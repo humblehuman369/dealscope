@@ -1,0 +1,17 @@
+{
+  "api": "AXESSO",
+  "address": "953 Banyan Dr, Delray Beach, FL 33483",
+  "fetched_at": "2025-12-19T19:56:24.537650",
+  "endpoints": {
+    "property_details": {
+      "status_code": 404,
+      "data": null,
+      "error": "{ \"statusCode\": 404, \"message\": \"Resource not found\" }"
+    },
+    "area_search": {
+      "status_code": 404,
+      "data": null,
+      "error": "{ \"statusCode\": 404, \"message\": \"Resource not found\" }"
+    }
+  }
+}
