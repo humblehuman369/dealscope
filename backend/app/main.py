@@ -1,0 +1,526 @@
+"""
+InvestIQ - Real Estate Investment Analytics API
+Main FastAPI application entry point.
+"""
+from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from typing import Optional, List
+from datetime import datetime
+import logging
+
+from app.core.config import settings
+from app.schemas import (
+    PropertySearchRequest, PropertyResponse, AnalyticsRequest, 
+    AnalyticsResponse, AllAssumptions, StrategyType,
+    SensitivityRequest, SensitivityResponse
+)
+from app.services.property_service import property_service
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Create FastAPI app
+app = FastAPI(
+    title="DealScope API",
+    description="Real Estate Investment Analytics Platform - Analyze properties across 6 investment strategies",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Configure properly in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ============================================
+# HEALTH CHECK
+# ============================================
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {
+        "status": "healthy",
+        "version": settings.APP_VERSION,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+@app.get("/")
+async def root():
+    """API root endpoint."""
+    return {
+        "name": "DealScope API",
+        "version": settings.APP_VERSION,
+        "docs": "/docs",
+        "strategies": [
+            "Long-Term Rental",
+            "Short-Term Rental", 
+            "BRRRR",
+            "Fix & Flip",
+            "House Hacking",
+            "Wholesale"
+        ]
+    }
+
+
+# ============================================
+# PROPERTY ENDPOINTS
+# ============================================
+
+@app.post("/api/v1/properties/search", response_model=PropertyResponse)
+async def search_property(request: PropertySearchRequest):
+    """
+    Search for a property by address.
+    
+    Fetches data from RentCast and AXESSO APIs, normalizes into unified schema.
+    Returns property details, valuations, rental estimates, and data provenance.
+    """
+    try:
+        # Build full address
+        address_parts = [request.address]
+        if request.city:
+            address_parts.append(request.city)
+        if request.state:
+            address_parts.append(request.state)
+        if request.zip_code:
+            address_parts.append(request.zip_code)
+        
+        full_address = ", ".join(address_parts)
+        
+        logger.info(f"Searching for property: {full_address}")
+        
+        result = await property_service.search_property(full_address)
+        return result
+        
+    except Exception as e:
+        logger.error(f"Property search error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/properties/{property_id}", response_model=PropertyResponse)
+async def get_property(property_id: str):
+    """
+    Get cached property data by ID.
+    """
+    try:
+        if property_id not in property_service._property_cache:
+            raise HTTPException(status_code=404, detail="Property not found")
+        
+        return property_service._property_cache[property_id]["data"]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get property error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/properties/demo/sample", response_model=PropertyResponse)
+async def get_demo_property():
+    """
+    Get sample/demo property data.
+    
+    Returns the Palm Beach County sample property from the Excel workbook
+    for testing and demonstration purposes.
+    """
+    try:
+        return property_service.get_mock_property()
+    except Exception as e:
+        logger.error(f"Demo property error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
+# ANALYTICS ENDPOINTS
+# ============================================
+
+@app.post("/api/v1/analytics/calculate", response_model=AnalyticsResponse)
+async def calculate_analytics(request: AnalyticsRequest):
+    """
+    Calculate investment analytics for a property.
+    
+    Computes metrics for all 6 strategies (or specified subset):
+    - Long-Term Rental (LTR)
+    - Short-Term Rental (STR/Airbnb)
+    - BRRRR (Buy, Rehab, Rent, Refinance, Repeat)
+    - Fix & Flip
+    - House Hacking
+    - Wholesale
+    
+    Uses provided assumptions or defaults from Assumptions Reference.
+    """
+    try:
+        logger.info(f"Calculating analytics for property: {request.property_id}")
+        
+        result = await property_service.calculate_analytics(
+            property_id=request.property_id,
+            assumptions=request.assumptions,
+            strategies=request.strategies
+        )
+        return result
+        
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Analytics calculation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/analytics/{property_id}/quick")
+async def quick_analytics(
+    property_id: str,
+    purchase_price: Optional[float] = None,
+    down_payment_pct: float = Query(0.20, ge=0, le=1),
+    interest_rate: float = Query(0.075, ge=0, le=0.3)
+):
+    """
+    Quick analytics with minimal parameters.
+    
+    Returns summary metrics for all strategies using default assumptions
+    with optional overrides for key financing terms.
+    """
+    try:
+        assumptions = AllAssumptions()
+        if purchase_price:
+            assumptions.financing.purchase_price = purchase_price
+        assumptions.financing.down_payment_pct = down_payment_pct
+        assumptions.financing.interest_rate = interest_rate
+        
+        result = await property_service.calculate_analytics(
+            property_id=property_id,
+            assumptions=assumptions
+        )
+        
+        # Return summary only
+        return {
+            "property_id": property_id,
+            "summary": {
+                "ltr": {
+                    "monthly_cash_flow": result.ltr.monthly_cash_flow if result.ltr else None,
+                    "cash_on_cash_return": result.ltr.cash_on_cash_return if result.ltr else None,
+                    "cap_rate": result.ltr.cap_rate if result.ltr else None
+                },
+                "str": {
+                    "monthly_cash_flow": result.str.monthly_cash_flow if result.str else None,
+                    "cash_on_cash_return": result.str.cash_on_cash_return if result.str else None,
+                    "break_even_occupancy": result.str.break_even_occupancy if result.str else None
+                },
+                "brrrr": {
+                    "cash_left_in_deal": result.brrrr.cash_left_in_deal if result.brrrr else None,
+                    "infinite_roi_achieved": result.brrrr.infinite_roi_achieved if result.brrrr else None,
+                    "equity_position": result.brrrr.equity_position if result.brrrr else None
+                },
+                "flip": {
+                    "net_profit": result.flip.net_profit_before_tax if result.flip else None,
+                    "roi": result.flip.roi if result.flip else None,
+                    "meets_70_rule": result.flip.meets_70_rule if result.flip else None
+                },
+                "house_hack": {
+                    "net_housing_cost": result.house_hack.net_housing_cost_scenario_a if result.house_hack else None,
+                    "savings_vs_renting": result.house_hack.savings_vs_renting_a if result.house_hack else None
+                },
+                "wholesale": {
+                    "net_profit": result.wholesale.net_profit if result.wholesale else None,
+                    "roi": result.wholesale.roi if result.wholesale else None,
+                    "deal_viability": result.wholesale.deal_viability if result.wholesale else None
+                }
+            }
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Quick analytics error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
+# ASSUMPTIONS ENDPOINTS
+# ============================================
+
+@app.get("/api/v1/assumptions/defaults")
+async def get_default_assumptions():
+    """
+    Get default assumptions for all strategies.
+    
+    Returns the Assumptions Reference from the Excel workbook
+    with recommended default values for each parameter.
+    """
+    defaults = AllAssumptions()
+    return {
+        "assumptions": defaults.model_dump(),
+        "descriptions": {
+            "financing": {
+                "down_payment_pct": "Down payment as percentage of purchase price (0.20 = 20%)",
+                "interest_rate": "Annual mortgage interest rate (0.075 = 7.5%)",
+                "loan_term_years": "Loan term in years (typically 30)",
+                "closing_costs_pct": "Buyer closing costs as percentage (0.03 = 3%)"
+            },
+            "operating": {
+                "vacancy_rate": "Expected vacancy as percentage (0.05 = 5%)",
+                "property_management_pct": "Property management fee as % of rent",
+                "maintenance_pct": "Maintenance reserve as % of rent"
+            },
+            "str": {
+                "platform_fees_pct": "Airbnb/VRBO platform fees (0.15 = 15%)",
+                "str_management_pct": "STR property management fee",
+                "cleaning_cost_per_turnover": "Cost per guest turnover"
+            },
+            "brrrr": {
+                "refinance_ltv": "Loan-to-value ratio for cash-out refinance (0.75 = 75%)",
+                "purchase_discount_pct": "Target discount below market for distressed purchase"
+            },
+            "flip": {
+                "hard_money_rate": "Annual interest rate for hard money loan",
+                "selling_costs_pct": "Total selling costs including commission"
+            },
+            "house_hack": {
+                "fha_down_payment_pct": "FHA minimum down payment (0.035 = 3.5%)",
+                "fha_mip_rate": "FHA mortgage insurance premium rate"
+            },
+            "wholesale": {
+                "assignment_fee": "Target wholesale assignment fee",
+                "target_purchase_discount_pct": "70% rule discount from ARV"
+            }
+        }
+    }
+
+
+# ============================================
+# SENSITIVITY ANALYSIS ENDPOINTS
+# ============================================
+
+@app.post("/api/v1/sensitivity/analyze")
+async def run_sensitivity_analysis(request: SensitivityRequest):
+    """
+    Run sensitivity analysis on a key variable.
+    
+    Shows how KPIs change as the selected variable varies by ±5%, ±10%, etc.
+    Useful for understanding investment risk and break-even points.
+    """
+    try:
+        # Get base property
+        if request.property_id not in property_service._property_cache:
+            raise HTTPException(status_code=404, detail="Property not found")
+        
+        property_data = property_service._property_cache[request.property_id]["data"]
+        
+        # Map variable name to actual value
+        variable_mapping = {
+            "purchase_price": request.assumptions.financing.purchase_price or property_data.valuations.current_value_avm,
+            "interest_rate": request.assumptions.financing.interest_rate,
+            "down_payment_pct": request.assumptions.financing.down_payment_pct,
+            "monthly_rent": property_data.rentals.monthly_rent_ltr,
+            "occupancy_rate": property_data.rentals.occupancy_rate,
+            "average_daily_rate": property_data.rentals.average_daily_rate
+        }
+        
+        base_value = variable_mapping.get(request.variable)
+        if base_value is None:
+            raise HTTPException(status_code=400, detail=f"Unknown variable: {request.variable}")
+        
+        results = []
+        for variation in request.range_pct:
+            # Create modified assumptions
+            modified = request.assumptions.model_copy(deep=True)
+            
+            # Apply variation
+            if request.variable == "purchase_price":
+                modified.financing.purchase_price = base_value * (1 + variation)
+            elif request.variable == "interest_rate":
+                modified.financing.interest_rate = base_value * (1 + variation)
+            elif request.variable == "down_payment_pct":
+                modified.financing.down_payment_pct = base_value * (1 + variation)
+            
+            # Calculate analytics
+            analytics = await property_service.calculate_analytics(
+                property_id=request.property_id,
+                assumptions=modified,
+                strategies=request.strategies
+            )
+            
+            result_row = {
+                "variation_pct": variation,
+                "variable_value": base_value * (1 + variation),
+                "results": {}
+            }
+            
+            if analytics.ltr:
+                result_row["results"]["ltr_cash_flow"] = analytics.ltr.annual_cash_flow
+                result_row["results"]["ltr_coc"] = analytics.ltr.cash_on_cash_return
+            if analytics.str:
+                result_row["results"]["str_cash_flow"] = analytics.str.annual_cash_flow
+                result_row["results"]["str_coc"] = analytics.str.cash_on_cash_return
+            if analytics.flip:
+                result_row["results"]["flip_profit"] = analytics.flip.net_profit_before_tax
+                result_row["results"]["flip_roi"] = analytics.flip.roi
+            
+            results.append(result_row)
+        
+        return SensitivityResponse(
+            property_id=request.property_id,
+            variable=request.variable,
+            baseline_value=base_value,
+            results=results
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Sensitivity analysis error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
+# COMPARISON ENDPOINTS
+# ============================================
+
+@app.get("/api/v1/comparison/{property_id}")
+async def get_strategy_comparison(property_id: str):
+    """
+    Get side-by-side comparison of all strategies.
+    
+    Returns the Scenario Comparison view from the Excel workbook
+    with rankings and recommendations.
+    """
+    try:
+        assumptions = AllAssumptions()
+        analytics = await property_service.calculate_analytics(
+            property_id=property_id,
+            assumptions=assumptions
+        )
+        
+        comparison = {
+            "property_id": property_id,
+            "strategies": {
+                "ltr": {
+                    "name": "Long-Term Rental",
+                    "initial_investment": analytics.ltr.total_cash_required if analytics.ltr else None,
+                    "year1_cash_flow": analytics.ltr.annual_cash_flow if analytics.ltr else None,
+                    "year1_roi": analytics.ltr.cash_on_cash_return if analytics.ltr else None,
+                    "risk_level": "Low",
+                    "time_horizon": "10+ years",
+                    "active_management": "Low"
+                },
+                "str": {
+                    "name": "Short-Term Rental",
+                    "initial_investment": analytics.str.total_cash_required if analytics.str else None,
+                    "year1_cash_flow": analytics.str.annual_cash_flow if analytics.str else None,
+                    "year1_roi": analytics.str.cash_on_cash_return if analytics.str else None,
+                    "risk_level": "Medium",
+                    "time_horizon": "5-10 years",
+                    "active_management": "High"
+                },
+                "brrrr": {
+                    "name": "BRRRR",
+                    "initial_investment": analytics.brrrr.total_cash_invested if analytics.brrrr else None,
+                    "year1_cash_flow": analytics.brrrr.post_refi_annual_cash_flow if analytics.brrrr else None,
+                    "year1_roi": analytics.brrrr.post_refi_cash_on_cash if analytics.brrrr else None,
+                    "risk_level": "Medium",
+                    "time_horizon": "2-5 years",
+                    "active_management": "Medium"
+                },
+                "flip": {
+                    "name": "Fix & Flip",
+                    "initial_investment": analytics.flip.total_cash_required if analytics.flip else None,
+                    "total_profit": analytics.flip.net_profit_before_tax if analytics.flip else None,
+                    "year1_roi": analytics.flip.annualized_roi if analytics.flip else None,
+                    "risk_level": "High",
+                    "time_horizon": "6 months",
+                    "active_management": "High"
+                },
+                "house_hack": {
+                    "name": "House Hacking",
+                    "initial_investment": analytics.house_hack.total_cash_required if analytics.house_hack else None,
+                    "monthly_savings": analytics.house_hack.savings_vs_renting_a if analytics.house_hack else None,
+                    "year1_roi": analytics.house_hack.roi_on_savings if analytics.house_hack else None,
+                    "risk_level": "Low",
+                    "time_horizon": "1+ years",
+                    "active_management": "Medium"
+                },
+                "wholesale": {
+                    "name": "Wholesale",
+                    "initial_investment": analytics.wholesale.total_cash_at_risk if analytics.wholesale else None,
+                    "total_profit": analytics.wholesale.net_profit if analytics.wholesale else None,
+                    "roi": analytics.wholesale.roi if analytics.wholesale else None,
+                    "risk_level": "Medium",
+                    "time_horizon": "30-45 days",
+                    "active_management": "High"
+                }
+            },
+            "recommendations": [
+                {
+                    "profile": "First-time investor, limited capital",
+                    "recommended": "House Hacking",
+                    "reason": "Lowest down payment (3.5% FHA), live for free while building equity"
+                },
+                {
+                    "profile": "Passive income, long-term wealth",
+                    "recommended": "Long-Term Rental",
+                    "reason": "Stable cash flow, low management, appreciation + principal paydown"
+                },
+                {
+                    "profile": "Maximize revenue in tourism area",
+                    "recommended": "Short-Term Rental",
+                    "reason": "Higher revenue potential if market supports STR"
+                },
+                {
+                    "profile": "Scale portfolio quickly",
+                    "recommended": "BRRRR",
+                    "reason": "Recycle capital to buy multiple properties"
+                },
+                {
+                    "profile": "Active investor, quick profits",
+                    "recommended": "Fix & Flip",
+                    "reason": "Fast returns but requires renovation expertise"
+                },
+                {
+                    "profile": "No capital, strong network",
+                    "recommended": "Wholesale",
+                    "reason": "No money down, earn assignment fees"
+                }
+            ]
+        }
+        
+        return comparison
+        
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Comparison error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
+# STARTUP / SHUTDOWN
+# ============================================
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on startup."""
+    logger.info("Starting DealScope API...")
+    logger.info(f"RentCast API configured: {'Yes' if settings.RENTCAST_API_KEY else 'No'}")
+    logger.info(f"AXESSO API configured: {'Yes' if settings.AXESSO_API_KEY else 'No'}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown."""
+    logger.info("Shutting down DealScope API...")
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

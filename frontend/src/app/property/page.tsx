@@ -1,0 +1,878 @@
+'use client'
+
+import { useSearchParams } from 'next/navigation'
+import { useState, useMemo, useCallback, useEffect, Suspense } from 'react'
+import dynamic from 'next/dynamic'
+import { 
+  Building2, Home, Repeat, Hammer, Users, FileText, 
+  TrendingUp, TrendingDown, DollarSign, Percent, Calendar, 
+  AlertTriangle, CheckCircle, Zap, Target, PiggyBank, 
+  RefreshCw, Award, Loader2, Bell, Settings, Menu,
+  BarChart3, LineChart, GitCompare, Activity, Wrench, ChevronRight,
+  ArrowUpRight, ArrowDownRight, Sparkles, ChevronDown, ChevronUp,
+  X, Layers, Calculator, Eye, EyeOff, SlidersHorizontal
+} from 'lucide-react'
+import { 
+  ProjectionAssumptions,
+  calculate10YearProjections
+} from '@/lib/projections'
+
+// Dynamic imports for drill-down components
+const ProjectionsView = dynamic(() => import('@/components/ProjectionsView'), { loading: () => <LoadingCard /> })
+const ScenarioComparison = dynamic(() => import('@/components/ScenarioComparison'), { loading: () => <LoadingCard /> })
+const DealScoreCard = dynamic(() => import('@/components/DealScoreCard'), { loading: () => <LoadingCard /> })
+const SensitivityAnalysisView = dynamic(() => import('@/components/SensitivityAnalysis'), { loading: () => <LoadingCard /> })
+const ChartsView = dynamic(() => import('@/components/ChartsView'), { loading: () => <LoadingCard /> })
+const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), { loading: () => <LoadingCard /> })
+
+function LoadingCard() {
+  return <div className="animate-pulse bg-gray-100 rounded-2xl h-64" />
+}
+
+// ============================================
+// TYPES
+// ============================================
+
+interface PropertyData {
+  property_id: string
+  address: { street: string; city: string; state: string; zip_code: string; full_address: string }
+  details: { property_type: string | null; bedrooms: number | null; bathrooms: number | null; square_footage: number | null }
+  valuations: { current_value_avm: number | null; arv: number | null }
+  rentals: { monthly_rent_ltr: number | null; average_daily_rate: number | null; occupancy_rate: number | null }
+  market: { property_taxes_annual: number | null }
+}
+
+interface Assumptions {
+  purchasePrice: number; downPaymentPct: number; interestRate: number; loanTermYears: number
+  monthlyRent: number; arv: number; rehabCost: number; propertyTaxes: number; insurance: number
+  vacancyRate: number; managementPct: number; maintenancePct: number; closingCostsPct: number
+  averageDailyRate: number; occupancyRate: number; holdingPeriodMonths: number; sellingCostsPct: number
+}
+
+type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
+type DrillDownView = 'details' | 'charts' | 'projections' | 'score' | 'sensitivity' | 'rehab' | 'compare'
+
+// ============================================
+// API FUNCTIONS
+// ============================================
+
+async function fetchProperty(address: string): Promise<PropertyData> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+  const response = await fetch(`${apiUrl}/api/v1/properties/search`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ address })
+  })
+  if (!response.ok) throw new Error('Property not found')
+  return response.json()
+}
+
+async function fetchDemoProperty(): Promise<PropertyData> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+  const response = await fetch(`${apiUrl}/api/v1/properties/demo/sample`)
+  if (!response.ok) throw new Error('Failed to load demo')
+  return response.json()
+}
+
+// ============================================
+// CALCULATIONS
+// ============================================
+
+function calculateMonthlyMortgage(principal: number, annualRate: number, years: number): number {
+  if (annualRate === 0) return principal / (years * 12)
+  const monthlyRate = annualRate / 12
+  const numPayments = years * 12
+  return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+}
+
+function calculateLTR(a: Assumptions) {
+  const downPayment = a.purchasePrice * a.downPaymentPct
+  const closingCosts = a.purchasePrice * a.closingCostsPct
+  const loanAmount = a.purchasePrice - downPayment
+  const totalCashRequired = downPayment + closingCosts
+  const monthlyPI = calculateMonthlyMortgage(loanAmount, a.interestRate, a.loanTermYears)
+  const annualDebtService = monthlyPI * 12
+  const annualGrossRent = a.monthlyRent * 12
+  const vacancyLoss = annualGrossRent * a.vacancyRate
+  const effectiveGrossIncome = annualGrossRent - vacancyLoss
+  const propertyManagement = annualGrossRent * a.managementPct
+  const maintenance = annualGrossRent * a.maintenancePct
+  const totalOperatingExpenses = a.propertyTaxes + a.insurance + propertyManagement + maintenance
+  const noi = effectiveGrossIncome - totalOperatingExpenses
+  const annualCashFlow = noi - annualDebtService
+  const monthlyCashFlow = annualCashFlow / 12
+  const capRate = a.purchasePrice > 0 ? noi / a.purchasePrice : 0
+  const cashOnCash = totalCashRequired > 0 ? annualCashFlow / totalCashRequired : 0
+  const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
+  const onePercentRule = a.purchasePrice > 0 ? a.monthlyRent / a.purchasePrice : 0
+  return { totalCashRequired, monthlyCashFlow, annualCashFlow, capRate, cashOnCash, dscr, onePercentRule, noi, loanAmount }
+}
+
+function calculateSTR(a: Assumptions) {
+  const downPayment = a.purchasePrice * a.downPaymentPct
+  const closingCosts = a.purchasePrice * a.closingCostsPct
+  const loanAmount = a.purchasePrice - downPayment
+  const totalCashRequired = downPayment + closingCosts
+  const monthlyPI = calculateMonthlyMortgage(loanAmount, a.interestRate, a.loanTermYears)
+  const annualDebtService = monthlyPI * 12
+  const annualGrossRent = a.averageDailyRate * 365 * a.occupancyRate
+  const managementFee = annualGrossRent * 0.20
+  const platformFees = annualGrossRent * 0.03
+  const utilities = 3600
+  const supplies = 2400
+  const totalOperatingExpenses = a.propertyTaxes + a.insurance + managementFee + platformFees + utilities + supplies + (annualGrossRent * a.maintenancePct)
+  const noi = annualGrossRent - totalOperatingExpenses
+  const annualCashFlow = noi - annualDebtService
+  const monthlyCashFlow = annualCashFlow / 12
+  const capRate = a.purchasePrice > 0 ? noi / a.purchasePrice : 0
+  const cashOnCash = totalCashRequired > 0 ? annualCashFlow / totalCashRequired : 0
+  return { totalCashRequired, monthlyCashFlow, annualCashFlow, capRate, cashOnCash, noi, annualGrossRent }
+}
+
+function calculateBRRRR(a: Assumptions) {
+  const initialCash = (a.purchasePrice * 0.30) + a.rehabCost + (a.purchasePrice * a.closingCostsPct)
+  const refinanceLoanAmount = a.arv * 0.75
+  const cashBack = refinanceLoanAmount - (a.purchasePrice * 0.70)
+  const cashLeftInDeal = Math.max(0, initialCash - cashBack)
+  const monthlyPI = calculateMonthlyMortgage(refinanceLoanAmount, a.interestRate, a.loanTermYears)
+  const annualDebtService = monthlyPI * 12
+  const annualGrossRent = a.monthlyRent * 12
+  const effectiveGrossIncome = annualGrossRent * (1 - a.vacancyRate)
+  const totalOperatingExpenses = a.propertyTaxes + a.insurance + (annualGrossRent * a.managementPct) + (annualGrossRent * a.maintenancePct)
+  const noi = effectiveGrossIncome - totalOperatingExpenses
+  const annualCashFlow = noi - annualDebtService
+  const monthlyCashFlow = annualCashFlow / 12
+  const cashOnCash = cashLeftInDeal > 0 ? annualCashFlow / cashLeftInDeal : Infinity
+  const equityCreated = a.arv - refinanceLoanAmount
+  return { initialCash, cashBack, cashLeftInDeal, monthlyCashFlow, annualCashFlow, cashOnCash, equityCreated, refinanceLoanAmount }
+}
+
+function calculateFlip(a: Assumptions) {
+  const purchaseCosts = a.purchasePrice * a.closingCostsPct
+  const holdingCosts = (a.purchasePrice * (a.interestRate / 12) * a.holdingPeriodMonths) + ((a.propertyTaxes / 12) * a.holdingPeriodMonths) + ((a.insurance / 12) * a.holdingPeriodMonths)
+  const sellingCosts = a.arv * a.sellingCostsPct
+  const totalInvestment = a.purchasePrice + purchaseCosts + a.rehabCost + holdingCosts
+  const netProfit = a.arv - totalInvestment - sellingCosts
+  const roi = totalInvestment > 0 ? netProfit / totalInvestment : 0
+  const annualizedROI = roi * (12 / a.holdingPeriodMonths)
+  return { totalInvestment, netProfit, roi, annualizedROI, holdingCosts, sellingCosts }
+}
+
+function calculateHouseHack(a: Assumptions) {
+  const units = 4
+  const ownerUnit = 1
+  const rentalUnits = units - ownerUnit
+  const rentPerUnit = a.monthlyRent / units
+  const monthlyRentalIncome = rentPerUnit * rentalUnits
+  const downPayment = a.purchasePrice * 0.035
+  const closingCosts = a.purchasePrice * a.closingCostsPct
+  const totalCashRequired = downPayment + closingCosts
+  const loanAmount = a.purchasePrice - downPayment
+  const monthlyPI = calculateMonthlyMortgage(loanAmount, a.interestRate, a.loanTermYears)
+  const monthlyTaxes = a.propertyTaxes / 12
+  const monthlyInsurance = a.insurance / 12
+  const monthlyExpenses = monthlyPI + monthlyTaxes + monthlyInsurance + (monthlyRentalIncome * a.vacancyRate) + (monthlyRentalIncome * a.maintenancePct)
+  const effectiveHousingCost = monthlyExpenses - monthlyRentalIncome
+  const marketRent = rentPerUnit * 1.2
+  const monthlySavings = marketRent - effectiveHousingCost
+  return { totalCashRequired, monthlyRentalIncome, effectiveHousingCost, monthlySavings, monthlyPI, rentalUnits }
+}
+
+function calculateWholesale(a: Assumptions) {
+  const assignmentFee = (a.arv - a.purchasePrice - a.rehabCost) * 0.30
+  const earnestMoney = 1000
+  const marketingCosts = 500
+  const closingCosts = 500
+  const totalInvestment = earnestMoney + marketingCosts + closingCosts
+  const netProfit = assignmentFee - totalInvestment
+  const roi = totalInvestment > 0 ? netProfit / totalInvestment : 0
+  const dealTimeline = 30
+  return { assignmentFee, totalInvestment, netProfit, roi, dealTimeline, earnestMoney }
+}
+
+// ============================================
+// FORMATTING
+// ============================================
+
+const formatCurrency = (value: number): string => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value)
+const formatCompact = (value: number): string => Math.abs(value) >= 1000000 ? `$${(value / 1000000).toFixed(1)}M` : Math.abs(value) >= 1000 ? `$${(value / 1000).toFixed(0)}K` : formatCurrency(value)
+const formatPercent = (value: number): string => `${(value * 100).toFixed(1)}%`
+
+// ============================================
+// STRATEGY DEFINITIONS
+// ============================================
+
+const strategies: { id: StrategyId; name: string; shortName: string; description: string; icon: any; color: string; gradient: string }[] = [
+  { id: 'ltr', name: 'Long-Term Rental', shortName: 'LTR', description: 'Buy-and-hold with steady cash flow', icon: Building2, color: 'violet', gradient: 'from-violet-500 to-purple-600' },
+  { id: 'str', name: 'Short-Term Rental', shortName: 'STR', description: 'Airbnb/VRBO for max revenue', icon: Home, color: 'cyan', gradient: 'from-cyan-500 to-blue-600' },
+  { id: 'brrrr', name: 'BRRRR', shortName: 'BRRRR', description: 'Buy, Rehab, Rent, Refi, Repeat', icon: Repeat, color: 'emerald', gradient: 'from-emerald-500 to-green-600' },
+  { id: 'flip', name: 'Fix & Flip', shortName: 'Flip', description: 'Renovate and sell for profit', icon: Hammer, color: 'orange', gradient: 'from-orange-500 to-red-500' },
+  { id: 'house_hack', name: 'House Hacking', shortName: 'Hack', description: 'Live in one, rent the rest', icon: Users, color: 'blue', gradient: 'from-blue-500 to-indigo-600' },
+  { id: 'wholesale', name: 'Wholesale', shortName: 'Wholesale', description: 'Assign contracts for quick profit', icon: FileText, color: 'pink', gradient: 'from-pink-500 to-rose-600' },
+]
+
+// ============================================
+// UI COMPONENTS
+// ============================================
+
+function TopNav({ property, isDemo }: { property: PropertyData; isDemo: boolean }) {
+  return (
+    <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center gap-4">
+        <a href="/" className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/80 transition-colors">
+          <Menu className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
+        </a>
+        <div>
+          <div className="flex items-center gap-2">
+            {isDemo && <span className="px-2 py-0.5 text-xs font-semibold bg-gradient-to-r from-violet-500 to-cyan-500 text-white rounded-md">DEMO</span>}
+            <h1 className="text-lg font-bold text-gray-800">{property.address.full_address}</h1>
+          </div>
+          <p className="text-sm text-gray-400">{property.details.bedrooms || '—'} bed · {property.details.bathrooms || '—'} bath · {property.details.square_footage?.toLocaleString() || '—'} sqft</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-1">
+        <button className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/80 transition-colors">
+          <Bell className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-pink-500 rounded-full" />
+        </button>
+        <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/80 transition-colors">
+          <Settings className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function GradientSlider({ label, value, min, max, step, onChange, formatType = 'currency', compact = false }: {
+  label: string; value: number; min: number; max: number; step: number; onChange: (value: number) => void
+  formatType?: 'currency' | 'percent' | 'years' | 'months'; compact?: boolean
+}) {
+  const percentage = Math.round(((value - min) / (max - min)) * 100)
+  const displayValue = formatType === 'currency' ? formatCurrency(value) : formatType === 'percent' ? `${(value * 100).toFixed(1)}%` : formatType === 'years' ? `${value} yrs` : `${value} mo`
+
+  return (
+    <div className={compact ? 'py-2' : 'py-3'}>
+      <div className="flex items-center justify-between mb-2">
+        <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-gray-500`}>{label}</span>
+        <span className={`${compact ? 'text-sm' : 'text-base'} font-bold text-gray-800`}>{displayValue}</span>
+      </div>
+      <div className="relative h-2">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-500 via-cyan-500 to-emerald-400" />
+        <div className="absolute top-0 right-0 h-full bg-gray-200 rounded-r-full transition-all duration-150" style={{ width: `${100 - percentage}%` }} />
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 shadow-[0_0_16px_rgba(59,130,246,0.5)] flex items-center justify-center cursor-grab transition-transform hover:scale-110" style={{ left: `${percentage}%` }}>
+          <span className="text-[8px] font-bold text-white">{percentage}%</span>
+        </div>
+        <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+      </div>
+    </div>
+  )
+}
+
+function StrategyCard({ strategy, metrics, isSelected, onClick, isBest }: {
+  strategy: typeof strategies[0]; metrics: { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; verdict: 'good' | 'ok' | 'poor' }
+  isSelected: boolean; onClick: () => void; isBest: boolean
+}) {
+  const Icon = strategy.icon
+  const verdictDot = { good: 'bg-emerald-400', ok: 'bg-amber-400', poor: 'bg-red-400' }
+  
+  return (
+    <button
+      onClick={onClick}
+      className={`relative bg-white rounded-2xl p-5 text-left transition-all duration-200 group ${
+        isSelected 
+          ? 'ring-2 ring-blue-400 shadow-md' 
+          : 'shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]'
+      }`}
+    >
+      {/* Best Badge */}
+      {isBest && (
+        <div className="absolute -top-1.5 -right-1.5 px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-medium rounded-full">
+          Best
+        </div>
+      )}
+      
+      {/* Icon */}
+      <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${strategy.gradient} flex items-center justify-center mb-4 opacity-90`}>
+        <Icon className="w-4 h-4 text-white" strokeWidth={1.5} />
+      </div>
+      
+      {/* Strategy Name */}
+      <h3 className="text-sm font-semibold text-gray-800 mb-4">{strategy.name}</h3>
+      
+      {/* Primary Metric */}
+      <div className="mb-3">
+        <div className="text-[11px] text-gray-400 mb-1">{metrics.primaryLabel}</div>
+        <div className="text-2xl font-semibold text-gray-800 tracking-tight">{metrics.primary}</div>
+      </div>
+      
+      {/* Secondary Metric */}
+      <div className="mb-4">
+        <div className="text-[11px] text-gray-400 mb-1">{metrics.secondaryLabel}</div>
+        <div className="text-base font-medium text-gray-600">{metrics.secondary}</div>
+      </div>
+      
+      {/* Status Indicator */}
+      <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+        <span className={`w-2 h-2 rounded-full ${verdictDot[metrics.verdict]}`} />
+        <span className="text-xs text-gray-400">
+          {metrics.verdict === 'good' ? 'Strong returns' : metrics.verdict === 'ok' ? 'Moderate' : 'Below target'}
+        </span>
+        <ChevronRight className="w-3.5 h-3.5 text-gray-300 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+      </div>
+    </button>
+  )
+}
+
+function AssumptionsPanel({ assumptions, update, isExpanded, onToggle }: {
+  assumptions: Assumptions; update: (key: keyof Assumptions, value: number) => void
+  isExpanded: boolean; onToggle: () => void
+}) {
+  return (
+    <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
+      <button onClick={onToggle} className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
+            <SlidersHorizontal className="w-4 h-4 text-white" strokeWidth={1.5} />
+          </div>
+          <div className="text-left">
+            <span className="font-semibold text-gray-800">Variables</span>
+            <div className="text-xs text-gray-400">
+              {formatCompact(assumptions.purchasePrice)} · {formatPercent(assumptions.downPaymentPct)} down · {formatPercent(assumptions.interestRate)} rate
+            </div>
+          </div>
+        </div>
+        {isExpanded ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+      </button>
+      
+      {isExpanded && (
+        <div className="px-4 pb-4 border-t border-gray-100">
+          <div className="grid grid-cols-2 gap-x-6">
+            <GradientSlider label="Purchase Price" value={assumptions.purchasePrice} min={100000} max={1000000} step={5000} onChange={(v) => update('purchasePrice', v)} formatType="currency" compact />
+            <GradientSlider label="Monthly Rent" value={assumptions.monthlyRent} min={500} max={8000} step={50} onChange={(v) => update('monthlyRent', v)} formatType="currency" compact />
+            <GradientSlider label="Down Payment" value={assumptions.downPaymentPct} min={0.035} max={0.30} step={0.005} onChange={(v) => update('downPaymentPct', v)} formatType="percent" compact />
+            <GradientSlider label="Interest Rate" value={assumptions.interestRate} min={0.04} max={0.12} step={0.001} onChange={(v) => update('interestRate', v)} formatType="percent" compact />
+            <GradientSlider label="ARV" value={assumptions.arv} min={100000} max={1200000} step={5000} onChange={(v) => update('arv', v)} formatType="currency" compact />
+            <GradientSlider label="Rehab Cost" value={assumptions.rehabCost} min={0} max={150000} step={1000} onChange={(v) => update('rehabCost', v)} formatType="currency" compact />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView; onViewChange: (view: DrillDownView) => void }) {
+  const tabs: { id: DrillDownView; label: string; icon: any; highlight?: boolean }[] = [
+    { id: 'rehab', label: 'Rehab', icon: Wrench, highlight: true },
+    { id: 'details', label: 'Details', icon: Calculator },
+    { id: 'charts', label: 'Charts', icon: LineChart },
+    { id: 'projections', label: '10-Year', icon: TrendingUp },
+    { id: 'score', label: 'Score', icon: Award },
+    { id: 'sensitivity', label: 'What-If', icon: Activity },
+    { id: 'compare', label: 'Compare', icon: GitCompare },
+  ]
+  
+  return (
+    <div className="flex gap-1 overflow-x-auto">
+      {tabs.map(tab => {
+        const Icon = tab.icon
+        const isActive = activeView === tab.id
+        const isHighlight = tab.highlight
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onViewChange(tab.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-all ${
+              isActive 
+                ? isHighlight 
+                  ? 'bg-orange-500 text-white' 
+                  : 'bg-white text-gray-800 shadow-sm'
+                : isHighlight
+                  ? 'text-orange-500 hover:bg-orange-50'
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-white/50'
+            }`}
+          >
+            <Icon className="w-3.5 h-3.5" strokeWidth={1.5} />
+            {tab.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function StatRow({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className={`flex items-center justify-between py-3 ${highlight ? 'bg-emerald-50 -mx-4 px-4 rounded-lg' : ''}`}>
+      <span className="text-sm text-gray-500">{label}</span>
+      <span className={`font-semibold ${highlight ? 'text-emerald-600' : 'text-gray-800'}`}>{value}</span>
+    </div>
+  )
+}
+
+function RuleCheck({ label, value, target, passed }: { label: string; value: string; target: string; passed: boolean }) {
+  return (
+    <div className={`flex items-center justify-between p-3 rounded-xl ${passed ? 'bg-emerald-50' : 'bg-amber-50'}`}>
+      <div className="flex items-center gap-2">
+        {passed ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-amber-600" />}
+        <span className="text-sm font-medium text-gray-700">{label}</span>
+      </div>
+      <div className="text-right">
+        <span className={`font-bold ${passed ? 'text-emerald-600' : 'text-amber-600'}`}>{value}</span>
+        <span className="text-xs text-gray-400 ml-2">({target})</span>
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// STRATEGY DETAIL VIEWS
+// ============================================
+
+function LTRDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateLTR>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      <div className="space-y-4">
+        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+          <DollarSign className="w-4 h-4 text-violet-500" /> Key Metrics
+        </h4>
+        <div className="bg-gray-50 rounded-xl p-4 divide-y divide-gray-200">
+          <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 200} />
+          <StatRow label="Annual Cash Flow" value={formatCurrency(calc.annualCashFlow)} />
+          <StatRow label="Cash-on-Cash Return" value={formatPercent(calc.cashOnCash)} highlight={calc.cashOnCash > 0.08} />
+          <StatRow label="Cap Rate" value={formatPercent(calc.capRate)} />
+          <StatRow label="DSCR" value={calc.dscr.toFixed(2)} />
+          <StatRow label="NOI" value={formatCurrency(calc.noi)} />
+          <StatRow label="Cash Required" value={formatCurrency(calc.totalCashRequired)} />
+        </div>
+        <div className="space-y-2">
+          <RuleCheck label="1% Rule" value={formatPercent(calc.onePercentRule)} target="≥1%" passed={calc.onePercentRule >= 0.01} />
+          <RuleCheck label="DSCR" value={calc.dscr.toFixed(2)} target="≥1.25" passed={calc.dscr >= 1.25} />
+          <RuleCheck label="Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} target="≥$200" passed={calc.monthlyCashFlow >= 200} />
+        </div>
+      </div>
+      <div className="space-y-4">
+        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-cyan-500" /> Adjust Inputs
+        </h4>
+        <div className="bg-gray-50 rounded-xl p-4 space-y-1">
+          <GradientSlider label="Monthly Rent" value={assumptions.monthlyRent} min={500} max={8000} step={50} onChange={(v) => update('monthlyRent', v)} formatType="currency" compact />
+          <GradientSlider label="Vacancy Rate" value={assumptions.vacancyRate} min={0} max={0.15} step={0.01} onChange={(v) => update('vacancyRate', v)} formatType="percent" compact />
+          <GradientSlider label="Management %" value={assumptions.managementPct} min={0} max={0.15} step={0.01} onChange={(v) => update('managementPct', v)} formatType="percent" compact />
+          <GradientSlider label="Maintenance %" value={assumptions.maintenancePct} min={0.03} max={0.15} step={0.01} onChange={(v) => update('maintenancePct', v)} formatType="percent" compact />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function STRDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateSTR>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      <div className="space-y-4">
+        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+          <DollarSign className="w-4 h-4 text-cyan-500" /> Key Metrics
+        </h4>
+        <div className="bg-gray-50 rounded-xl p-4 divide-y divide-gray-200">
+          <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 500} />
+          <StatRow label="Annual Gross Revenue" value={formatCurrency(calc.annualGrossRent)} />
+          <StatRow label="Cash-on-Cash Return" value={formatPercent(calc.cashOnCash)} highlight={calc.cashOnCash > 0.12} />
+          <StatRow label="Cap Rate" value={formatPercent(calc.capRate)} />
+          <StatRow label="NOI" value={formatCurrency(calc.noi)} />
+          <StatRow label="Cash Required" value={formatCurrency(calc.totalCashRequired)} />
+        </div>
+      </div>
+      <div className="space-y-4">
+        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-cyan-500" /> Adjust Inputs
+        </h4>
+        <div className="bg-gray-50 rounded-xl p-4 space-y-1">
+          <GradientSlider label="Daily Rate" value={assumptions.averageDailyRate} min={50} max={500} step={10} onChange={(v) => update('averageDailyRate', v)} formatType="currency" compact />
+          <GradientSlider label="Occupancy Rate" value={assumptions.occupancyRate} min={0.40} max={0.95} step={0.01} onChange={(v) => update('occupancyRate', v)} formatType="percent" compact />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function BRRRRDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateBRRRR>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      <div className="space-y-4">
+        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+          <DollarSign className="w-4 h-4 text-emerald-500" /> Key Metrics
+        </h4>
+        <div className="bg-gray-50 rounded-xl p-4 divide-y divide-gray-200">
+          <StatRow label="Initial Cash Needed" value={formatCurrency(calc.initialCash)} />
+          <StatRow label="Cash Back at Refi" value={formatCurrency(calc.cashBack)} highlight={calc.cashBack > 0} />
+          <StatRow label="Cash Left in Deal" value={formatCurrency(calc.cashLeftInDeal)} highlight={calc.cashLeftInDeal < 10000} />
+          <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} />
+          <StatRow label="Cash-on-Cash" value={calc.cashOnCash === Infinity ? '∞' : formatPercent(calc.cashOnCash)} highlight />
+          <StatRow label="Equity Created" value={formatCurrency(calc.equityCreated)} />
+        </div>
+      </div>
+      <div className="space-y-4">
+        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-emerald-500" /> Adjust Inputs
+        </h4>
+        <div className="bg-gray-50 rounded-xl p-4 space-y-1">
+          <GradientSlider label="ARV" value={assumptions.arv} min={100000} max={1200000} step={5000} onChange={(v) => update('arv', v)} formatType="currency" compact />
+          <GradientSlider label="Rehab Cost" value={assumptions.rehabCost} min={0} max={150000} step={1000} onChange={(v) => update('rehabCost', v)} formatType="currency" compact />
+          <GradientSlider label="Monthly Rent" value={assumptions.monthlyRent} min={500} max={8000} step={50} onChange={(v) => update('monthlyRent', v)} formatType="currency" compact />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateFlip>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      <div className="space-y-4">
+        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+          <DollarSign className="w-4 h-4 text-orange-500" /> Key Metrics
+        </h4>
+        <div className="bg-gray-50 rounded-xl p-4 divide-y divide-gray-200">
+          <StatRow label="Net Profit" value={formatCurrency(calc.netProfit)} highlight={calc.netProfit > 30000} />
+          <StatRow label="ROI" value={formatPercent(calc.roi)} highlight={calc.roi > 0.20} />
+          <StatRow label="Annualized ROI" value={formatPercent(calc.annualizedROI)} />
+          <StatRow label="Total Investment" value={formatCurrency(calc.totalInvestment)} />
+          <StatRow label="Holding Costs" value={formatCurrency(calc.holdingCosts)} />
+          <StatRow label="Selling Costs" value={formatCurrency(calc.sellingCosts)} />
+        </div>
+      </div>
+      <div className="space-y-4">
+        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-orange-500" /> Adjust Inputs
+        </h4>
+        <div className="bg-gray-50 rounded-xl p-4 space-y-1">
+          <GradientSlider label="ARV" value={assumptions.arv} min={100000} max={1200000} step={5000} onChange={(v) => update('arv', v)} formatType="currency" compact />
+          <GradientSlider label="Rehab Cost" value={assumptions.rehabCost} min={0} max={150000} step={1000} onChange={(v) => update('rehabCost', v)} formatType="currency" compact />
+          <GradientSlider label="Holding Period" value={assumptions.holdingPeriodMonths} min={3} max={12} step={1} onChange={(v) => update('holdingPeriodMonths', v)} formatType="months" compact />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function HouseHackDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateHouseHack>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      <div className="space-y-4">
+        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+          <DollarSign className="w-4 h-4 text-blue-500" /> Key Metrics
+        </h4>
+        <div className="bg-gray-50 rounded-xl p-4 divide-y divide-gray-200">
+          <StatRow label="Effective Housing Cost" value={formatCurrency(calc.effectiveHousingCost)} highlight={calc.effectiveHousingCost < 500} />
+          <StatRow label="Monthly Savings" value={formatCurrency(calc.monthlySavings)} highlight={calc.monthlySavings > 500} />
+          <StatRow label="Rental Income" value={formatCurrency(calc.monthlyRentalIncome)} />
+          <StatRow label="Mortgage Payment" value={formatCurrency(calc.monthlyPI)} />
+          <StatRow label="Cash Required (3.5%)" value={formatCurrency(calc.totalCashRequired)} />
+          <StatRow label="Rental Units" value={`${calc.rentalUnits} units`} />
+        </div>
+      </div>
+      <div className="space-y-4">
+        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-blue-500" /> Adjust Inputs
+        </h4>
+        <div className="bg-gray-50 rounded-xl p-4 space-y-1">
+          <GradientSlider label="Total Rent (all units)" value={assumptions.monthlyRent} min={1000} max={12000} step={100} onChange={(v) => update('monthlyRent', v)} formatType="currency" compact />
+          <GradientSlider label="Vacancy Rate" value={assumptions.vacancyRate} min={0} max={0.15} step={0.01} onChange={(v) => update('vacancyRate', v)} formatType="percent" compact />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function WholesaleDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateWholesale>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      <div className="space-y-4">
+        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+          <DollarSign className="w-4 h-4 text-pink-500" /> Key Metrics
+        </h4>
+        <div className="bg-gray-50 rounded-xl p-4 divide-y divide-gray-200">
+          <StatRow label="Assignment Fee" value={formatCurrency(calc.assignmentFee)} highlight={calc.assignmentFee > 10000} />
+          <StatRow label="Net Profit" value={formatCurrency(calc.netProfit)} highlight={calc.netProfit > 8000} />
+          <StatRow label="ROI" value={formatPercent(calc.roi)} highlight />
+          <StatRow label="Total Investment" value={formatCurrency(calc.totalInvestment)} />
+          <StatRow label="Earnest Money" value={formatCurrency(calc.earnestMoney)} />
+          <StatRow label="Timeline" value={`${calc.dealTimeline} days`} />
+        </div>
+      </div>
+      <div className="space-y-4">
+        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-pink-500" /> Adjust Inputs
+        </h4>
+        <div className="bg-gray-50 rounded-xl p-4 space-y-1">
+          <GradientSlider label="ARV" value={assumptions.arv} min={100000} max={1200000} step={5000} onChange={(v) => update('arv', v)} formatType="currency" compact />
+          <GradientSlider label="Rehab Estimate" value={assumptions.rehabCost} min={0} max={150000} step={1000} onChange={(v) => update('rehabCost', v)} formatType="currency" compact />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
+
+function PropertyPageContent() {
+  const searchParams = useSearchParams()
+  const addressParam = searchParams.get('address')
+  const isDemo = searchParams.get('demo') === 'true'
+  
+  const [property, setProperty] = useState<PropertyData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
+  const [selectedStrategy, setSelectedStrategy] = useState<StrategyId>('ltr')
+  const [drillDownView, setDrillDownView] = useState<DrillDownView>('details')
+  const [assumptionsExpanded, setAssumptionsExpanded] = useState(true)
+  
+  const [assumptions, setAssumptions] = useState<Assumptions>({
+    purchasePrice: 425000, downPaymentPct: 0.20, interestRate: 0.075, loanTermYears: 30,
+    monthlyRent: 2100, arv: 465000, rehabCost: 40000, propertyTaxes: 4500, insurance: 1500,
+    vacancyRate: 0.05, managementPct: 0.10, maintenancePct: 0.10, closingCostsPct: 0.03,
+    averageDailyRate: 250, occupancyRate: 0.82, holdingPeriodMonths: 6, sellingCostsPct: 0.08
+  })
+
+  useEffect(() => {
+    async function loadProperty() {
+      setLoading(true)
+      try {
+        const data = isDemo ? await fetchDemoProperty() : addressParam ? await fetchProperty(decodeURIComponent(addressParam)) : null
+        if (!data) throw new Error('No address provided')
+        setProperty(data)
+        setAssumptions(prev => ({
+          ...prev,
+          purchasePrice: data.valuations.current_value_avm || prev.purchasePrice,
+          monthlyRent: data.rentals.monthly_rent_ltr || prev.monthlyRent,
+          arv: data.valuations.arv || (data.valuations.current_value_avm ? data.valuations.current_value_avm * 1.1 : prev.arv),
+          propertyTaxes: data.market.property_taxes_annual || prev.propertyTaxes,
+          averageDailyRate: data.rentals.average_daily_rate || prev.averageDailyRate,
+          occupancyRate: data.rentals.occupancy_rate || prev.occupancyRate,
+        }))
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load property')
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadProperty()
+  }, [addressParam, isDemo])
+
+  const update = useCallback((key: keyof Assumptions, value: number) => {
+    setAssumptions(prev => ({ ...prev, [key]: value }))
+  }, [])
+
+  // Calculate all strategies
+  const ltrCalc = useMemo(() => calculateLTR(assumptions), [assumptions])
+  const strCalc = useMemo(() => calculateSTR(assumptions), [assumptions])
+  const brrrrCalc = useMemo(() => calculateBRRRR(assumptions), [assumptions])
+  const flipCalc = useMemo(() => calculateFlip(assumptions), [assumptions])
+  const houseHackCalc = useMemo(() => calculateHouseHack(assumptions), [assumptions])
+  const wholesaleCalc = useMemo(() => calculateWholesale(assumptions), [assumptions])
+
+  // Strategy metrics for cards
+  const strategyMetrics: Record<StrategyId, { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; verdict: 'good' | 'ok' | 'poor'; score: number }> = useMemo(() => ({
+    ltr: {
+      primary: formatCurrency(ltrCalc.monthlyCashFlow),
+      primaryLabel: 'Monthly Cash Flow',
+      secondary: formatPercent(ltrCalc.cashOnCash),
+      secondaryLabel: 'Cash-on-Cash',
+      verdict: ltrCalc.monthlyCashFlow >= 200 ? 'good' : ltrCalc.monthlyCashFlow >= 0 ? 'ok' : 'poor',
+      score: ltrCalc.cashOnCash * 100
+    },
+    str: {
+      primary: formatCurrency(strCalc.monthlyCashFlow),
+      primaryLabel: 'Monthly Cash Flow',
+      secondary: formatPercent(strCalc.cashOnCash),
+      secondaryLabel: 'Cash-on-Cash',
+      verdict: strCalc.monthlyCashFlow >= 500 ? 'good' : strCalc.monthlyCashFlow >= 0 ? 'ok' : 'poor',
+      score: strCalc.cashOnCash * 100
+    },
+    brrrr: {
+      primary: brrrrCalc.cashOnCash === Infinity ? '∞' : formatPercent(brrrrCalc.cashOnCash),
+      primaryLabel: 'Cash-on-Cash',
+      secondary: formatCurrency(brrrrCalc.cashLeftInDeal),
+      secondaryLabel: 'Cash in Deal',
+      verdict: brrrrCalc.cashLeftInDeal < 10000 ? 'good' : brrrrCalc.cashLeftInDeal < 30000 ? 'ok' : 'poor',
+      score: brrrrCalc.cashLeftInDeal < 5000 ? 100 : 50
+    },
+    flip: {
+      primary: formatCurrency(flipCalc.netProfit),
+      primaryLabel: 'Net Profit',
+      secondary: formatPercent(flipCalc.roi),
+      secondaryLabel: 'ROI',
+      verdict: flipCalc.netProfit >= 30000 ? 'good' : flipCalc.netProfit >= 15000 ? 'ok' : 'poor',
+      score: flipCalc.roi * 100
+    },
+    house_hack: {
+      primary: formatCurrency(houseHackCalc.effectiveHousingCost),
+      primaryLabel: 'Housing Cost',
+      secondary: formatCurrency(houseHackCalc.monthlySavings),
+      secondaryLabel: 'Monthly Savings',
+      verdict: houseHackCalc.effectiveHousingCost < 500 ? 'good' : houseHackCalc.effectiveHousingCost < 1000 ? 'ok' : 'poor',
+      score: houseHackCalc.monthlySavings > 0 ? 80 : 40
+    },
+    wholesale: {
+      primary: formatCurrency(wholesaleCalc.assignmentFee),
+      primaryLabel: 'Assignment Fee',
+      secondary: formatPercent(wholesaleCalc.roi),
+      secondaryLabel: 'ROI',
+      verdict: wholesaleCalc.assignmentFee >= 10000 ? 'good' : wholesaleCalc.assignmentFee >= 5000 ? 'ok' : 'poor',
+      score: wholesaleCalc.roi * 10
+    },
+  }), [ltrCalc, strCalc, brrrrCalc, flipCalc, houseHackCalc, wholesaleCalc])
+
+  // Find best strategy
+  const bestStrategy = useMemo(() => {
+    const scores = Object.entries(strategyMetrics).map(([id, m]) => ({ id, score: m.score }))
+    scores.sort((a, b) => b.score - a.score)
+    return scores[0]?.id as StrategyId
+  }, [strategyMetrics])
+
+  // Projection assumptions for charts
+  const projectionAssumptions: ProjectionAssumptions = useMemo(() => ({
+    purchasePrice: assumptions.purchasePrice, downPaymentPct: assumptions.downPaymentPct,
+    closingCostsPct: assumptions.closingCostsPct, interestRate: assumptions.interestRate,
+    loanTermYears: assumptions.loanTermYears, monthlyRent: assumptions.monthlyRent,
+    annualRentGrowth: 0.03, vacancyRate: assumptions.vacancyRate, propertyTaxes: assumptions.propertyTaxes,
+    insurance: assumptions.insurance, propertyTaxGrowth: 0.02, insuranceGrowth: 0.03,
+    managementPct: assumptions.managementPct, maintenancePct: assumptions.maintenancePct,
+    capexReservePct: 0.05, annualAppreciation: 0.03
+  }), [assumptions])
+
+  const projections = useMemo(() => calculate10YearProjections(projectionAssumptions), [projectionAssumptions])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3" />
+          <p className="text-gray-400 text-sm">Loading property...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !property) {
+    return (
+      <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
+          <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto mb-4" strokeWidth={1.5} />
+          <h2 className="text-lg font-bold text-gray-800 mb-2">Unable to Load Property</h2>
+          <p className="text-gray-400 text-sm mb-6">{error}</p>
+          <div className="flex gap-3 justify-center">
+            <a href="/" className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-600 transition-colors">Back</a>
+            <a href="?demo=true" className="px-4 py-2 bg-gradient-to-r from-violet-500 to-cyan-500 text-white rounded-xl text-sm font-medium shadow-lg hover:shadow-xl transition-all">Try Demo</a>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const currentStrategy = strategies.find(s => s.id === selectedStrategy)!
+  const CurrentIcon = currentStrategy.icon
+
+  return (
+    <div className="min-h-screen bg-[#f4f5f7]">
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <TopNav property={property} isDemo={isDemo} />
+        
+        {/* Collapsible Assumptions Panel */}
+        <div className="mb-6">
+          <AssumptionsPanel 
+            assumptions={assumptions} 
+            update={update} 
+            isExpanded={assumptionsExpanded} 
+            onToggle={() => setAssumptionsExpanded(!assumptionsExpanded)} 
+          />
+        </div>
+
+        {/* Strategy Grid - THE CORE */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-800">Investment Strategies</h2>
+            <span className="text-xs text-gray-400">Click a strategy for detailed analysis</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {strategies.map(strategy => (
+              <StrategyCard
+                key={strategy.id}
+                strategy={strategy}
+                metrics={strategyMetrics[strategy.id]}
+                isSelected={selectedStrategy === strategy.id}
+                onClick={() => { setSelectedStrategy(strategy.id); setDrillDownView('details'); }}
+                isBest={bestStrategy === strategy.id}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Drill-Down Panel */}
+        <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
+          {/* Compact Professional Header */}
+          <div className="px-5 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${currentStrategy.gradient} flex items-center justify-center`}>
+                  <CurrentIcon className="w-4 h-4 text-white" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-gray-800">{currentStrategy.name}</h3>
+                  <p className="text-xs text-gray-400">{currentStrategy.description}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className={`text-xl font-semibold ${
+                  strategyMetrics[selectedStrategy].verdict === 'good' ? 'text-emerald-600' : 
+                  strategyMetrics[selectedStrategy].verdict === 'ok' ? 'text-amber-600' : 'text-red-500'
+                }`}>{strategyMetrics[selectedStrategy].primary}</div>
+                <div className="text-xs text-gray-400">{strategyMetrics[selectedStrategy].primaryLabel}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Drill-Down Tabs */}
+          <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
+            <DrillDownTabs activeView={drillDownView} onViewChange={setDrillDownView} />
+          </div>
+
+          {/* Drill-Down Content */}
+          <div className="p-5">
+            {drillDownView === 'details' && selectedStrategy === 'ltr' && <LTRDetails calc={ltrCalc} assumptions={assumptions} update={update} />}
+            {drillDownView === 'details' && selectedStrategy === 'str' && <STRDetails calc={strCalc} assumptions={assumptions} update={update} />}
+            {drillDownView === 'details' && selectedStrategy === 'brrrr' && <BRRRRDetails calc={brrrrCalc} assumptions={assumptions} update={update} />}
+            {drillDownView === 'details' && selectedStrategy === 'flip' && <FlipDetails calc={flipCalc} assumptions={assumptions} update={update} />}
+            {drillDownView === 'details' && selectedStrategy === 'house_hack' && <HouseHackDetails calc={houseHackCalc} assumptions={assumptions} update={update} />}
+            {drillDownView === 'details' && selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} />}
+            
+            {drillDownView === 'charts' && <ChartsView projections={projections} totalCashInvested={ltrCalc.totalCashRequired} />}
+            {drillDownView === 'projections' && <ProjectionsView assumptions={projectionAssumptions} />}
+            {drillDownView === 'score' && <DealScoreCard metrics={{ monthlyCashFlow: ltrCalc.monthlyCashFlow, cashOnCash: ltrCalc.cashOnCash, capRate: ltrCalc.capRate, onePercentRule: ltrCalc.onePercentRule, dscr: ltrCalc.dscr, purchasePrice: assumptions.purchasePrice, arv: assumptions.arv, totalCashRequired: ltrCalc.totalCashRequired, monthlyRent: assumptions.monthlyRent }} />}
+            {drillDownView === 'sensitivity' && <SensitivityAnalysisView assumptions={{ purchasePrice: assumptions.purchasePrice, downPaymentPct: assumptions.downPaymentPct, interestRate: assumptions.interestRate, loanTermYears: assumptions.loanTermYears, monthlyRent: assumptions.monthlyRent, propertyTaxes: assumptions.propertyTaxes, insurance: assumptions.insurance, vacancyRate: assumptions.vacancyRate, managementPct: assumptions.managementPct, maintenancePct: assumptions.maintenancePct }} />}
+            {drillDownView === 'rehab' && <RehabEstimator initialBudget={assumptions.rehabCost} />}
+            {drillDownView === 'compare' && <ScenarioComparison currentAssumptions={projectionAssumptions} propertyAddress={property.address.full_address} />}
+          </div>
+        </div>
+
+        {/* Compare Link */}
+        <div className="mt-6 text-center">
+          <a href="/compare" className="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] text-gray-600 font-medium transition-all">
+            <GitCompare className="w-4 h-4" />
+            Compare Multiple Properties
+            <ChevronRight className="w-4 h-4" />
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function PropertyPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-gray-400 animate-spin" /></div>}>
+      <PropertyPageContent />
+    </Suspense>
+  )
+}

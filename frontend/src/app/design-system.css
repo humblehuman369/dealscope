@@ -1,0 +1,311 @@
+/* DealScope Design System - Light Mode */
+
+:root {
+  /* Background Colors */
+  --bg-primary: #f5f6f8;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fafbfc;
+  
+  /* Text Colors */
+  --text-primary: #1a1d23;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --text-muted: #d1d5db;
+  
+  /* Brand Gradient */
+  --gradient-slider: linear-gradient(90deg, #8b5cf6 0%, #06b6d4 50%, #10b981 100%);
+  --gradient-purple: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  --gradient-green: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  --gradient-orange: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  
+  /* Accent Colors */
+  --accent-purple: #8b5cf6;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-green: #10b981;
+  --accent-orange: #f97316;
+  --accent-pink: #ec4899;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.1);
+  --shadow-glow-blue: 0 0 20px rgba(59, 130, 246, 0.4);
+  --shadow-glow-purple: 0 0 20px rgba(139, 92, 246, 0.4);
+  --shadow-glow-green: 0 0 20px rgba(16, 185, 129, 0.4);
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+}
+
+/* Base Styles */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Card Styles */
+.ds-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+}
+
+.ds-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.ds-card-lg {
+  padding: var(--space-8);
+}
+
+.ds-card-md {
+  padding: var(--space-6);
+}
+
+.ds-card-sm {
+  padding: var(--space-4);
+}
+
+/* Typography */
+.ds-heading-xl {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.ds-heading-lg {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.ds-heading-md {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ds-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.ds-label-sm {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+.ds-value-xl {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+}
+
+.ds-value-lg {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Gradient Slider */
+.ds-slider-track {
+  height: 8px;
+  background: linear-gradient(90deg, #8b5cf6 0%, #06b6d4 50%, #10b981 100%);
+  border-radius: 4px;
+  position: relative;
+}
+
+.ds-slider-thumb {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  border-radius: 8px;
+  box-shadow: var(--shadow-glow-blue);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.ds-slider-thumb:hover {
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+}
+
+.ds-slider-value {
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+}
+
+/* Icon Styles */
+.ds-icon {
+  color: var(--text-tertiary);
+  transition: color 0.2s ease;
+}
+
+.ds-icon:hover {
+  color: var(--text-secondary);
+}
+
+.ds-icon-purple {
+  color: var(--accent-purple);
+}
+
+.ds-icon-blue {
+  color: var(--accent-blue);
+}
+
+.ds-icon-green {
+  color: var(--accent-green);
+}
+
+.ds-icon-orange {
+  color: var(--accent-orange);
+}
+
+/* Alert Badge */
+.ds-alert-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-pink);
+  border-radius: 50%;
+  position: absolute;
+  top: -2px;
+  right: -2px;
+}
+
+/* Button Styles */
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.ds-btn-primary {
+  background: var(--gradient-blue);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.ds-btn-primary:hover {
+  box-shadow: var(--shadow-glow-blue);
+  transform: translateY(-1px);
+}
+
+.ds-btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid #e5e7eb;
+}
+
+.ds-btn-secondary:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+/* Progress Bar */
+.ds-progress {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.ds-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Stat Badge */
+.ds-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.ds-badge-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--accent-green);
+}
+
+.ds-badge-warning {
+  background: rgba(249, 115, 22, 0.1);
+  color: var(--accent-orange);
+}
+
+.ds-badge-info {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-blue);
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
