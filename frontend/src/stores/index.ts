@@ -223,24 +223,34 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
 )
 
 // Helper function for deep merging
-function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>): T {
-  const result = { ...target }
+function deepMerge<T>(target: T, source: Partial<T>): T {
+  const result = { ...target } as T & Record<string, unknown>
   
   for (const key in source) {
-    if (source[key] !== undefined) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      const sourceValue = source[key as keyof T]
+      const targetValue = target[key as keyof T]
+      
       if (
-        typeof source[key] === 'object' &&
-        source[key] !== null &&
-        !Array.isArray(source[key])
+        sourceValue !== undefined &&
+        typeof sourceValue === 'object' &&
+        sourceValue !== null &&
+        !Array.isArray(sourceValue) &&
+        typeof targetValue === 'object' &&
+        targetValue !== null &&
+        !Array.isArray(targetValue)
       ) {
-        result[key] = deepMerge(target[key] || {}, source[key] as any)
-      } else {
-        result[key] = source[key] as any
+        (result as Record<string, unknown>)[key] = deepMerge(
+          targetValue as Record<string, unknown>,
+          sourceValue as Record<string, unknown>
+        )
+      } else if (sourceValue !== undefined) {
+        (result as Record<string, unknown>)[key] = sourceValue
       }
     }
   }
   
-  return result
+  return result as T
 }
 
 // Property store
