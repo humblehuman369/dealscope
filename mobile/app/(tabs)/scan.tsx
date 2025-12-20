@@ -95,8 +95,11 @@ export default function ScanScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Camera View */}
-      <CameraView style={styles.camera} facing="back">
+      {/* Camera View - no children allowed */}
+      <CameraView style={styles.camera} facing="back" />
+      
+      {/* Overlay elements positioned absolutely on top of camera */}
+      <View style={styles.overlay} pointerEvents="box-none">
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
           <View style={styles.headerContent}>
@@ -178,7 +181,7 @@ export default function ScanScreen() {
             </View>
           )}
         </View>
-      </CameraView>
+      </View>
 
       {/* Result Bottom Sheet */}
       {result && (
@@ -204,6 +207,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   camera: {
+    flex: 1,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
     flex: 1,
   },
   header: {

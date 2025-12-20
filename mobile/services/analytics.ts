@@ -7,6 +7,9 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.investiq.com';
 
+// Enable mock data in development when API is unreachable
+const USE_MOCK_DATA_ON_ERROR = __DEV__;
+
 export interface StrategyResult {
   name: string;
   primaryValue: number;
@@ -64,6 +67,104 @@ export interface InvestmentAnalytics {
 }
 
 /**
+ * Generate mock analytics data for development/demo purposes.
+ */
+function generateMockAnalytics(address: string): InvestmentAnalytics {
+  const listPrice = 250000 + Math.floor(Math.random() * 300000);
+  const rentEstimate = Math.floor(listPrice * 0.007);
+  const strEstimate = Math.floor(rentEstimate / 20);
+  
+  return {
+    property: {
+      address,
+      city: 'Demo City',
+      state: 'FL',
+      zip: '33000',
+      bedrooms: 3,
+      bathrooms: 2,
+      sqft: 1800,
+      yearBuilt: 2005,
+      lotSize: 7500,
+      propertyType: 'Single Family',
+    },
+    pricing: {
+      listPrice,
+      estimatedValue: Math.floor(listPrice * 1.05),
+      pricePerSqft: Math.floor(listPrice / 1800),
+      rentEstimate,
+      strEstimate,
+    },
+    strategies: {
+      longTermRental: {
+        name: 'Long-Term Rental',
+        primaryValue: rentEstimate * 12 * 0.4,
+        primaryLabel: 'Annual Cash Flow',
+        secondaryValue: rentEstimate,
+        secondaryLabel: 'Monthly Rent',
+        isProfit: true,
+      },
+      shortTermRental: {
+        name: 'Short-Term Rental',
+        primaryValue: strEstimate * 200 * 0.55,
+        primaryLabel: 'Annual Revenue',
+        secondaryValue: strEstimate,
+        secondaryLabel: 'Avg. Nightly Rate',
+        isProfit: true,
+      },
+      brrrr: {
+        name: 'BRRRR',
+        primaryValue: listPrice * 0.15,
+        primaryLabel: 'Equity Created',
+        secondaryValue: rentEstimate * 0.35,
+        secondaryLabel: 'Monthly Cash Flow',
+        isProfit: true,
+      },
+      fixAndFlip: {
+        name: 'Fix & Flip',
+        primaryValue: listPrice * 0.18,
+        primaryLabel: 'Projected Profit',
+        secondaryValue: listPrice * 0.12,
+        secondaryLabel: 'ROI',
+        isProfit: true,
+      },
+      houseHack: {
+        name: 'House Hacking',
+        primaryValue: rentEstimate * 0.6,
+        primaryLabel: 'Rental Income',
+        secondaryValue: Math.floor(listPrice * 0.035 / 12),
+        secondaryLabel: 'Net Housing Cost',
+        isProfit: true,
+      },
+      wholesale: {
+        name: 'Wholesale',
+        primaryValue: listPrice * 0.08,
+        primaryLabel: 'Assignment Fee',
+        secondaryValue: listPrice * 0.75,
+        secondaryLabel: 'MAO',
+        isProfit: true,
+      },
+    },
+    metrics: {
+      capRate: 0.068,
+      cashOnCash: 0.095,
+      grossRentMultiplier: 10.5,
+      dscr: 1.32,
+      breakeven: 0.72,
+    },
+    assumptions: {
+      downPayment: 0.25,
+      interestRate: 0.0725,
+      loanTerm: 30,
+      vacancyRate: 0.05,
+      managementFee: 0.08,
+      maintenance: 0.05,
+      rehabCost: 25000,
+      arv: Math.floor(listPrice * 1.25),
+    },
+  };
+}
+
+/**
  * Fetch complete investment analytics for a property.
  * 
  * @param address - Full property address
@@ -82,6 +183,12 @@ export async function fetchPropertyAnalytics(
     return response.data;
   } catch (error) {
     console.error('Analytics fetch error:', error);
+    
+    // In development, return mock data when API is unreachable
+    if (USE_MOCK_DATA_ON_ERROR) {
+      console.log('Using mock analytics data for development');
+      return generateMockAnalytics(address);
+    }
     
     // If API fails, try to calculate locally with minimal data
     if (axios.isAxiosError(error) && error.response?.status === 404) {
