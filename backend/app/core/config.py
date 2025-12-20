@@ -2,8 +2,9 @@
 Application configuration and settings.
 """
 from pydantic_settings import BaseSettings
+from pydantic import computed_field
 from functools import lru_cache
-from typing import Optional
+from typing import Optional, List
 import os
 
 
@@ -38,8 +39,13 @@ class Settings(BaseSettings):
     RATE_LIMIT_REQUESTS: int = 100
     RATE_LIMIT_PERIOD: int = 60  # seconds
     
-    # CORS
-    CORS_ORIGINS: list = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    # CORS - stored as comma-separated string
+    CORS_ORIGINS_STR: str = "http://localhost:3000,http://127.0.0.1:3000"
+    
+    @property
+    def CORS_ORIGINS(self) -> List[str]:
+        """Parse CORS_ORIGINS_STR into a list of origins."""
+        return [origin.strip() for origin in self.CORS_ORIGINS_STR.split(',') if origin.strip()]
     
     class Config:
         env_file = ".env"
