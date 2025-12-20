@@ -217,7 +217,7 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
         }),
     }),
     {
-      name: 'dealscope-assumptions',
+      name: 'investiq-assumptions',
     }
   )
 )
@@ -291,7 +291,7 @@ export const usePropertyStore = create<PropertyStore>()(
         set({ recentSearches: [] }),
     }),
     {
-      name: 'dealscope-property',
+      name: 'investiq-property',
     }
   )
 )

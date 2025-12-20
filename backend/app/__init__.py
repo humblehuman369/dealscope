@@ -1,2 +1,2 @@
-# DealScope Backend Application
+# InvestIQ Backend Application
 __version__ = "1.0.0"

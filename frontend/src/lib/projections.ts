@@ -338,13 +338,13 @@ export function createScenario(
 
 export function saveScenarios(scenarios: Scenario[]): void {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('dealscope-scenarios', JSON.stringify(scenarios))
+    localStorage.setItem('investiq-scenarios', JSON.stringify(scenarios))
   }
 }
 
 export function loadScenarios(): Scenario[] {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('dealscope-scenarios')
+    const saved = localStorage.getItem('investiq-scenarios')
     if (saved) {
       try {
         return JSON.parse(saved)
@@ -425,13 +425,13 @@ export function createPropertyComparison(
 
 export function savePropertyComparisons(properties: PropertyComparison[]): void {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('dealscope-comparisons', JSON.stringify(properties))
+    localStorage.setItem('investiq-comparisons', JSON.stringify(properties))
   }
 }
 
 export function loadPropertyComparisons(): PropertyComparison[] {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('dealscope-comparisons')
+    const saved = localStorage.getItem('investiq-comparisons')
     if (saved) {
       try {
         return JSON.parse(saved)

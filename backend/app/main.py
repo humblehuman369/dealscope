@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
-    title="DealScope API",
+    title="InvestIQ API",
     description="Real Estate Investment Analytics Platform - Analyze properties across 6 investment strategies",
     version="1.0.0",
     docs_url="/docs",
@@ -61,7 +61,7 @@ async def health_check():
 async def root():
     """API root endpoint."""
     return {
-        "name": "DealScope API",
+        "name": "InvestIQ API",
         "version": settings.APP_VERSION,
         "docs": "/docs",
         "strategies": [
@@ -510,7 +510,7 @@ async def get_strategy_comparison(property_id: str):
 @app.on_event("startup")
 async def startup_event():
     """Initialize services on startup."""
-    logger.info("Starting DealScope API...")
+    logger.info("Starting InvestIQ API...")
     logger.info(f"RentCast API configured: {'Yes' if settings.RENTCAST_API_KEY else 'No'}")
     logger.info(f"AXESSO API configured: {'Yes' if settings.AXESSO_API_KEY else 'No'}")
 
@@ -518,7 +518,7 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown."""
-    logger.info("Shutting down DealScope API...")
+    logger.info("Shutting down InvestIQ API...")
 
 
 if __name__ == "__main__":

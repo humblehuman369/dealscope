@@ -9,4 +9,4 @@ restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
 [[services]]
-name = "dealscope-api"
+name = "investiq-api"
