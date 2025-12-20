@@ -68,7 +68,7 @@ function ComparisonRow({
   
   return (
     <tr className={`border-b border-gray-100 ${highlight ? 'bg-emerald-50' : ''}`}>
-      <td className={`py-3 px-4 text-sm ${highlight ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>
+      <td className={`py-2 px-3 text-xs ${highlight ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
         {label}
       </td>
       {values.map((value, i) => {
@@ -76,13 +76,13 @@ function ComparisonRow({
         return (
           <td 
             key={i} 
-            className={`py-3 px-4 text-sm text-right font-medium ${
+            className={`py-2 px-3 text-xs text-right font-medium ${
               isBest ? 'text-emerald-600 bg-emerald-100' : 
               highlight ? 'text-gray-900' : 'text-gray-700'
             }`}
           >
             {formatValue(value)}
-            {isBest && <span className="ml-1">★</span>}
+            {isBest && <span className="ml-1 text-[10px]">★</span>}
           </td>
         )
       })}
@@ -106,12 +106,12 @@ function ScenarioNameInput({
   onCancel: () => void
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
         placeholder="Scenario name..."
         autoFocus
         onKeyDown={(e) => {
@@ -119,11 +119,11 @@ function ScenarioNameInput({
           if (e.key === 'Escape') onCancel()
         }}
       />
-      <button onClick={onSave} className="p-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600">
-        <Check className="w-4 h-4" />
+      <button onClick={onSave} className="p-1.5 bg-emerald-500 text-white rounded hover:bg-emerald-600">
+        <Check className="w-3 h-3" />
       </button>
-      <button onClick={onCancel} className="p-2 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300">
-        <X className="w-4 h-4" />
+      <button onClick={onCancel} className="p-1.5 bg-gray-200 text-gray-600 rounded hover:bg-gray-300">
+        <X className="w-3 h-3" />
       </button>
     </div>
   )
@@ -183,20 +183,15 @@ export default function ScenarioComparison({
   }
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-            <BarChart3 className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Scenario Comparison</h2>
-            <p className="text-sm text-gray-500">Compare different assumptions side-by-side</p>
-          </div>
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800">Scenario Comparison</h2>
+          <p className="text-sm text-gray-500">Compare different assumptions side-by-side</p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {showSaveDialog ? (
             <ScenarioNameInput
               value={newScenarioName}
@@ -207,9 +202,9 @@ export default function ScenarioComparison({
           ) : (
             <button
               onClick={() => setShowSaveDialog(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              <Save className="w-4 h-4" />
+              <Save className="w-3 h-3" />
               Save Current
             </button>
           )}
@@ -218,26 +213,26 @@ export default function ScenarioComparison({
       
       {/* Saved Scenarios Pills */}
       {scenarios.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {scenarios.map(s => (
             <div 
               key={s.id} 
-              className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full text-sm"
+              className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 rounded text-xs"
             >
               <span className="font-medium">{s.name}</span>
               <button 
                 onClick={() => handleDuplicateScenario(s)}
-                className="p-1 hover:bg-gray-200 rounded-full"
+                className="p-0.5 hover:bg-gray-200 rounded"
                 title="Duplicate"
               >
-                <Copy className="w-3 h-3 text-gray-500" />
+                <Copy className="w-2.5 h-2.5 text-gray-500" />
               </button>
               <button 
                 onClick={() => handleDeleteScenario(s.id)}
-                className="p-1 hover:bg-red-100 rounded-full"
+                className="p-0.5 hover:bg-red-100 rounded"
                 title="Delete"
               >
-                <Trash2 className="w-3 h-3 text-red-500" />
+                <Trash2 className="w-2.5 h-2.5 text-red-500" />
               </button>
             </div>
           ))}
@@ -245,17 +240,17 @@ export default function ScenarioComparison({
       )}
       
       {/* Comparison Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left py-4 px-4 font-semibold text-gray-700 w-48">Metric</th>
+                <th className="text-left py-2.5 px-3 text-xs font-medium text-gray-600 w-40">Metric</th>
                 {compareScenarios.map((s, i) => (
-                  <th key={s.id} className="text-right py-4 px-4 font-semibold text-gray-700 min-w-[140px]">
-                    <div className="flex items-center justify-end gap-2">
+                  <th key={s.id} className="text-right py-2.5 px-3 text-xs font-medium text-gray-600 min-w-[100px]">
+                    <div className="flex items-center justify-end gap-1">
                       {i === 0 && (
-                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                        <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] rounded">
                           Current
                         </span>
                       )}
@@ -268,7 +263,7 @@ export default function ScenarioComparison({
             <tbody>
               {/* Key Assumptions */}
               <tr className="bg-gray-50">
-                <td colSpan={compareScenarios.length + 1} className="py-2 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">
+                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
                   Key Assumptions
                 </td>
               </tr>
@@ -300,7 +295,7 @@ export default function ScenarioComparison({
               
               {/* Year 1 Performance */}
               <tr className="bg-gray-50">
-                <td colSpan={compareScenarios.length + 1} className="py-2 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">
+                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
                   Year 1 Performance
                 </td>
               </tr>
@@ -324,7 +319,7 @@ export default function ScenarioComparison({
               
               {/* 10-Year Summary */}
               <tr className="bg-emerald-50">
-                <td colSpan={compareScenarios.length + 1} className="py-2 px-4 text-xs font-bold text-emerald-700 uppercase tracking-wide">
+                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">
                   10-Year Summary
                 </td>
               </tr>
@@ -366,7 +361,7 @@ export default function ScenarioComparison({
               {expandedView && (
                 <>
                   <tr className="bg-gray-50">
-                    <td colSpan={compareScenarios.length + 1} className="py-2 px-4 text-xs font-bold text-gray-500 uppercase tracking-wide">
+                    <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
                       Year 5 Snapshot
                     </td>
                   </tr>
@@ -399,16 +394,16 @@ export default function ScenarioComparison({
         {/* Expand/Collapse Button */}
         <button
           onClick={() => setExpandedView(!expandedView)}
-          className="w-full py-3 flex items-center justify-center gap-2 text-sm text-gray-500 hover:bg-gray-50 border-t border-gray-100"
+          className="w-full py-2 flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:bg-gray-50 border-t border-gray-100"
         >
           {expandedView ? (
             <>
-              <ChevronUp className="w-4 h-4" />
+              <ChevronUp className="w-3 h-3" />
               Show Less
             </>
           ) : (
             <>
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="w-3 h-3" />
               Show More Details
             </>
           )}
@@ -417,35 +412,27 @@ export default function ScenarioComparison({
       
       {/* Best Scenario Highlight */}
       {scenarios.length > 0 && (
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-6 border border-amber-200">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-amber-200 rounded-xl flex items-center justify-center">
-              <Award className="w-6 h-6 text-amber-600" />
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-900 mb-1">Best Performing Scenario</h3>
-              <p className="text-sm text-gray-600">
-                Based on 10-year total wealth, 
-                <span className="font-semibold text-amber-700">
-                  {' '}{[...compareScenarios].sort((a, b) => b.summary.totalWealth - a.summary.totalWealth)[0].name}
-                </span>
-                {' '}generates the highest returns with{' '}
-                <span className="font-semibold">
-                  {formatCompact([...compareScenarios].sort((a, b) => b.summary.totalWealth - a.summary.totalWealth)[0].summary.totalWealth)}
-                </span>
-                {' '}in total wealth.
-              </p>
-            </div>
-          </div>
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-3 border border-amber-200">
+          <h3 className="text-xs font-medium text-gray-800 mb-1">Best Performing Scenario</h3>
+          <p className="text-xs text-gray-600">
+            Based on 10-year total wealth, 
+            <span className="font-medium text-amber-700">
+              {' '}{[...compareScenarios].sort((a, b) => b.summary.totalWealth - a.summary.totalWealth)[0].name}
+            </span>
+            {' '}generates the highest returns with{' '}
+            <span className="font-medium">
+              {formatCompact([...compareScenarios].sort((a, b) => b.summary.totalWealth - a.summary.totalWealth)[0].summary.totalWealth)}
+            </span>
+            {' '}in total wealth.
+          </p>
         </div>
       )}
       
       {/* Empty State */}
       {scenarios.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <BarChart3 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <p className="font-medium">No saved scenarios yet</p>
-          <p className="text-sm">Adjust assumptions and click "Save Current" to compare different scenarios</p>
+        <div className="text-center py-6 text-gray-500">
+          <p className="text-sm font-medium">No saved scenarios yet</p>
+          <p className="text-xs">Adjust assumptions and click "Save Current" to compare different scenarios</p>
         </div>
       )}
     </div>

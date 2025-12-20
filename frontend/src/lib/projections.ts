@@ -1,5 +1,5 @@
 /**
- * DealScope - Projections & Comparison Engine
+ * InvestIQ - Projections & Comparison Engine
  * 10-year projections, scenario comparison, and multi-property analysis
  */
 
