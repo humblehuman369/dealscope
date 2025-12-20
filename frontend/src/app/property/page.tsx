@@ -59,18 +59,20 @@ interface PropertyData {
 
 interface Assumptions {
   // Base values from API (for ±50% adjustment sliders)
-  basePurchasePrice: number; baseMonthlyRent: number
+  basePurchasePrice: number; baseMonthlyRent: number; baseAverageDailyRate: number
   // Adjustment percentages (-0.5 to +0.5 for ±50%)
-  purchasePriceAdj: number; monthlyRentAdj: number
+  purchasePriceAdj: number; monthlyRentAdj: number; averageDailyRateAdj: number
   // Computed values (base × (1 + adj))
-  purchasePrice: number; monthlyRent: number
+  purchasePrice: number; monthlyRent: number; averageDailyRate: number
   // ARV = Purchase Price × (1 + arvPct), where arvPct is 0 to 1 (0% to 100%)
   arvPct: number; arv: number
   // Standard percentage sliders with specific ranges
   downPaymentPct: number; interestRate: number; loanTermYears: number
   rehabCostPct: number; rehabCost: number; propertyTaxes: number; insurance: number
   vacancyRate: number; managementPct: number; maintenancePct: number; closingCostsPct: number
-  averageDailyRate: number; occupancyRate: number; holdingPeriodMonths: number; sellingCostsPct: number
+  occupancyRate: number; holdingPeriodMonths: number; sellingCostsPct: number
+  // House Hack specific
+  roomsRented: number; totalBedrooms: number
 }
 
 type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
@@ -182,11 +184,12 @@ function calculateFlip(a: Assumptions) {
 }
 
 function calculateHouseHack(a: Assumptions) {
-  const units = 4
-  const ownerUnit = 1
-  const rentalUnits = units - ownerUnit
-  const rentPerUnit = a.monthlyRent / units
-  const monthlyRentalIncome = rentPerUnit * rentalUnits
+  // Use actual bedrooms from property, rooms rented is user-adjustable
+  const totalBedrooms = a.totalBedrooms || 4
+  const roomsRented = a.roomsRented || Math.max(1, totalBedrooms - 1)
+  // Pro-rata rent per room based on total monthly rent
+  const rentPerRoom = a.monthlyRent / totalBedrooms
+  const monthlyRentalIncome = rentPerRoom * roomsRented
   const downPayment = a.purchasePrice * 0.035
   const closingCosts = a.purchasePrice * a.closingCostsPct
   const totalCashRequired = downPayment + closingCosts
@@ -196,9 +199,9 @@ function calculateHouseHack(a: Assumptions) {
   const monthlyInsurance = a.insurance / 12
   const monthlyExpenses = monthlyPI + monthlyTaxes + monthlyInsurance + (monthlyRentalIncome * a.vacancyRate) + (monthlyRentalIncome * a.maintenancePct)
   const effectiveHousingCost = monthlyExpenses - monthlyRentalIncome
-  const marketRent = rentPerUnit * 1.2
+  const marketRent = rentPerRoom * 1.2
   const monthlySavings = marketRent - effectiveHousingCost
-  return { totalCashRequired, monthlyRentalIncome, effectiveHousingCost, monthlySavings, monthlyPI, rentalUnits }
+  return { totalCashRequired, monthlyRentalIncome, effectiveHousingCost, monthlySavings, monthlyPI, roomsRented, totalBedrooms, rentPerRoom }
 }
 
 function calculateWholesale(a: Assumptions) {
@@ -274,17 +277,15 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
   const displayValue = formatType === 'currency' ? formatCurrency(value) : formatType === 'percent' ? `${(value * 100).toFixed(1)}%` : formatType === 'years' ? `${value} yrs` : `${value} mo`
 
   return (
-    <div className={compact ? 'py-2' : 'py-3'}>
-      <div className="flex items-center justify-between mb-2">
-        <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-gray-500`}>{label}</span>
-        <span className={`${compact ? 'text-sm' : 'text-base'} font-bold text-gray-800`}>{displayValue}</span>
+    <div className={compact ? 'py-1.5' : 'py-2'}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[11px] text-gray-500">{label}</span>
+        <span className="text-xs font-medium text-gray-700">{displayValue}</span>
       </div>
-      <div className="relative h-2">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-500 via-cyan-500 to-emerald-400" />
-        <div className="absolute top-0 right-0 h-full bg-gray-200 rounded-r-full transition-all duration-150" style={{ width: `${100 - percentage}%` }} />
-        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 shadow-[0_0_16px_rgba(59,130,246,0.5)] flex items-center justify-center cursor-grab transition-transform hover:scale-110" style={{ left: `${percentage}%` }}>
-          <span className="text-[8px] font-bold text-white">{percentage}%</span>
-        </div>
+      <div className="relative h-1">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150" style={{ width: `${100 - percentage}%` }} />
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110" style={{ left: `${percentage}%` }} />
         <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
       </div>
     </div>
@@ -302,34 +303,32 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
   const adjSign = adjustment >= 0 ? '+' : ''
 
   return (
-    <div className={compact ? 'py-2' : 'py-3'}>
-      <div className="flex items-center justify-between mb-2">
-        <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-gray-500`}>{label}</span>
-        <div className="text-right">
-          <span className={`${compact ? 'text-sm' : 'text-base'} font-bold text-gray-800`}>{formatCurrency(computedValue)}</span>
-          <span className={`ml-2 text-xs font-medium ${adjustment === 0 ? 'text-gray-400' : adjustment > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+    <div className={compact ? 'py-1.5' : 'py-2'}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[11px] text-gray-500">{label}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-medium text-gray-700">{formatCurrency(computedValue)}</span>
+          <span className={`text-[10px] font-medium ${adjustment === 0 ? 'text-gray-400' : adjustment > 0 ? 'text-teal-600' : 'text-rose-500'}`}>
             {adjSign}{adjPercent.toFixed(0)}%
           </span>
         </div>
       </div>
-      <div className="relative h-2">
-        {/* Background gradient - red on left, green on right, neutral in center */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-red-400 via-gray-300 to-emerald-400" />
-        {/* Center line indicator */}
-        <div className="absolute top-0 left-1/2 w-0.5 h-full bg-gray-500 -translate-x-1/2 z-10" />
-        {/* Slider thumb */}
+      <div className="relative h-1">
+        {/* Background gradient - subtle red to green */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-300 via-gray-200 to-teal-300" />
+        {/* Center line indicator - thin */}
+        <div className="absolute top-0 left-1/2 w-px h-full bg-gray-400 -translate-x-1/2 z-10" />
+        {/* Slider thumb - refined circle */}
         <div 
-          className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-lg shadow-lg flex items-center justify-center cursor-grab transition-transform hover:scale-110 ${
+          className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white shadow-sm cursor-grab transition-transform hover:scale-110 ${
             adjustment === 0 
-              ? 'bg-gradient-to-br from-gray-400 to-gray-600' 
+              ? 'border-2 border-gray-400' 
               : adjustment > 0 
-                ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_16px_rgba(16,185,129,0.5)]'
-                : 'bg-gradient-to-br from-red-400 to-red-600 shadow-[0_0_16px_rgba(239,68,68,0.5)]'
+                ? 'border-2 border-teal-500'
+                : 'border-2 border-rose-500'
           }`}
           style={{ left: `${sliderPosition}%` }}
-        >
-          <span className="text-[8px] font-bold text-white">{adjSign}{adjPercent.toFixed(0)}</span>
-        </div>
+        />
         <input 
           type="range" 
           min={0} 
@@ -352,17 +351,15 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
   const displayPercent = (value * 100).toFixed(1)
 
   return (
-    <div className={compact ? 'py-2' : 'py-3'}>
-      <div className="flex items-center justify-between mb-2">
-        <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-gray-500`}>{label}</span>
-        <span className={`${compact ? 'text-sm' : 'text-base'} font-bold text-gray-800`}>{displayPercent}%</span>
+    <div className={compact ? 'py-1.5' : 'py-2'}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[11px] text-gray-500">{label}</span>
+        <span className="text-xs font-medium text-gray-700">{displayPercent}%</span>
       </div>
-      <div className="relative h-2">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-500 via-cyan-500 to-emerald-400" />
-        <div className="absolute top-0 right-0 h-full bg-gray-200 rounded-r-full transition-all duration-150" style={{ width: `${100 - percentage}%` }} />
-        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 shadow-[0_0_16px_rgba(59,130,246,0.5)] flex items-center justify-center cursor-grab transition-transform hover:scale-110" style={{ left: `${percentage}%` }}>
-          <span className="text-[8px] font-bold text-white">{displayPercent}</span>
-        </div>
+      <div className="relative h-1">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150" style={{ width: `${100 - percentage}%` }} />
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110" style={{ left: `${percentage}%` }} />
         <input 
           type="range" 
           min={0} 
@@ -377,56 +374,96 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
   )
 }
 
-function StrategyCard({ strategy, metrics, isSelected, onClick, isBest }: {
-  strategy: typeof strategies[0]; metrics: { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; verdict: 'good' | 'ok' | 'poor' }
-  isSelected: boolean; onClick: () => void; isBest: boolean
+// Discrete slider for rooms rented (1 to totalBedrooms)
+function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = false }: {
+  roomsRented: number; totalBedrooms: number; onChange: (rooms: number) => void; compact?: boolean
 }) {
-  const Icon = strategy.icon
-  const verdictDot = { good: 'bg-emerald-400', ok: 'bg-amber-400', poor: 'bg-red-400' }
+  const maxRooms = Math.max(1, totalBedrooms - 1) // Can't rent all rooms - owner needs 1
+  const percentage = totalBedrooms > 1 ? ((roomsRented - 1) / (maxRooms - 1)) * 100 : 50
+  const rentPerRoom = 100 / totalBedrooms // Simplified display
+
+  return (
+    <div className={compact ? 'py-1.5' : 'py-2'}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[11px] text-gray-500">Rooms Rented</span>
+        <span className="text-xs font-medium text-gray-700">{roomsRented} of {totalBedrooms} rooms</span>
+      </div>
+      <div className="relative h-1">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150" style={{ width: `${100 - percentage}%` }} />
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110" style={{ left: `${percentage}%` }} />
+        <input 
+          type="range" 
+          min={1} 
+          max={maxRooms} 
+          step={1} 
+          value={roomsRented} 
+          onChange={(e) => onChange(parseInt(e.target.value))} 
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+        />
+      </div>
+      {/* Room indicators */}
+      <div className="flex justify-between mt-1">
+        {Array.from({ length: maxRooms }, (_, i) => i + 1).map(room => (
+          <div 
+            key={room} 
+            className={`w-1.5 h-1.5 rounded-full ${room <= roomsRented ? 'bg-teal-500' : 'bg-gray-200'}`}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function StrategyCard({ strategy, metrics, isSelected, onClick }: {
+  strategy: typeof strategies[0]; metrics: { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; verdict: 'good' | 'ok' | 'poor'; primaryValue: number }
+  isSelected: boolean; onClick: () => void
+}) {
+  // Use actual numeric value for profit/loss coloring
+  const isProfit = metrics.primaryValue > 0
+  const isLoss = metrics.primaryValue < 0
+  
+  // Refined color classes - subtle but clear
+  const primaryColor = isLoss 
+    ? 'text-rose-600' 
+    : isProfit 
+      ? 'text-teal-600' 
+      : 'text-gray-400'
+  
+  // Thin top accent line based on profitability
+  const accentColor = isLoss 
+    ? 'bg-rose-500' 
+    : isProfit 
+      ? 'bg-teal-500' 
+      : 'bg-gray-200'
   
   return (
     <button
       onClick={onClick}
-      className={`relative bg-white rounded-2xl p-5 text-left transition-all duration-200 group ${
+      className={`relative bg-white rounded-md text-left transition-all duration-200 overflow-hidden ${
         isSelected 
-          ? 'ring-2 ring-blue-400 shadow-md' 
-          : 'shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]'
+          ? 'ring-1 ring-gray-300 shadow-sm' 
+          : 'hover:shadow-sm'
       }`}
     >
-      {/* Best Badge */}
-      {isBest && (
-        <div className="absolute -top-1.5 -right-1.5 px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-medium rounded-full">
-          Best
+      {/* Thin top accent bar */}
+      <div className={`h-0.5 w-full ${accentColor}`} />
+      
+      <div className="px-2.5 py-2">
+        {/* Strategy Name - Full name, refined size */}
+        <h3 className="text-[11px] font-semibold text-gray-900 tracking-tight leading-tight mb-1.5">{strategy.name}</h3>
+        
+        {/* Primary Value - Clear with profit/loss color */}
+        <div className={`text-xl font-semibold tracking-tight leading-none ${primaryColor}`}>
+          {metrics.primary}
         </div>
-      )}
-      
-      {/* Icon */}
-      <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${strategy.gradient} flex items-center justify-center mb-4 opacity-90`}>
-        <Icon className="w-4 h-4 text-white" strokeWidth={1.5} />
-      </div>
-      
-      {/* Strategy Name */}
-      <h3 className="text-sm font-semibold text-gray-800 mb-4">{strategy.name}</h3>
-      
-      {/* Primary Metric */}
-      <div className="mb-3">
-        <div className="text-[11px] text-gray-400 mb-1">{metrics.primaryLabel}</div>
-        <div className="text-2xl font-semibold text-gray-800 tracking-tight">{metrics.primary}</div>
-      </div>
-      
-      {/* Secondary Metric */}
-      <div className="mb-4">
-        <div className="text-[11px] text-gray-400 mb-1">{metrics.secondaryLabel}</div>
-        <div className="text-base font-medium text-gray-600">{metrics.secondary}</div>
-      </div>
-      
-      {/* Status Indicator */}
-      <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-        <span className={`w-2 h-2 rounded-full ${verdictDot[metrics.verdict]}`} />
-        <span className="text-xs text-gray-400">
-          {metrics.verdict === 'good' ? 'Strong returns' : metrics.verdict === 'ok' ? 'Moderate' : 'Below target'}
-        </span>
-        <ChevronRight className="w-3.5 h-3.5 text-gray-300 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="text-[8px] text-gray-400 tracking-wide mt-0.5 mb-1.5">{metrics.primaryLabel}</div>
+        
+        {/* Secondary Metric - Value on top, label below */}
+        <div className="pt-1.5 border-t border-gray-100/80">
+          <div className="text-sm font-semibold text-gray-700">{metrics.secondary}</div>
+          <div className="text-[8px] text-gray-400 mt-px">{metrics.secondaryLabel}</div>
+        </div>
       </div>
     </button>
   )
@@ -441,20 +478,18 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
   const displayPercent = (arvPct * 100).toFixed(0)
 
   return (
-    <div className={compact ? 'py-2' : 'py-3'}>
-      <div className="flex items-center justify-between mb-2">
-        <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-gray-500`}>ARV</span>
-        <div className="text-right">
-          <span className={`${compact ? 'text-sm' : 'text-base'} font-bold text-gray-800`}>{formatCurrency(computedArv)}</span>
-          <span className="ml-2 text-xs font-medium text-emerald-500">+{displayPercent}%</span>
+    <div className={compact ? 'py-1.5' : 'py-2'}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[11px] text-gray-500">ARV</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-medium text-gray-700">{formatCurrency(computedArv)}</span>
+          <span className="text-[10px] font-medium text-teal-600">+{displayPercent}%</span>
         </div>
       </div>
-      <div className="relative h-2">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-300 via-cyan-400 to-emerald-400" />
-        <div className="absolute top-0 right-0 h-full bg-gray-200 rounded-r-full transition-all duration-150" style={{ width: `${100 - percentage}%` }} />
-        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_16px_rgba(16,185,129,0.5)] flex items-center justify-center cursor-grab transition-transform hover:scale-110" style={{ left: `${percentage}%` }}>
-          <span className="text-[8px] font-bold text-white">{displayPercent}</span>
-        </div>
+      <div className="relative h-1">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150" style={{ width: `${100 - percentage}%` }} />
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110" style={{ left: `${percentage}%` }} />
         <input 
           type="range" 
           min={0} 
@@ -476,25 +511,23 @@ function AssumptionsPanel({ assumptions, update, updateAdjustment, isExpanded, o
   isExpanded: boolean; onToggle: () => void
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
-      <button onClick={onToggle} className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
-            <SlidersHorizontal className="w-4 h-4 text-white" strokeWidth={1.5} />
-          </div>
+    <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+      <button onClick={onToggle} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50/50 transition-colors">
+        <div className="flex items-center gap-2.5">
+          <SlidersHorizontal className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
           <div className="text-left">
-            <span className="font-semibold text-gray-800">Variables</span>
-            <div className="text-xs text-gray-400">
+            <span className="text-sm font-medium text-gray-700">Variables</span>
+            <span className="text-xs text-gray-400 ml-3">
               {formatCompact(assumptions.purchasePrice)} · {formatPercent(assumptions.downPaymentPct)} down · {formatPercent(assumptions.interestRate)} rate
-            </div>
+            </span>
           </div>
         </div>
-        {isExpanded ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+        {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
       </button>
       
       {isExpanded && (
-        <div className="px-4 pb-4 border-t border-gray-100">
-          <div className="grid grid-cols-2 gap-x-6">
+        <div className="px-4 pb-3 border-t border-gray-50">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-0">
             {/* ±50% Adjustment Sliders for Purchase Price and Monthly Rent */}
             <AdjustmentSlider 
               label="Purchase Price" 
@@ -620,23 +653,23 @@ function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView
 
 function StatRow({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`flex items-center justify-between py-3 ${highlight ? 'bg-emerald-50 -mx-4 px-4 rounded-lg' : ''}`}>
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className={`font-semibold ${highlight ? 'text-emerald-600' : 'text-gray-800'}`}>{value}</span>
+    <div className={`flex items-center justify-between py-1.5 ${highlight ? 'bg-teal-50/50 -mx-3 px-3 rounded' : ''}`}>
+      <span className="text-[11px] text-gray-500">{label}</span>
+      <span className={`text-xs font-medium ${highlight ? 'text-teal-600' : 'text-gray-700'}`}>{value}</span>
     </div>
   )
 }
 
 function RuleCheck({ label, value, target, passed }: { label: string; value: string; target: string; passed: boolean }) {
   return (
-    <div className={`flex items-center justify-between p-3 rounded-xl ${passed ? 'bg-emerald-50' : 'bg-amber-50'}`}>
-      <div className="flex items-center gap-2">
-        {passed ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-amber-600" />}
-        <span className="text-sm font-medium text-gray-700">{label}</span>
+    <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-md ${passed ? 'bg-teal-50/50' : 'bg-amber-50/50'}`}>
+      <div className="flex items-center gap-1.5">
+        {passed ? <CheckCircle className="w-3 h-3 text-teal-600" /> : <AlertTriangle className="w-3 h-3 text-amber-600" />}
+        <span className="text-[11px] font-medium text-gray-600">{label}</span>
       </div>
-      <div className="text-right">
-        <span className={`font-bold ${passed ? 'text-emerald-600' : 'text-amber-600'}`}>{value}</span>
-        <span className="text-xs text-gray-400 ml-2">({target})</span>
+      <div className="flex items-center gap-1">
+        <span className={`text-xs font-medium ${passed ? 'text-teal-600' : 'text-amber-600'}`}>{value}</span>
+        <span className="text-[10px] text-gray-400">({target})</span>
       </div>
     </div>
   )
@@ -646,14 +679,16 @@ function RuleCheck({ label, value, target, passed }: { label: string; value: str
 // STRATEGY DETAIL VIEWS
 // ============================================
 
-function LTRDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateLTR>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
+function LTRDetails({ calc, assumptions, update, updateAdjustment }: { 
+  calc: ReturnType<typeof calculateLTR>; assumptions: Assumptions; 
+  update: (k: keyof Assumptions, v: number) => void
+  updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
+}) {
   return (
     <div className="grid grid-cols-2 gap-6">
       <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-violet-500" /> Key Metrics
-        </h4>
-        <div className="bg-gray-50 rounded-xl p-4 divide-y divide-gray-200">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
+        <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
           <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 200} />
           <StatRow label="Annual Cash Flow" value={formatCurrency(calc.annualCashFlow)} />
           <StatRow label="Cash-on-Cash Return" value={formatPercent(calc.cashOnCash)} highlight={calc.cashOnCash > 0.08} />
@@ -669,28 +704,28 @@ function LTRDetails({ calc, assumptions, update }: { calc: ReturnType<typeof cal
         </div>
       </div>
       <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-cyan-500" /> Adjust Inputs
-        </h4>
-        <div className="bg-gray-50 rounded-xl p-4 space-y-1">
-          <GradientSlider label="Monthly Rent" value={assumptions.monthlyRent} min={500} max={8000} step={50} onChange={(v) => update('monthlyRent', v)} formatType="currency" compact />
-          <GradientSlider label="Vacancy Rate" value={assumptions.vacancyRate} min={0} max={0.15} step={0.01} onChange={(v) => update('vacancyRate', v)} formatType="percent" compact />
-          <GradientSlider label="Management %" value={assumptions.managementPct} min={0} max={0.15} step={0.01} onChange={(v) => update('managementPct', v)} formatType="percent" compact />
-          <GradientSlider label="Maintenance %" value={assumptions.maintenancePct} min={0.03} max={0.15} step={0.01} onChange={(v) => update('maintenancePct', v)} formatType="percent" compact />
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
+        <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+          <AdjustmentSlider label="Monthly Rent" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
+          <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
+          <PercentSlider label="Management %" value={assumptions.managementPct} onChange={(v) => update('managementPct', v)} compact maxPercent={30} />
+          <PercentSlider label="Maintenance %" value={assumptions.maintenancePct} onChange={(v) => update('maintenancePct', v)} compact maxPercent={30} />
         </div>
       </div>
     </div>
   )
 }
 
-function STRDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateSTR>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
+function STRDetails({ calc, assumptions, update, updateAdjustment }: { 
+  calc: ReturnType<typeof calculateSTR>; assumptions: Assumptions; 
+  update: (k: keyof Assumptions, v: number) => void
+  updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj' | 'averageDailyRateAdj', value: number) => void
+}) {
   return (
     <div className="grid grid-cols-2 gap-6">
       <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-cyan-500" /> Key Metrics
-        </h4>
-        <div className="bg-gray-50 rounded-xl p-4 divide-y divide-gray-200">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
+        <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
           <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 500} />
           <StatRow label="Annual Gross Revenue" value={formatCurrency(calc.annualGrossRent)} />
           <StatRow label="Cash-on-Cash Return" value={formatPercent(calc.cashOnCash)} highlight={calc.cashOnCash > 0.12} />
@@ -700,26 +735,26 @@ function STRDetails({ calc, assumptions, update }: { calc: ReturnType<typeof cal
         </div>
       </div>
       <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-cyan-500" /> Adjust Inputs
-        </h4>
-        <div className="bg-gray-50 rounded-xl p-4 space-y-1">
-          <GradientSlider label="Daily Rate" value={assumptions.averageDailyRate} min={50} max={500} step={10} onChange={(v) => update('averageDailyRate', v)} formatType="currency" compact />
-          <GradientSlider label="Occupancy Rate" value={assumptions.occupancyRate} min={0.40} max={0.95} step={0.01} onChange={(v) => update('occupancyRate', v)} formatType="percent" compact />
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
+        <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+          <AdjustmentSlider label="Daily Rate" baseValue={assumptions.baseAverageDailyRate} adjustment={assumptions.averageDailyRateAdj} onChange={(v) => updateAdjustment('averageDailyRateAdj', v)} compact />
+          <PercentSlider label="Occupancy Rate" value={assumptions.occupancyRate} onChange={(v) => update('occupancyRate', v)} compact maxPercent={95} />
         </div>
       </div>
     </div>
   )
 }
 
-function BRRRRDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateBRRRR>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
+function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: { 
+  calc: ReturnType<typeof calculateBRRRR>; assumptions: Assumptions; 
+  update: (k: keyof Assumptions, v: number) => void
+  updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
+}) {
   return (
     <div className="grid grid-cols-2 gap-6">
       <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-emerald-500" /> Key Metrics
-        </h4>
-        <div className="bg-gray-50 rounded-xl p-4 divide-y divide-gray-200">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
+        <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
           <StatRow label="Initial Cash Needed" value={formatCurrency(calc.initialCash)} />
           <StatRow label="Cash Back at Refi" value={formatCurrency(calc.cashBack)} highlight={calc.cashBack > 0} />
           <StatRow label="Cash Left in Deal" value={formatCurrency(calc.cashLeftInDeal)} highlight={calc.cashLeftInDeal < 10000} />
@@ -729,13 +764,11 @@ function BRRRRDetails({ calc, assumptions, update }: { calc: ReturnType<typeof c
         </div>
       </div>
       <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-emerald-500" /> Adjust Inputs
-        </h4>
-        <div className="bg-gray-50 rounded-xl p-4 space-y-1">
-          <GradientSlider label="ARV" value={assumptions.arv} min={100000} max={1200000} step={5000} onChange={(v) => update('arv', v)} formatType="currency" compact />
-          <GradientSlider label="Rehab Cost" value={assumptions.rehabCost} min={0} max={150000} step={1000} onChange={(v) => update('rehabCost', v)} formatType="currency" compact />
-          <GradientSlider label="Monthly Rent" value={assumptions.monthlyRent} min={500} max={8000} step={50} onChange={(v) => update('monthlyRent', v)} formatType="currency" compact />
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
+        <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+          <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
+          <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
+          <AdjustmentSlider label="Monthly Rent" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
         </div>
       </div>
     </div>
@@ -746,10 +779,8 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
   return (
     <div className="grid grid-cols-2 gap-6">
       <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-orange-500" /> Key Metrics
-        </h4>
-        <div className="bg-gray-50 rounded-xl p-4 divide-y divide-gray-200">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
+        <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
           <StatRow label="Net Profit" value={formatCurrency(calc.netProfit)} highlight={calc.netProfit > 30000} />
           <StatRow label="ROI" value={formatPercent(calc.roi)} highlight={calc.roi > 0.20} />
           <StatRow label="Annualized ROI" value={formatPercent(calc.annualizedROI)} />
@@ -759,12 +790,10 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
         </div>
       </div>
       <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-orange-500" /> Adjust Inputs
-        </h4>
-        <div className="bg-gray-50 rounded-xl p-4 space-y-1">
-          <GradientSlider label="ARV" value={assumptions.arv} min={100000} max={1200000} step={5000} onChange={(v) => update('arv', v)} formatType="currency" compact />
-          <GradientSlider label="Rehab Cost" value={assumptions.rehabCost} min={0} max={150000} step={1000} onChange={(v) => update('rehabCost', v)} formatType="currency" compact />
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
+        <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+          <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
+          <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
           <GradientSlider label="Holding Period" value={assumptions.holdingPeriodMonths} min={3} max={12} step={1} onChange={(v) => update('holdingPeriodMonths', v)} formatType="months" compact />
         </div>
       </div>
@@ -772,29 +801,30 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
   )
 }
 
-function HouseHackDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateHouseHack>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
+function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: { 
+  calc: ReturnType<typeof calculateHouseHack>; assumptions: Assumptions; 
+  update: (k: keyof Assumptions, v: number) => void
+  updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
+}) {
   return (
     <div className="grid grid-cols-2 gap-6">
       <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-blue-500" /> Key Metrics
-        </h4>
-        <div className="bg-gray-50 rounded-xl p-4 divide-y divide-gray-200">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
+        <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
           <StatRow label="Effective Housing Cost" value={formatCurrency(calc.effectiveHousingCost)} highlight={calc.effectiveHousingCost < 500} />
           <StatRow label="Monthly Savings" value={formatCurrency(calc.monthlySavings)} highlight={calc.monthlySavings > 500} />
           <StatRow label="Rental Income" value={formatCurrency(calc.monthlyRentalIncome)} />
+          <StatRow label="Rent per Room" value={formatCurrency(calc.rentPerRoom)} />
           <StatRow label="Mortgage Payment" value={formatCurrency(calc.monthlyPI)} />
           <StatRow label="Cash Required (3.5%)" value={formatCurrency(calc.totalCashRequired)} />
-          <StatRow label="Rental Units" value={`${calc.rentalUnits} units`} />
         </div>
       </div>
       <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-blue-500" /> Adjust Inputs
-        </h4>
-        <div className="bg-gray-50 rounded-xl p-4 space-y-1">
-          <GradientSlider label="Total Rent (all units)" value={assumptions.monthlyRent} min={1000} max={12000} step={100} onChange={(v) => update('monthlyRent', v)} formatType="currency" compact />
-          <GradientSlider label="Vacancy Rate" value={assumptions.vacancyRate} min={0} max={0.15} step={0.01} onChange={(v) => update('vacancyRate', v)} formatType="percent" compact />
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
+        <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+          <RoomsRentedSlider roomsRented={assumptions.roomsRented} totalBedrooms={assumptions.totalBedrooms} onChange={(v) => update('roomsRented', v)} compact />
+          <AdjustmentSlider label="Total Rent (all rooms)" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
+          <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
         </div>
       </div>
     </div>
@@ -805,10 +835,8 @@ function WholesaleDetails({ calc, assumptions, update }: { calc: ReturnType<type
   return (
     <div className="grid grid-cols-2 gap-6">
       <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-pink-500" /> Key Metrics
-        </h4>
-        <div className="bg-gray-50 rounded-xl p-4 divide-y divide-gray-200">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
+        <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
           <StatRow label="Assignment Fee" value={formatCurrency(calc.assignmentFee)} highlight={calc.assignmentFee > 10000} />
           <StatRow label="Net Profit" value={formatCurrency(calc.netProfit)} highlight={calc.netProfit > 8000} />
           <StatRow label="ROI" value={formatPercent(calc.roi)} highlight />
@@ -818,12 +846,10 @@ function WholesaleDetails({ calc, assumptions, update }: { calc: ReturnType<type
         </div>
       </div>
       <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-pink-500" /> Adjust Inputs
-        </h4>
-        <div className="bg-gray-50 rounded-xl p-4 space-y-1">
-          <GradientSlider label="ARV" value={assumptions.arv} min={100000} max={1200000} step={5000} onChange={(v) => update('arv', v)} formatType="currency" compact />
-          <GradientSlider label="Rehab Estimate" value={assumptions.rehabCost} min={0} max={150000} step={1000} onChange={(v) => update('rehabCost', v)} formatType="currency" compact />
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
+        <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+          <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
+          <PercentSlider label="Rehab Estimate" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
         </div>
       </div>
     </div>
@@ -849,18 +875,20 @@ function PropertyPageContent() {
   
   const [assumptions, setAssumptions] = useState<Assumptions>({
     // Base values from API (for ±50% adjustment sliders)
-    basePurchasePrice: 425000, baseMonthlyRent: 2100,
+    basePurchasePrice: 425000, baseMonthlyRent: 2100, baseAverageDailyRate: 250,
     // Adjustment percentages (0 = center, no adjustment)
-    purchasePriceAdj: 0, monthlyRentAdj: 0,
+    purchasePriceAdj: 0, monthlyRentAdj: 0, averageDailyRateAdj: 0,
     // Computed values (will be updated when adjustments change)
-    purchasePrice: 425000, monthlyRent: 2100,
+    purchasePrice: 425000, monthlyRent: 2100, averageDailyRate: 250,
     // ARV = Purchase Price × (1 + arvPct), starts at 0% (= Purchase Price)
     arvPct: 0.20, arv: 510000,
     // Standard values
     downPaymentPct: 0.20, interestRate: 0.056, loanTermYears: 30,
     rehabCostPct: 0.05, rehabCost: 21250, propertyTaxes: 4500, insurance: 1500,
     vacancyRate: 0.03, managementPct: 0.00, maintenancePct: 0.05, closingCostsPct: 0.03,
-    averageDailyRate: 250, occupancyRate: 0.82, holdingPeriodMonths: 6, sellingCostsPct: 0.08
+    occupancyRate: 0.82, holdingPeriodMonths: 6, sellingCostsPct: 0.08,
+    // House Hack specific - defaults
+    roomsRented: 3, totalBedrooms: 4
   })
 
   useEffect(() => {
@@ -895,17 +923,23 @@ function PropertyPageContent() {
           ? (mortgageRateRaw > 1 ? mortgageRateRaw / 100 : mortgageRateRaw) 
           : 0.056
         
+        // Base daily rate from API
+        const baseAverageDailyRate = data.rentals.average_daily_rate || 250
+        
         setAssumptions(prev => ({
           ...prev,
           // Base values (center of sliders)
           basePurchasePrice: Math.round(basePurchasePrice),
           baseMonthlyRent: Math.round(baseMonthlyRent),
+          baseAverageDailyRate: Math.round(baseAverageDailyRate),
           // Adjustments start at 0 (center)
           purchasePriceAdj: 0,
           monthlyRentAdj: 0,
+          averageDailyRateAdj: 0,
           // Computed values (base × (1 + 0) = base)
           purchasePrice: Math.round(basePurchasePrice),
           monthlyRent: Math.round(baseMonthlyRent),
+          averageDailyRate: Math.round(baseAverageDailyRate),
           // ARV: percentage above purchase price (0-100%)
           arvPct,
           arv: Math.round(basePurchasePrice * (1 + arvPct)),
@@ -915,13 +949,15 @@ function PropertyPageContent() {
           rehabCostPct: 0.05,
           rehabCost: Math.round(basePurchasePrice * 0.05),
           propertyTaxes: data.market.property_taxes_annual || prev.propertyTaxes,
-          averageDailyRate: data.rentals.average_daily_rate || prev.averageDailyRate,
           occupancyRate: data.rentals.occupancy_rate || prev.occupancyRate,
           // Fixed rates per user spec
           downPaymentPct: 0.20,   // 20%
           vacancyRate: 0.03,      // 3%
           managementPct: 0.00,    // 0%
           maintenancePct: 0.05,   // 5%
+          // House Hack: bedrooms from property, default to renting all but 1
+          totalBedrooms: data.details.bedrooms || 4,
+          roomsRented: Math.max(1, (data.details.bedrooms || 4) - 1),
         }))
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load property')
@@ -948,7 +984,7 @@ function PropertyPageContent() {
   }, [])
 
   // Update handler for adjustment sliders (±50% for Purchase Price and Monthly Rent)
-  const updateAdjustment = useCallback((key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => {
+  const updateAdjustment = useCallback((key: 'purchasePriceAdj' | 'monthlyRentAdj' | 'averageDailyRateAdj', value: number) => {
     setAssumptions(prev => {
       const updated = { ...prev, [key]: value }
       // Recalculate computed values based on base × (1 + adjustment)
@@ -959,6 +995,8 @@ function PropertyPageContent() {
         updated.arv = Math.round(updated.purchasePrice * (1 + prev.arvPct))
       } else if (key === 'monthlyRentAdj') {
         updated.monthlyRent = Math.round(prev.baseMonthlyRent * (1 + value))
+      } else if (key === 'averageDailyRateAdj') {
+        updated.averageDailyRate = Math.round(prev.baseAverageDailyRate * (1 + value))
       }
       return updated
     })
@@ -972,15 +1010,16 @@ function PropertyPageContent() {
   const houseHackCalc = useMemo(() => calculateHouseHack(assumptions), [assumptions])
   const wholesaleCalc = useMemo(() => calculateWholesale(assumptions), [assumptions])
 
-  // Strategy metrics for cards
-  const strategyMetrics: Record<StrategyId, { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; verdict: 'good' | 'ok' | 'poor'; score: number }> = useMemo(() => ({
+  // Strategy metrics for cards - includes primaryValue for profit/loss color coding
+  const strategyMetrics: Record<StrategyId, { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; verdict: 'good' | 'ok' | 'poor'; score: number; primaryValue: number }> = useMemo(() => ({
     ltr: {
       primary: formatCurrency(ltrCalc.monthlyCashFlow),
       primaryLabel: 'Monthly Cash Flow',
       secondary: formatPercent(ltrCalc.cashOnCash),
       secondaryLabel: 'Cash-on-Cash',
       verdict: ltrCalc.monthlyCashFlow >= 200 ? 'good' : ltrCalc.monthlyCashFlow >= 0 ? 'ok' : 'poor',
-      score: ltrCalc.cashOnCash * 100
+      score: ltrCalc.cashOnCash * 100,
+      primaryValue: ltrCalc.monthlyCashFlow
     },
     str: {
       primary: formatCurrency(strCalc.monthlyCashFlow),
@@ -988,39 +1027,44 @@ function PropertyPageContent() {
       secondary: formatPercent(strCalc.cashOnCash),
       secondaryLabel: 'Cash-on-Cash',
       verdict: strCalc.monthlyCashFlow >= 500 ? 'good' : strCalc.monthlyCashFlow >= 0 ? 'ok' : 'poor',
-      score: strCalc.cashOnCash * 100
+      score: strCalc.cashOnCash * 100,
+      primaryValue: strCalc.monthlyCashFlow
     },
     brrrr: {
-      primary: brrrrCalc.cashOnCash === Infinity ? '∞' : formatPercent(brrrrCalc.cashOnCash),
-      primaryLabel: 'Cash-on-Cash',
-      secondary: formatCurrency(brrrrCalc.cashLeftInDeal),
-      secondaryLabel: 'Cash in Deal',
+      primary: formatCurrency(brrrrCalc.monthlyCashFlow),
+      primaryLabel: 'Monthly Cash Flow',
+      secondary: brrrrCalc.cashOnCash === Infinity ? '∞' : formatPercent(brrrrCalc.cashOnCash),
+      secondaryLabel: 'Cash-on-Cash',
       verdict: brrrrCalc.cashLeftInDeal < 10000 ? 'good' : brrrrCalc.cashLeftInDeal < 30000 ? 'ok' : 'poor',
-      score: brrrrCalc.cashLeftInDeal < 5000 ? 100 : 50
+      score: brrrrCalc.cashLeftInDeal < 5000 ? 100 : 50,
+      primaryValue: brrrrCalc.monthlyCashFlow
     },
     flip: {
       primary: formatCurrency(flipCalc.netProfit),
       primaryLabel: 'Net Profit',
       secondary: formatPercent(flipCalc.roi),
       secondaryLabel: 'ROI',
-      verdict: flipCalc.netProfit >= 30000 ? 'good' : flipCalc.netProfit >= 15000 ? 'ok' : 'poor',
-      score: flipCalc.roi * 100
+      verdict: flipCalc.netProfit >= 30000 ? 'good' : flipCalc.netProfit >= 0 ? 'ok' : 'poor',
+      score: flipCalc.roi * 100,
+      primaryValue: flipCalc.netProfit
     },
     house_hack: {
-      primary: formatCurrency(houseHackCalc.effectiveHousingCost),
-      primaryLabel: 'Housing Cost',
-      secondary: formatCurrency(houseHackCalc.monthlySavings),
-      secondaryLabel: 'Monthly Savings',
-      verdict: houseHackCalc.effectiveHousingCost < 500 ? 'good' : houseHackCalc.effectiveHousingCost < 1000 ? 'ok' : 'poor',
-      score: houseHackCalc.monthlySavings > 0 ? 80 : 40
+      primary: formatCurrency(houseHackCalc.monthlySavings),
+      primaryLabel: 'Monthly Savings',
+      secondary: formatCurrency(houseHackCalc.effectiveHousingCost),
+      secondaryLabel: 'Net Housing Cost',
+      verdict: houseHackCalc.monthlySavings > 500 ? 'good' : houseHackCalc.monthlySavings > 0 ? 'ok' : 'poor',
+      score: houseHackCalc.monthlySavings > 0 ? 80 : 40,
+      primaryValue: houseHackCalc.monthlySavings
     },
     wholesale: {
-      primary: formatCurrency(wholesaleCalc.assignmentFee),
-      primaryLabel: 'Assignment Fee',
+      primary: formatCurrency(wholesaleCalc.netProfit),
+      primaryLabel: 'Net Profit',
       secondary: formatPercent(wholesaleCalc.roi),
       secondaryLabel: 'ROI',
-      verdict: wholesaleCalc.assignmentFee >= 10000 ? 'good' : wholesaleCalc.assignmentFee >= 5000 ? 'ok' : 'poor',
-      score: wholesaleCalc.roi * 10
+      verdict: wholesaleCalc.netProfit >= 8000 ? 'good' : wholesaleCalc.netProfit >= 0 ? 'ok' : 'poor',
+      score: wholesaleCalc.roi * 10,
+      primaryValue: wholesaleCalc.netProfit
     },
   }), [ltrCalc, strCalc, brrrrCalc, flipCalc, houseHackCalc, wholesaleCalc])
 
@@ -1079,6 +1123,25 @@ function PropertyPageContent() {
       <div className="max-w-7xl mx-auto px-6 py-6">
         <TopNav property={property} isDemo={isDemo} />
         
+        {/* Strategy Grid - Clean & Sophisticated */}
+        <div className="mb-5">
+          <div className="flex items-baseline justify-between mb-3">
+            <h2 className="text-sm font-medium text-gray-500 tracking-wide">Investment Strategies</h2>
+            <span className="text-[10px] text-gray-400">Select to analyze</span>
+          </div>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+            {strategies.map(strategy => (
+              <StrategyCard
+                key={strategy.id}
+                strategy={strategy}
+                metrics={strategyMetrics[strategy.id]}
+                isSelected={selectedStrategy === strategy.id}
+                onClick={() => { setSelectedStrategy(strategy.id); setDrillDownView('details'); }}
+              />
+            ))}
+          </div>
+        </div>
+
         {/* Collapsible Assumptions Panel */}
         <div className="mb-6">
           <AssumptionsPanel 
@@ -1090,46 +1153,21 @@ function PropertyPageContent() {
           />
         </div>
 
-        {/* Strategy Grid - THE CORE */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-800">Investment Strategies</h2>
-            <span className="text-xs text-gray-400">Click a strategy for detailed analysis</span>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {strategies.map(strategy => (
-              <StrategyCard
-                key={strategy.id}
-                strategy={strategy}
-                metrics={strategyMetrics[strategy.id]}
-                isSelected={selectedStrategy === strategy.id}
-                onClick={() => { setSelectedStrategy(strategy.id); setDrillDownView('details'); }}
-                isBest={bestStrategy === strategy.id}
-              />
-            ))}
-          </div>
-        </div>
-
         {/* Drill-Down Panel */}
-        <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
-          {/* Compact Professional Header */}
-          <div className="px-5 py-4 border-b border-gray-100">
+        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+          {/* Clean Header - No Icon */}
+          <div className="px-4 py-3 border-b border-gray-100">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${currentStrategy.gradient} flex items-center justify-center`}>
-                  <CurrentIcon className="w-4 h-4 text-white" strokeWidth={1.5} />
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-gray-800">{currentStrategy.name}</h3>
-                  <p className="text-xs text-gray-400">{currentStrategy.description}</p>
-                </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-700">{currentStrategy.name}</h3>
+                <p className="text-[11px] text-gray-400">{currentStrategy.description}</p>
               </div>
               <div className="text-right">
-                <div className={`text-xl font-semibold ${
-                  strategyMetrics[selectedStrategy].verdict === 'good' ? 'text-emerald-600' : 
-                  strategyMetrics[selectedStrategy].verdict === 'ok' ? 'text-amber-600' : 'text-red-500'
+                <div className={`text-lg font-semibold ${
+                  strategyMetrics[selectedStrategy].primaryValue > 0 ? 'text-teal-600' : 
+                  strategyMetrics[selectedStrategy].primaryValue < 0 ? 'text-rose-600' : 'text-gray-500'
                 }`}>{strategyMetrics[selectedStrategy].primary}</div>
-                <div className="text-xs text-gray-400">{strategyMetrics[selectedStrategy].primaryLabel}</div>
+                <div className="text-[10px] text-gray-400">{strategyMetrics[selectedStrategy].primaryLabel}</div>
               </div>
             </div>
           </div>
@@ -1141,11 +1179,11 @@ function PropertyPageContent() {
 
           {/* Drill-Down Content */}
           <div className="p-5">
-            {drillDownView === 'details' && selectedStrategy === 'ltr' && <LTRDetails calc={ltrCalc} assumptions={assumptions} update={update} />}
-            {drillDownView === 'details' && selectedStrategy === 'str' && <STRDetails calc={strCalc} assumptions={assumptions} update={update} />}
-            {drillDownView === 'details' && selectedStrategy === 'brrrr' && <BRRRRDetails calc={brrrrCalc} assumptions={assumptions} update={update} />}
+            {drillDownView === 'details' && selectedStrategy === 'ltr' && <LTRDetails calc={ltrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
+            {drillDownView === 'details' && selectedStrategy === 'str' && <STRDetails calc={strCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
+            {drillDownView === 'details' && selectedStrategy === 'brrrr' && <BRRRRDetails calc={brrrrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
             {drillDownView === 'details' && selectedStrategy === 'flip' && <FlipDetails calc={flipCalc} assumptions={assumptions} update={update} />}
-            {drillDownView === 'details' && selectedStrategy === 'house_hack' && <HouseHackDetails calc={houseHackCalc} assumptions={assumptions} update={update} />}
+            {drillDownView === 'details' && selectedStrategy === 'house_hack' && <HouseHackDetails calc={houseHackCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
             {drillDownView === 'details' && selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} />}
             
             {drillDownView === 'charts' && <ChartsView projections={projections} totalCashInvested={ltrCalc.totalCashRequired} />}
@@ -1177,3 +1215,4 @@ export default function PropertyPage() {
     </Suspense>
   )
 }
+

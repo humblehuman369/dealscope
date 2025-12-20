@@ -358,14 +358,9 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
-            <Hammer className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Rehab Estimator</h2>
-            <p className="text-sm text-gray-500">Build your renovation budget item by item</p>
-          </div>
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800">Rehab Estimator</h2>
+          <p className="text-sm text-gray-500">Build your renovation budget item by item</p>
         </div>
         
         {selections.length > 0 && (

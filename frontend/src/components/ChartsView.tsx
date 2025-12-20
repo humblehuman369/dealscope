@@ -46,29 +46,29 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
   const avgCF = totalCF / data.length
   
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-4 gap-3">
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-4 text-white">
-          <div className="text-emerald-100 text-xs mb-1">Total 10-Year</div>
-          <div className="text-2xl font-black">{formatCompact(totalCF)}</div>
+    <div className="space-y-4">
+      {/* Summary Cards - Compact */}
+      <div className="grid grid-cols-4 gap-2">
+        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-3 text-white">
+          <div className="text-emerald-100 text-[10px] uppercase tracking-wide">Total 10-Year</div>
+          <div className="text-lg font-bold">{formatCompact(totalCF)}</div>
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-gray-100">
-          <div className="text-gray-400 text-xs mb-1">Average/Year</div>
-          <div className="text-xl font-bold text-gray-900">{formatCompact(avgCF)}</div>
+        <div className="bg-white rounded-xl p-3 border border-gray-100">
+          <div className="text-gray-400 text-[10px] uppercase tracking-wide">Average/Year</div>
+          <div className="text-lg font-bold text-gray-900">{formatCompact(avgCF)}</div>
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-gray-100">
-          <div className="text-gray-400 text-xs mb-1">Year 1</div>
-          <div className="text-xl font-bold text-emerald-600">{formatCompact(data[0].cashFlow)}</div>
+        <div className="bg-white rounded-xl p-3 border border-gray-100">
+          <div className="text-gray-400 text-[10px] uppercase tracking-wide">Year 1</div>
+          <div className="text-lg font-bold text-emerald-600">{formatCompact(data[0].cashFlow)}</div>
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-gray-100">
-          <div className="text-gray-400 text-xs mb-1">Year 10</div>
-          <div className="text-xl font-bold text-emerald-600">{formatCompact(data[9].cashFlow)}</div>
+        <div className="bg-white rounded-xl p-3 border border-gray-100">
+          <div className="text-gray-400 text-[10px] uppercase tracking-wide">Year 10</div>
+          <div className="text-lg font-bold text-emerald-600">{formatCompact(data[9].cashFlow)}</div>
         </div>
       </div>
       
       {/* Lollipop Chart */}
-      <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-3xl p-6 relative overflow-hidden">
+      <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-4 relative overflow-hidden">
         {/* Background glow */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500 rounded-full blur-[100px]" />
@@ -82,7 +82,7 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
         </div>
         
         {/* Chart */}
-        <div className="relative h-72 flex items-end justify-around px-4">
+        <div className="relative h-52 flex items-end justify-around px-3">
           {data.map((d, i) => {
             const height = range > 0 ? ((d.cashFlow - minCF) / range) * 200 + 40 : 120
             const isHovered = hoveredIndex === i
@@ -225,37 +225,28 @@ function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection
   
   return (
     <div className="space-y-6">
-      {/* Header Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-5 text-white">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-5 h-5 text-blue-200" />
-            <span className="text-blue-100 text-sm">Year 10 Equity</span>
-          </div>
-          <div className="text-3xl font-black">{formatCompact(data[9].totalEquity)}</div>
-          <div className="text-blue-200 text-sm mt-1">
+      {/* Header Stats - Compact */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-3 text-white">
+          <div className="text-blue-200 text-[10px] uppercase tracking-wide mb-1">Year 10 Equity</div>
+          <div className="text-xl font-bold">{formatCompact(data[9].totalEquity)}</div>
+          <div className="text-blue-200 text-xs mt-0.5">
             +{formatCompact(data[9].totalEquity - totalCashInvested)} gain
           </div>
         </div>
         
-        <div className="bg-white rounded-2xl p-5 border border-gray-100">
-          <div className="flex items-center gap-2 mb-2">
-            <Building2 className="w-5 h-5 text-orange-500" />
-            <span className="text-gray-500 text-sm">Loan Remaining</span>
-          </div>
-          <div className="text-3xl font-black text-gray-900">{formatCompact(data[9].loanBalance)}</div>
-          <div className="text-orange-500 text-sm mt-1">
+        <div className="bg-white rounded-xl p-3 border border-gray-100">
+          <div className="text-gray-400 text-[10px] uppercase tracking-wide mb-1">Loan Remaining</div>
+          <div className="text-xl font-bold text-gray-900">{formatCompact(data[9].loanBalance)}</div>
+          <div className="text-orange-500 text-xs mt-0.5">
             {((1 - data[9].loanBalance / data[0].loanBalance) * 100).toFixed(0)}% paid off
           </div>
         </div>
         
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-5 border border-emerald-200">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-5 h-5 text-emerald-500" />
-            <span className="text-emerald-700 text-sm">Crossover Point</span>
-          </div>
-          <div className="text-3xl font-black text-emerald-700">Year {crossoverYear > 0 ? crossoverYear + 1 : '—'}</div>
-          <div className="text-emerald-600 text-sm mt-1">
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-200">
+          <div className="text-emerald-600 text-[10px] uppercase tracking-wide mb-1">Crossover Point</div>
+          <div className="text-xl font-bold text-emerald-700">Year {crossoverYear > 0 ? crossoverYear + 1 : '—'}</div>
+          <div className="text-emerald-600 text-xs mt-0.5">
             Equity exceeds loan
           </div>
         </div>
@@ -504,38 +495,38 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
   ]
   
   const total = segments.reduce((sum, s) => sum + s.value, 0)
-  const radius = 100
-  const strokeWidth = 32
+  const radius = 70
+  const strokeWidth = 22
   const circumference = 2 * Math.PI * radius
   
   let cumulativePercent = 0
   
   return (
     <div className="space-y-6">
-      {/* Top Summary */}
-      <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-3xl p-6 text-white">
+      {/* Top Summary - Compact */}
+      <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-xl p-4 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-purple-200 text-sm mb-1">Initial Investment</div>
-            <div className="text-3xl font-black">{formatCompact(totalCashInvested)}</div>
+            <div className="text-purple-200 text-[10px] uppercase tracking-wide">Initial Investment</div>
+            <div className="text-xl font-bold">{formatCompact(totalCashInvested)}</div>
           </div>
-          <div className="text-6xl font-thin text-white/30">→</div>
+          <div className="text-3xl font-thin text-white/30">→</div>
           <div className="text-right">
-            <div className="text-purple-200 text-sm mb-1">Year {selectedYear + 1} Wealth</div>
-            <div className="text-4xl font-black">{formatCompact(yearData.totalWealth)}</div>
+            <div className="text-purple-200 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Wealth</div>
+            <div className="text-2xl font-bold">{formatCompact(yearData.totalWealth)}</div>
           </div>
-          <div className="text-right pl-6 border-l border-white/20">
-            <div className="text-purple-200 text-sm mb-1">Return</div>
-            <div className="text-3xl font-black text-emerald-300">
+          <div className="text-right pl-4 border-l border-white/20">
+            <div className="text-purple-200 text-[10px] uppercase tracking-wide">Return</div>
+            <div className="text-xl font-bold text-emerald-300">
               {(yearData.totalWealth / totalCashInvested).toFixed(1)}x
             </div>
           </div>
         </div>
       </div>
       
-      {/* Donut Chart */}
-      <div className="bg-white rounded-3xl border border-gray-100 p-8">
-        <div className="flex items-center gap-12">
+      {/* Donut Chart - Compact */}
+      <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="flex items-center gap-8">
           {/* Donut */}
           <div className="relative flex-shrink-0">
             <svg width={radius * 2 + strokeWidth * 2 + 20} height={radius * 2 + strokeWidth * 2 + 20}>
@@ -598,41 +589,37 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
             
             {/* Center content */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <Sparkles className="w-8 h-8 text-purple-400 mb-2" />
-              <div className="text-sm text-gray-500">Total Wealth</div>
-              <div className="text-4xl font-black text-gray-900">{formatCompact(yearData.totalWealth)}</div>
-              <div className="mt-2 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold">
+              <div className="text-[10px] text-gray-400 uppercase tracking-wide">Total Wealth</div>
+              <div className="text-2xl font-bold text-gray-900">{formatCompact(yearData.totalWealth)}</div>
+              <div className="mt-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-xs font-medium">
                 +{formatCompact(yearData.totalWealth - totalCashInvested)}
               </div>
             </div>
           </div>
           
-          {/* Legend & Breakdown */}
-          <div className="flex-1 space-y-4">
+          {/* Legend & Breakdown - Compact */}
+          <div className="flex-1 space-y-2">
             {segments.map((seg, i) => {
-              const Icon = seg.icon
               const percent = total > 0 ? (seg.value / total) * 100 : 0
               
               return (
-                <div key={i} className="bg-gray-50 rounded-2xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
+                <div key={i} className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
                       <div 
-                        className="w-10 h-10 rounded-xl flex items-center justify-center"
-                        style={{ backgroundColor: `${seg.color}20` }}
-                      >
-                        <Icon className="w-5 h-5" style={{ color: seg.color }} />
-                      </div>
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: seg.color }}
+                      />
                       <div>
-                        <div className="font-semibold text-gray-900">{seg.label}</div>
-                        <div className="text-xs text-gray-500">{percent.toFixed(1)}% of wealth</div>
+                        <span className="text-sm font-medium text-gray-800">{seg.label}</span>
+                        <span className="text-xs text-gray-400 ml-2">{percent.toFixed(0)}%</span>
                       </div>
                     </div>
-                    <div className="text-2xl font-black" style={{ color: seg.color }}>
+                    <div className="text-sm font-semibold" style={{ color: seg.color }}>
                       {formatCompact(seg.value)}
                     </div>
                   </div>
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
                     <div 
                       className="h-full rounded-full transition-all duration-700"
                       style={{ width: `${percent}%`, backgroundColor: seg.color }}
@@ -645,20 +632,20 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
         </div>
       </div>
       
-      {/* Timeline Controller */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-5">
-        <div className="flex items-center gap-4 mb-4">
+      {/* Timeline Controller - Compact */}
+      <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-3">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => {
               if (selectedYear === 9) setSelectedYear(0)
               setIsPlaying(!isPlaying)
             }}
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
           >
             {isPlaying ? (
-              <Pause className="w-5 h-5 text-white" />
+              <Pause className="w-4 h-4 text-white" />
             ) : (
-              <Play className="w-5 h-5 text-white ml-0.5" />
+              <Play className="w-4 h-4 text-white ml-0.5" />
             )}
           </button>
           
@@ -667,19 +654,19 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
               setSelectedYear(0)
               setIsPlaying(false)
             }}
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
           >
-            <RotateCcw className="w-4 h-4 text-white" />
+            <RotateCcw className="w-3 h-3 text-white" />
           </button>
           
           <div className="flex-1">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-white/60 text-sm">Timeline</span>
-              <span className="text-white font-bold">Year {selectedYear + 1}</span>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-white/60 text-xs">Timeline</span>
+              <span className="text-white text-xs font-medium">Year {selectedYear + 1}</span>
             </div>
             
             {/* Timeline dots */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               {data.map((_, i) => (
                 <button
                   key={i}
@@ -687,7 +674,7 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
                     setSelectedYear(i)
                     setIsPlaying(false)
                   }}
-                  className={`flex-1 h-2 rounded-full transition-all duration-300 ${
+                  className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${
                     i <= selectedYear 
                       ? 'bg-gradient-to-r from-purple-500 to-indigo-500' 
                       : 'bg-white/20'
@@ -696,13 +683,6 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
               ))}
             </div>
           </div>
-        </div>
-        
-        {/* Year values preview */}
-        <div className="flex justify-between text-xs text-white/40">
-          {data.filter((_, i) => i % 2 === 0 || i === 9).map(d => (
-            <span key={d.year}>{formatCompact(d.totalWealth)}</span>
-          ))}
         </div>
       </div>
     </div>
@@ -730,40 +710,31 @@ export default function ChartsView({ projections, totalCashInvested }: ChartsVie
   ]
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 rounded-2xl flex items-center justify-center shadow-xl shadow-purple-500/25">
-          <BarChart3 className="w-7 h-7 text-white" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-black text-gray-900">Wealth Visualizer</h2>
-          <p className="text-gray-500">Interactive 10-year investment analysis</p>
-        </div>
+      <div>
+        <h2 className="text-lg font-semibold text-gray-800">Wealth Visualizer</h2>
+        <p className="text-sm text-gray-500">Interactive 10-year investment analysis</p>
       </div>
 
-      {/* Tab Selector */}
-      <div className="flex gap-3 p-1.5 bg-gray-100 rounded-2xl">
+      {/* Tab Selector - Compact */}
+      <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
         {tabs.map(tab => {
-          const Icon = tab.icon
           const isActive = activeChart === tab.id
           
           return (
             <button
               key={tab.id}
               onClick={() => setActiveChart(tab.id as any)}
-              className={`flex-1 flex items-center justify-center gap-3 py-4 px-6 rounded-xl font-semibold transition-all duration-300 ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isActive 
-                  ? 'bg-white shadow-lg text-gray-900' 
+                  ? 'bg-white shadow-sm text-gray-900' 
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <Icon className={`w-5 h-5 ${isActive ? `text-${tab.color}-500` : ''}`} 
-                style={{ color: isActive ? (tab.color === 'emerald' ? '#10b981' : tab.color === 'blue' ? '#3b82f6' : '#8b5cf6') : undefined }}
-              />
               <span>{tab.label}</span>
-              <span className={`text-sm px-2 py-0.5 rounded-full ${
-                isActive ? 'bg-gray-100' : 'bg-transparent'
+              <span className={`text-xs px-1.5 py-0.5 rounded ${
+                isActive ? 'bg-gray-100 text-gray-700' : 'text-gray-400'
               }`}>
                 {formatCompact(tab.value)}
               </span>
@@ -773,7 +744,7 @@ export default function ChartsView({ projections, totalCashInvested }: ChartsVie
       </div>
 
       {/* Chart Content */}
-      <div className="min-h-[600px]">
+      <div className="min-h-[400px]">
         {activeChart === 'cashflow' && <CashFlowLollipopChart data={projections} />}
         {activeChart === 'equity' && <EquityMirrorChart data={projections} totalCashInvested={totalCashInvested} />}
         {activeChart === 'wealth' && <TotalWealthDonutChart data={projections} totalCashInvested={totalCashInvested} />}
