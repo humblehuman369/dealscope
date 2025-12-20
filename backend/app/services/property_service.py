@@ -6,10 +6,12 @@ from datetime import datetime
 import hashlib
 import json
 import uuid
+import logging
 
 from app.services.api_clients import (
     RentCastClient, AXESSOClient, DataNormalizer, create_api_clients
 )
+from app.services.zillow_client import ZillowClient, ZillowDataExtractor, create_zillow_client
 from app.services.calculators import (
     calculate_ltr, calculate_str, calculate_brrrr,
     calculate_flip, calculate_house_hack, calculate_wholesale
@@ -22,6 +24,8 @@ from app.schemas import (
     HouseHackResults, WholesaleResults
 )
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class PropertyService:
@@ -36,6 +40,12 @@ class PropertyService:
             rentcast_url=settings.RENTCAST_URL,
             axesso_api_key=settings.AXESSO_API_KEY,
             axesso_url=settings.AXESSO_URL
+        )
+        
+        # Use the comprehensive ZillowClient for Zillow data
+        self.zillow = create_zillow_client(
+            api_key=settings.AXESSO_API_KEY,
+            base_url=settings.AXESSO_URL
         )
         
         # In-memory cache (replace with Redis in production)
@@ -81,9 +91,23 @@ class PropertyService:
         if rc_rent.success and rc_rent.data:
             rentcast_data.update(rc_rent.data)
         
-        # Fetch from AXESSO
-        ax_response = await self.axesso.get_property_details(address=address)
-        axesso_data = ax_response.data if ax_response.success else None
+        # Fetch from Zillow via AXESSO
+        # The search-by-address endpoint returns all property data including Zestimate
+        axesso_data = None
+        try:
+            logger.info(f"Fetching Zillow data for: {address}")
+            zillow_response = await self.zillow.search_by_address(address)
+            
+            if zillow_response.success and zillow_response.data:
+                axesso_data = zillow_response.data
+                zpid = axesso_data.get('zpid')
+                zestimate = axesso_data.get('zestimate')
+                rent_zestimate = axesso_data.get('rentZestimate')
+                logger.info(f"Zillow data retrieved - zpid: {zpid}, zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}")
+            else:
+                logger.warning(f"Zillow search failed for: {address} - {zillow_response.error}")
+        except Exception as e:
+            logger.error(f"Error fetching Zillow data: {e}")
         
         # Normalize and merge data
         normalized, provenance = self.normalizer.normalize(

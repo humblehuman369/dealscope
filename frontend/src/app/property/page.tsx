@@ -58,8 +58,17 @@ interface PropertyData {
 }
 
 interface Assumptions {
-  purchasePrice: number; downPaymentPct: number; interestRate: number; loanTermYears: number
-  monthlyRent: number; arv: number; rehabCost: number; propertyTaxes: number; insurance: number
+  // Base values from API (for ±50% adjustment sliders)
+  basePurchasePrice: number; baseMonthlyRent: number
+  // Adjustment percentages (-0.5 to +0.5 for ±50%)
+  purchasePriceAdj: number; monthlyRentAdj: number
+  // Computed values (base × (1 + adj))
+  purchasePrice: number; monthlyRent: number
+  // ARV = Purchase Price × (1 + arvPct), where arvPct is 0 to 1 (0% to 100%)
+  arvPct: number; arv: number
+  // Standard percentage sliders with specific ranges
+  downPaymentPct: number; interestRate: number; loanTermYears: number
+  rehabCostPct: number; rehabCost: number; propertyTaxes: number; insurance: number
   vacancyRate: number; managementPct: number; maintenancePct: number; closingCostsPct: number
   averageDailyRate: number; occupancyRate: number; holdingPeriodMonths: number; sellingCostsPct: number
 }
@@ -282,6 +291,92 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
   )
 }
 
+// Adjustment slider for ±50% range with center at 0%
+function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = false }: {
+  label: string; baseValue: number; adjustment: number; onChange: (adj: number) => void; compact?: boolean
+}) {
+  // adjustment is -0.5 to +0.5, convert to 0-100 slider position (50 = center)
+  const sliderPosition = Math.round((adjustment + 0.5) * 100)
+  const computedValue = Math.round(baseValue * (1 + adjustment))
+  const adjPercent = adjustment * 100
+  const adjSign = adjustment >= 0 ? '+' : ''
+
+  return (
+    <div className={compact ? 'py-2' : 'py-3'}>
+      <div className="flex items-center justify-between mb-2">
+        <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-gray-500`}>{label}</span>
+        <div className="text-right">
+          <span className={`${compact ? 'text-sm' : 'text-base'} font-bold text-gray-800`}>{formatCurrency(computedValue)}</span>
+          <span className={`ml-2 text-xs font-medium ${adjustment === 0 ? 'text-gray-400' : adjustment > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+            {adjSign}{adjPercent.toFixed(0)}%
+          </span>
+        </div>
+      </div>
+      <div className="relative h-2">
+        {/* Background gradient - red on left, green on right, neutral in center */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-red-400 via-gray-300 to-emerald-400" />
+        {/* Center line indicator */}
+        <div className="absolute top-0 left-1/2 w-0.5 h-full bg-gray-500 -translate-x-1/2 z-10" />
+        {/* Slider thumb */}
+        <div 
+          className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-lg shadow-lg flex items-center justify-center cursor-grab transition-transform hover:scale-110 ${
+            adjustment === 0 
+              ? 'bg-gradient-to-br from-gray-400 to-gray-600' 
+              : adjustment > 0 
+                ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_16px_rgba(16,185,129,0.5)]'
+                : 'bg-gradient-to-br from-red-400 to-red-600 shadow-[0_0_16px_rgba(239,68,68,0.5)]'
+          }`}
+          style={{ left: `${sliderPosition}%` }}
+        >
+          <span className="text-[8px] font-bold text-white">{adjSign}{adjPercent.toFixed(0)}</span>
+        </div>
+        <input 
+          type="range" 
+          min={0} 
+          max={100} 
+          step={1} 
+          value={sliderPosition} 
+          onChange={(e) => onChange((parseFloat(e.target.value) - 50) / 100)} 
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+        />
+      </div>
+    </div>
+  )
+}
+
+// Percentage slider for 0-100% range
+function PercentSlider({ label, value, onChange, compact = false, maxPercent = 100 }: {
+  label: string; value: number; onChange: (value: number) => void; compact?: boolean; maxPercent?: number
+}) {
+  const percentage = Math.round((value / (maxPercent / 100)) * 100)
+  const displayPercent = (value * 100).toFixed(1)
+
+  return (
+    <div className={compact ? 'py-2' : 'py-3'}>
+      <div className="flex items-center justify-between mb-2">
+        <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-gray-500`}>{label}</span>
+        <span className={`${compact ? 'text-sm' : 'text-base'} font-bold text-gray-800`}>{displayPercent}%</span>
+      </div>
+      <div className="relative h-2">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-500 via-cyan-500 to-emerald-400" />
+        <div className="absolute top-0 right-0 h-full bg-gray-200 rounded-r-full transition-all duration-150" style={{ width: `${100 - percentage}%` }} />
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 shadow-[0_0_16px_rgba(59,130,246,0.5)] flex items-center justify-center cursor-grab transition-transform hover:scale-110" style={{ left: `${percentage}%` }}>
+          <span className="text-[8px] font-bold text-white">{displayPercent}</span>
+        </div>
+        <input 
+          type="range" 
+          min={0} 
+          max={maxPercent / 100} 
+          step={0.001} 
+          value={value} 
+          onChange={(e) => onChange(parseFloat(e.target.value))} 
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+        />
+      </div>
+    </div>
+  )
+}
+
 function StrategyCard({ strategy, metrics, isSelected, onClick, isBest }: {
   strategy: typeof strategies[0]; metrics: { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; verdict: 'good' | 'ok' | 'poor' }
   isSelected: boolean; onClick: () => void; isBest: boolean
@@ -337,8 +432,47 @@ function StrategyCard({ strategy, metrics, isSelected, onClick, isBest }: {
   )
 }
 
-function AssumptionsPanel({ assumptions, update, isExpanded, onToggle }: {
-  assumptions: Assumptions; update: (key: keyof Assumptions, value: number) => void
+// ARV Slider - shows computed value based on Purchase Price + percentage
+function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
+  purchasePrice: number; arvPct: number; onChange: (value: number) => void; compact?: boolean
+}) {
+  const computedArv = Math.round(purchasePrice * (1 + arvPct))
+  const percentage = Math.round(arvPct * 100)
+  const displayPercent = (arvPct * 100).toFixed(0)
+
+  return (
+    <div className={compact ? 'py-2' : 'py-3'}>
+      <div className="flex items-center justify-between mb-2">
+        <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-gray-500`}>ARV</span>
+        <div className="text-right">
+          <span className={`${compact ? 'text-sm' : 'text-base'} font-bold text-gray-800`}>{formatCurrency(computedArv)}</span>
+          <span className="ml-2 text-xs font-medium text-emerald-500">+{displayPercent}%</span>
+        </div>
+      </div>
+      <div className="relative h-2">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-300 via-cyan-400 to-emerald-400" />
+        <div className="absolute top-0 right-0 h-full bg-gray-200 rounded-r-full transition-all duration-150" style={{ width: `${100 - percentage}%` }} />
+        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_16px_rgba(16,185,129,0.5)] flex items-center justify-center cursor-grab transition-transform hover:scale-110" style={{ left: `${percentage}%` }}>
+          <span className="text-[8px] font-bold text-white">{displayPercent}</span>
+        </div>
+        <input 
+          type="range" 
+          min={0} 
+          max={1} 
+          step={0.01} 
+          value={arvPct} 
+          onChange={(e) => onChange(parseFloat(e.target.value))} 
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+        />
+      </div>
+    </div>
+  )
+}
+
+function AssumptionsPanel({ assumptions, update, updateAdjustment, isExpanded, onToggle }: {
+  assumptions: Assumptions
+  update: (key: keyof Assumptions, value: number) => void
+  updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
   isExpanded: boolean; onToggle: () => void
 }) {
   return (
@@ -361,12 +495,82 @@ function AssumptionsPanel({ assumptions, update, isExpanded, onToggle }: {
       {isExpanded && (
         <div className="px-4 pb-4 border-t border-gray-100">
           <div className="grid grid-cols-2 gap-x-6">
-            <GradientSlider label="Purchase Price" value={assumptions.purchasePrice} min={100000} max={1000000} step={5000} onChange={(v) => update('purchasePrice', v)} formatType="currency" compact />
-            <GradientSlider label="Monthly Rent" value={assumptions.monthlyRent} min={500} max={8000} step={50} onChange={(v) => update('monthlyRent', v)} formatType="currency" compact />
-            <GradientSlider label="Down Payment" value={assumptions.downPaymentPct} min={0.035} max={0.30} step={0.005} onChange={(v) => update('downPaymentPct', v)} formatType="percent" compact />
-            <GradientSlider label="Interest Rate" value={assumptions.interestRate} min={0.04} max={0.12} step={0.001} onChange={(v) => update('interestRate', v)} formatType="percent" compact />
-            <GradientSlider label="ARV" value={assumptions.arv} min={100000} max={1200000} step={5000} onChange={(v) => update('arv', v)} formatType="currency" compact />
-            <GradientSlider label="Rehab Cost" value={assumptions.rehabCost} min={0} max={150000} step={1000} onChange={(v) => update('rehabCost', v)} formatType="currency" compact />
+            {/* ±50% Adjustment Sliders for Purchase Price and Monthly Rent */}
+            <AdjustmentSlider 
+              label="Purchase Price" 
+              baseValue={assumptions.basePurchasePrice} 
+              adjustment={assumptions.purchasePriceAdj} 
+              onChange={(v) => updateAdjustment('purchasePriceAdj', v)} 
+              compact 
+            />
+            <AdjustmentSlider 
+              label="Monthly Rent" 
+              baseValue={assumptions.baseMonthlyRent} 
+              adjustment={assumptions.monthlyRentAdj} 
+              onChange={(v) => updateAdjustment('monthlyRentAdj', v)} 
+              compact 
+            />
+            
+            {/* ARV: 0-100% above Purchase Price */}
+            <ArvSlider
+              purchasePrice={assumptions.purchasePrice}
+              arvPct={assumptions.arvPct}
+              onChange={(v) => update('arvPct', v)}
+              compact
+            />
+            
+            {/* Down Payment: 0-100% */}
+            <PercentSlider 
+              label="Down Payment" 
+              value={assumptions.downPaymentPct} 
+              onChange={(v) => update('downPaymentPct', v)} 
+              compact 
+            />
+            
+            {/* Interest Rate: 0-30% */}
+            <PercentSlider 
+              label="Interest Rate" 
+              value={assumptions.interestRate} 
+              onChange={(v) => update('interestRate', v)} 
+              compact 
+              maxPercent={30}
+            />
+            
+            {/* Rehab Cost: 0-50% */}
+            <PercentSlider 
+              label="Rehab Cost" 
+              value={assumptions.rehabCostPct} 
+              onChange={(v) => update('rehabCostPct', v)} 
+              compact 
+              maxPercent={50}
+            />
+            
+            {/* Vacancy Rate: 0-30% */}
+            <PercentSlider 
+              label="Vacancy Rate" 
+              value={assumptions.vacancyRate} 
+              onChange={(v) => update('vacancyRate', v)} 
+              compact 
+              maxPercent={30}
+            />
+            
+            {/* Management %: 0-30% */}
+            <PercentSlider 
+              label="Management %" 
+              value={assumptions.managementPct} 
+              onChange={(v) => update('managementPct', v)} 
+              compact 
+              maxPercent={30}
+            />
+            
+            {/* Maintenance: 0-30% */}
+            <PercentSlider 
+              label="Maintenance" 
+              value={assumptions.maintenancePct} 
+              onChange={(v) => update('maintenancePct', v)} 
+              compact 
+              maxPercent={30}
+            />
           </div>
         </div>
       )}
@@ -644,8 +848,17 @@ function PropertyPageContent() {
   const [assumptionsExpanded, setAssumptionsExpanded] = useState(true)
   
   const [assumptions, setAssumptions] = useState<Assumptions>({
-    purchasePrice: 425000, downPaymentPct: 0.20, interestRate: 0.075, loanTermYears: 30,
-    monthlyRent: 2100, arv: 465000, rehabCost: 21250, propertyTaxes: 4500, insurance: 1500,
+    // Base values from API (for ±50% adjustment sliders)
+    basePurchasePrice: 425000, baseMonthlyRent: 2100,
+    // Adjustment percentages (0 = center, no adjustment)
+    purchasePriceAdj: 0, monthlyRentAdj: 0,
+    // Computed values (will be updated when adjustments change)
+    purchasePrice: 425000, monthlyRent: 2100,
+    // ARV = Purchase Price × (1 + arvPct), starts at 0% (= Purchase Price)
+    arvPct: 0.20, arv: 510000,
+    // Standard values
+    downPaymentPct: 0.20, interestRate: 0.056, loanTermYears: 30,
+    rehabCostPct: 0.05, rehabCost: 21250, propertyTaxes: 4500, insurance: 1500,
     vacancyRate: 0.03, managementPct: 0.00, maintenancePct: 0.05, closingCostsPct: 0.03,
     averageDailyRate: 250, occupancyRate: 0.82, holdingPeriodMonths: 6, sellingCostsPct: 0.08
   })
@@ -658,45 +871,54 @@ function PropertyPageContent() {
         if (!data) throw new Error('No address provided')
         setProperty(data)
         
-        // Calculate defaults based on API data using formulas:
-        // Purchase Price = 90% of zestimate (or fallback to AVM/last sale)
+        // Calculate BASE values from API data
+        // These are the center points for the ±50% adjustment sliders
+        
+        // Base Purchase Price = 90% of zestimate
         const zestimate = data.valuations.zestimate
-        const baseValue = zestimate || data.valuations.current_value_avm || data.valuations.arv || 425000
-        const purchasePrice = zestimate ? zestimate * 0.90 : baseValue
+        const fallbackValue = data.valuations.current_value_avm || data.valuations.arv || 425000
+        const basePurchasePrice = zestimate ? zestimate * 0.90 : fallbackValue
         
-        // ARV = zestimate + (zestimate * zestimate_high_pct/100) if zestimate_high_pct is a percentage
-        // Note: zestimate_high_pct from Zillow is the percentage above zestimate
+        // ARV percentage = how much above purchase price the ARV should be
+        // Default to zestimate_high_pct from Zillow, or 20% if not available
         const zestimateHighPct = data.valuations.zestimate_high_pct
-        const arv = zestimate && zestimateHighPct 
-          ? zestimate + (zestimate * (zestimateHighPct / 100))
-          : zestimate 
-            ? zestimate * 1.10 
-            : baseValue * 1.10
+        const arvPct = zestimateHighPct 
+          ? zestimateHighPct / 100  // Convert 8 to 0.08
+          : 0.20  // Default 20% above purchase price
         
-        // Monthly Rent = average_rent from rentalData (or fallback)
-        const monthlyRent = data.rentals.average_rent || data.rentals.monthly_rent_ltr || 2100
+        // Base Monthly Rent = rentZestimate from API
+        const baseMonthlyRent = data.rentals.average_rent || data.rentals.monthly_rent_ltr || 2100
         
-        // Interest Rate = mortgage_rate_arm5 (or fallback to 7.5%)
-        // API returns rate as percentage (e.g., 6.5 for 6.5%), convert to decimal
+        // Interest Rate = mortgage_rate_arm5 (from API, as decimal)
         const mortgageRateRaw = data.market.mortgage_rate_arm5 || data.market.mortgage_rate_30yr
         const interestRate = mortgageRateRaw 
           ? (mortgageRateRaw > 1 ? mortgageRateRaw / 100 : mortgageRateRaw) 
-          : 0.075
-        
-        // Rehab Cost = 5% of Purchase Price
-        const rehabCost = purchasePrice * 0.05
+          : 0.056
         
         setAssumptions(prev => ({
           ...prev,
-          purchasePrice: Math.round(purchasePrice),
-          monthlyRent: Math.round(monthlyRent),
-          arv: Math.round(arv),
+          // Base values (center of sliders)
+          basePurchasePrice: Math.round(basePurchasePrice),
+          baseMonthlyRent: Math.round(baseMonthlyRent),
+          // Adjustments start at 0 (center)
+          purchasePriceAdj: 0,
+          monthlyRentAdj: 0,
+          // Computed values (base × (1 + 0) = base)
+          purchasePrice: Math.round(basePurchasePrice),
+          monthlyRent: Math.round(baseMonthlyRent),
+          // ARV: percentage above purchase price (0-100%)
+          arvPct,
+          arv: Math.round(basePurchasePrice * (1 + arvPct)),
+          // Interest rate from API
           interestRate,
-          rehabCost: Math.round(rehabCost),
+          // Rehab cost starts at 5% (default)
+          rehabCostPct: 0.05,
+          rehabCost: Math.round(basePurchasePrice * 0.05),
           propertyTaxes: data.market.property_taxes_annual || prev.propertyTaxes,
           averageDailyRate: data.rentals.average_daily_rate || prev.averageDailyRate,
           occupancyRate: data.rentals.occupancy_rate || prev.occupancyRate,
           // Fixed rates per user spec
+          downPaymentPct: 0.20,   // 20%
           vacancyRate: 0.03,      // 3%
           managementPct: 0.00,    // 0%
           maintenancePct: 0.05,   // 5%
@@ -710,8 +932,36 @@ function PropertyPageContent() {
     loadProperty()
   }, [addressParam, isDemo])
 
+  // Update handler for standard fields
   const update = useCallback((key: keyof Assumptions, value: number) => {
-    setAssumptions(prev => ({ ...prev, [key]: value }))
+    setAssumptions(prev => {
+      const updated = { ...prev, [key]: value }
+      // Handle derived calculations
+      if (key === 'rehabCostPct') {
+        updated.rehabCost = Math.round(prev.purchasePrice * value)
+      } else if (key === 'arvPct') {
+        // ARV = Purchase Price × (1 + arvPct)
+        updated.arv = Math.round(prev.purchasePrice * (1 + value))
+      }
+      return updated
+    })
+  }, [])
+
+  // Update handler for adjustment sliders (±50% for Purchase Price and Monthly Rent)
+  const updateAdjustment = useCallback((key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => {
+    setAssumptions(prev => {
+      const updated = { ...prev, [key]: value }
+      // Recalculate computed values based on base × (1 + adjustment)
+      if (key === 'purchasePriceAdj') {
+        updated.purchasePrice = Math.round(prev.basePurchasePrice * (1 + value))
+        // Also update rehab cost and ARV since they're based on purchase price
+        updated.rehabCost = Math.round(updated.purchasePrice * prev.rehabCostPct)
+        updated.arv = Math.round(updated.purchasePrice * (1 + prev.arvPct))
+      } else if (key === 'monthlyRentAdj') {
+        updated.monthlyRent = Math.round(prev.baseMonthlyRent * (1 + value))
+      }
+      return updated
+    })
   }, [])
 
   // Calculate all strategies
@@ -833,7 +1083,8 @@ function PropertyPageContent() {
         <div className="mb-6">
           <AssumptionsPanel 
             assumptions={assumptions} 
-            update={update} 
+            update={update}
+            updateAdjustment={updateAdjustment}
             isExpanded={assumptionsExpanded} 
             onToggle={() => setAssumptionsExpanded(!assumptionsExpanded)} 
           />
