@@ -24,7 +24,7 @@ python-multipart==0.0.6
 # Export Generation
 reportlab==4.0.8
 openpyxl==3.1.2
-pandas==2.1.4
+# pandas>=2.2.0  # Optional - only for export_to_excel.py script, not needed for API
 
 # Utilities
 python-dotenv==1.0.0
