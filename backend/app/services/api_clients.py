@@ -461,6 +461,18 @@ class DataNormalizer:
                 value = value[key]
             else:
                 return None
+        
+        # Handle special cases where the API returns yearly data as a dict
+        # e.g., propertyTaxes: {"2024": {"year": 2024, "total": 6471}, ...}
+        if field == "propertyTaxes" and isinstance(value, dict):
+            # Find the most recent year's total tax
+            years = [k for k in value.keys() if k.isdigit()]
+            if years:
+                latest_year = max(years)
+                year_data = value.get(latest_year, {})
+                return year_data.get("total") if isinstance(year_data, dict) else None
+            return None
+        
         return value
     
     def calculate_data_quality(

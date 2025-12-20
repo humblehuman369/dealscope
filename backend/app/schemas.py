@@ -28,6 +28,7 @@ class DataSource(str, Enum):
     MERGED = "merged"
     ASSUMPTION = "assumption"
     USER_OVERRIDE = "user_override"
+    MISSING = "missing"
 
 
 class Confidence(str, Enum):
