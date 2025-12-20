@@ -8,6 +8,9 @@ import { calculateBoundingBox } from '../utils/geoCalculations';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.investiq.com';
 
+// Enable mock data in development when API is unreachable
+const USE_MOCK_DATA_ON_ERROR = __DEV__;
+
 export interface ParcelData {
   apn: string;
   address: string;
@@ -32,6 +35,44 @@ export interface ParcelData {
 interface GeoJSONPolygon {
   type: 'Polygon';
   coordinates: [number, number][][];
+}
+
+/**
+ * Generate mock parcel data for development/demo purposes.
+ */
+function generateMockParcels(centerLat: number, centerLng: number): ParcelData[] {
+  const streetNames = ['Oak', 'Maple', 'Pine', 'Cedar', 'Birch', 'Elm', 'Willow'];
+  const streetTypes = ['St', 'Ave', 'Dr', 'Ln', 'Way', 'Ct'];
+  
+  const parcels: ParcelData[] = [];
+  const numParcels = 3 + Math.floor(Math.random() * 5);
+  
+  for (let i = 0; i < numParcels; i++) {
+    const offset = 0.0002 * (i + 1);
+    const streetNum = 100 + Math.floor(Math.random() * 900);
+    const streetName = streetNames[Math.floor(Math.random() * streetNames.length)];
+    const streetType = streetTypes[Math.floor(Math.random() * streetTypes.length)];
+    
+    parcels.push({
+      apn: `${Math.floor(Math.random() * 900000) + 100000}`,
+      address: `${streetNum} ${streetName} ${streetType}`,
+      city: 'Demo City',
+      state: 'FL',
+      zip: '33000',
+      lat: centerLat + offset * (Math.random() - 0.5),
+      lng: centerLng + offset * (Math.random() - 0.5),
+      propertyDetails: {
+        bedrooms: 2 + Math.floor(Math.random() * 3),
+        bathrooms: 1.5 + Math.floor(Math.random() * 2),
+        sqft: 1200 + Math.floor(Math.random() * 1500),
+        yearBuilt: 1980 + Math.floor(Math.random() * 40),
+        lotSize: 5000 + Math.floor(Math.random() * 5000),
+        propertyType: 'Single Family',
+      },
+    });
+  }
+  
+  return parcels;
 }
 
 /**
@@ -64,6 +105,12 @@ export async function queryParcelsInArea(
     return response.data.parcels || [];
   } catch (error) {
     console.error('Parcel lookup error:', error);
+    
+    // In development, return mock data when API is unreachable
+    if (USE_MOCK_DATA_ON_ERROR) {
+      console.log('Using mock parcel data for development');
+      return generateMockParcels(centerLat, centerLng);
+    }
     
     // Fallback: Try reverse geocoding if parcel lookup fails
     return await reverseGeocodeToParcel(centerLat, centerLng);
