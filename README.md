@@ -1,4 +1,4 @@
-# DealScope - Real Estate Investment Analytics Platform
+# InvestIQ - Real Estate Investment Analytics Platform
 
 <p align="center">
   <img src="https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js" />
@@ -61,7 +61,7 @@ See **[DEPLOY.md](./DEPLOY.md)** for detailed instructions.
 
 ```bash
 # Clone the repository
-cd dealscope
+cd investiq
 
 # Set environment variables
 cp backend/.env.example backend/.env
@@ -138,7 +138,7 @@ npm run dev
 ## 📁 Project Structure
 
 ```
-dealscope/
+investiq/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI application

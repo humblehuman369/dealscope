@@ -4,11 +4,11 @@ services:
   # PostgreSQL Database
   db:
     image: postgres:15-alpine
-    container_name: dealscope-db
+    container_name: investiq-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: dealscope
+      POSTGRES_DB: investiq
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -22,7 +22,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: dealscope-redis
+    container_name: investiq-redis
     ports:
       - "6379:6379"
     healthcheck:
@@ -36,9 +36,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: dealscope-backend
+    container_name: investiq-backend
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/dealscope
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/investiq
       - REDIS_URL=redis://redis:6379/0
       - RENTCAST_API_KEY=${RENTCAST_API_KEY}
       - RENTCAST_URL=https://api.rentcast.io/v1
@@ -60,7 +60,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: dealscope-frontend
+    container_name: investiq-frontend
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
     ports:

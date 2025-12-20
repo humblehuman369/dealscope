@@ -1,4 +1,4 @@
-# DealScope Deployment Guide
+# InvestIQ Deployment Guide
 
 ## 🚀 Quick Deploy (Recommended)
 
@@ -17,14 +17,14 @@ This is the fastest way to get live. Free tiers available for both.
 ### 1.2 Deploy Backend
 1. Click **"New Project"**
 2. Select **"Deploy from GitHub repo"**
-3. Connect your GitHub and select/create the dealscope repo
+3. Connect your GitHub and select/create the investiq repo
 4. Select the `backend` folder as root directory
 
 ### 1.3 Configure Environment Variables
 In Railway dashboard, go to **Variables** tab and add:
 
 ```
-APP_NAME=DealScope
+APP_NAME=InvestIQ
 APP_VERSION=1.0.0
 DEBUG=false
 
@@ -46,7 +46,7 @@ CORS_ORIGINS=["https://your-app.vercel.app","http://localhost:3000"]
 ### 1.4 Get Your Backend URL
 After deployment, Railway provides a URL like:
 ```
-https://dealscope-api-production.up.railway.app
+https://investiq-api-production.up.railway.app
 ```
 
 ---
@@ -67,7 +67,7 @@ https://dealscope-api-production.up.railway.app
 In Vercel dashboard, go to **Settings > Environment Variables**:
 
 ```
-NEXT_PUBLIC_API_URL=https://dealscope-api-production.up.railway.app
+NEXT_PUBLIC_API_URL=https://investiq-api-production.up.railway.app
 ```
 
 ### 2.4 Deploy
@@ -120,7 +120,7 @@ Your app is now live at: `https://your-app.vercel.app`
 ```bash
 # Clone and navigate
 git clone <your-repo>
-cd dealscope
+cd investiq
 
 # Create .env file
 cp backend/.env.example backend/.env
@@ -142,7 +142,7 @@ docker-compose up -d --build
 #### Backend
 ```bash
 cd backend
-fly launch --name dealscope-api
+fly launch --name investiq-api
 fly secrets set RENTCAST_API_KEY=xxx AXESSO_API_KEY=xxx SECRET_KEY=xxx
 fly deploy
 ```
@@ -150,8 +150,8 @@ fly deploy
 #### Frontend
 ```bash
 cd frontend
-fly launch --name dealscope-web
-fly secrets set NEXT_PUBLIC_API_URL=https://dealscope-api.fly.dev
+fly launch --name investiq-web
+fly secrets set NEXT_PUBLIC_API_URL=https://investiq-api.fly.dev
 fly deploy
 ```
 
@@ -258,7 +258,7 @@ Visit `https://your-api-url.railway.app/docs` for Swagger UI
 
 ### Backend (.env)
 ```env
-APP_NAME=DealScope
+APP_NAME=InvestIQ
 APP_VERSION=1.0.0
 DEBUG=false
 RENTCAST_API_KEY=your_rentcast_key

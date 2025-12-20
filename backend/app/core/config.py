@@ -12,12 +12,12 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     
     # Application
-    APP_NAME: str = "DealScope"
+    APP_NAME: str = "InvestIQ"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
     
     # Database
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/dealscope"
+    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/investiq"
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
