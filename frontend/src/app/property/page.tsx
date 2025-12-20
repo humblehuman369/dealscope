@@ -37,9 +37,24 @@ interface PropertyData {
   property_id: string
   address: { street: string; city: string; state: string; zip_code: string; full_address: string }
   details: { property_type: string | null; bedrooms: number | null; bathrooms: number | null; square_footage: number | null }
-  valuations: { current_value_avm: number | null; arv: number | null }
-  rentals: { monthly_rent_ltr: number | null; average_daily_rate: number | null; occupancy_rate: number | null }
-  market: { property_taxes_annual: number | null }
+  valuations: { 
+    current_value_avm: number | null; arv: number | null
+    // Raw Zestimate data for default calculations
+    zestimate: number | null
+    zestimate_high_pct: number | null
+    zestimate_low_pct: number | null
+  }
+  rentals: { 
+    monthly_rent_ltr: number | null; average_daily_rate: number | null; occupancy_rate: number | null
+    // Raw Zillow averageRent
+    average_rent: number | null
+  }
+  market: { 
+    property_taxes_annual: number | null
+    // Mortgage rates from Zillow
+    mortgage_rate_arm5: number | null
+    mortgage_rate_30yr: number | null
+  }
 }
 
 interface Assumptions {
@@ -630,8 +645,8 @@ function PropertyPageContent() {
   
   const [assumptions, setAssumptions] = useState<Assumptions>({
     purchasePrice: 425000, downPaymentPct: 0.20, interestRate: 0.075, loanTermYears: 30,
-    monthlyRent: 2100, arv: 465000, rehabCost: 40000, propertyTaxes: 4500, insurance: 1500,
-    vacancyRate: 0.05, managementPct: 0.10, maintenancePct: 0.10, closingCostsPct: 0.03,
+    monthlyRent: 2100, arv: 465000, rehabCost: 21250, propertyTaxes: 4500, insurance: 1500,
+    vacancyRate: 0.03, managementPct: 0.00, maintenancePct: 0.05, closingCostsPct: 0.03,
     averageDailyRate: 250, occupancyRate: 0.82, holdingPeriodMonths: 6, sellingCostsPct: 0.08
   })
 
@@ -642,14 +657,49 @@ function PropertyPageContent() {
         const data = isDemo ? await fetchDemoProperty() : addressParam ? await fetchProperty(decodeURIComponent(addressParam)) : null
         if (!data) throw new Error('No address provided')
         setProperty(data)
+        
+        // Calculate defaults based on API data using formulas:
+        // Purchase Price = 90% of zestimate (or fallback to AVM/last sale)
+        const zestimate = data.valuations.zestimate
+        const baseValue = zestimate || data.valuations.current_value_avm || data.valuations.arv || 425000
+        const purchasePrice = zestimate ? zestimate * 0.90 : baseValue
+        
+        // ARV = zestimate + (zestimate * zestimate_high_pct/100) if zestimate_high_pct is a percentage
+        // Note: zestimate_high_pct from Zillow is the percentage above zestimate
+        const zestimateHighPct = data.valuations.zestimate_high_pct
+        const arv = zestimate && zestimateHighPct 
+          ? zestimate + (zestimate * (zestimateHighPct / 100))
+          : zestimate 
+            ? zestimate * 1.10 
+            : baseValue * 1.10
+        
+        // Monthly Rent = average_rent from rentalData (or fallback)
+        const monthlyRent = data.rentals.average_rent || data.rentals.monthly_rent_ltr || 2100
+        
+        // Interest Rate = mortgage_rate_arm5 (or fallback to 7.5%)
+        // API returns rate as percentage (e.g., 6.5 for 6.5%), convert to decimal
+        const mortgageRateRaw = data.market.mortgage_rate_arm5 || data.market.mortgage_rate_30yr
+        const interestRate = mortgageRateRaw 
+          ? (mortgageRateRaw > 1 ? mortgageRateRaw / 100 : mortgageRateRaw) 
+          : 0.075
+        
+        // Rehab Cost = 5% of Purchase Price
+        const rehabCost = purchasePrice * 0.05
+        
         setAssumptions(prev => ({
           ...prev,
-          purchasePrice: data.valuations.current_value_avm || prev.purchasePrice,
-          monthlyRent: data.rentals.monthly_rent_ltr || prev.monthlyRent,
-          arv: data.valuations.arv || (data.valuations.current_value_avm ? data.valuations.current_value_avm * 1.1 : prev.arv),
+          purchasePrice: Math.round(purchasePrice),
+          monthlyRent: Math.round(monthlyRent),
+          arv: Math.round(arv),
+          interestRate,
+          rehabCost: Math.round(rehabCost),
           propertyTaxes: data.market.property_taxes_annual || prev.propertyTaxes,
           averageDailyRate: data.rentals.average_daily_rate || prev.averageDailyRate,
           occupancyRate: data.rentals.occupancy_rate || prev.occupancyRate,
+          // Fixed rates per user spec
+          vacancyRate: 0.03,      // 3%
+          managementPct: 0.00,    // 0%
+          maintenancePct: 0.05,   // 5%
         }))
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load property')
