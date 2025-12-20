@@ -5,7 +5,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.investiq.com';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://app.investiq.guru';
 
 // Enable mock data in development when API is unreachable
 const USE_MOCK_DATA_ON_ERROR = __DEV__;
