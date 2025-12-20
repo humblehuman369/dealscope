@@ -109,6 +109,10 @@ class ValuationData(BaseModel):
     last_sale_date: Optional[str] = None
     arv: Optional[float] = None
     arv_flip: Optional[float] = None
+    # Raw Zestimate data for frontend calculations
+    zestimate: Optional[float] = None
+    zestimate_high_pct: Optional[float] = None
+    zestimate_low_pct: Optional[float] = None
 
 
 class RentalData(BaseModel):
@@ -120,6 +124,8 @@ class RentalData(BaseModel):
     average_daily_rate: Optional[float] = None
     occupancy_rate: Optional[float] = None
     rent_per_sqft: Optional[float] = None
+    # Raw Zillow rental data
+    average_rent: Optional[float] = None
 
 
 class MarketData(BaseModel):
@@ -128,6 +134,9 @@ class MarketData(BaseModel):
     market_strength: Optional[str] = None
     property_taxes_annual: Optional[float] = None
     hoa_fees_monthly: Optional[float] = None
+    # Mortgage rate data for frontend calculations
+    mortgage_rate_arm5: Optional[float] = None
+    mortgage_rate_30yr: Optional[float] = None
 
 
 class DataQuality(BaseModel):

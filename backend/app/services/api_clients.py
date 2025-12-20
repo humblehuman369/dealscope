@@ -345,7 +345,10 @@ class DataNormalizer:
         "lot_size": ("lotSize", "lotAreaValue", "rentcast"),
         "year_built": ("yearBuilt", "yearBuilt", "rentcast"),
         
-        # Valuations
+        # Valuations - Zillow (AXESSO) primary for Zestimate data
+        "zestimate": (None, "zestimate", "axesso"),
+        "zestimate_high_pct": (None, "zestimateHighPercent", "axesso"),
+        "zestimate_low_pct": (None, "zestimateLowPercent", "axesso"),
         "current_value_avm": ("price", "zestimate", "rentcast"),
         "value_range_low": ("priceRangeLow", "zestimateLowPercent", "rentcast"),
         "value_range_high": ("priceRangeHigh", "zestimateHighPercent", "rentcast"),
@@ -353,10 +356,15 @@ class DataNormalizer:
         "last_sale_date": ("lastSaleDate", "lastSoldDate", "rentcast"),
         "tax_assessed_value": ("taxAssessedValue", "taxAssessedValue", "rentcast"),
         
-        # Rental Data
+        # Rental Data - Zillow averageRent from rentalData
         "monthly_rent_ltr": ("rent", "rentZestimate", "rentcast"),
+        "average_rent": (None, "rentalData.averageRent", "axesso"),
         "rent_range_low": ("rentRangeLow", None, "rentcast"),
         "rent_range_high": ("rentRangeHigh", None, "rentcast"),
+        
+        # Mortgage Rates - Zillow mortgage data
+        "mortgage_rate_arm5": (None, "mortgageZHLRates.arm5Bucket.rate", "axesso"),
+        "mortgage_rate_30yr": (None, "mortgageZHLRates.thirtyYearFixedBucket.rate", "axesso"),
         
         # STR Data (AXESSO primary for STR)
         "average_daily_rate": (None, "averageDailyRate", "axesso"),

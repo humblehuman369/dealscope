@@ -119,18 +119,27 @@ class PropertyService:
                 last_sale_date=normalized.get("last_sale_date"),
                 tax_assessed_value=normalized.get("tax_assessed_value"),
                 arv=self._estimate_arv(normalized),
-                arv_flip=self._estimate_arv_flip(normalized)
+                arv_flip=self._estimate_arv_flip(normalized),
+                # Raw Zestimate data for frontend default calculations
+                zestimate=normalized.get("zestimate"),
+                zestimate_high_pct=normalized.get("zestimate_high_pct"),
+                zestimate_low_pct=normalized.get("zestimate_low_pct")
             ),
             rentals=RentalData(
                 monthly_rent_ltr=normalized.get("monthly_rent_ltr"),
                 rent_range_low=normalized.get("rent_range_low"),
                 rent_range_high=normalized.get("rent_range_high"),
                 average_daily_rate=normalized.get("average_daily_rate") or self._estimate_adr(normalized),
-                occupancy_rate=normalized.get("occupancy_rate") or 0.75
+                occupancy_rate=normalized.get("occupancy_rate") or 0.75,
+                # Raw Zillow averageRent for frontend
+                average_rent=normalized.get("average_rent")
             ),
             market=MarketData(
                 property_taxes_annual=normalized.get("property_taxes_annual") or self._estimate_taxes(normalized),
-                hoa_fees_monthly=normalized.get("hoa_fees_monthly", 0)
+                hoa_fees_monthly=normalized.get("hoa_fees_monthly", 0),
+                # Mortgage rates for frontend
+                mortgage_rate_arm5=normalized.get("mortgage_rate_arm5"),
+                mortgage_rate_30yr=normalized.get("mortgage_rate_30yr")
             ),
             provenance=ProvenanceMap(fields=provenance),
             data_quality=DataQuality(**data_quality),
