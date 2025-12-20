@@ -49,7 +49,7 @@ export default function HomePage() {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 via-cyan-500 to-emerald-500 flex items-center justify-center">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
-              <span className="text-lg font-bold text-gray-800">DealScope</span>
+              <span className="text-lg font-bold text-gray-800">InvestIQ</span>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -243,7 +243,7 @@ export default function HomePage() {
             <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 via-cyan-500 to-emerald-500 flex items-center justify-center">
               <Sparkles className="w-3 h-3 text-white" />
             </div>
-            <span className="text-sm font-medium text-gray-600">DealScope</span>
+            <span className="text-sm font-medium text-gray-600">InvestIQ</span>
           </div>
           <p className="text-sm text-gray-400">Real estate investment analytics</p>
         </div>

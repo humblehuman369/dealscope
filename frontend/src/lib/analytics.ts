@@ -1,5 +1,5 @@
 /**
- * DealScope - Deal Scoring & Sensitivity Analysis
+ * InvestIQ - Deal Scoring & Sensitivity Analysis
  */
 
 // ============================================
