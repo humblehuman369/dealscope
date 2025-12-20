@@ -182,33 +182,28 @@ function SummaryCard({
   trend?: 'up' | 'down'
 }) {
   return (
-    <div className={`p-5 rounded-2xl ${
+    <div className={`p-3 rounded-xl ${
       highlight 
-        ? 'bg-gradient-to-br from-emerald-50 to-green-100 border-2 border-emerald-200' 
+        ? 'bg-gradient-to-br from-emerald-50 to-green-100 border border-emerald-200' 
         : 'bg-white border border-gray-100'
     }`}>
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-sm text-gray-500 mb-1">{label}</div>
-          <div className={`text-2xl font-bold ${highlight ? 'text-emerald-700' : 'text-gray-900'}`}>
+          <div className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5">{label}</div>
+          <div className={`text-lg font-bold ${highlight ? 'text-emerald-700' : 'text-gray-900'}`}>
             {value}
           </div>
           {subValue && (
-            <div className="text-sm text-gray-400 mt-1">{subValue}</div>
+            <div className="text-xs text-gray-400 mt-0.5">{subValue}</div>
           )}
-        </div>
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-          highlight ? 'bg-emerald-200' : 'bg-gray-100'
-        }`}>
-          <Icon className={`w-5 h-5 ${highlight ? 'text-emerald-600' : 'text-gray-500'}`} />
         </div>
       </div>
       {trend && (
-        <div className={`flex items-center gap-1 mt-2 text-sm ${
+        <div className={`flex items-center gap-1 mt-1 text-xs ${
           trend === 'up' ? 'text-emerald-600' : 'text-red-500'
         }`}>
-          <ArrowUpRight className={`w-4 h-4 ${trend === 'down' ? 'rotate-180' : ''}`} />
-          <span>{trend === 'up' ? 'Positive growth' : 'Declining'}</span>
+          <ArrowUpRight className={`w-3 h-3 ${trend === 'down' ? 'rotate-180' : ''}`} />
+          <span>{trend === 'up' ? 'Positive' : 'Declining'}</span>
         </div>
       )}
     </div>
@@ -222,34 +217,34 @@ function SummaryCard({
 function ProjectionTable({ data }: { data: YearlyProjection[] }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-xs">
         <thead>
           <tr className="border-b border-gray-200">
-            <th className="text-left py-3 px-2 font-semibold text-gray-600">Year</th>
-            <th className="text-right py-3 px-2 font-semibold text-gray-600">Property Value</th>
-            <th className="text-right py-3 px-2 font-semibold text-gray-600">Loan Balance</th>
-            <th className="text-right py-3 px-2 font-semibold text-gray-600">Total Equity</th>
-            <th className="text-right py-3 px-2 font-semibold text-gray-600">Cash Flow</th>
-            <th className="text-right py-3 px-2 font-semibold text-gray-600">Cumulative CF</th>
-            <th className="text-right py-3 px-2 font-semibold text-gray-600">Total Wealth</th>
-            <th className="text-right py-3 px-2 font-semibold text-gray-600">CoC Return</th>
+            <th className="text-left py-2 px-1.5 font-medium text-gray-500">Year</th>
+            <th className="text-right py-2 px-1.5 font-medium text-gray-500">Property Value</th>
+            <th className="text-right py-2 px-1.5 font-medium text-gray-500">Loan Balance</th>
+            <th className="text-right py-2 px-1.5 font-medium text-gray-500">Total Equity</th>
+            <th className="text-right py-2 px-1.5 font-medium text-gray-500">Cash Flow</th>
+            <th className="text-right py-2 px-1.5 font-medium text-gray-500">Cumulative CF</th>
+            <th className="text-right py-2 px-1.5 font-medium text-gray-500">Total Wealth</th>
+            <th className="text-right py-2 px-1.5 font-medium text-gray-500">CoC Return</th>
           </tr>
         </thead>
         <tbody>
           {data.map((row) => (
             <tr key={row.year} className="border-b border-gray-100 hover:bg-gray-50">
-              <td className="py-3 px-2 font-medium">Year {row.year}</td>
-              <td className="py-3 px-2 text-right">{formatCompact(row.propertyValue)}</td>
-              <td className="py-3 px-2 text-right text-gray-500">{formatCompact(row.loanBalance)}</td>
-              <td className="py-3 px-2 text-right text-blue-600 font-medium">{formatCompact(row.totalEquity)}</td>
-              <td className={`py-3 px-2 text-right font-medium ${row.cashFlow >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              <td className="py-2 px-1.5 font-medium">Y{row.year}</td>
+              <td className="py-2 px-1.5 text-right">{formatCompact(row.propertyValue)}</td>
+              <td className="py-2 px-1.5 text-right text-gray-500">{formatCompact(row.loanBalance)}</td>
+              <td className="py-2 px-1.5 text-right text-blue-600 font-medium">{formatCompact(row.totalEquity)}</td>
+              <td className={`py-2 px-1.5 text-right font-medium ${row.cashFlow >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                 {formatCompact(row.cashFlow)}
               </td>
-              <td className={`py-3 px-2 text-right ${row.cumulativeCashFlow >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              <td className={`py-2 px-1.5 text-right ${row.cumulativeCashFlow >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                 {formatCompact(row.cumulativeCashFlow)}
               </td>
-              <td className="py-3 px-2 text-right font-bold text-purple-600">{formatCompact(row.totalWealth)}</td>
-              <td className="py-3 px-2 text-right">{formatPercent(row.cashOnCash)}</td>
+              <td className="py-2 px-1.5 text-right font-semibold text-purple-600">{formatCompact(row.totalWealth)}</td>
+              <td className="py-2 px-1.5 text-right">{formatPercent(row.cashOnCash)}</td>
             </tr>
           ))}
         </tbody>
@@ -281,20 +276,15 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
   const year10 = projections[9]
   
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
-          <TrendingUp className="w-8 h-8 text-white" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-black text-gray-900">10-Year Wealth Projection</h2>
-          <p className="text-gray-500">See how this investment builds wealth over time</p>
-        </div>
+      <div>
+        <h2 className="text-lg font-semibold text-gray-800">10-Year Wealth Projection</h2>
+        <p className="text-sm text-gray-500">See how this investment builds wealth over time</p>
       </div>
 
       {/* Key Metrics Summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <SummaryCard
           label="Total Wealth (Year 10)"
           value={formatCompact(year10.totalWealth)}
@@ -326,53 +316,53 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
       </div>
 
       {/* Wealth Growth Chart */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6">
-        <h3 className="font-bold text-gray-900 mb-4">Wealth Accumulation</h3>
-        <StackedAreaChart data={projections} height={220} />
+      <div className="bg-white rounded-xl border border-gray-100 p-4">
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Wealth Accumulation</h3>
+        <StackedAreaChart data={projections} height={160} />
         
-        <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-gray-100">
+        <div className="grid grid-cols-3 gap-3 mt-4 pt-3 border-t border-gray-100">
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">{formatCompact(year10.cumulativeCashFlow)}</div>
-            <div className="text-sm text-gray-500">Cash Flow</div>
+            <div className="text-lg font-bold text-purple-600">{formatCompact(year10.cumulativeCashFlow)}</div>
+            <div className="text-xs text-gray-500">Cash Flow</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{formatCompact(year10.equityFromPaydown)}</div>
-            <div className="text-sm text-gray-500">Principal Paydown</div>
+            <div className="text-lg font-bold text-blue-600">{formatCompact(year10.equityFromPaydown)}</div>
+            <div className="text-xs text-gray-500">Principal Paydown</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-emerald-600">{formatCompact(year10.equityFromAppreciation)}</div>
-            <div className="text-sm text-gray-500">Appreciation</div>
+            <div className="text-lg font-bold text-emerald-600">{formatCompact(year10.equityFromAppreciation)}</div>
+            <div className="text-xs text-gray-500">Appreciation</div>
           </div>
         </div>
       </div>
 
       {/* Annual Cash Flow Chart */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <h3 className="font-bold text-gray-900 mb-4">Annual Cash Flow</h3>
+      <div className="grid md:grid-cols-2 gap-3">
+        <div className="bg-white rounded-xl border border-gray-100 p-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Annual Cash Flow</h3>
           <MiniBarChart 
             data={projections.map(p => p.cashFlow)} 
             color="green"
-            height={150}
+            height={100}
           />
-          <div className="mt-4 text-center">
-            <span className="text-sm text-gray-500">Avg: </span>
-            <span className="font-bold text-emerald-600">
+          <div className="mt-3 text-center">
+            <span className="text-xs text-gray-500">Avg: </span>
+            <span className="text-sm font-semibold text-emerald-600">
               {formatCurrency(summary.totalCashFlow / 10)}/year
             </span>
           </div>
         </div>
         
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <h3 className="font-bold text-gray-900 mb-4">Equity Growth</h3>
+        <div className="bg-white rounded-xl border border-gray-100 p-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Equity Growth</h3>
           <MiniBarChart 
             data={projections.map(p => p.totalEquity)} 
             color="blue"
-            height={150}
+            height={100}
           />
-          <div className="mt-4 text-center">
-            <span className="text-sm text-gray-500">Year 10: </span>
-            <span className="font-bold text-blue-600">
+          <div className="mt-3 text-center">
+            <span className="text-xs text-gray-500">Year 10: </span>
+            <span className="text-sm font-semibold text-blue-600">
               {formatCompact(year10.totalEquity)}
             </span>
           </div>
@@ -380,62 +370,59 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
       </div>
 
       {/* Growth Assumptions */}
-      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-100">
-        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-indigo-500" />
-          Growth Assumptions
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-100">
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Growth Assumptions</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div>
-            <div className="text-sm text-gray-500">Annual Appreciation</div>
-            <div className="text-lg font-bold text-indigo-600">{formatPercent(assumptions.annualAppreciation)}</div>
+            <div className="text-xs text-gray-500">Annual Appreciation</div>
+            <div className="text-sm font-semibold text-indigo-600">{formatPercent(assumptions.annualAppreciation)}</div>
           </div>
           <div>
-            <div className="text-sm text-gray-500">Rent Growth</div>
-            <div className="text-lg font-bold text-indigo-600">{formatPercent(assumptions.annualRentGrowth)}</div>
+            <div className="text-xs text-gray-500">Rent Growth</div>
+            <div className="text-sm font-semibold text-indigo-600">{formatPercent(assumptions.annualRentGrowth)}</div>
           </div>
           <div>
-            <div className="text-sm text-gray-500">Property Tax Growth</div>
-            <div className="text-lg font-bold text-gray-600">{formatPercent(assumptions.propertyTaxGrowth)}</div>
+            <div className="text-xs text-gray-500">Property Tax Growth</div>
+            <div className="text-sm font-semibold text-gray-600">{formatPercent(assumptions.propertyTaxGrowth)}</div>
           </div>
           <div>
-            <div className="text-sm text-gray-500">Insurance Growth</div>
-            <div className="text-lg font-bold text-gray-600">{formatPercent(assumptions.insuranceGrowth)}</div>
+            <div className="text-xs text-gray-500">Insurance Growth</div>
+            <div className="text-sm font-semibold text-gray-600">{formatPercent(assumptions.insuranceGrowth)}</div>
           </div>
         </div>
       </div>
 
       {/* Year-by-Year Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6">
-        <h3 className="font-bold text-gray-900 mb-4">Year-by-Year Breakdown</h3>
+      <div className="bg-white rounded-xl border border-gray-100 p-4">
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Year-by-Year Breakdown</h3>
         <ProjectionTable data={projections} />
       </div>
 
       {/* Investment Summary */}
-      <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-4 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold mb-1">10-Year Investment Summary</h3>
-            <p className="text-emerald-100">Starting with {formatCurrency(totalCashInvested)} investment</p>
+            <h3 className="text-sm font-semibold">10-Year Investment Summary</h3>
+            <p className="text-emerald-100 text-xs">Starting with {formatCurrency(totalCashInvested)} investment</p>
           </div>
           <div className="text-right">
-            <div className="text-4xl font-black">{summary.equityMultiple.toFixed(1)}x</div>
-            <div className="text-emerald-100">Equity Multiple</div>
+            <div className="text-2xl font-bold">{summary.equityMultiple.toFixed(1)}x</div>
+            <div className="text-emerald-100 text-xs">Equity Multiple</div>
           </div>
         </div>
         
-        <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-emerald-400/30">
+        <div className="grid grid-cols-3 gap-3 mt-4 pt-3 border-t border-emerald-400/30">
           <div>
-            <div className="text-emerald-100 text-sm">Cash Invested</div>
-            <div className="text-xl font-bold">{formatCompact(totalCashInvested)}</div>
+            <div className="text-emerald-100 text-[10px] uppercase tracking-wide">Cash Invested</div>
+            <div className="text-base font-semibold">{formatCompact(totalCashInvested)}</div>
           </div>
           <div>
-            <div className="text-emerald-100 text-sm">Total Returns</div>
-            <div className="text-xl font-bold">{formatCompact(year10.totalWealth)}</div>
+            <div className="text-emerald-100 text-[10px] uppercase tracking-wide">Total Returns</div>
+            <div className="text-base font-semibold">{formatCompact(year10.totalWealth)}</div>
           </div>
           <div>
-            <div className="text-emerald-100 text-sm">Net Gain</div>
-            <div className="text-xl font-bold">+{formatCompact(year10.totalWealth - totalCashInvested)}</div>
+            <div className="text-emerald-100 text-[10px] uppercase tracking-wide">Net Gain</div>
+            <div className="text-base font-semibold">+{formatCompact(year10.totalWealth - totalCashInvested)}</div>
           </div>
         </div>
       </div>

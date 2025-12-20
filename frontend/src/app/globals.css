@@ -2,9 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Modern system font stack - clean, thin, sophisticated */
+html {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+}
+
 body {
-  background-color: #f9fafb;
-  color: #111827;
+  background-color: #f8f9fa;
+  color: #1a1a1a;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 .btn-primary {

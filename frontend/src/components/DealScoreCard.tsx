@@ -66,8 +66,8 @@ function ScoreRing({ score, grade, size = 180 }: { score: number; grade: string;
       
       {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className={`text-5xl font-black ${colors.text}`}>{score}</div>
-        <div className={`text-2xl font-bold bg-gradient-to-r ${colors.bg} bg-clip-text text-transparent`}>
+        <div className={`text-3xl font-bold ${colors.text}`}>{score}</div>
+        <div className={`text-lg font-semibold bg-gradient-to-r ${colors.bg} bg-clip-text text-transparent`}>
           {grade}
         </div>
       </div>
@@ -149,36 +149,31 @@ export default function DealScoreCard({ metrics, compact = false }: DealScoreCar
   }
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-          <Award className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">Deal Score</h2>
-          <p className="text-sm text-gray-500">Comprehensive deal analysis</p>
-        </div>
+      <div>
+        <h2 className="text-lg font-semibold text-gray-800">Deal Score</h2>
+        <p className="text-sm text-gray-500">Comprehensive deal analysis</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-4">
         {/* Score Ring */}
         <div className="flex flex-col items-center">
-          <ScoreRing score={score.overall} grade={score.grade} size={200} />
+          <ScoreRing score={score.overall} grade={score.grade} size={140} />
           
-          <div className={`mt-4 px-6 py-3 rounded-xl text-center ${
+          <div className={`mt-3 px-4 py-2 rounded-lg text-center ${
             score.overall >= 70 ? 'bg-emerald-50 border border-emerald-200' :
             score.overall >= 50 ? 'bg-blue-50 border border-blue-200' :
             score.overall >= 30 ? 'bg-amber-50 border border-amber-200' :
             'bg-red-50 border border-red-200'
           }`}>
-            <div className="font-bold text-gray-900">{score.verdict}</div>
+            <div className="text-sm font-medium text-gray-900">{score.verdict}</div>
           </div>
         </div>
 
         {/* Score Breakdown */}
-        <div className="space-y-4">
-          <h3 className="font-semibold text-gray-900">Score Breakdown</h3>
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-gray-700 mb-2">Score Breakdown</h3>
           
           <ScoreBar label="Cash Flow" score={score.cashFlow} maxScore={20} icon={DollarSign} />
           <ScoreBar label="Cash-on-Cash" score={score.cashOnCash} maxScore={20} icon={Percent} />
