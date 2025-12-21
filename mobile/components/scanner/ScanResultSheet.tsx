@@ -72,10 +72,13 @@ export function ScanResultSheet({
 
   const { property, analytics, confidence, scanTime } = result;
 
+  // Use property details from analytics (API data) which has full property info
+  const propertyDetails = analytics.property || property;
+
   // Get top 3 strategies sorted by primary value
   const strategies = Object.entries(analytics.strategies)
     .map(([key, value]) => ({ key, ...value }))
-    .sort((a, b) => b.primaryValue - a.primaryValue)
+    .sort((a, b) => Math.abs(b.primaryValue) - Math.abs(a.primaryValue))
     .slice(0, 3);
 
   return (
@@ -96,11 +99,11 @@ export function ScanResultSheet({
         <View style={styles.header}>
           <View style={styles.addressContainer}>
             <Text style={styles.address} numberOfLines={1}>
-              {property.address}
+              {propertyDetails.address || property.address}
             </Text>
             <Text style={styles.propertyDetails}>
-              {property.bedrooms || '?'} bed · {property.bathrooms || '?'} bath
-              {property.sqft && ` · ${property.sqft.toLocaleString()} sqft`}
+              {propertyDetails.bedrooms || '?'} bed · {propertyDetails.bathrooms || '?'} bath
+              {propertyDetails.sqft ? ` · ${propertyDetails.sqft.toLocaleString()} sqft` : ''}
             </Text>
           </View>
           
@@ -202,6 +205,17 @@ function StrategyCard({
   isProfit,
   isTop = false,
 }: StrategyCardProps) {
+  // Determine if secondary value is a percentage or dollar amount based on label
+  const isSecondaryPercent = secondaryLabel.toLowerCase().includes('roi') ||
+                              secondaryLabel.toLowerCase().includes('%') ||
+                              secondaryLabel.toLowerCase().includes('rate') ||
+                              secondaryLabel.toLowerCase().includes('return');
+  
+  // Format the secondary value appropriately
+  const formattedSecondary = isSecondaryPercent 
+    ? formatPercent(secondaryValue / 100) // API returns percentage as whole number (e.g., 12.5 for 12.5%)
+    : formatCurrency(secondaryValue);
+
   return (
     <View style={[styles.strategyCard, isTop && styles.strategyCardTop]}>
       <View style={styles.strategyHeader}>
@@ -231,7 +245,7 @@ function StrategyCard({
             styles.metricValue,
             secondaryValue > 0 ? styles.profitText : styles.lossText
           ]}>
-            {formatPercent(secondaryValue)}
+            {formattedSecondary}
           </Text>
           <Text style={styles.metricLabel}>{secondaryLabel}</Text>
         </View>
