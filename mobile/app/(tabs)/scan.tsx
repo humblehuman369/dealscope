@@ -142,11 +142,20 @@ export default function ScanScreen() {
           <View style={styles.buttonRow}>
             {/* Demo Scan Button (for indoor testing) */}
             <TouchableOpacity
-              style={styles.demoButton}
-              onPress={() => {
-                // Navigate to demo property
-                router.push('/property/demo-fl-12345');
+              style={[styles.demoButton, isScanning && styles.demoButtonDisabled]}
+              onPress={async () => {
+                // Haptic feedback
+                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                
+                // Demo scan at a real Florida property (953 Banyan Dr, Delray Beach, FL)
+                // This tests the full flow: Google Maps → Backend API → Analytics
+                await performScan(50, { 
+                  lat: 26.4530,  // Delray Beach, FL
+                  lng: -80.0729, 
+                  heading: 0 
+                });
               }}
+              disabled={isScanning}
               activeOpacity={0.8}
             >
               <Ionicons name="flask-outline" size={20} color="#fff" />
@@ -327,6 +336,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
+  },
+  demoButtonDisabled: {
+    opacity: 0.5,
   },
   demoButtonText: {
     fontWeight: '600',
