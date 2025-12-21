@@ -88,6 +88,13 @@ export async function queryParcelsInArea(
   centerLng: number,
   radiusMeters: number = 100
 ): Promise<ParcelData[]> {
+  // In development mode, skip API and use mock data directly
+  // (Parcel API endpoint is not implemented yet)
+  if (USE_MOCK_DATA_ON_ERROR) {
+    console.log('Using mock parcel data for development');
+    return generateMockParcels(centerLat, centerLng);
+  }
+
   const bbox = calculateBoundingBox(centerLat, centerLng, radiusMeters);
 
   try {
@@ -105,12 +112,6 @@ export async function queryParcelsInArea(
     return response.data.parcels || [];
   } catch (error) {
     console.error('Parcel lookup error:', error);
-    
-    // In development, return mock data when API is unreachable
-    if (USE_MOCK_DATA_ON_ERROR) {
-      console.log('Using mock parcel data for development');
-      return generateMockParcels(centerLat, centerLng);
-    }
     
     // Fallback: Try reverse geocoding if parcel lookup fails
     return await reverseGeocodeToParcel(centerLat, centerLng);
