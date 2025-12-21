@@ -1,5 +1,5 @@
 {
-  "venvPath": ".",
+  "venvPath": "/Users/bradgeisen/IQ-Data/dealscope/backend",
   "venv": "venv",
-  "pythonVersion": "3.11"
+  "pythonVersion": "3.12"
 }
