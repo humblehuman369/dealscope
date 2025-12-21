@@ -19,5 +19,6 @@ COPY . .
 # Expose port (Railway will override with $PORT)
 EXPOSE 8000
 
-# Use exec to ensure proper signal handling from Railway
-CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
+# TEMPORARY: Use minimal test app to debug Railway
+# CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
+CMD ["sh", "-c", "exec uvicorn test_minimal:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
