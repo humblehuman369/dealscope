@@ -2,12 +2,14 @@
 InvestIQ - Real Estate Investment Analytics API
 Main FastAPI application entry point.
 """
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from typing import Optional, List
 from datetime import datetime
 import logging
+import os
 
 from app.core.config import settings
 from app.schemas import (
@@ -24,13 +26,31 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Create FastAPI app
+
+# Lifespan context manager (replaces deprecated on_event)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize services on startup and cleanup on shutdown."""
+    # Startup
+    logger.info("Starting InvestIQ API...")
+    logger.info(f"Environment PORT: {os.environ.get('PORT', 'not set')}")
+    logger.info(f"RentCast API configured: {'Yes' if settings.RENTCAST_API_KEY else 'No'}")
+    logger.info(f"AXESSO API configured: {'Yes' if settings.AXESSO_API_KEY else 'No'}")
+    
+    yield  # Application runs here
+    
+    # Shutdown
+    logger.info("Shutting down InvestIQ API...")
+
+
+# Create FastAPI app with lifespan
 app = FastAPI(
     title="InvestIQ API",
     description="Real Estate Investment Analytics Platform - Analyze properties across 6 investment strategies",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # CORS middleware
@@ -504,23 +524,10 @@ async def get_strategy_comparison(property_id: str):
 
 
 # ============================================
-# STARTUP / SHUTDOWN
+# LOCAL DEVELOPMENT
 # ============================================
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize services on startup."""
-    logger.info("Starting InvestIQ API...")
-    logger.info(f"RentCast API configured: {'Yes' if settings.RENTCAST_API_KEY else 'No'}")
-    logger.info(f"AXESSO API configured: {'Yes' if settings.AXESSO_API_KEY else 'No'}")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown."""
-    logger.info("Shutting down InvestIQ API...")
-
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
