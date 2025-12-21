@@ -174,13 +174,29 @@ export async function fetchPropertyAnalytics(
   address: string
 ): Promise<InvestmentAnalytics> {
   try {
-    const response = await axios.post(
-      `${API_BASE_URL}/api/analyze`,
+    // Step 1: Search for the property
+    const searchResponse = await axios.post(
+      `${API_BASE_URL}/api/v1/properties/search`,
       { address },
       { timeout: 30000 }
     );
 
-    return response.data;
+    const propertyData = searchResponse.data;
+    
+    // Step 2: Calculate analytics
+    const analyticsResponse = await axios.post(
+      `${API_BASE_URL}/api/v1/analytics/calculate`,
+      { 
+        property_id: propertyData.property_id,
+        assumptions: {}
+      },
+      { timeout: 30000 }
+    );
+
+    const analytics = analyticsResponse.data;
+    
+    // Transform backend response to mobile app format
+    return transformBackendResponse(propertyData, analytics);
   } catch (error) {
     console.error('Analytics fetch error:', error);
     
@@ -197,6 +213,102 @@ export async function fetchPropertyAnalytics(
     
     throw new Error('Unable to analyze property. Please try again.');
   }
+}
+
+/**
+ * Transform backend API response to mobile app format.
+ */
+function transformBackendResponse(property: any, analytics: any): InvestmentAnalytics {
+  return {
+    property: {
+      address: property.address?.street || '',
+      city: property.address?.city || '',
+      state: property.address?.state || '',
+      zip: property.address?.zip_code || '',
+      bedrooms: property.details?.bedrooms || 0,
+      bathrooms: property.details?.bathrooms || 0,
+      sqft: property.details?.square_footage || 0,
+      yearBuilt: property.details?.year_built || 0,
+      lotSize: property.details?.lot_size || 0,
+      propertyType: property.details?.property_type || 'Single Family',
+    },
+    pricing: {
+      listPrice: property.valuations?.current_value_avm || 0,
+      estimatedValue: property.valuations?.current_value_avm || 0,
+      pricePerSqft: property.details?.square_footage 
+        ? Math.floor((property.valuations?.current_value_avm || 0) / property.details.square_footage)
+        : 0,
+      rentEstimate: property.rentals?.monthly_rent_ltr || 0,
+      strEstimate: property.rentals?.average_daily_rate || 0,
+    },
+    strategies: {
+      longTermRental: {
+        name: 'Long-Term Rental',
+        primaryValue: analytics.ltr?.annual_cash_flow || 0,
+        primaryLabel: 'Annual Cash Flow',
+        secondaryValue: analytics.ltr?.monthly_cash_flow || 0,
+        secondaryLabel: 'Monthly Cash Flow',
+        isProfit: (analytics.ltr?.annual_cash_flow || 0) > 0,
+      },
+      shortTermRental: {
+        name: 'Short-Term Rental',
+        primaryValue: analytics.str?.annual_cash_flow || 0,
+        primaryLabel: 'Annual Cash Flow',
+        secondaryValue: analytics.str?.monthly_cash_flow || 0,
+        secondaryLabel: 'Monthly Cash Flow',
+        isProfit: (analytics.str?.annual_cash_flow || 0) > 0,
+      },
+      brrrr: {
+        name: 'BRRRR',
+        primaryValue: analytics.brrrr?.equity_position || 0,
+        primaryLabel: 'Equity Position',
+        secondaryValue: analytics.brrrr?.cash_left_in_deal || 0,
+        secondaryLabel: 'Cash Left in Deal',
+        isProfit: analytics.brrrr?.infinite_roi_achieved || false,
+      },
+      fixAndFlip: {
+        name: 'Fix & Flip',
+        primaryValue: analytics.flip?.net_profit_before_tax || 0,
+        primaryLabel: 'Net Profit',
+        secondaryValue: (analytics.flip?.roi || 0) * 100,
+        secondaryLabel: 'ROI %',
+        isProfit: (analytics.flip?.net_profit_before_tax || 0) > 0,
+      },
+      houseHack: {
+        name: 'House Hacking',
+        primaryValue: analytics.house_hack?.savings_vs_renting_a || 0,
+        primaryLabel: 'Monthly Savings',
+        secondaryValue: analytics.house_hack?.net_housing_cost_scenario_a || 0,
+        secondaryLabel: 'Net Housing Cost',
+        isProfit: (analytics.house_hack?.savings_vs_renting_a || 0) > 0,
+      },
+      wholesale: {
+        name: 'Wholesale',
+        primaryValue: analytics.wholesale?.net_profit || 0,
+        primaryLabel: 'Net Profit',
+        secondaryValue: (analytics.wholesale?.roi || 0) * 100,
+        secondaryLabel: 'ROI %',
+        isProfit: (analytics.wholesale?.net_profit || 0) > 0,
+      },
+    },
+    metrics: {
+      capRate: analytics.ltr?.cap_rate || 0,
+      cashOnCash: analytics.ltr?.cash_on_cash_return || 0,
+      grossRentMultiplier: analytics.ltr?.grm || 0,
+      dscr: analytics.ltr?.dscr || 0,
+      breakeven: analytics.str?.break_even_occupancy || 0,
+    },
+    assumptions: {
+      downPayment: 0.20,
+      interestRate: 0.075,
+      loanTerm: 30,
+      vacancyRate: 0.05,
+      managementFee: 0.08,
+      maintenance: 0.05,
+      rehabCost: 25000,
+      arv: property.valuations?.arv || 0,
+    },
+  };
 }
 
 /**
