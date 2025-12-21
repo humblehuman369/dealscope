@@ -166,10 +166,19 @@ export default function ScanScreen() {
           {/* Status Info */}
           <View style={styles.statusRow}>
             <Text style={styles.statusText}>
-              Heading: {Math.round(scanner.heading)}° {getCardinalDirection(scanner.heading)}
+              {scanner.heading}° {getCardinalDirection(scanner.heading)}
             </Text>
             <Text style={styles.statusText}>
-              GPS: ±{Math.round(scanner.accuracy)}m
+              ±{Math.round(scanner.accuracy)}m
+            </Text>
+          </View>
+          
+          {/* Debug GPS Info */}
+          <View style={styles.statusRow}>
+            <Text style={[styles.statusText, { fontSize: 10, opacity: 0.7 }]}>
+              {scanner.userLat !== 0 
+                ? `📍 ${scanner.userLat.toFixed(5)}, ${scanner.userLng.toFixed(5)}`
+                : '⏳ Waiting for GPS...'}
             </Text>
           </View>
 
