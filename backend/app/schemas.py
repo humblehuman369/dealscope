@@ -86,7 +86,7 @@ class Address(BaseModel):
 
 class PropertyDetails(BaseModel):
     """Core property details from API data."""
-    property_type: Optional[PropertyType] = None
+    property_type: Optional[str] = None  # Changed from PropertyType enum for API flexibility
     bedrooms: Optional[int] = None
     bathrooms: Optional[float] = None
     square_footage: Optional[int] = None
