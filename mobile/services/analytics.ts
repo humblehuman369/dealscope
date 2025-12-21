@@ -173,6 +173,13 @@ function generateMockAnalytics(address: string): InvestmentAnalytics {
 export async function fetchPropertyAnalytics(
   address: string
 ): Promise<InvestmentAnalytics> {
+  // In development mode with mock parcel data, use mock analytics too
+  // This ensures consistent mock data flow for testing
+  if (USE_MOCK_DATA_ON_ERROR && address.includes('Demo City')) {
+    console.log('Using mock analytics data for development (mock address detected)');
+    return generateMockAnalytics(address);
+  }
+
   try {
     // Step 1: Search for the property
     const searchResponse = await axios.post(
