@@ -94,7 +94,21 @@ async function fetchProperty(address: string): Promise<PropertyData> {
 
 async function fetchDemoProperty(): Promise<PropertyData> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-  const response = await fetch(`${apiUrl}/api/v1/properties/demo/sample`)
+  
+  // Try external API first, then fall back to local API route
+  try {
+    if (apiUrl) {
+      const response = await fetch(`${apiUrl}/api/v1/properties/demo/sample`, {
+        signal: AbortSignal.timeout(5000) // 5 second timeout
+      })
+      if (response.ok) return response.json()
+    }
+  } catch (e) {
+    console.log('External API unavailable, using local fallback')
+  }
+  
+  // Fallback to local Next.js API route
+  const response = await fetch('/api/v1/properties/demo/sample')
   if (!response.ok) throw new Error('Failed to load demo')
   return response.json()
 }
