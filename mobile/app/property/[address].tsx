@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import {
   View,
@@ -6,20 +7,34 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 
-import { fetchPropertyAnalytics, formatCurrency, formatPercent } from '../../services/analytics';
+import { fetchPropertyAnalytics, formatCurrency, formatPercent, InvestmentAnalytics } from '../../services/analytics';
 import { colors } from '../../theme/colors';
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function PropertyDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { address } = useLocalSearchParams<{ address: string }>();
+  const [expandedStrategy, setExpandedStrategy] = useState<string | null>(null);
   
   const decodedAddress = decodeURIComponent(address || '');
+
+  const toggleStrategy = (key: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedStrategy(expandedStrategy === key ? null : key);
+  };
 
   const { data: analytics, isLoading, error } = useQuery({
     queryKey: ['property', decodedAddress],
@@ -139,8 +154,14 @@ export default function PropertyDetailScreen() {
         </Text>
         {strategies.map(({ key, name, icon }) => {
           const strategy = analytics.strategies[key];
+          const isExpanded = expandedStrategy === key;
           return (
-            <View key={key} style={styles.strategyCard}>
+            <TouchableOpacity 
+              key={key} 
+              style={[styles.strategyCard, isExpanded && styles.strategyCardExpanded]}
+              onPress={() => toggleStrategy(key)}
+              activeOpacity={0.7}
+            >
               <View style={styles.strategyHeader}>
                 <Ionicons name={icon as any} size={20} color={colors.primary[600]} />
                 <Text style={styles.strategyName}>{name}</Text>
@@ -155,6 +176,11 @@ export default function PropertyDetailScreen() {
                     {strategy.isProfit ? 'Profitable' : 'Loss'}
                   </Text>
                 </View>
+                <Ionicons 
+                  name={isExpanded ? 'chevron-up' : 'chevron-down'} 
+                  size={18} 
+                  color={colors.gray[400]} 
+                />
               </View>
               <View style={styles.strategyMetrics}>
                 <View style={styles.strategyMetric}>
@@ -173,7 +199,15 @@ export default function PropertyDetailScreen() {
                   </Text>
                 </View>
               </View>
-            </View>
+              
+              {/* Expanded Details */}
+              {isExpanded && (
+                <StrategyDetails 
+                  strategyKey={key} 
+                  analytics={analytics}
+                />
+              )}
+            </TouchableOpacity>
           );
         })}
 
@@ -222,6 +256,144 @@ function MetricItem({ label, value, isGood }: { label: string; value: string; is
       </Text>
     </View>
   );
+}
+
+interface StrategyDetailsProps {
+  strategyKey: string;
+  analytics: InvestmentAnalytics;
+}
+
+function StrategyDetails({ strategyKey, analytics }: StrategyDetailsProps) {
+  const { assumptions, pricing, metrics } = analytics;
+  
+  // Strategy-specific details
+  const getStrategyBreakdown = () => {
+    const purchasePrice = pricing.listPrice;
+    const downPaymentAmount = purchasePrice * assumptions.downPayment;
+    const loanAmount = purchasePrice - downPaymentAmount;
+    const monthlyMortgage = calculateMonthlyPayment(loanAmount, assumptions.interestRate, assumptions.loanTerm);
+    
+    switch (strategyKey) {
+      case 'longTermRental':
+        const ltrRent = pricing.rentEstimate;
+        const ltrExpenses = ltrRent * (assumptions.vacancyRate + assumptions.managementFee + assumptions.maintenance);
+        const ltrNOI = (ltrRent * 12) - (ltrExpenses * 12);
+        return [
+          { label: 'Monthly Rent', value: formatCurrency(ltrRent) },
+          { label: 'Monthly Mortgage', value: formatCurrency(monthlyMortgage) },
+          { label: 'Monthly Expenses', value: formatCurrency(ltrExpenses) },
+          { label: 'Annual NOI', value: formatCurrency(ltrNOI) },
+          { label: 'Cap Rate', value: formatPercent(metrics.capRate) },
+          { label: 'Cash-on-Cash', value: formatPercent(metrics.cashOnCash) },
+          { label: 'DSCR', value: metrics.dscr.toFixed(2) },
+        ];
+        
+      case 'shortTermRental':
+        const strNightly = pricing.strEstimate;
+        const occupancy = 1 - assumptions.vacancyRate;
+        const strAnnual = strNightly * 365 * occupancy;
+        return [
+          { label: 'Avg Nightly Rate', value: formatCurrency(strNightly) },
+          { label: 'Est. Occupancy', value: formatPercent(occupancy) },
+          { label: 'Annual Revenue', value: formatCurrency(strAnnual) },
+          { label: 'Monthly Mortgage', value: formatCurrency(monthlyMortgage) },
+          { label: 'Management Fee', value: formatPercent(assumptions.managementFee) },
+          { label: 'Break-even Occupancy', value: formatPercent(metrics.breakeven) },
+        ];
+        
+      case 'brrrr':
+        const arv = assumptions.arv || purchasePrice * 1.25;
+        const equity = arv - purchasePrice - assumptions.rehabCost;
+        return [
+          { label: 'Purchase Price', value: formatCurrency(purchasePrice) },
+          { label: 'Rehab Cost', value: formatCurrency(assumptions.rehabCost) },
+          { label: 'After Repair Value', value: formatCurrency(arv) },
+          { label: 'Total Investment', value: formatCurrency(purchasePrice + assumptions.rehabCost) },
+          { label: 'Equity Created', value: formatCurrency(equity) },
+          { label: '75% LTV Refinance', value: formatCurrency(arv * 0.75) },
+        ];
+        
+      case 'fixAndFlip':
+        const flipArv = assumptions.arv || purchasePrice * 1.25;
+        const flipProfit = flipArv - purchasePrice - assumptions.rehabCost - (flipArv * 0.08);
+        return [
+          { label: 'Purchase Price', value: formatCurrency(purchasePrice) },
+          { label: 'Rehab Budget', value: formatCurrency(assumptions.rehabCost) },
+          { label: 'After Repair Value', value: formatCurrency(flipArv) },
+          { label: 'Holding Costs (Est.)', value: formatCurrency(purchasePrice * 0.02) },
+          { label: 'Selling Costs (8%)', value: formatCurrency(flipArv * 0.08) },
+          { label: 'Est. Net Profit', value: formatCurrency(flipProfit) },
+        ];
+        
+      case 'houseHack':
+        const rentableUnits = Math.max(1, (analytics.property.bedrooms || 3) - 1);
+        const roomRent = pricing.rentEstimate * 0.35;
+        const hackedIncome = roomRent * rentableUnits;
+        return [
+          { label: 'Est. Room Rent', value: formatCurrency(roomRent) },
+          { label: 'Rentable Rooms', value: String(rentableUnits) },
+          { label: 'Monthly Income', value: formatCurrency(hackedIncome) },
+          { label: 'Your Mortgage', value: formatCurrency(monthlyMortgage) },
+          { label: 'Net Housing Cost', value: formatCurrency(monthlyMortgage - hackedIncome) },
+          { label: 'vs. Renting Alone', value: formatCurrency(pricing.rentEstimate) },
+        ];
+        
+      case 'wholesale':
+        const mao = purchasePrice * 0.7 - assumptions.rehabCost;
+        const assignmentFee = purchasePrice * 0.08;
+        return [
+          { label: 'ARV (Est.)', value: formatCurrency(assumptions.arv || purchasePrice * 1.25) },
+          { label: '70% Rule MAO', value: formatCurrency(mao) },
+          { label: 'Rehab Estimate', value: formatCurrency(assumptions.rehabCost) },
+          { label: 'Assignment Fee', value: formatCurrency(assignmentFee) },
+          { label: 'Marketing Cost', value: formatCurrency(500) },
+          { label: 'Net Profit', value: formatCurrency(assignmentFee - 500) },
+        ];
+        
+      default:
+        return [];
+    }
+  };
+  
+  const breakdown = getStrategyBreakdown();
+  
+  return (
+    <View style={styles.expandedDetails}>
+      <View style={styles.divider} />
+      <Text style={styles.breakdownTitle}>Strategy Breakdown</Text>
+      {breakdown.map((item, index) => (
+        <View key={index} style={styles.breakdownRow}>
+          <Text style={styles.breakdownLabel}>{item.label}</Text>
+          <Text style={styles.breakdownValue}>{item.value}</Text>
+        </View>
+      ))}
+      
+      {/* Assumptions */}
+      <View style={styles.assumptionsSection}>
+        <Text style={styles.assumptionsTitle}>Assumptions Used</Text>
+        <View style={styles.assumptionsRow}>
+          <Text style={styles.assumptionItem}>
+            Down: {formatPercent(assumptions.downPayment)}
+          </Text>
+          <Text style={styles.assumptionItem}>
+            Rate: {formatPercent(assumptions.interestRate)}
+          </Text>
+          <Text style={styles.assumptionItem}>
+            Term: {assumptions.loanTerm}yr
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// Helper function to calculate monthly mortgage payment
+function calculateMonthlyPayment(principal: number, annualRate: number, years: number): number {
+  const monthlyRate = annualRate / 12;
+  const numPayments = years * 12;
+  if (monthlyRate === 0) return principal / numPayments;
+  return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+         (Math.pow(1 + monthlyRate, numPayments) - 1);
 }
 
 const styles = StyleSheet.create({
@@ -381,6 +553,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
+  strategyCardExpanded: {
+    borderWidth: 2,
+    borderColor: colors.primary[200],
+    backgroundColor: colors.primary[50],
+  },
   strategyHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -455,6 +632,60 @@ const styles = StyleSheet.create({
     width: 1,
     height: 40,
     backgroundColor: colors.gray[200],
+  },
+  expandedDetails: {
+    marginTop: 16,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.gray[200],
+    marginBottom: 16,
+  },
+  breakdownTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.gray[700],
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+  breakdownLabel: {
+    fontSize: 14,
+    color: colors.gray[600],
+  },
+  breakdownValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.gray[900],
+  },
+  assumptionsSection: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: colors.gray[100],
+    borderRadius: 8,
+  },
+  assumptionsTitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.gray[500],
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  assumptionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  assumptionItem: {
+    fontSize: 12,
+    color: colors.gray[600],
   },
 });
 
