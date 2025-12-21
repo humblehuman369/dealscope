@@ -7,8 +7,8 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
 
-// Enable mock data in development when API is unreachable
-const USE_MOCK_DATA_ON_ERROR = __DEV__;
+// Disable mock data - use real API
+const USE_MOCK_DATA_ON_ERROR = false;
 
 export interface StrategyResult {
   name: string;

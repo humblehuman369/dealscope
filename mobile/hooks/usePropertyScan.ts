@@ -63,16 +63,24 @@ export function usePropertyScan() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const performScan = useCallback(async (estimatedDistance: number = 50) => {
-    // Validate scanner is ready
-    if (!scanner.isLocationReady) {
-      setError('GPS not ready. Please wait for location lock.');
-      return;
-    }
+  const performScan = useCallback(async (
+    estimatedDistance: number = 50, 
+    overrideLocation?: { lat: number; lng: number; heading?: number }
+  ) => {
+    // If override location provided (for demo/testing), skip GPS check
+    const useOverride = overrideLocation && overrideLocation.lat !== 0;
+    
+    if (!useOverride) {
+      // Validate scanner is ready for real scans
+      if (!scanner.isLocationReady) {
+        setError('GPS not ready. Please wait for location lock.');
+        return;
+      }
 
-    if (scanner.userLat === 0 || scanner.userLng === 0) {
-      setError('Unable to determine your location');
-      return;
+      if (scanner.userLat === 0 || scanner.userLng === 0) {
+        setError('Unable to determine your location');
+        return;
+      }
     }
 
     setIsScanning(true);
@@ -82,19 +90,30 @@ export function usePropertyScan() {
     const startTime = Date.now();
 
     try {
+      // Use override or real scanner values
+      const userLat = useOverride ? overrideLocation!.lat : scanner.userLat;
+      const userLng = useOverride ? overrideLocation!.lng : scanner.userLng;
+      const heading = useOverride && overrideLocation!.heading !== undefined 
+        ? overrideLocation!.heading 
+        : scanner.heading;
+
+      console.log(`Scanning from: ${userLat}, ${userLng} heading ${heading}°`);
+
       // Step 1: Calculate target point based on heading and distance
       const targetPoint = calculateTargetPoint(
-        scanner.userLat,
-        scanner.userLng,
-        scanner.heading,
+        userLat,
+        userLng,
+        heading,
         estimatedDistance
       );
 
+      console.log(`Target point: ${targetPoint.lat}, ${targetPoint.lng}`);
+
       // Step 2: Generate scan cone for property matching
       const scanPoints = generateScanCone(
-        scanner.userLat,
-        scanner.userLng,
-        scanner.heading,
+        userLat,
+        userLng,
+        heading,
         Math.max(10, estimatedDistance - 20),
         estimatedDistance + 30,
         25 // 25° cone angle for better accuracy
@@ -148,7 +167,16 @@ export function usePropertyScan() {
       }
 
       // Step 5: Fetch investment analytics for the matched property
-      const analytics = await fetchPropertyAnalytics(matchedParcel.address);
+      // Build full address string for API
+      const fullAddress = [
+        matchedParcel.address,
+        matchedParcel.city,
+        matchedParcel.state,
+        matchedParcel.zip
+      ].filter(Boolean).join(', ');
+      
+      console.log('Fetching analytics for:', fullAddress);
+      const analytics = await fetchPropertyAnalytics(fullAddress);
 
       // Step 6: Build result
       const scanResult: ScanResult = {

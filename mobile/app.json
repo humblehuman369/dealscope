@@ -27,7 +27,7 @@
         "NSMotionUsageDescription": "InvestIQ uses the compass to determine which direction you're facing when scanning properties."
       },
       "config": {
-        "googleMapsApiKey": "YOUR_IOS_GOOGLE_MAPS_API_KEY"
+        "googleMapsApiKey": "AIzaSyCKp7Tt4l2zu2h2EV6PXPz7xbZLoPrtziw"
       }
     },
     "android": {
@@ -44,7 +44,7 @@
       ],
       "config": {
         "googleMaps": {
-          "apiKey": "YOUR_ANDROID_GOOGLE_MAPS_API_KEY"
+          "apiKey": "AIzaSyCKp7Tt4l2zu2h2EV6PXPz7xbZLoPrtziw"
         }
       }
     },

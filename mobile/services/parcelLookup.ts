@@ -1,15 +1,16 @@
 /**
  * Parcel lookup service for property identification.
- * Queries parcel boundaries and property data from various sources.
+ * Uses Google Maps Reverse Geocoding to convert GPS coordinates to addresses.
  */
 
 import axios from 'axios';
 import { calculateBoundingBox } from '../utils/geoCalculations';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
+const GOOGLE_MAPS_API_KEY = 'AIzaSyCKp7Tt4l2zu2h2EV6PXPz7xbZLoPrtziw';
 
 // Enable mock data in development when API is unreachable
-const USE_MOCK_DATA_ON_ERROR = __DEV__;
+const USE_MOCK_DATA_ON_ERROR = false; // Disable mock data - use real Google Maps API
 
 export interface ParcelData {
   apn: string;
@@ -76,7 +77,7 @@ function generateMockParcels(centerLat: number, centerLng: number): ParcelData[]
 }
 
 /**
- * Query parcels within a specified area.
+ * Query parcels within a specified area using Google Maps Reverse Geocoding.
  * 
  * @param centerLat - Center latitude
  * @param centerLng - Center longitude
@@ -88,34 +89,79 @@ export async function queryParcelsInArea(
   centerLng: number,
   radiusMeters: number = 100
 ): Promise<ParcelData[]> {
-  // In development mode, skip API and use mock data directly
-  // (Parcel API endpoint is not implemented yet)
-  if (USE_MOCK_DATA_ON_ERROR) {
-    console.log('Using mock parcel data for development');
-    return generateMockParcels(centerLat, centerLng);
-  }
-
-  const bbox = calculateBoundingBox(centerLat, centerLng, radiusMeters);
-
   try {
-    const response = await axios.get(`${API_BASE_URL}/api/parcels/search`, {
-      params: {
-        minLat: bbox.minLat,
-        maxLat: bbox.maxLat,
-        minLng: bbox.minLng,
-        maxLng: bbox.maxLng,
-        limit: 50,
-      },
-      timeout: 10000,
-    });
-
-    return response.data.parcels || [];
-  } catch (error) {
-    console.error('Parcel lookup error:', error);
+    // Use Google Maps Reverse Geocoding to get the address at these coordinates
+    const parcels = await googleReverseGeocode(centerLat, centerLng);
     
-    // Fallback: Try reverse geocoding if parcel lookup fails
-    return await reverseGeocodeToParcel(centerLat, centerLng);
+    if (parcels.length > 0) {
+      console.log('Google Maps found address:', parcels[0].address);
+      return parcels;
+    }
+    
+    // If no results, return empty
+    console.log('No address found at coordinates');
+    return [];
+  } catch (error) {
+    console.error('Google Maps geocoding error:', error);
+    
+    // Fallback to mock data if Google Maps fails
+    if (USE_MOCK_DATA_ON_ERROR) {
+      console.log('Using mock parcel data as fallback');
+      return generateMockParcels(centerLat, centerLng);
+    }
+    
+    return [];
   }
+}
+
+/**
+ * Use Google Maps Reverse Geocoding API to convert coordinates to address.
+ */
+async function googleReverseGeocode(lat: number, lng: number): Promise<ParcelData[]> {
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_MAPS_API_KEY}`;
+  
+  const response = await axios.get(url, { timeout: 10000 });
+  
+  if (response.data.status !== 'OK' || !response.data.results?.length) {
+    console.log('Google Maps response status:', response.data.status);
+    return [];
+  }
+  
+  // Get the most specific result (usually a street address)
+  const results = response.data.results;
+  const parcels: ParcelData[] = [];
+  
+  // Find the street address result
+  const streetAddress = results.find((r: any) => 
+    r.types.includes('street_address') || 
+    r.types.includes('premise') ||
+    r.types.includes('subpremise')
+  ) || results[0];
+  
+  if (streetAddress) {
+    // Parse address components
+    const components = streetAddress.address_components;
+    const getComponent = (type: string) => 
+      components.find((c: any) => c.types.includes(type))?.long_name || '';
+    
+    const streetNumber = getComponent('street_number');
+    const route = getComponent('route');
+    const city = getComponent('locality') || getComponent('sublocality');
+    const state = getComponent('administrative_area_level_1');
+    const zip = getComponent('postal_code');
+    
+    parcels.push({
+      apn: '',
+      address: streetNumber ? `${streetNumber} ${route}` : route,
+      city,
+      state,
+      zip,
+      lat: streetAddress.geometry.location.lat,
+      lng: streetAddress.geometry.location.lng,
+    });
+  }
+  
+  return parcels;
 }
 
 /**
