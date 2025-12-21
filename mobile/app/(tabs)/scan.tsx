@@ -138,30 +138,64 @@ export default function ScanScreen() {
             />
           </View>
 
-          {/* Scan Button */}
-          <Animated.View style={{ transform: [{ scale: scanAnimation }] }}>
+          {/* Scan Buttons */}
+          <View style={styles.buttonRow}>
+            {/* Demo Scan Button (for indoor testing) */}
             <TouchableOpacity
-              style={[
-                styles.scanButton,
-                isScanning && styles.scanButtonScanning,
-              ]}
-              onPress={handleScan}
-              disabled={isScanning}
+              style={styles.demoButton}
+              onPress={() => {
+                // Navigate to demo property
+                router.push('/property/demo-fl-12345');
+              }}
               activeOpacity={0.8}
             >
-              {isScanning ? (
-                <View style={styles.scanningIndicator}>
-                  <Ionicons name="scan" size={32} color="#fff" />
-                  <Text style={styles.scanButtonText}>Scanning...</Text>
-                </View>
-              ) : (
-                <>
-                  <Ionicons name="scan-outline" size={32} color="#fff" />
-                  <Text style={styles.scanButtonText}>SCAN NOW</Text>
-                </>
-              )}
+              <Ionicons name="flask-outline" size={20} color="#fff" />
+              <Text style={styles.demoButtonText}>DEMO</Text>
             </TouchableOpacity>
-          </Animated.View>
+
+            {/* Main Scan Button */}
+            <Animated.View style={{ transform: [{ scale: scanAnimation }] }}>
+              <TouchableOpacity
+                style={[
+                  styles.scanButton,
+                  isScanning && styles.scanButtonScanning,
+                  !scanner.isLocationReady && styles.scanButtonDisabled,
+                ]}
+                onPress={handleScan}
+                disabled={isScanning || !scanner.isLocationReady}
+                activeOpacity={0.8}
+              >
+                {isScanning ? (
+                  <View style={styles.scanningIndicator}>
+                    <Ionicons name="scan" size={32} color="#fff" />
+                    <Text style={styles.scanButtonText}>Scanning...</Text>
+                  </View>
+                ) : !scanner.isLocationReady ? (
+                  <>
+                    <Ionicons name="location-outline" size={32} color="#fff" />
+                    <Text style={styles.scanButtonText}>GPS...</Text>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons name="scan-outline" size={32} color="#fff" />
+                    <Text style={styles.scanButtonText}>SCAN</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </Animated.View>
+
+            {/* Search Button */}
+            <TouchableOpacity
+              style={styles.demoButton}
+              onPress={() => {
+                router.push('/');
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="search-outline" size={20} color="#fff" />
+              <Text style={styles.demoButtonText}>SEARCH</Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Status Info */}
           <View style={styles.statusRow}>
@@ -279,6 +313,27 @@ const styles = StyleSheet.create({
   distanceContainer: {
     marginBottom: 20,
   },
+  buttonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+  },
+  demoButton: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  demoButtonText: {
+    fontWeight: '600',
+    fontSize: 10,
+    color: '#fff',
+    letterSpacing: 0.5,
+  },
   scanButton: {
     backgroundColor: colors.primary[600],
     paddingVertical: 16,
@@ -288,7 +343,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
-    alignSelf: 'center',
     shadowColor: colors.primary[600],
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
@@ -297,6 +351,10 @@ const styles = StyleSheet.create({
   },
   scanButtonScanning: {
     backgroundColor: colors.primary[700],
+  },
+  scanButtonDisabled: {
+    backgroundColor: colors.gray[600],
+    shadowOpacity: 0,
   },
   scanningIndicator: {
     flexDirection: 'row',
