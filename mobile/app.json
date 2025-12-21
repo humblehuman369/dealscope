@@ -84,7 +84,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "your-eas-project-id"
+        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
       }
     }
   }
