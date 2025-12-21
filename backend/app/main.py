@@ -10,21 +10,47 @@ from typing import Optional, List
 from datetime import datetime
 import logging
 import os
+import sys
 
-from app.core.config import settings
-from app.schemas import (
-    PropertySearchRequest, PropertyResponse, AnalyticsRequest, 
-    AnalyticsResponse, AllAssumptions, StrategyType,
-    SensitivityRequest, SensitivityResponse
-)
-from app.services.property_service import property_service
-
-# Configure logging
+# Configure logging FIRST - output to stdout for Railway
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout  # Force stdout instead of stderr
 )
 logger = logging.getLogger(__name__)
+
+# Log startup immediately
+logger.info("=" * 50)
+logger.info("INVESTIQ API LOADING...")
+logger.info(f"Python version: {sys.version}")
+logger.info(f"PORT env: {os.environ.get('PORT', 'not set')}")
+logger.info("=" * 50)
+
+try:
+    from app.core.config import settings
+    logger.info("Config loaded successfully")
+except Exception as e:
+    logger.error(f"Failed to load config: {e}")
+    raise
+
+try:
+    from app.schemas import (
+        PropertySearchRequest, PropertyResponse, AnalyticsRequest, 
+        AnalyticsResponse, AllAssumptions, StrategyType,
+        SensitivityRequest, SensitivityResponse
+    )
+    logger.info("Schemas loaded successfully")
+except Exception as e:
+    logger.error(f"Failed to load schemas: {e}")
+    raise
+
+try:
+    from app.services.property_service import property_service
+    logger.info("Property service loaded successfully")
+except Exception as e:
+    logger.error(f"Failed to load property service: {e}")
+    raise
 
 
 # Lifespan context manager (replaces deprecated on_event)
@@ -32,10 +58,10 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Initialize services on startup and cleanup on shutdown."""
     # Startup
-    logger.info("Starting InvestIQ API...")
-    logger.info(f"Environment PORT: {os.environ.get('PORT', 'not set')}")
+    logger.info("Starting InvestIQ API lifespan...")
     logger.info(f"RentCast API configured: {'Yes' if settings.RENTCAST_API_KEY else 'No'}")
     logger.info(f"AXESSO API configured: {'Yes' if settings.AXESSO_API_KEY else 'No'}")
+    logger.info("Lifespan startup complete - yielding to app")
     
     yield  # Application runs here
     
