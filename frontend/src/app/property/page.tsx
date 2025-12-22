@@ -1181,51 +1181,30 @@ function PropertyPageContent() {
           />
         </div>
 
-        {/* Drill-Down Panel */}
-        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
-          {/* Rehab Estimator Banner - Subtle with gradient accent lines */}
-          <button
-            onClick={() => setDrillDownView('rehab')}
-            className="w-full group"
-          >
-            {/* Top gradient line */}
-            <div className="h-0.5 bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400" />
-            
-            <div className={`px-4 py-3 flex items-center justify-between transition-all ${
-              drillDownView === 'rehab' 
-                ? 'bg-gray-50' 
-                : 'bg-white hover:bg-gray-50/50'
-            }`}>
-              <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-                  drillDownView === 'rehab' 
-                    ? 'bg-gradient-to-br from-rose-100 to-emerald-100' 
-                    : 'bg-gray-100 group-hover:bg-gradient-to-br group-hover:from-rose-50 group-hover:to-emerald-50'
-                }`}>
-                  <Wrench className={`w-4 h-4 transition-colors ${
-                    drillDownView === 'rehab' ? 'text-gray-700' : 'text-gray-500 group-hover:text-gray-600'
-                  }`} strokeWidth={1.5} />
-                </div>
-                <div className="text-left">
-                  <h3 className={`font-semibold text-sm transition-colors ${
-                    drillDownView === 'rehab' ? 'text-gray-800' : 'text-gray-700'
-                  }`}>Rehab Estimator</h3>
-                  <p className="text-gray-400 text-xs">Build your renovation budget item by item</p>
-                </div>
+        {/* Rehab Estimator Banner - Links to dedicated page */}
+        <a
+          href={`/rehab?address=${encodeURIComponent(property.address.full_address)}&budget=${assumptions.rehabCost}`}
+          className="block bg-white rounded-lg border border-gray-100 overflow-hidden group mb-4"
+        >
+          {/* Top gradient line */}
+          <div className="h-0.5 bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400" />
+          
+          <div className="px-4 py-3 flex items-center justify-between transition-all hover:bg-gray-50/50">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors bg-gray-100 group-hover:bg-gradient-to-br group-hover:from-rose-50 group-hover:to-emerald-50">
+                <Wrench className="w-4 h-4 transition-colors text-gray-500 group-hover:text-gray-600" strokeWidth={1.5} />
               </div>
-              <div className="flex items-center gap-2">
-                {drillDownView === 'rehab' ? (
-                  <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Active</span>
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all" />
-                )}
+              <div className="text-left">
+                <h3 className="font-semibold text-sm transition-colors text-gray-700">Rehab Estimator</h3>
+                <p className="text-gray-400 text-xs">Build your renovation budget item by item</p>
               </div>
             </div>
-            
-            {/* Bottom gradient line */}
-            <div className="h-0.5 bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400" />
-          </button>
+            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all" />
+          </div>
+        </a>
 
+        {/* Drill-Down Panel */}
+        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
           {/* Drill-Down Tabs */}
           <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
             <DrillDownTabs activeView={drillDownView} onViewChange={setDrillDownView} />
@@ -1244,7 +1223,6 @@ function PropertyPageContent() {
             {drillDownView === 'projections' && <ProjectionsView assumptions={projectionAssumptions} />}
             {drillDownView === 'score' && <DealScoreCard metrics={{ monthlyCashFlow: ltrCalc.monthlyCashFlow, cashOnCash: ltrCalc.cashOnCash, capRate: ltrCalc.capRate, onePercentRule: ltrCalc.onePercentRule, dscr: ltrCalc.dscr, purchasePrice: assumptions.purchasePrice, arv: assumptions.arv, totalCashRequired: ltrCalc.totalCashRequired, monthlyRent: assumptions.monthlyRent }} />}
             {drillDownView === 'sensitivity' && <SensitivityAnalysisView assumptions={{ purchasePrice: assumptions.purchasePrice, downPaymentPct: assumptions.downPaymentPct, interestRate: assumptions.interestRate, loanTermYears: assumptions.loanTermYears, monthlyRent: assumptions.monthlyRent, propertyTaxes: assumptions.propertyTaxes, insurance: assumptions.insurance, vacancyRate: assumptions.vacancyRate, managementPct: assumptions.managementPct, maintenancePct: assumptions.maintenancePct }} />}
-            {drillDownView === 'rehab' && <RehabEstimator initialBudget={assumptions.rehabCost} />}
             {drillDownView === 'compare' && <ScenarioComparison currentAssumptions={projectionAssumptions} propertyAddress={property.address.full_address} />}
           </div>
         </div>
