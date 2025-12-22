@@ -1183,33 +1183,47 @@ function PropertyPageContent() {
 
         {/* Drill-Down Panel */}
         <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
-          {/* Rehab Estimator Banner */}
+          {/* Rehab Estimator Banner - Subtle with gradient accent lines */}
           <button
             onClick={() => setDrillDownView('rehab')}
             className="w-full group"
           >
+            {/* Top gradient line */}
+            <div className="h-0.5 bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400" />
+            
             <div className={`px-4 py-3 flex items-center justify-between transition-all ${
               drillDownView === 'rehab' 
-                ? 'bg-gradient-to-r from-orange-500 to-amber-500' 
-                : 'bg-gradient-to-r from-orange-500/90 to-amber-500/90 hover:from-orange-500 hover:to-amber-500'
+                ? 'bg-gray-50' 
+                : 'bg-white hover:bg-gray-50/50'
             }`}>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                  <Wrench className="w-5 h-5 text-white" strokeWidth={1.5} />
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+                  drillDownView === 'rehab' 
+                    ? 'bg-gradient-to-br from-rose-100 to-emerald-100' 
+                    : 'bg-gray-100 group-hover:bg-gradient-to-br group-hover:from-rose-50 group-hover:to-emerald-50'
+                }`}>
+                  <Wrench className={`w-4 h-4 transition-colors ${
+                    drillDownView === 'rehab' ? 'text-gray-700' : 'text-gray-500 group-hover:text-gray-600'
+                  }`} strokeWidth={1.5} />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-white font-semibold text-sm">Rehab Estimator</h3>
-                  <p className="text-white/80 text-xs">Build your renovation budget item by item</p>
+                  <h3 className={`font-semibold text-sm transition-colors ${
+                    drillDownView === 'rehab' ? 'text-gray-800' : 'text-gray-700'
+                  }`}>Rehab Estimator</h3>
+                  <p className="text-gray-400 text-xs">Build your renovation budget item by item</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {drillDownView === 'rehab' ? (
-                  <span className="text-white/90 text-xs font-medium">Active</span>
+                  <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Active</span>
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-0.5 transition-transform" />
+                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all" />
                 )}
               </div>
             </div>
+            
+            {/* Bottom gradient line */}
+            <div className="h-0.5 bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400" />
           </button>
 
           {/* Drill-Down Tabs */}
