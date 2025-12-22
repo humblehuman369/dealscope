@@ -116,9 +116,13 @@ export async function queryParcelsInArea(
 
 /**
  * Use Google Maps Reverse Geocoding API to convert coordinates to address.
+ * Coordinates are passed with 6 decimal precision for ~0.11m accuracy.
  */
 async function googleReverseGeocode(lat: number, lng: number): Promise<ParcelData[]> {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_MAPS_API_KEY}`;
+  // Ensure 6 decimal precision in API call (Google Maps supports up to 8)
+  const latStr = lat.toFixed(6);
+  const lngStr = lng.toFixed(6);
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latStr},${lngStr}&key=${GOOGLE_MAPS_API_KEY}`;
   
   const response = await axios.get(url, { timeout: 10000 });
   

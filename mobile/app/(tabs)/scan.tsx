@@ -149,9 +149,10 @@ export default function ScanScreen() {
                 
                 // Demo scan at a real Florida property (953 Banyan Dr, Delray Beach, FL)
                 // This tests the full flow: Google Maps → Backend API → Analytics
+                // Using 6 decimal places for ~0.11m accuracy
                 await performScan(50, { 
-                  lat: 26.4530,  // Delray Beach, FL
-                  lng: -80.0729, 
+                  lat: 26.452998,  // Delray Beach, FL - 6 decimal precision
+                  lng: -80.072891, // 6 decimal places = ~0.11m accuracy
                   heading: 0 
                 });
               }}

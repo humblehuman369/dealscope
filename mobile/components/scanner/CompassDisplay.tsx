@@ -17,10 +17,18 @@ export function CompassDisplay({ heading, accuracy }: CompassDisplayProps) {
   return (
     <View style={styles.container}>
       <View style={styles.compassRing}>
+        {/* 
+          COMPASS NEEDLE ROTATION FIX:
+          The needle should ALWAYS point to magnetic North.
+          When the device heading is 90° (facing East), the needle
+          must rotate -90° to continue pointing North.
+          
+          Therefore: needle rotation = -heading
+        */}
         <View
           style={[
             styles.needle,
-            { transform: [{ rotate: `${heading}deg` }] },
+            { transform: [{ rotate: `${-heading}deg` }] },
           ]}
         >
           <View style={styles.needleNorth} />
