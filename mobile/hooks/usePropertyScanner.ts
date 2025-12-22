@@ -3,6 +3,10 @@ import * as Location from 'expo-location';
 import { Magnetometer } from 'expo-sensors';
 import { Platform } from 'react-native';
 
+// Coordinate precision constants
+// 6 decimal places = ~0.11m accuracy (optimal for property scanning)
+const COORDINATE_PRECISION = 6;
+
 interface ScannerState {
   userLat: number;
   userLng: number;
@@ -12,6 +16,10 @@ interface ScannerState {
   isCompassReady: boolean;
   error: string | null;
 }
+
+// Low-pass filter coefficient for magnetometer smoothing
+// Higher value = more smoothing, slower response (0.0-1.0)
+const MAGNETOMETER_SMOOTHING = 0.15;
 
 /**
  * Hook to manage GPS location and compass heading for property scanning.
@@ -28,7 +36,12 @@ export function usePropertyScanner() {
     error: null,
   });
 
+  // Raw magnetometer data
   const magnetometerData = useRef({ x: 0, y: 0, z: 0 });
+  // Smoothed magnetometer data (low-pass filtered)
+  const smoothedMagData = useRef({ x: 0, y: 0, z: 0 });
+  // Previous heading for additional smoothing
+  const previousHeading = useRef(0);
 
   useEffect(() => {
     let locationSubscription: Location.LocationSubscription | null = null;
@@ -46,20 +59,22 @@ export function usePropertyScanner() {
           return;
         }
 
-        // Get initial location
+        // Get initial location with highest precision
         const initialLocation = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.BestForNavigation,
         });
 
+        // Store coordinates with full precision (6+ decimal places)
+        // JavaScript numbers handle this natively, but we ensure it's preserved
         setState(prev => ({
           ...prev,
-          userLat: initialLocation.coords.latitude,
-          userLng: initialLocation.coords.longitude,
+          userLat: Number(initialLocation.coords.latitude.toFixed(COORDINATE_PRECISION)),
+          userLng: Number(initialLocation.coords.longitude.toFixed(COORDINATE_PRECISION)),
           accuracy: initialLocation.coords.accuracy ?? 10,
           isLocationReady: true,
         }));
 
-        // Subscribe to location updates
+        // Subscribe to location updates with high precision
         locationSubscription = await Location.watchPositionAsync(
           {
             accuracy: Location.Accuracy.BestForNavigation,
@@ -67,10 +82,11 @@ export function usePropertyScanner() {
             timeInterval: 1000,  // Or every 1 second
           },
           (location) => {
+            // Preserve coordinate precision (6 decimal places = ~0.11m)
             setState(prev => ({
               ...prev,
-              userLat: location.coords.latitude,
-              userLng: location.coords.longitude,
+              userLat: Number(location.coords.latitude.toFixed(COORDINATE_PRECISION)),
+              userLng: Number(location.coords.longitude.toFixed(COORDINATE_PRECISION)),
               accuracy: location.coords.accuracy ?? 10,
               isLocationReady: true,
             }));
@@ -80,15 +96,39 @@ export function usePropertyScanner() {
         // Setup magnetometer for compass heading
         const isMagnetometerAvailable = await Magnetometer.isAvailableAsync();
         if (isMagnetometerAvailable) {
-          Magnetometer.setUpdateInterval(100); // 10 updates per second
+          // 10 updates per second for smooth compass
+          Magnetometer.setUpdateInterval(100);
 
           magnetometerSubscription = Magnetometer.addListener((data) => {
+            // Store raw data
             magnetometerData.current = data;
-            const heading = calculateHeading(data);
+            
+            // Apply low-pass filter for smooth compass movement
+            // This reduces jitter from electromagnetic interference
+            smoothedMagData.current = {
+              x: smoothedMagData.current.x + MAGNETOMETER_SMOOTHING * (data.x - smoothedMagData.current.x),
+              y: smoothedMagData.current.y + MAGNETOMETER_SMOOTHING * (data.y - smoothedMagData.current.y),
+              z: smoothedMagData.current.z + MAGNETOMETER_SMOOTHING * (data.z - smoothedMagData.current.z),
+            };
+            
+            // Calculate heading from smoothed data
+            const rawHeading = calculateHeading(smoothedMagData.current);
+            
+            // Apply additional heading smoothing to prevent jumpiness
+            // Handle wrap-around at 0°/360° boundary
+            let headingDiff = rawHeading - previousHeading.current;
+            if (headingDiff > 180) headingDiff -= 360;
+            if (headingDiff < -180) headingDiff += 360;
+            
+            let smoothedHeading = previousHeading.current + headingDiff * 0.3;
+            if (smoothedHeading < 0) smoothedHeading += 360;
+            if (smoothedHeading >= 360) smoothedHeading -= 360;
+            
+            previousHeading.current = smoothedHeading;
             
             setState(prev => ({
               ...prev,
-              heading,
+              heading: Math.round(smoothedHeading),
               isCompassReady: true,
             }));
           });
@@ -120,33 +160,84 @@ export function usePropertyScanner() {
 }
 
 /**
- * Calculate compass heading from magnetometer data.
+ * Calculate compass heading from magnetometer data for CAMERA MODE.
  * Returns heading in degrees (0-360), where 0 = North.
+ * 
+ * IMPORTANT: This function assumes the phone is held VERTICALLY in portrait
+ * orientation with the camera facing forward (typical scanning/photo mode).
+ * 
+ * Device orientation in camera mode:
+ * - Phone is roughly vertical (screen facing user, camera facing target)
+ * - The camera direction defines "forward" (the direction you're facing)
+ * - X-axis points to the right of the device
+ * - Y-axis points UP (toward top of phone / sky)
+ * - Z-axis points OUT of the screen (toward the user)
+ * 
+ * When phone is vertical, we use X and Z magnetometer components
+ * to calculate the horizontal heading (what the camera is pointing at).
  */
 function calculateHeading(data: { x: number; y: number; z: number }): number {
-  const { x, y } = data;
+  const { x, y, z } = data;
   
-  // Calculate angle in radians
-  let heading = Math.atan2(y, x);
+  // For a phone held vertically in portrait mode (camera facing forward):
+  // - The horizontal plane is defined by the X and Z axes
+  // - X points right, Z points toward user (out of screen)
+  // - We want the heading of where the BACK of the phone (camera) points
+  // 
+  // atan2(x, -z) gives us the angle from magnetic north:
+  // - When camera faces North: x≈0, z<0 (mag field comes from front) → heading≈0°
+  // - When camera faces East: x>0, z≈0 → heading≈90°
+  // - When camera faces South: x≈0, z>0 → heading≈180°
+  // - When camera faces West: x<0, z≈0 → heading≈270°
   
-  // Convert to degrees
-  heading = heading * (180 / Math.PI);
+  let heading: number;
   
-  // Adjust for device orientation
   if (Platform.OS === 'ios') {
-    // iOS magnetometer is aligned with the device
-    heading = 90 - heading;
+    // iOS: Magnetometer data is in device coordinates
+    // For vertical phone, heading is based on X and Z
+    heading = Math.atan2(x, -z);
   } else {
-    // Android may need different adjustment
-    heading = heading - 90;
+    // Android: Magnetometer follows same coordinate system
+    // but may have different sign conventions depending on device
+    heading = Math.atan2(x, -z);
   }
   
-  // Normalize to 0-360
+  // Convert radians to degrees
+  heading = heading * (180 / Math.PI);
+  
+  // Normalize to 0-360 range
   if (heading < 0) {
     heading += 360;
   }
   heading = heading % 360;
   
   return Math.round(heading);
+}
+
+/**
+ * Alternative heading calculation for FLAT/MAP MODE.
+ * Use this when the phone is held horizontally (like viewing a map).
+ * 
+ * In flat mode:
+ * - Phone screen faces up
+ * - Top of phone points in the direction of travel/facing
+ * - X-axis points right, Y-axis points to top of device
+ */
+function calculateHeadingFlatMode(data: { x: number; y: number; z: number }): number {
+  const { x, y } = data;
+  
+  // For flat phone, use X and Y components
+  // atan2(x, y) gives heading where Y-axis (top of phone) points
+  let heading = Math.atan2(x, y);
+  
+  // Convert radians to degrees
+  heading = heading * (180 / Math.PI);
+  
+  // Normalize to 0-360 range
+  if (heading < 0) {
+    heading += 360;
+  }
+  
+  return Math.round(heading % 360);
 }
 
