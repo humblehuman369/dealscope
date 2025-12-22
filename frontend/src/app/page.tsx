@@ -112,13 +112,6 @@ export default function HomePage() {
 
           {/* Quick Links */}
           <div className="flex items-center justify-center gap-6 mt-6">
-            <button
-              onClick={() => router.push('/property?demo=true')}
-              className="flex items-center gap-1 text-sm text-gray-400 hover:text-violet-500 transition-colors"
-            >
-              <Sparkles className="w-4 h-4" strokeWidth={1.5} />
-              Try demo property
-            </button>
             <a
               href="/compare"
               className="flex items-center gap-1 text-sm text-gray-400 hover:text-violet-500 transition-colors"
@@ -226,10 +219,10 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold mb-3">Ready to Analyze?</h2>
             <p className="text-white/80 mb-8 font-light">Enter any US property address and get instant investment analytics.</p>
             <button
-              onClick={() => router.push('/property?demo=true')}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="px-8 py-4 bg-white text-gray-800 font-semibold rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 mx-auto"
             >
-              Try Demo Property
+              Search Property
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
