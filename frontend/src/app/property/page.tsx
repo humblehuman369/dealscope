@@ -1118,7 +1118,7 @@ function PropertyPageContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center">
+      <div className="min-h-screen bg-[#e8eaed] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3" />
           <p className="text-gray-400 text-sm">Loading property...</p>
@@ -1129,7 +1129,7 @@ function PropertyPageContent() {
 
   if (error || !property) {
     return (
-      <div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-[#e8eaed] flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
           <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto mb-4" strokeWidth={1.5} />
           <h2 className="text-lg font-bold text-gray-800 mb-2">Unable to Load Property</h2>
@@ -1147,7 +1147,7 @@ function PropertyPageContent() {
   const CurrentIcon = currentStrategy.icon
 
   return (
-    <div className="min-h-screen bg-[#f4f5f7]">
+    <div className="min-h-screen bg-[#e8eaed]">
       <div className="max-w-7xl mx-auto px-6 py-6">
         <TopNav property={property} isDemo={isDemo} />
         
@@ -1264,7 +1264,7 @@ function PropertyPageContent() {
 
 export default function PropertyPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#f4f5f7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-gray-400 animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#e8eaed] flex items-center justify-center"><Loader2 className="w-8 h-8 text-gray-400 animate-spin" /></div>}>
       <PropertyPageContent />
     </Suspense>
   )
