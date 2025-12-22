@@ -140,27 +140,16 @@ export default function ScanScreen() {
 
           {/* Scan Buttons */}
           <View style={styles.buttonRow}>
-            {/* Demo Scan Button (for indoor testing) */}
+            {/* Search Button */}
             <TouchableOpacity
-              style={[styles.demoButton, isScanning && styles.demoButtonDisabled]}
-              onPress={async () => {
-                // Haptic feedback
-                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                
-                // Demo scan at a real Florida property (953 Banyan Dr, Delray Beach, FL)
-                // This tests the full flow: Google Maps → Backend API → Analytics
-                // Using 6 decimal places for ~0.11m accuracy
-                await performScan(50, { 
-                  lat: 26.452998,  // Delray Beach, FL - 6 decimal precision
-                  lng: -80.072891, // 6 decimal places = ~0.11m accuracy
-                  heading: 0 
-                });
+              style={styles.secondaryButton}
+              onPress={() => {
+                router.push('/search');
               }}
-              disabled={isScanning}
               activeOpacity={0.8}
             >
-              <Ionicons name="flask-outline" size={20} color="#fff" />
-              <Text style={styles.demoButtonText}>DEMO</Text>
+              <Ionicons name="search-outline" size={20} color="#fff" />
+              <Text style={styles.secondaryButtonText}>SEARCH</Text>
             </TouchableOpacity>
 
             {/* Main Scan Button */}
@@ -193,18 +182,6 @@ export default function ScanScreen() {
                 )}
               </TouchableOpacity>
             </Animated.View>
-
-            {/* Search Button */}
-            <TouchableOpacity
-              style={styles.demoButton}
-              onPress={() => {
-                router.push('/');
-              }}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="search-outline" size={20} color="#fff" />
-              <Text style={styles.demoButtonText}>SEARCH</Text>
-            </TouchableOpacity>
           </View>
 
           {/* Status Info */}
@@ -329,7 +306,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 16,
   },
-  demoButton: {
+  secondaryButton: {
     backgroundColor: 'rgba(255,255,255,0.2)',
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -338,10 +315,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 4,
   },
-  demoButtonDisabled: {
-    opacity: 0.5,
-  },
-  demoButtonText: {
+  secondaryButtonText: {
     fontWeight: '600',
     fontSize: 10,
     color: '#fff',
