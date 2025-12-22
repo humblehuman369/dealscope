@@ -42,7 +42,7 @@ export default function HomePage() {
       <nav className="px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/80 transition-colors">
+            <button aria-label="Open menu" className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/80 transition-colors">
               <Menu className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
             </button>
             <div className="flex items-center gap-2">
@@ -53,11 +53,11 @@ export default function HomePage() {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <button className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/80 transition-colors">
+            <button aria-label="Notifications" className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/80 transition-colors">
               <Bell className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
               <span className="absolute top-2 right-2 w-2 h-2 bg-pink-500 rounded-full" />
             </button>
-            <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/80 transition-colors">
+            <button aria-label="Settings" className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/80 transition-colors">
               <Settings className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
             </button>
           </div>
