@@ -256,6 +256,9 @@ const strategies: { id: StrategyId; name: string; shortName: string; description
 // ============================================
 
 function TopNav({ property, isDemo }: { property: PropertyData; isDemo: boolean }) {
+  // Get estimated market value (Zestimate or AVM)
+  const estimatedValue = property.valuations.zestimate || property.valuations.current_value_avm || 0
+  
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-4">
@@ -267,7 +270,19 @@ function TopNav({ property, isDemo }: { property: PropertyData; isDemo: boolean 
             {isDemo && <span className="px-2 py-0.5 text-xs font-semibold bg-gradient-to-r from-violet-500 to-cyan-500 text-white rounded-md">DEMO</span>}
             <h1 className="text-lg font-bold text-gray-800">{property.address.full_address}</h1>
           </div>
-          <p className="text-sm text-gray-400">{property.details.bedrooms || '—'} bed · {property.details.bathrooms || '—'} bath · {property.details.square_footage?.toLocaleString() || '—'} sqft</p>
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-gray-400">
+              {property.details.bedrooms || '—'} bed · {property.details.bathrooms || '—'} bath · {property.details.square_footage?.toLocaleString() || '—'} sqft
+            </p>
+            {estimatedValue > 0 && (
+              <>
+                <span className="text-gray-300">·</span>
+                <p className="text-sm font-semibold text-teal-600">
+                  Est. {formatCurrency(estimatedValue)}
+                </p>
+              </>
+            )}
+          </div>
         </div>
       </div>
       <div className="flex items-center gap-1">
