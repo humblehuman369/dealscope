@@ -642,7 +642,6 @@ function AssumptionsPanel({ assumptions, update, updateAdjustment, isExpanded, o
 
 function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView; onViewChange: (view: DrillDownView) => void }) {
   const tabs: { id: DrillDownView; label: string; icon: any; highlight?: boolean }[] = [
-    { id: 'rehab', label: 'Rehab', icon: Wrench, highlight: true },
     { id: 'details', label: 'Details', icon: Calculator },
     { id: 'charts', label: 'Charts', icon: LineChart },
     { id: 'projections', label: '10-Year', icon: TrendingUp },
@@ -1152,6 +1151,28 @@ function PropertyPageContent() {
       <div className="max-w-7xl mx-auto px-6 py-6">
         <TopNav property={property} isDemo={isDemo} />
         
+        {/* Rehab Estimator Banner */}
+        <button
+          onClick={() => setDrillDownView('rehab')}
+          className="w-full mb-5 group"
+        >
+          <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-4 flex items-center justify-between shadow-lg shadow-orange-500/20 hover:shadow-xl hover:shadow-orange-500/30 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <Wrench className="w-6 h-6 text-white" strokeWidth={1.5} />
+              </div>
+              <div className="text-left">
+                <h3 className="text-white font-semibold text-base">Rehab Estimator</h3>
+                <p className="text-white/80 text-sm">Build your renovation budget item by item</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-white/90 group-hover:text-white transition-colors">
+              <span className="text-sm font-medium hidden sm:block">Open Estimator</span>
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </button>
+
         {/* Strategy Grid - Clean & Sophisticated */}
         <div className="mb-5">
           <div className="flex items-baseline justify-between mb-3">
