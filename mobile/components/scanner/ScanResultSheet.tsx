@@ -5,7 +5,6 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   Pressable,
-  ScrollView,
   Dimensions,
 } from 'react-native';
 import Animated, {
@@ -19,16 +18,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScanResult } from '../../hooks/usePropertyScan';
-import { 
-  formatCurrency, 
-  formatPercent,
-  getStrategyDisplayName,
-} from '../../services/analytics';
+import { formatCurrency, InvestmentAnalytics } from '../../services/analytics';
 import { colors } from '../../theme/colors';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const SHEET_MIN_HEIGHT = 320;
-const SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.85;
+const SHEET_MIN_HEIGHT = 280;
+const SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.5;
 
 interface ScanResultSheetProps {
   result: ScanResult;
@@ -37,7 +32,8 @@ interface ScanResultSheetProps {
 }
 
 /**
- * Bottom sheet displaying scan results with strategy summaries.
+ * Simplified bottom sheet displaying property confirmation after scan.
+ * Shows: address, beds, baths, sqft, estimated value, and View Full Analysis CTA.
  */
 export function ScanResultSheet({ 
   result, 
@@ -70,16 +66,16 @@ export function ScanResultSheet({
     transform: [{ translateY: translateY.value }],
   }));
 
-  const { property, analytics, confidence, scanTime } = result;
+  const { property, analytics } = result;
 
+  // Cast analytics to full type (API returns complete data)
+  const fullAnalytics = analytics as unknown as InvestmentAnalytics;
+  
   // Use property details from analytics (API data) which has full property info
-  const propertyDetails = analytics.property || property;
-
-  // Get top 3 strategies sorted by primary value
-  const strategies = Object.entries(analytics.strategies)
-    .map(([key, value]) => ({ key, ...value }))
-    .sort((a, b) => Math.abs(b.primaryValue) - Math.abs(a.primaryValue))
-    .slice(0, 3);
+  const propertyDetails = fullAnalytics.property || property;
+  
+  // Get estimated value (Zestimate / AVM)
+  const estimatedValue = fullAnalytics.pricing?.estimatedValue || fullAnalytics.pricing?.listPrice || 0;
 
   return (
     <GestureDetector gesture={gesture}>
@@ -87,7 +83,7 @@ export function ScanResultSheet({
         style={[
           styles.sheet, 
           sheetStyle,
-          { paddingBottom: insets.bottom + 16 }
+          { paddingBottom: insets.bottom + 20 }
         ]}
       >
         {/* Handle */}
@@ -95,162 +91,73 @@ export function ScanResultSheet({
           <View style={styles.handle} />
         </View>
 
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.addressContainer}>
-            <Text style={styles.address} numberOfLines={1}>
-              {propertyDetails.address || property.address}
-            </Text>
-            <Text style={styles.propertyDetails}>
-              {propertyDetails.bedrooms || '?'} bed · {propertyDetails.bathrooms || '?'} bath
-              {propertyDetails.sqft ? ` · ${propertyDetails.sqft.toLocaleString()} sqft` : ''}
-            </Text>
-          </View>
-          
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Ionicons name="close" size={20} color={colors.gray[500]} />
-          </TouchableOpacity>
-        </View>
+        {/* Close Button */}
+        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <Ionicons name="close" size={22} color={colors.gray[500]} />
+        </TouchableOpacity>
 
-        {/* Confidence & Scan Info */}
-        <View style={styles.scanInfo}>
-          <View style={styles.infoBadge}>
-            <Ionicons name="checkmark-circle" size={14} color={colors.profit.main} />
-            <Text style={styles.infoText}>{confidence}% match</Text>
+        {/* Property Confirmation Header */}
+        <View style={styles.content}>
+          {/* Checkmark Icon */}
+          <View style={styles.checkmarkContainer}>
+            <Ionicons name="checkmark-circle" size={48} color={colors.profit.main} />
           </View>
-          <View style={styles.infoBadge}>
-            <Ionicons name="timer-outline" size={14} color={colors.gray[500]} />
-            <Text style={styles.infoText}>{(scanTime / 1000).toFixed(1)}s</Text>
+
+          {/* Address */}
+          <Text style={styles.addressTitle}>Property Found</Text>
+          <Text style={styles.address} numberOfLines={2}>
+            {propertyDetails.address || property.address}
+          </Text>
+
+          {/* Property Stats */}
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Ionicons name="bed-outline" size={20} color={colors.gray[600]} />
+              <Text style={styles.statValue}>{propertyDetails.bedrooms || '—'}</Text>
+              <Text style={styles.statLabel}>Beds</Text>
+            </View>
+            
+            <View style={styles.statDivider} />
+            
+            <View style={styles.statItem}>
+              <Ionicons name="water-outline" size={20} color={colors.gray[600]} />
+              <Text style={styles.statValue}>{propertyDetails.bathrooms || '—'}</Text>
+              <Text style={styles.statLabel}>Baths</Text>
+            </View>
+            
+            <View style={styles.statDivider} />
+            
+            <View style={styles.statItem}>
+              <Ionicons name="resize-outline" size={20} color={colors.gray[600]} />
+              <Text style={styles.statValue}>
+                {propertyDetails.sqft ? propertyDetails.sqft.toLocaleString() : '—'}
+              </Text>
+              <Text style={styles.statLabel}>Sq Ft</Text>
+            </View>
           </View>
-          <View style={styles.infoBadge}>
-            <Ionicons name="pricetag-outline" size={14} color={colors.gray[500]} />
-            <Text style={styles.infoText}>
-              {formatCurrency(analytics.pricing?.listPrice || 0)}
+
+          {/* Estimated Value */}
+          <View style={styles.valueContainer}>
+            <Text style={styles.valueLabel}>Estimated Market Value</Text>
+            <Text style={styles.valueAmount}>
+              {estimatedValue > 0 ? formatCurrency(estimatedValue) : '—'}
             </Text>
           </View>
-        </View>
 
-        {/* Top Strategies */}
-        <ScrollView 
-          style={styles.strategiesList}
-          showsVerticalScrollIndicator={false}
-        >
-          {strategies.map((strategy, index) => (
-            <StrategyCard
-              key={strategy.key}
-              name={getStrategyDisplayName(strategy.key)}
-              primaryValue={strategy.primaryValue}
-              primaryLabel={strategy.primaryLabel}
-              secondaryValue={strategy.secondaryValue}
-              secondaryLabel={strategy.secondaryLabel}
-              isProfit={strategy.isProfit}
-              isTop={index === 0}
-            />
-          ))}
-
-          {/* View All Button */}
-          <TouchableOpacity 
-            style={styles.viewAllButton}
+          {/* View Full Analysis Button */}
+          <Pressable 
+            style={({ pressed }) => [
+              styles.ctaButton,
+              pressed && styles.ctaButtonPressed
+            ]}
             onPress={onViewDetails}
           >
-            <Text style={styles.viewAllText}>View Full Analysis</Text>
-            <Ionicons 
-              name="arrow-forward" 
-              size={18} 
-              color={colors.primary[600]} 
-            />
-          </TouchableOpacity>
-        </ScrollView>
-
-        {/* Action Buttons */}
-        <View style={styles.actions}>
-          <Pressable style={styles.actionButton}>
-            <Ionicons name="heart-outline" size={20} color={colors.gray[600]} />
-            <Text style={styles.actionText}>Save</Text>
-          </Pressable>
-          <Pressable style={styles.actionButton}>
-            <Ionicons name="share-outline" size={20} color={colors.gray[600]} />
-            <Text style={styles.actionText}>Share</Text>
-          </Pressable>
-          <Pressable style={styles.actionButton}>
-            <Ionicons name="create-outline" size={20} color={colors.gray[600]} />
-            <Text style={styles.actionText}>Notes</Text>
-          </Pressable>
-          <Pressable style={styles.actionButton}>
-            <Ionicons name="navigate-outline" size={20} color={colors.gray[600]} />
-            <Text style={styles.actionText}>Directions</Text>
+            <Text style={styles.ctaButtonText}>View Full Analysis</Text>
+            <Ionicons name="arrow-forward" size={20} color="#fff" />
           </Pressable>
         </View>
       </Animated.View>
     </GestureDetector>
-  );
-}
-
-interface StrategyCardProps {
-  name: string;
-  primaryValue: number;
-  primaryLabel: string;
-  secondaryValue: number;
-  secondaryLabel: string;
-  isProfit: boolean;
-  isTop?: boolean;
-}
-
-function StrategyCard({
-  name,
-  primaryValue,
-  primaryLabel,
-  secondaryValue,
-  secondaryLabel,
-  isProfit,
-  isTop = false,
-}: StrategyCardProps) {
-  // Determine if secondary value is a percentage or dollar amount based on label
-  const isSecondaryPercent = secondaryLabel.toLowerCase().includes('roi') ||
-                              secondaryLabel.toLowerCase().includes('%') ||
-                              secondaryLabel.toLowerCase().includes('rate') ||
-                              secondaryLabel.toLowerCase().includes('return');
-  
-  // Format the secondary value appropriately
-  const formattedSecondary = isSecondaryPercent 
-    ? formatPercent(secondaryValue / 100) // API returns percentage as whole number (e.g., 12.5 for 12.5%)
-    : formatCurrency(secondaryValue);
-
-  return (
-    <View style={[styles.strategyCard, isTop && styles.strategyCardTop]}>
-      <View style={styles.strategyHeader}>
-        <Text style={styles.strategyName}>{name}</Text>
-        {isTop && (
-          <View style={styles.topBadge}>
-            <Text style={styles.topBadgeText}>TOP</Text>
-          </View>
-        )}
-      </View>
-      
-      <View style={styles.strategyMetrics}>
-        <View style={styles.metricColumn}>
-          <Text style={[
-            styles.metricValue,
-            isProfit ? styles.profitText : styles.lossText
-          ]}>
-            {formatCurrency(primaryValue)}
-          </Text>
-          <Text style={styles.metricLabel}>{primaryLabel}</Text>
-        </View>
-        
-        <View style={styles.metricDivider} />
-        
-        <View style={styles.metricColumn}>
-          <Text style={[
-            styles.metricValue,
-            secondaryValue > 0 ? styles.profitText : styles.lossText
-          ]}>
-            {formattedSecondary}
-          </Text>
-          <Text style={styles.metricLabel}>{secondaryLabel}</Text>
-        </View>
-      </View>
-    </View>
   );
 }
 
@@ -281,151 +188,107 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gray[300],
     borderRadius: 2,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: 20,
-    paddingBottom: 12,
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    right: 16,
+    padding: 8,
+    zIndex: 10,
   },
-  addressContainer: {
-    flex: 1,
+  content: {
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  checkmarkContainer: {
+    marginBottom: 8,
+  },
+  addressTitle: {
+    fontWeight: '600',
+    fontSize: 14,
+    color: colors.profit.dark,
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   address: {
     fontWeight: '600',
-    fontSize: 17,
-    color: colors.gray[900],
-    marginBottom: 2,
-  },
-  propertyDetails: {
-    fontWeight: '400',
-    fontSize: 13,
-    color: colors.gray[500],
-  },
-  closeButton: {
-    padding: 8,
-    marginTop: -4,
-    marginRight: -8,
-  },
-  scanInfo: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  infoBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: colors.gray[100],
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  infoText: {
-    fontWeight: '500',
-    fontSize: 12,
-    color: colors.gray[700],
-  },
-  strategiesList: {
-    paddingHorizontal: 20,
-    maxHeight: 280,
-  },
-  strategyCard: {
-    backgroundColor: colors.gray[50],
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: colors.gray[200],
-  },
-  strategyCardTop: {
-    backgroundColor: colors.primary[50],
-    borderColor: colors.primary[200],
-  },
-  strategyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  strategyName: {
-    fontWeight: '600',
-    fontSize: 14,
-    color: colors.gray[800],
-  },
-  topBadge: {
-    backgroundColor: colors.primary[600],
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  topBadgeText: {
-    fontWeight: '700',
-    fontSize: 10,
-    color: '#fff',
-    letterSpacing: 0.5,
-  },
-  strategyMetrics: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  metricColumn: {
-    flex: 1,
-  },
-  metricDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: colors.gray[200],
-    marginHorizontal: 16,
-  },
-  metricValue: {
-    fontWeight: '700',
     fontSize: 18,
-    marginBottom: 2,
+    color: colors.gray[900],
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 24,
   },
-  metricLabel: {
-    fontWeight: '400',
-    fontSize: 11,
-    color: colors.gray[500],
-  },
-  profitText: {
-    color: colors.profit.dark,
-  },
-  lossText: {
-    color: colors.loss.dark,
-  },
-  viewAllButton: {
+  statsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    backgroundColor: colors.primary[50],
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginTop: 4,
-    marginBottom: 16,
-  },
-  viewAllText: {
-    fontWeight: '600',
-    fontSize: 14,
-    color: colors.primary[600],
-  },
-  actions: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: colors.gray[200],
-    paddingTop: 12,
+    backgroundColor: colors.gray[50],
+    borderRadius: 16,
+    paddingVertical: 16,
     paddingHorizontal: 20,
+    marginBottom: 16,
+    width: '100%',
   },
-  actionButton: {
+  statItem: {
     flex: 1,
     alignItems: 'center',
-    gap: 4,
   },
-  actionText: {
+  statValue: {
+    fontWeight: '700',
+    fontSize: 20,
+    color: colors.gray[900],
+    marginTop: 4,
+  },
+  statLabel: {
+    fontWeight: '400',
+    fontSize: 12,
+    color: colors.gray[500],
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: colors.gray[200],
+  },
+  valueContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  valueLabel: {
     fontWeight: '500',
-    fontSize: 11,
-    color: colors.gray[600],
+    fontSize: 13,
+    color: colors.gray[500],
+    marginBottom: 4,
+  },
+  valueAmount: {
+    fontWeight: '700',
+    fontSize: 28,
+    color: colors.primary[700],
+  },
+  ctaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: colors.primary[600],
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 14,
+    width: '100%',
+    shadowColor: colors.primary[600],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  ctaButtonPressed: {
+    backgroundColor: colors.primary[700],
+    transform: [{ scale: 0.98 }],
+  },
+  ctaButtonText: {
+    fontWeight: '700',
+    fontSize: 16,
+    color: '#fff',
+    letterSpacing: 0.3,
   },
 });
-

@@ -6,6 +6,7 @@ import {
   TouchableOpacity, 
   TextInput,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useRouter } from 'expo-router';
@@ -25,33 +26,67 @@ interface NearbyProperty {
   strategy: string;
 }
 
+// Default region (South Florida)
+const DEFAULT_REGION = {
+  latitude: 26.6683,
+  longitude: -80.2683,
+  latitudeDelta: 0.05,
+  longitudeDelta: 0.05,
+};
+
 export default function MapScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView>(null);
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStrategy, setSelectedStrategy] = useState<string>('longTermRental');
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
+  const [region, setRegion] = useState(DEFAULT_REGION);
   const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<NearbyProperty | null>(null);
 
   useEffect(() => {
     async function getLocation() {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return;
+      setIsLoadingLocation(true);
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setIsLoadingLocation(false);
+          return;
+        }
 
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
 
-      setUserLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
+        const newLocation = {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        };
+
+        setUserLocation(newLocation);
+        
+        // Update region to center on user location
+        const newRegion = {
+          ...newLocation,
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
+        };
+        setRegion(newRegion);
+        
+        // Animate map to user location
+        if (mapRef.current) {
+          mapRef.current.animateToRegion(newRegion, 1000);
+        }
+      } catch (error) {
+        console.error('Error getting location:', error);
+      } finally {
+        setIsLoadingLocation(false);
+      }
     }
 
     getLocation();
@@ -67,12 +102,21 @@ export default function MapScreen() {
     }
   };
 
-  const strategies = [
-    { key: 'longTermRental', label: 'Long-Term' },
-    { key: 'shortTermRental', label: 'Short-Term' },
-    { key: 'brrrr', label: 'BRRRR' },
-    { key: 'fixAndFlip', label: 'Fix & Flip' },
-  ];
+  const handleCenterOnLocation = () => {
+    if (userLocation && mapRef.current) {
+      mapRef.current.animateToRegion({
+        ...userLocation,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+      }, 500);
+    }
+  };
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push(`/property/${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -83,16 +127,8 @@ export default function MapScreen() {
         provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         showsUserLocation
         showsMyLocationButton={false}
-        initialRegion={userLocation ? {
-          ...userLocation,
-          latitudeDelta: 0.02,
-          longitudeDelta: 0.02,
-        } : {
-          latitude: 26.6683,
-          longitude: -80.2683,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        }}
+        initialRegion={region}
+        onRegionChangeComplete={setRegion}
       >
         {nearbyProperties.map((property) => (
           <Marker
@@ -123,6 +159,8 @@ export default function MapScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor={colors.gray[400]}
+            returnKeyType="search"
+            onSubmitEditing={handleSearch}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
@@ -131,46 +169,32 @@ export default function MapScreen() {
           )}
         </View>
 
-        <TouchableOpacity style={styles.settingsButton}>
-          <Ionicons name="options-outline" size={22} color={colors.gray[600]} />
+        <TouchableOpacity 
+          style={styles.settingsButton}
+          onPress={() => router.push('/search')}
+        >
+          <Ionicons name="add" size={22} color={colors.primary[600]} />
         </TouchableOpacity>
       </View>
 
-      {/* Strategy Filter */}
-      <View style={styles.filterContainer}>
-        {strategies.map((strategy) => (
-          <TouchableOpacity
-            key={strategy.key}
-            style={[
-              styles.filterChip,
-              selectedStrategy === strategy.key && styles.filterChipActive,
-            ]}
-            onPress={() => setSelectedStrategy(strategy.key)}
-          >
-            <Text style={[
-              styles.filterChipText,
-              selectedStrategy === strategy.key && styles.filterChipTextActive,
-            ]}>
-              {strategy.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* Loading Indicator */}
+      {isLoadingLocation && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color={colors.primary[600]} />
+          <Text style={styles.loadingText}>Finding your location...</Text>
+        </View>
+      )}
 
       {/* My Location Button */}
       <TouchableOpacity
         style={[styles.locationButton, { bottom: insets.bottom + 120 }]}
-        onPress={() => {
-          if (userLocation && mapRef.current) {
-            mapRef.current.animateToRegion({
-              ...userLocation,
-              latitudeDelta: 0.02,
-              longitudeDelta: 0.02,
-            });
-          }
-        }}
+        onPress={handleCenterOnLocation}
       >
-        <Ionicons name="locate" size={22} color={colors.primary[600]} />
+        <Ionicons 
+          name={userLocation ? "locate" : "locate-outline"} 
+          size={22} 
+          color={userLocation ? colors.primary[600] : colors.gray[400]} 
+        />
       </TouchableOpacity>
 
       {/* Selected Property Card */}
@@ -204,13 +228,21 @@ export default function MapScreen() {
         </View>
       )}
 
-      {/* Empty State */}
-      {nearbyProperties.length === 0 && (
+      {/* Empty State - only show after location is loaded */}
+      {!isLoadingLocation && nearbyProperties.length === 0 && (
         <View style={styles.emptyState}>
-          <Ionicons name="home-outline" size={40} color={colors.gray[300]} />
+          <Ionicons name="compass-outline" size={40} color={colors.primary[400]} />
+          <Text style={styles.emptyStateTitle}>Explore Properties</Text>
           <Text style={styles.emptyStateText}>
-            Scan properties or search to see investment analytics on the map
+            Use the Scan tab to analyze properties near you, or search for a specific address
           </Text>
+          <TouchableOpacity 
+            style={styles.emptyStateButton}
+            onPress={() => router.push('/search')}
+          >
+            <Ionicons name="search" size={18} color="#fff" />
+            <Text style={styles.emptyStateButtonText}>Search Address</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -266,36 +298,29 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  filterContainer: {
+  loadingContainer: {
     position: 'absolute',
-    top: 110,
-    left: 0,
-    right: 0,
+    top: 120,
+    left: 16,
+    right: 16,
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
-  },
-  filterChip: {
     backgroundColor: '#fff',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  filterChipActive: {
-    backgroundColor: colors.primary[600],
-  },
-  filterChipText: {
+  loadingText: {
     fontWeight: '500',
-    fontSize: 13,
+    fontSize: 14,
     color: colors.gray[600],
-  },
-  filterChipTextActive: {
-    color: '#fff',
   },
   locationButton: {
     position: 'absolute',
@@ -395,21 +420,46 @@ const styles = StyleSheet.create({
   emptyState: {
     position: 'absolute',
     top: '50%',
-    left: 40,
-    right: 40,
+    left: 24,
+    right: 24,
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    padding: 24,
-    borderRadius: 16,
-    transform: [{ translateY: -50 }],
+    backgroundColor: 'rgba(255,255,255,0.98)',
+    padding: 28,
+    borderRadius: 20,
+    transform: [{ translateY: -80 }],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  emptyStateTitle: {
+    fontWeight: '600',
+    fontSize: 18,
+    color: colors.gray[900],
+    marginTop: 12,
+    marginBottom: 8,
   },
   emptyStateText: {
     fontWeight: '400',
     fontSize: 14,
     color: colors.gray[500],
     textAlign: 'center',
-    marginTop: 12,
     lineHeight: 20,
+    marginBottom: 20,
+  },
+  emptyStateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.primary[600],
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  emptyStateButtonText: {
+    fontWeight: '600',
+    fontSize: 14,
+    color: '#fff',
   },
 });
-
