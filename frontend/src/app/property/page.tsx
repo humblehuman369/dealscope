@@ -1151,28 +1151,6 @@ function PropertyPageContent() {
       <div className="max-w-7xl mx-auto px-6 py-6">
         <TopNav property={property} isDemo={isDemo} />
         
-        {/* Rehab Estimator Banner */}
-        <button
-          onClick={() => setDrillDownView('rehab')}
-          className="w-full mb-5 group"
-        >
-          <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-4 flex items-center justify-between shadow-lg shadow-orange-500/20 hover:shadow-xl hover:shadow-orange-500/30 transition-all">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <Wrench className="w-6 h-6 text-white" strokeWidth={1.5} />
-              </div>
-              <div className="text-left">
-                <h3 className="text-white font-semibold text-base">Rehab Estimator</h3>
-                <p className="text-white/80 text-sm">Build your renovation budget item by item</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-white/90 group-hover:text-white transition-colors">
-              <span className="text-sm font-medium hidden sm:block">Open Estimator</span>
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </button>
-
         {/* Strategy Grid - Clean & Sophisticated */}
         <div className="mb-5">
           <div className="flex items-baseline justify-between mb-3">
@@ -1205,22 +1183,34 @@ function PropertyPageContent() {
 
         {/* Drill-Down Panel */}
         <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
-          {/* Clean Header - No Icon */}
-          <div className="px-4 py-3 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-gray-700">{currentStrategy.name}</h3>
-                <p className="text-[11px] text-gray-400">{currentStrategy.description}</p>
+          {/* Rehab Estimator Banner */}
+          <button
+            onClick={() => setDrillDownView('rehab')}
+            className="w-full group"
+          >
+            <div className={`px-4 py-3 flex items-center justify-between transition-all ${
+              drillDownView === 'rehab' 
+                ? 'bg-gradient-to-r from-orange-500 to-amber-500' 
+                : 'bg-gradient-to-r from-orange-500/90 to-amber-500/90 hover:from-orange-500 hover:to-amber-500'
+            }`}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                  <Wrench className="w-5 h-5 text-white" strokeWidth={1.5} />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-white font-semibold text-sm">Rehab Estimator</h3>
+                  <p className="text-white/80 text-xs">Build your renovation budget item by item</p>
+                </div>
               </div>
-              <div className="text-right">
-                <div className={`text-lg font-semibold ${
-                  strategyMetrics[selectedStrategy].primaryValue > 0 ? 'text-teal-600' : 
-                  strategyMetrics[selectedStrategy].primaryValue < 0 ? 'text-rose-600' : 'text-gray-500'
-                }`}>{strategyMetrics[selectedStrategy].primary}</div>
-                <div className="text-[10px] text-gray-400">{strategyMetrics[selectedStrategy].primaryLabel}</div>
+              <div className="flex items-center gap-2">
+                {drillDownView === 'rehab' ? (
+                  <span className="text-white/90 text-xs font-medium">Active</span>
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-white/80 group-hover:translate-x-0.5 transition-transform" />
+                )}
               </div>
             </div>
-          </div>
+          </button>
 
           {/* Drill-Down Tabs */}
           <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
