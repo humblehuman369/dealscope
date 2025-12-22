@@ -92,27 +92,6 @@ async function fetchProperty(address: string): Promise<PropertyData> {
   return response.json()
 }
 
-async function fetchDemoProperty(): Promise<PropertyData> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-  
-  // Try external API first, then fall back to local API route
-  try {
-    if (apiUrl) {
-      const response = await fetch(`${apiUrl}/api/v1/properties/demo/sample`, {
-        signal: AbortSignal.timeout(5000) // 5 second timeout
-      })
-      if (response.ok) return response.json()
-    }
-  } catch (e) {
-    console.log('External API unavailable, using local fallback')
-  }
-  
-  // Fallback to local Next.js API route
-  const response = await fetch('/api/v1/properties/demo/sample')
-  if (!response.ok) throw new Error('Failed to load demo')
-  return response.json()
-}
-
 // ============================================
 // CALCULATIONS
 // ============================================
@@ -255,7 +234,7 @@ const strategies: { id: StrategyId; name: string; shortName: string; description
 // UI COMPONENTS
 // ============================================
 
-function TopNav({ property, isDemo }: { property: PropertyData; isDemo: boolean }) {
+function TopNav({ property }: { property: PropertyData }) {
   // Get estimated market value (Zestimate or AVM)
   const estimatedValue = property.valuations.zestimate || property.valuations.current_value_avm || 0
   
@@ -267,7 +246,6 @@ function TopNav({ property, isDemo }: { property: PropertyData; isDemo: boolean 
         </a>
         <div>
           <div className="flex items-center gap-2">
-            {isDemo && <span className="px-2 py-0.5 text-xs font-semibold bg-gradient-to-r from-violet-500 to-cyan-500 text-white rounded-md">DEMO</span>}
             <h1 className="text-lg font-bold text-gray-800">{property.address.full_address}</h1>
           </div>
           <div className="flex items-center gap-3">
@@ -891,7 +869,6 @@ function WholesaleDetails({ calc, assumptions, update }: { calc: ReturnType<type
 function PropertyPageContent() {
   const searchParams = useSearchParams()
   const addressParam = searchParams.get('address')
-  const isDemo = searchParams.get('demo') === 'true'
   
   const [property, setProperty] = useState<PropertyData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -923,8 +900,8 @@ function PropertyPageContent() {
     async function loadProperty() {
       setLoading(true)
       try {
-        const data = isDemo ? await fetchDemoProperty() : addressParam ? await fetchProperty(decodeURIComponent(addressParam)) : null
-        if (!data) throw new Error('No address provided')
+        if (!addressParam) throw new Error('No address provided')
+        const data = await fetchProperty(decodeURIComponent(addressParam))
         setProperty(data)
         
         // Calculate BASE values from API data
@@ -994,7 +971,7 @@ function PropertyPageContent() {
       }
     }
     loadProperty()
-  }, [addressParam, isDemo])
+  }, [addressParam])
 
   // Update handler for standard fields
   const update = useCallback((key: keyof Assumptions, value: number) => {
@@ -1135,8 +1112,7 @@ function PropertyPageContent() {
           <h2 className="text-lg font-bold text-gray-800 mb-2">Unable to Load Property</h2>
           <p className="text-gray-400 text-sm mb-6">{error}</p>
           <div className="flex gap-3 justify-center">
-            <a href="/" className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-600 transition-colors">Back</a>
-            <a href="?demo=true" className="px-4 py-2 bg-gradient-to-r from-violet-500 to-cyan-500 text-white rounded-xl text-sm font-medium shadow-lg hover:shadow-xl transition-all">Try Demo</a>
+            <a href="/" className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-600 transition-colors">Back to Search</a>
           </div>
         </div>
       </div>
@@ -1149,7 +1125,7 @@ function PropertyPageContent() {
   return (
     <div className="min-h-screen bg-[#e8eeef]">
       <div className="max-w-7xl mx-auto px-6 py-6">
-        <TopNav property={property} isDemo={isDemo} />
+        <TopNav property={property} />
         
         {/* Strategy Grid - Clean & Sophisticated */}
         <div className="mb-5">
@@ -1205,6 +1181,28 @@ function PropertyPageContent() {
 
         {/* Drill-Down Panel */}
         <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+          {/* Strategy Header - Synced with selected strategy */}
+          <div className="px-5 py-3 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${currentStrategy.gradient}`}>
+                  <CurrentIcon className="w-4 h-4 text-white" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-800">{currentStrategy.name}</h3>
+                  <p className="text-[11px] text-gray-400">{currentStrategy.description}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className={`text-lg font-semibold ${
+                  strategyMetrics[selectedStrategy].primaryValue > 0 ? 'text-teal-600' : 
+                  strategyMetrics[selectedStrategy].primaryValue < 0 ? 'text-rose-600' : 'text-gray-500'
+                }`}>{strategyMetrics[selectedStrategy].primary}</div>
+                <div className="text-[10px] text-gray-400">{strategyMetrics[selectedStrategy].primaryLabel}</div>
+              </div>
+            </div>
+          </div>
+
           {/* Drill-Down Tabs */}
           <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
             <DrillDownTabs activeView={drillDownView} onViewChange={setDrillDownView} />
