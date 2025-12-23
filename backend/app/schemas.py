@@ -545,6 +545,7 @@ class PropertySearchRequest(BaseModel):
 class PropertyResponse(BaseModel):
     """Full property data response."""
     property_id: str
+    zpid: Optional[str] = None  # Zillow Property ID for photos API
     address: Address
     details: PropertyDetails
     valuations: ValuationData

@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { usePropertyStore } from '@/stores'
 import { 
   Camera, Search, Image as ImageIcon, Download, Grid3X3, 
   LayoutGrid, X, ChevronLeft, ChevronRight, Loader2,
-  ExternalLink, AlertCircle
+  ExternalLink, AlertCircle, Home, CheckCircle2
 } from 'lucide-react'
 
 interface Photo {
@@ -26,6 +27,8 @@ interface PhotosResponse {
 }
 
 export default function PhotosPage() {
+  const { currentProperty } = usePropertyStore()
+  
   const [zpid, setZpid] = useState('')
   const [propertyUrl, setPropertyUrl] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
@@ -34,6 +37,51 @@ export default function PhotosPage() {
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'masonry'>('grid')
   const [isMock, setIsMock] = useState(false)
+  const [autoFetched, setAutoFetched] = useState(false)
+
+  // Auto-populate ZPID from current property
+  useEffect(() => {
+    if (currentProperty?.zpid && !zpid) {
+      setZpid(currentProperty.zpid)
+    }
+  }, [currentProperty, zpid])
+
+  // Auto-fetch photos when we have a ZPID from current property
+  useEffect(() => {
+    if (currentProperty?.zpid && !autoFetched && photos.length === 0 && !isLoading) {
+      setAutoFetched(true)
+      fetchPhotosWithZpid(currentProperty.zpid)
+    }
+  }, [currentProperty?.zpid, autoFetched, photos.length, isLoading])
+
+  const fetchPhotosWithZpid = async (zpidToFetch: string) => {
+    setIsLoading(true)
+    setError(null)
+    setPhotos([])
+    setIsMock(false)
+
+    try {
+      const params = new URLSearchParams()
+      params.append('zpid', zpidToFetch)
+
+      const response = await fetch(`/api/v1/photos?${params.toString()}`)
+      const data: PhotosResponse = await response.json()
+
+      if (data.success) {
+        setPhotos(data.photos || [])
+        setIsMock(data.is_mock || false)
+        if (data.photos.length === 0) {
+          setError('No photos found for this property')
+        }
+      } else {
+        setError(data.error || 'Failed to fetch photos')
+      }
+    } catch (err) {
+      setError('Failed to fetch photos. Please check your connection.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const fetchPhotos = async () => {
     if (!zpid && !propertyUrl) {
@@ -72,6 +120,7 @@ export default function PhotosPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setAutoFetched(true) // Prevent auto-fetch from running again
     fetchPhotos()
   }
 
@@ -104,70 +153,106 @@ export default function PhotosPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Property Photos</h1>
-              <p className="text-sm text-gray-500">Fetch property photos from Zillow via AXESSO API</p>
+              <p className="text-sm text-gray-500">
+                {currentProperty 
+                  ? `Viewing photos for ${currentProperty.address}`
+                  : 'Fetch property photos from Zillow via AXESSO API'
+                }
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Search Form */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="zpid" className="block text-sm font-medium text-gray-700 mb-1">
-                  Zillow Property ID (ZPID)
-                </label>
-                <input
-                  type="text"
-                  id="zpid"
-                  value={zpid}
-                  onChange={(e) => setZpid(e.target.value)}
-                  placeholder="e.g., 2078546319"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all"
-                />
-              </div>
-              <div>
-                <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">
-                  Or Zillow Property URL
-                </label>
-                <input
-                  type="text"
-                  id="url"
-                  value={propertyUrl}
-                  onChange={(e) => setPropertyUrl(e.target.value)}
-                  placeholder="e.g., https://www.zillow.com/homedetails/..."
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all"
-                />
-              </div>
+        {/* Current Property Banner */}
+        {currentProperty && currentProperty.zpid && (
+          <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+            <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+              <Home className="w-5 h-5 text-teal-600" />
             </div>
-            
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-gray-500">
-                Enter either the ZPID or the full Zillow URL for the property
+            <div className="flex-1">
+              <p className="text-teal-900 font-medium">
+                {currentProperty.address}, {currentProperty.city}, {currentProperty.state} {currentProperty.zipCode}
               </p>
-              <button
-                type="submit"
-                disabled={isLoading || (!zpid && !propertyUrl)}
-                className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Fetching...
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-4 h-4" />
-                    Fetch Photos
-                  </>
-                )}
-              </button>
+              <p className="text-teal-700 text-sm">
+                ZPID: {currentProperty.zpid} • Photos will auto-load for this property
+              </p>
             </div>
-          </form>
-        </div>
+            <CheckCircle2 className="w-5 h-5 text-teal-500" />
+          </div>
+        )}
+
+        {/* No Property Selected - Show Manual Input */}
+        {(!currentProperty || !currentProperty.zpid) && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Manual Photo Lookup</h2>
+              <p className="text-sm text-gray-500">
+                No property selected. Search for a property on the Dashboard first, or enter a ZPID/URL below.
+              </p>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="zpid" className="block text-sm font-medium text-gray-700 mb-1">
+                    Zillow Property ID (ZPID)
+                  </label>
+                  <input
+                    type="text"
+                    id="zpid"
+                    value={zpid}
+                    onChange={(e) => setZpid(e.target.value)}
+                    placeholder="e.g., 2078546319"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">
+                    Or Zillow Property URL
+                  </label>
+                  <input
+                    type="text"
+                    id="url"
+                    value={propertyUrl}
+                    onChange={(e) => setPropertyUrl(e.target.value)}
+                    placeholder="e.g., https://www.zillow.com/homedetails/..."
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-end">
+                <button
+                  type="submit"
+                  disabled={isLoading || (!zpid && !propertyUrl)}
+                  className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Fetching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4" />
+                      Fetch Photos
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="text-center py-16">
+            <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading property photos...</p>
+          </div>
+        )}
 
         {/* Error Message */}
-        {error && (
+        {error && !isLoading && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-8 flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
             <p className="text-red-700">{error}</p>
@@ -185,7 +270,7 @@ export default function PhotosPage() {
         )}
 
         {/* Photos Grid */}
-        {photos.length > 0 && (
+        {photos.length > 0 && !isLoading && (
           <div>
             {/* Toolbar */}
             <div className="flex items-center justify-between mb-4">
@@ -264,15 +349,15 @@ export default function PhotosPage() {
           </div>
         )}
 
-        {/* Empty State */}
-        {!isLoading && photos.length === 0 && !error && (
+        {/* Empty State - Only show if no current property and not loading */}
+        {!isLoading && photos.length === 0 && !error && !currentProperty?.zpid && (
           <div className="text-center py-16">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Camera className="w-10 h-10 text-gray-400" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No Photos Yet</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              Enter a Zillow Property ID or URL above to fetch property photos from the AXESSO API.
+              Search for a property on the Dashboard to automatically load photos, or enter a ZPID above.
             </p>
           </div>
         )}
@@ -356,4 +441,3 @@ export default function PhotosPage() {
     </div>
   )
 }
-
