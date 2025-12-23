@@ -24,7 +24,8 @@
         "NSCameraUsageDescription": "InvestIQ needs camera access to scan properties for instant investment analysis.",
         "NSLocationWhenInUseUsageDescription": "InvestIQ needs your location to identify properties you're looking at and show nearby investment opportunities.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "InvestIQ uses your location to identify properties and provide real-time investment analytics.",
-        "NSMotionUsageDescription": "InvestIQ uses the compass to determine which direction you're facing when scanning properties."
+        "NSMotionUsageDescription": "InvestIQ uses the compass to determine which direction you're facing when scanning properties.",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "config": {
         "googleMapsApiKey": "AIzaSyCKp7Tt4l2zu2h2EV6PXPz7xbZLoPrtziw"
@@ -40,8 +41,7 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.ACCESS_COARSE_LOCATION"
       ],
       "config": {
         "googleMaps": {
@@ -87,7 +87,6 @@
       "eas": {
         "projectId": "c8258f15-a554-499a-a55f-adfc32d569d2"
       }
-    },
-    "owner": "humblehuman369"
+    }
   }
 }
