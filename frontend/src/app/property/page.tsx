@@ -167,6 +167,15 @@ function calculateBRRRR(a: Assumptions) {
 }
 
 function calculateFlip(a: Assumptions) {
+  // PRIMARY METRICS: Flip Margin (the opportunity/spread)
+  const flipMargin = a.arv - a.purchasePrice - a.rehabCost
+  const flipMarginPct = a.purchasePrice > 0 ? flipMargin / a.purchasePrice : 0
+  
+  // 70% Rule Check: Purchase should be ≤ (ARV × 0.70) - Rehab
+  const maxPurchase70Rule = (a.arv * 0.70) - a.rehabCost
+  const passes70Rule = a.purchasePrice <= maxPurchase70Rule
+  
+  // DETAILED P&L (for Full Breakdown)
   const purchaseCosts = a.purchasePrice * a.closingCostsPct
   const holdingCosts = (a.purchasePrice * (a.interestRate / 12) * a.holdingPeriodMonths) + ((a.propertyTaxes / 12) * a.holdingPeriodMonths) + ((a.insurance / 12) * a.holdingPeriodMonths)
   const sellingCosts = a.arv * a.sellingCostsPct
@@ -174,7 +183,13 @@ function calculateFlip(a: Assumptions) {
   const netProfit = a.arv - totalInvestment - sellingCosts
   const roi = totalInvestment > 0 ? netProfit / totalInvestment : 0
   const annualizedROI = roi * (12 / a.holdingPeriodMonths)
-  return { totalInvestment, netProfit, roi, annualizedROI, holdingCosts, sellingCosts }
+  
+  return { 
+    // Primary metrics (headline)
+    flipMargin, flipMarginPct, passes70Rule, maxPurchase70Rule,
+    // Detailed P&L (breakdown)
+    totalInvestment, netProfit, roi, annualizedROI, holdingCosts, sellingCosts, purchaseCosts
+  }
 }
 
 function calculateHouseHack(a: Assumptions) {
@@ -977,14 +992,39 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
     <div>
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Deal Opportunity</h4>
+          {/* Flip Margin Hero */}
+          <div className={`rounded-lg p-4 ${calc.flipMargin >= 50000 ? 'bg-emerald-50 border border-emerald-200' : calc.flipMargin >= 20000 ? 'bg-amber-50 border border-amber-200' : 'bg-rose-50 border border-rose-200'}`}>
+            <div className="text-center">
+              <div className="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Flip Margin</div>
+              <div className={`text-2xl font-bold ${calc.flipMargin >= 50000 ? 'text-emerald-600' : calc.flipMargin >= 20000 ? 'text-amber-600' : 'text-rose-600'}`}>
+                {formatCurrency(calc.flipMargin)}
+              </div>
+              <div className={`text-sm font-medium mt-1 ${calc.flipMarginPct >= 0.20 ? 'text-emerald-500' : calc.flipMarginPct >= 0.10 ? 'text-amber-500' : 'text-rose-500'}`}>
+                {formatPercent(calc.flipMarginPct)} of Purchase
+              </div>
+            </div>
+          </div>
+          
+          {/* 70% Rule Check */}
+          <div className={`flex items-center justify-between px-3 py-2 rounded-lg ${calc.passes70Rule ? 'bg-emerald-50' : 'bg-amber-50'}`}>
+            <div className="flex items-center gap-2">
+              {calc.passes70Rule ? <CheckCircle className="w-4 h-4 text-emerald-500" /> : <AlertTriangle className="w-4 h-4 text-amber-500" />}
+              <span className="text-xs font-medium text-gray-700">70% Rule</span>
+            </div>
+            <div className="text-right">
+              <div className={`text-xs font-medium ${calc.passes70Rule ? 'text-emerald-600' : 'text-amber-600'}`}>
+                {calc.passes70Rule ? 'PASS' : 'OVER'}
+              </div>
+              <div className="text-[10px] text-gray-400">Max: {formatCurrency(calc.maxPurchase70Rule)}</div>
+            </div>
+          </div>
+          
+          {/* Quick Stats */}
           <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
-            <StatRow label="Net Profit" value={formatCurrency(calc.netProfit)} highlight={calc.netProfit > 30000} />
-            <StatRow label="ROI" value={formatPercent(calc.roi)} highlight={calc.roi > 0.20} />
-            <StatRow label="Annualized ROI" value={formatPercent(calc.annualizedROI)} />
-            <StatRow label="Total Investment" value={formatCurrency(calc.totalInvestment)} />
-            <StatRow label="Holding Costs" value={formatCurrency(calc.holdingCosts)} />
-            <StatRow label="Selling Costs" value={formatCurrency(calc.sellingCosts)} />
+            <StatRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
+            <StatRow label="Rehab Budget" value={formatCurrency(assumptions.rehabCost)} />
+            <StatRow label="After Repair Value" value={formatCurrency(assumptions.arv)} highlight />
           </div>
         </div>
         <div className="space-y-4">
@@ -993,6 +1033,25 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
             <GradientSlider label="Holding Period" value={assumptions.holdingPeriodMonths} min={3} max={12} step={1} onChange={(v) => update('holdingPeriodMonths', v)} formatType="months" compact />
+          </div>
+          
+          {/* Margin Guidance */}
+          <div className="bg-blue-50/50 rounded-lg p-3 border border-blue-100">
+            <div className="text-[10px] font-semibold text-blue-700 uppercase tracking-wide mb-2">Flip Margin Guide</div>
+            <div className="space-y-1 text-[10px] text-gray-600">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span><strong>$50K+</strong> — Strong deal with buffer</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-amber-400" />
+                <span><strong>$20-50K</strong> — Workable, watch costs</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-rose-400" />
+                <span><strong>&lt;$20K</strong> — Thin margin, risky</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1689,18 +1748,18 @@ function FlipAnalyticBreakdown({ calc, assumptions }: {
   calc: ReturnType<typeof calculateFlip>
   assumptions: Assumptions 
 }) {
+  // Detailed cost breakdowns
   const purchaseCosts = assumptions.purchasePrice * assumptions.closingCostsPct
   const monthlyInterest = assumptions.purchasePrice * (assumptions.interestRate / 12)
   const monthlyTaxes = assumptions.propertyTaxes / 12
   const monthlyInsurance = assumptions.insurance / 12
   const holdingCosts = (monthlyInterest + monthlyTaxes + monthlyInsurance) * assumptions.holdingPeriodMonths
   const sellingCosts = assumptions.arv * assumptions.sellingCostsPct
-  const totalInvestment = assumptions.purchasePrice + purchaseCosts + assumptions.rehabCost + holdingCosts
-  const grossProceeds = assumptions.arv - sellingCosts
-  const netProfit = grossProceeds - totalInvestment
-  const roi = totalInvestment > 0 ? netProfit / totalInvestment : 0
-  const annualizedROI = roi * (12 / assumptions.holdingPeriodMonths)
-  const profitMargin = assumptions.arv > 0 ? netProfit / assumptions.arv : 0
+  
+  // What eats into your margin
+  const totalCosts = purchaseCosts + holdingCosts + sellingCosts
+  const estimatedNetProfit = calc.flipMargin - totalCosts
+  const profitMarginPct = assumptions.arv > 0 ? estimatedNetProfit / assumptions.arv : 0
 
   return (
     <div className="mt-4 pt-4 border-t border-gray-200">
@@ -1709,99 +1768,106 @@ function FlipAnalyticBreakdown({ calc, assumptions }: {
         <h4 className="text-sm font-semibold text-gray-700">Full Analytic Breakdown</h4>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        {/* LEFT COLUMN: Costs */}
-        <div className="space-y-2">
-          {/* Acquisition */}
-          <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide mb-1 flex items-center gap-1">
-              <DollarSign className="w-3 h-3" /> Acquisition Costs
+      {/* STEP 1: Flip Margin (The Opportunity) */}
+      <div className="mb-4">
+        <div className="text-[10px] font-semibold text-orange-600 uppercase tracking-wide mb-2">Step 1: The Opportunity (Flip Margin)</div>
+        <div className={`rounded-lg p-3 ${calc.flipMargin >= 50000 ? 'bg-emerald-50 border border-emerald-200' : calc.flipMargin >= 20000 ? 'bg-amber-50 border border-amber-200' : 'bg-rose-50 border border-rose-200'}`}>
+          <div className="grid grid-cols-3 gap-2 mb-2">
+            <div className="text-center">
+              <div className="text-[9px] text-gray-500">ARV</div>
+              <div className="text-sm font-bold text-gray-700">{formatCurrency(assumptions.arv)}</div>
             </div>
-            <CompactCalcRow label="Purchase Price" result={formatCurrency(assumptions.purchasePrice)} />
-            <CompactCalcRow label="Closing Costs" formula={formatPercent(assumptions.closingCostsPct)} result={formatCurrency(purchaseCosts)} />
-            <div className="flex justify-between pt-1 border-t border-gray-200/50 mt-1">
-              <span className="text-[10px] font-medium text-orange-700">Acquisition Total</span>
-              <span className="text-xs font-bold text-orange-600">{formatCurrency(assumptions.purchasePrice + purchaseCosts)}</span>
+            <div className="text-center">
+              <div className="text-[9px] text-gray-500">Purchase</div>
+              <div className="text-sm font-bold text-gray-700">−{formatCurrency(assumptions.purchasePrice)}</div>
             </div>
-          </div>
-
-          {/* Rehab */}
-          <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide mb-1 flex items-center gap-1">
-              <Hammer className="w-3 h-3" /> Rehab Budget
-            </div>
-            <CompactCalcRow label="Rehab Cost" formula={formatPercent(assumptions.rehabCostPct)} result={formatCurrency(assumptions.rehabCost)} />
-          </div>
-
-          {/* Holding Costs */}
-          <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-rose-600 uppercase tracking-wide mb-1 flex items-center gap-1">
-              <Calendar className="w-3 h-3" /> Holding Costs ({assumptions.holdingPeriodMonths} months)
-            </div>
-            <CompactCalcRow label="Monthly Interest" formula={formatPercent(assumptions.interestRate)} result={formatCurrency(monthlyInterest)} />
-            <CompactCalcRow label="Monthly Taxes" result={formatCurrency(monthlyTaxes)} />
-            <CompactCalcRow label="Monthly Insurance" result={formatCurrency(monthlyInsurance)} />
-            <div className="flex justify-between pt-1 border-t border-gray-200/50 mt-1">
-              <span className="text-[10px] font-medium text-rose-700">Total Holding</span>
-              <span className="text-xs font-bold text-rose-600">{formatCurrency(holdingCosts)}</span>
+            <div className="text-center">
+              <div className="text-[9px] text-gray-500">Rehab</div>
+              <div className="text-sm font-bold text-gray-700">−{formatCurrency(assumptions.rehabCost)}</div>
             </div>
           </div>
-
-          {/* Total Investment */}
-          <div className="rounded-lg p-2 bg-gray-100 border border-gray-200">
-            <div className="flex justify-between items-center">
-              <span className="text-[11px] font-semibold text-gray-700">Total Investment</span>
-              <span className="text-sm font-bold text-gray-800">{formatCurrency(totalInvestment)}</span>
+          <div className="border-t border-gray-200/50 pt-2 flex justify-between items-center">
+            <span className="text-[11px] font-semibold text-gray-600">= Flip Margin</span>
+            <div className="text-right">
+              <span className={`text-xl font-bold ${calc.flipMargin >= 50000 ? 'text-emerald-600' : calc.flipMargin >= 20000 ? 'text-amber-600' : 'text-rose-600'}`}>
+                {formatCurrency(calc.flipMargin)}
+              </span>
+              <span className="text-xs text-gray-500 ml-2">({formatPercent(calc.flipMarginPct)})</span>
             </div>
           </div>
         </div>
+        <div className="text-[10px] text-gray-500 mt-1 italic">
+          This is your "spread" — the raw profit potential before accounting for transaction and holding costs.
+        </div>
+      </div>
 
-        {/* RIGHT COLUMN: Sale & Profit */}
-        <div className="space-y-2">
-          {/* Sale */}
-          <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide mb-1 flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" /> Sale Proceeds
-            </div>
-            <CompactCalcRow label="After Repair Value" result={formatCurrency(assumptions.arv)} />
-            <CompactCalcRow label="Selling Costs" formula={formatPercent(assumptions.sellingCostsPct)} result={`-${formatCurrency(sellingCosts)}`} type="subtract" />
-            <div className="flex justify-between pt-1 border-t border-gray-200/50 mt-1">
-              <span className="text-[10px] font-medium text-emerald-700">Net Proceeds</span>
-              <span className="text-xs font-bold text-emerald-600">{formatCurrency(grossProceeds)}</span>
-            </div>
-          </div>
-
-          {/* Profit Calculation */}
-          <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-violet-600 uppercase tracking-wide mb-1 flex items-center gap-1">
-              <Calculator className="w-3 h-3" /> Profit Calculation
-            </div>
-            <CompactCalcRow label="Net Proceeds" result={formatCurrency(grossProceeds)} type="add" />
-            <CompactCalcRow label="Total Investment" result={`-${formatCurrency(totalInvestment)}`} type="subtract" />
-          </div>
-
-          {/* Profit Result */}
-          <div className={`rounded-lg p-2 ${netProfit >= 0 ? 'bg-emerald-50 border border-emerald-200' : 'bg-rose-50 border border-rose-200'}`}>
-            <div className="flex justify-between items-center">
-              <span className="text-[11px] font-semibold text-gray-700">Net Profit</span>
-              <span className={`text-lg font-bold ${netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{formatCurrency(netProfit)}</span>
-            </div>
-          </div>
-
-          {/* Quick Summary */}
-          <div className="bg-gray-100/50 rounded-lg p-2">
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div>
-                <div className="text-[9px] text-gray-500">ROI</div>
-                <div className={`text-xs font-bold ${roi >= 0.20 ? 'text-emerald-600' : 'text-amber-600'}`}>{formatPercent(roi)}</div>
+      {/* STEP 2: What Eats Into Your Margin */}
+      <div className="mb-4">
+        <div className="text-[10px] font-semibold text-rose-600 uppercase tracking-wide mb-2">Step 2: What Eats Into Your Margin</div>
+        <div className="grid grid-cols-2 gap-3">
+          {/* Left: Cost Breakdown */}
+          <div className="space-y-2">
+            {/* Closing Costs */}
+            <div className="bg-gray-50/50 rounded-lg p-2">
+              <div className="flex items-center gap-1 mb-1">
+                <DollarSign className="w-3 h-3 text-gray-500" />
+                <span className="text-[10px] font-medium text-gray-600">Closing Costs</span>
               </div>
-              <div>
-                <div className="text-[9px] text-gray-500">Annualized</div>
-                <div className={`text-xs font-bold ${annualizedROI >= 0.50 ? 'text-emerald-600' : 'text-amber-600'}`}>{formatPercent(annualizedROI)}</div>
+              <CompactCalcRow label="Purchase Closing" formula={formatPercent(assumptions.closingCostsPct)} result={formatCurrency(purchaseCosts)} />
+              <CompactCalcRow label="Selling Costs" formula={formatPercent(assumptions.sellingCostsPct)} result={formatCurrency(sellingCosts)} />
+            </div>
+
+            {/* Holding Costs */}
+            <div className="bg-gray-50/50 rounded-lg p-2">
+              <div className="flex items-center gap-1 mb-1">
+                <Calendar className="w-3 h-3 text-gray-500" />
+                <span className="text-[10px] font-medium text-gray-600">Holding ({assumptions.holdingPeriodMonths} mo)</span>
               </div>
-              <div>
-                <div className="text-[9px] text-gray-500">Margin</div>
-                <div className={`text-xs font-bold ${profitMargin >= 0.10 ? 'text-emerald-600' : 'text-amber-600'}`}>{formatPercent(profitMargin)}</div>
+              <CompactCalcRow label="Interest" formula={formatPercent(assumptions.interestRate)} result={formatCurrency(monthlyInterest * assumptions.holdingPeriodMonths)} />
+              <CompactCalcRow label="Taxes + Ins" result={formatCurrency((monthlyTaxes + monthlyInsurance) * assumptions.holdingPeriodMonths)} />
+            </div>
+          </div>
+
+          {/* Right: Cost Summary */}
+          <div className="space-y-2">
+            <div className="bg-rose-50/50 rounded-lg p-3 border border-rose-100">
+              <div className="text-[10px] text-gray-500 mb-2">Total Costs Eating Margin</div>
+              <div className="space-y-1">
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-gray-600">Closing (buy+sell)</span>
+                  <span className="font-medium text-rose-600">−{formatCurrency(purchaseCosts + sellingCosts)}</span>
+                </div>
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-gray-600">Holding Costs</span>
+                  <span className="font-medium text-rose-600">−{formatCurrency(holdingCosts)}</span>
+                </div>
+                <div className="border-t border-rose-200 pt-1 mt-1 flex justify-between">
+                  <span className="text-[10px] font-medium text-gray-700">Total Costs</span>
+                  <span className="text-sm font-bold text-rose-600">−{formatCurrency(totalCosts)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* STEP 3: Estimated Net Profit */}
+      <div className="mb-4">
+        <div className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide mb-2">Step 3: Estimated Net Profit</div>
+        <div className={`rounded-lg p-3 ${estimatedNetProfit >= 30000 ? 'bg-emerald-50 border border-emerald-200' : estimatedNetProfit >= 0 ? 'bg-amber-50 border border-amber-200' : 'bg-rose-50 border border-rose-200'}`}>
+          <div className="grid grid-cols-3 gap-2 mb-2">
+            <div className="text-center">
+              <div className="text-[9px] text-gray-500">Flip Margin</div>
+              <div className="text-sm font-bold text-gray-700">{formatCurrency(calc.flipMargin)}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-[9px] text-gray-500">Total Costs</div>
+              <div className="text-sm font-bold text-rose-600">−{formatCurrency(totalCosts)}</div>
+            </div>
+            <div className="text-center border-l border-gray-200">
+              <div className="text-[9px] text-gray-500">Net Profit</div>
+              <div className={`text-lg font-bold ${estimatedNetProfit >= 30000 ? 'text-emerald-600' : estimatedNetProfit >= 0 ? 'text-amber-600' : 'text-rose-600'}`}>
+                {formatCurrency(estimatedNetProfit)}
               </div>
             </div>
           </div>
@@ -1809,31 +1875,39 @@ function FlipAnalyticBreakdown({ calc, assumptions }: {
       </div>
 
       {/* Key Metrics with Explanations */}
-      <div className="mt-3 space-y-1.5">
-        <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Flip Success Metrics</div>
+      <div className="space-y-1.5">
+        <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Quick Reference Metrics</div>
         <CompactMetric
-          name="Net Profit"
-          value={formatCurrency(netProfit)}
-          formula={`${formatCurrency(grossProceeds)} − ${formatCurrency(totalInvestment)}`}
-          benchmark="≥$30K"
-          passed={netProfit >= 30000}
-          explanation="Target minimum $30K per flip to justify risk and effort. Factor in unexpected costs (10-20% buffer)."
+          name="Flip Margin"
+          value={formatCurrency(calc.flipMargin)}
+          formula={`${formatCurrency(assumptions.arv)} − ${formatCurrency(assumptions.purchasePrice)} − ${formatCurrency(assumptions.rehabCost)}`}
+          benchmark="≥$50K"
+          passed={calc.flipMargin >= 50000}
+          explanation="The raw spread between ARV and your acquisition costs. This is your starting profit potential before expenses."
         />
         <CompactMetric
-          name="ROI"
-          value={formatPercent(roi)}
-          formula={`${formatCurrency(netProfit)} ÷ ${formatCurrency(totalInvestment)}`}
+          name="Flip Margin %"
+          value={formatPercent(calc.flipMarginPct)}
+          formula={`${formatCurrency(calc.flipMargin)} ÷ ${formatCurrency(assumptions.purchasePrice)}`}
           benchmark="≥20%"
-          passed={roi >= 0.20}
-          explanation="Return on Investment shows profit as percentage of total capital deployed. 20%+ is a solid flip."
+          passed={calc.flipMarginPct >= 0.20}
+          explanation="Margin as a percentage of purchase price. Higher percentage = more buffer for unexpected costs."
         />
         <CompactMetric
-          name="70% Rule Check"
-          value={formatCurrency(assumptions.purchasePrice)}
-          formula={`Max: ${formatCurrency(assumptions.arv * 0.70 - assumptions.rehabCost)}`}
-          benchmark="≤70% ARV − Rehab"
-          passed={assumptions.purchasePrice <= (assumptions.arv * 0.70 - assumptions.rehabCost)}
-          explanation="Classic flip rule: Purchase ≤ 70% of ARV minus rehab costs. Ensures profit margin for unexpected costs."
+          name="70% Rule"
+          value={calc.passes70Rule ? 'PASS' : 'OVER'}
+          formula={`Max Purchase: ${formatCurrency(calc.maxPurchase70Rule)}`}
+          benchmark="Purchase ≤ 70% ARV − Rehab"
+          passed={calc.passes70Rule}
+          explanation="Industry standard: Purchase should be ≤ 70% of ARV minus rehab. This ensures room for costs and profit."
+        />
+        <CompactMetric
+          name="Est. Net Profit"
+          value={formatCurrency(estimatedNetProfit)}
+          formula={`${formatCurrency(calc.flipMargin)} − ${formatCurrency(totalCosts)}`}
+          benchmark="≥$30K"
+          passed={estimatedNetProfit >= 30000}
+          explanation="Your estimated take-home after all costs. Aim for $30K+ per flip to justify the time and risk."
         />
       </div>
     </div>
@@ -2321,13 +2395,13 @@ function PropertyPageContent() {
       primaryValue: brrrrCalc.monthlyCashFlow
     },
     flip: {
-      primary: formatCurrency(flipCalc.netProfit),
-      primaryLabel: 'Net Profit',
-      secondary: formatPercent(flipCalc.roi),
-      secondaryLabel: 'ROI',
-      verdict: flipCalc.netProfit >= 30000 ? 'good' : flipCalc.netProfit >= 0 ? 'ok' : 'poor',
-      score: flipCalc.roi * 100,
-      primaryValue: flipCalc.netProfit
+      primary: formatCurrency(flipCalc.flipMargin),
+      primaryLabel: 'Flip Margin',
+      secondary: formatPercent(flipCalc.flipMarginPct),
+      secondaryLabel: 'Margin %',
+      verdict: flipCalc.flipMargin >= 50000 ? 'good' : flipCalc.flipMargin >= 20000 ? 'ok' : 'poor',
+      score: flipCalc.flipMarginPct * 100,
+      primaryValue: flipCalc.flipMargin
     },
     house_hack: {
       primary: formatCurrency(houseHackCalc.monthlySavings),
