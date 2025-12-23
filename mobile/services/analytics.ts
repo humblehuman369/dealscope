@@ -17,6 +17,11 @@ export interface StrategyResult {
   secondaryValue: number;
   secondaryLabel: string;
   isProfit: boolean;
+  // Additional fields for Fix & Flip
+  flipMargin?: number;
+  flipMarginPct?: number;
+  passes70Rule?: boolean;
+  maxPurchase70Rule?: number;
 }
 
 export interface InvestmentAnalytics {
@@ -94,56 +99,71 @@ function generateMockAnalytics(address: string): InvestmentAnalytics {
       rentEstimate,
       strEstimate,
     },
-    strategies: {
-      longTermRental: {
-        name: 'Long-Term Rental',
-        primaryValue: rentEstimate * 12 * 0.4,
-        primaryLabel: 'Annual Cash Flow',
-        secondaryValue: rentEstimate,
-        secondaryLabel: 'Monthly Rent',
-        isProfit: true,
-      },
-      shortTermRental: {
-        name: 'Short-Term Rental',
-        primaryValue: strEstimate * 200 * 0.55,
-        primaryLabel: 'Annual Revenue',
-        secondaryValue: strEstimate,
-        secondaryLabel: 'Avg. Nightly Rate',
-        isProfit: true,
-      },
-      brrrr: {
-        name: 'BRRRR',
-        primaryValue: listPrice * 0.15,
-        primaryLabel: 'Equity Created',
-        secondaryValue: rentEstimate * 0.35,
-        secondaryLabel: 'Monthly Cash Flow',
-        isProfit: true,
-      },
-      fixAndFlip: {
-        name: 'Fix & Flip',
-        primaryValue: listPrice * 0.18,
-        primaryLabel: 'Projected Profit',
-        secondaryValue: listPrice * 0.12,
-        secondaryLabel: 'ROI',
-        isProfit: true,
-      },
-      houseHack: {
-        name: 'House Hacking',
-        primaryValue: rentEstimate * 0.6,
-        primaryLabel: 'Rental Income',
-        secondaryValue: Math.floor(listPrice * 0.035 / 12),
-        secondaryLabel: 'Net Housing Cost',
-        isProfit: true,
-      },
-      wholesale: {
-        name: 'Wholesale',
-        primaryValue: listPrice * 0.08,
-        primaryLabel: 'Assignment Fee',
-        secondaryValue: listPrice * 0.75,
-        secondaryLabel: 'MAO',
-        isProfit: true,
-      },
-    },
+    strategies: (() => {
+      // Calculate Flip Margin for mock data
+      const rehabCost = 25000;
+      const arv = Math.floor(listPrice * 1.25);
+      const flipMargin = arv - listPrice - rehabCost;
+      const flipMarginPct = listPrice > 0 ? flipMargin / listPrice : 0;
+      const maxPurchase70Rule = (arv * 0.70) - rehabCost;
+      const passes70Rule = listPrice <= maxPurchase70Rule;
+      const monthlyCashFlow = rentEstimate * 0.35;
+
+      return {
+        longTermRental: {
+          name: 'Long-Term Rental',
+          primaryValue: monthlyCashFlow,
+          primaryLabel: 'Monthly Cash Flow',
+          secondaryValue: 0.08,
+          secondaryLabel: 'Cash-on-Cash',
+          isProfit: monthlyCashFlow > 0,
+        },
+        shortTermRental: {
+          name: 'Short-Term Rental',
+          primaryValue: monthlyCashFlow * 2.5,
+          primaryLabel: 'Monthly Cash Flow',
+          secondaryValue: 0.15,
+          secondaryLabel: 'Cash-on-Cash',
+          isProfit: true,
+        },
+        brrrr: {
+          name: 'BRRRR',
+          primaryValue: monthlyCashFlow * 0.8,
+          primaryLabel: 'Monthly Cash Flow',
+          secondaryValue: 0.12,
+          secondaryLabel: 'Cash-on-Cash',
+          isProfit: true,
+        },
+        fixAndFlip: {
+          name: 'Fix & Flip',
+          primaryValue: flipMargin,
+          primaryLabel: 'Flip Margin',
+          secondaryValue: flipMarginPct,
+          secondaryLabel: 'Margin %',
+          isProfit: flipMargin >= 20000,
+          flipMargin,
+          flipMarginPct,
+          passes70Rule,
+          maxPurchase70Rule,
+        },
+        houseHack: {
+          name: 'House Hacking',
+          primaryValue: rentEstimate * 0.6,
+          primaryLabel: 'Monthly Savings',
+          secondaryValue: Math.floor(listPrice * 0.035 / 12),
+          secondaryLabel: 'Net Housing Cost',
+          isProfit: true,
+        },
+        wholesale: {
+          name: 'Wholesale',
+          primaryValue: listPrice * 0.08,
+          primaryLabel: 'Net Profit',
+          secondaryValue: 4.5,
+          secondaryLabel: 'ROI',
+          isProfit: true,
+        },
+      };
+    })(),
     metrics: {
       capRate: 0.068,
       cashOnCash: 0.095,
@@ -248,56 +268,71 @@ function transformBackendResponse(property: any, analytics: any): InvestmentAnal
       rentEstimate: property.rentals?.monthly_rent_ltr || 0,
       strEstimate: property.rentals?.average_daily_rate || 0,
     },
-    strategies: {
-      longTermRental: {
-        name: 'Long-Term Rental',
-        primaryValue: analytics.ltr?.annual_cash_flow || 0,
-        primaryLabel: 'Annual Cash Flow',
-        secondaryValue: analytics.ltr?.monthly_cash_flow || 0,
-        secondaryLabel: 'Monthly Cash Flow',
-        isProfit: (analytics.ltr?.annual_cash_flow || 0) > 0,
-      },
-      shortTermRental: {
-        name: 'Short-Term Rental',
-        primaryValue: analytics.str?.annual_cash_flow || 0,
-        primaryLabel: 'Annual Cash Flow',
-        secondaryValue: analytics.str?.monthly_cash_flow || 0,
-        secondaryLabel: 'Monthly Cash Flow',
-        isProfit: (analytics.str?.annual_cash_flow || 0) > 0,
-      },
-      brrrr: {
-        name: 'BRRRR',
-        primaryValue: analytics.brrrr?.equity_position || 0,
-        primaryLabel: 'Equity Position',
-        secondaryValue: analytics.brrrr?.cash_left_in_deal || 0,
-        secondaryLabel: 'Cash Left in Deal',
-        isProfit: analytics.brrrr?.infinite_roi_achieved || false,
-      },
-      fixAndFlip: {
-        name: 'Fix & Flip',
-        primaryValue: analytics.flip?.net_profit_before_tax || 0,
-        primaryLabel: 'Net Profit',
-        secondaryValue: (analytics.flip?.roi || 0) * 100,
-        secondaryLabel: 'ROI %',
-        isProfit: (analytics.flip?.net_profit_before_tax || 0) > 0,
-      },
-      houseHack: {
-        name: 'House Hacking',
-        primaryValue: analytics.house_hack?.savings_vs_renting_a || 0,
-        primaryLabel: 'Monthly Savings',
-        secondaryValue: analytics.house_hack?.net_housing_cost_scenario_a || 0,
-        secondaryLabel: 'Net Housing Cost',
-        isProfit: (analytics.house_hack?.savings_vs_renting_a || 0) > 0,
-      },
-      wholesale: {
-        name: 'Wholesale',
-        primaryValue: analytics.wholesale?.net_profit || 0,
-        primaryLabel: 'Net Profit',
-        secondaryValue: (analytics.wholesale?.roi || 0) * 100,
-        secondaryLabel: 'ROI %',
-        isProfit: (analytics.wholesale?.net_profit || 0) > 0,
-      },
-    },
+    strategies: (() => {
+      // Calculate Flip Margin for Fix & Flip (matching frontend)
+      const purchasePrice = property.valuations?.current_value_avm || 0;
+      const rehabCost = 25000; // Default rehab estimate
+      const arv = property.valuations?.arv || purchasePrice * 1.1;
+      const flipMargin = arv - purchasePrice - rehabCost;
+      const flipMarginPct = purchasePrice > 0 ? flipMargin / purchasePrice : 0;
+      const maxPurchase70Rule = (arv * 0.70) - rehabCost;
+      const passes70Rule = purchasePrice <= maxPurchase70Rule;
+
+      return {
+        longTermRental: {
+          name: 'Long-Term Rental',
+          primaryValue: analytics.ltr?.monthly_cash_flow || 0,
+          primaryLabel: 'Monthly Cash Flow',
+          secondaryValue: analytics.ltr?.cash_on_cash_return || 0,
+          secondaryLabel: 'Cash-on-Cash',
+          isProfit: (analytics.ltr?.monthly_cash_flow || 0) > 0,
+        },
+        shortTermRental: {
+          name: 'Short-Term Rental',
+          primaryValue: analytics.str?.monthly_cash_flow || 0,
+          primaryLabel: 'Monthly Cash Flow',
+          secondaryValue: analytics.str?.cash_on_cash_return || 0,
+          secondaryLabel: 'Cash-on-Cash',
+          isProfit: (analytics.str?.monthly_cash_flow || 0) > 0,
+        },
+        brrrr: {
+          name: 'BRRRR',
+          primaryValue: analytics.brrrr?.monthly_cash_flow || 0,
+          primaryLabel: 'Monthly Cash Flow',
+          secondaryValue: analytics.brrrr?.cash_on_cash_return || 0,
+          secondaryLabel: 'Cash-on-Cash',
+          isProfit: (analytics.brrrr?.monthly_cash_flow || 0) > 0,
+        },
+        fixAndFlip: {
+          name: 'Fix & Flip',
+          primaryValue: flipMargin,
+          primaryLabel: 'Flip Margin',
+          secondaryValue: flipMarginPct,
+          secondaryLabel: 'Margin %',
+          isProfit: flipMargin >= 20000,
+          flipMargin,
+          flipMarginPct,
+          passes70Rule,
+          maxPurchase70Rule,
+        },
+        houseHack: {
+          name: 'House Hacking',
+          primaryValue: analytics.house_hack?.savings_vs_renting_a || 0,
+          primaryLabel: 'Monthly Savings',
+          secondaryValue: analytics.house_hack?.net_housing_cost_scenario_a || 0,
+          secondaryLabel: 'Net Housing Cost',
+          isProfit: (analytics.house_hack?.savings_vs_renting_a || 0) > 0,
+        },
+        wholesale: {
+          name: 'Wholesale',
+          primaryValue: analytics.wholesale?.net_profit || 0,
+          primaryLabel: 'Net Profit',
+          secondaryValue: analytics.wholesale?.roi || 0,
+          secondaryLabel: 'ROI',
+          isProfit: (analytics.wholesale?.net_profit || 0) > 0,
+        },
+      };
+    })(),
     metrics: {
       capRate: analytics.ltr?.cap_rate || 0,
       cashOnCash: analytics.ltr?.cash_on_cash_return || 0,

@@ -195,10 +195,32 @@ export default function PropertyDetailScreen() {
                 <View style={styles.strategyMetric}>
                   <Text style={styles.strategyMetricLabel}>{strategy.secondaryLabel}</Text>
                   <Text style={styles.strategyMetricSecondary}>
-                    {formatCurrency(strategy.secondaryValue)}
+                    {strategy.secondaryLabel === 'Cash-on-Cash' || strategy.secondaryLabel === 'Margin %' || strategy.secondaryLabel === 'ROI'
+                      ? formatPercent(strategy.secondaryValue)
+                      : formatCurrency(strategy.secondaryValue)}
                   </Text>
                 </View>
               </View>
+              
+              {/* 70% Rule Badge for Fix & Flip */}
+              {key === 'fixAndFlip' && strategy.passes70Rule !== undefined && (
+                <View style={[
+                  styles.ruleCheckBadge,
+                  { backgroundColor: strategy.passes70Rule ? colors.profit.light : colors.loss.light }
+                ]}>
+                  <Ionicons 
+                    name={strategy.passes70Rule ? 'checkmark-circle' : 'alert-circle'} 
+                    size={14} 
+                    color={strategy.passes70Rule ? colors.profit.main : colors.loss.main} 
+                  />
+                  <Text style={[
+                    styles.ruleCheckText,
+                    { color: strategy.passes70Rule ? colors.profit.main : colors.loss.main }
+                  ]}>
+                    70% Rule: {strategy.passes70Rule ? 'PASS' : 'OVER'}
+                  </Text>
+                </View>
+              )}
               
               {/* Expanded Details */}
               {isExpanded && (
@@ -315,14 +337,23 @@ function StrategyDetails({ strategyKey, analytics }: StrategyDetailsProps) {
         
       case 'fixAndFlip':
         const flipAfterRepairValue = assumptions.arv || purchasePrice * 1.25;
-        const flipProfit = flipAfterRepairValue - purchasePrice - assumptions.rehabCost - (flipAfterRepairValue * 0.08);
+        const flipMargin = flipAfterRepairValue - purchasePrice - assumptions.rehabCost;
+        const flipMarginPct = purchasePrice > 0 ? flipMargin / purchasePrice : 0;
+        const maxPurchase70 = (flipAfterRepairValue * 0.70) - assumptions.rehabCost;
+        const closingCosts = purchasePrice * 0.03;
+        const holdingCosts = purchasePrice * 0.02;
+        const sellingCosts = flipAfterRepairValue * 0.06;
+        const totalCosts = closingCosts + holdingCosts + sellingCosts;
+        const estNetProfit = flipMargin - totalCosts;
         return [
-          { label: 'Purchase Price', value: formatCurrency(purchasePrice) },
-          { label: 'Rehab Budget', value: formatCurrency(assumptions.rehabCost) },
-          { label: 'After Repair Value', value: formatCurrency(flipAfterRepairValue) },
-          { label: 'Holding Costs (Est.)', value: formatCurrency(purchasePrice * 0.02) },
-          { label: 'Selling Costs (8%)', value: formatCurrency(flipAfterRepairValue * 0.08) },
-          { label: 'Est. Net Profit', value: formatCurrency(flipProfit) },
+          { label: 'After Repair Value (ARV)', value: formatCurrency(flipAfterRepairValue) },
+          { label: 'Purchase Price', value: `-${formatCurrency(purchasePrice)}` },
+          { label: 'Rehab Budget', value: `-${formatCurrency(assumptions.rehabCost)}` },
+          { label: 'FLIP MARGIN', value: formatCurrency(flipMargin), highlight: true },
+          { label: 'Flip Margin %', value: formatPercent(flipMarginPct) },
+          { label: '70% Rule Max Purchase', value: formatCurrency(maxPurchase70) },
+          { label: 'Est. Costs (Close+Hold+Sell)', value: `-${formatCurrency(totalCosts)}` },
+          { label: 'Est. Net Profit', value: formatCurrency(estNetProfit), highlight: true },
         ];
         
       case 'houseHack':
@@ -362,11 +393,39 @@ function StrategyDetails({ strategyKey, analytics }: StrategyDetailsProps) {
       <View style={styles.divider} />
       <Text style={styles.breakdownTitle}>Strategy Breakdown</Text>
       {breakdown.map((item, index) => (
-        <View key={index} style={styles.breakdownRow}>
-          <Text style={styles.breakdownLabel}>{item.label}</Text>
-          <Text style={styles.breakdownValue}>{item.value}</Text>
+        <View key={index} style={[
+          styles.breakdownRow,
+          (item as any).highlight && styles.breakdownRowHighlight
+        ]}>
+          <Text style={[
+            styles.breakdownLabel,
+            (item as any).highlight && styles.breakdownLabelHighlight
+          ]}>{item.label}</Text>
+          <Text style={[
+            styles.breakdownValue,
+            (item as any).highlight && styles.breakdownValueHighlight
+          ]}>{item.value}</Text>
         </View>
       ))}
+      
+      {/* Flip Margin Guide for Fix & Flip */}
+      {strategyKey === 'fixAndFlip' && (
+        <View style={styles.flipMarginGuide}>
+          <Text style={styles.guideTitle}>FLIP MARGIN GUIDE</Text>
+          <View style={styles.guideRow}>
+            <View style={[styles.guideDot, { backgroundColor: colors.profit.main }]} />
+            <Text style={styles.guideText}><Text style={styles.guideBold}>$50K+</Text> — Strong deal with buffer</Text>
+          </View>
+          <View style={styles.guideRow}>
+            <View style={[styles.guideDot, { backgroundColor: '#f59e0b' }]} />
+            <Text style={styles.guideText}><Text style={styles.guideBold}>$20-50K</Text> — Workable, watch costs</Text>
+          </View>
+          <View style={styles.guideRow}>
+            <View style={[styles.guideDot, { backgroundColor: colors.loss.main }]} />
+            <Text style={styles.guideText}><Text style={styles.guideBold}>&lt;$20K</Text> — Thin margin, risky</Text>
+          </View>
+        </View>
+      )}
       
       {/* Assumptions */}
       <View style={styles.assumptionsSection}>
@@ -586,7 +645,8 @@ const styles = StyleSheet.create({
   strategyMetric: {},
   strategyMetricLabel: {
     fontSize: 12,
-    color: colors.gray[500],
+    fontWeight: '500',
+    color: colors.gray[600],
   },
   strategyMetricValue: {
     fontSize: 18,
@@ -598,6 +658,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.gray[700],
     marginTop: 2,
+  },
+  ruleCheckBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  ruleCheckText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   rentCard: {
     backgroundColor: '#fff',
@@ -656,14 +730,64 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.gray[100],
   },
+  breakdownRowHighlight: {
+    backgroundColor: colors.primary[50],
+    marginHorizontal: -12,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    borderBottomWidth: 0,
+  },
   breakdownLabel: {
     fontSize: 14,
     color: colors.gray[600],
+  },
+  breakdownLabelHighlight: {
+    fontWeight: '600',
+    color: colors.primary[700],
   },
   breakdownValue: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.gray[900],
+  },
+  breakdownValueHighlight: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.primary[600],
+  },
+  flipMarginGuide: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: colors.gray[50],
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+  },
+  guideTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.gray[500],
+    letterSpacing: 0.5,
+    marginBottom: 10,
+  },
+  guideRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  guideDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  guideText: {
+    fontSize: 12,
+    color: colors.gray[600],
+  },
+  guideBold: {
+    fontWeight: '700',
+    color: colors.gray[800],
   },
   assumptionsSection: {
     marginTop: 16,
