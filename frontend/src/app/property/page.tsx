@@ -295,7 +295,7 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150" style={{ width: `${100 - percentage}%` }} />
         <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110" style={{ left: `${percentage}%` }} />
-        <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+        <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} aria-label={label} title={label} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
       </div>
     </div>
   )
@@ -345,6 +345,8 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
           step={1} 
           value={sliderPosition} 
           onChange={(e) => onChange((parseFloat(e.target.value) - 50) / 100)} 
+          aria-label={label}
+          title={`Adjust ${label}`}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
         />
       </div>
@@ -376,6 +378,8 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
           step={0.001} 
           value={value} 
           onChange={(e) => onChange(parseFloat(e.target.value))} 
+          aria-label={label}
+          title={`Adjust ${label}`}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
         />
       </div>
@@ -408,6 +412,8 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
           step={1} 
           value={roomsRented} 
           onChange={(e) => onChange(parseInt(e.target.value))} 
+          aria-label="Rooms Rented"
+          title="Adjust number of rooms rented"
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
         />
       </div>
@@ -506,6 +512,8 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
           step={0.01} 
           value={arvPct} 
           onChange={(e) => onChange(parseFloat(e.target.value))} 
+          aria-label="ARV percentage"
+          title="Adjust ARV percentage"
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
         />
       </div>
