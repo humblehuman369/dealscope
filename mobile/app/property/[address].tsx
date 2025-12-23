@@ -10,6 +10,7 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,19 +18,33 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fetchPropertyAnalytics, formatCurrency, formatPercent, InvestmentAnalytics } from '../../services/analytics';
 import { colors } from '../../theme/colors';
+import PropertyWebView from '../../components/PropertyWebView';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+type ViewMode = 'native' | 'full';
+
 export default function PropertyDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { address } = useLocalSearchParams<{ address: string }>();
   const [expandedStrategy, setExpandedStrategy] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('full'); // Default to full-featured view
   
   const decodedAddress = decodeURIComponent(address || '');
+
+  // If full view mode, render WebView with complete web app features
+  if (viewMode === 'full') {
+    return (
+      <PropertyWebView
+        address={decodedAddress}
+        onClose={() => router.back()}
+      />
+    );
+  }
 
   const toggleStrategy = (key: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -254,7 +269,42 @@ export default function PropertyDetailScreen() {
             </View>
           </View>
         </View>
+
+        {/* Switch to Full View CTA */}
+        <TouchableOpacity
+          style={styles.fullViewCard}
+          onPress={() => {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            setViewMode('full');
+          }}
+        >
+          <View style={styles.fullViewContent}>
+            <View style={styles.fullViewIcon}>
+              <Ionicons name="expand-outline" size={24} color={colors.white} />
+            </View>
+            <View style={styles.fullViewText}>
+              <Text style={styles.fullViewTitle}>Open Full Analysis</Text>
+              <Text style={styles.fullViewSubtitle}>
+                Access charts, projections, rehab estimator & more
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.primary[600]} />
+          </View>
+        </TouchableOpacity>
       </ScrollView>
+
+      {/* Floating Action Button for Full View */}
+      <TouchableOpacity
+        style={[styles.fab, { bottom: insets.bottom + 20 }]}
+        onPress={() => {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          setViewMode('full');
+        }}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="analytics" size={22} color={colors.white} />
+        <Text style={styles.fabText}>Full Analysis</Text>
+      </TouchableOpacity>
     </>
   );
 }
@@ -810,6 +860,66 @@ const styles = StyleSheet.create({
   assumptionItem: {
     fontSize: 12,
     color: colors.gray[600],
+  },
+  // Full View Card
+  fullViewCard: {
+    marginHorizontal: 16,
+    marginVertical: 16,
+    backgroundColor: colors.primary[50],
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: colors.primary[200],
+    borderStyle: 'dashed',
+    overflow: 'hidden',
+  },
+  fullViewContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  fullViewIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.primary[600],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullViewText: {
+    flex: 1,
+  },
+  fullViewTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.gray[900],
+  },
+  fullViewSubtitle: {
+    fontSize: 12,
+    color: colors.gray[600],
+    marginTop: 2,
+  },
+  // Floating Action Button
+  fab: {
+    position: 'absolute',
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.primary[600],
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 28,
+    shadowColor: colors.primary[900],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  fabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.white,
   },
 });
 

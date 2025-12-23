@@ -42,9 +42,9 @@ export default function RootLayout() {
             <Stack.Screen 
               name="property/[address]" 
               options={{ 
-                presentation: 'modal',
-                headerShown: true,
-                headerTitle: 'Property Analysis',
+                presentation: 'fullScreenModal',
+                headerShown: false, // WebView provides its own header
+                animation: 'slide_from_bottom',
               }} 
             />
           </Stack>
