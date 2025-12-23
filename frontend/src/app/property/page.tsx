@@ -483,7 +483,7 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
 }) {
   const percentage = Math.round((value / 0.30) * 100) // maxPercent is 30%
   const displayPercent = (value * 100).toFixed(1)
-  const dollarValue = Math.round(annualRent * value)
+  const monthlyValue = Math.round((annualRent * value) / 12) // Monthly calculation
   const fillRef = useRef<HTMLDivElement>(null)
   const thumbRef = useRef<HTMLDivElement>(null)
 
@@ -496,10 +496,7 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[11px] text-gray-500">Maintenance</span>
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs font-medium text-gray-700">{displayPercent}%</span>
-          <span className="text-[10px] text-gray-400">({formatCurrency(dollarValue)}/yr)</span>
-        </div>
+        <span className="text-xs font-medium text-gray-700">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-1">
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
@@ -513,8 +510,49 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
           value={value} 
           onChange={(e) => onChange(parseFloat(e.target.value))} 
           aria-label="Maintenance percentage"
-          title={`Adjust Maintenance - ${displayPercent}% = ${formatCurrency(dollarValue)}/year`}
+          title={`Adjust Maintenance - ${displayPercent}% = ${formatCurrency(monthlyValue)}/mo`}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+        />
+      </div>
+    </div>
+  )
+}
+
+// Management slider with dollar value display (like Maintenance)
+function ManagementSlider({ value, onChange, annualRent, compact = false }: {
+  value: number; onChange: (value: number) => void; annualRent: number; compact?: boolean
+}) {
+  const percentage = Math.round((value / 0.30) * 100) // maxPercent is 30%
+  const displayPercent = (value * 100).toFixed(1)
+  const monthlyValue = Math.round((annualRent * value) / 12) // Monthly calculation
+  const fillRef = useRef<HTMLDivElement>(null)
+  const thumbRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${100 - percentage}%`)
+    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
+  }, [percentage])
+
+  return (
+    <div className={compact ? 'py-1.5' : 'py-2'}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[11px] text-gray-500">Management</span>
+        <span className="text-xs font-medium text-gray-700">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
+      </div>
+      <div className="relative h-1">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <input 
+          type="range" 
+          min={0} 
+          max={0.30}
+          step={0.001}
+          value={value}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+          aria-label="Management percentage"
+          title="Adjust Management percentage"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
       </div>
     </div>
@@ -851,7 +889,7 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
             <AdjustmentSlider label="Monthly Rent" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
             <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
-            <PercentSlider label="Management %" value={assumptions.managementPct} onChange={(v) => update('managementPct', v)} compact maxPercent={30} />
+            <ManagementSlider value={assumptions.managementPct} onChange={(v) => update('managementPct', v)} annualRent={annualRent} compact />
             <MaintenanceSlider value={assumptions.maintenancePct} onChange={(v) => update('maintenancePct', v)} annualRent={annualRent} compact />
           </div>
         </div>
@@ -913,7 +951,7 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
             <AdjustmentSlider label="Daily Rate" baseValue={assumptions.baseAverageDailyRate} adjustment={assumptions.averageDailyRateAdj} onChange={(v) => updateAdjustment('averageDailyRateAdj', v)} compact />
             <PercentSlider label="Occupancy Rate" value={assumptions.occupancyRate} onChange={(v) => update('occupancyRate', v)} compact maxPercent={95} />
             <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
-            <PercentSlider label="Management %" value={assumptions.managementPct} onChange={(v) => update('managementPct', v)} compact maxPercent={30} />
+            <ManagementSlider value={assumptions.managementPct} onChange={(v) => update('managementPct', v)} annualRent={annualSTRRevenue} compact />
             <MaintenanceSlider value={assumptions.maintenancePct} onChange={(v) => update('maintenancePct', v)} annualRent={annualSTRRevenue} compact />
           </div>
         </div>
@@ -966,7 +1004,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
             <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
             <AdjustmentSlider label="Monthly Rent" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
             <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
-            <PercentSlider label="Management %" value={assumptions.managementPct} onChange={(v) => update('managementPct', v)} compact maxPercent={30} />
+            <ManagementSlider value={assumptions.managementPct} onChange={(v) => update('managementPct', v)} annualRent={annualRent} compact />
             <MaintenanceSlider value={assumptions.maintenancePct} onChange={(v) => update('maintenancePct', v)} annualRent={annualRent} compact />
           </div>
         </div>
