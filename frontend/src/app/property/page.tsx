@@ -600,12 +600,12 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
         <div className={`text-xl font-semibold tracking-tight leading-none ${primaryColor}`}>
           {metrics.primary}
         </div>
-        <div className="text-[8px] text-gray-400 tracking-wide mt-0.5 mb-1.5">{metrics.primaryLabel}</div>
+        <div className="text-[9px] font-medium text-gray-500 tracking-wide mt-0.5 mb-1.5">{metrics.primaryLabel}</div>
         
         {/* Secondary Metric - Value on top, label below */}
         <div className="pt-1.5 border-t border-gray-100/80">
           <div className="text-sm font-semibold text-gray-700">{metrics.secondary}</div>
-          <div className="text-[8px] text-gray-400 mt-px">{metrics.secondaryLabel}</div>
+          <div className="text-[9px] font-medium text-gray-500 mt-px">{metrics.secondaryLabel}</div>
         </div>
       </div>
     </button>
@@ -2548,7 +2548,7 @@ function PropertyPageContent() {
                   strategyMetrics[selectedStrategy].primaryValue > 0 ? 'text-teal-600' : 
                   strategyMetrics[selectedStrategy].primaryValue < 0 ? 'text-rose-600' : 'text-gray-500'
                 }`}>{strategyMetrics[selectedStrategy].primary}</div>
-                <div className="text-[10px] text-gray-400">{strategyMetrics[selectedStrategy].primaryLabel}</div>
+                <div className="text-[10px] font-medium text-gray-500">{strategyMetrics[selectedStrategy].primaryLabel}</div>
               </div>
             </div>
           </div>
