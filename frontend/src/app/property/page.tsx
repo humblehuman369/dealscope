@@ -731,15 +731,6 @@ function AssumptionsPanel({ assumptions, update, updateAdjustment, isExpanded, o
               compact 
               maxPercent={50}
             />
-            
-            {/* Vacancy Rate: 0-30% */}
-            <PercentSlider 
-              label="Vacancy Rate" 
-              value={assumptions.vacancyRate} 
-              onChange={(v) => update('vacancyRate', v)} 
-              compact 
-              maxPercent={30}
-            />
           </div>
         </div>
       )}
@@ -909,6 +900,7 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
             <AdjustmentSlider label="Daily Rate" baseValue={assumptions.baseAverageDailyRate} adjustment={assumptions.averageDailyRateAdj} onChange={(v) => updateAdjustment('averageDailyRateAdj', v)} compact />
             <PercentSlider label="Occupancy Rate" value={assumptions.occupancyRate} onChange={(v) => update('occupancyRate', v)} compact maxPercent={95} />
+            <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
             <PercentSlider label="Management %" value={assumptions.managementPct} onChange={(v) => update('managementPct', v)} compact maxPercent={30} />
             <MaintenanceSlider value={assumptions.maintenancePct} onChange={(v) => update('maintenancePct', v)} annualRent={annualSTRRevenue} compact />
           </div>
@@ -961,6 +953,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
             <AdjustmentSlider label="Monthly Rent" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
+            <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
             <PercentSlider label="Management %" value={assumptions.managementPct} onChange={(v) => update('managementPct', v)} compact maxPercent={30} />
             <MaintenanceSlider value={assumptions.maintenancePct} onChange={(v) => update('maintenancePct', v)} annualRent={annualRent} compact />
           </div>
