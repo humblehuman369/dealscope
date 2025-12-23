@@ -156,3 +156,12 @@ body {
     opacity: 0.5;
   }
 }
+
+/* Slider dynamic positioning using CSS custom properties */
+.slider-fill {
+  width: var(--slider-fill, 0%);
+}
+
+.slider-thumb {
+  left: var(--slider-position, 50%);
+}
