@@ -327,6 +327,24 @@ class AXESSOClient:
             "status": status
         }
         return await self._make_request("search", params)
+    
+    async def get_photos(self, zpid: str = None, url: str = None) -> APIResponse:
+        """Get property photos from Zillow.
+        
+        Args:
+            zpid: Zillow Property ID
+            url: Property URL on Zillow
+            
+        Returns:
+            APIResponse with photo URLs
+        """
+        params = {}
+        if zpid:
+            params["zpid"] = zpid
+        if url:
+            params["url"] = url
+        
+        return await self._make_request("photos", params)
 
 
 class DataNormalizer:

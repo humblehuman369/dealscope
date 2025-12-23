@@ -31,6 +31,7 @@ export default function RootLayout({
                     <nav className="flex items-center space-x-5">
                       <a href="/" className="text-sm font-medium text-gray-600 hover:text-gray-900">Search</a>
                       <a href="/property" className="text-sm font-medium text-gray-600 hover:text-gray-900">Dashboard</a>
+                      <a href="/photos" className="text-sm font-medium text-gray-600 hover:text-gray-900">Photos</a>
                     </nav>
                   </div>
                   <div className="flex items-center space-x-2">
