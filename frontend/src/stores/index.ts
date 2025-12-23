@@ -253,12 +253,28 @@ function deepMerge<T>(target: T, source: Partial<T>): T {
   return result as T
 }
 
+// Current property info for header display
+export interface CurrentPropertyInfo {
+  propertyId: string
+  address: string
+  city: string
+  state: string
+  zipCode: string
+  bedrooms: number | null
+  bathrooms: number | null
+  squareFootage: number | null
+  estimatedValue: number | null
+}
+
 // Property store
 interface PropertyStore {
   currentPropertyId: string | null
+  currentProperty: CurrentPropertyInfo | null
   recentSearches: Array<{ address: string; propertyId: string; timestamp: number }>
   
   setCurrentProperty: (propertyId: string) => void
+  setCurrentPropertyInfo: (info: CurrentPropertyInfo) => void
+  clearCurrentProperty: () => void
   addRecentSearch: (address: string, propertyId: string) => void
   clearRecentSearches: () => void
 }
@@ -267,10 +283,17 @@ export const usePropertyStore = create<PropertyStore>()(
   persist(
     (set, get) => ({
       currentPropertyId: null,
+      currentProperty: null,
       recentSearches: [],
       
       setCurrentProperty: (propertyId) =>
         set({ currentPropertyId: propertyId }),
+      
+      setCurrentPropertyInfo: (info) =>
+        set({ currentPropertyId: info.propertyId, currentProperty: info }),
+      
+      clearCurrentProperty: () =>
+        set({ currentPropertyId: null, currentProperty: null }),
       
       addRecentSearch: (address, propertyId) =>
         set((state) => {
