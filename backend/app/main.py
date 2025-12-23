@@ -430,6 +430,45 @@ async def run_sensitivity_analysis(request: SensitivityRequest):
 
 
 # ============================================
+# PHOTOS ENDPOINTS
+# ============================================
+
+@app.get("/api/v1/photos")
+async def get_property_photos(
+    zpid: Optional[str] = None,
+    url: Optional[str] = None
+):
+    """
+    Get property photos from Zillow via AXESSO API.
+    
+    Args:
+        zpid: Zillow Property ID
+        url: Property URL on Zillow
+    
+    Returns:
+        List of photo URLs for the property
+    """
+    try:
+        if not zpid and not url:
+            raise HTTPException(
+                status_code=400, 
+                detail="Either zpid or url parameter is required"
+            )
+        
+        logger.info(f"Fetching photos for zpid={zpid}, url={url}")
+        
+        # Get photos from AXESSO client
+        result = await property_service.get_property_photos(zpid=zpid, url=url)
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Photos fetch error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
 # COMPARISON ENDPOINTS
 # ============================================
 

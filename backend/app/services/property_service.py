@@ -402,6 +402,57 @@ class PropertyService:
         
         return results
     
+    async def get_property_photos(
+        self, 
+        zpid: Optional[str] = None, 
+        url: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Fetch property photos from Zillow via AXESSO API.
+        
+        Args:
+            zpid: Zillow Property ID
+            url: Property URL on Zillow
+            
+        Returns:
+            Dict with photos data
+        """
+        logger.info(f"Fetching photos - zpid: {zpid}, url: {url}")
+        
+        try:
+            result = await self.axesso.get_photos(zpid=zpid, url=url)
+            
+            if result.success and result.data:
+                return {
+                    "success": True,
+                    "zpid": zpid,
+                    "url": url,
+                    "photos": result.data.get("photos", []),
+                    "total_count": len(result.data.get("photos", [])),
+                    "fetched_at": datetime.utcnow().isoformat()
+                }
+            else:
+                return {
+                    "success": False,
+                    "zpid": zpid,
+                    "url": url,
+                    "error": result.error or "Failed to fetch photos",
+                    "photos": [],
+                    "total_count": 0,
+                    "fetched_at": datetime.utcnow().isoformat()
+                }
+        except Exception as e:
+            logger.error(f"Error fetching photos: {e}")
+            return {
+                "success": False,
+                "zpid": zpid,
+                "url": url,
+                "error": str(e),
+                "photos": [],
+                "total_count": 0,
+                "fetched_at": datetime.utcnow().isoformat()
+            }
+    
     def get_mock_property(self) -> PropertyResponse:
         """
         Return mock property data for testing/demo.

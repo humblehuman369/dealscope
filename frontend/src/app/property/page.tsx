@@ -17,6 +17,7 @@ import {
   ProjectionAssumptions,
   calculate10YearProjections
 } from '@/lib/projections'
+import { usePropertyStore } from '@/stores'
 
 // Dynamic imports for drill-down components
 const ProjectionsView = dynamic(() => import('@/components/ProjectionsView'), { loading: () => <LoadingCard /> })
@@ -2293,6 +2294,7 @@ function WholesaleAnalyticBreakdown({ calc, assumptions }: {
 function PropertyPageContent() {
   const searchParams = useSearchParams()
   const addressParam = searchParams.get('address')
+  const { setCurrentPropertyInfo } = usePropertyStore()
   
   const [property, setProperty] = useState<PropertyData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -2329,6 +2331,19 @@ function PropertyPageContent() {
         if (!addressParam) throw new Error('No address provided')
         const data = await fetchProperty(decodeURIComponent(addressParam))
         setProperty(data)
+        
+        // Update the header store with current property info
+        setCurrentPropertyInfo({
+          propertyId: data.property_id,
+          address: data.address.street,
+          city: data.address.city,
+          state: data.address.state,
+          zipCode: data.address.zip_code,
+          bedrooms: data.details.bedrooms,
+          bathrooms: data.details.bathrooms,
+          squareFootage: data.details.square_footage,
+          estimatedValue: data.valuations.zestimate || data.valuations.current_value_avm
+        })
         
         // Calculate BASE values from API data
         // These are the center points for the ±50% adjustment sliders
