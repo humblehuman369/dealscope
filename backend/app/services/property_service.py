@@ -94,16 +94,17 @@ class PropertyService:
         # Fetch from Zillow via AXESSO
         # The search-by-address endpoint returns all property data including Zestimate
         axesso_data = None
+        zillow_zpid = None  # Store ZPID for photos API
         try:
             logger.info(f"Fetching Zillow data for: {address}")
             zillow_response = await self.zillow.search_by_address(address)
             
             if zillow_response.success and zillow_response.data:
                 axesso_data = zillow_response.data
-                zpid = axesso_data.get('zpid')
+                zillow_zpid = axesso_data.get('zpid')
                 zestimate = axesso_data.get('zestimate')
                 rent_zestimate = axesso_data.get('rentZestimate')
-                logger.info(f"Zillow data retrieved - zpid: {zpid}, zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}")
+                logger.info(f"Zillow data retrieved - zpid: {zillow_zpid}, zestimate: ${zestimate}, rentZestimate: ${rent_zestimate}")
             else:
                 logger.warning(f"Zillow search failed for: {address} - {zillow_response.error}")
         except Exception as e:
@@ -125,6 +126,7 @@ class PropertyService:
         # Build response
         response = PropertyResponse(
             property_id=property_id,
+            zpid=str(zillow_zpid) if zillow_zpid else None,  # Zillow Property ID for photos
             address=address_obj,
             details=PropertyDetails(
                 property_type=normalized.get("property_type"),

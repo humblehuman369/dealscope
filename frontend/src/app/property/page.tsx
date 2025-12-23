@@ -37,6 +37,7 @@ function LoadingCard() {
 
 interface PropertyData {
   property_id: string
+  zpid?: string | null  // Zillow Property ID for photos API
   address: { street: string; city: string; state: string; zip_code: string; full_address: string }
   details: { property_type: string | null; bedrooms: number | null; bathrooms: number | null; square_footage: number | null }
   valuations: { 
@@ -2335,6 +2336,7 @@ function PropertyPageContent() {
         // Update the header store with current property info
         setCurrentPropertyInfo({
           propertyId: data.property_id,
+          zpid: data.zpid || null,  // Zillow Property ID for photos
           address: data.address.street,
           city: data.address.city,
           state: data.address.state,

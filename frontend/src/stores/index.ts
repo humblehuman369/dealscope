@@ -256,6 +256,7 @@ function deepMerge<T>(target: T, source: Partial<T>): T {
 // Current property info for header display
 export interface CurrentPropertyInfo {
   propertyId: string
+  zpid: string | null  // Zillow Property ID for photos API
   address: string
   city: string
   state: string
