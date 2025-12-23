@@ -32,7 +32,7 @@ export default function PropertyDetailScreen() {
   const insets = useSafeAreaInsets();
   const { address } = useLocalSearchParams<{ address: string }>();
   const [expandedStrategy, setExpandedStrategy] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('full'); // Default to full-featured view
+  const [viewMode, setViewMode] = useState<ViewMode>('native'); // Default to native view (works offline)
   
   const decodedAddress = decodeURIComponent(address || '');
 
@@ -42,6 +42,10 @@ export default function PropertyDetailScreen() {
       <PropertyWebView
         address={decodedAddress}
         onClose={() => router.back()}
+        onFallbackToNative={() => {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          setViewMode('native');
+        }}
       />
     );
   }
