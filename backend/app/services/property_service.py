@@ -422,15 +422,26 @@ class PropertyService:
         logger.info(f"Fetching photos - zpid: {zpid}, url: {url}")
         
         try:
-            result = await self.axesso.get_photos(zpid=zpid, url=url)
+            # Use the comprehensive ZillowClient for photos (better error handling)
+            result = await self.zillow.get_photos(zpid=zpid, url=url)
             
             if result.success and result.data:
+                # Handle different response structures from AXESSO
+                photos = []
+                if isinstance(result.data, dict):
+                    photos = result.data.get("photos", [])
+                    # Also check for 'images' key as some endpoints use this
+                    if not photos:
+                        photos = result.data.get("images", [])
+                elif isinstance(result.data, list):
+                    photos = result.data
+                
                 return {
                     "success": True,
                     "zpid": zpid,
                     "url": url,
-                    "photos": result.data.get("photos", []),
-                    "total_count": len(result.data.get("photos", [])),
+                    "photos": photos,
+                    "total_count": len(photos),
                     "fetched_at": datetime.utcnow().isoformat()
                 }
             else:
