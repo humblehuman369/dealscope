@@ -58,9 +58,9 @@ class StrategyType(str, Enum):
 
 class FieldProvenance(BaseModel):
     """Tracks the origin and confidence of each data field."""
-    source: DataSource
-    fetched_at: datetime
-    confidence: Confidence
+    source: str  # Changed to str to accept string values from normalizer
+    fetched_at: str  # Changed to str to accept ISO format strings
+    confidence: str  # Changed to str to accept string values
     raw_values: Optional[Dict[str, Any]] = None
     conflict_flag: bool = False
 

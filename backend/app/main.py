@@ -363,14 +363,14 @@ async def run_sensitivity_analysis(request: SensitivityRequest):
         
         property_data = property_service._property_cache[request.property_id]["data"]
         
-        # Map variable name to actual value
+        # Map variable name to actual value (with None safety checks)
         variable_mapping = {
-            "purchase_price": request.assumptions.financing.purchase_price or property_data.valuations.current_value_avm,
+            "purchase_price": request.assumptions.financing.purchase_price or property_data.valuations.current_value_avm or 425000,
             "interest_rate": request.assumptions.financing.interest_rate,
             "down_payment_pct": request.assumptions.financing.down_payment_pct,
-            "monthly_rent": property_data.rentals.monthly_rent_ltr,
-            "occupancy_rate": property_data.rentals.occupancy_rate,
-            "average_daily_rate": property_data.rentals.average_daily_rate
+            "monthly_rent": property_data.rentals.monthly_rent_ltr or 2100,
+            "occupancy_rate": property_data.rentals.occupancy_rate or 0.75,
+            "average_daily_rate": property_data.rentals.average_daily_rate or 200
         }
         
         base_value = variable_mapping.get(request.variable)

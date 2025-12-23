@@ -21,7 +21,7 @@ from app.schemas import (
     StrategyType, Address, PropertyDetails, ValuationData,
     RentalData, MarketData, ProvenanceMap, DataQuality,
     LTRResults, STRResults, BRRRRResults, FlipResults,
-    HouseHackResults, WholesaleResults
+    HouseHackResults, WholesaleResults, FieldProvenance
 )
 from app.core.config import settings
 
@@ -165,7 +165,10 @@ class PropertyService:
                 mortgage_rate_arm5=normalized.get("mortgage_rate_arm5"),
                 mortgage_rate_30yr=normalized.get("mortgage_rate_30yr")
             ),
-            provenance=ProvenanceMap(fields=provenance),
+            provenance=ProvenanceMap(fields={
+                k: FieldProvenance(**v) if isinstance(v, dict) else v 
+                for k, v in provenance.items()
+            }),
             data_quality=DataQuality(**data_quality),
             fetched_at=timestamp
         )
@@ -452,27 +455,27 @@ class PropertyService:
                 hoa_fees_monthly=0
             ),
             provenance=ProvenanceMap(fields={
-                "current_value_avm": {
-                    "source": "rentcast",
-                    "fetched_at": timestamp.isoformat(),
-                    "confidence": "high",
-                    "raw_values": {"rentcast": 425000},
-                    "conflict_flag": False
-                },
-                "monthly_rent_ltr": {
-                    "source": "rentcast",
-                    "fetched_at": timestamp.isoformat(),
-                    "confidence": "high",
-                    "raw_values": {"rentcast": 2100},
-                    "conflict_flag": False
-                },
-                "average_daily_rate": {
-                    "source": "axesso",
-                    "fetched_at": timestamp.isoformat(),
-                    "confidence": "medium",
-                    "raw_values": {"axesso": 250},
-                    "conflict_flag": False
-                }
+                "current_value_avm": FieldProvenance(
+                    source="rentcast",
+                    fetched_at=timestamp.isoformat(),
+                    confidence="high",
+                    raw_values={"rentcast": 425000},
+                    conflict_flag=False
+                ),
+                "monthly_rent_ltr": FieldProvenance(
+                    source="rentcast",
+                    fetched_at=timestamp.isoformat(),
+                    confidence="high",
+                    raw_values={"rentcast": 2100},
+                    conflict_flag=False
+                ),
+                "average_daily_rate": FieldProvenance(
+                    source="axesso",
+                    fetched_at=timestamp.isoformat(),
+                    confidence="medium",
+                    raw_values={"axesso": 250},
+                    conflict_flag=False
+                )
             }),
             data_quality=DataQuality(
                 completeness_score=85.0,
