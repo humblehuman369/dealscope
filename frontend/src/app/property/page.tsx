@@ -2230,7 +2230,7 @@ function PropertyPageContent() {
     // ARV = Purchase Price × (1 + arvPct), starts at 0% (= Purchase Price)
     arvPct: 0.20, arv: 510000,
     // Standard values
-    downPaymentPct: 0.20, interestRate: 0.056, loanTermYears: 30,
+    downPaymentPct: 0.30, interestRate: 0.056, loanTermYears: 30,
     rehabCostPct: 0.05, rehabCost: 21250, propertyTaxes: 4500, insurance: 1500,
     vacancyRate: 0.03, managementPct: 0.00, maintenancePct: 0.05, closingCostsPct: 0.03,
     occupancyRate: 0.82, holdingPeriodMonths: 6, sellingCostsPct: 0.08,
@@ -2299,7 +2299,7 @@ function PropertyPageContent() {
           propertyTaxes: data.market.property_taxes_annual || prev.propertyTaxes,
           occupancyRate: data.rentals.occupancy_rate || prev.occupancyRate,
           // Fixed rates per user spec
-          downPaymentPct: 0.20,   // 20%
+          downPaymentPct: 0.30,   // 30%
           vacancyRate: 0.03,      // 3%
           managementPct: 0.00,    // 0%
           maintenancePct: 0.05,   // 5%
