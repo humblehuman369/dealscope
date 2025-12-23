@@ -302,26 +302,26 @@ function StrategyDetails({ strategyKey, analytics }: StrategyDetailsProps) {
         ];
         
       case 'brrrr':
-        const arv = assumptions.arv || purchasePrice * 1.25;
-        const equity = arv - purchasePrice - assumptions.rehabCost;
+        const afterRepairValue = assumptions.arv || purchasePrice * 1.25;
+        const equity = afterRepairValue - purchasePrice - assumptions.rehabCost;
         return [
           { label: 'Purchase Price', value: formatCurrency(purchasePrice) },
           { label: 'Rehab Cost', value: formatCurrency(assumptions.rehabCost) },
-          { label: 'After Repair Value', value: formatCurrency(arv) },
+          { label: 'After Repair Value', value: formatCurrency(afterRepairValue) },
           { label: 'Total Investment', value: formatCurrency(purchasePrice + assumptions.rehabCost) },
           { label: 'Equity Created', value: formatCurrency(equity) },
-          { label: '75% LTV Refinance', value: formatCurrency(arv * 0.75) },
+          { label: '75% LTV Refinance', value: formatCurrency(afterRepairValue * 0.75) },
         ];
         
       case 'fixAndFlip':
-        const flipArv = assumptions.arv || purchasePrice * 1.25;
-        const flipProfit = flipArv - purchasePrice - assumptions.rehabCost - (flipArv * 0.08);
+        const flipAfterRepairValue = assumptions.arv || purchasePrice * 1.25;
+        const flipProfit = flipAfterRepairValue - purchasePrice - assumptions.rehabCost - (flipAfterRepairValue * 0.08);
         return [
           { label: 'Purchase Price', value: formatCurrency(purchasePrice) },
           { label: 'Rehab Budget', value: formatCurrency(assumptions.rehabCost) },
-          { label: 'After Repair Value', value: formatCurrency(flipArv) },
+          { label: 'After Repair Value', value: formatCurrency(flipAfterRepairValue) },
           { label: 'Holding Costs (Est.)', value: formatCurrency(purchasePrice * 0.02) },
-          { label: 'Selling Costs (8%)', value: formatCurrency(flipArv * 0.08) },
+          { label: 'Selling Costs (8%)', value: formatCurrency(flipAfterRepairValue * 0.08) },
           { label: 'Est. Net Profit', value: formatCurrency(flipProfit) },
         ];
         
@@ -342,7 +342,7 @@ function StrategyDetails({ strategyKey, analytics }: StrategyDetailsProps) {
         const mao = purchasePrice * 0.7 - assumptions.rehabCost;
         const assignmentFee = purchasePrice * 0.08;
         return [
-          { label: 'ARV (Est.)', value: formatCurrency(assumptions.arv || purchasePrice * 1.25) },
+          { label: 'After Repair Value (Est.)', value: formatCurrency(assumptions.arv || purchasePrice * 1.25) },
           { label: '70% Rule MAO', value: formatCurrency(mao) },
           { label: 'Rehab Estimate', value: formatCurrency(assumptions.rehabCost) },
           { label: 'Assignment Fee', value: formatCurrency(assignmentFee) },

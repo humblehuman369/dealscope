@@ -242,7 +242,7 @@ class AXESSOClient:
             )
         
         headers = {
-            "Ocp-Apim-Subscription-Key": self.api_key,
+            "axesso-api-key": self.api_key,  # Fixed: AXESSO uses 'axesso-api-key' header
             "Accept": "application/json"
         }
         

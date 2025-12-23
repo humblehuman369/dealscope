@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// In-memory cache for demo purposes (resets on cold start)
+// Backend API URL - defaults to localhost for development
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
+
+// In-memory cache for fallback (when backend is unavailable)
 const propertyCache: Record<string, { data: any; fetchedAt: Date }> = {}
 
 function generatePropertyId(address: string): string {
@@ -110,16 +113,42 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Build full address
+    // Build full address for fallback
     const addressParts = [address]
     if (city) addressParts.push(city)
     if (state) addressParts.push(state)
     if (zip_code) addressParts.push(zip_code)
     const fullAddress = addressParts.join(', ')
-    
     const propertyId = generatePropertyId(fullAddress)
     
-    // Check cache first
+    // Try to call the backend API first
+    try {
+      const backendResponse = await fetch(`${BACKEND_URL}/api/v1/properties/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+      
+      if (backendResponse.ok) {
+        const data = await backendResponse.json()
+        // Cache the result
+        propertyCache[data.property_id] = {
+          data,
+          fetchedAt: new Date()
+        }
+        return NextResponse.json(data)
+      }
+      
+      // If backend returns an error, log it and fall through to mock data
+      console.warn(`Backend API returned ${backendResponse.status}, falling back to mock data`)
+    } catch (backendError) {
+      // Backend is unavailable, use mock data
+      console.warn('Backend API unavailable, using mock data:', backendError)
+    }
+    
+    // Fallback: Check cache
     if (propertyCache[propertyId]) {
       const cached = propertyCache[propertyId]
       const cacheAge = Date.now() - cached.fetchedAt.getTime()
@@ -128,8 +157,7 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Generate mock property data
-    // In production, this would call RentCast/AXESSO APIs
+    // Fallback: Generate mock property data
     const property = generateMockProperty(fullAddress)
     
     // Cache the result
