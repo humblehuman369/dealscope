@@ -41,7 +41,8 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION"
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECORD_AUDIO"
       ],
       "config": {
         "googleMaps": {
@@ -87,6 +88,7 @@
       "eas": {
         "projectId": "c8258f15-a554-499a-a55f-adfc32d569d2"
       }
-    }
+    },
+    "owner": "humblehuman369"
   }
 }
