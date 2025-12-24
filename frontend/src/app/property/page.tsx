@@ -359,25 +359,19 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
         <span className="text-[11px] text-gray-500">{label}</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-gray-700">{formatCurrency(computedValue)}</span>
-          <span className={`text-[10px] font-medium ${adjustment === 0 ? 'text-gray-400' : adjustment > 0 ? 'text-teal-600' : 'text-rose-500'}`}>
+          <span className={`text-[10px] font-medium ${adjustment === 0 ? 'text-gray-400' : 'text-teal-600'}`}>
             {adjSign}{adjPercent.toFixed(0)}%
           </span>
         </div>
       </div>
       <div className="relative h-1">
-        {/* Background gradient - subtle red to green */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-300 via-gray-200 to-teal-300" />
+        {/* Background gradient - green as value increases */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         {/* Center line indicator - thin */}
         <div className="absolute top-0 left-1/2 w-px h-full bg-gray-400 -translate-x-1/2 z-10" />
         <div 
           ref={thumbRef}
-          className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb ${
-            adjustment === 0 
-              ? 'border-2 border-gray-400' 
-              : adjustment > 0 
-                ? 'border-2 border-teal-500'
-                : 'border-2 border-rose-500'
-          }`}
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb"
         />
         <input 
           type="range" 
