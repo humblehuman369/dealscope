@@ -1173,7 +1173,11 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
   )
 }
 
-function WholesaleDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateWholesale>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
+function WholesaleDetails({ calc, assumptions, update, updateAdjustment }: { 
+  calc: ReturnType<typeof calculateWholesale>; assumptions: Assumptions; 
+  update: (k: keyof Assumptions, v: number) => void
+  updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
+}) {
   const [showBreakdown, setShowBreakdown] = useState(false)
   
   return (
@@ -1198,6 +1202,9 @@ function WholesaleDetails({ calc, assumptions, update }: { calc: ReturnType<type
             <span className={`text-xs font-semibold ${calc.spreadFromPurchase > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
               {formatCurrency(Math.abs(calc.spreadFromPurchase))} {calc.spreadFromPurchase > 0 ? 'below' : 'above'} MAO
             </span>
+            <span className="text-xs text-gray-400 ml-2">
+              ({(calc.purchasePctOfArv * 100).toFixed(0)}% of ARV)
+            </span>
           </div>
         )}
       </div>
@@ -1207,6 +1214,8 @@ function WholesaleDetails({ calc, assumptions, update }: { calc: ReturnType<type
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
             <StatRow label="Maximum Allowable Offer" value={formatCurrency(calc.mao)} highlight={calc.isPurchaseBelowMAO} />
+            <StatRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
+            <StatRow label="Purchase as % of ARV" value={`${(calc.purchasePctOfArv * 100).toFixed(1)}%`} highlight={calc.purchasePctOfArv <= 0.70} />
             <StatRow label="Wholesale Fee" value={formatCurrency(calc.wholesaleFee)} highlight />
             <StatRow label="After Repair Value" value={formatCurrency(calc.arv)} />
             <StatRow label="70% of ARV" value={formatCurrency(calc.arvMultiple)} />
@@ -1216,6 +1225,7 @@ function WholesaleDetails({ calc, assumptions, update }: { calc: ReturnType<type
         <div className="space-y-4">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+            <AdjustmentSlider label="Purchase Price" baseValue={assumptions.basePurchasePrice} adjustment={assumptions.purchasePriceAdj} onChange={(v) => updateAdjustment('purchasePriceAdj', v)} compact />
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Estimate" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
             <PercentSlider label="Wholesale Fee %" value={assumptions.wholesaleFeePct} onChange={(v) => update('wholesaleFeePct', v)} compact maxPercent={5} />
@@ -2405,9 +2415,9 @@ function PropertyPageContent() {
           arv: Math.round(basePurchasePrice * (1 + arvPct)),
           // Interest rate from API
           interestRate,
-          // Rehab cost starts at 5% (default) - based on adjusted purchase price
+          // Rehab cost starts at 5% (default) - based on market value (basePurchasePrice)
           rehabCostPct: 0.05,
-          rehabCost: Math.round(basePurchasePrice * 0.90 * 0.05),
+          rehabCost: Math.round(basePurchasePrice * 0.05),
           propertyTaxes: data.market.property_taxes_annual || prev.propertyTaxes,
           occupancyRate: data.rentals.occupancy_rate || prev.occupancyRate,
           // Fixed rates per user spec
@@ -2436,7 +2446,9 @@ function PropertyPageContent() {
       const updated = { ...prev, [key]: value }
       // Handle derived calculations
       if (key === 'rehabCostPct') {
-        updated.rehabCost = Math.round(prev.purchasePrice * value)
+        // Rehab cost based on market value (basePurchasePrice), not negotiated purchase price
+        // This ensures MAO calculation is independent of purchase price adjustments
+        updated.rehabCost = Math.round(prev.basePurchasePrice * value)
       } else if (key === 'arvPct') {
         // ARV = Est. Market Value × (1 + arvPct) - based on market value, not offer price
         updated.arv = Math.round(prev.basePurchasePrice * (1 + value))
@@ -2452,9 +2464,8 @@ function PropertyPageContent() {
       // Recalculate computed values based on base × (1 + adjustment)
       if (key === 'purchasePriceAdj') {
         updated.purchasePrice = Math.round(prev.basePurchasePrice * (1 + value))
-        // Also update rehab cost (based on offer price) - ARV stays based on market value
-        updated.rehabCost = Math.round(updated.purchasePrice * prev.rehabCostPct)
-        // ARV is based on Est. Market Value, not offer price - don't recalculate here
+        // NOTE: rehabCost is NOT recalculated here - it stays based on basePurchasePrice
+        // This ensures MAO (for wholesale) is independent of purchase price adjustments
       } else if (key === 'monthlyRentAdj') {
         updated.monthlyRent = Math.round(prev.baseMonthlyRent * (1 + value))
       } else if (key === 'averageDailyRateAdj') {
@@ -2682,7 +2693,7 @@ function PropertyPageContent() {
             {drillDownView === 'details' && selectedStrategy === 'brrrr' && <BRRRRDetails calc={brrrrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
             {drillDownView === 'details' && selectedStrategy === 'flip' && <FlipDetails calc={flipCalc} assumptions={assumptions} update={update} />}
             {drillDownView === 'details' && selectedStrategy === 'house_hack' && <HouseHackDetails calc={houseHackCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
-            {drillDownView === 'details' && selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} />}
+            {drillDownView === 'details' && selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
             
             {drillDownView === 'charts' && <ChartsView projections={projections} totalCashInvested={ltrCalc.totalCashRequired} />}
             {drillDownView === 'projections' && <ProjectionsView assumptions={projectionAssumptions} />}
