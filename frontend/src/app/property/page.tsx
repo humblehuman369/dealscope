@@ -223,17 +223,21 @@ function calculateWholesale(a: Assumptions) {
   const wholesaleFee = a.basePurchasePrice * a.wholesaleFeePct
   const mao = (a.arv * 0.70) - a.rehabCost - wholesaleFee
   
+  // Purchase Price as % of ARV (key metric for 70% rule rating)
+  const purchasePctOfArv = a.arv > 0 ? a.purchasePrice / a.arv : 1
+  
   // Additional reference calculations
   const arvMultiple = a.arv * 0.70 // What 70% of ARV gives you
-  const spreadFromCurrent = mao - a.purchasePrice // Difference from current asking price
+  const spreadFromPurchase = mao - a.purchasePrice // Difference from purchase price
   const isPurchaseBelowMAO = a.purchasePrice <= mao
   
   return { 
     mao, 
     wholesaleFee, 
     arvMultiple,
-    spreadFromCurrent,
+    spreadFromPurchase,
     isPurchaseBelowMAO,
+    purchasePctOfArv,
     arv: a.arv,
     rehabCost: a.rehabCost
   }
@@ -1188,11 +1192,11 @@ function WholesaleDetails({ calc, assumptions, update }: { calc: ReturnType<type
             {calc.isPurchaseBelowMAO ? '✓ DEAL WORKS' : '✗ OVER MAO'}
           </div>
         </div>
-        {calc.spreadFromCurrent !== 0 && (
+        {calc.spreadFromPurchase !== 0 && (
           <div className="mt-3 pt-3 border-t border-gray-200/50">
-            <span className="text-xs text-gray-500">Current price is </span>
-            <span className={`text-xs font-semibold ${calc.spreadFromCurrent > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-              {formatCurrency(Math.abs(calc.spreadFromCurrent))} {calc.spreadFromCurrent > 0 ? 'below' : 'above'} MAO
+            <span className="text-xs text-gray-500">Purchase price is </span>
+            <span className={`text-xs font-semibold ${calc.spreadFromPurchase > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              {formatCurrency(Math.abs(calc.spreadFromPurchase))} {calc.spreadFromPurchase > 0 ? 'below' : 'above'} MAO
             </span>
           </div>
         )}
@@ -2206,7 +2210,7 @@ function WholesaleAnalyticBreakdown({ calc, assumptions }: {
               <div className="text-[10px] text-gray-500 mb-1">Maximum Allowable Offer</div>
               <div className={`text-2xl font-bold ${calc.isPurchaseBelowMAO ? 'text-emerald-600' : 'text-rose-600'}`}>{formatCurrency(calc.mao)}</div>
               <div className={`text-[10px] mt-1 font-medium ${calc.isPurchaseBelowMAO ? 'text-emerald-600' : 'text-rose-600'}`}>
-                {calc.isPurchaseBelowMAO ? 'Below current asking price ✓' : 'Above current asking price ✗'}
+                {calc.isPurchaseBelowMAO ? 'Purchase price is below MAO ✓' : 'Purchase price exceeds MAO ✗'}
               </div>
             </div>
           </div>
@@ -2216,17 +2220,23 @@ function WholesaleAnalyticBreakdown({ calc, assumptions }: {
             <div className="text-[10px] font-semibold text-gray-600 mb-2">Price Comparison</div>
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] text-gray-500">Current Asking Price</span>
+                <span className="text-[10px] text-gray-500">Purchase Price</span>
                 <span className="text-xs font-medium text-gray-700">{formatCurrency(assumptions.purchasePrice)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[10px] text-gray-500">Your MAO</span>
                 <span className="text-xs font-medium text-pink-600">{formatCurrency(calc.mao)}</span>
               </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] text-gray-500">Purchase as % of ARV</span>
+                <span className={`text-xs font-medium ${calc.purchasePctOfArv <= 0.70 ? 'text-emerald-600' : calc.purchasePctOfArv <= 0.80 ? 'text-amber-600' : 'text-rose-600'}`}>
+                  {(calc.purchasePctOfArv * 100).toFixed(1)}%
+                </span>
+              </div>
               <div className="flex justify-between items-center pt-1.5 border-t border-gray-200">
-                <span className="text-[10px] font-medium text-gray-600">Difference</span>
-                <span className={`text-xs font-bold ${calc.spreadFromCurrent > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {calc.spreadFromCurrent > 0 ? '+' : ''}{formatCurrency(calc.spreadFromCurrent)}
+                <span className="text-[10px] font-medium text-gray-600">Spread (MAO − Purchase)</span>
+                <span className={`text-xs font-bold ${calc.spreadFromPurchase > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {calc.spreadFromPurchase > 0 ? '+' : ''}{formatCurrency(calc.spreadFromPurchase)}
                 </span>
               </div>
             </div>
@@ -2277,12 +2287,12 @@ function WholesaleAnalyticBreakdown({ calc, assumptions }: {
           explanation="Your assignment fee for finding and assigning the deal. Adjust based on your market."
         />
         <CompactMetric
-          name="Spread from Asking"
-          value={formatCurrency(Math.abs(calc.spreadFromCurrent))}
-          formula="MAO − Asking Price"
+          name="Spread from Purchase"
+          value={formatCurrency(Math.abs(calc.spreadFromPurchase))}
+          formula="MAO − Purchase Price"
           benchmark="Positive = Good"
-          passed={calc.spreadFromCurrent > 0}
-          explanation={calc.spreadFromCurrent > 0 ? "Asking price is below your MAO - there's room to make an offer!" : "Asking price is above your MAO - you'd need seller to come down."}
+          passed={calc.spreadFromPurchase > 0}
+          explanation={calc.spreadFromPurchase > 0 ? "Purchase price is below your MAO - deal works!" : "Purchase price is above your MAO - negotiate lower."}
         />
       </div>
     </div>
@@ -2469,7 +2479,8 @@ function PropertyPageContent() {
       primaryLabel: 'Monthly Cash Flow',
       secondary: formatPercent(ltrCalc.cashOnCash),
       secondaryLabel: 'Cash-on-Cash',
-      rating: (ltrCalc.monthlyCashFlow >= 500 ? 'excellent' : ltrCalc.monthlyCashFlow >= 300 ? 'great' : ltrCalc.monthlyCashFlow >= 150 ? 'good' : ltrCalc.monthlyCashFlow >= 0 ? 'fair' : 'poor') as Rating,
+      // Rating based on Cash-on-Cash %: >15% Excellent, >12% Great, >8% Good, >5% Fair, <5% Poor
+      rating: (ltrCalc.cashOnCash >= 0.15 ? 'excellent' : ltrCalc.cashOnCash >= 0.12 ? 'great' : ltrCalc.cashOnCash >= 0.08 ? 'good' : ltrCalc.cashOnCash >= 0.05 ? 'fair' : 'poor') as Rating,
       score: ltrCalc.cashOnCash * 100,
       primaryValue: ltrCalc.monthlyCashFlow
     },
@@ -2478,7 +2489,8 @@ function PropertyPageContent() {
       primaryLabel: 'Monthly Cash Flow',
       secondary: formatPercent(strCalc.cashOnCash),
       secondaryLabel: 'Cash-on-Cash',
-      rating: (strCalc.monthlyCashFlow >= 1500 ? 'excellent' : strCalc.monthlyCashFlow >= 1000 ? 'great' : strCalc.monthlyCashFlow >= 500 ? 'good' : strCalc.monthlyCashFlow >= 0 ? 'fair' : 'poor') as Rating,
+      // Rating based on Cash-on-Cash %: >25% Excellent, >20% Great, >15% Good, >10% Fair, <10% Poor (higher for STR)
+      rating: (strCalc.cashOnCash >= 0.25 ? 'excellent' : strCalc.cashOnCash >= 0.20 ? 'great' : strCalc.cashOnCash >= 0.15 ? 'good' : strCalc.cashOnCash >= 0.10 ? 'fair' : 'poor') as Rating,
       score: strCalc.cashOnCash * 100,
       primaryValue: strCalc.monthlyCashFlow
     },
@@ -2487,8 +2499,9 @@ function PropertyPageContent() {
       primaryLabel: 'Monthly Cash Flow',
       secondary: brrrrCalc.cashOnCash === Infinity ? '∞' : formatPercent(brrrrCalc.cashOnCash),
       secondaryLabel: 'Cash-on-Cash',
-      rating: (brrrrCalc.cashLeftInDeal <= 0 ? 'excellent' : brrrrCalc.cashLeftInDeal < 10000 ? 'great' : brrrrCalc.cashLeftInDeal < 25000 ? 'good' : brrrrCalc.cashLeftInDeal < 50000 ? 'fair' : 'poor') as Rating,
-      score: brrrrCalc.cashLeftInDeal < 5000 ? 100 : 50,
+      // Rating based on Cash-on-Cash % (Infinity = all money back): ∞ Excellent, >50% Great, >25% Good, >10% Fair, <10% Poor
+      rating: (brrrrCalc.cashOnCash === Infinity ? 'excellent' : brrrrCalc.cashOnCash >= 0.50 ? 'great' : brrrrCalc.cashOnCash >= 0.25 ? 'good' : brrrrCalc.cashOnCash >= 0.10 ? 'fair' : 'poor') as Rating,
+      score: brrrrCalc.cashOnCash === Infinity ? 100 : brrrrCalc.cashOnCash * 100,
       primaryValue: brrrrCalc.monthlyCashFlow
     },
     flip: {
@@ -2496,7 +2509,8 @@ function PropertyPageContent() {
       primaryLabel: 'Flip Margin',
       secondary: formatPercent(flipCalc.flipMarginPct),
       secondaryLabel: 'Margin %',
-      rating: (flipCalc.flipMargin >= 75000 ? 'excellent' : flipCalc.flipMargin >= 50000 ? 'great' : flipCalc.flipMargin >= 30000 ? 'good' : flipCalc.flipMargin >= 15000 ? 'fair' : 'poor') as Rating,
+      // Rating based on Flip Margin %: >30% Excellent, >20% Great, >15% Good, >10% Fair, <10% Poor
+      rating: (flipCalc.flipMarginPct >= 0.30 ? 'excellent' : flipCalc.flipMarginPct >= 0.20 ? 'great' : flipCalc.flipMarginPct >= 0.15 ? 'good' : flipCalc.flipMarginPct >= 0.10 ? 'fair' : 'poor') as Rating,
       score: flipCalc.flipMarginPct * 100,
       primaryValue: flipCalc.flipMargin
     },
@@ -2509,17 +2523,19 @@ function PropertyPageContent() {
       secondaryLabel: houseHackCalc.effectiveHousingCost <= 0 
         ? 'Monthly Profit'
         : 'Net Housing Cost',
-      rating: (houseHackCalc.effectiveHousingCost <= 0 ? 'excellent' : houseHackCalc.monthlySavings >= 1000 ? 'great' : houseHackCalc.monthlySavings >= 500 ? 'good' : houseHackCalc.monthlySavings >= 0 ? 'fair' : 'poor') as Rating,
+      // Rating: Live free = Excellent, otherwise based on savings vs typical market rent ratio
+      rating: (houseHackCalc.effectiveHousingCost <= 0 ? 'excellent' : houseHackCalc.effectiveHousingCost <= houseHackCalc.rentPerRoom * 0.25 ? 'great' : houseHackCalc.effectiveHousingCost <= houseHackCalc.rentPerRoom * 0.50 ? 'good' : houseHackCalc.monthlySavings >= 0 ? 'fair' : 'poor') as Rating,
       score: houseHackCalc.monthlySavings > 0 ? 80 : 40,
       primaryValue: houseHackCalc.monthlySavings
     },
     wholesale: {
       primary: formatCurrency(wholesaleCalc.mao),
       primaryLabel: 'Max Allowable Offer',
-      secondary: formatCurrency(wholesaleCalc.wholesaleFee),
-      secondaryLabel: 'Wholesale Fee',
-      rating: (wholesaleCalc.isPurchaseBelowMAO && wholesaleCalc.wholesaleFee >= 15000 ? 'excellent' : wholesaleCalc.isPurchaseBelowMAO && wholesaleCalc.wholesaleFee >= 10000 ? 'great' : wholesaleCalc.isPurchaseBelowMAO && wholesaleCalc.wholesaleFee >= 5000 ? 'good' : wholesaleCalc.isPurchaseBelowMAO ? 'fair' : 'poor') as Rating,
-      score: wholesaleCalc.isPurchaseBelowMAO ? 80 : 20,
+      secondary: `${(wholesaleCalc.purchasePctOfArv * 100).toFixed(0)}% of ARV`,
+      secondaryLabel: 'Purchase Price',
+      // Rating based on Purchase Price as % of ARV (70% Rule): <70% Excellent, 70-75% Great, 75-80% Good, 80-85% Fair, >85% Poor
+      rating: (wholesaleCalc.purchasePctOfArv < 0.70 ? 'excellent' : wholesaleCalc.purchasePctOfArv <= 0.75 ? 'great' : wholesaleCalc.purchasePctOfArv <= 0.80 ? 'good' : wholesaleCalc.purchasePctOfArv <= 0.85 ? 'fair' : 'poor') as Rating,
+      score: (1 - wholesaleCalc.purchasePctOfArv) * 100,
       primaryValue: wholesaleCalc.mao
     },
   }), [ltrCalc, strCalc, brrrrCalc, flipCalc, houseHackCalc, wholesaleCalc])
