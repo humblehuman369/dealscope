@@ -971,7 +971,7 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Long-Term Rental Strategy" />
+      <StepHeader step={3} title="Fine Tune Your Long-Term Rental Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
         {/* LEFT: Adjust Inputs (Step 3 content) */}
@@ -1044,7 +1044,7 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Short-Term Rental Strategy" />
+      <StepHeader step={3} title="Fine Tune Your Short-Term Rental Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
         {/* LEFT: Adjust Inputs */}
@@ -1102,7 +1102,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune BRRRR Strategy" />
+      <StepHeader step={3} title="Fine Tune Your BRRRR Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
         {/* LEFT: Adjust Inputs */}
@@ -1156,7 +1156,7 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Fix & Flip Strategy" />
+      <StepHeader step={3} title="Fine Tune Your Fix & Flip Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
         {/* LEFT: Adjust Inputs */}
@@ -1255,7 +1255,7 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune House Hacking Strategy" />
+      <StepHeader step={3} title="Fine Tune Your House Hacking Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
         {/* LEFT: Adjust Inputs */}
@@ -1310,7 +1310,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Wholesale Strategy" />
+      <StepHeader step={3} title="Fine Tune Your Wholesale Strategy" />
       
       {/* 70% Rule Hero Section */}
       <div className={`rounded-xl p-4 mb-4 ${calc.isPurchaseBelowMAO ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200' : 'bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200'}`}>
@@ -2749,7 +2749,7 @@ function PropertyPageContent() {
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
           {/* Step 2 Header + Strategy Cards */}
           <div className="px-5 pt-4 pb-3 border-b border-gray-100">
-            <StepHeader step={2} title="Select an Investment Strategy" />
+            <StepHeader step={2} title="Select Your Investment Strategy" />
             
             {/* Strategy Cards Grid - Inside the panel for visual connection */}
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2 relative">
