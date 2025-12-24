@@ -593,8 +593,19 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
   )
 }
 
+// Rating configuration
+type Rating = 'poor' | 'fair' | 'good' | 'great' | 'excellent'
+
+const ratingConfig: Record<Rating, { label: string; bgColor: string; textColor: string; borderColor: string }> = {
+  poor: { label: 'Poor', bgColor: 'bg-rose-50', textColor: 'text-rose-600', borderColor: 'border-rose-200' },
+  fair: { label: 'Fair', bgColor: 'bg-amber-50', textColor: 'text-amber-600', borderColor: 'border-amber-200' },
+  good: { label: 'Good', bgColor: 'bg-teal-50', textColor: 'text-teal-600', borderColor: 'border-teal-200' },
+  great: { label: 'Great', bgColor: 'bg-emerald-50', textColor: 'text-emerald-600', borderColor: 'border-emerald-200' },
+  excellent: { label: 'Excellent', bgColor: 'bg-emerald-100', textColor: 'text-emerald-700', borderColor: 'border-emerald-300' },
+}
+
 function StrategyCard({ strategy, metrics, isSelected, onClick }: {
-  strategy: typeof strategies[0]; metrics: { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; verdict: 'good' | 'ok' | 'poor'; primaryValue: number }
+  strategy: typeof strategies[0]; metrics: { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; rating: Rating; primaryValue: number }
   isSelected: boolean; onClick: () => void
 }) {
   // Use actual numeric value for profit/loss coloring
@@ -608,12 +619,14 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
       ? 'text-teal-600' 
       : 'text-gray-400'
   
-  // Thin top accent line based on profitability
-  const accentColor = isLoss 
-    ? 'bg-rose-500' 
-    : isProfit 
-      ? 'bg-teal-500' 
-      : 'bg-gray-200'
+  // Get rating display config
+  const ratingDisplay = ratingConfig[metrics.rating]
+  
+  // Accent bar color based on rating
+  const accentColor = metrics.rating === 'poor' ? 'bg-rose-500' 
+    : metrics.rating === 'fair' ? 'bg-amber-500'
+    : metrics.rating === 'good' ? 'bg-teal-500'
+    : 'bg-emerald-500'
   
   return (
     <button
@@ -628,8 +641,13 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
       <div className={`h-0.5 w-full ${accentColor}`} />
       
       <div className="px-2.5 py-2">
-        {/* Strategy Name - Full name, refined size */}
-        <h3 className="text-[11px] font-semibold text-gray-900 tracking-tight leading-tight mb-1.5">{strategy.name}</h3>
+        {/* Strategy Name with Rating Badge */}
+        <div className="flex items-center justify-between mb-1.5">
+          <h3 className="text-[11px] font-semibold text-gray-900 tracking-tight leading-tight">{strategy.name}</h3>
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${ratingDisplay.bgColor} ${ratingDisplay.textColor} ${ratingDisplay.borderColor} border`}>
+            {ratingDisplay.label}
+          </span>
+        </div>
         
         {/* Primary Value - Clear with profit/loss color */}
         <div className={`text-xl font-semibold tracking-tight leading-none ${primaryColor}`}>
@@ -2451,7 +2469,7 @@ function PropertyPageContent() {
       primaryLabel: 'Monthly Cash Flow',
       secondary: formatPercent(ltrCalc.cashOnCash),
       secondaryLabel: 'Cash-on-Cash',
-      verdict: ltrCalc.monthlyCashFlow >= 200 ? 'good' : ltrCalc.monthlyCashFlow >= 0 ? 'ok' : 'poor',
+      rating: (ltrCalc.monthlyCashFlow >= 500 ? 'excellent' : ltrCalc.monthlyCashFlow >= 300 ? 'great' : ltrCalc.monthlyCashFlow >= 150 ? 'good' : ltrCalc.monthlyCashFlow >= 0 ? 'fair' : 'poor') as Rating,
       score: ltrCalc.cashOnCash * 100,
       primaryValue: ltrCalc.monthlyCashFlow
     },
@@ -2460,7 +2478,7 @@ function PropertyPageContent() {
       primaryLabel: 'Monthly Cash Flow',
       secondary: formatPercent(strCalc.cashOnCash),
       secondaryLabel: 'Cash-on-Cash',
-      verdict: strCalc.monthlyCashFlow >= 500 ? 'good' : strCalc.monthlyCashFlow >= 0 ? 'ok' : 'poor',
+      rating: (strCalc.monthlyCashFlow >= 1500 ? 'excellent' : strCalc.monthlyCashFlow >= 1000 ? 'great' : strCalc.monthlyCashFlow >= 500 ? 'good' : strCalc.monthlyCashFlow >= 0 ? 'fair' : 'poor') as Rating,
       score: strCalc.cashOnCash * 100,
       primaryValue: strCalc.monthlyCashFlow
     },
@@ -2469,7 +2487,7 @@ function PropertyPageContent() {
       primaryLabel: 'Monthly Cash Flow',
       secondary: brrrrCalc.cashOnCash === Infinity ? '∞' : formatPercent(brrrrCalc.cashOnCash),
       secondaryLabel: 'Cash-on-Cash',
-      verdict: brrrrCalc.cashLeftInDeal < 10000 ? 'good' : brrrrCalc.cashLeftInDeal < 30000 ? 'ok' : 'poor',
+      rating: (brrrrCalc.cashLeftInDeal <= 0 ? 'excellent' : brrrrCalc.cashLeftInDeal < 10000 ? 'great' : brrrrCalc.cashLeftInDeal < 25000 ? 'good' : brrrrCalc.cashLeftInDeal < 50000 ? 'fair' : 'poor') as Rating,
       score: brrrrCalc.cashLeftInDeal < 5000 ? 100 : 50,
       primaryValue: brrrrCalc.monthlyCashFlow
     },
@@ -2478,7 +2496,7 @@ function PropertyPageContent() {
       primaryLabel: 'Flip Margin',
       secondary: formatPercent(flipCalc.flipMarginPct),
       secondaryLabel: 'Margin %',
-      verdict: flipCalc.flipMargin >= 50000 ? 'good' : flipCalc.flipMargin >= 20000 ? 'ok' : 'poor',
+      rating: (flipCalc.flipMargin >= 75000 ? 'excellent' : flipCalc.flipMargin >= 50000 ? 'great' : flipCalc.flipMargin >= 30000 ? 'good' : flipCalc.flipMargin >= 15000 ? 'fair' : 'poor') as Rating,
       score: flipCalc.flipMarginPct * 100,
       primaryValue: flipCalc.flipMargin
     },
@@ -2491,7 +2509,7 @@ function PropertyPageContent() {
       secondaryLabel: houseHackCalc.effectiveHousingCost <= 0 
         ? 'Monthly Profit'
         : 'Net Housing Cost',
-      verdict: houseHackCalc.monthlySavings > 500 ? 'good' : houseHackCalc.monthlySavings > 0 ? 'ok' : 'poor',
+      rating: (houseHackCalc.effectiveHousingCost <= 0 ? 'excellent' : houseHackCalc.monthlySavings >= 1000 ? 'great' : houseHackCalc.monthlySavings >= 500 ? 'good' : houseHackCalc.monthlySavings >= 0 ? 'fair' : 'poor') as Rating,
       score: houseHackCalc.monthlySavings > 0 ? 80 : 40,
       primaryValue: houseHackCalc.monthlySavings
     },
@@ -2500,7 +2518,7 @@ function PropertyPageContent() {
       primaryLabel: 'Max Allowable Offer',
       secondary: formatCurrency(wholesaleCalc.wholesaleFee),
       secondaryLabel: 'Wholesale Fee',
-      verdict: wholesaleCalc.isPurchaseBelowMAO ? 'good' : 'poor',
+      rating: (wholesaleCalc.isPurchaseBelowMAO && wholesaleCalc.wholesaleFee >= 15000 ? 'excellent' : wholesaleCalc.isPurchaseBelowMAO && wholesaleCalc.wholesaleFee >= 10000 ? 'great' : wholesaleCalc.isPurchaseBelowMAO && wholesaleCalc.wholesaleFee >= 5000 ? 'good' : wholesaleCalc.isPurchaseBelowMAO ? 'fair' : 'poor') as Rating,
       score: wholesaleCalc.isPurchaseBelowMAO ? 80 : 20,
       primaryValue: wholesaleCalc.mao
     },
