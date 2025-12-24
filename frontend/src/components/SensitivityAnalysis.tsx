@@ -209,10 +209,10 @@ function WhatIfSlider({
       </div>
       
       <div className="relative h-1.5 mb-2">
-        <div className="absolute inset-0 bg-gray-200 rounded-full" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div 
-          className="absolute h-full bg-blue-500 rounded-full transition-all"
-          style={{ width: `${percentage}%` }}
+          className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all"
+          style={{ width: `${100 - percentage}%` }}
         />
         <input
           type="range"
