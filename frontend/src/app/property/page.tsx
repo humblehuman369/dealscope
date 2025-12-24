@@ -971,7 +971,7 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Strategy" subtitle="Adjust strategy-specific inputs to refine your analysis" />
+      <StepHeader step={3} title="Fine Tune Long-Term Rental Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
         {/* LEFT: Adjust Inputs (Step 3 content) */}
@@ -1044,7 +1044,7 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Strategy" subtitle="Adjust strategy-specific inputs to refine your analysis" />
+      <StepHeader step={3} title="Fine Tune Short-Term Rental Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
         {/* LEFT: Adjust Inputs */}
@@ -1102,7 +1102,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Strategy" subtitle="Adjust strategy-specific inputs to refine your analysis" />
+      <StepHeader step={3} title="Fine Tune BRRRR Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
         {/* LEFT: Adjust Inputs */}
@@ -1156,7 +1156,7 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Strategy" subtitle="Adjust strategy-specific inputs to refine your analysis" />
+      <StepHeader step={3} title="Fine Tune Fix & Flip Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
         {/* LEFT: Adjust Inputs */}
@@ -1255,7 +1255,7 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Strategy" subtitle="Adjust strategy-specific inputs to refine your analysis" />
+      <StepHeader step={3} title="Fine Tune House Hacking Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
         {/* LEFT: Adjust Inputs */}
@@ -1310,7 +1310,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Strategy" subtitle="Adjust strategy-specific inputs to refine your analysis" />
+      <StepHeader step={3} title="Fine Tune Wholesale Strategy" />
       
       {/* 70% Rule Hero Section */}
       <div className={`rounded-xl p-4 mb-4 ${calc.isPurchaseBelowMAO ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200' : 'bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200'}`}>
@@ -2728,9 +2728,6 @@ function PropertyPageContent() {
       </div>
     )
   }
-
-  const currentStrategy = strategies.find(s => s.id === selectedStrategy)!
-  const CurrentIcon = currentStrategy.icon
 
   return (
     <div className="min-h-screen bg-[#e8eeef]">
