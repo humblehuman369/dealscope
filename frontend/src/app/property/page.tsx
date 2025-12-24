@@ -7,7 +7,7 @@ import {
   Building2, Home, Repeat, Hammer, Users, FileText, 
   TrendingUp, TrendingDown, DollarSign, Percent, Calendar, 
   AlertTriangle, CheckCircle, Zap, Target, PiggyBank, 
-  RefreshCw, Award, Loader2, Bell, Settings, Menu,
+  RefreshCw, Award, Loader2, Menu,
   BarChart3, LineChart, GitCompare, Activity, Wrench, ChevronRight,
   ArrowUpRight, ArrowDownRight, Sparkles, ChevronDown, ChevronUp,
   X, Layers, Calculator, Eye, EyeOff, SlidersHorizontal,
@@ -292,17 +292,6 @@ function TopNav({ property }: { property: PropertyData }) {
             )}
           </div>
         </div>
-      </div>
-      <div className="flex items-center gap-1">
-        <button type="button" title="View notifications" aria-label="View notifications" className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/80 transition-colors">
-          <span className="sr-only">View notifications</span>
-          <Bell className="w-5 h-5 text-gray-400" strokeWidth={1.5} aria-hidden="true" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-pink-500 rounded-full" aria-hidden="true" />
-        </button>
-        <button type="button" title="Open settings" aria-label="Open settings" className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/80 transition-colors">
-          <span className="sr-only">Open settings</span>
-          <Settings className="w-5 h-5 text-gray-400" strokeWidth={1.5} aria-hidden="true" />
-        </button>
       </div>
     </div>
   )
