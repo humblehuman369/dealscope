@@ -639,8 +639,8 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
         
         {/* Secondary Metric - Value on top, label below */}
         <div className="pt-1.5 border-t border-gray-100/80">
-          <div className="text-sm font-semibold text-gray-700">{metrics.secondary}</div>
-          <div className="text-[9px] font-medium text-gray-500 mt-px">{metrics.secondaryLabel}</div>
+          <div className={`text-sm font-semibold ${metrics.secondaryLabel.includes('Profit') ? 'text-emerald-600' : 'text-gray-700'}`}>{metrics.secondary}</div>
+          <div className={`text-[9px] font-medium mt-px ${metrics.secondaryLabel.includes('Profit') ? 'text-emerald-500' : 'text-gray-500'}`}>{metrics.secondaryLabel}</div>
         </div>
       </div>
     </button>
@@ -2485,8 +2485,12 @@ function PropertyPageContent() {
     house_hack: {
       primary: formatCurrency(houseHackCalc.monthlySavings),
       primaryLabel: 'Monthly Savings',
-      secondary: formatCurrency(houseHackCalc.effectiveHousingCost),
-      secondaryLabel: 'Net Housing Cost',
+      secondary: houseHackCalc.effectiveHousingCost <= 0 
+        ? formatCurrency(Math.abs(houseHackCalc.effectiveHousingCost))
+        : formatCurrency(houseHackCalc.effectiveHousingCost),
+      secondaryLabel: houseHackCalc.effectiveHousingCost <= 0 
+        ? 'Monthly Profit'
+        : 'Net Housing Cost',
       verdict: houseHackCalc.monthlySavings > 500 ? 'good' : houseHackCalc.monthlySavings > 0 ? 'ok' : 'poor',
       score: houseHackCalc.monthlySavings > 0 ? 80 : 40,
       primaryValue: houseHackCalc.monthlySavings
