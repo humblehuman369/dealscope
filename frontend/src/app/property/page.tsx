@@ -2463,7 +2463,7 @@ function PropertyPageContent() {
   const wholesaleCalc = useMemo(() => calculateWholesale(assumptions), [assumptions])
 
   // Strategy metrics for cards - includes primaryValue for profit/loss color coding
-  const strategyMetrics: Record<StrategyId, { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; verdict: 'good' | 'ok' | 'poor'; score: number; primaryValue: number }> = useMemo(() => ({
+  const strategyMetrics: Record<StrategyId, { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; rating: Rating; score: number; primaryValue: number }> = useMemo(() => ({
     ltr: {
       primary: formatCurrency(ltrCalc.monthlyCashFlow),
       primaryLabel: 'Monthly Cash Flow',
