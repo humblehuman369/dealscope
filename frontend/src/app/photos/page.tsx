@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { usePropertyStore } from '@/stores'
 import { 
-  Camera, Search, Image as ImageIcon, Download, Grid3X3, 
+  Search, Image as ImageIcon, Download, Grid3X3, 
   LayoutGrid, X, ChevronLeft, ChevronRight, Loader2,
-  ExternalLink, AlertCircle, Home, CheckCircle2
+  ExternalLink, AlertCircle, Camera
 } from 'lucide-react'
 
 interface Photo {
@@ -145,42 +145,6 @@ export default function PhotosPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Camera className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Property Photos</h1>
-              <p className="text-sm text-gray-500">
-                {currentProperty 
-                  ? `Viewing photos for ${currentProperty.address}`
-                  : 'Fetch property photos from Zillow via AXESSO API'
-                }
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Current Property Banner */}
-        {currentProperty && currentProperty.zpid && (
-          <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-6 flex items-center gap-3">
-            <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-              <Home className="w-5 h-5 text-teal-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-teal-900 font-medium">
-                {currentProperty.address}, {currentProperty.city}, {currentProperty.state} {currentProperty.zipCode}
-              </p>
-              <p className="text-teal-700 text-sm">
-                ZPID: {currentProperty.zpid} • Photos will auto-load for this property
-              </p>
-            </div>
-            <CheckCircle2 className="w-5 h-5 text-teal-500" />
-          </div>
-        )}
-
         {/* No Property Selected - Show Manual Input */}
         {(!currentProperty || !currentProperty.zpid) && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">

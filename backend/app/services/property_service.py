@@ -404,6 +404,46 @@ class PropertyService:
         
         return results
     
+    def _normalize_photo(self, photo: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Normalize a photo object from AXESSO format to frontend expected format.
+        
+        AXESSO returns photos with mixedSources.jpeg[]/webp[] structure.
+        Frontend expects { url: string, caption?: string, width?: number, height?: number }.
+        """
+        # If already in simple format with direct url
+        if isinstance(photo, dict) and "url" in photo and isinstance(photo["url"], str):
+            return {
+                "url": photo["url"],
+                "caption": photo.get("caption", ""),
+                "width": photo.get("width"),
+                "height": photo.get("height")
+            }
+        
+        # Handle AXESSO mixedSources format
+        if isinstance(photo, dict) and "mixedSources" in photo:
+            mixed = photo["mixedSources"]
+            caption = photo.get("caption", "")
+            
+            # Prefer JPEG, fall back to WebP
+            sources = mixed.get("jpeg", []) or mixed.get("webp", [])
+            
+            if sources:
+                # Get the highest resolution image (last in the array usually)
+                # Sort by width to get the best quality
+                sorted_sources = sorted(sources, key=lambda x: x.get("width", 0), reverse=True)
+                best_source = sorted_sources[0] if sorted_sources else None
+                
+                if best_source and "url" in best_source:
+                    return {
+                        "url": best_source["url"],
+                        "caption": caption,
+                        "width": best_source.get("width"),
+                        "height": best_source.get("height")
+                    }
+        
+        return None
+    
     async def get_property_photos(
         self, 
         zpid: Optional[str] = None, 
@@ -417,7 +457,7 @@ class PropertyService:
             url: Property URL on Zillow
             
         Returns:
-            Dict with photos data
+            Dict with photos data, normalized to frontend expected format
         """
         logger.info(f"Fetching photos - zpid: {zpid}, url: {url}")
         
@@ -427,21 +467,30 @@ class PropertyService:
             
             if result.success and result.data:
                 # Handle different response structures from AXESSO
-                photos = []
+                raw_photos = []
                 if isinstance(result.data, dict):
-                    photos = result.data.get("photos", [])
+                    raw_photos = result.data.get("photos", [])
                     # Also check for 'images' key as some endpoints use this
-                    if not photos:
-                        photos = result.data.get("images", [])
+                    if not raw_photos:
+                        raw_photos = result.data.get("images", [])
                 elif isinstance(result.data, list):
-                    photos = result.data
+                    raw_photos = result.data
+                
+                # Normalize each photo to frontend expected format
+                normalized_photos = []
+                for photo in raw_photos:
+                    normalized = self._normalize_photo(photo)
+                    if normalized:
+                        normalized_photos.append(normalized)
+                
+                logger.info(f"Normalized {len(normalized_photos)} photos from {len(raw_photos)} raw photos")
                 
                 return {
                     "success": True,
                     "zpid": zpid,
                     "url": url,
-                    "photos": photos,
-                    "total_count": len(photos),
+                    "photos": normalized_photos,
+                    "total_count": len(normalized_photos),
                     "fetched_at": datetime.utcnow().isoformat()
                 }
             else:
