@@ -8,10 +8,10 @@ import {
   TrendingUp, TrendingDown, DollarSign, Percent, Calendar, 
   AlertTriangle, CheckCircle, Zap, Target, PiggyBank, 
   RefreshCw, Award, Loader2, Menu,
-  BarChart3, LineChart, GitCompare, Activity, Wrench, ChevronRight,
+  BarChart3, LineChart, GitCompare, Activity, Wrench, ChevronRight, ChevronLeft,
   ArrowUpRight, ArrowDownRight, Sparkles, ChevronDown, ChevronUp,
   X, Layers, Calculator, Eye, EyeOff, SlidersHorizontal,
-  ArrowDown, Info, Minus, Plus, HelpCircle
+  ArrowDown, Info, Minus, Plus, HelpCircle, ImageIcon
 } from 'lucide-react'
 import { 
   ProjectionAssumptions,
@@ -268,6 +268,108 @@ const strategies: { id: StrategyId; name: string; shortName: string; description
 // UI COMPONENTS
 // ============================================
 
+interface Photo {
+  url: string
+  caption?: string
+  width?: number
+  height?: number
+}
+
+function PhotoCarousel({ zpid }: { zpid: string | null | undefined }) {
+  const [photos, setPhotos] = useState<Photo[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    if (!zpid) return
+    
+    const fetchPhotos = async () => {
+      setIsLoading(true)
+      try {
+        const response = await fetch(`/api/v1/photos?zpid=${zpid}`)
+        const data = await response.json()
+        if (data.success && data.photos?.length > 0) {
+          setPhotos(data.photos)
+        }
+      } catch (error) {
+        console.error('Failed to fetch photos:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchPhotos()
+  }, [zpid])
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1))
+  }
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1))
+  }
+
+  if (!zpid || isLoading) {
+    return (
+      <div className="w-[280px] h-[100px] bg-gray-100 rounded-xl flex items-center justify-center">
+        {isLoading ? (
+          <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+        ) : (
+          <ImageIcon className="w-6 h-6 text-gray-300" />
+        )}
+      </div>
+    )
+  }
+
+  if (photos.length === 0) {
+    return (
+      <div className="w-[280px] h-[100px] bg-gray-100 rounded-xl flex items-center justify-center">
+        <ImageIcon className="w-6 h-6 text-gray-300" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative w-[280px] h-[100px] rounded-xl overflow-hidden group">
+      {/* Main Image */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={photos[currentIndex]?.url}
+        alt={photos[currentIndex]?.caption || `Property photo ${currentIndex + 1}`}
+        className="w-full h-full object-cover"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23e5e7eb" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%239ca3af" font-size="12">No Image</text></svg>'
+        }}
+      />
+      
+      {/* Navigation Arrows */}
+      {photos.length > 1 && (
+        <>
+          <button
+            onClick={(e) => { e.preventDefault(); goToPrevious() }}
+            className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-label="Previous photo"
+          >
+            <ChevronLeft className="w-4 h-4 text-white" />
+          </button>
+          <button
+            onClick={(e) => { e.preventDefault(); goToNext() }}
+            className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-label="Next photo"
+          >
+            <ChevronRight className="w-4 h-4 text-white" />
+          </button>
+        </>
+      )}
+      
+      {/* Photo Counter */}
+      <div className="absolute bottom-1 right-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded">
+        {currentIndex + 1}/{photos.length}
+      </div>
+    </div>
+  )
+}
+
 function TopNav({ property }: { property: PropertyData }) {
   // Get estimated market value (Zestimate or AVM)
   const estimatedValue = property.valuations.zestimate || property.valuations.current_value_avm || 0
@@ -297,6 +399,9 @@ function TopNav({ property }: { property: PropertyData }) {
           </div>
         </div>
       </div>
+      
+      {/* Photo Carousel */}
+      <PhotoCarousel zpid={property.zpid} />
     </div>
   )
 }
