@@ -405,8 +405,8 @@ function DesktopScannerView({
     }
   }, [scanner]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (searchAddress.trim()) {
       router.push(`/property?address=${encodeURIComponent(searchAddress)}`);
     }
@@ -466,6 +466,7 @@ function DesktopScannerView({
                 </div>
                 <button
                   type="submit"
+                  onClick={() => handleSearch()}
                   className="px-6 py-3 bg-teal-500 text-white rounded-xl font-medium hover:bg-teal-600 transition-colors flex items-center gap-2"
                 >
                   Analyze
