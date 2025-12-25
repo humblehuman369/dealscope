@@ -21,9 +21,9 @@ interface UseGeolocationOptions {
 
 const defaultOptions: UseGeolocationOptions = {
   enableHighAccuracy: true,
-  timeout: 15000,
-  maximumAge: 0,
-  watchPosition: true,
+  timeout: 5000, // 5 second timeout
+  maximumAge: 60000, // Accept cached position up to 1 minute old
+  watchPosition: false, // Use single request, not watch
 };
 
 /**
@@ -113,7 +113,23 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
 
   useEffect(() => {
     const cleanup = requestLocation();
+    
+    // Fallback timeout in case browser doesn't trigger error
+    const fallbackTimeout = setTimeout(() => {
+      setState(prev => {
+        if (prev.isLoading) {
+          return {
+            ...prev,
+            isLoading: false,
+            error: prev.error || 'Location unavailable on this device',
+          };
+        }
+        return prev;
+      });
+    }, 6000); // 6 seconds fallback
+    
     return () => {
+      clearTimeout(fallbackTimeout);
       if (cleanup) cleanup();
     };
   }, [requestLocation]);
