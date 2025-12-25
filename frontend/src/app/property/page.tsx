@@ -275,7 +275,7 @@ interface Photo {
   height?: number
 }
 
-function PhotoCarousel({ zpid }: { zpid: string | null | undefined }) {
+function PhotoCarousel({ zpid, fillHeight = false }: { zpid: string | null | undefined; fillHeight?: boolean }) {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
@@ -309,9 +309,14 @@ function PhotoCarousel({ zpid }: { zpid: string | null | undefined }) {
     setCurrentIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1))
   }
 
+  // Container classes based on fillHeight prop
+  const containerClass = fillHeight 
+    ? "w-full h-full min-h-[120px] bg-gray-200 flex items-center justify-center"
+    : "w-[280px] h-[100px] bg-gray-100 rounded-xl flex items-center justify-center"
+
   if (!zpid || isLoading) {
     return (
-      <div className="w-[280px] h-[100px] bg-gray-100 rounded-xl flex items-center justify-center">
+      <div className={containerClass}>
         {isLoading ? (
           <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
         ) : (
@@ -323,14 +328,18 @@ function PhotoCarousel({ zpid }: { zpid: string | null | undefined }) {
 
   if (photos.length === 0) {
     return (
-      <div className="w-[280px] h-[100px] bg-gray-100 rounded-xl flex items-center justify-center">
+      <div className={containerClass}>
         <ImageIcon className="w-6 h-6 text-gray-300" />
       </div>
     )
   }
 
+  const carouselClass = fillHeight
+    ? "relative w-full h-full min-h-[120px] overflow-hidden group"
+    : "relative w-[280px] h-[100px] rounded-xl overflow-hidden group"
+
   return (
-    <div className="relative w-[280px] h-[100px] rounded-xl overflow-hidden group">
+    <div className={carouselClass}>
       {/* Main Image */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -370,38 +379,227 @@ function PhotoCarousel({ zpid }: { zpid: string | null | undefined }) {
   )
 }
 
+// Compact photo strip showing 3 photos side by side
+function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
+  const [photos, setPhotos] = useState<Photo[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+
+  useEffect(() => {
+    if (!zpid) return
+    
+    const fetchPhotos = async () => {
+      setIsLoading(true)
+      try {
+        const response = await fetch(`/api/v1/photos?zpid=${zpid}`)
+        const data = await response.json()
+        if (data.success && data.photos?.length > 0) {
+          setPhotos(data.photos)
+        }
+      } catch (error) {
+        console.error('Failed to fetch photos:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchPhotos()
+  }, [zpid])
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index)
+    setIsLightboxOpen(true)
+  }
+
+  if (!zpid || isLoading) {
+    return (
+      <div className="flex gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="w-24 h-16 bg-gray-100 rounded flex items-center justify-center">
+            {isLoading && i === 0 ? (
+              <Loader2 className="w-4 h-4 text-gray-300 animate-spin" />
+            ) : (
+              <ImageIcon className="w-4 h-4 text-gray-300" />
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (photos.length === 0) {
+    return (
+      <div className="flex gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="w-24 h-16 bg-gray-100 rounded flex items-center justify-center">
+            <ImageIcon className="w-4 h-4 text-gray-300" />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  // Show first 3 photos
+  const displayPhotos = photos.slice(0, 3)
+  const remainingCount = photos.length - 3
+
+  return (
+    <>
+      <div className="flex gap-1.5 flex-shrink-0">
+        {displayPhotos.map((photo, index) => (
+          <button
+            key={index}
+            onClick={() => openLightbox(index)}
+            className="relative w-24 h-16 rounded overflow-hidden group cursor-pointer"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photo.url}
+              alt={`Property photo ${index + 1}`}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23e5e7eb" width="100" height="100"/></svg>'
+              }}
+            />
+            {/* Show remaining count on last photo */}
+            {index === 2 && remainingCount > 0 && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <span className="text-white text-sm font-semibold">+{remainingCount}</span>
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Fullscreen Lightbox */}
+      {isLightboxOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          {/* Close button */}
+          <button 
+            className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors z-10"
+            onClick={() => setIsLightboxOpen(false)}
+            aria-label="Close lightbox"
+          >
+            <X className="w-5 h-5 text-white" />
+          </button>
+          
+          {/* Photo counter */}
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm font-medium">
+            {lightboxIndex + 1} of {photos.length}
+          </div>
+          
+          {/* Main image */}
+          <div className="relative max-w-[90vw] max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photos[lightboxIndex]?.url}
+              alt={`Property photo ${lightboxIndex + 1}`}
+              className="max-w-full max-h-[80vh] object-contain rounded-lg"
+            />
+          </div>
+          
+          {/* Navigation */}
+          {photos.length > 1 && (
+            <>
+              <button
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1)) }}
+                aria-label="Previous photo"
+              >
+                <ChevronLeft className="w-6 h-6 text-white" />
+              </button>
+              <button
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1)) }}
+                aria-label="Next photo"
+              >
+                <ChevronRight className="w-6 h-6 text-white" />
+              </button>
+            </>
+          )}
+          
+          {/* Thumbnail strip */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 max-w-[90vw] overflow-x-auto pb-2">
+            {photos.slice(0, 12).map((photo, index) => (
+              <button
+                key={index}
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex(index) }}
+                className={`flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden transition-all ${
+                  index === lightboxIndex 
+                    ? 'ring-2 ring-white opacity-100 scale-105' 
+                    : 'opacity-50 hover:opacity-80'
+                }`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photo.url}
+                  alt={`Thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
+            {photos.length > 12 && (
+              <div className="flex-shrink-0 w-16 h-12 rounded-lg bg-white/20 flex items-center justify-center text-white text-xs font-medium">
+                +{photos.length - 12}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 function TopNav({ property }: { property: PropertyData }) {
   // Get estimated market value (Zestimate or AVM)
   const estimatedValue = property.valuations.zestimate || property.valuations.current_value_avm || 0
   
   return (
-    <div className="flex items-center justify-between mb-6">
-      <div className="flex items-center gap-4">
-        <a href="/" className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/80 transition-colors" aria-label="Back to home" title="Back to home">
-          <Menu className="w-5 h-5 text-gray-400" strokeWidth={1.5} aria-hidden="true" />
-        </a>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-bold text-gray-800">{property.address.full_address}</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <p className="text-sm text-gray-400">
-              {property.details.bedrooms || '—'} bed · {property.details.bathrooms || '—'} bath · {property.details.square_footage?.toLocaleString() || '—'} sqft
+    <div className="mb-4 bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* Main row - always horizontal on md+, stacked on mobile */}
+      <div className="flex flex-col md:flex-row md:items-start">
+        {/* Left: Property Info */}
+        <div className="flex items-start gap-3 p-3 md:p-4 flex-1 min-w-0">
+          <a href="/" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0 mt-0.5" aria-label="Back to home" title="Back to home">
+            <Menu className="w-5 h-5 text-gray-400" strokeWidth={1.5} aria-hidden="true" />
+          </a>
+          <div className="flex-1 min-w-0">
+            {/* Street Address - Line 1 */}
+            <h1 className="text-base md:text-lg font-bold text-gray-900 leading-tight">
+              {property.address.street}
+            </h1>
+            {/* City, State Zip - Line 2 */}
+            <p className="text-gray-500 text-xs md:text-sm whitespace-nowrap">
+              {property.address.city}, {property.address.state} {property.address.zip_code}
             </p>
-            {estimatedValue > 0 && (
-              <>
-                <span className="text-gray-300">·</span>
-                <p className="text-sm font-semibold text-teal-600">
+            {/* Stats + Price - Line 3 */}
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-xs text-gray-400 whitespace-nowrap">
+                {property.details.bedrooms || '—'} bd · {property.details.bathrooms || '—'} ba · {property.details.square_footage?.toLocaleString() || '—'} sqft
+              </span>
+              {estimatedValue > 0 && (
+                <span className="text-sm font-semibold text-teal-600 whitespace-nowrap">
                   Est. {formatCurrency(estimatedValue)}
-                </p>
-              </>
-            )}
+                </span>
+              )}
+            </div>
           </div>
+        </div>
+        
+        {/* Right: Photo Strip - visible on md+ */}
+        <div className="hidden md:flex flex-shrink-0 pr-3 py-3">
+          <PhotoStrip zpid={property.zpid} />
         </div>
       </div>
       
-      {/* Photo Carousel */}
-      <PhotoCarousel zpid={property.zpid} />
+      {/* Mobile only: Photo Strip row */}
+      <div className="flex md:hidden justify-center px-3 pb-3 -mt-1">
+        <PhotoStrip zpid={property.zpid} />
+      </div>
     </div>
   )
 }
@@ -771,6 +969,116 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
         </div>
       </div>
     </button>
+  )
+}
+
+// Strategy type for the carousel
+type Strategy = { id: StrategyId; name: string; shortName: string; description: string; icon: React.ComponentType<{ className?: string }>; color: string; gradient: string }
+
+// Strategy Carousel - Responsive horizontal scroll with navigation
+function StrategyCarousel({ 
+  strategies: strategyList, 
+  strategyMetrics, 
+  selectedStrategy, 
+  onSelectStrategy 
+}: {
+  strategies: Strategy[]
+  strategyMetrics: Record<StrategyId, { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; rating: Rating; primaryValue: number }>
+  selectedStrategy: StrategyId
+  onSelectStrategy: (id: StrategyId) => void
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const checkScroll = useCallback(() => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
+      setCanScrollLeft(scrollLeft > 5)
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5)
+    }
+  }, [])
+
+  useEffect(() => {
+    checkScroll()
+    const el = scrollRef.current
+    if (el) {
+      el.addEventListener('scroll', checkScroll)
+      window.addEventListener('resize', checkScroll)
+      return () => {
+        el.removeEventListener('scroll', checkScroll)
+        window.removeEventListener('resize', checkScroll)
+      }
+    }
+  }, [checkScroll])
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const cardWidth = 160 // approximate card width + gap
+      const scrollAmount = direction === 'left' ? -cardWidth * 2 : cardWidth * 2
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+    }
+  }
+
+  return (
+    <div className="relative">
+      {/* Left scroll button */}
+      {canScrollLeft && (
+        <button
+          onClick={() => scroll('left')}
+          className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white/95 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all"
+          aria-label="Scroll left"
+        >
+          <ChevronLeft className="w-5 h-5 text-gray-600" />
+        </button>
+      )}
+
+      {/* Right scroll button */}
+      {canScrollRight && (
+        <button
+          onClick={() => scroll('right')}
+          className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white/95 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all"
+          aria-label="Scroll right"
+        >
+          <ChevronRight className="w-5 h-5 text-gray-600" />
+        </button>
+      )}
+
+      {/* Scrollable container */}
+      <div
+        ref={scrollRef}
+        className="flex gap-2 overflow-x-auto px-5 pb-4 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+      >
+        {strategyList.map((strategy) => {
+          const isSelected = selectedStrategy === strategy.id
+          return (
+            <div 
+              key={strategy.id} 
+              className="relative flex-shrink-0 snap-start min-w-[140px] max-w-[180px] flex-1"
+            >
+              <StrategyCard
+                strategy={strategy}
+                metrics={strategyMetrics[strategy.id]}
+                isSelected={isSelected}
+                onClick={() => onSelectStrategy(strategy.id)}
+              />
+              {/* Visual connection bridge - extends from selected card to tabs */}
+              {isSelected && (
+                <div className="absolute -bottom-4 left-0 right-0 h-4 bg-gray-50" />
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Gradient fade hints for more content */}
+      {canScrollLeft && (
+        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
+      )}
+      {canScrollRight && (
+        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none z-10" />
+      )}
+    </div>
   )
 }
 
@@ -2852,31 +3160,23 @@ function PropertyPageContent() {
 
         {/* STEP 2: Select Investment Strategy + Connected Content Panel */}
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-          {/* Step 2 Header + Strategy Cards */}
-          <div className="px-5 pt-4 pb-3 border-b border-gray-100">
-            <StepHeader step={2} title="Select Your Investment Strategy" />
-            
-            {/* Strategy Cards Grid - Inside the panel for visual connection */}
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 relative">
-              {strategies.map((strategy, index) => (
-                <div key={strategy.id} className="relative">
-                  <StrategyCard
-                    strategy={strategy}
-                    metrics={strategyMetrics[strategy.id]}
-                    isSelected={selectedStrategy === strategy.id}
-                    onClick={() => { setSelectedStrategy(strategy.id); setDrillDownView('details'); }}
-                  />
-                  {/* Visual connection indicator - shows as bottom pointer for selected */}
-                  {selectedStrategy === strategy.id && (
-                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-gray-50 border-r border-b border-gray-100 z-10" />
-                  )}
-                </div>
-              ))}
+          {/* Step 2 Header + Strategy Cards Carousel */}
+          <div className="pt-4 pb-0 relative">
+            <div className="px-5">
+              <StepHeader step={2} title="Select Your Investment Strategy" />
             </div>
+            
+            {/* Strategy Cards Carousel - Responsive with horizontal scroll */}
+            <StrategyCarousel
+              strategies={strategies}
+              strategyMetrics={strategyMetrics}
+              selectedStrategy={selectedStrategy}
+              onSelectStrategy={(id) => { setSelectedStrategy(id); setDrillDownView('details'); }}
+            />
           </div>
 
-          {/* Tabs - Left aligned */}
-          <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
+          {/* Tabs - Connected to selected strategy with matching gray background */}
+          <div className="px-5 py-3 bg-gray-50">
             <DrillDownTabs activeView={drillDownView} onViewChange={setDrillDownView} />
           </div>
 
@@ -2917,4 +3217,5 @@ export default function PropertyPage() {
     </Suspense>
   )
 }
+
 
