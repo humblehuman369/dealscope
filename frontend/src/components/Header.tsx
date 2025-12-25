@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Settings } from 'lucide-react'
+import { Bell, Settings, ScanLine } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -17,6 +17,15 @@ export default function Header() {
               <span className="text-lg font-semibold text-gray-900">InvestIQ</span>
             </Link>
             <nav className="hidden md:flex items-center space-x-5">
+              <Link 
+                href="/scan" 
+                className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  pathname === '/scan' ? 'text-teal-600' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <ScanLine className="w-4 h-4" />
+                Scan
+              </Link>
               <Link 
                 href="/" 
                 className={`text-sm font-medium transition-colors ${
