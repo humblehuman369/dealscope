@@ -414,7 +414,7 @@ function DesktopScannerView({
     } finally {
       setIsLoadingNearby(false);
     }
-  }, [scanner]);
+  }, [scanner.latitude, scanner.longitude, scanner.performScan, scanner.result, scanner.clearResult]);
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
