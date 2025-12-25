@@ -480,49 +480,33 @@ function DesktopScannerView({
             <div className="flex flex-col items-center justify-center md:w-72">
               <button
                 onClick={onSwitchMode}
-                disabled={!scanner.isLocationReady}
-                className={`group relative w-40 h-40 rounded-full flex flex-col items-center justify-center transition-all duration-300 ${
-                  scanner.isLocationReady
-                    ? 'bg-gradient-to-br from-teal-400 to-teal-600 hover:from-teal-500 hover:to-teal-700 shadow-2xl shadow-teal-500/30 hover:scale-105 cursor-pointer'
-                    : 'bg-gray-700 cursor-wait'
-                }`}
+                className="group relative w-36 h-36 rounded-full flex flex-col items-center justify-center transition-all duration-300 bg-gradient-to-br from-teal-400 to-teal-600 hover:from-teal-500 hover:to-teal-700 shadow-2xl shadow-teal-500/30 hover:scale-105 cursor-pointer"
               >
                 {/* Animated ring */}
-                {scanner.isLocationReady && (
-                  <div className="absolute inset-0 rounded-full border-2 border-teal-400/50 animate-ping" />
-                )}
+                <div className="absolute inset-0 rounded-full border-2 border-teal-400/50 animate-ping" />
                 
                 {/* Icon and text */}
-                {!scanner.isLocationReady ? (
-                  <>
-                    <Loader2 className="w-12 h-12 text-white/70 animate-spin mb-2" />
-                    <span className="text-white/70 text-sm font-medium">Locating...</span>
-                  </>
-                ) : (
-                  <>
-                    <ScanLine className="w-12 h-12 text-white mb-2 group-hover:scale-110 transition-transform" />
-                    <span className="text-white text-lg font-bold">SCAN</span>
-                    <span className="text-white/70 text-xs mt-1">Tap to start</span>
-                  </>
-                )}
+                <ScanLine className="w-10 h-10 text-white mb-1 group-hover:scale-110 transition-transform" />
+                <span className="text-white text-lg font-bold">SCAN</span>
+                <span className="text-white/70 text-[10px] mt-0.5">Use Camera</span>
               </button>
               
-              {/* Status indicator */}
-              <div className="mt-4 flex items-center gap-2 text-sm">
+              {/* GPS Status - subtle indicator */}
+              <div className="mt-3 flex items-center gap-1.5 text-xs">
                 {scanner.isLocationReady ? (
                   <>
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <span className="text-green-400">Ready</span>
+                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                    <span className="text-green-400/80">GPS Ready</span>
                   </>
                 ) : scanner.locationError ? (
                   <>
-                    <div className="w-2 h-2 bg-red-400 rounded-full" />
-                    <span className="text-red-400">Location required</span>
+                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                    <span className="text-gray-400">GPS unavailable</span>
                   </>
                 ) : (
                   <>
-                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-                    <span className="text-amber-400">Acquiring GPS...</span>
+                    <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
+                    <span className="text-amber-400/80">Acquiring GPS...</span>
                   </>
                 )}
               </div>
