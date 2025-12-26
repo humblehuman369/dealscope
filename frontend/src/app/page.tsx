@@ -92,8 +92,16 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   const [cameraReady, setCameraReady] = useState(false);
   const [distance, setDistance] = useState(50);
   const [manualHeading, setManualHeading] = useState<number | null>(null);
+  const [compassStatus, setCompassStatus] = useState<string | null>(null);
   
   const scanner = usePropertyScan();
+
+  // #region agent log
+  const DEBUG_SERVER = 'http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184';
+  function debugLog(location: string, message: string, data: object, hypothesisId: string) {
+    fetch(DEBUG_SERVER, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location, message, data, hypothesisId, timestamp: Date.now(), sessionId: 'debug-session' }) }).catch(() => {});
+  }
+  // #endregion
 
   // Initialize camera
   useEffect(() => {
@@ -131,7 +139,13 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
     startCamera();
 
     // Request orientation permission on iOS
+    // #region agent log
+    debugLog('page.tsx:139', 'Permission request check', { hasCompass: scanner.hasCompass, heading: scanner.heading, isOrientationSupported: scanner.isOrientationSupported }, 'H2');
+    // #endregion
     if (scanner.hasCompass && !scanner.heading) {
+      // #region agent log
+      debugLog('page.tsx:143', 'Requesting orientation permission', {}, 'H2');
+      // #endregion
       scanner.requestOrientationPermission();
     }
 
@@ -143,6 +157,16 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   }, [scanner]);
 
   const handleScan = async () => {
+    // #region agent log
+    debugLog('page.tsx:150', 'Scan button pressed', { heading: scanner.heading, hasCompass: scanner.hasCompass }, 'H2-FIX');
+    // #endregion
+    // Request compass permission on first scan if not granted yet (iOS 13+ requires user gesture)
+    if (scanner.heading === null && scanner.isOrientationSupported) {
+      // #region agent log
+      debugLog('page.tsx:155', 'Requesting permission on scan tap', {}, 'H2-FIX');
+      // #endregion
+      await scanner.requestOrientationPermission();
+    }
     await scanner.performScan(distance, manualHeading ?? undefined);
   };
 
@@ -253,8 +277,39 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
             />
           </div>
 
-          {/* Manual heading input (if no compass) */}
-          {!scanner.hasCompass && (
+          {/* Compass enable button - required for iOS 13+ user gesture */}
+          {scanner.heading === null && (
+            <div className="mb-4">
+              <button
+                onClick={async () => {
+                  setCompassStatus('Requesting...');
+                  try {
+                    const granted = await scanner.requestOrientationPermission();
+                    setCompassStatus(granted ? 'Granted!' : 'Denied/Failed');
+                  } catch (err) {
+                    setCompassStatus(`Error: ${err instanceof Error ? err.message : String(err)}`);
+                  }
+                }}
+                className="w-full py-3 px-4 bg-amber-500/20 border border-amber-500/30 rounded-xl text-amber-400 font-medium hover:bg-amber-500/30 transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+                🧭 ENABLE COMPASS (TAP HERE)
+              </button>
+              {compassStatus && (
+                <p className="text-xs text-amber-300 mt-2 text-center font-mono">
+                  Status: {compassStatus}
+                </p>
+              )}
+              <p className="text-xs text-white/50 mt-1 text-center">
+                Required for iOS - tap button above
+              </p>
+            </div>
+          )}
+
+          {/* Manual heading input (if compass not available after permission) */}
+          {!scanner.hasCompass && scanner.heading === null && (
             <div className="mb-4">
               <label className="text-xs text-white/70 mb-2 block">
                 Point device at property and enter direction (0-360°)
@@ -337,6 +392,17 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
                 : '⏳ Waiting for GPS...'
               }
             </span>
+          </div>
+
+          {/* DEBUG: Compass diagnostic info - remove after fix */}
+          <div className="mt-2 p-2 bg-purple-900/30 rounded-lg text-[10px] text-purple-300 font-mono">
+            <div>isHTTPS: {String(typeof window !== 'undefined' && (window.location.protocol === 'https:' || window.location.hostname === 'localhost'))}</div>
+            <div>isSupported: {String(scanner.isOrientationSupported)}</div>
+            <div>isMobile: {String(scanner.isMobileDevice)}</div>
+            <div>hasCompass: {String(scanner.hasCompass)}</div>
+            <div>heading: {String(scanner.heading)}</div>
+            <div>permReq: {String(scanner.permissionRequested)}</div>
+            {compassStatus && <div className="text-amber-300">btn: {compassStatus}</div>}
           </div>
 
           {/* Error display */}

@@ -177,6 +177,8 @@ export function usePropertyScan() {
     heading: orientation.heading,
     hasCompass: orientation.hasCompass,
     isOrientationSupported: orientation.isSupported,
+    isMobileDevice: orientation.isMobileDevice,
+    permissionRequested: orientation.permissionRequested,
     requestOrientationPermission: orientation.requestPermission,
     
     // Scan state
