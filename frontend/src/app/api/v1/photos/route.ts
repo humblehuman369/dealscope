@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// Force dynamic rendering since this route uses searchParams
+export const dynamic = 'force-dynamic'
+
 // Backend API URL - defaults to localhost for development
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
 

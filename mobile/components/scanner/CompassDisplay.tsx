@@ -1,7 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
+// #region agent log
+import * as FileSystem from 'expo-file-system';
+const DEBUG_LOG_PATH = '/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug.log';
+async function debugLog(location: string, message: string, data: object, hypothesisId: string) {
+  const entry = JSON.stringify({ location, message, data, hypothesisId, timestamp: Date.now(), sessionId: 'debug-session' }) + '\n';
+  try { await FileSystem.writeAsStringAsync(DEBUG_LOG_PATH, entry, { encoding: FileSystem.EncodingType.UTF8, append: true }); } catch (e) {}
+}
+// #endregion
 
 interface CompassDisplayProps {
   heading: number;
@@ -12,6 +20,11 @@ interface CompassDisplayProps {
  * Compact compass display showing current heading direction.
  */
 export function CompassDisplay({ heading, accuracy }: CompassDisplayProps) {
+  // #region agent log
+  useEffect(() => {
+    debugLog('CompassDisplay.tsx:23', 'CompassDisplay rendered with props', { heading, accuracy }, 'H3');
+  }, [heading, accuracy]);
+  // #endregion
   const cardinalDirection = getCardinalDirection(heading);
   
   return (

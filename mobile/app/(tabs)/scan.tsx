@@ -21,6 +21,14 @@ import { CompassDisplay } from '../../components/scanner/CompassDisplay';
 import { DistanceSlider } from '../../components/scanner/DistanceSlider';
 import { ScanResultSheet } from '../../components/scanner/ScanResultSheet';
 import { colors } from '../../theme/colors';
+// #region agent log
+import * as FileSystem from 'expo-file-system';
+const DEBUG_LOG_PATH = '/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug.log';
+async function debugLog(location: string, message: string, data: object, hypothesisId: string) {
+  const entry = JSON.stringify({ location, message, data, hypothesisId, timestamp: Date.now(), sessionId: 'debug-session' }) + '\n';
+  try { await FileSystem.writeAsStringAsync(DEBUG_LOG_PATH, entry, { encoding: FileSystem.EncodingType.UTF8, append: true }); } catch (e) {}
+}
+// #endregion
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -33,6 +41,12 @@ export default function ScanScreen() {
   const [distance, setDistance] = useState(50);
   const scanner = usePropertyScanner();
   const { isScanning, result, error, performScan, clearResult } = usePropertyScan();
+  
+  // #region agent log
+  React.useEffect(() => {
+    debugLog('scan.tsx:42', 'Scanner state in ScanScreen', { heading: scanner.heading, isCompassReady: scanner.isCompassReady, isLocationReady: scanner.isLocationReady, error: scanner.error }, 'H3');
+  }, [scanner.heading, scanner.isCompassReady, scanner.isLocationReady, scanner.error]);
+  // #endregion
   
   // Animation
   const scanAnimation = useRef(new Animated.Value(1)).current;
