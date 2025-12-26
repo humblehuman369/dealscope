@@ -46,17 +46,17 @@ export async function GET(request: NextRequest) {
       console.warn('Backend API unavailable for photos:', backendError)
     }
     
-    // Fallback: Return mock photos data
+    // Fallback: Return mock photos data with real placeholder images
     const mockPhotos = {
       success: true,
       zpid: zpid || null,
       url: url || null,
       photos: [
-        { url: 'https://photos.zillowstatic.com/fp/placeholder-1.jpg', caption: 'Front exterior' },
-        { url: 'https://photos.zillowstatic.com/fp/placeholder-2.jpg', caption: 'Living room' },
-        { url: 'https://photos.zillowstatic.com/fp/placeholder-3.jpg', caption: 'Kitchen' },
-        { url: 'https://photos.zillowstatic.com/fp/placeholder-4.jpg', caption: 'Master bedroom' },
-        { url: 'https://photos.zillowstatic.com/fp/placeholder-5.jpg', caption: 'Backyard' },
+        { url: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop', caption: 'Front exterior' },
+        { url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop', caption: 'Living room' },
+        { url: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop', caption: 'Kitchen' },
+        { url: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop', caption: 'Master bedroom' },
+        { url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop', caption: 'Backyard' },
       ],
       total_count: 5,
       fetched_at: new Date().toISOString(),

@@ -408,11 +408,21 @@ class PropertyService:
         """
         Normalize a photo object from AXESSO format to frontend expected format.
         
-        AXESSO returns photos with mixedSources.jpeg[]/webp[] structure.
+        AXESSO property-v2 can return photos in various formats:
+        - mixedSources.jpeg[]/webp[] structure
+        - Direct url field
+        - sources array with width/url
+        
         Frontend expects { url: string, caption?: string, width?: number, height?: number }.
         """
+        if not isinstance(photo, dict):
+            # Sometimes it's just a URL string
+            if isinstance(photo, str) and photo.startswith("http"):
+                return {"url": photo, "caption": ""}
+            return None
+        
         # If already in simple format with direct url
-        if isinstance(photo, dict) and "url" in photo and isinstance(photo["url"], str):
+        if "url" in photo and isinstance(photo["url"], str):
             return {
                 "url": photo["url"],
                 "caption": photo.get("caption", ""),
@@ -421,7 +431,7 @@ class PropertyService:
             }
         
         # Handle AXESSO mixedSources format
-        if isinstance(photo, dict) and "mixedSources" in photo:
+        if "mixedSources" in photo:
             mixed = photo["mixedSources"]
             caption = photo.get("caption", "")
             
@@ -429,7 +439,7 @@ class PropertyService:
             sources = mixed.get("jpeg", []) or mixed.get("webp", [])
             
             if sources:
-                # Get the highest resolution image (last in the array usually)
+                # Get the highest resolution image
                 # Sort by width to get the best quality
                 sorted_sources = sorted(sources, key=lambda x: x.get("width", 0), reverse=True)
                 best_source = sorted_sources[0] if sorted_sources else None
@@ -442,6 +452,39 @@ class PropertyService:
                         "height": best_source.get("height")
                     }
         
+        # Handle sources array format (alternative AXESSO format)
+        if "sources" in photo:
+            sources = photo["sources"]
+            caption = photo.get("caption", "")
+            
+            if isinstance(sources, list) and sources:
+                # Sort by width to get the best quality
+                sorted_sources = sorted(sources, key=lambda x: x.get("width", 0), reverse=True)
+                best_source = sorted_sources[0] if sorted_sources else None
+                
+                if best_source and "url" in best_source:
+                    return {
+                        "url": best_source["url"],
+                        "caption": caption,
+                        "width": best_source.get("width"),
+                        "height": best_source.get("height")
+                    }
+        
+        # Handle responsivePhotos format with subPhotos
+        if "subPhotos" in photo:
+            sub_photos = photo["subPhotos"]
+            if isinstance(sub_photos, list) and sub_photos:
+                # Get highest resolution subphoto
+                sorted_subs = sorted(sub_photos, key=lambda x: x.get("width", 0), reverse=True)
+                best = sorted_subs[0] if sorted_subs else None
+                if best and "url" in best:
+                    return {
+                        "url": best["url"],
+                        "caption": photo.get("caption", ""),
+                        "width": best.get("width"),
+                        "height": best.get("height")
+                    }
+        
         return None
     
     async def get_property_photos(
@@ -451,6 +494,9 @@ class PropertyService:
     ) -> Dict[str, Any]:
         """
         Fetch property photos from Zillow via AXESSO API.
+        
+        Note: AXESSO doesn't have a dedicated photos endpoint.
+        Photos are fetched from the property-v2 endpoint response.
         
         Args:
             zpid: Zillow Property ID
@@ -462,17 +508,25 @@ class PropertyService:
         logger.info(f"Fetching photos - zpid: {zpid}, url: {url}")
         
         try:
-            # Use the comprehensive ZillowClient for photos (better error handling)
+            # Use the comprehensive ZillowClient for photos
+            # This now uses property-v2 endpoint and extracts photos
             result = await self.zillow.get_photos(zpid=zpid, url=url)
             
             if result.success and result.data:
                 # Handle different response structures from AXESSO
                 raw_photos = []
                 if isinstance(result.data, dict):
+                    # Primary: photos array from property-v2
                     raw_photos = result.data.get("photos", [])
-                    # Also check for 'images' key as some endpoints use this
+                    # Alternative: responsivePhotos
+                    if not raw_photos:
+                        raw_photos = result.data.get("responsivePhotos", [])
+                    # Alternative: images
                     if not raw_photos:
                         raw_photos = result.data.get("images", [])
+                    # Alternative: hugePhotos
+                    if not raw_photos:
+                        raw_photos = result.data.get("hugePhotos", [])
                 elif isinstance(result.data, list):
                     raw_photos = result.data
                 
@@ -494,11 +548,12 @@ class PropertyService:
                     "fetched_at": datetime.utcnow().isoformat()
                 }
             else:
+                logger.warning(f"Photo fetch failed: {result.error}")
                 return {
                     "success": False,
                     "zpid": zpid,
                     "url": url,
-                    "error": result.error or "Failed to fetch photos",
+                    "error": result.error or "Failed to fetch photos from property-v2 endpoint",
                     "photos": [],
                     "total_count": 0,
                     "fetched_at": datetime.utcnow().isoformat()
