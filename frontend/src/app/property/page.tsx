@@ -89,12 +89,10 @@ type DrillDownView = 'details' | 'charts' | 'projections' | 'score' | 'sensitivi
 
 async function fetchProperty(address: string): Promise<PropertyData> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-  console.log('[DEBUG] fetchProperty called', { address, apiUrl });
   const response = await fetch(`${apiUrl}/api/v1/properties/search`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ address })
   })
-  console.log('[DEBUG] fetchProperty response', { ok: response.ok, status: response.status });
   if (!response.ok) throw new Error('Property not found')
   return response.json()
 }
@@ -2895,13 +2893,10 @@ function PropertyPageContent() {
 
   useEffect(() => {
     async function loadProperty() {
-      console.log('[DEBUG] loadProperty called', { addressParam });
       setLoading(true)
       try {
         if (!addressParam) throw new Error('No address provided')
-        console.log('[DEBUG] Calling fetchProperty', { decodedAddress: decodeURIComponent(addressParam) });
         const data = await fetchProperty(decodeURIComponent(addressParam))
-        console.log('[DEBUG] Property data received', { propertyId: data.property_id });
         setProperty(data)
         
         // Update the header store with current property info
@@ -2982,7 +2977,6 @@ function PropertyPageContent() {
           wholesaleFeePct: 0.007,
         }))
       } catch (err) {
-        console.log('[DEBUG] Error loading property', { error: err instanceof Error ? err.message : String(err) });
         setError(err instanceof Error ? err.message : 'Failed to load property')
       } finally {
         setLoading(false)
@@ -3128,8 +3122,6 @@ function PropertyPageContent() {
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3" />
           <p className="text-gray-400 text-sm">Loading property...</p>
-          {/* DEBUG */}
-          <p className="text-gray-300 text-xs mt-4 font-mono">addressParam: {addressParam}</p>
         </div>
       </div>
     )
@@ -3142,8 +3134,6 @@ function PropertyPageContent() {
           <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto mb-4" strokeWidth={1.5} />
           <h2 className="text-lg font-bold text-gray-800 mb-2">Unable to Load Property</h2>
           <p className="text-gray-400 text-sm mb-6">{error || 'Property data is null'}</p>
-          {/* DEBUG */}
-          <p className="text-gray-300 text-xs mb-4 font-mono">addressParam: {addressParam}</p>
           <div className="flex gap-3 justify-center">
             <a href="/" className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-600 transition-colors">Back to Search</a>
           </div>

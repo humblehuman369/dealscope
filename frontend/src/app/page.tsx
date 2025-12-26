@@ -442,15 +442,10 @@ function DesktopScannerView({
   const [isNavigating, setIsNavigating] = useState(false);
   
   const handleSearch = (e?: React.FormEvent) => {
-    console.log('[DEBUG] handleSearch called', { searchAddress });
     if (e) e.preventDefault();
     if (searchAddress.trim()) {
-      console.log('[DEBUG] Navigating to property page', { address: searchAddress });
       setIsNavigating(true);
-      // Use window.location for more reliable navigation
       window.location.href = `/property?address=${encodeURIComponent(searchAddress)}`;
-    } else {
-      console.log('[DEBUG] Search skipped - empty address');
     }
   };
 

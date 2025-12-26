@@ -102,20 +102,11 @@ function generateMockProperty(address: string) {
 }
 
 export async function POST(request: NextRequest) {
-  // #region agent log
-  console.log('[DEBUG H5] properties/search: POST request received');
-  // #endregion
   try {
     const body = await request.json()
-    // #region agent log
-    console.log('[DEBUG H5] properties/search: Request body:', body);
-    // #endregion
     const { address, city, state, zip_code } = body
     
     if (!address) {
-      // #region agent log
-      console.log('[DEBUG H5] properties/search: No address provided');
-      // #endregion
       return NextResponse.json(
         { detail: 'Address is required' },
         { status: 400 }
