@@ -87,26 +87,14 @@ type DrillDownView = 'details' | 'charts' | 'projections' | 'score' | 'sensitivi
 // API FUNCTIONS
 // ============================================
 
-// #region agent log
-const DEBUG_SERVER = 'http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184';
-function debugLog(location: string, message: string, data: object, hypothesisId: string) {
-  fetch(DEBUG_SERVER, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location, message, data, hypothesisId, timestamp: Date.now(), sessionId: 'debug-session' }) }).catch(() => {});
-  console.log(`[DEBUG ${hypothesisId}] ${location}: ${message}`, data);
-}
-// #endregion
-
 async function fetchProperty(address: string): Promise<PropertyData> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-  // #region agent log
-  debugLog('property/page.tsx:fetchProperty', 'Fetching property', { address, apiUrl, fullUrl: `${apiUrl}/api/v1/properties/search` }, 'H2');
-  // #endregion
+  console.log('[DEBUG] fetchProperty called', { address, apiUrl });
   const response = await fetch(`${apiUrl}/api/v1/properties/search`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ address })
   })
-  // #region agent log
-  debugLog('property/page.tsx:fetchProperty', 'API response', { ok: response.ok, status: response.status }, 'H2');
-  // #endregion
+  console.log('[DEBUG] fetchProperty response', { ok: response.ok, status: response.status });
   if (!response.ok) throw new Error('Property not found')
   return response.json()
 }
@@ -2907,19 +2895,13 @@ function PropertyPageContent() {
 
   useEffect(() => {
     async function loadProperty() {
-      // #region agent log
-      debugLog('property/page.tsx:loadProperty', 'loadProperty called', { addressParam }, 'H3');
-      // #endregion
+      console.log('[DEBUG] loadProperty called', { addressParam });
       setLoading(true)
       try {
         if (!addressParam) throw new Error('No address provided')
-        // #region agent log
-        debugLog('property/page.tsx:loadProperty', 'Calling fetchProperty', { decodedAddress: decodeURIComponent(addressParam) }, 'H3');
-        // #endregion
+        console.log('[DEBUG] Calling fetchProperty', { decodedAddress: decodeURIComponent(addressParam) });
         const data = await fetchProperty(decodeURIComponent(addressParam))
-        // #region agent log
-        debugLog('property/page.tsx:loadProperty', 'Property data received', { propertyId: data.property_id, address: data.address }, 'H3');
-        // #endregion
+        console.log('[DEBUG] Property data received', { propertyId: data.property_id });
         setProperty(data)
         
         // Update the header store with current property info
@@ -3000,9 +2982,7 @@ function PropertyPageContent() {
           wholesaleFeePct: 0.007,
         }))
       } catch (err) {
-        // #region agent log
-        debugLog('property/page.tsx:loadProperty', 'Error loading property', { error: err instanceof Error ? err.message : String(err) }, 'H4');
-        // #endregion
+        console.log('[DEBUG] Error loading property', { error: err instanceof Error ? err.message : String(err) });
         setError(err instanceof Error ? err.message : 'Failed to load property')
       } finally {
         setLoading(false)
