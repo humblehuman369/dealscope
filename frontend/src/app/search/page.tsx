@@ -38,7 +38,8 @@ export default function SearchPage() {
     }
     setIsSearching(true)
     console.log('[DEBUG search/page] Navigating to property page', { address });
-    router.push(`/property?address=${encodeURIComponent(address)}`)
+    // Use window.location for reliable navigation
+    window.location.href = `/property?address=${encodeURIComponent(address)}`
   }
 
   return (
