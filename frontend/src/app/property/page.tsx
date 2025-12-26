@@ -281,29 +281,17 @@ function PhotoCarousel({ zpid, fillHeight = false }: { zpid: string | null | und
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoCarousel',message:'PhotoCarousel useEffect triggered',data:{zpid,zpidType:typeof zpid,zpidIsNull:zpid===null,zpidIsUndefined:zpid===undefined},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
-    // #endregion
     if (!zpid) return
     
     const fetchPhotos = async () => {
       setIsLoading(true)
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoCarousel:fetchPhotos',message:'Fetching photos from API',data:{zpid,apiUrl:`/api/v1/photos?zpid=${zpid}`},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       try {
         const response = await fetch(`/api/v1/photos?zpid=${zpid}`)
         const data = await response.json()
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoCarousel:fetchPhotos:response',message:'Photos API response received',data:{success:data.success,photoCount:data.photos?.length,isMock:data.is_mock,error:data.error},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-        // #endregion
         if (data.success && data.photos?.length > 0) {
           setPhotos(data.photos)
         }
       } catch (error) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoCarousel:fetchPhotos:error',message:'Photos fetch failed',data:{error:String(error)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-        // #endregion
         console.error('Failed to fetch photos:', error)
       } finally {
         setIsLoading(false)
@@ -2909,9 +2897,6 @@ function PropertyPageContent() {
       try {
         if (!addressParam) throw new Error('No address provided')
         const data = await fetchProperty(decodeURIComponent(addressParam))
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:loadProperty',message:'Property data loaded',data:{property_id:data.property_id,zpid:data.zpid,zpidType:typeof data.zpid,hasZpid:!!data.zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
         setProperty(data)
         
         // Update the header store with current property info

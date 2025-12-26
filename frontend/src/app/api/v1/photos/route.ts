@@ -26,9 +26,6 @@ export async function GET(request: NextRequest) {
     
     // Try to call the backend API
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/v1/photos/route.ts:GET',message:'Calling backend photos API',data:{backendUrl:BACKEND_URL,zpid,url,fullUrl:`${BACKEND_URL}/api/v1/photos?${params.toString()}`},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D,E'})}).catch(()=>{});
-      // #endregion
       const backendResponse = await fetch(
         `${BACKEND_URL}/api/v1/photos?${params.toString()}`,
         {
@@ -41,20 +38,11 @@ export async function GET(request: NextRequest) {
       
       if (backendResponse.ok) {
         const data = await backendResponse.json()
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/v1/photos/route.ts:GET:success',message:'Backend photos API returned data',data:{success:data.success,photoCount:data.photos?.length,error:data.error},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D,E'})}).catch(()=>{});
-        // #endregion
         return NextResponse.json(data)
       }
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/v1/photos/route.ts:GET:backendError',message:'Backend photos API returned non-OK',data:{status:backendResponse.status},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D,E'})}).catch(()=>{});
-      // #endregion
       console.warn(`Backend API returned ${backendResponse.status} for photos`)
     } catch (backendError) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/v1/photos/route.ts:GET:exception',message:'Backend photos API unavailable',data:{error:String(backendError)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D,E'})}).catch(()=>{});
-      // #endregion
       console.warn('Backend API unavailable for photos:', backendError)
     }
     
