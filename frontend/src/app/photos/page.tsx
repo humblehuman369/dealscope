@@ -84,7 +84,9 @@ export default function PhotosPage() {
   }
 
   const fetchPhotos = async () => {
+    console.log('[Photos] fetchPhotos called, zpid:', zpid, 'url:', propertyUrl)
     if (!zpid && !propertyUrl) {
+      console.log('[Photos] No zpid or url - showing error')
       setError('Please enter either a Zillow Property ID (ZPID) or a Zillow URL')
       return
     }
@@ -120,6 +122,7 @@ export default function PhotosPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('[Photos] handleSubmit called, zpid:', zpid, 'url:', propertyUrl)
     setAutoFetched(true) // Prevent auto-fetch from running again
     fetchPhotos()
   }

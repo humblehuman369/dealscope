@@ -436,6 +436,10 @@ class ZillowClient:
         """
         Get property photos.
         
+        NOTE: AXESSO API doesn't have a separate /photos endpoint.
+        Photos are included in the /property-v2 response.
+        This method calls property-v2 and extracts photos from the response.
+        
         Useful for property condition assessment.
         """
         params = {}
@@ -443,8 +447,52 @@ class ZillowClient:
             params["zpid"] = zpid
         if url:
             params["url"] = url
+        
+        # Use property-v2 endpoint which includes photos
+        response = await self._make_request(ZillowEndpoint.PROPERTY_V2, params)
+        
+        if response.success and response.data:
+            # Extract photos from the property-v2 response
+            # Photos are typically in 'photos', 'images', 'responsivePhotos', or 'hugePhotos' field
+            photos = []
+            data = response.data
             
-        return await self._make_request(ZillowEndpoint.PHOTOS, params)
+            # Try different possible photo field names
+            if isinstance(data, dict):
+                # Primary: responsivePhotos (most common in Zillow data)
+                if "responsivePhotos" in data:
+                    photos = data["responsivePhotos"]
+                # Alternative: photos array
+                elif "photos" in data:
+                    photos = data["photos"]
+                # Alternative: hugePhotos
+                elif "hugePhotos" in data:
+                    photos = data["hugePhotos"]
+                # Alternative: images
+                elif "images" in data:
+                    photos = data["images"]
+                # Sometimes nested under 'media' or 'photoGallery'
+                elif "media" in data:
+                    media = data["media"]
+                    if isinstance(media, dict):
+                        photos = media.get("photos", []) or media.get("images", [])
+                elif "photoGallery" in data:
+                    gallery = data["photoGallery"]
+                    if isinstance(gallery, list):
+                        photos = gallery
+            
+            # Return modified response with photos data
+            return ZillowAPIResponse(
+                success=True,
+                endpoint=ZillowEndpoint.PROPERTY_V2,
+                data={"photos": photos if photos else []},
+                error=None,
+                status_code=response.status_code,
+                zpid=response.zpid,
+                raw_response=response.raw_response
+            )
+        
+        return response
     
     # =========================================================================
     # SEARCH METHODS

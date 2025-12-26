@@ -32,8 +32,8 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               // Styles: self + unsafe-inline for Tailwind CSS and inline styles
               "style-src 'self' 'unsafe-inline'",
-              // Connections: self + HTTPS for API calls
-              "connect-src 'self' https: wss:",
+              // Connections: self + HTTPS for API calls + localhost for dev
+              "connect-src 'self' https: wss: http://localhost:* ws://localhost:*",
               // Images: allow any source for property photos
               "img-src * data: blob:",
               // Fonts: self + data URIs
