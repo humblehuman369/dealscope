@@ -414,13 +414,13 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
 
   if (!zpid || isLoading) {
     return (
-      <div className="flex gap-1.5">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="w-24 h-16 bg-gray-100 rounded flex items-center justify-center">
+      <div className="flex gap-2.5">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="w-[140px] h-[100px] bg-gray-100 rounded-xl flex items-center justify-center">
             {isLoading && i === 0 ? (
-              <Loader2 className="w-4 h-4 text-gray-300 animate-spin" />
+              <Loader2 className="w-6 h-6 text-gray-300 animate-spin" />
             ) : (
-              <ImageIcon className="w-4 h-4 text-gray-300" />
+              <ImageIcon className="w-6 h-6 text-gray-300" />
             )}
           </div>
         ))}
@@ -430,42 +430,42 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
 
   if (photos.length === 0) {
     return (
-      <div className="flex gap-1.5">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="w-24 h-16 bg-gray-100 rounded flex items-center justify-center">
-            <ImageIcon className="w-4 h-4 text-gray-300" />
+      <div className="flex gap-2.5">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="w-[140px] h-[100px] bg-gray-100 rounded-xl flex items-center justify-center">
+            <ImageIcon className="w-6 h-6 text-gray-300" />
           </div>
         ))}
       </div>
     )
   }
 
-  // Show first 3 photos
-  const displayPhotos = photos.slice(0, 3)
-  const remainingCount = photos.length - 3
+  // Show first 4 photos
+  const displayPhotos = photos.slice(0, 4)
+  const remainingCount = photos.length - 4
 
   return (
     <>
-      <div className="flex gap-1.5 flex-shrink-0">
+      <div className="flex gap-2.5 flex-shrink-0">
         {displayPhotos.map((photo, index) => (
           <button
             key={index}
             onClick={() => openLightbox(index)}
-            className="relative w-24 h-16 rounded overflow-hidden group cursor-pointer"
+            className="relative w-[140px] h-[100px] rounded-xl overflow-hidden group cursor-pointer shadow-sm hover:shadow-lg transition-all"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={photo.url}
               alt={`Property photo ${index + 1}`}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23e5e7eb" width="100" height="100"/></svg>'
               }}
             />
             {/* Show remaining count on last photo */}
-            {index === 2 && remainingCount > 0 && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <span className="text-white text-sm font-semibold">+{remainingCount}</span>
+            {index === 3 && remainingCount > 0 && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-[1px]">
+                <span className="text-white text-xl font-bold">+{remainingCount}</span>
               </div>
             )}
           </button>
@@ -568,15 +568,11 @@ function TopNav({ property }: { property: PropertyData }) {
             <Menu className="w-5 h-5 text-gray-400" strokeWidth={1.5} aria-hidden="true" />
           </a>
           <div className="flex-1 min-w-0">
-            {/* Street Address - Line 1 */}
+            {/* Full Address - Single Line */}
             <h1 className="text-base md:text-lg font-bold text-gray-900 leading-tight">
-              {property.address.street}
+              {property.address.street}, {property.address.city}, {property.address.state} {property.address.zip_code}
             </h1>
-            {/* City, State Zip - Line 2 */}
-            <p className="text-gray-500 text-xs md:text-sm whitespace-nowrap">
-              {property.address.city}, {property.address.state} {property.address.zip_code}
-            </p>
-            {/* Stats + Price - Line 3 */}
+            {/* Stats + Price - Line 2 */}
             <div className="flex items-center gap-3 mt-1">
               <span className="text-xs text-gray-400 whitespace-nowrap">
                 {property.details.bedrooms || '—'} bd · {property.details.bathrooms || '—'} ba · {property.details.square_footage?.toLocaleString() || '—'} sqft
@@ -591,7 +587,7 @@ function TopNav({ property }: { property: PropertyData }) {
         </div>
         
         {/* Right: Photo Strip - visible on md+ */}
-        <div className="hidden md:flex flex-shrink-0 pr-3 py-3">
+        <div className="hidden md:flex flex-shrink-0 pr-4 py-3 items-center">
           <PhotoStrip zpid={property.zpid} />
         </div>
       </div>
