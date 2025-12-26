@@ -31,14 +31,8 @@ export default function SearchPage() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('[DEBUG search/page] handleSearch called', { address });
-    if (!address.trim()) {
-      console.log('[DEBUG search/page] Empty address, skipping');
-      return
-    }
+    if (!address.trim()) return
     setIsSearching(true)
-    console.log('[DEBUG search/page] Navigating to property page', { address });
-    // Use window.location for reliable navigation
     window.location.href = `/property?address=${encodeURIComponent(address)}`
   }
 
