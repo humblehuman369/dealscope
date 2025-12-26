@@ -123,6 +123,9 @@ export async function POST(request: NextRequest) {
     
     // Try to call the backend API first
     try {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/v1/properties/search/route.ts:POST',message:'Calling backend API',data:{backendUrl:BACKEND_URL,address:body.address},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       const backendResponse = await fetch(`${BACKEND_URL}/api/v1/properties/search`, {
         method: 'POST',
         headers: {
@@ -133,6 +136,9 @@ export async function POST(request: NextRequest) {
       
       if (backendResponse.ok) {
         const data = await backendResponse.json()
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/v1/properties/search/route.ts:POST:success',message:'Backend returned data',data:{property_id:data.property_id,zpid:data.zpid,hasZpid:!!data.zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B'})}).catch(()=>{});
+        // #endregion
         // Cache the result
         propertyCache[data.property_id] = {
           data,
@@ -142,9 +148,15 @@ export async function POST(request: NextRequest) {
       }
       
       // If backend returns an error, log it and fall through to mock data
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/v1/properties/search/route.ts:POST:backendError',message:'Backend returned non-OK status',data:{status:backendResponse.status},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       console.warn(`Backend API returned ${backendResponse.status}, falling back to mock data`)
     } catch (backendError) {
       // Backend is unavailable, use mock data
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api/v1/properties/search/route.ts:POST:exception',message:'Backend API unavailable',data:{error:String(backendError)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       console.warn('Backend API unavailable, using mock data:', backendError)
     }
     
