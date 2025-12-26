@@ -938,7 +938,7 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
   return (
     <button
       onClick={onClick}
-      className={`relative rounded-md text-left transition-all duration-200 overflow-hidden ${
+      className={`relative rounded-md text-left transition-all duration-200 overflow-hidden w-full h-full ${
         isSelected 
           ? 'bg-white ring-1 ring-gray-200' 
           : 'bg-gray-500/15 hover:bg-gray-500/10'
@@ -947,14 +947,9 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
       {/* Thin top accent bar */}
       <div className={`h-0.5 w-full ${accentColor}`} />
       
-      <div className="px-2.5 py-2">
-        {/* Strategy Name with Rating Badge */}
-        <div className="flex items-center justify-between mb-1.5">
-          <h3 className="text-[11px] font-semibold text-gray-900 tracking-tight leading-tight">{strategy.name}</h3>
-          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${ratingDisplay.bgColor} ${ratingDisplay.textColor} ${ratingDisplay.borderColor} border`}>
-            {ratingDisplay.label}
-          </span>
-        </div>
+      <div className="px-2.5 py-2 h-full flex flex-col">
+        {/* Strategy Name */}
+        <h3 className="text-[11px] font-semibold text-gray-900 tracking-tight leading-tight mb-1.5">{strategy.name}</h3>
         
         {/* Primary Value - Clear with profit/loss color */}
         <div className={`text-xl font-semibold tracking-tight leading-none ${primaryColor}`}>
@@ -966,6 +961,13 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
         <div className="pt-1.5 border-t border-gray-100/80">
           <div className={`text-sm font-semibold ${metrics.secondaryLabel.includes('Profit') ? 'text-emerald-600' : 'text-gray-700'}`}>{metrics.secondary}</div>
           <div className={`text-[9px] font-medium mt-px ${metrics.secondaryLabel.includes('Profit') ? 'text-emerald-500' : 'text-gray-500'}`}>{metrics.secondaryLabel}</div>
+        </div>
+        
+        {/* Rating Badge - Bottom right */}
+        <div className="mt-auto pt-2 flex justify-end">
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${ratingDisplay.bgColor} ${ratingDisplay.textColor} ${ratingDisplay.borderColor} border`}>
+            {ratingDisplay.label}
+          </span>
         </div>
       </div>
     </button>
@@ -1054,7 +1056,7 @@ function StrategyCarousel({
           return (
             <div 
               key={strategy.id} 
-              className="relative flex-shrink-0 snap-start min-w-[140px] max-w-[180px] flex-1"
+              className="relative flex-shrink-0 snap-start w-[156px] h-[140px]"
             >
               <StrategyCard
                 strategy={strategy}
