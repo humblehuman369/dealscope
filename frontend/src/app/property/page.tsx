@@ -3128,6 +3128,8 @@ function PropertyPageContent() {
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3" />
           <p className="text-gray-400 text-sm">Loading property...</p>
+          {/* DEBUG */}
+          <p className="text-gray-300 text-xs mt-4 font-mono">addressParam: {addressParam}</p>
         </div>
       </div>
     )
@@ -3139,7 +3141,9 @@ function PropertyPageContent() {
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
           <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto mb-4" strokeWidth={1.5} />
           <h2 className="text-lg font-bold text-gray-800 mb-2">Unable to Load Property</h2>
-          <p className="text-gray-400 text-sm mb-6">{error}</p>
+          <p className="text-gray-400 text-sm mb-6">{error || 'Property data is null'}</p>
+          {/* DEBUG */}
+          <p className="text-gray-300 text-xs mb-4 font-mono">addressParam: {addressParam}</p>
           <div className="flex gap-3 justify-center">
             <a href="/" className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-600 transition-colors">Back to Search</a>
           </div>

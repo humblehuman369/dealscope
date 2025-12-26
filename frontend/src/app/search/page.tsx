@@ -31,8 +31,13 @@ export default function SearchPage() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!address.trim()) return
+    console.log('[DEBUG search/page] handleSearch called', { address });
+    if (!address.trim()) {
+      console.log('[DEBUG search/page] Empty address, skipping');
+      return
+    }
     setIsSearching(true)
+    console.log('[DEBUG search/page] Navigating to property page', { address });
     router.push(`/property?address=${encodeURIComponent(address)}`)
   }
 
