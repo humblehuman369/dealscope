@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface GeolocationState {
   latitude: number | null;
@@ -31,7 +31,11 @@ const defaultOptions: UseGeolocationOptions = {
  * Works on both desktop and mobile browsers.
  */
 export function useGeolocation(options: UseGeolocationOptions = {}) {
-  const opts = { ...defaultOptions, ...options };
+  // Memoize options to prevent infinite re-renders
+  const enableHighAccuracy = options.enableHighAccuracy ?? defaultOptions.enableHighAccuracy;
+  const timeout = options.timeout ?? defaultOptions.timeout;
+  const maximumAge = options.maximumAge ?? defaultOptions.maximumAge;
+  const watchPosition = options.watchPosition ?? defaultOptions.watchPosition;
   
   const [state, setState] = useState<GeolocationState>({
     latitude: null,
@@ -42,6 +46,9 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     isSupported: typeof navigator !== 'undefined' && 'geolocation' in navigator,
     timestamp: null,
   });
+
+  // Track if initial request has been made
+  const hasRequestedRef = useRef(false);
 
   const handleSuccess = useCallback((position: GeolocationPosition) => {
     setState(prev => ({
@@ -78,7 +85,9 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
   }, []);
 
   const requestLocation = useCallback(() => {
-    if (!state.isSupported) {
+    const isSupported = typeof navigator !== 'undefined' && 'geolocation' in navigator;
+    
+    if (!isSupported) {
       setState(prev => ({
         ...prev,
         error: 'Geolocation is not supported by your browser',
@@ -90,12 +99,12 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     const geoOptions: PositionOptions = {
-      enableHighAccuracy: opts.enableHighAccuracy,
-      timeout: opts.timeout,
-      maximumAge: opts.maximumAge,
+      enableHighAccuracy,
+      timeout,
+      maximumAge,
     };
 
-    if (opts.watchPosition) {
+    if (watchPosition) {
       const watchId = navigator.geolocation.watchPosition(
         handleSuccess,
         handleError,
@@ -109,9 +118,13 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
         geoOptions
       );
     }
-  }, [state.isSupported, opts, handleSuccess, handleError]);
+  }, [enableHighAccuracy, timeout, maximumAge, watchPosition, handleSuccess, handleError]);
 
+  // Initial location request - only run once on mount
   useEffect(() => {
+    if (hasRequestedRef.current) return;
+    hasRequestedRef.current = true;
+    
     const cleanup = requestLocation();
     
     // Fallback timeout in case browser doesn't trigger error
@@ -132,7 +145,7 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
       clearTimeout(fallbackTimeout);
       if (cleanup) cleanup();
     };
-  }, [requestLocation]);
+  }, []); // Empty dependency - only run once on mount
 
   const refresh = useCallback(() => {
     requestLocation();
