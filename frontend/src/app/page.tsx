@@ -386,7 +386,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
 
 /**
  * Desktop/Fallback Scanner View
- * Map-based nearby property discovery with enhanced UI
+ * Light theme consistent with dashboard
  */
 function DesktopScannerView({ 
   onSwitchMode, 
@@ -461,281 +461,222 @@ function DesktopScannerView({
   };
 
   return (
-    <main className="min-h-screen bg-[#0a0a0f]">
-      {/* Hero Section with Scanner */}
-      <div className="relative overflow-hidden">
-        {/* Animated background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-900/20 via-transparent to-cyan-900/20" />
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0)',
-          backgroundSize: '48px 48px',
-        }} />
-        
-        {/* Glowing orbs */}
-        <div className="absolute top-20 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20">
+      {/* Hero Section */}
+      <section className="px-6 py-16 md:py-24">
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight">
+            Analyze Any Property
+            <br />
+            <span className="bg-gradient-to-r from-teal-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
+              in Seconds
+            </span>
+          </h1>
+          <p className="text-gray-500 text-lg mb-10 max-w-xl mx-auto font-light">
+            Get instant investment analytics across 6 strategies. Make data-driven decisions with confidence.
+          </p>
 
-        <div className="relative max-w-6xl mx-auto px-6 py-16 md:py-24">
-          <div className="text-center mb-12">
-            {/* Logo badge */}
-            <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-sm border border-white/10 px-4 py-2 rounded-full mb-8">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 via-cyan-500 to-emerald-500 flex items-center justify-center">
-                <Sparkles className="w-3 h-3 text-white" />
+          {/* Search Card */}
+          <div className="bg-white rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-3 max-w-2xl mx-auto">
+            <form onSubmit={handleSearch} className="flex items-center gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" strokeWidth={1.5} />
+                <input
+                  type="text"
+                  value={searchAddress}
+                  onChange={(e) => setSearchAddress(e.target.value)}
+                  placeholder="Enter property address..."
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-200 transition-all"
+                />
               </div>
-              <span className="text-sm font-medium text-white/80">InvestIQ Scanner</span>
-            </div>
-
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
-              Point. Scan.
-              <br />
-              <span className="bg-gradient-to-r from-violet-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-                Analyze Instantly.
-              </span>
-            </h1>
-            <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 font-light">
-              Aim your phone at any property to unlock investment analytics across 6 strategies in seconds.
-            </p>
+              <button
+                type="submit"
+                disabled={isNavigating || !searchAddress.trim()}
+                className="px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-2xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+              >
+                {isNavigating ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="animate-spin w-5 h-5" />
+                    Analyzing
+                  </span>
+                ) : (
+                  <>Analyze</>
+                )}
+              </button>
+            </form>
           </div>
 
-          {/* Main Scanner Card */}
-          <div className="flex flex-col lg:flex-row gap-8 items-center justify-center">
-            {/* Scan Button */}
-            <div className="flex flex-col items-center">
-              <button
-                onClick={onSwitchMode}
-                className="group relative w-44 h-44 rounded-full flex flex-col items-center justify-center transition-all duration-500 bg-gradient-to-br from-teal-400 via-cyan-500 to-teal-600 hover:from-teal-300 hover:via-cyan-400 hover:to-teal-500 shadow-[0_0_60px_rgba(20,184,166,0.4)] hover:shadow-[0_0_80px_rgba(20,184,166,0.6)] hover:scale-105 cursor-pointer"
-              >
-                {/* Animated rings */}
-                <div className="absolute inset-0 rounded-full border-2 border-teal-400/30 animate-ping" />
-                <div className="absolute inset-[-8px] rounded-full border border-teal-400/20 animate-pulse" />
-                <div className="absolute inset-[-16px] rounded-full border border-teal-400/10" />
-                
-                {/* Icon and text */}
-                <ScanLine className="w-14 h-14 text-white mb-2 group-hover:scale-110 transition-transform drop-shadow-lg" />
-                <span className="text-white text-2xl font-bold tracking-wide">SCAN</span>
-                <span className="text-white/70 text-xs mt-1">Use Camera</span>
-              </button>
-              
-              {/* GPS Status */}
-              <div className="mt-6 flex items-center gap-2 text-sm">
-                {scanner.isLocationReady ? (
-                  <>
-                    <div className="w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
-                    <span className="text-emerald-400">Location Ready</span>
-                  </>
-                ) : scanner.locationError ? (
-                  <>
-                    <div className="w-2 h-2 bg-gray-500 rounded-full" />
-                    <span className="text-gray-500">Location unavailable</span>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
-                    <span className="text-cyan-400">Analyzing location...</span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Or divider */}
-            <div className="flex lg:flex-col items-center gap-4">
-              <div className="w-16 lg:w-px h-px lg:h-16 bg-gradient-to-r lg:bg-gradient-to-b from-transparent via-white/20 to-transparent" />
-              <span className="text-gray-500 text-sm font-medium">or</span>
-              <div className="w-16 lg:w-px h-px lg:h-16 bg-gradient-to-r lg:bg-gradient-to-b from-transparent via-white/20 to-transparent" />
-            </div>
-
-            {/* Search Card */}
-            <div className="w-full max-w-md">
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
-                <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                  <Search className="w-5 h-5 text-gray-400" />
-                  Search by Address
-                </h3>
-                <form onSubmit={handleSearch} className="space-y-4">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={searchAddress}
-                      onChange={(e) => setSearchAddress(e.target.value)}
-                      placeholder="123 Main St, City, State"
-                      className="w-full px-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={!searchAddress.trim() || isNavigating}
-                    className="w-full py-4 bg-gradient-to-r from-violet-500 via-cyan-500 to-emerald-500 text-white font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-cyan-500/25 transition-all flex items-center justify-center gap-2"
-                  >
-                    {isNavigating ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        Analyze Property
-                        <ChevronRight className="w-5 h-5" />
-                      </>
-                    )}
-                  </button>
-                </form>
-              </div>
-            </div>
+          {/* Quick Links */}
+          <div className="flex items-center justify-center gap-6 mt-6">
+            <a
+              href="/compare"
+              className="flex items-center gap-1 text-sm text-gray-400 hover:text-teal-500 transition-colors"
+            >
+              <Building2 className="w-4 h-4" strokeWidth={1.5} />
+              Compare properties
+            </a>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Strategies Section */}
-      <div className="max-w-6xl mx-auto px-6 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">6 Investment Strategies</h2>
-          <p className="text-gray-400">Instant analytics for every approach</p>
-        </div>
+      <section className="px-6 py-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Six Investment Strategies</h2>
+            <p className="text-gray-400 font-light">Find the approach that fits your goals</p>
+          </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {strategies.map((strategy) => {
-            const Icon = strategy.icon;
-            return (
-              <div 
-                key={strategy.id}
-                className="group bg-white/5 backdrop-blur-sm border border-white/5 rounded-2xl p-5 hover:bg-white/10 hover:border-white/10 transition-all cursor-pointer text-center"
-              >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${strategy.color} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-lg`}>
-                  <Icon className="w-6 h-6 text-white" strokeWidth={1.5} />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {strategies.map((strategy) => {
+              const Icon = strategy.icon;
+              const colorMap: Record<string, string> = {
+                'from-violet-500 to-purple-600': 'bg-violet-50 text-violet-500',
+                'from-cyan-500 to-blue-600': 'bg-cyan-50 text-cyan-500',
+                'from-emerald-500 to-green-600': 'bg-emerald-50 text-emerald-500',
+                'from-orange-500 to-red-500': 'bg-orange-50 text-orange-500',
+                'from-blue-500 to-indigo-600': 'bg-blue-50 text-blue-500',
+                'from-pink-500 to-rose-600': 'bg-pink-50 text-pink-500',
+              };
+              const colorClass = colorMap[strategy.color] || 'bg-gray-50 text-gray-500';
+              return (
+                <div key={strategy.id} className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-shadow cursor-pointer group">
+                  <div className="flex items-start gap-4">
+                    <div className={`w-10 h-10 rounded-xl ${colorClass} flex items-center justify-center`}>
+                      <Icon className="w-5 h-5" strokeWidth={1.5} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-semibold text-gray-800">{strategy.name}</h3>
+                        <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-1 transition-all" />
+                      </div>
+                      <p className="text-sm text-gray-400 font-light">Instant cash flow & ROI analysis</p>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{strategy.name}</span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* How it Works */}
-      <div className="max-w-6xl mx-auto px-6 py-16">
-        <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-10 text-center">How It Works</h2>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center shadow-lg shadow-teal-500/25">
-                <Target className="w-8 h-8 text-white" />
-              </div>
-              <div className="text-3xl font-bold text-white/20 mb-2">01</div>
-              <h3 className="font-semibold text-white mb-2">Point at Property</h3>
-              <p className="text-gray-400 text-sm">
-                Use your phone&apos;s camera to aim at any property you want to analyze
-              </p>
-            </div>
+      <section className="px-6 py-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] p-8 md:p-12">
+            <h2 className="text-2xl font-bold text-gray-800 mb-10 text-center">How It Works</h2>
             
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
-                <Zap className="w-8 h-8 text-white" />
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg">
+                  <Search className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-3xl font-bold text-gray-200 mb-2">01</div>
+                <h3 className="font-semibold text-gray-800 mb-2">Enter Address</h3>
+                <p className="text-gray-400 text-sm">
+                  Search for any US property by street address
+                </p>
               </div>
-              <div className="text-3xl font-bold text-white/20 mb-2">02</div>
-              <h3 className="font-semibold text-white mb-2">Instant Scan</h3>
-              <p className="text-gray-400 text-sm">
-                GPS and compass identify the exact property in under 2 seconds
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-                <Home className="w-8 h-8 text-white" />
+              
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg">
+                  <Zap className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-3xl font-bold text-gray-200 mb-2">02</div>
+                <h3 className="font-semibold text-gray-800 mb-2">Instant Analysis</h3>
+                <p className="text-gray-400 text-sm">
+                  Get valuations, rent estimates, and market data in seconds
+                </p>
               </div>
-              <div className="text-3xl font-bold text-white/20 mb-2">03</div>
-              <h3 className="font-semibold text-white mb-2">Get Analytics</h3>
-              <p className="text-gray-400 text-sm">
-                Instantly see investment strategies, cash flow, and ROI projections
-              </p>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-lg">
+                  <Home className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-3xl font-bold text-gray-200 mb-2">03</div>
+                <h3 className="font-semibold text-gray-800 mb-2">Compare Strategies</h3>
+                <p className="text-gray-400 text-sm">
+                  See cash flow, ROI, and projections across 6 strategies
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Location Section (if GPS available) */}
       {scanner.isLocationReady && (
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-lg font-semibold text-white">Your Location</h3>
-                <p className="text-gray-400 text-sm">
-                  {scanner.latitude?.toFixed(6)}, {scanner.longitude?.toFixed(6)}
-                  {scanner.accuracy && ` (±${Math.round(scanner.accuracy)}m)`}
-                </p>
+        <section className="px-6 py-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">Your Location</h3>
+                  <p className="text-gray-400 text-sm">
+                    {scanner.latitude?.toFixed(6)}, {scanner.longitude?.toFixed(6)}
+                    {scanner.accuracy && ` (±${Math.round(scanner.accuracy)}m)`}
+                  </p>
+                </div>
+                <button
+                  onClick={fetchNearbyProperties}
+                  disabled={isLoadingNearby}
+                  className="flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-600 rounded-lg font-medium hover:bg-teal-100 transition-colors disabled:opacity-50"
+                >
+                  {isLoadingNearby ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  Find Nearby
+                </button>
               </div>
-              <button
-                onClick={fetchNearbyProperties}
-                disabled={isLoadingNearby}
-                className="flex items-center gap-2 px-4 py-2 bg-teal-500/20 text-teal-400 rounded-lg font-medium hover:bg-teal-500/30 transition-colors disabled:opacity-50"
-              >
-                {isLoadingNearby ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4" />
-                )}
-                Find Nearby
-              </button>
-            </div>
 
-            {/* Nearby properties list */}
-            {nearbyProperties.length > 0 && (
-              <div className="grid gap-3">
-                {nearbyProperties.map((property, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handlePropertyClick(property)}
-                    className="flex items-center gap-3 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-left w-full group"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center flex-shrink-0">
-                      <Home className="w-5 h-5 text-teal-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-white truncate">
-                        {property.address}
+              {/* Nearby properties list */}
+              {nearbyProperties.length > 0 && (
+                <div className="grid gap-3">
+                  {nearbyProperties.map((property, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handlePropertyClick(property)}
+                      className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors text-left w-full group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
+                        <Home className="w-5 h-5 text-teal-500" />
                       </div>
-                      <div className="text-sm text-gray-400">
-                        {property.city}, {property.state} {property.zip}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-800 truncate">
+                          {property.address}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          {property.city}, {property.state} {property.zip}
+                        </div>
                       </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
-                  </button>
-                ))}
-              </div>
-            )}
+                      <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Location permission needed */}
-      {!scanner.isLocationReady && scanner.locationError && (
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 text-center">
-            <AlertCircle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">Location Access Needed</h3>
-            <p className="text-gray-400 mb-4 max-w-md mx-auto">{scanner.locationError}</p>
+      {/* CTA Section */}
+      <section className="px-6 py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-gradient-to-r from-teal-500 via-cyan-500 to-emerald-500 rounded-3xl p-10 text-center text-white shadow-xl">
+            <h2 className="text-3xl font-bold mb-3">Ready to Analyze?</h2>
+            <p className="text-white/80 mb-8 font-light">Enter any US property address and get instant investment analytics.</p>
             <button
-              onClick={scanner.refreshLocation}
-              className="px-6 py-3 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-600 transition-colors"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="px-8 py-4 bg-white text-gray-800 font-semibold rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 mx-auto"
             >
-              Enable Location
+              Search Property
+              <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
-      )}
-
-      {/* Footer */}
-      <footer className="max-w-6xl mx-auto px-6 py-8 border-t border-white/5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 via-cyan-500 to-emerald-500 flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-white" />
-            </div>
-            <span className="text-sm font-medium text-gray-400">InvestIQ</span>
-          </div>
-          <p className="text-sm text-gray-500">Real estate investment analytics</p>
-        </div>
-      </footer>
+      </section>
     </main>
   );
 }
