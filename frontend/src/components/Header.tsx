@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Settings, ScanLine, Search, Sparkles } from 'lucide-react'
+import { Bell, Settings, ScanLine, Search } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -18,10 +18,7 @@ export default function Header() {
         <div className="flex justify-between items-center h-14">
           {/* Left side - Logo & Nav */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 via-cyan-500 to-emerald-500 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
+            <Link href="/" className="flex items-center">
               <span className="text-lg font-semibold text-gray-900">InvestIQ</span>
             </Link>
             <nav className="hidden md:flex items-center space-x-5">
