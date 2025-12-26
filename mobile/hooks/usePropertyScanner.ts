@@ -25,15 +25,6 @@ const MAGNETOMETER_SMOOTHING = 0.15;
  * Hook to manage GPS location and compass heading for property scanning.
  * Provides real-time updates of user position and direction they're facing.
  */
-// #region agent log
-import * as FileSystem from 'expo-file-system';
-const DEBUG_LOG_PATH = '/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug.log';
-async function debugLog(location: string, message: string, data: object, hypothesisId: string) {
-  const entry = JSON.stringify({ location, message, data, hypothesisId, timestamp: Date.now(), sessionId: 'debug-session' }) + '\n';
-  try { await FileSystem.writeAsStringAsync(DEBUG_LOG_PATH, entry, { encoding: FileSystem.EncodingType.UTF8, append: true }); } catch (e) {}
-}
-// #endregion
-
 export function usePropertyScanner() {
   const [state, setState] = useState<ScannerState>({
     userLat: 0,
@@ -104,20 +95,11 @@ export function usePropertyScanner() {
 
         // Setup magnetometer for compass heading
         const isMagnetometerAvailable = await Magnetometer.isAvailableAsync();
-        // #region agent log
-        debugLog('usePropertyScanner.ts:97', 'Magnetometer availability check', { isMagnetometerAvailable }, 'H1');
-        // #endregion
         if (isMagnetometerAvailable) {
           // 10 updates per second for smooth compass
           Magnetometer.setUpdateInterval(100);
-          // #region agent log
-          debugLog('usePropertyScanner.ts:102', 'Magnetometer subscription starting', {}, 'H1');
-          // #endregion
 
           magnetometerSubscription = Magnetometer.addListener((data) => {
-            // #region agent log
-            debugLog('usePropertyScanner.ts:107', 'Magnetometer data received', { x: data.x, y: data.y, z: data.z }, 'H4');
-            // #endregion
             // Store raw data
             magnetometerData.current = data;
             
@@ -131,9 +113,6 @@ export function usePropertyScanner() {
             
             // Calculate heading from smoothed data
             const rawHeading = calculateHeading(smoothedMagData.current);
-            // #region agent log
-            debugLog('usePropertyScanner.ts:122', 'Heading calculated', { rawHeading, smoothedX: smoothedMagData.current.x, smoothedZ: smoothedMagData.current.z, isNaN: isNaN(rawHeading) }, 'H2');
-            // #endregion
             
             // Apply additional heading smoothing to prevent jumpiness
             // Handle wrap-around at 0°/360° boundary
@@ -146,9 +125,6 @@ export function usePropertyScanner() {
             if (smoothedHeading >= 360) smoothedHeading -= 360;
             
             previousHeading.current = smoothedHeading;
-            // #region agent log
-            debugLog('usePropertyScanner.ts:136', 'State update with heading', { smoothedHeading: Math.round(smoothedHeading), isCompassReady: true }, 'H3');
-            // #endregion
             
             setState(prev => ({
               ...prev,
@@ -158,9 +134,6 @@ export function usePropertyScanner() {
           });
         } else {
           // Fallback: Use location heading if available
-          // #region agent log
-          debugLog('usePropertyScanner.ts:148', 'Magnetometer NOT available', {}, 'H1');
-          // #endregion
           console.log('Magnetometer not available, using location heading');
         }
       } catch (error) {
