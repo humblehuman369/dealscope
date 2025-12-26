@@ -1022,10 +1022,14 @@ function StrategyCarousel({
     }
   }
 
+  // Determine if we're at first or last strategy
+  const isFirstStrategy = selectedStrategy === 'ltr'
+  const isLastStrategy = selectedStrategy === 'wholesale'
+
   return (
     <div className="relative">
-      {/* Left scroll button */}
-      {canScrollLeft && (
+      {/* Left scroll button - hide when first strategy is selected */}
+      {canScrollLeft && !isFirstStrategy && (
         <button
           onClick={() => scroll('left')}
           className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white/95 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all"
@@ -1035,8 +1039,8 @@ function StrategyCarousel({
         </button>
       )}
 
-      {/* Right scroll button */}
-      {canScrollRight && (
+      {/* Right scroll button - hide when last strategy is selected */}
+      {canScrollRight && !isLastStrategy && (
         <button
           onClick={() => scroll('right')}
           className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white/95 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all"
@@ -1074,10 +1078,10 @@ function StrategyCarousel({
       </div>
 
       {/* Gradient fade hints for more content */}
-      {canScrollLeft && (
+      {canScrollLeft && !isFirstStrategy && (
         <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
       )}
-      {canScrollRight && (
+      {canScrollRight && !isLastStrategy && (
         <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none z-10" />
       )}
     </div>
