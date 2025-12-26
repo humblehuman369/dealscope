@@ -940,8 +940,8 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
       onClick={onClick}
       className={`relative rounded-md text-left transition-all duration-200 overflow-hidden ${
         isSelected 
-          ? 'bg-gray-50 ring-1 ring-gray-200' 
-          : 'bg-white hover:shadow-sm'
+          ? 'bg-white ring-1 ring-gray-200' 
+          : 'bg-gray-500/15 hover:bg-gray-500/10'
       }`}
     >
       {/* Thin top accent bar */}
@@ -1064,7 +1064,7 @@ function StrategyCarousel({
               />
               {/* Visual connection bridge - extends from selected card to tabs */}
               {isSelected && (
-                <div className="absolute -bottom-4 left-0 right-0 h-4 bg-gray-50" />
+                <div className="absolute -bottom-4 left-0 right-0 h-4 bg-white" />
               )}
             </div>
           )
