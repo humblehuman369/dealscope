@@ -439,12 +439,16 @@ function DesktopScannerView({
     }
   }, [scanner.latitude, scanner.longitude, scanner.performScan, scanner.result, scanner.clearResult]);
 
+  const [isNavigating, setIsNavigating] = useState(false);
+  
   const handleSearch = (e?: React.FormEvent) => {
     console.log('[DEBUG] handleSearch called', { searchAddress });
     if (e) e.preventDefault();
     if (searchAddress.trim()) {
       console.log('[DEBUG] Navigating to property page', { address: searchAddress });
-      router.push(`/property?address=${encodeURIComponent(searchAddress)}`);
+      setIsNavigating(true);
+      // Use window.location for more reliable navigation
+      window.location.href = `/property?address=${encodeURIComponent(searchAddress)}`;
     } else {
       console.log('[DEBUG] Search skipped - empty address');
     }
@@ -564,11 +568,20 @@ function DesktopScannerView({
                   </div>
                   <button
                     type="submit"
-                    disabled={!searchAddress.trim()}
+                    disabled={!searchAddress.trim() || isNavigating}
                     className="w-full py-4 bg-gradient-to-r from-violet-500 via-cyan-500 to-emerald-500 text-white font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-cyan-500/25 transition-all flex items-center justify-center gap-2"
                   >
-                    Analyze Property
-                    <ChevronRight className="w-5 h-5" />
+                    {isNavigating ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        Analyze Property
+                        <ChevronRight className="w-5 h-5" />
+                      </>
+                    )}
                   </button>
                 </form>
               </div>
