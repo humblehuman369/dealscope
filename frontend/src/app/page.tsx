@@ -516,25 +516,27 @@ function DesktopScannerView({
                 <span className="text-white/70 text-xs mt-1">Use Camera</span>
               </button>
               
-              {/* GPS Status */}
-              <div className="mt-6 flex items-center gap-2 text-sm">
-                {scanner.isLocationReady ? (
-                  <>
-                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
-                    <span className="text-emerald-400">GPS Ready</span>
-                  </>
-                ) : scanner.locationError ? (
-                  <>
-                    <div className="w-2 h-2 bg-gray-500 rounded-full" />
-                    <span className="text-gray-500">GPS unavailable</span>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-                    <span className="text-amber-400">Acquiring GPS...</span>
-                  </>
-                )}
-              </div>
+              {/* GPS Status - Only show when user has entered address or when location is ready/has error */}
+              {(searchAddress.trim() || scanner.isLocationReady || scanner.locationError) && (
+                <div className="mt-6 flex items-center gap-2 text-sm">
+                  {scanner.isLocationReady ? (
+                    <>
+                      <div className="w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+                      <span className="text-emerald-400">Location Ready</span>
+                    </>
+                  ) : scanner.locationError ? (
+                    <>
+                      <div className="w-2 h-2 bg-gray-500 rounded-full" />
+                      <span className="text-gray-500">Location unavailable</span>
+                    </>
+                  ) : searchAddress.trim() ? (
+                    <>
+                      <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+                      <span className="text-cyan-400">Analyzing location...</span>
+                    </>
+                  ) : null}
+                </div>
+              )}
             </div>
 
             {/* Or divider */}
