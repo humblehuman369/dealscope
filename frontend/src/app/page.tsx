@@ -439,10 +439,28 @@ function DesktopScannerView({
     }
   }, [scanner.latitude, scanner.longitude, scanner.performScan, scanner.result, scanner.clearResult]);
 
+  // #region agent log
+  const DEBUG_SERVER = 'http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184';
+  function debugLog(location: string, message: string, data: object, hypothesisId: string) {
+    fetch(DEBUG_SERVER, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location, message, data, hypothesisId, timestamp: Date.now(), sessionId: 'debug-session' }) }).catch(() => {});
+    console.log(`[DEBUG ${hypothesisId}] ${location}: ${message}`, data);
+  }
+  // #endregion
+
   const handleSearch = (e?: React.FormEvent) => {
+    // #region agent log
+    debugLog('page.tsx:handleSearch', 'handleSearch called', { hasEvent: !!e, searchAddress, trimmed: searchAddress.trim() }, 'H1');
+    // #endregion
     if (e) e.preventDefault();
     if (searchAddress.trim()) {
+      // #region agent log
+      debugLog('page.tsx:handleSearch', 'Navigating to property page', { address: searchAddress }, 'H1');
+      // #endregion
       router.push(`/property?address=${encodeURIComponent(searchAddress)}`);
+    } else {
+      // #region agent log
+      debugLog('page.tsx:handleSearch', 'Search skipped - empty address', {}, 'H1');
+      // #endregion
     }
   };
 
