@@ -8,6 +8,7 @@ interface ThemeContextType {
   theme: Theme
   toggleTheme: () => void
   setTheme: (theme: Theme) => void
+  mounted: boolean
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
@@ -18,13 +19,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Load theme from localStorage on mount
   useEffect(() => {
-    setMounted(true)
     const savedTheme = localStorage.getItem('theme') as Theme | null
     if (savedTheme) {
       setThemeState(savedTheme)
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setThemeState('dark')
     }
+    setMounted(true)
   }, [])
 
   // Apply theme class to html element
@@ -48,13 +49,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setThemeState(newTheme)
   }
 
-  // Prevent flash of wrong theme
-  if (!mounted) {
-    return null
-  }
-
+  // Always render children - don't block rendering
+  // The mounted flag is exposed so components can handle hydration mismatch if needed
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme, mounted }}>
       {children}
     </ThemeContext.Provider>
   )
