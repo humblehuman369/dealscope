@@ -468,18 +468,34 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoStrip',message:'PhotoStrip render',data:{zpid,zpidType:typeof zpid,isNull:zpid===null,isUndefined:zpid===undefined},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
+
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoStrip-useEffect',message:'useEffect triggered',data:{zpid,willFetch:!!zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     if (!zpid) return
     
     const fetchPhotos = async () => {
       setIsLoading(true)
       try {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoStrip-fetch',message:'Fetching photos',data:{zpid,url:`/api/v1/photos?zpid=${zpid}`},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         const response = await fetch(`/api/v1/photos?zpid=${zpid}`)
         const data = await response.json()
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoStrip-response',message:'Photos API response',data:{success:data.success,hasPhotos:!!data.photos,photoCount:data.photos?.length,isMock:data.is_mock,firstPhotoUrl:data.photos?.[0]?.url?.substring(0,60)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C-D'})}).catch(()=>{});
+        // #endregion
         if (data.success && data.photos?.length > 0) {
           setPhotos(data.photos)
         }
       } catch (error) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoStrip-error',message:'Photo fetch error',data:{error:String(error)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         console.error('Failed to fetch photos:', error)
       } finally {
         setIsLoading(false)
