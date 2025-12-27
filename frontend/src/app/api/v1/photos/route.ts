@@ -55,6 +55,9 @@ export async function GET(request: NextRequest) {
       console.warn('Backend API unavailable for photos:', backendError)
     }
     
+    // #region agent log
+    console.log('[DEBUG] Using mock photos fallback');
+    // #endregion
     // Fallback: Return mock photos data with real placeholder images
     const mockPhotos = {
       success: true,
