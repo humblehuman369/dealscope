@@ -1415,11 +1415,6 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
             <StatRow label="NOI" value={formatCurrency(calc.noi)} />
             <StatRow label="Cash Required" value={formatCurrency(calc.totalCashRequired)} />
           </div>
-          <div className="space-y-2">
-            <RuleCheck label="1% Rule" value={formatPercent(calc.onePercentRule)} target="≥1%" passed={calc.onePercentRule >= 0.01} />
-            <RuleCheck label="DSCR" value={calc.dscr.toFixed(2)} target="≥1.25" passed={calc.dscr >= 1.25} />
-            <RuleCheck label="Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} target="≥$200" passed={calc.monthlyCashFlow >= 200} />
-          </div>
         </div>
       </div>
       
