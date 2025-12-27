@@ -256,7 +256,7 @@ const formatPercent = (value: number): string => `${(value * 100).toFixed(1)}%`
 // ============================================
 
 const strategies: { id: StrategyId; name: string; shortName: string; description: string; icon: any; color: string; gradient: string }[] = [
-  { id: 'ltr', name: 'Long-Term Rental', shortName: 'LTR', description: 'Buy-and-hold with steady cash flow', icon: Building2, color: 'violet', gradient: 'from-violet-500 to-purple-600' },
+  { id: 'ltr', name: 'Long-Term Rental', shortName: 'LTR', description: 'Buy-and-hold with steady cash flow', icon: Building2, color: 'teal', gradient: 'from-teal-500 to-emerald-600' },
   { id: 'str', name: 'Short-Term Rental', shortName: 'STR', description: 'Airbnb/VRBO for max revenue', icon: Home, color: 'cyan', gradient: 'from-cyan-500 to-blue-600' },
   { id: 'brrrr', name: 'BRRRR', shortName: 'BRRRR', description: 'Buy, Rehab, Rent, Refi, Repeat', icon: Repeat, color: 'emerald', gradient: 'from-emerald-500 to-green-600' },
   { id: 'flip', name: 'Fix & Flip', shortName: 'Flip', description: 'Renovate and sell for profit', icon: Hammer, color: 'orange', gradient: 'from-orange-500 to-red-500' },
@@ -1422,10 +1422,10 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
       <div className="mt-6">
         <button
           onClick={() => setShowBreakdown(!showBreakdown)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
+          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
             showBreakdown 
-              ? 'border-violet-300 bg-violet-50 text-violet-700' 
-              : 'border-gray-200 bg-white text-gray-600 hover:border-violet-200 hover:bg-violet-50/50'
+              ? 'border-teal-300 bg-teal-50 text-teal-700' 
+              : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-teal-200 hover:bg-teal-50/50'
           }`}
         >
           <Calculator className="w-4 h-4" />
@@ -1903,7 +1903,7 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
     <div className="mt-4 pt-4 border-t border-gray-200">
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
-        <Calculator className="w-4 h-4 text-violet-500" />
+        <Calculator className="w-4 h-4 text-teal-500" />
         <h4 className="text-sm font-semibold text-gray-700">Full Analytic Breakdown</h4>
       </div>
 
@@ -1912,7 +1912,7 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
         <div className="space-y-2">
           {/* Gross Income */}
           <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-violet-600 uppercase tracking-wide mb-1 flex items-center gap-1">
+            <div className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-1 flex items-center gap-1">
               <DollarSign className="w-3 h-3" /> Gross Income
             </div>
             <CompactCalcRow label="Monthly Rent" result={formatCurrency(assumptions.monthlyRent)} />
@@ -2274,14 +2274,14 @@ function BRRRRAnalyticBreakdown({ calc, assumptions }: {
 
           {/* After Repair Value */}
           <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-violet-600 uppercase tracking-wide mb-1 flex items-center gap-1">
+            <div className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-1 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" /> Phase 2: Refinance
             </div>
             <CompactCalcRow label="After Repair Value" result={formatCurrency(assumptions.arv)} />
             <CompactCalcRow label="New Loan" formula="75% LTV" result={formatCurrency(refinanceLoanAmount)} />
             <CompactCalcRow label="Pay Off Old Loan" formula="70% of purchase" result={`-${formatCurrency(assumptions.purchasePrice * 0.70)}`} type="subtract" />
             <div className="flex justify-between pt-1 border-t border-gray-200/50 mt-1">
-              <span className="text-[10px] font-medium text-violet-700">Cash Back at Refi</span>
+              <span className="text-[10px] font-medium text-teal-700">Cash Back at Refi</span>
               <span className={`text-xs font-bold ${cashBack > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{formatCurrency(cashBack)}</span>
             </div>
           </div>
@@ -2641,7 +2641,7 @@ function HouseHackAnalyticBreakdown({ calc, assumptions }: {
 
           {/* Housing Cost Calculation */}
           <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-violet-600 uppercase tracking-wide mb-1 flex items-center gap-1">
+            <div className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-1 flex items-center gap-1">
               <Calculator className="w-3 h-3" /> Your Housing Cost
             </div>
             <CompactCalcRow label="Total Expenses" result={formatCurrency(totalMonthlyExpenses)} />
@@ -2736,7 +2736,7 @@ function WholesaleAnalyticBreakdown({ calc, assumptions }: {
 
           {/* Step 2: Apply 70% Rule */}
           <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-violet-600 uppercase tracking-wide mb-1 flex items-center gap-1">
+            <div className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-1 flex items-center gap-1">
               <Percent className="w-3 h-3" /> Step 2: Apply 70% Rule
             </div>
             <CompactCalcRow label="ARV × 70%" formula={`${formatCurrency(calc.arv)} × 0.70`} result={formatCurrency(arvAt70)} type="total" />
