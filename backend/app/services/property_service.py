@@ -508,8 +508,7 @@ class PropertyService:
         logger.info(f"Fetching photos - zpid: {zpid}, url: {url}")
         
         try:
-            # Use the comprehensive ZillowClient for photos
-            # This now uses property-v2 endpoint and extracts photos
+            # Use the dedicated /photos endpoint via ZillowClient
             result = await self.zillow.get_photos(zpid=zpid, url=url)
             
             if result.success and result.data:
@@ -553,7 +552,7 @@ class PropertyService:
                     "success": False,
                     "zpid": zpid,
                     "url": url,
-                    "error": result.error or "Failed to fetch photos from property-v2 endpoint",
+                    "error": result.error or "Failed to fetch photos from AXESSO API",
                     "photos": [],
                     "total_count": 0,
                     "fetched_at": datetime.utcnow().isoformat()
