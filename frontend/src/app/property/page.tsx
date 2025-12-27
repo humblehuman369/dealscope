@@ -1365,7 +1365,7 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
               <PercentDollarSlider 
                 label="Rehab Cost" 
                 value={assumptions.rehabCostPct} 
-                baseAmount={assumptions.purchasePrice}
+                baseAmount={assumptions.basePurchasePrice}
                 onChange={(v) => update('rehabCostPct', v)} 
                 compact 
                 maxPercent={50}
