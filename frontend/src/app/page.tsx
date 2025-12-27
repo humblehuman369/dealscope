@@ -389,7 +389,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
 
 /**
  * Desktop/Fallback Scanner View
- * Light/Dark theme consistent with dashboard
+ * Matches the polished scanner design with prominent SCAN button
  */
 function DesktopScannerView({ 
   onSwitchMode, 
@@ -403,6 +403,7 @@ function DesktopScannerView({
   const [searchAddress, setSearchAddress] = useState('');
   const [nearbyProperties, setNearbyProperties] = useState<ScanResult['property'][]>([]);
   const [isLoadingNearby, setIsLoadingNearby] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   
   const scanner = usePropertyScan();
 
@@ -413,21 +414,16 @@ function DesktopScannerView({
     setIsLoadingNearby(true);
     
     try {
-      // Fetch properties in cardinal directions
       const directions = [
         { name: 'North', heading: 0 },
         { name: 'NE', heading: 45 },
         { name: 'East', heading: 90 },
         { name: 'SE', heading: 135 },
-        { name: 'South', heading: 180 },
-        { name: 'SW', heading: 225 },
-        { name: 'West', heading: 270 },
-        { name: 'NW', heading: 315 },
       ];
 
       const results: ScanResult['property'][] = [];
       
-      for (const dir of directions.slice(0, 4)) {
+      for (const dir of directions) {
         await scanner.performScan(50, dir.heading);
         if (scanner.result?.property) {
           results.push(scanner.result.property);
@@ -442,8 +438,6 @@ function DesktopScannerView({
       setIsLoadingNearby(false);
     }
   }, [scanner.latitude, scanner.longitude, scanner.performScan, scanner.result, scanner.clearResult]);
-
-  const [isNavigating, setIsNavigating] = useState(false);
   
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -465,131 +459,161 @@ function DesktopScannerView({
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/50 transition-colors duration-300">
-      {/* Header with Theme Toggle */}
-      <header className="sticky top-0 z-50 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 via-cyan-500 to-emerald-500 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-lg font-bold text-gray-900 dark:text-white">InvestIQ</span>
-          </div>
-          
-          {/* Theme Toggle Switch */}
-          <button
-            onClick={toggleTheme}
-            className="relative inline-flex items-center justify-center p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200"
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          >
-            <div className="relative w-12 h-6 rounded-full bg-gray-200 dark:bg-slate-600 transition-colors duration-300">
-              <div 
-                className={`absolute top-0.5 w-5 h-5 rounded-full bg-white dark:bg-slate-900 shadow-md transition-all duration-300 flex items-center justify-center ${
-                  theme === 'dark' ? 'left-[26px]' : 'left-0.5'
-                }`}
-              >
-                {theme === 'light' ? (
-                  <Sun className="w-3 h-3 text-amber-500" />
-                ) : (
-                  <Moon className="w-3 h-3 text-indigo-400" />
-                )}
-              </div>
-            </div>
-          </button>
+    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950">
+      {/* Hero Section with Scanner */}
+      <section className="relative overflow-hidden">
+        {/* Background gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-transparent" />
+        
+        {/* Animated background dots */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+            backgroundSize: '40px 40px',
+          }} />
         </div>
-      </header>
 
-      {/* Hero Section */}
-      <section className="px-6 py-16 md:py-24">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-4 leading-tight">
-            Analyze Any Property
-            <br />
-            <span className="bg-gradient-to-r from-teal-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
-              in Seconds
-            </span>
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-lg mb-10 max-w-xl mx-auto font-light">
-            Get instant investment analytics across 6 strategies. Make data-driven decisions with confidence.
-          </p>
+        <div className="relative px-6 pt-8 pb-16">
+          {/* Header Badge */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-slate-800/80 backdrop-blur-sm px-4 py-2 rounded-full border border-slate-700">
+              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center">
+                <Sparkles className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-white text-sm font-medium">InvestIQ Scanner</span>
+            </div>
+          </div>
 
-          {/* Search Card */}
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] p-3 max-w-2xl mx-auto transition-colors duration-300">
-            <form onSubmit={handleSearch} className="flex items-center gap-2">
-              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" strokeWidth={1.5} />
+          {/* Title */}
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+              Point. Scan.
+              <br />
+              <span className="bg-gradient-to-r from-teal-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+                Analyze Instantly.
+              </span>
+            </h1>
+            <p className="text-gray-400 text-lg">
+              Aim your phone at any property to unlock investment analytics across 6 strategies in seconds.
+            </p>
+          </div>
+
+          {/* Large Scan Button */}
+          <div className="flex flex-col items-center mb-10">
+            <button
+              onClick={onSwitchMode}
+              className="group relative w-32 h-32 rounded-full flex flex-col items-center justify-center transition-all duration-300 bg-gradient-to-br from-teal-400 to-teal-600 hover:from-teal-500 hover:to-teal-700 shadow-2xl shadow-teal-500/40 hover:scale-105 cursor-pointer"
+            >
+              {/* Animated ping ring */}
+              <div className="absolute inset-0 rounded-full border-2 border-teal-400/50 animate-ping" />
+              
+              {/* Inner ring */}
+              <div className="absolute inset-2 rounded-full border border-white/20" />
+              
+              {/* Icon and text */}
+              <ScanLine className="w-10 h-10 text-white mb-1 group-hover:scale-110 transition-transform" />
+              <span className="text-white text-lg font-bold tracking-wide">SCAN</span>
+              <span className="text-white/60 text-[10px] mt-0.5">Use Camera</span>
+            </button>
+            
+            {/* GPS Status */}
+            <div className="mt-4 flex items-center gap-2 text-sm">
+              {scanner.isLocationReady ? (
+                <>
+                  <div className="w-2 h-2 bg-green-400 rounded-full" />
+                  <span className="text-green-400">GPS Ready</span>
+                </>
+              ) : scanner.locationError ? (
+                <>
+                  <div className="w-2 h-2 bg-gray-500 rounded-full" />
+                  <span className="text-gray-400">GPS unavailable</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+                  <span className="text-amber-400">Acquiring GPS...</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* OR Divider */}
+          <div className="flex items-center justify-center gap-4 mb-8 max-w-md mx-auto">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+            <span className="text-slate-500 text-sm">or</span>
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+          </div>
+
+          {/* Search by Address */}
+          <div className="max-w-md mx-auto">
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/50">
+              <div className="flex items-center gap-2 text-white mb-4">
+                <Search className="w-4 h-4 text-gray-400" />
+                <span className="text-sm font-medium">Search by Address</span>
+              </div>
+              
+              <form onSubmit={handleSearch}>
                 <input
                   type="text"
                   value={searchAddress}
                   onChange={(e) => setSearchAddress(e.target.value)}
-                  placeholder="Enter property address..."
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-slate-700 rounded-2xl text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-600 transition-all"
+                  placeholder="1451 SW 10 ST, Boca Raton, FL 33486"
+                  className="w-full px-4 py-3 bg-slate-900/80 border border-slate-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent mb-4 text-sm"
                 />
-              </div>
-              <button
-                type="submit"
-                disabled={isNavigating || !searchAddress.trim()}
-                className="px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-2xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-              >
-                {isNavigating ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="animate-spin w-5 h-5" />
-                    Analyzing
-                  </span>
-                ) : (
-                  <>Analyze</>
-                )}
-              </button>
-            </form>
-          </div>
-
-          {/* Quick Links */}
-          <div className="flex items-center justify-center gap-6 mt-6">
-            <a
-              href="/compare"
-              className="flex items-center gap-1 text-sm text-gray-400 dark:text-gray-500 hover:text-teal-500 dark:hover:text-teal-400 transition-colors"
-            >
-              <Building2 className="w-4 h-4" strokeWidth={1.5} />
-              Compare properties
-            </a>
+                <button
+                  type="submit"
+                  disabled={isNavigating || !searchAddress.trim()}
+                  className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                >
+                  {isNavigating ? (
+                    <>
+                      <Loader2 className="animate-spin w-5 h-5" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      Analyze Property
+                      <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Strategies Section */}
+      {/* 6 Investment Strategies */}
       <section className="px-6 py-16">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Six Investment Strategies</h2>
-            <p className="text-gray-400 dark:text-gray-500 font-light">Find the approach that fits your goals</p>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-bold text-white mb-2">6 Investment Strategies</h2>
+            <p className="text-gray-500">Instant analytics for every approach</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {strategies.map((strategy) => {
               const Icon = strategy.icon;
-              const colorMap: Record<string, { light: string; dark: string }> = {
-                'from-violet-500 to-purple-600': { light: 'bg-violet-50 text-violet-500', dark: 'dark:bg-violet-900/30 dark:text-violet-400' },
-                'from-cyan-500 to-blue-600': { light: 'bg-cyan-50 text-cyan-500', dark: 'dark:bg-cyan-900/30 dark:text-cyan-400' },
-                'from-emerald-500 to-green-600': { light: 'bg-emerald-50 text-emerald-500', dark: 'dark:bg-emerald-900/30 dark:text-emerald-400' },
-                'from-orange-500 to-red-500': { light: 'bg-orange-50 text-orange-500', dark: 'dark:bg-orange-900/30 dark:text-orange-400' },
-                'from-blue-500 to-indigo-600': { light: 'bg-blue-50 text-blue-500', dark: 'dark:bg-blue-900/30 dark:text-blue-400' },
-                'from-pink-500 to-rose-600': { light: 'bg-pink-50 text-pink-500', dark: 'dark:bg-pink-900/30 dark:text-pink-400' },
+              const iconColorMap: Record<string, string> = {
+                'from-violet-500 to-purple-600': 'bg-violet-500/20 text-violet-400',
+                'from-cyan-500 to-blue-600': 'bg-cyan-500/20 text-cyan-400',
+                'from-emerald-500 to-green-600': 'bg-emerald-500/20 text-emerald-400',
+                'from-orange-500 to-red-500': 'bg-orange-500/20 text-orange-400',
+                'from-blue-500 to-indigo-600': 'bg-blue-500/20 text-blue-400',
+                'from-pink-500 to-rose-600': 'bg-pink-500/20 text-pink-400',
               };
-              const colors = colorMap[strategy.color] || { light: 'bg-gray-50 text-gray-500', dark: 'dark:bg-gray-800 dark:text-gray-400' };
+              const iconColor = iconColorMap[strategy.color] || 'bg-gray-500/20 text-gray-400';
+              
               return (
-                <div key={strategy.id} className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_4px_16px_rgba(0,0,0,0.4)] transition-all cursor-pointer group">
-                  <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-xl ${colors.light} ${colors.dark} flex items-center justify-center`}>
-                      <Icon className="w-5 h-5" strokeWidth={1.5} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-semibold text-gray-800 dark:text-white">{strategy.name}</h3>
-                        <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400 group-hover:translate-x-1 transition-all" />
-                      </div>
-                      <p className="text-sm text-gray-400 dark:text-gray-500 font-light">Instant cash flow & ROI analysis</p>
-                    </div>
+                <div 
+                  key={strategy.id} 
+                  className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/50 hover:border-slate-600 transition-all cursor-pointer group flex flex-col items-center text-center"
+                >
+                  <div className={`w-12 h-12 rounded-xl ${iconColor} flex items-center justify-center mb-3`}>
+                    <Icon className="w-6 h-6" />
                   </div>
+                  <h3 className="font-medium text-white text-sm">{strategy.name}</h3>
+                  <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 mt-2 transition-colors" />
                 </div>
               );
             })}
@@ -597,43 +621,43 @@ function DesktopScannerView({
         </div>
       </section>
 
-      {/* How it Works */}
+      {/* How It Works */}
       <section className="px-6 py-16">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] p-8 md:p-12 transition-colors duration-300">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-10 text-center">How It Works</h2>
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-slate-800/30 backdrop-blur-sm rounded-3xl p-8 border border-slate-700/50">
+            <h2 className="text-2xl font-bold text-white mb-10 text-center">How It Works</h2>
             
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg">
-                  <Search className="w-8 h-8 text-white" />
+                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg">
+                  <Target className="w-7 h-7 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-gray-200 dark:text-gray-700 mb-2">01</div>
-                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Enter Address</h3>
-                <p className="text-gray-400 dark:text-gray-500 text-sm">
-                  Search for any US property by street address
+                <div className="text-2xl font-bold text-slate-600 mb-2">01</div>
+                <h3 className="font-semibold text-white mb-2">Point at Property</h3>
+                <p className="text-gray-500 text-sm">
+                  Use your phone&apos;s camera to aim at any property you want to analyze
                 </p>
               </div>
               
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg">
-                  <Zap className="w-8 h-8 text-white" />
+                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg">
+                  <Zap className="w-7 h-7 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-gray-200 dark:text-gray-700 mb-2">02</div>
-                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Instant Analysis</h3>
-                <p className="text-gray-400 dark:text-gray-500 text-sm">
-                  Get valuations, rent estimates, and market data in seconds
+                <div className="text-2xl font-bold text-slate-600 mb-2">02</div>
+                <h3 className="font-semibold text-white mb-2">Instant Scan</h3>
+                <p className="text-gray-500 text-sm">
+                  GPS and compass identify the exact property in under 2 seconds
                 </p>
               </div>
               
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-lg">
-                  <Home className="w-8 h-8 text-white" />
+                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-lg">
+                  <Home className="w-7 h-7 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-gray-200 dark:text-gray-700 mb-2">03</div>
-                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Compare Strategies</h3>
-                <p className="text-gray-400 dark:text-gray-500 text-sm">
-                  See cash flow, ROI, and projections across 6 strategies
+                <div className="text-2xl font-bold text-slate-600 mb-2">03</div>
+                <h3 className="font-semibold text-white mb-2">Get Analytics</h3>
+                <p className="text-gray-500 text-sm">
+                  Instantly see investment strategies, cash flow, and ROI projections
                 </p>
               </div>
             </div>
@@ -642,78 +666,66 @@ function DesktopScannerView({
       </section>
 
       {/* Location Section (if GPS available) */}
-      {scanner.isLocationReady && (
+      {scanner.isLocationReady && nearbyProperties.length > 0 && (
         <section className="px-6 py-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] p-6 transition-colors duration-300">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Your Location</h3>
-                  <p className="text-gray-400 dark:text-gray-500 text-sm">
+                  <h3 className="text-lg font-semibold text-white">Nearby Properties</h3>
+                  <p className="text-gray-500 text-sm">
                     {scanner.latitude?.toFixed(6)}, {scanner.longitude?.toFixed(6)}
-                    {scanner.accuracy && ` (±${Math.round(scanner.accuracy)}m)`}
                   </p>
                 </div>
                 <button
                   onClick={fetchNearbyProperties}
                   disabled={isLoadingNearby}
-                  className="flex items-center gap-2 px-4 py-2 bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded-lg font-medium hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-teal-500/20 text-teal-400 rounded-lg font-medium hover:bg-teal-500/30 transition-colors disabled:opacity-50"
                 >
                   {isLoadingNearby ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <RefreshCw className="w-4 h-4" />
                   )}
-                  Find Nearby
+                  Refresh
                 </button>
               </div>
 
-              {/* Nearby properties list */}
-              {nearbyProperties.length > 0 && (
-                <div className="grid gap-3">
-                  {nearbyProperties.map((property, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handlePropertyClick(property)}
-                      className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-slate-700 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors text-left w-full group"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center flex-shrink-0">
-                        <Home className="w-5 h-5 text-teal-500 dark:text-teal-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-800 dark:text-white truncate">
-                          {property.address}
-                        </div>
-                        <div className="text-sm text-gray-400 dark:text-gray-500">
-                          {property.city}, {property.state} {property.zip}
-                        </div>
-                      </div>
-                      <ChevronRight className="w-5 h-5 text-gray-300 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-colors" />
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className="grid gap-3">
+                {nearbyProperties.map((property, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handlePropertyClick(property)}
+                    className="flex items-center gap-3 p-4 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-colors text-left w-full group"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center flex-shrink-0">
+                      <Home className="w-5 h-5 text-teal-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-white truncate">{property.address}</div>
+                      <div className="text-sm text-gray-500">{property.city}, {property.state} {property.zip}</div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-slate-400 transition-colors" />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </section>
       )}
 
-      {/* CTA Section */}
-      <section className="px-6 py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-r from-teal-500 via-cyan-500 to-emerald-500 rounded-3xl p-10 text-center text-white shadow-xl">
-            <h2 className="text-3xl font-bold mb-3">Ready to Analyze?</h2>
-            <p className="text-white/80 mb-8 font-light">Enter any US property address and get instant investment analytics.</p>
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="px-8 py-4 bg-white dark:bg-slate-900 text-gray-800 dark:text-white font-semibold rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 mx-auto"
-            >
-              Search Property
-              <ChevronRight className="w-5 h-5" />
-            </button>
+      {/* Footer */}
+      <footer className="px-6 py-8 mt-8">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center">
+              <Sparkles className="w-3 h-3 text-white" />
+            </div>
+            <span className="text-white text-sm font-medium">InvestIQ</span>
           </div>
+          <p className="text-gray-600 text-sm">Real estate investment analytics</p>
         </div>
-      </section>
+      </footer>
     </main>
   );
 }
