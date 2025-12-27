@@ -490,7 +490,14 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
         fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoStrip-response',message:'Photos API response',data:{success:data.success,hasPhotos:!!data.photos,photoCount:data.photos?.length,isMock:data.is_mock,firstPhotoUrl:data.photos?.[0]?.url?.substring(0,60)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C-D'})}).catch(()=>{});
         // #endregion
         if (data.success && data.photos?.length > 0) {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoStrip-setPhotos',message:'Setting photos state',data:{photoCount:data.photos.length,firstUrl:data.photos[0]?.url?.substring(0,60)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D-state'})}).catch(()=>{});
+          // #endregion
           setPhotos(data.photos)
+        } else {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoStrip-noSet',message:'NOT setting photos - condition failed',data:{success:data.success,hasPhotos:!!data.photos,photoCount:data.photos?.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D-fail'})}).catch(()=>{});
+          // #endregion
         }
       } catch (error) {
         // #region agent log
@@ -527,6 +534,9 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
   }
 
   if (photos.length === 0) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoStrip-empty',message:'Rendering empty photos state',data:{zpid,photosLength:photos.length,isLoading},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D-state'})}).catch(()=>{});
+    // #endregion
     return (
       <div className="flex gap-2.5">
         {[0, 1, 2, 3].map((i) => (
@@ -534,6 +544,10 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
             <ImageIcon className="w-6 h-6 text-gray-300" />
           </div>
         ))}
+        {/* Debug output */}
+        <div className="absolute top-0 left-0 bg-red-500 text-white text-xs p-1 rounded z-50">
+          DEBUG: photos={photos.length}, zpid={zpid || 'null'}
+        </div>
       </div>
     )
   }
@@ -541,6 +555,10 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
   // Show first 4 photos
   const displayPhotos = photos.slice(0, 4)
   const remainingCount = photos.length - 4
+  
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoStrip-render',message:'Rendering photos',data:{zpid,photosLength:photos.length,displayPhotosLength:displayPhotos.length,firstUrl:displayPhotos[0]?.url?.substring(0,60)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D-render'})}).catch(()=>{});
+  // #endregion
 
   return (
     <>
