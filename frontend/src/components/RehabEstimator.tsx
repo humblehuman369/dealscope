@@ -90,7 +90,9 @@ function TierSelector({
   return (
     <div className="flex items-center gap-1">
       {showLinkIcon && (
-        <Link2 className="w-3 h-3 text-gray-400 mr-1" title="All tiers sync together" />
+        <span title="All tiers sync together">
+          <Link2 className="w-3 h-3 text-gray-400 mr-1" />
+        </span>
       )}
       {tiers.map((tier) => (
         <button
