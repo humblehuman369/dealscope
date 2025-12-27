@@ -29,10 +29,6 @@ interface PhotosResponse {
 export default function PhotosPage() {
   const { currentProperty } = usePropertyStore()
   
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'photos/page.tsx:30',message:'PhotosPage render - currentProperty from store',data:{currentProperty:currentProperty,hasZpid:!!(currentProperty?.zpid)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B-C'})}).catch(()=>{});
-  // #endregion
-  
   const [zpid, setZpid] = useState('')
   const [propertyUrl, setPropertyUrl] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
@@ -59,9 +55,6 @@ export default function PhotosPage() {
   }, [currentProperty?.zpid, autoFetched, photos.length, isLoading])
 
   const fetchPhotosWithZpid = async (zpidToFetch: string) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'photos/page.tsx:57',message:'fetchPhotosWithZpid called',data:{zpidToFetch},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C-D'})}).catch(()=>{});
-    // #endregion
     setIsLoading(true)
     setError(null)
     setPhotos([])
@@ -110,9 +103,6 @@ export default function PhotosPage() {
 
       const response = await fetch(`/api/v1/photos?${params.toString()}`)
       const data: PhotosResponse = await response.json()
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'photos/page.tsx:112',message:'fetchPhotos API response',data:{success:data.success,photoCount:data.photos?.length,isMock:data.is_mock,error:data.error},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
 
       if (data.success) {
         setPhotos(data.photos || [])
@@ -300,15 +290,7 @@ export default function PhotosPage() {
                     src={photo.url}
                     alt={photo.caption || `Property photo ${index + 1}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    onLoad={() => {
-                      // #region agent log
-                      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'photos/page.tsx:289',message:'Image loaded successfully',data:{index,url:photo.url?.substring(0,80)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
-                      // #endregion
-                    }}
                     onError={(e) => {
-                      // #region agent log
-                      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'photos/page.tsx:295',message:'Image load FAILED',data:{index,url:photo.url?.substring(0,80)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
-                      // #endregion
                       (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23e5e7eb" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%239ca3af" font-size="12">No Image</text></svg>'
                     }}
                   />

@@ -3081,9 +3081,6 @@ function PropertyPageContent() {
         setProperty(data)
         
         // Update the header store with current property info
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:2903',message:'Setting currentPropertyInfo',data:{propertyId:data.property_id,zpid:data.zpid,hasZpid:!!data.zpid,rawZpidType:typeof data.zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A-B'})}).catch(()=>{});
-        // #endregion
         setCurrentPropertyInfo({
           propertyId: data.property_id,
           zpid: data.zpid || null,  // Zillow Property ID for photos
