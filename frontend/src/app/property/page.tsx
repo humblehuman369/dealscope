@@ -556,7 +556,15 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
               src={photo.url}
               alt={`Property photo ${index + 1}`}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              onLoad={() => {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoStrip-img-load',message:'Image loaded successfully',data:{index,url:photo.url?.substring(0,60)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
+                // #endregion
+              }}
               onError={(e) => {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:PhotoStrip-img-error',message:'Image load FAILED',data:{index,url:photo.url?.substring(0,60)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
+                // #endregion
                 (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23e5e7eb" width="100" height="100"/></svg>'
               }}
             />
