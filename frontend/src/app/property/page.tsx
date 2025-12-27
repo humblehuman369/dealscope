@@ -264,31 +264,85 @@ const strategies: { id: StrategyId; name: string; shortName: string; description
   { id: 'wholesale', name: 'Wholesale', shortName: 'Wholesale', description: 'Assign contracts for quick profit', icon: FileText, color: 'pink', gradient: 'from-pink-500 to-rose-600' },
 ]
 
-// Strategy explanations for the info modal
-const strategyExplanations: Record<StrategyId, { title: string; content: string }> = {
+// Strategy explanations for the info modal - using JSX for rich formatting
+const strategyExplanations: Record<StrategyId, { title: string; content: React.ReactNode }> = {
   ltr: {
-    title: 'What is Long-Term Rental (LTR)?',
-    content: `Long-term rental is the classic buy-and-hold strategy that's made countless millionaires! You purchase a property, rent it out to reliable tenants on an annual lease, and watch your wealth grow on autopilot. Every month, rent checks come in while your tenants pay down your mortgage for you. The magic happens in three ways: monthly cash flow puts money in your pocket NOW, your tenants build equity for you by paying down the loan, and appreciation grows your property value over time. It's the perfect "set it and forget it" strategy—ideal for beginners who want to build lasting wealth without the stress of constant management. Think of it as planting a money tree that grows stronger every year!`
+    title: 'Long-Term Rental',
+    content: (
+      <>
+        <p className="mb-3"><strong>Long-term rental</strong> is the classic buy-and-hold strategy that&apos;s made countless millionaires! You purchase a property, rent it out to reliable tenants on an annual lease, and watch your wealth grow on autopilot. Every month, rent checks come in while your tenants pay down your mortgage for you.</p>
+        <p className="mb-2">The magic happens in three ways:</p>
+        <ol className="list-decimal list-inside mb-3 space-y-1 ml-2">
+          <li>Monthly cash flow puts money in your pocket. NOW!</li>
+          <li>Your tenants build equity for you by paying down the loan</li>
+          <li>Appreciation grows your property value over time.</li>
+        </ol>
+        <p>It&apos;s the perfect <strong>&quot;set it and forget it&quot;</strong> strategy—ideal for investor who want to build lasting wealth without the stress of constant management. Think of it as planting a money tree that grows stronger every year!</p>
+      </>
+    )
   },
   str: {
-    title: 'What is Short-Term Rental (STR)?',
-    content: `Short-term rental is where you turn your property into a high-revenue hospitality business using platforms like Airbnb or VRBO! Instead of one tenant paying $2,000/month, imagine multiple guests paying $150-$300 PER NIGHT! Properties in hot tourist areas or business districts can generate 2-3X more revenue than traditional rentals. Yes, it requires more hands-on management (or a property manager), but the numbers speak for themselves. You're not just a landlord—you're running a hospitality business that can generate serious cash flow. Perfect for properties near beaches, mountains, major cities, or business hubs. The best part? You can block off dates to use the property yourself for vacations!`
+    title: 'Short-Term Rental',
+    content: (
+      <>
+        <p className="mb-3"><strong>Short-term rental</strong> is where you turn your property into a high-revenue hospitality business using platforms like Airbnb or VRBO! Instead of one tenant paying $2,000/month, imagine multiple guests paying $150-$300 PER NIGHT! Properties in hot tourist areas or business districts can generate <strong>2-3X more revenue</strong> than traditional rentals.</p>
+        <p className="mb-3">Yes, it requires more hands-on management (or a property manager), but the numbers speak for themselves. You&apos;re not just a landlord—you&apos;re running a hospitality business that can generate serious cash flow. Perfect for properties <strong>near beaches, mountains, major cities</strong>, or business hubs.</p>
+        <p><strong>The best part?</strong> You can block off dates to use the property yourself for vacations!</p>
+      </>
+    )
   },
   brrrr: {
-    title: 'What is BRRRR?',
-    content: `BRRRR stands for Buy, Rehab, Rent, Refinance, Repeat—and it's the holy grail for serious investors who want to scale FAST! Here's how it works: Buy a distressed property below market value, Rehab it to increase its worth, Rent it out to generate cash flow, then Refinance based on the NEW higher value to pull out most (or ALL) of your initial investment. Now you have a cash-flowing property AND you got your money back to Repeat the process! It's like having your cake and eating it too. Investors use BRRRR to build massive portfolios quickly because each deal funds the next one. The goal is "infinite return"—when you've pulled out 100% of your investment but still own a property that pays you every month. Mind-blowing, right?`
+    title: 'BRRRR',
+    content: (
+      <>
+        <p className="mb-3"><strong>BRRRR</strong> stands for <strong>Buy, Rehab, Rent, Refinance, Repeat</strong>—and it&apos;s the holy grail for serious investors who want to scale FAST!</p>
+        <p className="mb-2">Here&apos;s how it works:</p>
+        <ul className="list-disc list-inside mb-3 space-y-1 ml-2">
+          <li>Buy a distressed property below market value,</li>
+          <li>Rehab it to increase its worth,</li>
+          <li>Rent it out to generate cash flow,</li>
+          <li>Refinance based on the NEW higher value to pull out most (or ALL) of your initial investment.</li>
+          <li>Repeat the process!</li>
+        </ul>
+        <p className="mb-3">Now you have a cash-flowing property AND you got your money back to Repeat the process! It&apos;s like having your cake and eating it too. Investors use BRRRR to build massive portfolios quickly because each deal funds the next one. The goal is &quot;infinite return&quot;—when you&apos;ve pulled out 100% of your investment but still own a property that pays you every month. Mind-blowing, right?</p>
+      </>
+    )
   },
   flip: {
-    title: 'What is Fix & Flip?',
-    content: `Fix & Flip is the fast-cash strategy where you buy a distressed property at a discount, transform it into something beautiful, and sell it for profit—sometimes in just 3-6 months! While other strategies build wealth slowly over time, flipping puts tens of thousands of dollars in your pocket NOW. It requires more work and carries more risk, but the rewards can be exceptional. A successful flip can net you $30,000-$100,000+ in profit that you can use to fund your next deal or invest in rental properties. It's thrilling, it's fast-paced, and every successful flip proves you can spot value where others see problems! If you love HGTV and want to see big checks FAST, flipping is your game!`
+    title: 'Fix & Flip',
+    content: (
+      <>
+        <p className="mb-3"><strong>Fix & Flip</strong> is the <strong>fast-cash strategy</strong> where you buy a distressed property at a discount, transform it into something beautiful, and sell it for profit—sometimes in just 3-6 months!</p>
+        <p className="mb-3">While other strategies build wealth slowly over time, flipping puts tens of thousands of dollars in your pocket, NOW!</p>
+        <p className="mb-3">It requires more work and carries more risk, but the rewards can be exceptional. A successful flip can net you <strong>$30,000-$100,000+ in profit</strong> that you can use to fund your next deal or invest in rental properties.</p>
+        <p>It&apos;s <strong>thrilling</strong>, it&apos;s <strong>fast-paced</strong>, and every successful flip proves you can spot value where others see problems! If you love HGTV and want to see big checks FAST, flipping is your game!</p>
+      </>
+    )
   },
   house_hack: {
-    title: 'What is House Hacking?',
-    content: `House hacking is the ultimate beginner strategy where your biggest expense—housing—becomes your biggest asset instead! You buy a duplex, triplex, or single-family home with extra bedrooms, live in one unit/room, and rent out the others. The rent from your tenants covers most or ALL of your mortgage, property taxes, and insurance. You're essentially living for FREE while building equity and learning the landlord game with training wheels on. Plus, you can qualify for low down payment loans (as low as 3.5% FHA or 0% VA) because it's your primary residence! It's the fastest path from "paying rent" to "collecting rent" and building wealth. This strategy has created more first-time millionaire investors than any other!`
+    title: 'House Hacking',
+    content: (
+      <>
+        <p className="mb-3"><strong>House hacking</strong> is the <strong>ultimate beginner</strong> strategy where your biggest expense—housing—becomes your biggest asset instead!</p>
+        <p className="mb-3">You buy a duplex, triplex, or single-family home with extra bedrooms, live in one unit/room, and rent out the others. The rent from your tenants covers most or ALL of your mortgage, property taxes, and insurance.</p>
+        <p className="mb-3">You&apos;re essentially <strong>living for FREE</strong> while building equity and learning the landlord game with training wheels on. Plus, you can qualify for low down payment loans (as low as 3.5% FHA or 0% VA) because it&apos;s your primary residence! It&apos;s the fastest path from &quot;paying rent&quot; to &quot;collecting rent&quot; and building wealth. This strategy has created more first-time millionaire investors than any other!</p>
+      </>
+    )
   },
   wholesale: {
-    title: 'What is Wholesale?',
-    content: `Wholesaling is how you make money in real estate with little to no money of your own! Here's the genius: You find deeply discounted properties (usually distressed), get them under contract, then immediately assign that contract to another investor for a fee—typically $5,000-$15,000 or more. You never actually buy the property, never deal with banks, and never risk your own capital. It's pure deal-finding hustle! Your job is to be the matchmaker—connecting motivated sellers with cash buyers. While it won't build long-term wealth like rentals, it generates quick cash that you can use to fund your first rental property down payment. Many successful investors started with wholesaling to build their war chest before transitioning to buy-and-hold strategies. It's all about hustle, marketing, and building your buyer network!`
+    title: 'Wholesale',
+    content: (
+      <>
+        <p className="mb-3"><strong>Wholesaling</strong> is how you make money in real estate with <strong>little to no money</strong> of your own!</p>
+        <p className="mb-2">Here&apos;s the genius:</p>
+        <ol className="list-decimal list-inside mb-3 space-y-1 ml-2">
+          <li>You find deeply discounted properties (usually distressed), get them under contract,</li>
+          <li>Immediately assign that contract to another investor for a fee—typically $5,000-$15,000 or more.</li>
+        </ol>
+        <p className="mb-3">You never actually buy the property, never deal with banks, and never risk your own capital.</p>
+        <p><strong>It&apos;s pure deal-finding hustle!</strong> Your job is to be the matchmaker—connecting motivated sellers with cash buyers. While it won&apos;t build long-term wealth like rentals, it generates quick cash that you can use to fund your first rental property down payment. Many successful investors started with wholesaling to build their war chest before transitioning to buy-and-hold strategies. It&apos;s all about hustle, marketing, and building your buyer network!</p>
+      </>
+    )
   }
 }
 
@@ -953,8 +1007,6 @@ function StrategyInfoModal({
   
   if (!isOpen || !explanation || !strategy) return null
   
-  const Icon = strategy.icon
-  
   return (
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
@@ -964,30 +1016,20 @@ function StrategyInfoModal({
         className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header with gradient */}
-        <div className={`bg-gradient-to-r ${strategy.gradient} px-5 py-4`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <Icon className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-lg font-bold text-white">{explanation.title}</h2>
-            </div>
-            <button 
-              onClick={onClose}
-              className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
-              aria-label="Close"
-            >
-              <X className="w-4 h-4 text-white" />
-            </button>
-          </div>
-        </div>
+        {/* Close button - top right */}
+        <button 
+          onClick={onClose}
+          className="absolute top-3 right-3 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors z-10"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4 text-gray-500" />
+        </button>
         
         {/* Content */}
-        <div className="px-5 py-4 overflow-y-auto max-h-[60vh]">
-          <p className="text-sm text-gray-700 leading-relaxed">
+        <div className="px-5 py-5 overflow-y-auto max-h-[70vh]">
+          <div className="text-sm text-gray-700 leading-relaxed pr-6">
             {explanation.content}
-          </p>
+          </div>
         </div>
         
         {/* Footer */}
@@ -1049,13 +1091,15 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
         <div className={`h-0.5 w-full ${accentColor}`} />
         
         {/* Info Button - Top Right */}
-        <div 
+        <button 
+          type="button"
           onClick={handleInfoClick}
           className="absolute top-2 right-1.5 w-5 h-5 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center cursor-pointer transition-colors z-10 group"
           title={`What is ${strategy.name}?`}
+          aria-label={`Learn about ${strategy.name}`}
         >
           <Info className="w-3 h-3 text-gray-400 group-hover:text-gray-600" />
-        </div>
+        </button>
         
         <div className="px-2.5 py-2 h-full flex flex-col">
           {/* Strategy Name */}
