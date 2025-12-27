@@ -133,6 +133,10 @@ export async function POST(request: NextRequest) {
       
       if (backendResponse.ok) {
         const data = await backendResponse.json()
+        // #region agent log
+        const fs = await import('fs');
+        fs.appendFileSync('/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug.log', JSON.stringify({location:'api/v1/properties/search/route.ts:backend-ok',message:'Backend response received',data:{propertyId:data.property_id,zpid:data.zpid,hasZpid:!!data.zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})+'\n');
+        // #endregion
         // Cache the result
         propertyCache[data.property_id] = {
           data,
@@ -141,9 +145,17 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(data)
       }
       
+      // #region agent log
+      const fs2 = await import('fs');
+      fs2.appendFileSync('/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug.log', JSON.stringify({location:'api/v1/properties/search/route.ts:backend-error',message:'Backend returned error status',data:{status:backendResponse.status},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})+'\n');
+      // #endregion
       // If backend returns an error, log it and fall through to mock data
       console.warn(`Backend API returned ${backendResponse.status}, falling back to mock data`)
     } catch (backendError) {
+      // #region agent log
+      const fs3 = await import('fs');
+      fs3.appendFileSync('/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug.log', JSON.stringify({location:'api/v1/properties/search/route.ts:backend-unavailable',message:'Backend unavailable, using mock',data:{error:String(backendError)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})+'\n');
+      // #endregion
       // Backend is unavailable, use mock data
       console.warn('Backend API unavailable, using mock data:', backendError)
     }
