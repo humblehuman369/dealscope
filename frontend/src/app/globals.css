@@ -10,11 +10,19 @@ html {
   font-feature-settings: 'kern' 1, 'liga' 1;
 }
 
+/* Light mode (default) */
 body {
   background-color: #f8f9fa;
   color: #1a1a1a;
   font-weight: 400;
   letter-spacing: -0.01em;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode */
+html.dark body {
+  background-color: #0f172a;
+  color: #e2e8f0;
 }
 
 .btn-primary {
@@ -55,8 +63,18 @@ body {
   transition: background-color 0.2s;
 }
 
+html.dark .btn-secondary {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
 .btn-secondary:hover {
   background-color: #f9fafb;
+}
+
+html.dark .btn-secondary:hover {
+  background-color: #334155;
 }
 
 .card {
@@ -65,6 +83,12 @@ body {
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   border: 1px solid #e5e7eb;
   overflow: hidden;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+html.dark .card {
+  background-color: #1e293b;
+  border-color: #334155;
 }
 
 .input {
@@ -77,7 +101,14 @@ body {
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   outline: 1px solid #d1d5db;
   font-size: 0.875rem;
-  transition: outline 0.2s;
+  transition: outline 0.2s, background-color 0.3s ease, color 0.3s ease;
+  background-color: white;
+}
+
+html.dark .input {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  outline-color: #475569;
 }
 
 .input:focus {
@@ -86,6 +117,10 @@ body {
 
 .input::placeholder {
   color: #9ca3af;
+}
+
+html.dark .input::placeholder {
+  color: #64748b;
 }
 
 .badge {
@@ -128,6 +163,12 @@ body {
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   border: 1px solid #e5e7eb;
   padding: 1rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+html.dark .metric-card {
+  background-color: #1e293b;
+  border-color: #334155;
 }
 
 .metric-value {
@@ -136,16 +177,28 @@ body {
   color: #111827;
 }
 
+html.dark .metric-value {
+  color: #f1f5f9;
+}
+
 .metric-label {
   font-size: 0.875rem;
   color: #6b7280;
   margin-top: 0.25rem;
 }
 
+html.dark .metric-label {
+  color: #94a3b8;
+}
+
 .skeleton {
   background-color: #e5e7eb;
   border-radius: 0.25rem;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+html.dark .skeleton {
+  background-color: #334155;
 }
 
 @keyframes pulse {

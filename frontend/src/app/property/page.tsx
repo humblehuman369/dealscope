@@ -28,7 +28,7 @@ const ChartsView = dynamic(() => import('@/components/ChartsView'), { loading: (
 const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), { loading: () => <LoadingCard /> })
 
 function LoadingCard() {
-  return <div className="animate-pulse bg-gray-100 rounded-2xl h-64" />
+  return <div className="animate-pulse bg-gray-100 dark:bg-slate-800 rounded-2xl h-64" />
 }
 
 // ============================================
@@ -559,26 +559,26 @@ function TopNav({ property }: { property: PropertyData }) {
   const estimatedValue = property.valuations.zestimate || property.valuations.current_value_avm || 0
   
   return (
-    <div className="mb-4 bg-white rounded-xl shadow-sm overflow-hidden">
+    <div className="mb-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm dark:shadow-lg overflow-hidden transition-colors duration-300">
       {/* Main row - always horizontal on md+, stacked on mobile */}
       <div className="flex flex-col md:flex-row md:items-start">
         {/* Left: Property Info */}
         <div className="flex items-start gap-3 p-3 md:p-4 flex-1 min-w-0">
-          <a href="/" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0 mt-0.5" aria-label="Back to home" title="Back to home">
-            <Menu className="w-5 h-5 text-gray-400" strokeWidth={1.5} aria-hidden="true" />
+          <a href="/" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors flex-shrink-0 mt-0.5" aria-label="Back to home" title="Back to home">
+            <Menu className="w-5 h-5 text-gray-400 dark:text-gray-500" strokeWidth={1.5} aria-hidden="true" />
           </a>
           <div className="flex-1 min-w-0">
             {/* Full Address - Single Line */}
-            <h1 className="text-base md:text-lg font-bold text-gray-900 leading-tight">
+            <h1 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-tight">
               {property.address.street}, {property.address.city}, {property.address.state} {property.address.zip_code}
             </h1>
             {/* Stats + Price - Line 2 */}
             <div className="flex items-center gap-3 mt-1">
-              <span className="text-xs text-gray-400 whitespace-nowrap">
+              <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
                 {property.details.bedrooms || '—'} bd · {property.details.bathrooms || '—'} ba · {property.details.square_footage?.toLocaleString() || '—'} sqft
               </span>
               {estimatedValue > 0 && (
-                <span className="text-sm font-semibold text-teal-600 whitespace-nowrap">
+                <span className="text-sm font-semibold text-teal-600 dark:text-teal-400 whitespace-nowrap">
                   Est. {formatCurrency(estimatedValue)}
                 </span>
               )}
@@ -3120,10 +3120,10 @@ function PropertyPageContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#e8eeef] flex items-center justify-center">
+      <div className="min-h-screen bg-[#e8eeef] dark:bg-slate-950 flex items-center justify-center transition-colors duration-300">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3" />
-          <p className="text-gray-400 text-sm">Loading property...</p>
+          <Loader2 className="w-8 h-8 text-gray-400 dark:text-gray-500 animate-spin mx-auto mb-3" />
+          <p className="text-gray-400 dark:text-gray-500 text-sm">Loading property...</p>
         </div>
       </div>
     )
@@ -3131,13 +3131,13 @@ function PropertyPageContent() {
 
   if (error || !property) {
     return (
-      <div className="min-h-screen bg-[#e8eeef] flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
+      <div className="min-h-screen bg-[#e8eeef] dark:bg-slate-950 flex items-center justify-center p-6 transition-colors duration-300">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-8 max-w-md text-center">
           <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto mb-4" strokeWidth={1.5} />
-          <h2 className="text-lg font-bold text-gray-800 mb-2">Unable to Load Property</h2>
-          <p className="text-gray-400 text-sm mb-6">{error || 'Property data is null'}</p>
+          <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-2">Unable to Load Property</h2>
+          <p className="text-gray-400 dark:text-gray-500 text-sm mb-6">{error || 'Property data is null'}</p>
           <div className="flex gap-3 justify-center">
-            <a href="/" className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-600 transition-colors">Back to Search</a>
+            <a href="/" className="px-4 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 transition-colors">Back to Search</a>
           </div>
         </div>
       </div>
@@ -3145,7 +3145,7 @@ function PropertyPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#e8eeef]">
+    <div className="min-h-screen bg-[#e8eeef] dark:bg-slate-950 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 py-6">
         <TopNav property={property} />
         
@@ -3214,7 +3214,7 @@ function PropertyPageContent() {
 
 export default function PropertyPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#e8eeef] flex items-center justify-center"><Loader2 className="w-8 h-8 text-gray-400 animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#e8eeef] dark:bg-slate-950 flex items-center justify-center transition-colors duration-300"><Loader2 className="w-8 h-8 text-gray-400 dark:text-gray-500 animate-spin" /></div>}>
       <PropertyPageContent />
     </Suspense>
   )
