@@ -264,6 +264,34 @@ const strategies: { id: StrategyId; name: string; shortName: string; description
   { id: 'wholesale', name: 'Wholesale', shortName: 'Wholesale', description: 'Assign contracts for quick profit', icon: FileText, color: 'pink', gradient: 'from-pink-500 to-rose-600' },
 ]
 
+// Strategy explanations for the info modal
+const strategyExplanations: Record<StrategyId, { title: string; content: string }> = {
+  ltr: {
+    title: 'What is Long-Term Rental (LTR)?',
+    content: `Long-term rental is the classic buy-and-hold strategy that's made countless millionaires! You purchase a property, rent it out to reliable tenants on an annual lease, and watch your wealth grow on autopilot. Every month, rent checks come in while your tenants pay down your mortgage for you. The magic happens in three ways: monthly cash flow puts money in your pocket NOW, your tenants build equity for you by paying down the loan, and appreciation grows your property value over time. It's the perfect "set it and forget it" strategy—ideal for beginners who want to build lasting wealth without the stress of constant management. Think of it as planting a money tree that grows stronger every year!`
+  },
+  str: {
+    title: 'What is Short-Term Rental (STR)?',
+    content: `Short-term rental is where you turn your property into a high-revenue hospitality business using platforms like Airbnb or VRBO! Instead of one tenant paying $2,000/month, imagine multiple guests paying $150-$300 PER NIGHT! Properties in hot tourist areas or business districts can generate 2-3X more revenue than traditional rentals. Yes, it requires more hands-on management (or a property manager), but the numbers speak for themselves. You're not just a landlord—you're running a hospitality business that can generate serious cash flow. Perfect for properties near beaches, mountains, major cities, or business hubs. The best part? You can block off dates to use the property yourself for vacations!`
+  },
+  brrrr: {
+    title: 'What is BRRRR?',
+    content: `BRRRR stands for Buy, Rehab, Rent, Refinance, Repeat—and it's the holy grail for serious investors who want to scale FAST! Here's how it works: Buy a distressed property below market value, Rehab it to increase its worth, Rent it out to generate cash flow, then Refinance based on the NEW higher value to pull out most (or ALL) of your initial investment. Now you have a cash-flowing property AND you got your money back to Repeat the process! It's like having your cake and eating it too. Investors use BRRRR to build massive portfolios quickly because each deal funds the next one. The goal is "infinite return"—when you've pulled out 100% of your investment but still own a property that pays you every month. Mind-blowing, right?`
+  },
+  flip: {
+    title: 'What is Fix & Flip?',
+    content: `Fix & Flip is the fast-cash strategy where you buy a distressed property at a discount, transform it into something beautiful, and sell it for profit—sometimes in just 3-6 months! While other strategies build wealth slowly over time, flipping puts tens of thousands of dollars in your pocket NOW. It requires more work and carries more risk, but the rewards can be exceptional. A successful flip can net you $30,000-$100,000+ in profit that you can use to fund your next deal or invest in rental properties. It's thrilling, it's fast-paced, and every successful flip proves you can spot value where others see problems! If you love HGTV and want to see big checks FAST, flipping is your game!`
+  },
+  house_hack: {
+    title: 'What is House Hacking?',
+    content: `House hacking is the ultimate beginner strategy where your biggest expense—housing—becomes your biggest asset instead! You buy a duplex, triplex, or single-family home with extra bedrooms, live in one unit/room, and rent out the others. The rent from your tenants covers most or ALL of your mortgage, property taxes, and insurance. You're essentially living for FREE while building equity and learning the landlord game with training wheels on. Plus, you can qualify for low down payment loans (as low as 3.5% FHA or 0% VA) because it's your primary residence! It's the fastest path from "paying rent" to "collecting rent" and building wealth. This strategy has created more first-time millionaire investors than any other!`
+  },
+  wholesale: {
+    title: 'What is Wholesale?',
+    content: `Wholesaling is how you make money in real estate with little to no money of your own! Here's the genius: You find deeply discounted properties (usually distressed), get them under contract, then immediately assign that contract to another investor for a fee—typically $5,000-$15,000 or more. You never actually buy the property, never deal with banks, and never risk your own capital. It's pure deal-finding hustle! Your job is to be the matchmaker—connecting motivated sellers with cash buyers. While it won't build long-term wealth like rentals, it generates quick cash that you can use to fund your first rental property down payment. Many successful investors started with wholesaling to build their war chest before transitioning to buy-and-hold strategies. It's all about hustle, marketing, and building your buyer network!`
+  }
+}
+
 // ============================================
 // UI COMPONENTS
 // ============================================
@@ -910,10 +938,78 @@ const ratingConfig: Record<Rating, { label: string; bgColor: string; textColor: 
   excellent: { label: 'Excellent', bgColor: 'bg-emerald-100', textColor: 'text-emerald-700', borderColor: 'border-emerald-300' },
 }
 
+// Strategy Info Modal Component
+function StrategyInfoModal({ 
+  strategyId, 
+  isOpen, 
+  onClose 
+}: { 
+  strategyId: StrategyId
+  isOpen: boolean
+  onClose: () => void 
+}) {
+  const explanation = strategyExplanations[strategyId]
+  const strategy = strategies.find(s => s.id === strategyId)
+  
+  if (!isOpen || !explanation || !strategy) return null
+  
+  const Icon = strategy.icon
+  
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div 
+        className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header with gradient */}
+        <div className={`bg-gradient-to-r ${strategy.gradient} px-5 py-4`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <Icon className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-lg font-bold text-white">{explanation.title}</h2>
+            </div>
+            <button 
+              onClick={onClose}
+              className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+          </div>
+        </div>
+        
+        {/* Content */}
+        <div className="px-5 py-4 overflow-y-auto max-h-[60vh]">
+          <p className="text-sm text-gray-700 leading-relaxed">
+            {explanation.content}
+          </p>
+        </div>
+        
+        {/* Footer */}
+        <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
+          <button
+            onClick={onClose}
+            className={`w-full py-2.5 bg-gradient-to-r ${strategy.gradient} text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity`}
+          >
+            Got it!
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function StrategyCard({ strategy, metrics, isSelected, onClick }: {
   strategy: typeof strategies[0]; metrics: { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; rating: Rating; primaryValue: number }
   isSelected: boolean; onClick: () => void
 }) {
+  const [showInfoModal, setShowInfoModal] = useState(false)
+  
   // Use actual numeric value for profit/loss coloring
   const isProfit = metrics.primaryValue > 0
   const isLoss = metrics.primaryValue < 0
@@ -934,42 +1030,65 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
     : metrics.rating === 'good' ? 'bg-teal-500'
     : 'bg-emerald-500'
   
+  const handleInfoClick = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent card selection when clicking info
+    setShowInfoModal(true)
+  }
+  
   return (
-    <button
-      onClick={onClick}
-      className={`relative rounded-md text-left transition-all duration-200 overflow-hidden w-full h-full ${
-        isSelected 
-          ? 'bg-white ring-1 ring-gray-200' 
-          : 'bg-gray-500/15 hover:bg-gray-500/10'
-      }`}
-    >
-      {/* Thin top accent bar */}
-      <div className={`h-0.5 w-full ${accentColor}`} />
+    <>
+      <button
+        onClick={onClick}
+        className={`relative rounded-md text-left transition-all duration-200 overflow-hidden w-full h-full ${
+          isSelected 
+            ? 'bg-white ring-1 ring-gray-200' 
+            : 'bg-gray-500/15 hover:bg-gray-500/10'
+        }`}
+      >
+        {/* Thin top accent bar */}
+        <div className={`h-0.5 w-full ${accentColor}`} />
+        
+        {/* Info Button - Top Right */}
+        <div 
+          onClick={handleInfoClick}
+          className="absolute top-2 right-1.5 w-5 h-5 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center cursor-pointer transition-colors z-10 group"
+          title={`What is ${strategy.name}?`}
+        >
+          <Info className="w-3 h-3 text-gray-400 group-hover:text-gray-600" />
+        </div>
+        
+        <div className="px-2.5 py-2 h-full flex flex-col">
+          {/* Strategy Name */}
+          <h3 className="text-[11px] font-semibold text-gray-900 tracking-tight leading-tight mb-1.5 pr-5">{strategy.name}</h3>
+          
+          {/* Primary Value - Clear with profit/loss color */}
+          <div className={`text-xl font-semibold tracking-tight leading-none ${primaryColor}`}>
+            {metrics.primary}
+          </div>
+          <div className="text-[9px] font-medium text-gray-500 tracking-wide mt-0.5 mb-1.5">{metrics.primaryLabel}</div>
+          
+          {/* Secondary Metric - Value on top, label below */}
+          <div className="pt-1.5 border-t border-gray-100/80">
+            <div className={`text-sm font-semibold ${metrics.secondaryLabel.includes('Profit') ? 'text-emerald-600' : 'text-gray-700'}`}>{metrics.secondary}</div>
+            <div className={`text-[9px] font-medium mt-px ${metrics.secondaryLabel.includes('Profit') ? 'text-emerald-500' : 'text-gray-500'}`}>{metrics.secondaryLabel}</div>
+          </div>
+          
+          {/* Rating Badge - Bottom right */}
+          <div className="mt-auto pt-2 flex justify-end">
+            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${ratingDisplay.bgColor} ${ratingDisplay.textColor} ${ratingDisplay.borderColor} border`}>
+              {ratingDisplay.label}
+            </span>
+          </div>
+        </div>
+      </button>
       
-      <div className="px-2.5 py-2 h-full flex flex-col">
-        {/* Strategy Name */}
-        <h3 className="text-[11px] font-semibold text-gray-900 tracking-tight leading-tight mb-1.5">{strategy.name}</h3>
-        
-        {/* Primary Value - Clear with profit/loss color */}
-        <div className={`text-xl font-semibold tracking-tight leading-none ${primaryColor}`}>
-          {metrics.primary}
-        </div>
-        <div className="text-[9px] font-medium text-gray-500 tracking-wide mt-0.5 mb-1.5">{metrics.primaryLabel}</div>
-        
-        {/* Secondary Metric - Value on top, label below */}
-        <div className="pt-1.5 border-t border-gray-100/80">
-          <div className={`text-sm font-semibold ${metrics.secondaryLabel.includes('Profit') ? 'text-emerald-600' : 'text-gray-700'}`}>{metrics.secondary}</div>
-          <div className={`text-[9px] font-medium mt-px ${metrics.secondaryLabel.includes('Profit') ? 'text-emerald-500' : 'text-gray-500'}`}>{metrics.secondaryLabel}</div>
-        </div>
-        
-        {/* Rating Badge - Bottom right */}
-        <div className="mt-auto pt-2 flex justify-end">
-          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${ratingDisplay.bgColor} ${ratingDisplay.textColor} ${ratingDisplay.borderColor} border`}>
-            {ratingDisplay.label}
-          </span>
-        </div>
-      </div>
-    </button>
+      {/* Info Modal */}
+      <StrategyInfoModal 
+        strategyId={strategy.id} 
+        isOpen={showInfoModal} 
+        onClose={() => setShowInfoModal(false)} 
+      />
+    </>
   )
 }
 
