@@ -572,17 +572,20 @@ function TopNav({ property }: { property: PropertyData }) {
             <h1 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-tight">
               {property.address.street}, {property.address.city}, {property.address.state} {property.address.zip_code}
             </h1>
-            {/* Stats + Price - Line 2 */}
-            <div className="flex items-center gap-3 mt-1">
+            {/* Stats - Line 2 */}
+            <div className="mt-1">
               <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
                 {property.details.bedrooms || '—'} bd · {property.details.bathrooms || '—'} ba · {property.details.square_footage?.toLocaleString() || '—'} sqft
               </span>
-              {estimatedValue > 0 && (
+            </div>
+            {/* Estimated Value - Line 3 */}
+            {estimatedValue > 0 && (
+              <div className="mt-1">
                 <span className="text-sm font-semibold text-teal-600 dark:text-teal-400 whitespace-nowrap">
                   Est. {formatCurrency(estimatedValue)}
                 </span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
         
@@ -1154,7 +1157,7 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
       <div className="px-5 py-4">
-        <StepHeader step={1} title="Set Your Terms" />
+        <StepHeader step={1} title="Terms" subtitle="Customize your deal. Adjust the values to evaluate profitability." />
         
         <div className="grid grid-cols-3 gap-6">
           {/* Group 1: Property Values */}
