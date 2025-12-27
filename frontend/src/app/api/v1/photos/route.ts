@@ -11,6 +11,9 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const zpid = searchParams.get('zpid')
     const url = searchParams.get('url')
+    // #region agent log
+    console.log('[DEBUG] Photos API called - zpid:', zpid, 'url:', url);
+    // #endregion
     
     if (!zpid && !url) {
       return NextResponse.json(
@@ -38,9 +41,15 @@ export async function GET(request: NextRequest) {
       
       if (backendResponse.ok) {
         const data = await backendResponse.json()
+        // #region agent log
+        console.log('[DEBUG] Backend photos response:', JSON.stringify({success: data.success, photoCount: data.photos?.length, isMock: data.is_mock}));
+        // #endregion
         return NextResponse.json(data)
       }
       
+      // #region agent log
+      console.warn('[DEBUG] Backend API error - status:', backendResponse.status);
+      // #endregion
       console.warn(`Backend API returned ${backendResponse.status} for photos`)
     } catch (backendError) {
       console.warn('Backend API unavailable for photos:', backendError)
