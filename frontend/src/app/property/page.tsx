@@ -469,34 +469,19 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
   useEffect(() => {
-    console.log('[PhotoStrip] useEffect triggered, zpid:', zpid)
-    if (!zpid) {
-      console.log('[PhotoStrip] No zpid, skipping fetch')
-      return
-    }
+    if (!zpid) return
     
-    // Simple fetch without abort controller for now
     const fetchPhotos = async () => {
-      console.log('[PhotoStrip] Setting isLoading=true, starting fetch')
       setIsLoading(true)
       try {
-        const url = `/api/v1/photos?zpid=${zpid}`
-        console.log('[PhotoStrip] Fetching:', url)
-        const response = await fetch(url)
-        console.log('[PhotoStrip] Response status:', response.status)
+        const response = await fetch(`/api/v1/photos?zpid=${zpid}`)
         const data = await response.json()
-        console.log('[PhotoStrip] Parsed response:', JSON.stringify({ success: data.success, count: data.photos?.length }))
-        
         if (data.success && Array.isArray(data.photos) && data.photos.length > 0) {
-          console.log('[PhotoStrip] SUCCESS - Setting', data.photos.length, 'photos to state')
           setPhotos(data.photos)
-        } else {
-          console.log('[PhotoStrip] FAILED condition check:', { success: data.success, isArray: Array.isArray(data.photos), length: data.photos?.length })
         }
       } catch (error) {
-        console.error('[PhotoStrip] Fetch error:', error)
+        console.error('Failed to fetch photos:', error)
       } finally {
-        console.log('[PhotoStrip] Setting isLoading=false')
         setIsLoading(false)
       }
     }
@@ -526,7 +511,6 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
   }
 
   if (photos.length === 0) {
-    console.log('[PhotoStrip] Rendering empty state - photos:', photos.length, 'zpid:', zpid, 'isLoading:', isLoading)
     return (
       <div className="flex gap-2.5">
         {[0, 1, 2, 3].map((i) => (
@@ -541,8 +525,6 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
   // Show first 4 photos
   const displayPhotos = photos.slice(0, 4)
   const remainingCount = photos.length - 4
-  
-  console.log('[PhotoStrip] Rendering', displayPhotos.length, 'photos, first URL:', displayPhotos[0]?.url?.substring(0, 50))
 
   return (
     <>
