@@ -473,17 +473,7 @@ function DesktopScannerView({
           }} />
         </div>
 
-        <div className="relative px-6 pt-8 pb-16">
-          {/* Header Badge */}
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-slate-800/80 backdrop-blur-sm px-4 py-2 rounded-full border border-slate-700">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center">
-                <Sparkles className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-white text-sm font-medium">InvestIQ Scanner</span>
-            </div>
-          </div>
-
+        <div className="relative px-6 pt-12 pb-16">
           {/* Title */}
           <div className="text-center max-w-2xl mx-auto mb-10">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
