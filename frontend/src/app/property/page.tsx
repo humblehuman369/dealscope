@@ -1457,12 +1457,12 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Your Short-Term Rental Strategy" />
+      <StepHeader step={3} title="Short-Term Rental Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
-        {/* LEFT: Adjust Inputs */}
+        {/* LEFT: Fine Tune Strategy */}
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Fine Tune Strategy</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
             <AdjustmentSlider label="Daily Rate" baseValue={assumptions.baseAverageDailyRate} adjustment={assumptions.averageDailyRateAdj} onChange={(v) => updateAdjustment('averageDailyRateAdj', v)} compact />
             <PercentSlider label="Occupancy Rate" value={assumptions.occupancyRate} onChange={(v) => update('occupancyRate', v)} compact maxPercent={95} />
@@ -1489,8 +1489,8 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
       <div className="mt-6">
         <button
           onClick={() => setShowBreakdown(!showBreakdown)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
-            showBreakdown ? 'border-cyan-300 bg-cyan-50 text-cyan-700' : 'border-gray-200 bg-white text-gray-600 hover:border-cyan-200 hover:bg-cyan-50/50'
+          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+            showBreakdown ? 'border-cyan-300 bg-cyan-50 text-cyan-700' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-cyan-200 hover:bg-cyan-50/50'
           }`}
         >
           <Calculator className="w-4 h-4" />
@@ -1515,12 +1515,12 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Your BRRRR Strategy" />
+      <StepHeader step={3} title="BRRRR Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
-        {/* LEFT: Adjust Inputs */}
+        {/* LEFT: Fine Tune Strategy */}
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Fine Tune Strategy</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
@@ -1548,8 +1548,8 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
       <div className="mt-6">
         <button
           onClick={() => setShowBreakdown(!showBreakdown)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
-            showBreakdown ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-white text-gray-600 hover:border-emerald-200 hover:bg-emerald-50/50'
+          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+            showBreakdown ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-emerald-200 hover:bg-emerald-50/50'
           }`}
         >
           <Calculator className="w-4 h-4" />
@@ -1569,12 +1569,12 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Your Fix & Flip Strategy" />
+      <StepHeader step={3} title="Fix & Flip Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
-        {/* LEFT: Adjust Inputs */}
+        {/* LEFT: Fine Tune Strategy */}
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Fine Tune Strategy</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
@@ -1643,8 +1643,8 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
       <div className="mt-6">
         <button
           onClick={() => setShowBreakdown(!showBreakdown)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
-            showBreakdown ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-200 bg-white text-gray-600 hover:border-orange-200 hover:bg-orange-50/50'
+          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+            showBreakdown ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-orange-200 hover:bg-orange-50/50'
           }`}
         >
           <Calculator className="w-4 h-4" />
@@ -1668,12 +1668,12 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Your House Hacking Strategy" />
+      <StepHeader step={3} title="House Hack Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
-        {/* LEFT: Adjust Inputs */}
+        {/* LEFT: Fine Tune Strategy */}
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Fine Tune Strategy</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
             <RoomsRentedSlider roomsRented={assumptions.roomsRented} totalBedrooms={assumptions.totalBedrooms} onChange={(v) => update('roomsRented', v)} compact />
             <AdjustmentSlider label="Total Rent (all rooms)" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
@@ -1698,8 +1698,8 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
       <div className="mt-6">
         <button
           onClick={() => setShowBreakdown(!showBreakdown)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
-            showBreakdown ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-200 bg-white text-gray-600 hover:border-blue-200 hover:bg-blue-50/50'
+          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+            showBreakdown ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-blue-200 hover:bg-blue-50/50'
           }`}
         >
           <Calculator className="w-4 h-4" />
@@ -1723,7 +1723,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Your Wholesale Strategy" />
+      <StepHeader step={3} title="Wholesale Strategy" />
       
       {/* 70% Rule Hero Section */}
       <div className={`rounded-xl p-4 mb-4 ${calc.isPurchaseBelowMAO ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200' : 'bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200'}`}>
@@ -1753,9 +1753,9 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment }: {
       </div>
 
       <div className="grid grid-cols-2 gap-6">
-        {/* LEFT: Adjust Inputs */}
+        {/* LEFT: Fine Tune Strategy */}
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Fine Tune Strategy</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
             <AdjustmentSlider label="Purchase Price" baseValue={assumptions.basePurchasePrice} adjustment={assumptions.purchasePriceAdj} onChange={(v) => updateAdjustment('purchasePriceAdj', v)} compact />
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
@@ -1793,8 +1793,8 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment }: {
       <div className="mt-6">
         <button
           onClick={() => setShowBreakdown(!showBreakdown)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
-            showBreakdown ? 'border-pink-300 bg-pink-50 text-pink-700' : 'border-gray-200 bg-white text-gray-600 hover:border-pink-200 hover:bg-pink-50/50'
+          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+            showBreakdown ? 'border-pink-300 bg-pink-50 text-pink-700' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-pink-200 hover:bg-pink-50/50'
           }`}
         >
           <Calculator className="w-4 h-4" />
