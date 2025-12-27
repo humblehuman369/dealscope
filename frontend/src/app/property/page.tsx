@@ -469,53 +469,39 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
   useEffect(() => {
-    console.log('[PhotoStrip] useEffect - zpid:', zpid)
-    if (!zpid) return
+    console.log('[PhotoStrip] useEffect triggered, zpid:', zpid)
+    if (!zpid) {
+      console.log('[PhotoStrip] No zpid, skipping fetch')
+      return
+    }
     
-    let isMounted = true
-    const controller = new AbortController()
-    
+    // Simple fetch without abort controller for now
     const fetchPhotos = async () => {
+      console.log('[PhotoStrip] Setting isLoading=true, starting fetch')
       setIsLoading(true)
-      console.log('[PhotoStrip] Starting fetch for zpid:', zpid)
       try {
-        const response = await fetch(`/api/v1/photos?zpid=${zpid}`, {
-          signal: controller.signal
-        })
+        const url = `/api/v1/photos?zpid=${zpid}`
+        console.log('[PhotoStrip] Fetching:', url)
+        const response = await fetch(url)
+        console.log('[PhotoStrip] Response status:', response.status)
         const data = await response.json()
-        console.log('[PhotoStrip] API Response:', { success: data.success, photoCount: data.photos?.length, firstUrl: data.photos?.[0]?.url?.substring(0, 50) })
+        console.log('[PhotoStrip] Parsed response:', JSON.stringify({ success: data.success, count: data.photos?.length }))
         
-        if (!isMounted) {
-          console.log('[PhotoStrip] Component unmounted, skipping state update')
-          return
-        }
-        
-        if (data.success && data.photos?.length > 0) {
-          console.log('[PhotoStrip] Setting photos state with', data.photos.length, 'photos')
+        if (data.success && Array.isArray(data.photos) && data.photos.length > 0) {
+          console.log('[PhotoStrip] SUCCESS - Setting', data.photos.length, 'photos to state')
           setPhotos(data.photos)
         } else {
-          console.log('[PhotoStrip] NOT setting photos - condition failed:', { success: data.success, photoCount: data.photos?.length })
+          console.log('[PhotoStrip] FAILED condition check:', { success: data.success, isArray: Array.isArray(data.photos), length: data.photos?.length })
         }
       } catch (error) {
-        if ((error as Error).name === 'AbortError') {
-          console.log('[PhotoStrip] Fetch aborted (component unmounted)')
-          return
-        }
-        console.error('[PhotoStrip] Failed to fetch photos:', error)
+        console.error('[PhotoStrip] Fetch error:', error)
       } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
+        console.log('[PhotoStrip] Setting isLoading=false')
+        setIsLoading(false)
       }
     }
     
     fetchPhotos()
-    
-    return () => {
-      console.log('[PhotoStrip] Cleanup - aborting fetch for zpid:', zpid)
-      isMounted = false
-      controller.abort()
-    }
   }, [zpid])
 
   const openLightbox = (index: number) => {
