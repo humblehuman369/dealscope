@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import {
   Hammer, Plus, Minus, Trash2, ChevronDown, ChevronUp,
-  Calculator, DollarSign, AlertTriangle, CheckCircle, Sparkles
+  Calculator, DollarSign, AlertTriangle, CheckCircle, Sparkles, Link2
 } from 'lucide-react'
 import {
   REHAB_CATEGORIES,
@@ -14,6 +14,9 @@ import {
   calculateRehabEstimate,
   RehabPreset
 } from '@/lib/analytics'
+
+// Type for quality tier
+type QualityTier = 'low' | 'mid' | 'high'
 
 // ============================================
 // FORMATTING
@@ -60,34 +63,39 @@ function PresetCard({
 }
 
 // ============================================
-// TIER SELECTOR
+// TIER SELECTOR (Synchronized across all items)
 // ============================================
 
 function TierSelector({
   value,
-  onChange,
+  onGlobalTierChange,
   lowCost,
   midCost,
-  highCost
+  highCost,
+  showLinkIcon = true
 }: {
-  value: 'low' | 'mid' | 'high'
-  onChange: (tier: 'low' | 'mid' | 'high') => void
+  value: QualityTier
+  onGlobalTierChange: (tier: QualityTier) => void
   lowCost: number
   midCost: number
   highCost: number
+  showLinkIcon?: boolean
 }) {
   const tiers = [
-    { id: 'low', label: 'Budget', cost: lowCost, color: 'blue' },
-    { id: 'mid', label: 'Standard', cost: midCost, color: 'purple' },
-    { id: 'high', label: 'Premium', cost: highCost, color: 'orange' },
+    { id: 'low' as QualityTier, label: 'Budget', cost: lowCost, color: 'blue' },
+    { id: 'mid' as QualityTier, label: 'Standard', cost: midCost, color: 'purple' },
+    { id: 'high' as QualityTier, label: 'Premium', cost: highCost, color: 'orange' },
   ]
   
   return (
-    <div className="flex gap-1">
+    <div className="flex items-center gap-1">
+      {showLinkIcon && (
+        <Link2 className="w-3 h-3 text-gray-400 mr-1" title="All tiers sync together" />
+      )}
       {tiers.map((tier) => (
         <button
           key={tier.id}
-          onClick={() => onChange(tier.id as any)}
+          onClick={() => onGlobalTierChange(tier.id)}
           className={`px-2 py-1 text-xs rounded-lg transition-all ${
             value === tier.id
               ? `bg-${tier.color}-500 text-white`
@@ -115,16 +123,21 @@ function TierSelector({
 function RehabItemRow({
   item,
   selection,
+  globalTier,
   onUpdate,
-  onRemove
+  onRemove,
+  onGlobalTierChange
 }: {
   item: RehabItem
   selection: RehabSelection
+  globalTier: QualityTier
   onUpdate: (sel: RehabSelection) => void
   onRemove: () => void
+  onGlobalTierChange: (tier: QualityTier) => void
 }) {
-  const unitCost = selection.tier === 'low' ? item.lowCost :
-                   selection.tier === 'mid' ? item.midCost :
+  // Use global tier for display, the actual selection.tier is kept in sync by parent
+  const unitCost = globalTier === 'low' ? item.lowCost :
+                   globalTier === 'mid' ? item.midCost :
                    item.highCost
   const total = unitCost * selection.quantity
   
@@ -136,8 +149,8 @@ function RehabItemRow({
       </div>
       
       <TierSelector
-        value={selection.tier}
-        onChange={(tier) => onUpdate({ ...selection, tier })}
+        value={globalTier}
+        onGlobalTierChange={onGlobalTierChange}
         lowCost={item.lowCost}
         midCost={item.midCost}
         highCost={item.highCost}
@@ -185,15 +198,19 @@ function RehabItemRow({
 function CategorySection({
   category,
   selections,
+  globalTier,
   onAddItem,
   onUpdateItem,
-  onRemoveItem
+  onRemoveItem,
+  onGlobalTierChange
 }: {
   category: RehabCategory
   selections: RehabSelection[]
+  globalTier: QualityTier
   onAddItem: (itemId: string) => void
   onUpdateItem: (itemId: string, selection: RehabSelection) => void
   onRemoveItem: (itemId: string) => void
+  onGlobalTierChange: (tier: QualityTier) => void
 }) {
   const [expanded, setExpanded] = useState(true)
   const [showAddMenu, setShowAddMenu] = useState(false)
@@ -206,11 +223,12 @@ function CategorySection({
     !selections.some(s => s.itemId === i.id)
   )
   
+  // Use global tier for category total calculation
   const categoryTotal = selectedItems.reduce((sum, sel) => {
     const item = category.items.find(i => i.id === sel.itemId)
     if (!item) return sum
-    const unitCost = sel.tier === 'low' ? item.lowCost :
-                     sel.tier === 'mid' ? item.midCost :
+    const unitCost = globalTier === 'low' ? item.lowCost :
+                     globalTier === 'mid' ? item.midCost :
                      item.highCost
     return sum + unitCost * sel.quantity
   }, 0)
@@ -246,8 +264,10 @@ function CategorySection({
                 key={sel.itemId}
                 item={item}
                 selection={sel}
+                globalTier={globalTier}
                 onUpdate={(newSel) => onUpdateItem(sel.itemId, newSel)}
                 onRemove={() => onRemoveItem(sel.itemId)}
+                onGlobalTierChange={onGlobalTierChange}
               />
             )
           })}
@@ -306,16 +326,29 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
   const [selections, setSelections] = useState<RehabSelection[]>([])
   const [contingencyPct, setContingencyPct] = useState(0.10)
   const [activePreset, setActivePreset] = useState<string | null>(null)
+  // Global tier state - all items sync to this tier
+  const [globalTier, setGlobalTier] = useState<QualityTier>('mid')
+  
+  // Sync all selections to global tier when globalTier changes
+  const syncedSelections = useMemo(() => {
+    return selections.map(s => ({ ...s, tier: globalTier }))
+  }, [selections, globalTier])
   
   const estimate = useMemo(
-    () => calculateRehabEstimate(selections, contingencyPct),
-    [selections, contingencyPct]
+    () => calculateRehabEstimate(syncedSelections, contingencyPct),
+    [syncedSelections, contingencyPct]
   )
   
   // Notify parent of changes
   useMemo(() => {
     onEstimateChange?.(estimate.grandTotal)
   }, [estimate.grandTotal, onEstimateChange])
+  
+  // Handle global tier change - updates all items at once
+  const handleGlobalTierChange = useCallback((tier: QualityTier) => {
+    setGlobalTier(tier)
+    setActivePreset(null) // Clear preset since user customized
+  }, [])
   
   const handleAddItem = (itemId: string) => {
     // Find the item to get default quantity
@@ -328,7 +361,8 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
       }
     }
     
-    setSelections([...selections, { itemId, quantity: defaultQty, tier: 'mid' }])
+    // New items use the current global tier
+    setSelections([...selections, { itemId, quantity: defaultQty, tier: globalTier }])
     setActivePreset(null)
   }
   
@@ -345,11 +379,15 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
   const handlePresetSelect = (preset: RehabPreset) => {
     setSelections(preset.selections)
     setActivePreset(preset.id)
+    // Infer tier from preset (most presets use 'mid', but heavy uses some 'high')
+    // Default to 'mid' when selecting a preset
+    setGlobalTier('mid')
   }
   
   const handleClearAll = () => {
     setSelections([])
     setActivePreset(null)
+    setGlobalTier('mid') // Reset to default tier
   }
   
   const budgetDiff = initialBudget - estimate.grandTotal
@@ -389,6 +427,45 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
         </div>
       </div>
 
+      {/* Global Tier Selector */}
+      <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-orange-50 rounded-xl p-4 border border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link2 className="w-5 h-5 text-purple-500" />
+            <div>
+              <div className="font-semibold text-gray-900">Quality Level</div>
+              <div className="text-sm text-gray-500">All items update together</div>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {(['low', 'mid', 'high'] as QualityTier[]).map((tier) => {
+              const config = {
+                low: { label: 'Budget', color: '#3b82f6', bgActive: 'bg-blue-500', bgHover: 'hover:bg-blue-100' },
+                mid: { label: 'Standard', color: '#8b5cf6', bgActive: 'bg-purple-500', bgHover: 'hover:bg-purple-100' },
+                high: { label: 'Premium', color: '#f97316', bgActive: 'bg-orange-500', bgHover: 'hover:bg-orange-100' },
+              }[tier]
+              
+              return (
+                <button
+                  key={tier}
+                  onClick={() => handleGlobalTierChange(tier)}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                    globalTier === tier
+                      ? 'text-white shadow-md transform scale-105'
+                      : `text-gray-600 bg-white ${config.bgHover} border border-gray-200`
+                  }`}
+                  style={{
+                    backgroundColor: globalTier === tier ? config.color : undefined
+                  }}
+                >
+                  {config.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* Categories */}
       <div className="space-y-4">
         <h3 className="font-semibold text-gray-900">Detailed Breakdown</h3>
@@ -396,10 +473,12 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
           <CategorySection
             key={category.id}
             category={category}
-            selections={selections}
+            selections={syncedSelections}
+            globalTier={globalTier}
             onAddItem={handleAddItem}
             onUpdateItem={handleUpdateItem}
             onRemoveItem={handleRemoveItem}
+            onGlobalTierChange={handleGlobalTierChange}
           />
         ))}
       </div>
