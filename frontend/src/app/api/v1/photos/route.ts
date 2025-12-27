@@ -12,6 +12,8 @@ export async function GET(request: NextRequest) {
     const zpid = searchParams.get('zpid')
     const url = searchParams.get('url')
     
+    console.log('[Photos API] Request received - zpid:', zpid, 'BACKEND_URL:', BACKEND_URL)
+    
     if (!zpid && !url) {
       return NextResponse.json(
         { detail: 'Either zpid or url parameter is required' },
@@ -38,14 +40,16 @@ export async function GET(request: NextRequest) {
       
       if (backendResponse.ok) {
         const data = await backendResponse.json()
+        console.log('[Photos API] Backend success - photos:', data.photos?.length)
         return NextResponse.json(data)
       }
       
-      console.warn(`Backend API returned ${backendResponse.status} for photos`)
+      console.warn('[Photos API] Backend returned error status:', backendResponse.status)
     } catch (backendError) {
-      console.warn('Backend API unavailable for photos:', backendError)
+      console.error('[Photos API] Backend connection failed:', backendError)
     }
     
+    console.log('[Photos API] Using mock fallback photos')
     // Fallback: Return mock photos data with real placeholder images
     const mockPhotos = {
       success: true,
