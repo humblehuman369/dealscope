@@ -548,7 +548,7 @@ function DesktopScannerView({
   isMobileDevice: boolean;
 }) {
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, mounted } = useTheme();
   const [searchAddress, setSearchAddress] = useState('');
   const [nearbyProperties, setNearbyProperties] = useState<ScanResult['property'][]>([]);
   const [isLoadingNearby, setIsLoadingNearby] = useState(false);
@@ -556,6 +556,7 @@ function DesktopScannerView({
   const [infoModalStrategy, setInfoModalStrategy] = useState<StrategyId | null>(null);
   
   const scanner = usePropertyScan();
+  const isDark = theme === 'dark';
 
   // Fetch nearby properties when location is ready
   const fetchNearbyProperties = useCallback(async () => {
@@ -609,16 +610,72 @@ function DesktopScannerView({
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950">
+    <main className={`min-h-screen transition-colors duration-300 ${
+      isDark 
+        ? 'bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950' 
+        : 'bg-gradient-to-b from-slate-50 via-white to-teal-50/30'
+    }`}>
+      {/* Theme Toggle Header */}
+      <header className={`sticky top-0 z-50 backdrop-blur-md border-b transition-colors duration-300 ${
+        isDark 
+          ? 'bg-slate-900/80 border-slate-700/50' 
+          : 'bg-white/80 border-gray-200'
+      }`}>
+        <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <span className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>InvestIQ</span>
+          </div>
+          
+          {/* Theme Toggle Switch */}
+          <button
+            onClick={toggleTheme}
+            className={`relative inline-flex items-center justify-center p-2 rounded-xl transition-colors duration-200 ${
+              isDark 
+                ? 'bg-slate-800 hover:bg-slate-700' 
+                : 'bg-gray-100 hover:bg-gray-200'
+            }`}
+            aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+          >
+            <div className={`relative w-14 h-7 rounded-full transition-colors duration-300 ${
+              isDark ? 'bg-slate-600' : 'bg-gray-300'
+            }`}>
+              <div 
+                className={`absolute top-0.5 w-6 h-6 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
+                  isDark 
+                    ? 'left-[30px] bg-indigo-500' 
+                    : 'left-0.5 bg-amber-400'
+                }`}
+              >
+                {isDark ? (
+                  <Moon className="w-3.5 h-3.5 text-white" />
+                ) : (
+                  <Sun className="w-3.5 h-3.5 text-white" />
+                )}
+              </div>
+            </div>
+          </button>
+        </div>
+      </header>
+
       {/* Hero Section with Scanner */}
       <section className="relative overflow-hidden">
         {/* Background gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-transparent" />
+        <div className={`absolute inset-0 ${
+          isDark 
+            ? 'bg-gradient-to-b from-purple-900/20 via-transparent to-transparent' 
+            : 'bg-gradient-to-b from-teal-100/40 via-transparent to-transparent'
+        }`} />
         
         {/* Animated background dots */}
-        <div className="absolute inset-0 opacity-20">
+        <div className={`absolute inset-0 ${isDark ? 'opacity-20' : 'opacity-30'}`}>
           <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+            backgroundImage: isDark 
+              ? 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)'
+              : 'radial-gradient(circle at 2px 2px, rgba(0,128,128,0.12) 1px, transparent 0)',
             backgroundSize: '40px 40px',
           }} />
         </div>
@@ -626,14 +683,14 @@ function DesktopScannerView({
         <div className="relative px-6 pt-12 pb-16">
           {/* Title */}
           <div className="text-center max-w-2xl mx-auto mb-10">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+            <h1 className={`text-4xl md:text-5xl font-bold mb-4 leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
               Point. Scan.
               <br />
-              <span className="bg-gradient-to-r from-teal-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-teal-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
                 Analyze Instantly.
               </span>
             </h1>
-            <p className="text-gray-400 text-lg">
+            <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
               Aim your phone at any property to unlock investment analytics across 6 strategies in seconds.
             </p>
           </div>
@@ -642,10 +699,14 @@ function DesktopScannerView({
           <div className="flex flex-col items-center mb-10">
             <button
               onClick={onSwitchMode}
-              className="group relative w-32 h-32 rounded-full flex flex-col items-center justify-center transition-all duration-300 bg-gradient-to-br from-teal-400 to-teal-600 hover:from-teal-500 hover:to-teal-700 shadow-2xl shadow-teal-500/40 hover:scale-105 cursor-pointer"
+              className={`group relative w-32 h-32 rounded-full flex flex-col items-center justify-center transition-all duration-300 bg-gradient-to-br from-teal-400 to-teal-600 hover:from-teal-500 hover:to-teal-700 hover:scale-105 cursor-pointer ${
+                isDark ? 'shadow-2xl shadow-teal-500/40' : 'shadow-2xl shadow-teal-500/30'
+              }`}
             >
               {/* Animated ping ring */}
-              <div className="absolute inset-0 rounded-full border-2 border-teal-400/50 animate-ping" />
+              <div className={`absolute inset-0 rounded-full border-2 animate-ping ${
+                isDark ? 'border-teal-400/50' : 'border-teal-500/40'
+              }`} />
               
               {/* Inner ring */}
               <div className="absolute inset-2 rounded-full border border-white/20" />
@@ -660,18 +721,18 @@ function DesktopScannerView({
             <div className="mt-4 flex items-center gap-2 text-sm">
               {scanner.isLocationReady ? (
                 <>
-                  <div className="w-2 h-2 bg-green-400 rounded-full" />
-                  <span className="text-green-400">GPS Ready</span>
+                  <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-green-400' : 'bg-green-500'}`} />
+                  <span className={isDark ? 'text-green-400' : 'text-green-600'}>GPS Ready</span>
                 </>
               ) : scanner.locationError ? (
                 <>
                   <div className="w-2 h-2 bg-gray-500 rounded-full" />
-                  <span className="text-gray-400">GPS unavailable</span>
+                  <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>GPS unavailable</span>
                 </>
               ) : (
                 <>
-                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-                  <span className="text-amber-400">Acquiring GPS...</span>
+                  <div className={`w-2 h-2 rounded-full animate-pulse ${isDark ? 'bg-amber-400' : 'bg-amber-500'}`} />
+                  <span className={isDark ? 'text-amber-400' : 'text-amber-600'}>Acquiring GPS...</span>
                 </>
               )}
             </div>
@@ -679,16 +740,24 @@ function DesktopScannerView({
 
           {/* OR Divider */}
           <div className="flex items-center justify-center gap-4 mb-8 max-w-md mx-auto">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
-            <span className="text-slate-500 text-sm">or</span>
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+            <div className={`flex-1 h-px bg-gradient-to-r from-transparent to-transparent ${
+              isDark ? 'via-slate-700' : 'via-gray-300'
+            }`} />
+            <span className={isDark ? 'text-slate-500' : 'text-gray-400'}>or</span>
+            <div className={`flex-1 h-px bg-gradient-to-r from-transparent to-transparent ${
+              isDark ? 'via-slate-700' : 'via-gray-300'
+            }`} />
           </div>
 
           {/* Search by Address */}
           <div className="max-w-md mx-auto">
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/50">
-              <div className="flex items-center gap-2 text-white mb-4">
-                <Search className="w-4 h-4 text-gray-400" />
+            <div className={`backdrop-blur-sm rounded-2xl p-5 border transition-colors duration-300 ${
+              isDark 
+                ? 'bg-slate-800/50 border-slate-700/50' 
+                : 'bg-white/70 border-gray-200 shadow-lg'
+            }`}>
+              <div className={`flex items-center gap-2 mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                <Search className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
                 <span className="text-sm font-medium">Search by Address</span>
               </div>
               
@@ -698,7 +767,11 @@ function DesktopScannerView({
                   value={searchAddress}
                   onChange={(e) => setSearchAddress(e.target.value)}
                   placeholder="1451 SW 10 ST, Boca Raton, FL 33486"
-                  className="w-full px-4 py-3 bg-slate-900/80 border border-slate-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent mb-4 text-sm"
+                  className={`w-full px-4 py-3 rounded-xl mb-4 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors duration-300 ${
+                    isDark 
+                      ? 'bg-slate-900/80 border border-slate-600 text-white placeholder-gray-500' 
+                      : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400'
+                  }`}
                 />
                 <button
                   type="submit"
@@ -727,14 +800,14 @@ function DesktopScannerView({
       <section className="px-6 py-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold text-white mb-2">6 Investment Strategies</h2>
-            <p className="text-gray-500">Instant analytics for every approach</p>
+            <h2 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>6 Investment Strategies</h2>
+            <p className={isDark ? 'text-gray-500' : 'text-gray-500'}>Instant analytics for every approach</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {strategies.map((strategy) => {
               const Icon = strategy.icon;
-              const iconColorMap: Record<string, string> = {
+              const iconColorMapDark: Record<string, string> = {
                 'from-violet-500 to-purple-600': 'bg-violet-500/20 text-violet-400',
                 'from-cyan-500 to-blue-600': 'bg-cyan-500/20 text-cyan-400',
                 'from-emerald-500 to-green-600': 'bg-emerald-500/20 text-emerald-400',
@@ -742,20 +815,34 @@ function DesktopScannerView({
                 'from-blue-500 to-indigo-600': 'bg-blue-500/20 text-blue-400',
                 'from-pink-500 to-rose-600': 'bg-pink-500/20 text-pink-400',
               };
-              const iconColor = iconColorMap[strategy.color] || 'bg-gray-500/20 text-gray-400';
+              const iconColorMapLight: Record<string, string> = {
+                'from-violet-500 to-purple-600': 'bg-violet-100 text-violet-600',
+                'from-cyan-500 to-blue-600': 'bg-cyan-100 text-cyan-600',
+                'from-emerald-500 to-green-600': 'bg-emerald-100 text-emerald-600',
+                'from-orange-500 to-red-500': 'bg-orange-100 text-orange-600',
+                'from-blue-500 to-indigo-600': 'bg-blue-100 text-blue-600',
+                'from-pink-500 to-rose-600': 'bg-pink-100 text-pink-600',
+              };
+              const iconColor = isDark 
+                ? (iconColorMapDark[strategy.color] || 'bg-gray-500/20 text-gray-400')
+                : (iconColorMapLight[strategy.color] || 'bg-gray-100 text-gray-600');
               
               return (
                 <button
                   key={strategy.id}
                   type="button"
                   onClick={() => setInfoModalStrategy(strategy.id)}
-                  className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/50 hover:border-slate-500 hover:bg-slate-800/70 transition-all group flex flex-col items-center text-center cursor-pointer"
+                  className={`backdrop-blur-sm rounded-2xl p-5 border transition-all group flex flex-col items-center text-center cursor-pointer ${
+                    isDark 
+                      ? 'bg-slate-800/50 border-slate-700/50 hover:border-slate-500 hover:bg-slate-800/70' 
+                      : 'bg-white/70 border-gray-200 hover:border-gray-300 hover:bg-white shadow-sm hover:shadow-md'
+                  }`}
                   aria-label={`Learn about ${strategy.name}`}
                 >
                   <div className={`w-12 h-12 rounded-xl ${iconColor} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
                     <Icon className="w-6 h-6" />
                   </div>
-                  <h3 className="font-medium text-white text-sm">{strategy.name}</h3>
+                  <h3 className={`font-medium text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{strategy.name}</h3>
                 </button>
               );
             })}
@@ -775,17 +862,21 @@ function DesktopScannerView({
       {/* How It Works */}
       <section className="px-6 py-16">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-slate-800/30 backdrop-blur-sm rounded-3xl p-8 border border-slate-700/50">
-            <h2 className="text-2xl font-bold text-white mb-10 text-center">How It Works</h2>
+          <div className={`backdrop-blur-sm rounded-3xl p-8 border transition-colors duration-300 ${
+            isDark 
+              ? 'bg-slate-800/30 border-slate-700/50' 
+              : 'bg-white/60 border-gray-200 shadow-lg'
+          }`}>
+            <h2 className={`text-2xl font-bold mb-10 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>How It Works</h2>
             
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg">
                   <Target className="w-7 h-7 text-white" />
                 </div>
-                <div className="text-2xl font-bold text-slate-600 mb-2">01</div>
-                <h3 className="font-semibold text-white mb-2">Point at Property</h3>
-                <p className="text-gray-500 text-sm">
+                <div className={`text-2xl font-bold mb-2 ${isDark ? 'text-slate-600' : 'text-gray-300'}`}>01</div>
+                <h3 className={`font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Point at Property</h3>
+                <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
                   Use your phone&apos;s camera to aim at any property you want to analyze
                 </p>
               </div>
@@ -794,9 +885,9 @@ function DesktopScannerView({
                 <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg">
                   <Zap className="w-7 h-7 text-white" />
                 </div>
-                <div className="text-2xl font-bold text-slate-600 mb-2">02</div>
-                <h3 className="font-semibold text-white mb-2">Instant Scan</h3>
-                <p className="text-gray-500 text-sm">
+                <div className={`text-2xl font-bold mb-2 ${isDark ? 'text-slate-600' : 'text-gray-300'}`}>02</div>
+                <h3 className={`font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Instant Scan</h3>
+                <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
                   GPS and compass identify the exact property in under 2 seconds
                 </p>
               </div>
@@ -805,9 +896,9 @@ function DesktopScannerView({
                 <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-lg">
                   <Home className="w-7 h-7 text-white" />
                 </div>
-                <div className="text-2xl font-bold text-slate-600 mb-2">03</div>
-                <h3 className="font-semibold text-white mb-2">Get Analytics</h3>
-                <p className="text-gray-500 text-sm">
+                <div className={`text-2xl font-bold mb-2 ${isDark ? 'text-slate-600' : 'text-gray-300'}`}>03</div>
+                <h3 className={`font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Get Analytics</h3>
+                <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
                   Instantly see investment strategies, cash flow, and ROI projections
                 </p>
               </div>
@@ -820,18 +911,26 @@ function DesktopScannerView({
       {scanner.isLocationReady && nearbyProperties.length > 0 && (
         <section className="px-6 py-8">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-slate-800/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
+            <div className={`backdrop-blur-sm rounded-2xl p-6 border transition-colors duration-300 ${
+              isDark 
+                ? 'bg-slate-800/30 border-slate-700/50' 
+                : 'bg-white/60 border-gray-200 shadow-lg'
+            }`}>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Nearby Properties</h3>
-                  <p className="text-gray-500 text-sm">
+                  <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Nearby Properties</h3>
+                  <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
                     {scanner.latitude?.toFixed(6)}, {scanner.longitude?.toFixed(6)}
                   </p>
                 </div>
                 <button
                   onClick={fetchNearbyProperties}
                   disabled={isLoadingNearby}
-                  className="flex items-center gap-2 px-4 py-2 bg-teal-500/20 text-teal-400 rounded-lg font-medium hover:bg-teal-500/30 transition-colors disabled:opacity-50"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${
+                    isDark 
+                      ? 'bg-teal-500/20 text-teal-400 hover:bg-teal-500/30' 
+                      : 'bg-teal-100 text-teal-700 hover:bg-teal-200'
+                  }`}
                 >
                   {isLoadingNearby ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -847,16 +946,26 @@ function DesktopScannerView({
                   <button
                     key={index}
                     onClick={() => handlePropertyClick(property)}
-                    className="flex items-center gap-3 p-4 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-colors text-left w-full group"
+                    className={`flex items-center gap-3 p-4 rounded-xl transition-colors text-left w-full group ${
+                      isDark 
+                        ? 'bg-slate-700/50 hover:bg-slate-700' 
+                        : 'bg-gray-50 hover:bg-gray-100'
+                    }`}
                   >
-                    <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center flex-shrink-0">
-                      <Home className="w-5 h-5 text-teal-400" />
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      isDark ? 'bg-teal-500/20' : 'bg-teal-100'
+                    }`}>
+                      <Home className={`w-5 h-5 ${isDark ? 'text-teal-400' : 'text-teal-600'}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-white truncate">{property.address}</div>
-                      <div className="text-sm text-gray-500">{property.city}, {property.state} {property.zip}</div>
+                      <div className={`font-medium truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{property.address}</div>
+                      <div className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{property.city}, {property.state} {property.zip}</div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-slate-400 transition-colors" />
+                    <ChevronRight className={`w-5 h-5 transition-colors ${
+                      isDark 
+                        ? 'text-slate-600 group-hover:text-slate-400' 
+                        : 'text-gray-400 group-hover:text-gray-600'
+                    }`} />
                   </button>
                 ))}
               </div>
@@ -866,15 +975,17 @@ function DesktopScannerView({
       )}
 
       {/* Footer */}
-      <footer className="px-6 py-8 mt-8">
+      <footer className={`px-6 py-8 mt-8 border-t transition-colors duration-300 ${
+        isDark ? 'border-slate-800' : 'border-gray-200'
+      }`}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center">
               <Sparkles className="w-3 h-3 text-white" />
             </div>
-            <span className="text-white text-sm font-medium">InvestIQ</span>
+            <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>InvestIQ</span>
           </div>
-          <p className="text-gray-600 text-sm">Real estate investment analytics</p>
+          <p className={`text-sm ${isDark ? 'text-gray-600' : 'text-gray-500'}`}>Real estate investment analytics</p>
         </div>
       </footer>
     </main>
