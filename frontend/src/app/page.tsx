@@ -22,7 +22,8 @@ import {
   FileText,
   Sparkles,
   Sun,
-  Moon
+  Moon,
+  X
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { usePropertyScan, ScanResult } from '@/hooks/usePropertyScan';
@@ -51,7 +52,9 @@ function useIsMobile() {
   return isMobile;
 }
 
-const strategies = [
+type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale';
+
+const strategies: { id: StrategyId; name: string; icon: typeof Building2; color: string }[] = [
   { id: 'ltr', name: 'Long-Term Rental', icon: Building2, color: 'from-violet-500 to-purple-600' },
   { id: 'str', name: 'Short-Term Rental', icon: Home, color: 'from-cyan-500 to-blue-600' },
   { id: 'brrrr', name: 'BRRRR', icon: Repeat, color: 'from-emerald-500 to-green-600' },
@@ -59,6 +62,152 @@ const strategies = [
   { id: 'house_hack', name: 'House Hack', icon: Users, color: 'from-blue-500 to-indigo-600' },
   { id: 'wholesale', name: 'Wholesale', icon: FileText, color: 'from-pink-500 to-rose-600' },
 ];
+
+// Strategy explanations for the info modal - using JSX for rich formatting
+const strategyExplanations: Record<StrategyId, { title: string; content: React.ReactNode }> = {
+  ltr: {
+    title: 'Long-Term Rental',
+    content: (
+      <>
+        <p className="mb-3"><strong>Long-term rental</strong> is the classic buy-and-hold strategy that&apos;s made countless millionaires! You purchase a property, rent it out to reliable tenants on an annual lease, and watch your wealth grow on autopilot. Every month, rent checks come in while your tenants pay down your mortgage for you.</p>
+        <p className="mb-2">The magic happens in three ways:</p>
+        <ol className="list-decimal list-inside mb-3 space-y-1 ml-2">
+          <li>Monthly cash flow puts money in your pocket. NOW!</li>
+          <li>Your tenants build equity for you by paying down the loan</li>
+          <li>Appreciation grows your property value over time.</li>
+        </ol>
+        <p>It&apos;s the perfect <strong>&quot;set it and forget it&quot;</strong> strategy—ideal for investor who want to build lasting wealth without the stress of constant management. Think of it as planting a money tree that grows stronger every year!</p>
+      </>
+    )
+  },
+  str: {
+    title: 'Short-Term Rental',
+    content: (
+      <>
+        <p className="mb-3"><strong>Short-term rental</strong> is where you turn your property into a high-revenue hospitality business using platforms like Airbnb or VRBO! Instead of one tenant paying $2,000/month, imagine multiple guests paying $150-$300 PER NIGHT! Properties in hot tourist areas or business districts can generate <strong>2-3X more revenue</strong> than traditional rentals.</p>
+        <p className="mb-3">Yes, it requires more hands-on management (or a property manager), but the numbers speak for themselves. You&apos;re not just a landlord—you&apos;re running a hospitality business that can generate serious cash flow. Perfect for properties <strong>near beaches, mountains, major cities</strong>, or business hubs.</p>
+        <p><strong>The best part?</strong> You can block off dates to use the property yourself for vacations!</p>
+      </>
+    )
+  },
+  brrrr: {
+    title: 'BRRRR',
+    content: (
+      <>
+        <p className="mb-3"><strong>BRRRR</strong> stands for <strong>Buy, Rehab, Rent, Refinance, Repeat</strong>—and it&apos;s the holy grail for serious investors who want to scale FAST!</p>
+        <p className="mb-2">Here&apos;s how it works:</p>
+        <ul className="list-disc list-inside mb-3 space-y-1 ml-2">
+          <li>Buy a distressed property below market value,</li>
+          <li>Rehab it to increase its worth,</li>
+          <li>Rent it out to generate cash flow,</li>
+          <li>Refinance based on the NEW higher value to pull out most (or ALL) of your initial investment.</li>
+          <li>Repeat the process!</li>
+        </ul>
+        <p className="mb-3">Now you have a cash-flowing property AND you got your money back to Repeat the process! It&apos;s like having your cake and eating it too. Investors use BRRRR to build massive portfolios quickly because each deal funds the next one. The goal is &quot;infinite return&quot;—when you&apos;ve pulled out 100% of your investment but still own a property that pays you every month. Mind-blowing, right?</p>
+      </>
+    )
+  },
+  flip: {
+    title: 'Fix & Flip',
+    content: (
+      <>
+        <p className="mb-3"><strong>Fix & Flip</strong> is the <strong>fast-cash strategy</strong> where you buy a distressed property at a discount, transform it into something beautiful, and sell it for profit—sometimes in just 3-6 months!</p>
+        <p className="mb-3">While other strategies build wealth slowly over time, flipping puts tens of thousands of dollars in your pocket, NOW!</p>
+        <p className="mb-3">It requires more work and carries more risk, but the rewards can be exceptional. A successful flip can net you <strong>$30,000-$100,000+ in profit</strong> that you can use to fund your next deal or invest in rental properties.</p>
+        <p>It&apos;s <strong>thrilling</strong>, it&apos;s <strong>fast-paced</strong>, and every successful flip proves you can spot value where others see problems! If you love HGTV and want to see big checks FAST, flipping is your game!</p>
+      </>
+    )
+  },
+  house_hack: {
+    title: 'House Hacking',
+    content: (
+      <>
+        <p className="mb-3"><strong>House hacking</strong> is the <strong>ultimate beginner</strong> strategy where your biggest expense—housing—becomes your biggest asset instead!</p>
+        <p className="mb-3">You buy a duplex, triplex, or single-family home with extra bedrooms, live in one unit/room, and rent out the others. The rent from your tenants covers most or ALL of your mortgage, property taxes, and insurance.</p>
+        <p className="mb-3">You&apos;re essentially <strong>living for FREE</strong> while building equity and learning the landlord game with training wheels on. Plus, you can qualify for low down payment loans (as low as 3.5% FHA or 0% VA) because it&apos;s your primary residence! It&apos;s the fastest path from &quot;paying rent&quot; to &quot;collecting rent&quot; and building wealth. This strategy has created more first-time millionaire investors than any other!</p>
+      </>
+    )
+  },
+  wholesale: {
+    title: 'Wholesale',
+    content: (
+      <>
+        <p className="mb-3"><strong>Wholesaling</strong> is how you make money in real estate with <strong>little to no money</strong> of your own!</p>
+        <p className="mb-2">Here&apos;s the genius:</p>
+        <ol className="list-decimal list-inside mb-3 space-y-1 ml-2">
+          <li>You find deeply discounted properties (usually distressed), get them under contract,</li>
+          <li>Immediately assign that contract to another investor for a fee—typically $5,000-$15,000 or more.</li>
+        </ol>
+        <p className="mb-3">You never actually buy the property, never deal with banks, and never risk your own capital.</p>
+        <p><strong>It&apos;s pure deal-finding hustle!</strong> Your job is to be the matchmaker—connecting motivated sellers with cash buyers. While it won&apos;t build long-term wealth like rentals, it generates quick cash that you can use to fund your first rental property down payment. Many successful investors started with wholesaling to build their war chest before transitioning to buy-and-hold strategies. It&apos;s all about hustle, marketing, and building your buyer network!</p>
+      </>
+    )
+  }
+};
+
+// Strategy Info Modal Component
+function StrategyInfoModal({ 
+  strategyId, 
+  isOpen, 
+  onClose 
+}: { 
+  strategyId: StrategyId
+  isOpen: boolean
+  onClose: () => void 
+}) {
+  const explanation = strategyExplanations[strategyId]
+  const strategy = strategies.find(s => s.id === strategyId)
+  
+  if (!isOpen || !explanation || !strategy) return null
+  
+  // Map strategy gradient to button gradient
+  const buttonGradient: Record<string, string> = {
+    'from-violet-500 to-purple-600': 'from-violet-500 to-purple-600',
+    'from-cyan-500 to-blue-600': 'from-cyan-500 to-blue-600',
+    'from-emerald-500 to-green-600': 'from-emerald-500 to-green-600',
+    'from-orange-500 to-red-500': 'from-orange-500 to-red-500',
+    'from-blue-500 to-indigo-600': 'from-blue-500 to-indigo-600',
+    'from-pink-500 to-rose-600': 'from-pink-500 to-rose-600',
+  }
+  
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div 
+        className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button - top right */}
+        <button 
+          onClick={onClose}
+          className="absolute top-3 right-3 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors z-10"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4 text-gray-500" />
+        </button>
+        
+        {/* Content */}
+        <div className="px-5 py-5 overflow-y-auto max-h-[70vh]">
+          <div className="text-sm text-gray-700 leading-relaxed pr-6">
+            {explanation.content}
+          </div>
+        </div>
+        
+        {/* Footer */}
+        <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
+          <button
+            onClick={onClose}
+            className={`w-full py-2.5 bg-gradient-to-r ${buttonGradient[strategy.color] || 'from-teal-500 to-emerald-500'} text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity`}
+          >
+            Got it!
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function HomePage() {
   const router = useRouter();
@@ -404,6 +553,7 @@ function DesktopScannerView({
   const [nearbyProperties, setNearbyProperties] = useState<ScanResult['property'][]>([]);
   const [isLoadingNearby, setIsLoadingNearby] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [infoModalStrategy, setInfoModalStrategy] = useState<StrategyId | null>(null);
   
   const scanner = usePropertyScan();
 
@@ -595,19 +745,30 @@ function DesktopScannerView({
               const iconColor = iconColorMap[strategy.color] || 'bg-gray-500/20 text-gray-400';
               
               return (
-                <div 
-                  key={strategy.id} 
-                  className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/50 hover:border-slate-600 transition-all cursor-pointer group flex flex-col items-center text-center"
+                <button
+                  key={strategy.id}
+                  type="button"
+                  onClick={() => setInfoModalStrategy(strategy.id)}
+                  className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/50 hover:border-slate-500 hover:bg-slate-800/70 transition-all group flex flex-col items-center text-center cursor-pointer"
+                  aria-label={`Learn about ${strategy.name}`}
                 >
-                  <div className={`w-12 h-12 rounded-xl ${iconColor} flex items-center justify-center mb-3`}>
+                  <div className={`w-12 h-12 rounded-xl ${iconColor} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
                     <Icon className="w-6 h-6" />
                   </div>
                   <h3 className="font-medium text-white text-sm">{strategy.name}</h3>
-                  <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 mt-2 transition-colors" />
-                </div>
+                </button>
               );
             })}
           </div>
+          
+          {/* Strategy Info Modal */}
+          {infoModalStrategy && (
+            <StrategyInfoModal
+              strategyId={infoModalStrategy}
+              isOpen={!!infoModalStrategy}
+              onClose={() => setInfoModalStrategy(null)}
+            />
+          )}
         </div>
       </section>
 
