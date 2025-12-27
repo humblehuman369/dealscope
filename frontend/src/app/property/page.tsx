@@ -1157,7 +1157,7 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
       <div className="px-5 py-4">
-        <StepHeader step={1} title="Terms" subtitle="Customize your deal. Adjust the values to evaluate profitability." />
+        <StepHeader step={1} title="Terms" subtitle="Adjust the values to evaluate profitability." />
         
         <div className="grid grid-cols-3 gap-6">
           {/* Group 1: Property Values */}
@@ -1389,12 +1389,12 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       {/* Step 3 Header */}
-      <StepHeader step={3} title="Fine Tune Your Long-Term Rental Strategy" />
+      <StepHeader step={3} title="Long-Term Rental Strategy" />
       
       <div className="grid grid-cols-2 gap-6">
-        {/* LEFT: Adjust Inputs (Step 3 content) */}
+        {/* LEFT: Fine Tune Strategy (Step 3 content) */}
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Adjust Inputs</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Fine Tune Strategy</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
             <AdjustmentSlider label="Monthly Rent" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
             <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
@@ -3168,7 +3168,7 @@ function PropertyPageContent() {
           {/* Step 2 Header + Strategy Cards Carousel */}
           <div className="pt-4 pb-0 relative">
             <div className="px-5">
-              <StepHeader step={2} title="Select Your Investment Strategy" />
+              <StepHeader step={2} title="Investment Strategies" subtitle="Select a strategy to evaluate the details below." />
             </div>
             
             {/* Strategy Cards Carousel - Responsive with horizontal scroll */}
