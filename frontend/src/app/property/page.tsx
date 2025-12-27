@@ -1298,12 +1298,12 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
 function StepHeader({ step, title, subtitle }: { step: number; title: string; subtitle?: string }) {
   return (
     <div className="flex items-center gap-3 mb-4">
-      <div className="flex items-center justify-center w-7 h-7 rounded-full bg-teal-600 text-white text-sm font-bold shadow-sm">
+      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-600 text-white text-base font-bold shadow-sm">
         {step}
       </div>
       <div>
-        <h2 className="text-sm font-semibold text-gray-800">{title}</h2>
-        {subtitle && <p className="text-[11px] text-gray-400">{subtitle}</p>}
+        <h2 className="text-base font-semibold text-gray-800">{title}</h2>
+        {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
       </div>
     </div>
   )
