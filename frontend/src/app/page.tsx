@@ -20,8 +20,11 @@ import {
   Hammer,
   Users,
   FileText,
-  Sparkles
+  Sparkles,
+  Sun,
+  Moon
 } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 import { usePropertyScan, ScanResult } from '@/hooks/usePropertyScan';
 import { DistanceSlider } from '@/components/scanner/DistanceSlider';
 import { ScanTarget } from '@/components/scanner/ScanTarget';
@@ -386,7 +389,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
 
 /**
  * Desktop/Fallback Scanner View
- * Light theme consistent with dashboard
+ * Light/Dark theme consistent with dashboard
  */
 function DesktopScannerView({ 
   onSwitchMode, 
@@ -396,6 +399,7 @@ function DesktopScannerView({
   isMobileDevice: boolean;
 }) {
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
   const [searchAddress, setSearchAddress] = useState('');
   const [nearbyProperties, setNearbyProperties] = useState<ScanResult['property'][]>([]);
   const [isLoadingNearby, setIsLoadingNearby] = useState(false);
@@ -461,32 +465,65 @@ function DesktopScannerView({
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/50 transition-colors duration-300">
+      {/* Header with Theme Toggle */}
+      <header className="sticky top-0 z-50 px-6 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 via-cyan-500 to-emerald-500 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-lg font-bold text-gray-900 dark:text-white">InvestIQ</span>
+          </div>
+          
+          {/* Theme Toggle Switch */}
+          <button
+            onClick={toggleTheme}
+            className="relative inline-flex items-center justify-center p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200"
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            <div className="relative w-12 h-6 rounded-full bg-gray-200 dark:bg-slate-600 transition-colors duration-300">
+              <div 
+                className={`absolute top-0.5 w-5 h-5 rounded-full bg-white dark:bg-slate-900 shadow-md transition-all duration-300 flex items-center justify-center ${
+                  theme === 'dark' ? 'left-[26px]' : 'left-0.5'
+                }`}
+              >
+                {theme === 'light' ? (
+                  <Sun className="w-3 h-3 text-amber-500" />
+                ) : (
+                  <Moon className="w-3 h-3 text-indigo-400" />
+                )}
+              </div>
+            </div>
+          </button>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="px-6 py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-4 leading-tight">
             Analyze Any Property
             <br />
             <span className="bg-gradient-to-r from-teal-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
               in Seconds
             </span>
           </h1>
-          <p className="text-gray-500 text-lg mb-10 max-w-xl mx-auto font-light">
+          <p className="text-gray-500 dark:text-gray-400 text-lg mb-10 max-w-xl mx-auto font-light">
             Get instant investment analytics across 6 strategies. Make data-driven decisions with confidence.
           </p>
 
           {/* Search Card */}
-          <div className="bg-white rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-3 max-w-2xl mx-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] p-3 max-w-2xl mx-auto transition-colors duration-300">
             <form onSubmit={handleSearch} className="flex items-center gap-2">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" strokeWidth={1.5} />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" strokeWidth={1.5} />
                 <input
                   type="text"
                   value={searchAddress}
                   onChange={(e) => setSearchAddress(e.target.value)}
                   placeholder="Enter property address..."
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-200 transition-all"
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-slate-700 rounded-2xl text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-600 transition-all"
                 />
               </div>
               <button
@@ -510,7 +547,7 @@ function DesktopScannerView({
           <div className="flex items-center justify-center gap-6 mt-6">
             <a
               href="/compare"
-              className="flex items-center gap-1 text-sm text-gray-400 hover:text-teal-500 transition-colors"
+              className="flex items-center gap-1 text-sm text-gray-400 dark:text-gray-500 hover:text-teal-500 dark:hover:text-teal-400 transition-colors"
             >
               <Building2 className="w-4 h-4" strokeWidth={1.5} />
               Compare properties
@@ -523,34 +560,34 @@ function DesktopScannerView({
       <section className="px-6 py-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Six Investment Strategies</h2>
-            <p className="text-gray-400 font-light">Find the approach that fits your goals</p>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Six Investment Strategies</h2>
+            <p className="text-gray-400 dark:text-gray-500 font-light">Find the approach that fits your goals</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {strategies.map((strategy) => {
               const Icon = strategy.icon;
-              const colorMap: Record<string, string> = {
-                'from-violet-500 to-purple-600': 'bg-violet-50 text-violet-500',
-                'from-cyan-500 to-blue-600': 'bg-cyan-50 text-cyan-500',
-                'from-emerald-500 to-green-600': 'bg-emerald-50 text-emerald-500',
-                'from-orange-500 to-red-500': 'bg-orange-50 text-orange-500',
-                'from-blue-500 to-indigo-600': 'bg-blue-50 text-blue-500',
-                'from-pink-500 to-rose-600': 'bg-pink-50 text-pink-500',
+              const colorMap: Record<string, { light: string; dark: string }> = {
+                'from-violet-500 to-purple-600': { light: 'bg-violet-50 text-violet-500', dark: 'dark:bg-violet-900/30 dark:text-violet-400' },
+                'from-cyan-500 to-blue-600': { light: 'bg-cyan-50 text-cyan-500', dark: 'dark:bg-cyan-900/30 dark:text-cyan-400' },
+                'from-emerald-500 to-green-600': { light: 'bg-emerald-50 text-emerald-500', dark: 'dark:bg-emerald-900/30 dark:text-emerald-400' },
+                'from-orange-500 to-red-500': { light: 'bg-orange-50 text-orange-500', dark: 'dark:bg-orange-900/30 dark:text-orange-400' },
+                'from-blue-500 to-indigo-600': { light: 'bg-blue-50 text-blue-500', dark: 'dark:bg-blue-900/30 dark:text-blue-400' },
+                'from-pink-500 to-rose-600': { light: 'bg-pink-50 text-pink-500', dark: 'dark:bg-pink-900/30 dark:text-pink-400' },
               };
-              const colorClass = colorMap[strategy.color] || 'bg-gray-50 text-gray-500';
+              const colors = colorMap[strategy.color] || { light: 'bg-gray-50 text-gray-500', dark: 'dark:bg-gray-800 dark:text-gray-400' };
               return (
-                <div key={strategy.id} className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-shadow cursor-pointer group">
+                <div key={strategy.id} className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_4px_16px_rgba(0,0,0,0.4)] transition-all cursor-pointer group">
                   <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-xl ${colorClass} flex items-center justify-center`}>
+                    <div className={`w-10 h-10 rounded-xl ${colors.light} ${colors.dark} flex items-center justify-center`}>
                       <Icon className="w-5 h-5" strokeWidth={1.5} />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-semibold text-gray-800">{strategy.name}</h3>
-                        <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-1 transition-all" />
+                        <h3 className="font-semibold text-gray-800 dark:text-white">{strategy.name}</h3>
+                        <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400 group-hover:translate-x-1 transition-all" />
                       </div>
-                      <p className="text-sm text-gray-400 font-light">Instant cash flow & ROI analysis</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 font-light">Instant cash flow & ROI analysis</p>
                     </div>
                   </div>
                 </div>
@@ -563,17 +600,17 @@ function DesktopScannerView({
       {/* How it Works */}
       <section className="px-6 py-16">
         <div className="max-w-6xl mx-auto">
-          <div className="bg-white rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] p-8 md:p-12">
-            <h2 className="text-2xl font-bold text-gray-800 mb-10 text-center">How It Works</h2>
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] p-8 md:p-12 transition-colors duration-300">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-10 text-center">How It Works</h2>
             
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center shadow-lg">
                   <Search className="w-8 h-8 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-gray-200 mb-2">01</div>
-                <h3 className="font-semibold text-gray-800 mb-2">Enter Address</h3>
-                <p className="text-gray-400 text-sm">
+                <div className="text-3xl font-bold text-gray-200 dark:text-gray-700 mb-2">01</div>
+                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Enter Address</h3>
+                <p className="text-gray-400 dark:text-gray-500 text-sm">
                   Search for any US property by street address
                 </p>
               </div>
@@ -582,9 +619,9 @@ function DesktopScannerView({
                 <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg">
                   <Zap className="w-8 h-8 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-gray-200 mb-2">02</div>
-                <h3 className="font-semibold text-gray-800 mb-2">Instant Analysis</h3>
-                <p className="text-gray-400 text-sm">
+                <div className="text-3xl font-bold text-gray-200 dark:text-gray-700 mb-2">02</div>
+                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Instant Analysis</h3>
+                <p className="text-gray-400 dark:text-gray-500 text-sm">
                   Get valuations, rent estimates, and market data in seconds
                 </p>
               </div>
@@ -593,9 +630,9 @@ function DesktopScannerView({
                 <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-lg">
                   <Home className="w-8 h-8 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-gray-200 mb-2">03</div>
-                <h3 className="font-semibold text-gray-800 mb-2">Compare Strategies</h3>
-                <p className="text-gray-400 text-sm">
+                <div className="text-3xl font-bold text-gray-200 dark:text-gray-700 mb-2">03</div>
+                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Compare Strategies</h3>
+                <p className="text-gray-400 dark:text-gray-500 text-sm">
                   See cash flow, ROI, and projections across 6 strategies
                 </p>
               </div>
@@ -608,11 +645,11 @@ function DesktopScannerView({
       {scanner.isLocationReady && (
         <section className="px-6 py-8">
           <div className="max-w-6xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-6">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] p-6 transition-colors duration-300">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800">Your Location</h3>
-                  <p className="text-gray-400 text-sm">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Your Location</h3>
+                  <p className="text-gray-400 dark:text-gray-500 text-sm">
                     {scanner.latitude?.toFixed(6)}, {scanner.longitude?.toFixed(6)}
                     {scanner.accuracy && ` (±${Math.round(scanner.accuracy)}m)`}
                   </p>
@@ -620,7 +657,7 @@ function DesktopScannerView({
                 <button
                   onClick={fetchNearbyProperties}
                   disabled={isLoadingNearby}
-                  className="flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-600 rounded-lg font-medium hover:bg-teal-100 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded-lg font-medium hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors disabled:opacity-50"
                 >
                   {isLoadingNearby ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -638,20 +675,20 @@ function DesktopScannerView({
                     <button
                       key={index}
                       onClick={() => handlePropertyClick(property)}
-                      className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors text-left w-full group"
+                      className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-slate-700 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors text-left w-full group"
                     >
-                      <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
-                        <Home className="w-5 h-5 text-teal-500" />
+                      <div className="w-10 h-10 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center flex-shrink-0">
+                        <Home className="w-5 h-5 text-teal-500 dark:text-teal-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-800 truncate">
+                        <div className="font-medium text-gray-800 dark:text-white truncate">
                           {property.address}
                         </div>
-                        <div className="text-sm text-gray-400">
+                        <div className="text-sm text-gray-400 dark:text-gray-500">
                           {property.city}, {property.state} {property.zip}
                         </div>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                      <ChevronRight className="w-5 h-5 text-gray-300 dark:text-gray-600 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-colors" />
                     </button>
                   ))}
                 </div>
@@ -669,7 +706,7 @@ function DesktopScannerView({
             <p className="text-white/80 mb-8 font-light">Enter any US property address and get instant investment analytics.</p>
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="px-8 py-4 bg-white text-gray-800 font-semibold rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 mx-auto"
+              className="px-8 py-4 bg-white dark:bg-slate-900 text-gray-800 dark:text-white font-semibold rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 mx-auto"
             >
               Search Property
               <ChevronRight className="w-5 h-5" />
