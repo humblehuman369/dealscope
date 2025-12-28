@@ -20,10 +20,13 @@ from app.schemas.auth import TokenResponse, TokenPayload
 
 logger = logging.getLogger(__name__)
 
-# Password hashing context
-# truncate_error=True raises an error for passwords > 72 bytes
-# We handle this by truncating manually
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__truncate_error=False)
+# Password hashing context using bcrypt
+# Note: bcrypt has a 72-byte limit; we truncate in get_password_hash
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__rounds=12,  # Cost factor
+)
 
 
 class AuthService:
@@ -54,13 +57,18 @@ class AuthService:
     
     def get_password_hash(self, password: str) -> str:
         """Hash a password for storage."""
-        # Ensure password is a string and truncate to 72 bytes for bcrypt
-        if isinstance(password, bytes):
-            password = password.decode('utf-8')
-        # Truncate to 72 bytes (bcrypt limit)
-        password_bytes = password.encode('utf-8')[:72]
-        password = password_bytes.decode('utf-8', errors='ignore')
-        return pwd_context.hash(password)
+        try:
+            # Ensure password is a string and truncate to 72 bytes for bcrypt
+            if isinstance(password, bytes):
+                password = password.decode('utf-8')
+            # Truncate to 72 bytes (bcrypt limit)
+            password_bytes = password.encode('utf-8')[:72]
+            password = password_bytes.decode('utf-8', errors='ignore')
+            logger.debug(f"Hashing password of length {len(password)}")
+            return pwd_context.hash(password)
+        except Exception as e:
+            logger.error(f"Password hashing error: {e}")
+            raise
     
     # ===========================================
     # Token Creation
