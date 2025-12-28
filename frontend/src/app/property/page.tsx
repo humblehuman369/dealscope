@@ -89,12 +89,25 @@ type DrillDownView = 'details' | 'charts' | 'projections' | 'score' | 'sensitivi
 
 async function fetchProperty(address: string): Promise<PropertyData> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-  const response = await fetch(`${apiUrl}/api/v1/properties/search`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ address })
-  })
-  if (!response.ok) throw new Error('Property not found')
-  return response.json()
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:fetchProperty_ENTRY',message:'fetchProperty called',data:{address,apiUrl},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,C'})}).catch(()=>{});
+  // #endregion
+  try {
+    const response = await fetch(`${apiUrl}/api/v1/properties/search`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address })
+    })
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:fetchProperty_RESPONSE',message:'Fetch response received',data:{status:response.status,ok:response.ok},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B'})}).catch(()=>{});
+    // #endregion
+    if (!response.ok) throw new Error('Property not found')
+    return response.json()
+  } catch (err) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:fetchProperty_ERROR',message:'fetchProperty exception',data:{error:String(err)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
+    // #endregion
+    throw err
+  }
 }
 
 // ============================================
