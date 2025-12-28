@@ -55,6 +55,7 @@ async def register(
     Returns the created user. If email verification is enabled,
     a verification email will be sent.
     """
+    logger.info(f"Registration attempt for email: {data.email}")
     try:
         user, verification_token = await auth_service.register_user(
             db=db,
@@ -62,6 +63,7 @@ async def register(
             password=data.password,
             full_name=data.full_name
         )
+        logger.info(f"User registered successfully: {user.email}")
         
         # TODO: Send verification email if token exists
         if verification_token:
@@ -82,9 +84,18 @@ async def register(
         )
         
     except ValueError as e:
+        logger.warning(f"Registration validation error: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Registration failed with error: {e}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed. Please try again."
         )
 
 
