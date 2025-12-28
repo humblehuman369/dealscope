@@ -396,24 +396,23 @@ function PhotoCarousel({ zpid, fillHeight = false }: { zpid: string | null | und
     ? "w-full h-full min-h-[120px] bg-gray-200 flex items-center justify-center"
     : "w-[280px] h-[100px] bg-gray-100 rounded-xl flex items-center justify-center"
 
-  if (!zpid || isLoading) {
+  // Hide carousel if no zpid or no photos available
+  if (!zpid) {
+    return null
+  }
+
+  // Show loading spinner while fetching
+  if (isLoading) {
     return (
       <div className={containerClass}>
-        {isLoading ? (
-          <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
-        ) : (
-          <ImageIcon className="w-6 h-6 text-gray-300" />
-        )}
+        <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
       </div>
     )
   }
 
+  // Hide if no photos available
   if (photos.length === 0) {
-    return (
-      <div className={containerClass}>
-        <ImageIcon className="w-6 h-6 text-gray-300" />
-      </div>
-    )
+    return null
   }
 
   const carouselClass = fillHeight
@@ -494,12 +493,18 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
     setIsLightboxOpen(true)
   }
 
-  if (!zpid || isLoading) {
+  // Hide photo strip if no zpid
+  if (!zpid) {
+    return null
+  }
+
+  // Show loading placeholders while fetching
+  if (isLoading) {
     return (
       <div className="flex gap-2.5">
         {[0, 1, 2, 3].map((i) => (
           <div key={i} className="w-[140px] h-[100px] bg-gray-100 rounded-xl flex items-center justify-center">
-            {isLoading && i === 0 ? (
+            {i === 0 ? (
               <Loader2 className="w-6 h-6 text-gray-300 animate-spin" />
             ) : (
               <ImageIcon className="w-6 h-6 text-gray-300" />
@@ -510,16 +515,9 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
     )
   }
 
+  // Hide if no photos available
   if (photos.length === 0) {
-    return (
-      <div className="flex gap-2.5">
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="w-[140px] h-[100px] bg-gray-100 rounded-xl flex items-center justify-center">
-            <ImageIcon className="w-6 h-6 text-gray-300" />
-          </div>
-        ))}
-      </div>
-    )
+    return null
   }
 
   // Show first 4 photos
