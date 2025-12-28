@@ -89,20 +89,25 @@ type DrillDownView = 'details' | 'charts' | 'projections' | 'score' | 'sensitivi
 
 async function fetchProperty(address: string): Promise<PropertyData> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:fetchProperty_ENTRY',message:'fetchProperty called',data:{address,apiUrl},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,C'})}).catch(()=>{});
+  const fetchUrl = `${apiUrl}/api/v1/properties/search`
+  // #region agent log - BROWSER CONSOLE DEBUG
+  console.log('[DEBUG] fetchProperty called', { address, apiUrl, fetchUrl, windowLocation: typeof window !== 'undefined' ? window.location.href : 'SSR' })
+  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:fetchProperty_ENTRY',message:'fetchProperty called',data:{address,apiUrl,fetchUrl},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,C'})}).catch(()=>{});
   // #endregion
   try {
-    const response = await fetch(`${apiUrl}/api/v1/properties/search`, {
+    console.log('[DEBUG] About to fetch:', fetchUrl)
+    const response = await fetch(fetchUrl, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ address })
     })
+    console.log('[DEBUG] Fetch response:', { status: response.status, ok: response.ok })
     // #region agent log
     fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:fetchProperty_RESPONSE',message:'Fetch response received',data:{status:response.status,ok:response.ok},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B'})}).catch(()=>{});
     // #endregion
     if (!response.ok) throw new Error('Property not found')
     return response.json()
   } catch (err) {
+    console.error('[DEBUG] fetchProperty ERROR:', err, { apiUrl, fetchUrl })
     // #region agent log
     fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:fetchProperty_ERROR',message:'fetchProperty exception',data:{error:String(err)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
     // #endregion
