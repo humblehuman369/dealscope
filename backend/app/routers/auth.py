@@ -70,6 +70,7 @@ async def register(
             logger.info(f"Verification token generated for {data.email}")
             # await email_service.send_verification_email(user.email, verification_token)
         
+        # Note: New users don't have a profile yet, so we don't need to check it
         return UserResponse(
             id=str(user.id),
             email=user.email,
@@ -79,8 +80,8 @@ async def register(
             is_verified=user.is_verified,
             created_at=user.created_at,
             last_login=user.last_login,
-            has_profile=user.profile is not None,
-            onboarding_completed=user.profile.onboarding_completed if user.profile else False
+            has_profile=False,  # New users don't have profiles yet
+            onboarding_completed=False
         )
         
     except ValueError as e:
