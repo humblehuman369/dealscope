@@ -1,10 +1,11 @@
 """
 Database session management for async SQLAlchemy.
 Provides connection pooling and session dependency for FastAPI.
+Uses lazy initialization to allow app to start without database.
 """
 
-from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from typing import AsyncGenerator, Optional
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker, AsyncEngine
 from sqlalchemy.pool import NullPool
 import logging
 
@@ -12,24 +13,39 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Create async engine
-# Use NullPool for serverless environments (Railway), or QueuePool for traditional
-engine = create_async_engine(
-    settings.async_database_url,  # Auto-converts Railway's postgres:// to asyncpg format
-    echo=settings.DEBUG,  # Log SQL queries in debug mode
-    pool_pre_ping=True,   # Verify connections before using
-    # For Railway/serverless: use NullPool to avoid connection issues
-    # poolclass=NullPool,
-)
+# Lazy engine initialization
+_engine: Optional[AsyncEngine] = None
+_session_factory: Optional[async_sessionmaker] = None
 
-# Create async session factory
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-    autocommit=False,
-    autoflush=False,
-)
+
+def get_engine() -> AsyncEngine:
+    """Get or create the async database engine (lazy initialization)."""
+    global _engine
+    if _engine is None:
+        logger.info(f"Creating database engine...")
+        _engine = create_async_engine(
+            settings.async_database_url,
+            echo=settings.DEBUG,
+            pool_pre_ping=True,
+            # Use NullPool for Railway/serverless to avoid connection pool issues
+            poolclass=NullPool,
+        )
+        logger.info("Database engine created successfully")
+    return _engine
+
+
+def get_session_factory() -> async_sessionmaker:
+    """Get or create the async session factory (lazy initialization)."""
+    global _session_factory
+    if _session_factory is None:
+        _session_factory = async_sessionmaker(
+            get_engine(),
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autocommit=False,
+            autoflush=False,
+        )
+    return _session_factory
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -42,7 +58,8 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             result = await db.execute(select(User))
             return result.scalars().all()
     """
-    async with AsyncSessionLocal() as session:
+    session_factory = get_session_factory()
+    async with session_factory() as session:
         try:
             yield session
             await session.commit()
@@ -62,6 +79,7 @@ async def init_db() -> None:
     """
     from app.db.base import Base
     
+    engine = get_engine()
     async with engine.begin() as conn:
         # Import all models to register them
         from app.models import user, saved_property, document  # noqa
@@ -73,6 +91,8 @@ async def init_db() -> None:
 
 async def close_db() -> None:
     """Close database connections on shutdown."""
-    await engine.dispose()
-    logger.info("Database connections closed")
-
+    global _engine
+    if _engine is not None:
+        await _engine.dispose()
+        _engine = None
+        logger.info("Database connections closed")
