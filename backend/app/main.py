@@ -53,14 +53,15 @@ except Exception as e:
     logger.error(f"Failed to load property service: {e}")
     raise
 
-# Import auth routers
+# Import auth routers (optional - app works without them)
+auth_router = None
+users_router = None
 try:
     from app.routers.auth import router as auth_router
     from app.routers.users import router as users_router
     logger.info("Auth routers loaded successfully")
 except Exception as e:
-    logger.error(f"Failed to load auth routers: {e}")
-    raise
+    logger.warning(f"Auth routers not available (database may not be configured): {e}")
 
 # Import database session for cleanup
 try:
@@ -129,11 +130,13 @@ app.add_middleware(
 # INCLUDE ROUTERS
 # ============================================
 
-# Auth & User routes
-app.include_router(auth_router)
-app.include_router(users_router)
-
-logger.info("Auth routers included")
+# Auth & User routes (only if available)
+if auth_router is not None:
+    app.include_router(auth_router)
+    logger.info("Auth router included")
+if users_router is not None:
+    app.include_router(users_router)
+    logger.info("Users router included")
 
 
 # ============================================
