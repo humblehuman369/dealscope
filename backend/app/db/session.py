@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # Create async engine
 # Use NullPool for serverless environments (Railway), or QueuePool for traditional
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    settings.async_database_url,  # Auto-converts Railway's postgres:// to asyncpg format
     echo=settings.DEBUG,  # Log SQL queries in debug mode
     pool_pre_ping=True,   # Verify connections before using
     # For Railway/serverless: use NullPool to avoid connection issues

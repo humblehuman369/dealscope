@@ -23,7 +23,23 @@ class Settings(BaseSettings):
     # ===========================================
     # Database
     # ===========================================
+    # Can be provided as postgres://, postgresql://, or postgresql+asyncpg://
+    # Railway provides postgres:// - we convert to asyncpg format automatically
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/investiq"
+    
+    @property
+    def async_database_url(self) -> str:
+        """
+        Convert DATABASE_URL to asyncpg format for SQLAlchemy async.
+        Railway provides: postgres://user:pass@host:port/db
+        We need: postgresql+asyncpg://user:pass@host:port/db
+        """
+        url = self.DATABASE_URL
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif url.startswith("postgresql://") and "+asyncpg" not in url:
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
     
     # Database pool settings
     DB_POOL_SIZE: int = 5
