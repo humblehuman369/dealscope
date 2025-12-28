@@ -57,13 +57,16 @@ except Exception as e:
 auth_router = None
 users_router = None
 try:
+    print(">>> Attempting to load auth routers...", flush=True)
     from app.routers.auth import router as auth_router
     from app.routers.users import router as users_router
+    print(">>> Auth routers loaded successfully!", flush=True)
     logger.info("Auth routers loaded successfully")
 except Exception as e:
     import traceback
+    print(f">>> AUTH ROUTER ERROR: {e}", flush=True)
+    print(f">>> TRACEBACK:\n{traceback.format_exc()}", flush=True)
     logger.error(f"Auth routers failed to load: {e}")
-    logger.error(f"Full traceback:\n{traceback.format_exc()}")
 
 # Import database session for cleanup
 try:
