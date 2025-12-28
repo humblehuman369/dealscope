@@ -110,29 +110,26 @@ class SharedLink(Base):
     
     # Relationships
     user: Mapped["User"] = relationship("User")
-    property: Mapped["SavedProperty"] = relationship("SavedProperty")
+    saved_property: Mapped["SavedProperty"] = relationship("SavedProperty")
     
-    @property
-    def is_expired(self) -> bool:
+    def check_is_expired(self) -> bool:
         """Check if the link has expired."""
         if self.expires_at is None:
             return False
         return datetime.utcnow() > self.expires_at
     
-    @property
-    def is_view_limit_reached(self) -> bool:
+    def check_is_view_limit_reached(self) -> bool:
         """Check if max views have been reached."""
         if self.max_views is None:
             return False
         return self.view_count >= self.max_views
     
-    @property
-    def is_accessible(self) -> bool:
+    def check_is_accessible(self) -> bool:
         """Check if the link is still accessible."""
         return (
             self.is_active 
-            and not self.is_expired 
-            and not self.is_view_limit_reached
+            and not self.check_is_expired() 
+            and not self.check_is_view_limit_reached()
         )
     
     def increment_view_count(self) -> None:
