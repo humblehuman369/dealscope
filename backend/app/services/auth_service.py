@@ -21,7 +21,9 @@ from app.schemas.auth import TokenResponse, TokenPayload
 logger = logging.getLogger(__name__)
 
 # Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# truncate_error=True raises an error for passwords > 72 bytes
+# We handle this by truncating manually
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__truncate_error=False)
 
 
 class AuthService:
