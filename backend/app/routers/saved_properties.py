@@ -100,6 +100,49 @@ async def get_saved_properties_stats(
 
 
 # ===========================================
+# Bulk Operations (MUST be before /{property_id} routes)
+# ===========================================
+
+@router.post(
+    "/bulk/status",
+    summary="Bulk update property status"
+)
+async def bulk_update_status(
+    data: BulkStatusUpdate,
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    """Update status for multiple properties at once."""
+    count = await saved_property_service.bulk_update_status(
+        db=db,
+        user_id=str(current_user.id),
+        property_ids=data.property_ids,
+        status=data.status,
+    )
+    
+    return {"updated": count, "status": data.status.value}
+
+
+@router.delete(
+    "/bulk",
+    summary="Bulk delete properties"
+)
+async def bulk_delete_properties(
+    property_ids: List[str],
+    current_user: CurrentUser,
+    db: DbSession,
+):
+    """Delete multiple properties at once."""
+    count = await saved_property_service.bulk_delete(
+        db=db,
+        user_id=str(current_user.id),
+        property_ids=property_ids,
+    )
+    
+    return {"deleted": count}
+
+
+# ===========================================
 # CRUD Operations
 # ===========================================
 
@@ -324,49 +367,6 @@ async def delete_saved_property(
 
 
 # ===========================================
-# Bulk Operations
-# ===========================================
-
-@router.post(
-    "/bulk/status",
-    summary="Bulk update property status"
-)
-async def bulk_update_status(
-    data: BulkStatusUpdate,
-    current_user: CurrentUser,
-    db: DbSession,
-):
-    """Update status for multiple properties at once."""
-    count = await saved_property_service.bulk_update_status(
-        db=db,
-        user_id=str(current_user.id),
-        property_ids=data.property_ids,
-        status=data.status,
-    )
-    
-    return {"updated": count, "status": data.status.value}
-
-
-@router.delete(
-    "/bulk",
-    summary="Bulk delete properties"
-)
-async def bulk_delete_properties(
-    property_ids: List[str] = Query(..., description="Property IDs to delete"),
-    current_user: CurrentUser = None,
-    db: DbSession = None,
-):
-    """Delete multiple properties at once."""
-    count = await saved_property_service.bulk_delete(
-        db=db,
-        user_id=str(current_user.id),
-        property_ids=property_ids,
-    )
-    
-    return {"deleted": count}
-
-
-# ===========================================
 # Adjustment History
 # ===========================================
 
@@ -440,4 +440,3 @@ async def add_adjustment(
         reason=adjustment.reason,
         created_at=adjustment.created_at,
     )
-
