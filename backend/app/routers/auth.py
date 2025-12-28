@@ -271,6 +271,8 @@ async def get_me(current_user: CurrentUser):
     
     Requires valid access token in Authorization header.
     """
+    # Note: Avoid lazy loading profile relationship - check if profile_id exists instead
+    has_profile = hasattr(current_user, 'profile_id') and current_user.profile_id is not None
     return UserResponse(
         id=str(current_user.id),
         email=current_user.email,
@@ -280,8 +282,8 @@ async def get_me(current_user: CurrentUser):
         is_verified=current_user.is_verified,
         created_at=current_user.created_at,
         last_login=current_user.last_login,
-        has_profile=current_user.profile is not None,
-        onboarding_completed=current_user.profile.onboarding_completed if current_user.profile else False
+        has_profile=has_profile,
+        onboarding_completed=False  # Fetch profile separately if needed
     )
 
 
