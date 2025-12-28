@@ -61,7 +61,9 @@ try:
     from app.routers.users import router as users_router
     logger.info("Auth routers loaded successfully")
 except Exception as e:
-    logger.warning(f"Auth routers not available (database may not be configured): {e}")
+    import traceback
+    logger.error(f"Auth routers failed to load: {e}")
+    logger.error(f"Full traceback:\n{traceback.format_exc()}")
 
 # Import database session for cleanup
 try:
