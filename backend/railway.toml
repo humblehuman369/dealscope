@@ -2,7 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "echo 'Starting InvestIQ API...' && (alembic upgrade head || echo 'Alembic failed, continuing...') && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"

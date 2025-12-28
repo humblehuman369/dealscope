@@ -87,6 +87,21 @@ async def lifespan(app: FastAPI):
     logger.info(f"AXESSO API configured: {'Yes' if settings.AXESSO_API_KEY else 'No'}")
     logger.info(f"Database configured: {'Yes' if settings.DATABASE_URL else 'No'}")
     logger.info(f"Auth enabled: {'Yes' if settings.FEATURE_AUTH_REQUIRED else 'Optional'}")
+    
+    # Create database tables if they don't exist
+    if settings.DATABASE_URL and auth_router is not None:
+        try:
+            from app.db.base import Base
+            from app.db.session import get_engine
+            engine = get_engine()
+            async with engine.begin() as conn:
+                # Import all models
+                from app.models import User, UserProfile, SavedProperty, PropertyAdjustment, Document, SharedLink
+                await conn.run_sync(Base.metadata.create_all)
+                logger.info("Database tables created/verified successfully")
+        except Exception as e:
+            logger.error(f"Failed to create database tables: {e}")
+    
     logger.info("Lifespan startup complete - yielding to app")
     
     yield  # Application runs here
