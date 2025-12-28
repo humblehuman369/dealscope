@@ -302,7 +302,7 @@ class SavedPropertyService:
         if not saved_property:
             return False
         
-        await db.delete(saved_property)
+        db.delete(saved_property)  # delete() is synchronous in SQLAlchemy 2.0
         await db.flush()
         
         logger.info(f"Property deleted: {property_id}")
