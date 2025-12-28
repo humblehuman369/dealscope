@@ -34,8 +34,9 @@ except Exception as e:
     logger.error(f"Failed to load config: {e}")
     raise
 
+# Import property schemas from the new location
 try:
-    from app.schemas import (
+    from app.schemas.property import (
         PropertySearchRequest, PropertyResponse, AnalyticsRequest, 
         AnalyticsResponse, AllAssumptions, StrategyType,
         SensitivityRequest, SensitivityResponse
@@ -52,6 +53,23 @@ except Exception as e:
     logger.error(f"Failed to load property service: {e}")
     raise
 
+# Import auth routers
+try:
+    from app.routers.auth import router as auth_router
+    from app.routers.users import router as users_router
+    logger.info("Auth routers loaded successfully")
+except Exception as e:
+    logger.error(f"Failed to load auth routers: {e}")
+    raise
+
+# Import database session for cleanup
+try:
+    from app.db.session import close_db
+    logger.info("Database session module loaded")
+except Exception as e:
+    logger.warning(f"Database session not available (OK for initial setup): {e}")
+    close_db = None
+
 
 # Lifespan context manager (replaces deprecated on_event)
 @asynccontextmanager
@@ -61,18 +79,36 @@ async def lifespan(app: FastAPI):
     logger.info("Starting InvestIQ API lifespan...")
     logger.info(f"RentCast API configured: {'Yes' if settings.RENTCAST_API_KEY else 'No'}")
     logger.info(f"AXESSO API configured: {'Yes' if settings.AXESSO_API_KEY else 'No'}")
+    logger.info(f"Database configured: {'Yes' if settings.DATABASE_URL else 'No'}")
+    logger.info(f"Auth enabled: {'Yes' if settings.FEATURE_AUTH_REQUIRED else 'Optional'}")
     logger.info("Lifespan startup complete - yielding to app")
     
     yield  # Application runs here
     
     # Shutdown
     logger.info("Shutting down InvestIQ API...")
+    if close_db:
+        await close_db()
+        logger.info("Database connections closed")
 
 
 # Create FastAPI app with lifespan
 app = FastAPI(
     title="InvestIQ API",
-    description="Real Estate Investment Analytics Platform - Analyze properties across 6 investment strategies",
+    description="""
+    Real Estate Investment Analytics Platform - Analyze properties across 6 investment strategies.
+    
+    ## Features
+    - **Property Search**: Fetch property data from RentCast & AXESSO APIs
+    - **6 Strategy Analysis**: LTR, STR, BRRRR, Fix & Flip, House Hack, Wholesale
+    - **User Authentication**: Register, login, profile management
+    - **Saved Properties**: Save and track properties with custom adjustments
+    - **Document Storage**: Upload documents for each property
+    - **Sharing**: Generate shareable links for property analysis
+    
+    ## Authentication
+    Protected endpoints require a Bearer token. Get a token via `/api/v1/auth/login`.
+    """,
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -82,11 +118,22 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure properly in production
+    allow_origins=settings.CORS_ORIGINS if settings.CORS_ORIGINS else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ============================================
+# INCLUDE ROUTERS
+# ============================================
+
+# Auth & User routes
+app.include_router(auth_router)
+app.include_router(users_router)
+
+logger.info("Auth routers included")
 
 
 # ============================================
@@ -99,7 +146,13 @@ async def health_check():
     return {
         "status": "healthy",
         "version": settings.APP_VERSION,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.utcnow().isoformat(),
+        "features": {
+            "auth_required": settings.FEATURE_AUTH_REQUIRED,
+            "dashboard_enabled": settings.FEATURE_DASHBOARD_ENABLED,
+            "document_upload": settings.FEATURE_DOCUMENT_UPLOAD_ENABLED,
+            "sharing": settings.FEATURE_SHARING_ENABLED,
+        }
     }
 
 
@@ -117,12 +170,18 @@ async def root():
             "Fix & Flip",
             "House Hacking",
             "Wholesale"
-        ]
+        ],
+        "endpoints": {
+            "auth": "/api/v1/auth",
+            "users": "/api/v1/users",
+            "properties": "/api/v1/properties",
+            "analytics": "/api/v1/analytics",
+        }
     }
 
 
 # ============================================
-# PROPERTY ENDPOINTS
+# PROPERTY ENDPOINTS (EXISTING - PRESERVED)
 # ============================================
 
 @app.post("/api/v1/properties/search", response_model=PropertyResponse)
@@ -189,7 +248,7 @@ async def get_demo_property():
 
 
 # ============================================
-# ANALYTICS ENDPOINTS
+# ANALYTICS ENDPOINTS (EXISTING - PRESERVED)
 # ============================================
 
 @app.post("/api/v1/analytics/calculate", response_model=AnalyticsResponse)
@@ -293,7 +352,7 @@ async def quick_analytics(
 
 
 # ============================================
-# ASSUMPTIONS ENDPOINTS
+# ASSUMPTIONS ENDPOINTS (EXISTING - PRESERVED)
 # ============================================
 
 @app.get("/api/v1/assumptions/defaults")
@@ -345,7 +404,7 @@ async def get_default_assumptions():
 
 
 # ============================================
-# SENSITIVITY ANALYSIS ENDPOINTS
+# SENSITIVITY ANALYSIS ENDPOINTS (EXISTING - PRESERVED)
 # ============================================
 
 @app.post("/api/v1/sensitivity/analyze")
@@ -430,7 +489,7 @@ async def run_sensitivity_analysis(request: SensitivityRequest):
 
 
 # ============================================
-# PHOTOS ENDPOINTS
+# PHOTOS ENDPOINTS (EXISTING - PRESERVED)
 # ============================================
 
 @app.get("/api/v1/photos")
@@ -469,7 +528,7 @@ async def get_property_photos(
 
 
 # ============================================
-# COMPARISON ENDPOINTS
+# COMPARISON ENDPOINTS (EXISTING - PRESERVED)
 # ============================================
 
 @app.get("/api/v1/comparison/{property_id}")
