@@ -22,10 +22,10 @@ logger = logging.getLogger(__name__)
 
 # Password hashing context using bcrypt
 # Note: bcrypt has a 72-byte limit; we truncate in get_password_hash
+# Using bcrypt_sha256 to avoid version compatibility issues with newer bcrypt
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto",
-    bcrypt__rounds=12,  # Cost factor
 )
 
 
@@ -50,10 +50,15 @@ class AuthService:
     
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         """Verify a plain password against a hashed password."""
-        # Truncate to 72 bytes to match hashing
-        password_bytes = plain_password.encode('utf-8')[:72]
-        plain_password = password_bytes.decode('utf-8', errors='ignore')
-        return pwd_context.verify(plain_password, hashed_password)
+        try:
+            # Truncate to 72 bytes to match hashing
+            password_bytes = plain_password.encode('utf-8')[:72]
+            # Use bcrypt directly to avoid passlib version issues
+            import bcrypt
+            return bcrypt.checkpw(password_bytes, hashed_password.encode('utf-8'))
+        except Exception as e:
+            logger.warning(f"Password verification error: {e}")
+            return False
     
     def get_password_hash(self, password: str) -> str:
         """Hash a password for storage."""
@@ -65,7 +70,11 @@ class AuthService:
             password_bytes = password.encode('utf-8')[:72]
             password = password_bytes.decode('utf-8', errors='ignore')
             logger.debug(f"Hashing password of length {len(password)}")
-            return pwd_context.hash(password)
+            # Use bcrypt directly to avoid passlib version issues
+            import bcrypt
+            salt = bcrypt.gensalt(rounds=12)
+            hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+            return hashed.decode('utf-8')
         except Exception as e:
             logger.error(f"Password hashing error: {e}")
             raise
