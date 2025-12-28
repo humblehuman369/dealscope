@@ -47,10 +47,19 @@ class AuthService:
     
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         """Verify a plain password against a hashed password."""
+        # Truncate to 72 bytes to match hashing
+        password_bytes = plain_password.encode('utf-8')[:72]
+        plain_password = password_bytes.decode('utf-8', errors='ignore')
         return pwd_context.verify(plain_password, hashed_password)
     
     def get_password_hash(self, password: str) -> str:
         """Hash a password for storage."""
+        # Ensure password is a string and truncate to 72 bytes for bcrypt
+        if isinstance(password, bytes):
+            password = password.decode('utf-8')
+        # Truncate to 72 bytes (bcrypt limit)
+        password_bytes = password.encode('utf-8')[:72]
+        password = password_bytes.decode('utf-8', errors='ignore')
         return pwd_context.hash(password)
     
     # ===========================================
