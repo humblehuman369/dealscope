@@ -2,7 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "python -c 'import os; print(\"PORT:\", os.environ.get(\"PORT\")); print(\"DB URL set:\", bool(os.environ.get(\"DATABASE_URL\")))' && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+startCommand = "echo 'Starting InvestIQ API...' && echo 'DATABASE_URL set:' $( [ -n \"$DATABASE_URL\" ] && echo 'YES' || echo 'NO' ) && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
