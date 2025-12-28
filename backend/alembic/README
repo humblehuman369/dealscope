@@ -1,0 +1,40 @@
+# Alembic Migrations for InvestIQ
+
+This directory contains database migration scripts managed by Alembic.
+
+## Quick Reference
+
+### Generate a new migration
+```bash
+cd backend
+alembic revision --autogenerate -m "Description of changes"
+```
+
+### Apply all pending migrations
+```bash
+alembic upgrade head
+```
+
+### Rollback last migration
+```bash
+alembic downgrade -1
+```
+
+### Show current revision
+```bash
+alembic current
+```
+
+### Show migration history
+```bash
+alembic history
+```
+
+## Best Practices
+
+1. Always review auto-generated migrations before applying
+2. Test migrations on a development database first
+3. Keep migrations small and focused
+4. Never modify migrations that have been deployed to production
+5. Use descriptive migration messages
+

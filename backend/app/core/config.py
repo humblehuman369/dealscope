@@ -1,5 +1,6 @@
 """
 Application configuration and settings.
+All settings are loaded from environment variables with sensible defaults.
 """
 from pydantic_settings import BaseSettings
 from pydantic import computed_field
@@ -11,41 +12,135 @@ import os
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     
+    # ===========================================
     # Application
+    # ===========================================
     APP_NAME: str = "InvestIQ"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
+    ENVIRONMENT: str = "development"  # development, staging, production
     
+    # ===========================================
     # Database
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/investiq"
+    # ===========================================
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/investiq"
     
+    # Database pool settings
+    DB_POOL_SIZE: int = 5
+    DB_MAX_OVERFLOW: int = 10
+    DB_POOL_TIMEOUT: int = 30
+    
+    # ===========================================
     # Redis
+    # ===========================================
     REDIS_URL: str = "redis://localhost:6379/0"
     
-    # API Keys
+    # ===========================================
+    # API Keys (External Services)
+    # ===========================================
     RENTCAST_API_KEY: str = ""
     RENTCAST_URL: str = "https://api.rentcast.io/v1"
     
     AXESSO_API_KEY: str = ""
     AXESSO_URL: str = "https://api.axesso.de/zil"
     
-    # JWT Settings
+    # ===========================================
+    # JWT Authentication
+    # ===========================================
     SECRET_KEY: str = "your-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
+    # Password Reset
+    PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = 24
+    
+    # Email Verification
+    EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS: int = 48
+    
+    # ===========================================
+    # File Storage (S3/R2)
+    # ===========================================
+    STORAGE_BACKEND: str = "local"  # local, s3, r2
+    
+    # Local storage path (for development)
+    LOCAL_STORAGE_PATH: str = "./uploads"
+    
+    # S3/R2 Settings
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_REGION: str = "us-east-1"
+    S3_BUCKET_NAME: str = "investiq-documents"
+    S3_ENDPOINT_URL: Optional[str] = None  # For R2: https://{account_id}.r2.cloudflarestorage.com
+    
+    # Cloudflare R2 (S3-compatible)
+    R2_ACCOUNT_ID: str = ""
+    R2_ACCESS_KEY_ID: str = ""
+    R2_SECRET_ACCESS_KEY: str = ""
+    R2_BUCKET_NAME: str = "investiq-documents"
+    R2_PUBLIC_URL: str = ""  # Public URL for accessing files
+    
+    # File upload limits
+    MAX_UPLOAD_SIZE_MB: int = 50
+    ALLOWED_FILE_TYPES: str = "pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,webp"
+    
+    # ===========================================
+    # Email (Resend)
+    # ===========================================
+    RESEND_API_KEY: str = ""
+    EMAIL_FROM: str = "noreply@investiq.app"
+    EMAIL_FROM_NAME: str = "InvestIQ"
+    
+    # Email templates base URL (for links in emails)
+    FRONTEND_URL: str = "http://localhost:3000"
+    
+    # ===========================================
     # Rate Limiting
+    # ===========================================
     RATE_LIMIT_REQUESTS: int = 100
     RATE_LIMIT_PERIOD: int = 60  # seconds
     
-    # CORS - stored as comma-separated string
+    # Auth rate limits (more restrictive)
+    AUTH_RATE_LIMIT_REQUESTS: int = 5
+    AUTH_RATE_LIMIT_PERIOD: int = 60  # seconds
+    
+    # ===========================================
+    # CORS
+    # ===========================================
     CORS_ORIGINS_STR: str = "http://localhost:3000,http://127.0.0.1:3000"
     
     @property
     def CORS_ORIGINS(self) -> List[str]:
         """Parse CORS_ORIGINS_STR into a list of origins."""
         return [origin.strip() for origin in self.CORS_ORIGINS_STR.split(',') if origin.strip()]
+    
+    # ===========================================
+    # Feature Flags
+    # ===========================================
+    FEATURE_AUTH_REQUIRED: bool = False  # If True, all routes require auth
+    FEATURE_DASHBOARD_ENABLED: bool = True
+    FEATURE_DOCUMENT_UPLOAD_ENABLED: bool = True
+    FEATURE_SHARING_ENABLED: bool = True
+    FEATURE_EMAIL_VERIFICATION_REQUIRED: bool = False  # Require email verification
+    
+    # ===========================================
+    # Computed Properties
+    # ===========================================
+    
+    @property
+    def is_production(self) -> bool:
+        """Check if running in production."""
+        return self.ENVIRONMENT == "production"
+    
+    @property
+    def allowed_file_types_list(self) -> List[str]:
+        """Parse allowed file types into a list."""
+        return [ft.strip().lower() for ft in self.ALLOWED_FILE_TYPES.split(',')]
+    
+    @property
+    def max_upload_size_bytes(self) -> int:
+        """Max upload size in bytes."""
+        return self.MAX_UPLOAD_SIZE_MB * 1024 * 1024
     
     class Config:
         env_file = ".env"
