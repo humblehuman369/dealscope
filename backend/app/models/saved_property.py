@@ -139,18 +139,17 @@ class SavedProperty(Base):
     user: Mapped["User"] = relationship("User", back_populates="saved_properties")
     documents: Mapped[List["Document"]] = relationship(
         "Document", 
-        back_populates="property",
+        back_populates="saved_property",
         cascade="all, delete-orphan"
     )
     adjustments_history: Mapped[List["PropertyAdjustment"]] = relationship(
         "PropertyAdjustment", 
-        back_populates="property",
+        back_populates="saved_property",
         cascade="all, delete-orphan",
         order_by="PropertyAdjustment.created_at.desc()"
     )
     
-    @property
-    def display_name(self) -> str:
+    def get_display_name(self) -> str:
         """Return nickname if set, otherwise street address."""
         return self.nickname or self.address_street
 
@@ -202,7 +201,7 @@ class PropertyAdjustment(Base):
     )
     
     # Relationships
-    property: Mapped["SavedProperty"] = relationship(
+    saved_property: Mapped["SavedProperty"] = relationship(
         "SavedProperty", 
         back_populates="adjustments_history"
     )

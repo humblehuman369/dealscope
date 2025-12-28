@@ -156,18 +156,16 @@ class Document(Base):
     
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="documents")
-    property: Mapped[Optional["SavedProperty"]] = relationship(
+    saved_property: Mapped[Optional["SavedProperty"]] = relationship(
         "SavedProperty", 
         back_populates="documents"
     )
     
-    @property
-    def display_name(self) -> str:
+    def get_display_name(self) -> str:
         """Return title if set, otherwise original filename."""
         return self.title or self.original_filename or self.filename
     
-    @property
-    def file_size_formatted(self) -> str:
+    def get_file_size_formatted(self) -> str:
         """Return human-readable file size."""
         if not self.file_size:
             return "Unknown"
