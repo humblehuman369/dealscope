@@ -13,11 +13,12 @@ export default function Header() {
   const { user, isAuthenticated, logout, setShowAuthModal } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  
-  // Hide header on home page (scanner) since it has its own header
-  if (pathname === '/') {
-    return null
-  }
+
+  // #region agent log
+  useEffect(() => {
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:render',message:'Header rendered',data:{pathname,isAuthenticated,hasUser:!!user,userEmail:user?.email,showUserMenu},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'AUTH_CHECK'})}).catch(()=>{});
+  }, [pathname, isAuthenticated, user, showUserMenu]);
+  // #endregion
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -30,6 +31,12 @@ export default function Header() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+  
+  // Hide header on home page (scanner) since it has its own header
+  // NOTE: This must be AFTER all hooks to follow React Rules of Hooks
+  if (pathname === '/') {
+    return null
+  }
 
   return (
     <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-50 transition-colors duration-300">
@@ -114,7 +121,12 @@ export default function Header() {
               /* User Menu */
               <div className="relative ml-2" ref={menuRef}>
                 <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  onClick={() => {
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:avatar_click',message:'Avatar button clicked',data:{showUserMenu,willBecome:!showUserMenu},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'CLICK'})}).catch(()=>{});
+                    // #endregion
+                    setShowUserMenu(!showUserMenu)
+                  }}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-semibold text-sm">
