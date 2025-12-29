@@ -11,8 +11,9 @@ import {
   BarChart3, LineChart, GitCompare, Activity, Wrench, ChevronRight, ChevronLeft,
   ArrowUpRight, ArrowDownRight, Sparkles, ChevronDown, ChevronUp,
   X, Layers, Calculator, Eye, EyeOff, SlidersHorizontal,
-  ArrowDown, Info, Minus, Plus, HelpCircle, ImageIcon
+  ArrowDown, Info, Minus, Plus, HelpCircle, ImageIcon, Bookmark, BookmarkCheck
 } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
 import { 
   ProjectionAssumptions,
   calculate10YearProjections
@@ -635,8 +636,58 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
 }
 
 function TopNav({ property }: { property: PropertyData }) {
+  const { user, isAuthenticated, setShowAuthModal } = useAuth()
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  
   // Get estimated market value (Zestimate or AVM)
   const estimatedValue = property.valuations.zestimate || property.valuations.current_value_avm || 0
+  
+  const handleSaveProperty = async () => {
+    if (!isAuthenticated) {
+      setShowAuthModal('login')
+      return
+    }
+    
+    setSaveStatus('saving')
+    
+    try {
+      const token = localStorage.getItem('access_token')
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+      
+      const response = await fetch(`${apiUrl}/api/v1/properties/saved`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          external_property_id: property.property_id,
+          zpid: property.zpid || null,
+          address_street: property.address.street,
+          address_city: property.address.city,
+          address_state: property.address.state,
+          address_zip: property.address.zip_code,
+          full_address: property.address.full_address,
+          property_data_snapshot: property,
+          status: 'watching'
+        }),
+      })
+      
+      if (response.ok) {
+        setSaveStatus('saved')
+      } else {
+        const error = await response.json()
+        console.error('Failed to save property:', error)
+        setSaveStatus('error')
+        // Reset after 3 seconds
+        setTimeout(() => setSaveStatus('idle'), 3000)
+      }
+    } catch (err) {
+      console.error('Failed to save property:', err)
+      setSaveStatus('error')
+      setTimeout(() => setSaveStatus('idle'), 3000)
+    }
+  }
   
   return (
     <div className="mb-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm dark:shadow-lg overflow-hidden transition-colors duration-300">
@@ -667,6 +718,44 @@ function TopNav({ property }: { property: PropertyData }) {
               </div>
             )}
           </div>
+          
+          {/* Save Property Button */}
+          <button
+            onClick={handleSaveProperty}
+            disabled={saveStatus === 'saving' || saveStatus === 'saved'}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex-shrink-0 ${
+              saveStatus === 'saved'
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 cursor-default'
+                : saveStatus === 'saving'
+                ? 'bg-gray-100 text-gray-400 dark:bg-slate-700 dark:text-gray-500 cursor-wait'
+                : saveStatus === 'error'
+                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
+                : 'bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/30 dark:text-teal-400 dark:hover:bg-teal-900/50'
+            }`}
+            title={saveStatus === 'saved' ? 'Property saved to dashboard' : 'Save property to your dashboard'}
+          >
+            {saveStatus === 'saving' ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="hidden sm:inline">Saving...</span>
+              </>
+            ) : saveStatus === 'saved' ? (
+              <>
+                <BookmarkCheck className="w-4 h-4" />
+                <span className="hidden sm:inline">Saved</span>
+              </>
+            ) : saveStatus === 'error' ? (
+              <>
+                <AlertTriangle className="w-4 h-4" />
+                <span className="hidden sm:inline">Retry</span>
+              </>
+            ) : (
+              <>
+                <Bookmark className="w-4 h-4" />
+                <span className="hidden sm:inline">Save</span>
+              </>
+            )}
+          </button>
         </div>
         
         {/* Right: Photo Strip - visible on md+ */}
