@@ -4,9 +4,12 @@ import { useState, useEffect } from 'react'
 import { X, Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+
 export default function AuthModal() {
   const { showAuthModal, setShowAuthModal, login, register, isLoading } = useAuth()
   const [isLogin, setIsLogin] = useState(true)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -14,6 +17,7 @@ export default function AuthModal() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [isSendingReset, setIsSendingReset] = useState(false)
 
   // Sync modal type with context
   useEffect(() => {
@@ -29,7 +33,42 @@ export default function AuthModal() {
     setConfirmPassword('')
     setError('')
     setSuccess('')
+    setShowForgotPassword(false)
   }, [showAuthModal])
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setSuccess('')
+
+    if (!email) {
+      setError('Please enter your email address')
+      return
+    }
+
+    setIsSendingReset(true)
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      if (response.ok) {
+        setSuccess('If an account exists with that email, a reset link has been sent. Please check your inbox.')
+        setEmail('')
+      } else {
+        const errorData = await response.json()
+        setError(errorData.detail || 'Failed to send reset email')
+      }
+    } catch (err) {
+      setError('Network error. Please try again.')
+    } finally {
+      setIsSendingReset(false)
+    }
+  }
 
   if (!showAuthModal) return null
 
@@ -89,6 +128,7 @@ export default function AuthModal() {
     setIsLogin(!isLogin)
     setError('')
     setSuccess('')
+    setShowForgotPassword(false)
   }
 
   return (
@@ -110,16 +150,84 @@ export default function AuthModal() {
             <X className="w-5 h-5" />
           </button>
           <h2 className="text-2xl font-bold">
-            {isLogin ? 'Welcome Back!' : 'Create Account'}
+            {showForgotPassword ? 'Reset Password' : isLogin ? 'Welcome Back!' : 'Create Account'}
           </h2>
           <p className="text-teal-100 mt-1">
-            {isLogin 
-              ? 'Sign in to access your investment portfolio' 
-              : 'Start analyzing real estate investments today'}
+            {showForgotPassword 
+              ? 'Enter your email to receive a reset link'
+              : isLogin 
+                ? 'Sign in to access your investment portfolio' 
+                : 'Start analyzing real estate investments today'}
           </p>
         </div>
 
         {/* Form */}
+        {showForgotPassword ? (
+          /* Forgot Password Form */
+          <form onSubmit={handleForgotPassword} className="p-6 space-y-4">
+            {/* Error Message */}
+            {error && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {error}
+              </div>
+            )}
+
+            {/* Success Message */}
+            {success && (
+              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-400 text-sm">
+                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                {success}
+              </div>
+            )}
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSendingReset}
+              className="w-full py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-cyan-700 focus:ring-4 focus:ring-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            >
+              {isSendingReset ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                'Send Reset Link'
+              )}
+            </button>
+
+            {/* Back to Login */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowForgotPassword(false)
+                setError('')
+                setSuccess('')
+              }}
+              className="w-full text-center text-sm text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400"
+            >
+              ← Back to Sign In
+            </button>
+          </form>
+        ) : (
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Error Message */}
           {error && (
@@ -238,9 +346,14 @@ export default function AuthModal() {
           </button>
 
           {/* Forgot Password (Login only) */}
-          {isLogin && (
+          {isLogin && !showForgotPassword && (
             <button
               type="button"
+              onClick={() => {
+                setShowForgotPassword(true)
+                setError('')
+                setSuccess('')
+              }}
               className="w-full text-center text-sm text-teal-600 dark:text-teal-400 hover:underline"
             >
               Forgot your password?
@@ -274,6 +387,7 @@ export default function AuthModal() {
             )}
           </div>
         </form>
+        )}
       </div>
     </div>
   )
