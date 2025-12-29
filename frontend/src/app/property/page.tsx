@@ -89,7 +89,7 @@ type DrillDownView = 'details' | 'charts' | 'projections' | 'score' | 'sensitivi
 // ============================================
 
 async function fetchProperty(address: string): Promise<PropertyData> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
   // #region agent log
   console.log('[DEBUG-A,C] fetchProperty entry:', { address, apiUrl, fullUrl: `${apiUrl}/api/v1/properties/search` })
   // #endregion

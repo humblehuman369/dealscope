@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Backend API URL - defaults to localhost for development
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
+// Backend API URL - defaults to production Railway URL
+const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.railway.app'
 
 export async function POST(request: NextRequest) {
   try {
