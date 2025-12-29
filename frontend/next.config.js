@@ -33,7 +33,7 @@ const nextConfig = {
               // Styles: self + unsafe-inline for Tailwind CSS and inline styles
               "style-src 'self' 'unsafe-inline'",
               // Connections: self + HTTPS for API calls + localhost for dev
-              "connect-src 'self' https: wss: http://localhost:* ws://localhost:*",
+              "connect-src 'self' https: wss: http://localhost:* ws://localhost:* http://127.0.0.1:*",
               // Images: allow any source for property photos
               "img-src * data: blob:",
               // Fonts: self + data URIs
