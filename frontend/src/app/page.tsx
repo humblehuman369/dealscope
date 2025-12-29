@@ -592,14 +592,9 @@ function DesktopScannerView({
   
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    // #region agent log
-    const targetUrl = `/property?address=${encodeURIComponent(searchAddress)}`;
-    console.log('[DEBUG handleSearch]', { searchAddress, targetUrl });
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:handleSearch',message:'Search button clicked',data:{searchAddress,targetUrl},timestamp:Date.now(),sessionId:'debug-session'})}).catch(()=>{});
-    // #endregion
     if (searchAddress.trim()) {
       setIsNavigating(true);
-      window.location.href = targetUrl;
+      window.location.href = `/property?address=${encodeURIComponent(searchAddress)}`;
     }
   };
 
@@ -620,11 +615,6 @@ function DesktopScannerView({
         ? 'bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950' 
         : 'bg-gradient-to-b from-slate-50 via-white to-teal-50/30'
     }`}>
-      {/* #region agent log - DEBUG BANNER */}
-      <div className="bg-red-500 text-white text-center py-4 text-lg font-bold animate-pulse">
-        🔴 DEBUG MODE - LOCAL BUILD v3 - {typeof window !== 'undefined' ? window.location.host : 'SSR'} 🔴
-      </div>
-      {/* #endregion */}
       {/* Theme Toggle Header */}
       <header className={`sticky top-0 z-50 backdrop-blur-md border-b transition-colors duration-300 ${
         isDark 
