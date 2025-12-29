@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Settings, ScanLine, Search, Sun, Moon, User, LogOut, ChevronDown } from 'lucide-react'
+import { Bell, Settings, ScanLine, Search, Sun, Moon, User, LogOut, ChevronDown, LayoutDashboard } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
@@ -72,7 +72,7 @@ export default function Header() {
                   pathname?.startsWith('/property') ? 'text-teal-600 dark:text-teal-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
-                Dashboard
+                Property Analytics
               </Link>
               <Link 
                 href="/photos" 
@@ -82,6 +82,17 @@ export default function Header() {
               >
                 Photos
               </Link>
+              {isAuthenticated && (
+                <Link 
+                  href="/dashboard" 
+                  className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                    pathname === '/dashboard' ? 'text-teal-600 dark:text-teal-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </Link>
+              )}
             </nav>
           </div>
 
@@ -146,25 +157,22 @@ export default function Header() {
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
                     </div>
                     <Link
+                      href="/dashboard"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Dashboard
+                    </Link>
+                    <Link
                       href="/profile"
                       className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
                       onClick={() => {
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:137',message:'Profile link clicked',data:{href:'/profile',pathname:window.location.pathname,user:user?.email},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
-                        // #endregion
                         setShowUserMenu(false)
                       }}
                     >
                       <User className="w-4 h-4" />
                       Your Profile
-                    </Link>
-                    <Link
-                      href="/saved"
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <Settings className="w-4 h-4" />
-                      Saved Properties
                     </Link>
                     <button
                       onClick={() => {

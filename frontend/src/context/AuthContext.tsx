@@ -13,6 +13,7 @@ interface User {
   avatar_url?: string
   is_active: boolean
   is_verified: boolean
+  is_superuser: boolean
   created_at: string
   last_login?: string
   has_profile: boolean

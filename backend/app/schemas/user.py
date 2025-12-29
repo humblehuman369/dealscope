@@ -52,6 +52,7 @@ class UserResponse(BaseModel):
     avatar_url: Optional[str]
     is_active: bool
     is_verified: bool
+    is_superuser: bool = False
     created_at: datetime
     last_login: Optional[datetime]
     
