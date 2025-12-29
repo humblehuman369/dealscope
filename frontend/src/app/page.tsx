@@ -23,9 +23,12 @@ import {
   Sparkles,
   Sun,
   Moon,
-  X
+  X,
+  User,
+  LogOut
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { useAuth } from '@/context/AuthContext';
 import { usePropertyScan, ScanResult } from '@/hooks/usePropertyScan';
 import { DistanceSlider } from '@/components/scanner/DistanceSlider';
 import { ScanTarget } from '@/components/scanner/ScanTarget';
@@ -246,6 +249,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   const [manualHeading, setManualHeading] = useState<number | null>(null);
   
   const scanner = usePropertyScan();
+  const { user, isAuthenticated, logout, setShowAuthModal } = useAuth();
 
   // Initialize camera
   useEffect(() => {
@@ -373,6 +377,22 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
                 <MapPin className="w-3 h-3 text-teal-400" />
                 <span className="text-white text-xs">GPS Active</span>
               </div>
+            )}
+            {isAuthenticated && user ? (
+              <button
+                onClick={logout}
+                className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full"
+              >
+                <User className="w-3 h-3 text-white" />
+                <span className="text-white text-xs">{user.full_name?.split(' ')[0]}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowAuthModal('login')}
+                className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full"
+              >
+                <span className="text-white text-xs font-medium">Sign In</span>
+              </button>
             )}
             <button
               onClick={onSwitchMode}
@@ -549,6 +569,7 @@ function DesktopScannerView({
 }) {
   const router = useRouter();
   const { theme, toggleTheme, mounted } = useTheme();
+  const { user, isAuthenticated, logout, setShowAuthModal } = useAuth();
   const [searchAddress, setSearchAddress] = useState('');
   const [nearbyProperties, setNearbyProperties] = useState<ScanResult['property'][]>([]);
   const [isLoadingNearby, setIsLoadingNearby] = useState(false);
@@ -630,34 +651,81 @@ function DesktopScannerView({
             <span className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>InvestIQ</span>
           </div>
           
-          {/* Theme Toggle Switch */}
-          <button
-            onClick={toggleTheme}
-            className={`relative inline-flex items-center justify-center p-2 rounded-xl transition-colors duration-200 ${
-              isDark 
-                ? 'bg-slate-800 hover:bg-slate-700' 
-                : 'bg-gray-100 hover:bg-gray-200'
-            }`}
-            aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-          >
-            <div className={`relative w-14 h-7 rounded-full transition-colors duration-300 ${
-              isDark ? 'bg-slate-600' : 'bg-gray-300'
-            }`}>
-              <div 
-                className={`absolute top-0.5 w-6 h-6 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
-                  isDark 
-                    ? 'left-[30px] bg-indigo-500' 
-                    : 'left-0.5 bg-amber-400'
-                }`}
-              >
-                {isDark ? (
-                  <Moon className="w-3.5 h-3.5 text-white" />
-                ) : (
-                  <Sun className="w-3.5 h-3.5 text-white" />
-                )}
+          <div className="flex items-center gap-3">
+            {/* Theme Toggle Switch */}
+            <button
+              onClick={toggleTheme}
+              className={`relative inline-flex items-center justify-center p-2 rounded-xl transition-colors duration-200 ${
+                isDark 
+                  ? 'bg-slate-800 hover:bg-slate-700' 
+                  : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+              aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+            >
+              <div className={`relative w-14 h-7 rounded-full transition-colors duration-300 ${
+                isDark ? 'bg-slate-600' : 'bg-gray-300'
+              }`}>
+                <div 
+                  className={`absolute top-0.5 w-6 h-6 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
+                    isDark 
+                      ? 'left-[30px] bg-indigo-500' 
+                      : 'left-0.5 bg-amber-400'
+                  }`}
+                >
+                  {isDark ? (
+                    <Moon className="w-3.5 h-3.5 text-white" />
+                  ) : (
+                    <Sun className="w-3.5 h-3.5 text-white" />
+                  )}
+                </div>
               </div>
-            </div>
-          </button>
+            </button>
+            
+            {/* Auth Buttons */}
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-2">
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
+                  isDark ? 'bg-slate-800' : 'bg-gray-100'
+                }`}>
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-semibold text-xs">
+                    {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
+                  </div>
+                  <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-700'}`}>
+                    {user.full_name?.split(' ')[0] || 'User'}
+                  </span>
+                </div>
+                <button
+                  onClick={logout}
+                  className={`p-2 rounded-lg transition-colors ${
+                    isDark 
+                      ? 'text-gray-400 hover:text-white hover:bg-slate-800' 
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowAuthModal('login')}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                    isDark 
+                      ? 'text-gray-300 hover:text-white hover:bg-slate-800' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => setShowAuthModal('register')}
+                  className="px-4 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-cyan-600 rounded-lg hover:from-teal-600 hover:to-cyan-700 transition-all"
+                >
+                  Get Started
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
