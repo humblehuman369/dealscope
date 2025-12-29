@@ -136,7 +136,12 @@ export default function Header() {
                     <Link
                       href="/profile"
                       className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
-                      onClick={() => setShowUserMenu(false)}
+                      onClick={() => {
+                        // #region agent log
+                        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:137',message:'Profile link clicked',data:{href:'/profile',pathname:window.location.pathname,user:user?.email},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+                        // #endregion
+                        setShowUserMenu(false)
+                      }}
                     >
                       <User className="w-4 h-4" />
                       Your Profile
