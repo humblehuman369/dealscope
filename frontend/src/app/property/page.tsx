@@ -3042,6 +3042,13 @@ function PropertyPageContent() {
   const addressParam = searchParams.get('address')
   const { setCurrentPropertyInfo } = usePropertyStore()
   
+  // #region agent log - COMPONENT MOUNT
+  useEffect(() => {
+    console.log('[DEBUG PropertyPageContent MOUNT]', { addressParam, url: window.location.href })
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PropertyPageContent:MOUNT',message:'Component mounted',data:{addressParam,url:typeof window!=='undefined'?window.location.href:'server'},timestamp:Date.now(),sessionId:'debug-session'})}).catch(()=>{});
+  }, [addressParam])
+  // #endregion
+  
   const [property, setProperty] = useState<PropertyData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -3389,6 +3396,12 @@ function PropertyPageContent() {
 }
 
 export default function PropertyPage() {
+  // #region agent log - PAGE RENDER
+  if (typeof window !== 'undefined') {
+    console.log('[DEBUG PropertyPage RENDER]', { url: window.location.href })
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PropertyPage:RENDER',message:'Page component rendered',data:{url:window.location.href},timestamp:Date.now(),sessionId:'debug-session'})}).catch(()=>{});
+  }
+  // #endregion
   return (
     <Suspense fallback={<div className="min-h-screen bg-[#e8eeef] dark:bg-slate-950 flex items-center justify-center transition-colors duration-300"><Loader2 className="w-8 h-8 text-gray-400 dark:text-gray-500 animate-spin" /></div>}>
       <PropertyPageContent />

@@ -592,9 +592,14 @@ function DesktopScannerView({
   
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    // #region agent log
+    const targetUrl = `/property?address=${encodeURIComponent(searchAddress)}`;
+    console.log('[DEBUG handleSearch]', { searchAddress, targetUrl });
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'page.tsx:handleSearch',message:'Search button clicked',data:{searchAddress,targetUrl},timestamp:Date.now(),sessionId:'debug-session'})}).catch(()=>{});
+    // #endregion
     if (searchAddress.trim()) {
       setIsNavigating(true);
-      window.location.href = `/property?address=${encodeURIComponent(searchAddress)}`;
+      window.location.href = targetUrl;
     }
   };
 
@@ -615,6 +620,11 @@ function DesktopScannerView({
         ? 'bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950' 
         : 'bg-gradient-to-b from-slate-50 via-white to-teal-50/30'
     }`}>
+      {/* #region agent log - DEBUG BANNER */}
+      <div className="bg-yellow-400 text-black text-center py-2 text-sm font-bold">
+        DEBUG: You are on {typeof window !== 'undefined' ? window.location.host : 'server'} (v2)
+      </div>
+      {/* #endregion */}
       {/* Theme Toggle Header */}
       <header className={`sticky top-0 z-50 backdrop-blur-md border-b transition-colors duration-300 ${
         isDark 
