@@ -621,8 +621,8 @@ function DesktopScannerView({
         : 'bg-gradient-to-b from-slate-50 via-white to-teal-50/30'
     }`}>
       {/* #region agent log - DEBUG BANNER */}
-      <div className="bg-yellow-400 text-black text-center py-2 text-sm font-bold">
-        DEBUG: You are on {typeof window !== 'undefined' ? window.location.host : 'server'} (v2)
+      <div className="bg-red-500 text-white text-center py-4 text-lg font-bold animate-pulse">
+        🔴 DEBUG MODE - LOCAL BUILD v3 - {typeof window !== 'undefined' ? window.location.host : 'SSR'} 🔴
       </div>
       {/* #endregion */}
       {/* Theme Toggle Header */}
