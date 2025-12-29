@@ -89,29 +89,12 @@ type DrillDownView = 'details' | 'charts' | 'projections' | 'score' | 'sensitivi
 
 async function fetchProperty(address: string): Promise<PropertyData> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-  const fetchUrl = `${apiUrl}/api/v1/properties/search`
-  // #region agent log
-  console.log('[DEBUG fetchProperty]', { address, apiUrl, fetchUrl, timestamp: new Date().toISOString() })
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'fetchProperty:ENTRY',message:'fetchProperty called',data:{address,apiUrl,fetchUrl},timestamp:Date.now(),sessionId:'debug-session'})}).catch(()=>{});
-  // #endregion
-  try {
-    const response = await fetch(fetchUrl, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address })
-    })
-    // #region agent log
-    console.log('[DEBUG fetchProperty response]', { status: response.status, ok: response.ok })
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'fetchProperty:RESPONSE',message:'Response received',data:{status:response.status,ok:response.ok},timestamp:Date.now(),sessionId:'debug-session'})}).catch(()=>{});
-    // #endregion
-    if (!response.ok) throw new Error('Property not found')
-    return response.json()
-  } catch (err) {
-    // #region agent log
-    console.error('[DEBUG fetchProperty ERROR]', err)
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'fetchProperty:ERROR',message:'Exception caught',data:{error:String(err)},timestamp:Date.now(),sessionId:'debug-session'})}).catch(()=>{});
-    // #endregion
-    throw err
-  }
+  const response = await fetch(`${apiUrl}/api/v1/properties/search`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ address })
+  })
+  if (!response.ok) throw new Error('Property not found')
+  return response.json()
 }
 
 // ============================================
@@ -3042,13 +3025,6 @@ function PropertyPageContent() {
   const addressParam = searchParams.get('address')
   const { setCurrentPropertyInfo } = usePropertyStore()
   
-  // #region agent log - COMPONENT MOUNT
-  useEffect(() => {
-    console.log('[DEBUG PropertyPageContent MOUNT]', { addressParam, url: window.location.href })
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PropertyPageContent:MOUNT',message:'Component mounted',data:{addressParam,url:typeof window!=='undefined'?window.location.href:'server'},timestamp:Date.now(),sessionId:'debug-session'})}).catch(()=>{});
-  }, [addressParam])
-  // #endregion
-  
   const [property, setProperty] = useState<PropertyData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -3396,12 +3372,6 @@ function PropertyPageContent() {
 }
 
 export default function PropertyPage() {
-  // #region agent log - PAGE RENDER
-  if (typeof window !== 'undefined') {
-    console.log('[DEBUG PropertyPage RENDER]', { url: window.location.href })
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PropertyPage:RENDER',message:'Page component rendered',data:{url:window.location.href},timestamp:Date.now(),sessionId:'debug-session'})}).catch(()=>{});
-  }
-  // #endregion
   return (
     <Suspense fallback={<div className="min-h-screen bg-[#e8eeef] dark:bg-slate-950 flex items-center justify-center transition-colors duration-300"><Loader2 className="w-8 h-8 text-gray-400 dark:text-gray-500 animate-spin" /></div>}>
       <PropertyPageContent />
