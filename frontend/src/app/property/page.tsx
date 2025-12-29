@@ -91,7 +91,7 @@ type DrillDownView = 'details' | 'charts' | 'projections' | 'score' | 'sensitivi
 async function fetchProperty(address: string): Promise<PropertyData> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:fetchProperty:entry',message:'fetchProperty called',data:{address,apiUrl,fullUrl:`${apiUrl}/api/v1/properties/search`},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,C'})}).catch(()=>{});
+  console.log('[DEBUG-A,C] fetchProperty entry:', { address, apiUrl, fullUrl: `${apiUrl}/api/v1/properties/search` })
   // #endregion
   try {
     const response = await fetch(`${apiUrl}/api/v1/properties/search`, {
@@ -99,23 +99,23 @@ async function fetchProperty(address: string): Promise<PropertyData> {
       body: JSON.stringify({ address })
     })
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:fetchProperty:response',message:'fetch response received',data:{status:response.status,ok:response.ok,statusText:response.statusText},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,D'})}).catch(()=>{});
+    console.log('[DEBUG-B,D] fetchProperty response:', { status: response.status, ok: response.ok, statusText: response.statusText })
     // #endregion
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Could not read response');
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:fetchProperty:not-ok',message:'Response not ok',data:{status:response.status,errorText},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+      console.log('[DEBUG-B] fetchProperty not ok:', { status: response.status, errorText })
       // #endregion
       throw new Error('Property not found')
     }
     const data = await response.json()
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:fetchProperty:success',message:'Property data received',data:{propertyId:data?.property_id,hasAddress:!!data?.address},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
+    console.log('[DEBUG-E] fetchProperty success:', { propertyId: data?.property_id, hasAddress: !!data?.address })
     // #endregion
     return data
   } catch (err) {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:fetchProperty:catch',message:'Fetch error caught',data:{errorMessage:err instanceof Error ? err.message : String(err),errorName:err instanceof Error ? err.name : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
+    console.log('[DEBUG-D] fetchProperty catch:', { errorMessage: err instanceof Error ? err.message : String(err), errorName: err instanceof Error ? err.name : 'Unknown' })
     // #endregion
     throw err
   }
@@ -3167,7 +3167,7 @@ function PropertyPageContent() {
   useEffect(() => {
     async function loadProperty() {
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:loadProperty:start',message:'loadProperty started',data:{addressParam,decodedAddress:addressParam?decodeURIComponent(addressParam):null},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+      console.log('[DEBUG-A] loadProperty start:', { addressParam, decodedAddress: addressParam ? decodeURIComponent(addressParam) : null })
       // #endregion
       setLoading(true)
       try {
@@ -3255,7 +3255,7 @@ function PropertyPageContent() {
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Failed to load property'
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'property/page.tsx:loadProperty:catch',message:'loadProperty error caught',data:{errorMsg,errorName:err instanceof Error?err.name:'Unknown',addressParam},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
+        console.log('[DEBUG-ALL] loadProperty catch:', { errorMsg, errorName: err instanceof Error ? err.name : 'Unknown', addressParam })
         // #endregion
         setError(errorMsg)
       } finally {
