@@ -123,7 +123,7 @@ class Settings(BaseSettings):
     # ===========================================
     # CORS
     # ===========================================
-    CORS_ORIGINS_STR: str = "http://localhost:3000,http://127.0.0.1:3000"
+    CORS_ORIGINS_STR: str = "https://investiq.guru,https://www.investiq.guru,http://localhost:3000,http://127.0.0.1:3000"
     
     @property
     def CORS_ORIGINS(self) -> List[str]:
