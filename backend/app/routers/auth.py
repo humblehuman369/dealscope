@@ -280,6 +280,7 @@ async def get_me(current_user: CurrentUser):
         avatar_url=current_user.avatar_url,
         is_active=current_user.is_active,
         is_verified=current_user.is_verified,
+        is_superuser=current_user.is_superuser,
         created_at=current_user.created_at,
         last_login=current_user.last_login,
         has_profile=has_profile,

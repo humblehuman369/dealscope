@@ -57,13 +57,15 @@ except Exception as e:
 auth_router = None
 users_router = None
 saved_properties_router = None
+admin_router = None
 try:
     print(">>> Attempting to load auth routers...", flush=True)
     from app.routers.auth import router as auth_router
     from app.routers.users import router as users_router
     from app.routers.saved_properties import router as saved_properties_router
+    from app.routers.admin import router as admin_router
     print(">>> Auth routers loaded successfully!", flush=True)
-    logger.info("Auth and saved properties routers loaded successfully")
+    logger.info("Auth, saved properties, and admin routers loaded successfully")
 except Exception as e:
     import traceback
     print(f">>> AUTH ROUTER ERROR: {e}", flush=True)
@@ -162,6 +164,9 @@ if users_router is not None:
 if saved_properties_router is not None:
     app.include_router(saved_properties_router)
     logger.info("Saved properties router included")
+if admin_router is not None:
+    app.include_router(admin_router)
+    logger.info("Admin router included")
 
 
 # ============================================
