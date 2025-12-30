@@ -469,6 +469,98 @@ async def change_password(
 # ===========================================
 
 @router.get(
+    "/debug/config",
+    summary="Check database configuration (no connection)"
+)
+async def debug_config():
+    """
+    Show database configuration without actually connecting.
+    This helps debug connection issues.
+    """
+    import os
+    from app.core.config import settings
+    
+    db_url = os.environ.get("DATABASE_URL", "NOT SET")
+    
+    # Mask password for security
+    if db_url and "@" in db_url and db_url != "NOT SET":
+        # Format: postgres://user:pass@host:port/db
+        try:
+            proto_user = db_url.split("@")[0]  # postgres://user:pass
+            host_db = db_url.split("@")[1]      # host:port/db
+            proto = proto_user.split("://")[0]  # postgres
+            masked_url = f"{proto}://***:***@{host_db}"
+        except:
+            masked_url = "PARSE_ERROR"
+    else:
+        masked_url = db_url
+    
+    return {
+        "database_url_set": db_url != "NOT SET",
+        "database_url_masked": masked_url,
+        "is_private_railway": "railway.internal" in db_url,
+        "is_public_railway": "up.railway.app" in db_url or "proxy.rlwy.net" in db_url,
+        "async_url": settings.async_database_url.split("@")[0].split("://")[0] + "://***@" + settings.async_database_url.split("@")[-1] if "@" in settings.async_database_url else "PARSE_ERROR",
+        "environment": settings.ENVIRONMENT,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+@router.get(
+    "/debug/test-connection",
+    summary="Test database connection with full error details"
+)
+async def test_connection_manual():
+    """
+    Manually test database connection without using FastAPI dependency.
+    Returns full error details if connection fails.
+    """
+    import traceback
+    from app.core.config import settings
+    
+    result = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "steps": {}
+    }
+    
+    try:
+        # Step 1: Check settings
+        result["steps"]["1_settings"] = "checking..."
+        db_url = settings.async_database_url
+        result["steps"]["1_settings"] = f"OK - driver: {db_url.split('://')[0] if '://' in db_url else 'unknown'}"
+        
+        # Step 2: Import psycopg
+        result["steps"]["2_import"] = "importing psycopg..."
+        import psycopg
+        result["steps"]["2_import"] = f"OK - psycopg version: {psycopg.__version__}"
+        
+        # Step 3: Try async connection
+        result["steps"]["3_connect"] = "connecting..."
+        
+        # Get raw DATABASE_URL (not the async version)
+        import os
+        raw_url = os.environ.get("DATABASE_URL", settings.DATABASE_URL)
+        
+        # psycopg async connection test
+        async with await psycopg.AsyncConnection.connect(raw_url) as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("SELECT 1")
+                row = await cur.fetchone()
+                result["steps"]["3_connect"] = f"OK - test query returned: {row}"
+        
+        result["status"] = "SUCCESS"
+        result["message"] = "Database connection works!"
+        
+    except Exception as e:
+        result["status"] = "FAILED"
+        result["error"] = str(e)
+        result["error_type"] = type(e).__name__
+        result["traceback"] = traceback.format_exc()
+    
+    return result
+
+
+@router.get(
     "/debug/test-db",
     summary="Test database connectivity"
 )
