@@ -4,11 +4,12 @@ Supports async migrations with SQLAlchemy 2.0.
 """
 
 import asyncio
+import ssl
 from logging.config import fileConfig
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import context
 
@@ -24,6 +25,17 @@ config = context.config
 
 # Set the database URL from settings (auto-converts to asyncpg format)
 config.set_main_option("sqlalchemy.url", settings.async_database_url)
+
+# Configure SSL for Railway/production connections
+def get_connect_args():
+    """Get connection arguments including SSL for Railway."""
+    connect_args = {}
+    if settings.is_production or "railway" in settings.DATABASE_URL.lower():
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        connect_args["ssl"] = ssl_context
+    return connect_args
 
 # Interpret the config file for Python logging
 if config.config_file_name is not None:
