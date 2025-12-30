@@ -55,7 +55,8 @@ async def register(
     Returns the created user. If email verification is enabled,
     a verification email will be sent.
     """
-    logger.info(f"Registration attempt for email: {data.email}")
+    logger.info(f"[API] Registration attempt for email: {data.email}")
+    
     try:
         user, verification_token = await auth_service.register_user(
             db=db,
@@ -63,40 +64,48 @@ async def register(
             password=data.password,
             full_name=data.full_name
         )
-        logger.info(f"User registered successfully: {user.email}")
+        logger.info(f"[API] User registered successfully: {user.email} (id: {user.id})")
         
         # TODO: Send verification email if token exists
         if verification_token:
-            logger.info(f"Verification token generated for {data.email}")
+            logger.info(f"[API] Verification token generated for {data.email}")
             # await email_service.send_verification_email(user.email, verification_token)
         
-        # Note: New users don't have a profile yet, so we don't need to check it
-        return UserResponse(
+        # Build response with all required fields
+        # Note: We just created the profile in register_user, so it exists
+        # Avoid lazy loading by checking if profile was created (it was)
+        response = UserResponse(
             id=str(user.id),
             email=user.email,
             full_name=user.full_name,
             avatar_url=user.avatar_url,
             is_active=user.is_active,
             is_verified=user.is_verified,
+            is_superuser=user.is_superuser,
             created_at=user.created_at,
             last_login=user.last_login,
-            has_profile=False,  # New users don't have profiles yet
+            has_profile=True,  # Profile is created during registration
             onboarding_completed=False
         )
+        logger.debug(f"[API] Returning response for user: {user.email}")
+        return response
         
     except ValueError as e:
-        logger.warning(f"Registration validation error: {e}")
+        error_msg = str(e)
+        logger.warning(f"[API] Registration validation error: {error_msg}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
+            detail=error_msg
         )
     except Exception as e:
-        logger.error(f"Registration failed with error: {e}")
         import traceback
-        logger.error(f"Traceback: {traceback.format_exc()}")
+        error_msg = str(e)
+        tb = traceback.format_exc()
+        logger.error(f"[API] Registration failed with error: {error_msg}")
+        logger.error(f"[API] Traceback: {tb}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Registration failed. Please try again."
+            detail=f"Registration failed: {error_msg}"
         )
 
 
@@ -453,4 +462,157 @@ async def change_password(
         message="Password changed successfully",
         success=True
     )
+
+
+# ===========================================
+# Debug Endpoints (for troubleshooting)
+# ===========================================
+
+@router.get(
+    "/debug/test-db",
+    summary="Test database connectivity"
+)
+async def test_database(db: DbSession):
+    """
+    Test database connectivity by running a simple query.
+    Returns database connection status and version info.
+    """
+    from sqlalchemy import text
+    
+    try:
+        # Test basic connectivity
+        result = await db.execute(text("SELECT 1 as test"))
+        row = result.fetchone()
+        
+        # Get PostgreSQL version
+        version_result = await db.execute(text("SELECT version()"))
+        version_row = version_result.fetchone()
+        
+        # Count users table
+        from app.models.user import User
+        from sqlalchemy import select, func
+        user_count = await db.execute(select(func.count()).select_from(User))
+        count = user_count.scalar()
+        
+        return {
+            "status": "connected",
+            "test_query": row[0] if row else None,
+            "db_version": version_row[0] if version_row else None,
+            "user_count": count,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Database test failed: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+
+@router.get(
+    "/debug/test-hash",
+    summary="Test password hashing"
+)
+async def test_hash():
+    """
+    Test password hashing functionality.
+    Returns hash and verification results.
+    """
+    try:
+        test_password = "TestPassword123"
+        
+        # Test hashing
+        hashed = auth_service.get_password_hash(test_password)
+        
+        # Test verification
+        verified = auth_service.verify_password(test_password, hashed)
+        wrong_verified = auth_service.verify_password("wrongpassword", hashed)
+        
+        return {
+            "status": "success",
+            "hash_length": len(hashed),
+            "hash_prefix": hashed[:20] + "...",
+            "verification_correct": verified,
+            "verification_wrong": wrong_verified,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        import traceback
+        logger.error(f"Hash test failed: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc(),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+
+@router.post(
+    "/debug/test-register",
+    summary="Test registration flow step by step"
+)
+async def test_register_flow(db: DbSession):
+    """
+    Test the registration flow step by step.
+    Creates a test user (deleted immediately after).
+    """
+    import uuid
+    from sqlalchemy import text
+    
+    test_email = f"test_{uuid.uuid4().hex[:8]}@test.local"
+    results = {
+        "test_email": test_email,
+        "steps": {},
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    
+    try:
+        # Step 1: Test DB connection
+        results["steps"]["1_db_connection"] = "testing..."
+        await db.execute(text("SELECT 1"))
+        results["steps"]["1_db_connection"] = "success"
+        
+        # Step 2: Test password hashing
+        results["steps"]["2_password_hash"] = "testing..."
+        hashed = auth_service.get_password_hash("TestPassword123")
+        results["steps"]["2_password_hash"] = f"success (len={len(hashed)})"
+        
+        # Step 3: Test user creation
+        results["steps"]["3_user_create"] = "testing..."
+        from app.models.user import User
+        user = User(
+            email=test_email,
+            hashed_password=hashed,
+            full_name="Test User",
+            is_active=True,
+            is_verified=True,
+        )
+        db.add(user)
+        await db.flush()
+        results["steps"]["3_user_create"] = f"success (id={user.id})"
+        
+        # Step 4: Test profile creation
+        results["steps"]["4_profile_create"] = "testing..."
+        from app.models.user import UserProfile
+        profile = UserProfile(user_id=user.id)
+        db.add(profile)
+        await db.flush()
+        results["steps"]["4_profile_create"] = f"success (id={profile.id})"
+        
+        # Step 5: Rollback (don't keep test data)
+        results["steps"]["5_cleanup"] = "rolling back..."
+        await db.rollback()
+        results["steps"]["5_cleanup"] = "rolled back (no test data saved)"
+        
+        results["overall"] = "ALL STEPS PASSED"
+        
+    except Exception as e:
+        import traceback
+        results["error"] = str(e)
+        results["traceback"] = traceback.format_exc()
+        results["overall"] = "FAILED"
+        await db.rollback()
+    
+    return results
 
