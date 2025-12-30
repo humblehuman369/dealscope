@@ -22,8 +22,8 @@ python-dotenv==1.0.0
 sqlalchemy[asyncio]==2.0.25
 alembic==1.13.1
 # Using psycopg3 instead of asyncpg - better SSL/connection handling
-# Using psycopg with pool extra for async support
-psycopg[pool]==3.1.18
+# binary = bundled libpq, pool = async connection pooling
+psycopg[binary,pool]==3.1.18
 
 # ===========================================
 # NEW: Authentication & Security
