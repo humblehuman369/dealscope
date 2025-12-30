@@ -24,21 +24,16 @@ def get_engine() -> AsyncEngine:
     if _engine is None:
         logger.info(f"Creating database engine...")
         
-        # Get the database URL and ensure SSL for Railway
         db_url = settings.async_database_url
+        connect_args = {}
         
-        # For Railway/production: add sslmode to URL if not present
-        # Railway internal connections may not need SSL, but external do
-        is_railway = "railway" in settings.DATABASE_URL.lower()
-        is_external = "proxy.rlwy.net" in settings.DATABASE_URL or "railway.app" in settings.DATABASE_URL
-        
-        if is_railway and is_external and "sslmode" not in db_url:
-            # Add sslmode=require for external Railway connections
-            separator = "&" if "?" in db_url else "?"
-            db_url = f"{db_url}{separator}sslmode=require"
-            logger.info("SSL mode added for external Railway connection")
-        elif is_railway:
-            logger.info("Railway internal connection (SSL handled by network)")
+        # For Railway: always use SSL with asyncpg's native handling
+        # asyncpg expects ssl=True or ssl='require', not URL-based sslmode
+        is_railway = "railway" in (settings.DATABASE_URL or "").lower()
+        if is_railway or settings.is_production:
+            # Use asyncpg's native SSL - 'prefer' tries SSL first, falls back to non-SSL
+            connect_args["ssl"] = "prefer"
+            logger.info("SSL mode: prefer (asyncpg native)")
         
         _engine = create_async_engine(
             db_url,
@@ -46,6 +41,7 @@ def get_engine() -> AsyncEngine:
             pool_pre_ping=True,
             # Use NullPool for Railway/serverless to avoid connection pool issues
             poolclass=NullPool,
+            connect_args=connect_args,
         )
         logger.info("Database engine created successfully")
     return _engine

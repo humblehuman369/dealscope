@@ -23,16 +23,11 @@ from app.core.config import settings
 config = context.config
 
 # Set the database URL from settings (auto-converts to asyncpg format)
-# For Railway external connections, add sslmode if needed
-db_url = settings.async_database_url
+config.set_main_option("sqlalchemy.url", settings.async_database_url)
+
+# Determine if we need SSL for Railway
 is_railway = "railway" in (settings.DATABASE_URL or "").lower()
-is_external = "proxy.rlwy.net" in (settings.DATABASE_URL or "") or "railway.app" in (settings.DATABASE_URL or "")
-
-if is_railway and is_external and "sslmode" not in db_url:
-    separator = "&" if "?" in db_url else "?"
-    db_url = f"{db_url}{separator}sslmode=require"
-
-config.set_main_option("sqlalchemy.url", db_url)
+use_ssl = is_railway or settings.is_production
 
 # Interpret the config file for Python logging
 if config.config_file_name is not None:
@@ -85,10 +80,16 @@ async def run_async_migrations() -> None:
     In this scenario we need to create an Engine
     and associate a connection with the context.
     """
+    # Configure SSL for asyncpg (Railway/production)
+    connect_args = {}
+    if use_ssl:
+        connect_args["ssl"] = "prefer"
+    
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args=connect_args,
     )
 
     async with connectable.connect() as connection:
