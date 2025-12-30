@@ -21,7 +21,8 @@ python-dotenv==1.0.0
 # ===========================================
 sqlalchemy[asyncio]==2.0.25
 alembic==1.13.1
-asyncpg==0.29.0
+# Using psycopg3 instead of asyncpg - better SSL/connection handling
+psycopg[binary]==3.1.18
 
 # ===========================================
 # NEW: Authentication & Security
