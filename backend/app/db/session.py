@@ -30,8 +30,15 @@ def get_engine() -> AsyncEngine:
         # For Railway: always use SSL with asyncpg's native handling
         # asyncpg expects ssl=True or ssl='require', not URL-based sslmode
         is_railway = "railway" in (settings.DATABASE_URL or "").lower()
-        if is_railway or settings.is_production:
-            # Use asyncpg's native SSL - 'prefer' tries SSL first, falls back to non-SSL
+        # Check if using public Railway endpoint (requires SSL)
+        is_public_endpoint = "up.railway.app" in (settings.DATABASE_URL or "") or "proxy.rlwy.net" in (settings.DATABASE_URL or "")
+        
+        if is_public_endpoint:
+            # Public Railway endpoints REQUIRE SSL
+            connect_args["ssl"] = "require"
+            logger.info("SSL mode: require (public Railway endpoint)")
+        elif is_railway or settings.is_production:
+            # Internal Railway or other production - prefer SSL
             connect_args["ssl"] = "prefer"
             logger.info("SSL mode: prefer (asyncpg native)")
         
