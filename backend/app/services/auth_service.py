@@ -20,12 +20,12 @@ from app.schemas.auth import TokenResponse, TokenPayload
 
 logger = logging.getLogger(__name__)
 
-# Password hashing context using bcrypt
-# Note: bcrypt has a 72-byte limit; we truncate in get_password_hash
-# Using bcrypt_sha256 to avoid version compatibility issues with newer bcrypt
+# Password hashing context using bcrypt via passlib
+# This handles all the complexity of bcrypt versions and encoding
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto",
+    bcrypt__rounds=12,
 )
 
 
@@ -51,30 +51,17 @@ class AuthService:
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         """Verify a plain password against a hashed password."""
         try:
-            # Truncate to 72 bytes to match hashing
-            password_bytes = plain_password.encode('utf-8')[:72]
-            # Use bcrypt directly to avoid passlib version issues
-            import bcrypt
-            return bcrypt.checkpw(password_bytes, hashed_password.encode('utf-8'))
+            return pwd_context.verify(plain_password, hashed_password)
         except Exception as e:
             logger.warning(f"Password verification error: {e}")
             return False
     
     def get_password_hash(self, password: str) -> str:
-        """Hash a password for storage."""
+        """Hash a password for storage using passlib."""
         try:
-            # Ensure password is a string and truncate to 72 bytes for bcrypt
-            if isinstance(password, bytes):
-                password = password.decode('utf-8')
-            # Truncate to 72 bytes (bcrypt limit)
-            password_bytes = password.encode('utf-8')[:72]
-            password = password_bytes.decode('utf-8', errors='ignore')
-            logger.debug(f"Hashing password of length {len(password)}")
-            # Use bcrypt directly to avoid passlib version issues
-            import bcrypt
-            salt = bcrypt.gensalt(rounds=12)
-            hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-            return hashed.decode('utf-8')
+            hashed = pwd_context.hash(password)
+            logger.debug(f"Password hashed successfully, length: {len(hashed)}")
+            return hashed
         except Exception as e:
             logger.error(f"Password hashing error: {e}")
             raise
@@ -242,47 +229,79 @@ class AuthService:
         Returns:
             Tuple of (User, verification_token or None)
         """
-        # Check if email already exists
-        result = await db.execute(
-            select(User).where(User.email == email.lower())
-        )
-        existing_user = result.scalar_one_or_none()
+        logger.info(f"[register_user] Starting registration for: {email}")
         
-        if existing_user:
-            raise ValueError("Email already registered")
+        # Step 1: Check if email already exists
+        try:
+            logger.debug(f"[register_user] Checking for existing email...")
+            result = await db.execute(
+                select(User).where(User.email == email.lower())
+            )
+            existing_user = result.scalar_one_or_none()
+            
+            if existing_user:
+                logger.warning(f"[register_user] Email already registered: {email}")
+                raise ValueError("Email already registered")
+            logger.debug(f"[register_user] Email available")
+        except ValueError:
+            raise
+        except Exception as e:
+            logger.error(f"[register_user] Database query failed: {e}")
+            raise ValueError(f"Database error checking email: {str(e)}")
         
-        # Generate verification token if email verification is required
+        # Step 2: Generate verification token if required
         verification_token = None
+        verification_expires = None
         if settings.FEATURE_EMAIL_VERIFICATION_REQUIRED:
             verification_token = secrets.token_urlsafe(32)
             verification_expires = datetime.utcnow() + timedelta(
                 hours=settings.EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS
             )
-        else:
-            verification_expires = None
+            logger.debug(f"[register_user] Verification token generated")
         
-        # Create user
-        user = User(
-            email=email.lower(),
-            hashed_password=self.get_password_hash(password),
-            full_name=full_name,
-            is_active=True,
-            is_verified=not settings.FEATURE_EMAIL_VERIFICATION_REQUIRED,
-            verification_token=verification_token,
-            verification_token_expires=verification_expires,
-        )
+        # Step 3: Hash password
+        try:
+            logger.debug(f"[register_user] Hashing password...")
+            hashed_password = self.get_password_hash(password)
+            logger.debug(f"[register_user] Password hashed successfully")
+        except Exception as e:
+            logger.error(f"[register_user] Password hashing failed: {e}")
+            raise ValueError(f"Password hashing failed: {str(e)}")
         
-        db.add(user)
-        await db.flush()  # Get the user ID
+        # Step 4: Create user (without profile - profile created on demand)
+        try:
+            logger.debug(f"[register_user] Creating user record...")
+            user = User(
+                email=email.lower(),
+                hashed_password=hashed_password,
+                full_name=full_name,
+                is_active=True,
+                is_verified=not settings.FEATURE_EMAIL_VERIFICATION_REQUIRED,
+                verification_token=verification_token,
+                verification_token_expires=verification_expires,
+            )
+            
+            db.add(user)
+            await db.flush()
+            logger.debug(f"[register_user] User record created with id: {user.id}")
+        except Exception as e:
+            logger.error(f"[register_user] User creation failed: {e}")
+            raise ValueError(f"User creation failed: {str(e)}")
         
-        # Create empty profile
-        profile = UserProfile(user_id=user.id)
-        db.add(profile)
+        # Step 5: Create user profile (separate try-catch for isolation)
+        try:
+            logger.debug(f"[register_user] Creating user profile...")
+            profile = UserProfile(user_id=user.id)
+            db.add(profile)
+            await db.flush()
+            logger.debug(f"[register_user] Profile created successfully")
+        except Exception as e:
+            # Profile creation is optional - log but don't fail registration
+            logger.warning(f"[register_user] Profile creation failed (non-fatal): {e}")
         
-        await db.commit()
-        await db.refresh(user)
-        
-        logger.info(f"User registered: {email}")
+        # Note: Don't commit here - let the FastAPI dependency (get_db) handle the commit
+        # This ensures proper transaction management and rollback on errors
+        logger.info(f"[register_user] User registered successfully: {email}")
         
         return user, verification_token
     
