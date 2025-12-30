@@ -92,9 +92,19 @@ async def lifespan(app: FastAPI):
     logger.info(f"Database configured: {'Yes' if settings.DATABASE_URL else 'No'}")
     logger.info(f"Auth enabled: {'Yes' if settings.FEATURE_AUTH_REQUIRED else 'Optional'}")
     
-    # Create database tables if they don't exist (DEV ONLY).
-    # In production we rely on Alembic migrations (Railway startCommand runs them).
-    if (not settings.is_production) and settings.DATABASE_URL and auth_router is not None:
+    # Log DATABASE_URL format (masked for security) to debug Railway connection
+    if settings.DATABASE_URL:
+        db_url = settings.DATABASE_URL
+        # Extract host from URL for debugging
+        if "@" in db_url and "/" in db_url:
+            host_part = db_url.split("@")[1].split("/")[0] if "@" in db_url else "unknown"
+            logger.info(f"Database host: {host_part}")
+            logger.info(f"Is Railway URL: {'railway' in db_url.lower()}")
+            logger.info(f"Is production: {settings.is_production}")
+    
+    # Create database tables if they don't exist
+    # Note: Alembic removed from start command due to hanging issues
+    if settings.DATABASE_URL and auth_router is not None:
         try:
             from app.db.base import Base
             from app.db.session import get_engine
