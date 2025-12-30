@@ -8,7 +8,6 @@ from typing import AsyncGenerator, Optional
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker, AsyncEngine
 from sqlalchemy.pool import NullPool
 import logging
-import ssl
 
 from app.core.config import settings
 
@@ -25,23 +24,28 @@ def get_engine() -> AsyncEngine:
     if _engine is None:
         logger.info(f"Creating database engine...")
         
-        # Configure SSL for Railway/production PostgreSQL connections
-        connect_args = {}
-        if settings.is_production or "railway" in settings.DATABASE_URL.lower():
-            # Use SSL for Railway connections
-            ssl_context = ssl.create_default_context()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE
-            connect_args["ssl"] = ssl_context
-            logger.info("SSL enabled for database connection")
+        # Get the database URL and ensure SSL for Railway
+        db_url = settings.async_database_url
+        
+        # For Railway/production: add sslmode to URL if not present
+        # Railway internal connections may not need SSL, but external do
+        is_railway = "railway" in settings.DATABASE_URL.lower()
+        is_external = "proxy.rlwy.net" in settings.DATABASE_URL or "railway.app" in settings.DATABASE_URL
+        
+        if is_railway and is_external and "sslmode" not in db_url:
+            # Add sslmode=require for external Railway connections
+            separator = "&" if "?" in db_url else "?"
+            db_url = f"{db_url}{separator}sslmode=require"
+            logger.info("SSL mode added for external Railway connection")
+        elif is_railway:
+            logger.info("Railway internal connection (SSL handled by network)")
         
         _engine = create_async_engine(
-            settings.async_database_url,
+            db_url,
             echo=settings.DEBUG,
             pool_pre_ping=True,
             # Use NullPool for Railway/serverless to avoid connection pool issues
             poolclass=NullPool,
-            connect_args=connect_args,
         )
         logger.info("Database engine created successfully")
     return _engine
