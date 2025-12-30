@@ -92,8 +92,9 @@ async def lifespan(app: FastAPI):
     logger.info(f"Database configured: {'Yes' if settings.DATABASE_URL else 'No'}")
     logger.info(f"Auth enabled: {'Yes' if settings.FEATURE_AUTH_REQUIRED else 'Optional'}")
     
-    # Create database tables if they don't exist
-    if settings.DATABASE_URL and auth_router is not None:
+    # Create database tables if they don't exist (DEV ONLY).
+    # In production we rely on Alembic migrations (Railway startCommand runs them).
+    if (not settings.is_production) and settings.DATABASE_URL and auth_router is not None:
         try:
             from app.db.base import Base
             from app.db.session import get_engine
