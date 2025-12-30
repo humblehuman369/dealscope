@@ -28,22 +28,30 @@ def get_engine() -> AsyncEngine:
         
         db_url = settings.async_database_url
         
-        # Detect Railway environment
-        is_railway = "railway" in (settings.DATABASE_URL or "").lower()
+        # Detect connection type
+        # Private Railway network (railway.internal) does NOT use SSL
+        # Public endpoints require SSL
+        is_private_railway = "railway.internal" in (settings.DATABASE_URL or "")
         is_public_endpoint = "up.railway.app" in (settings.DATABASE_URL or "") or "proxy.rlwy.net" in (settings.DATABASE_URL or "")
         
-        # For psycopg3, we add sslmode to the URL instead of connect_args
-        # This is more reliable than trying to pass SSL context objects
-        if is_public_endpoint or is_railway or settings.is_production:
-            # Add sslmode=require to URL if not already present
+        if is_private_railway:
+            # Private Railway network - NO SSL needed
+            logger.info("SSL mode: disabled (Railway private network)")
+        elif is_public_endpoint:
+            # Public Railway endpoint - requires SSL
             if "sslmode=" not in db_url:
                 separator = "&" if "?" in db_url else "?"
                 db_url = f"{db_url}{separator}sslmode=require"
-            logger.info(f"SSL mode: require (Railway/production)")
+            logger.info("SSL mode: require (Railway public endpoint)")
         else:
-            logger.info("SSL mode: disabled (local development)")
+            # Local development or other
+            logger.info("SSL mode: disabled (local/other)")
         
-        logger.info(f"Database URL pattern: {db_url.split('@')[0].split('://')[0]}://***@{db_url.split('@')[-1] if '@' in db_url else '***'}")
+        # Log URL pattern for debugging (mask credentials)
+        if "@" in db_url:
+            url_start = db_url.split("://")[0]
+            url_end = db_url.split("@")[-1]
+            logger.info(f"Database URL: {url_start}://***@{url_end}")
         
         _engine = create_async_engine(
             db_url,
