@@ -30,15 +30,19 @@ class Settings(BaseSettings):
     @property
     def async_database_url(self) -> str:
         """
-        Convert DATABASE_URL to asyncpg format for SQLAlchemy async.
+        Convert DATABASE_URL to psycopg3 format for SQLAlchemy async.
         Railway provides: postgres://user:pass@host:port/db
-        We need: postgresql+asyncpg://user:pass@host:port/db
+        We need: postgresql+psycopg://user:pass@host:port/db
+        
+        Note: Using psycopg3 instead of asyncpg for better SSL handling.
         """
         url = self.DATABASE_URL
         if url.startswith("postgres://"):
-            url = url.replace("postgres://", "postgresql+asyncpg://", 1)
-        elif url.startswith("postgresql://") and "+asyncpg" not in url:
-            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            url = url.replace("postgres://", "postgresql+psycopg://", 1)
+        elif url.startswith("postgresql://") and "+psycopg" not in url:
+            url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+        elif "+asyncpg" in url:
+            url = url.replace("+asyncpg", "+psycopg")
         return url
     
     # Database pool settings

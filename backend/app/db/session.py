@@ -2,13 +2,14 @@
 Database session management for async SQLAlchemy.
 Provides connection pooling and session dependency for FastAPI.
 Uses lazy initialization to allow app to start without database.
+
+Note: Using psycopg3 driver instead of asyncpg for better SSL handling.
 """
 
 from typing import AsyncGenerator, Optional
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker, AsyncEngine
 from sqlalchemy.pool import NullPool
 import logging
-import ssl
 
 from app.core.config import settings
 
@@ -19,16 +20,6 @@ _engine: Optional[AsyncEngine] = None
 _session_factory: Optional[async_sessionmaker] = None
 
 
-def _create_ssl_context() -> ssl.SSLContext:
-    """Create SSL context for asyncpg that works with Railway."""
-    # Create a permissive SSL context for Railway's self-signed certs
-    ctx = ssl.create_default_context()
-    # Railway uses self-signed certificates, so we need to disable verification
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    return ctx
-
-
 def get_engine() -> AsyncEngine:
     """Get or create the async database engine (lazy initialization)."""
     global _engine
@@ -36,22 +27,23 @@ def get_engine() -> AsyncEngine:
         logger.info(f"Creating database engine...")
         
         db_url = settings.async_database_url
-        connect_args = {}
         
         # Detect Railway environment
         is_railway = "railway" in (settings.DATABASE_URL or "").lower()
         is_public_endpoint = "up.railway.app" in (settings.DATABASE_URL or "") or "proxy.rlwy.net" in (settings.DATABASE_URL or "")
         
-        if is_public_endpoint or is_railway:
-            # Railway requires SSL - use proper SSL context
-            connect_args["ssl"] = _create_ssl_context()
-            logger.info("SSL mode: enabled with custom context (Railway)")
-        elif settings.is_production:
-            # Other production environments
-            connect_args["ssl"] = _create_ssl_context()
-            logger.info("SSL mode: enabled with custom context (production)")
+        # For psycopg3, we add sslmode to the URL instead of connect_args
+        # This is more reliable than trying to pass SSL context objects
+        if is_public_endpoint or is_railway or settings.is_production:
+            # Add sslmode=require to URL if not already present
+            if "sslmode=" not in db_url:
+                separator = "&" if "?" in db_url else "?"
+                db_url = f"{db_url}{separator}sslmode=require"
+            logger.info(f"SSL mode: require (Railway/production)")
         else:
             logger.info("SSL mode: disabled (local development)")
+        
+        logger.info(f"Database URL pattern: {db_url.split('@')[0].split('://')[0]}://***@{db_url.split('@')[-1] if '@' in db_url else '***'}")
         
         _engine = create_async_engine(
             db_url,
@@ -59,7 +51,6 @@ def get_engine() -> AsyncEngine:
             pool_pre_ping=True,
             # Use NullPool for Railway/serverless to avoid connection pool issues
             poolclass=NullPool,
-            connect_args=connect_args,
         )
         logger.info("Database engine created successfully")
     return _engine
