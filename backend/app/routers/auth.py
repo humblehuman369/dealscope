@@ -482,6 +482,14 @@ async def debug_config():
     
     db_url = os.environ.get("DATABASE_URL", "NOT SET")
     
+    # Show more details about the URL for debugging
+    url_info = {
+        "length": len(db_url) if db_url else 0,
+        "has_at_sign": "@" in db_url if db_url else False,
+        "has_postgres": "postgres" in db_url.lower() if db_url else False,
+        "starts_with": db_url[:20] if db_url and len(db_url) > 20 else db_url[:10] if db_url else "EMPTY",
+    }
+    
     # Mask password for security
     if db_url and "@" in db_url and db_url != "NOT SET":
         # Format: postgres://user:pass@host:port/db
@@ -490,18 +498,30 @@ async def debug_config():
             host_db = db_url.split("@")[1]      # host:port/db
             proto = proto_user.split("://")[0]  # postgres
             masked_url = f"{proto}://***:***@{host_db}"
-        except:
-            masked_url = "PARSE_ERROR"
+        except Exception as e:
+            masked_url = f"PARSE_ERROR: {e}"
     else:
-        masked_url = db_url
+        masked_url = f"RAW (no @): {db_url[:30]}..." if db_url and len(db_url) > 30 else db_url
+    
+    # Check async URL
+    try:
+        async_url = settings.async_database_url
+        if "@" in async_url:
+            async_masked = async_url.split("://")[0] + "://***@" + async_url.split("@")[-1]
+        else:
+            async_masked = f"NO_AT_SIGN: {async_url[:30]}..."
+    except Exception as e:
+        async_masked = f"ERROR: {e}"
     
     return {
-        "database_url_set": db_url != "NOT SET",
+        "database_url_set": db_url != "NOT SET" and len(db_url) > 10,
+        "url_info": url_info,
         "database_url_masked": masked_url,
-        "is_private_railway": "railway.internal" in db_url,
-        "is_public_railway": "up.railway.app" in db_url or "proxy.rlwy.net" in db_url,
-        "async_url": settings.async_database_url.split("@")[0].split("://")[0] + "://***@" + settings.async_database_url.split("@")[-1] if "@" in settings.async_database_url else "PARSE_ERROR",
+        "is_private_railway": "railway.internal" in db_url if db_url else False,
+        "is_public_railway": ("up.railway.app" in db_url or "proxy.rlwy.net" in db_url) if db_url else False,
+        "async_url_masked": async_masked,
         "environment": settings.ENVIRONMENT,
+        "all_db_env_vars": {k: "SET" for k in os.environ.keys() if "DATABASE" in k.upper() or "POSTGRES" in k.upper()},
         "timestamp": datetime.utcnow().isoformat()
     }
 
