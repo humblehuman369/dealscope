@@ -8,6 +8,7 @@ from typing import AsyncGenerator, Optional
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker, AsyncEngine
 from sqlalchemy.pool import NullPool
 import logging
+import ssl
 
 from app.core.config import settings
 
@@ -16,6 +17,16 @@ logger = logging.getLogger(__name__)
 # Lazy engine initialization
 _engine: Optional[AsyncEngine] = None
 _session_factory: Optional[async_sessionmaker] = None
+
+
+def _create_ssl_context() -> ssl.SSLContext:
+    """Create SSL context for asyncpg that works with Railway."""
+    # Create a permissive SSL context for Railway's self-signed certs
+    ctx = ssl.create_default_context()
+    # Railway uses self-signed certificates, so we need to disable verification
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    return ctx
 
 
 def get_engine() -> AsyncEngine:
@@ -27,20 +38,20 @@ def get_engine() -> AsyncEngine:
         db_url = settings.async_database_url
         connect_args = {}
         
-        # For Railway: always use SSL with asyncpg's native handling
-        # asyncpg expects ssl=True or ssl='require', not URL-based sslmode
+        # Detect Railway environment
         is_railway = "railway" in (settings.DATABASE_URL or "").lower()
-        # Check if using public Railway endpoint (requires SSL)
         is_public_endpoint = "up.railway.app" in (settings.DATABASE_URL or "") or "proxy.rlwy.net" in (settings.DATABASE_URL or "")
         
-        if is_public_endpoint:
-            # Public Railway endpoints REQUIRE SSL
-            connect_args["ssl"] = "require"
-            logger.info("SSL mode: require (public Railway endpoint)")
-        elif is_railway or settings.is_production:
-            # Internal Railway or other production - prefer SSL
-            connect_args["ssl"] = "prefer"
-            logger.info("SSL mode: prefer (asyncpg native)")
+        if is_public_endpoint or is_railway:
+            # Railway requires SSL - use proper SSL context
+            connect_args["ssl"] = _create_ssl_context()
+            logger.info("SSL mode: enabled with custom context (Railway)")
+        elif settings.is_production:
+            # Other production environments
+            connect_args["ssl"] = _create_ssl_context()
+            logger.info("SSL mode: enabled with custom context (production)")
+        else:
+            logger.info("SSL mode: disabled (local development)")
         
         _engine = create_async_engine(
             db_url,
