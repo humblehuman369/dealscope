@@ -4,7 +4,6 @@ Supports async migrations with SQLAlchemy 2.0.
 """
 
 import asyncio
-import ssl
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -24,7 +23,16 @@ from app.core.config import settings
 config = context.config
 
 # Set the database URL from settings (auto-converts to asyncpg format)
-config.set_main_option("sqlalchemy.url", settings.async_database_url)
+# For Railway external connections, add sslmode if needed
+db_url = settings.async_database_url
+is_railway = "railway" in (settings.DATABASE_URL or "").lower()
+is_external = "proxy.rlwy.net" in (settings.DATABASE_URL or "") or "railway.app" in (settings.DATABASE_URL or "")
+
+if is_railway and is_external and "sslmode" not in db_url:
+    separator = "&" if "?" in db_url else "?"
+    db_url = f"{db_url}{separator}sslmode=require"
+
+config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging
 if config.config_file_name is not None:
@@ -77,20 +85,10 @@ async def run_async_migrations() -> None:
     In this scenario we need to create an Engine
     and associate a connection with the context.
     """
-    # Configure SSL for Railway/production PostgreSQL connections.
-    # Without this, Railway-managed Postgres connections can hang/fail during migrations.
-    connect_args = {}
-    if settings.is_production or "railway" in (settings.DATABASE_URL or "").lower() or "up.railway.app" in (settings.DATABASE_URL or ""):
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-        connect_args["ssl"] = ssl_context
-
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
-        connect_args=connect_args,
     )
 
     async with connectable.connect() as connection:
