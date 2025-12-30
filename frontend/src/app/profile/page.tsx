@@ -8,12 +8,6 @@ import {
   TrendingUp, Target, DollarSign, MapPin, Bell, Palette
 } from 'lucide-react'
 
-// #region agent log
-const debugLog = (message: string, data: Record<string, unknown>) => {
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'profile/page.tsx',message,data,timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'FIX'})}).catch(()=>{});
-};
-// #endregion
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
 interface UserProfile {
@@ -47,18 +41,9 @@ export default function ProfilePage() {
   // Form state
   const [fullName, setFullName] = useState('')
 
-  // #region agent log
-  useEffect(() => {
-    debugLog('ProfilePage mounted', { isAuthenticated, isLoading, userId: user?.id });
-  }, []);
-  // #endregion
-
   // Redirect if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      // #region agent log
-      debugLog('Not authenticated, redirecting', { isLoading, isAuthenticated });
-      // #endregion
       router.push('/')
     }
   }, [isLoading, isAuthenticated, router])
@@ -72,10 +57,6 @@ export default function ProfilePage() {
         const token = localStorage.getItem('access_token')
         if (!token) return
 
-        // #region agent log
-        debugLog('Fetching profile', { hasToken: !!token });
-        // #endregion
-
         const response = await fetch(`${API_BASE_URL}/api/v1/users/me/profile`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -86,19 +67,9 @@ export default function ProfilePage() {
         if (response.ok) {
           const data = await response.json()
           setProfile(data)
-          // #region agent log
-          debugLog('Profile fetched successfully', { profileId: data.id });
-          // #endregion
-        } else {
-          // #region agent log
-          debugLog('Profile fetch failed', { status: response.status });
-          // #endregion
         }
       } catch (err) {
         console.error('Failed to fetch profile:', err)
-        // #region agent log
-        debugLog('Profile fetch error', { error: String(err) });
-        // #endregion
       } finally {
         setIsLoadingProfile(false)
       }
@@ -133,9 +104,6 @@ export default function ProfilePage() {
       if (response.ok) {
         await refreshUser()
         setIsEditing(false)
-        // #region agent log
-        debugLog('Profile saved successfully', { fullName });
-        // #endregion
       } else {
         const errorData = await response.json()
         setError(errorData.detail || 'Failed to save changes')
