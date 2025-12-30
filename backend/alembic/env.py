@@ -4,6 +4,7 @@ Supports async migrations with SQLAlchemy 2.0.
 """
 
 import asyncio
+import ssl
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -76,10 +77,20 @@ async def run_async_migrations() -> None:
     In this scenario we need to create an Engine
     and associate a connection with the context.
     """
+    # Configure SSL for Railway/production PostgreSQL connections.
+    # Without this, Railway-managed Postgres connections can hang/fail during migrations.
+    connect_args = {}
+    if settings.is_production or "railway" in (settings.DATABASE_URL or "").lower() or "up.railway.app" in (settings.DATABASE_URL or ""):
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        connect_args["ssl"] = ssl_context
+
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args=connect_args,
     )
 
     async with connectable.connect() as connection:
