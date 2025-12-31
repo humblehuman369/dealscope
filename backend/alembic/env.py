@@ -82,16 +82,20 @@ async def run_async_migrations() -> None:
     In this scenario we need to create an Engine
     and associate a connection with the context.
     """
-    # Configure SSL for asyncpg (Railway/production)
-    connect_args = {}
-    if ssl_mode:
-        connect_args["ssl"] = ssl_mode
+    # Get the database URL and add sslmode if needed for public endpoints
+    db_url = config.get_main_option("sqlalchemy.url")
+    if ssl_mode and "sslmode=" not in db_url:
+        separator = "&" if "?" in db_url else "?"
+        db_url = f"{db_url}{separator}sslmode={ssl_mode}"
+    
+    # Create configuration with updated URL
+    configuration = config.get_section(config.config_ini_section, {})
+    configuration["sqlalchemy.url"] = db_url
     
     connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
-        connect_args=connect_args,
     )
 
     async with connectable.connect() as connection:
