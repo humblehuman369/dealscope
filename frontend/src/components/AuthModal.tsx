@@ -140,9 +140,9 @@ export default function AuthModal() {
       />
       
       {/* Modal */}
-      <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative bg-white dark:bg-navy-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="relative bg-gradient-to-r from-teal-500 to-cyan-600 px-6 py-8 text-white">
+        <div className="relative bg-gradient-brand px-6 py-8 text-white">
           <button
             onClick={handleClose}
             className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/20 transition-colors"
@@ -152,7 +152,7 @@ export default function AuthModal() {
           <h2 className="text-2xl font-bold">
             {showForgotPassword ? 'Reset Password' : isLogin ? 'Welcome Back!' : 'Create Account'}
           </h2>
-          <p className="text-teal-100 mt-1">
+          <p className="text-white/80 mt-1">
             {showForgotPassword 
               ? 'Enter your email to receive a reset link'
               : isLogin 
@@ -193,7 +193,7 @@ export default function AuthModal() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
                 />
               </div>
             </div>
@@ -202,7 +202,7 @@ export default function AuthModal() {
             <button
               type="submit"
               disabled={isSendingReset}
-              className="w-full py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-cyan-700 focus:ring-4 focus:ring-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              className="w-full py-3 bg-gradient-brand text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
             >
               {isSendingReset ? (
                 <>
@@ -222,7 +222,7 @@ export default function AuthModal() {
                 setError('')
                 setSuccess('')
               }}
-              className="w-full text-center text-sm text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400"
+              className="w-full text-center text-sm text-gray-600 dark:text-gray-400 hover:text-brand-500 dark:hover:text-brand-400"
             >
               ← Back to Sign In
             </button>
@@ -258,7 +258,7 @@ export default function AuthModal() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="John Doe"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
                 />
               </div>
             </div>
@@ -276,7 +276,7 @@ export default function AuthModal() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
               />
             </div>
           </div>
@@ -293,7 +293,7 @@ export default function AuthModal() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-12 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                className="w-full pl-10 pr-12 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
               />
               <button
                 type="button"
@@ -323,7 +323,7 @@ export default function AuthModal() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
                 />
               </div>
             </div>
@@ -333,7 +333,7 @@ export default function AuthModal() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-cyan-700 focus:ring-4 focus:ring-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 bg-gradient-brand text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <>
@@ -354,21 +354,21 @@ export default function AuthModal() {
                 setError('')
                 setSuccess('')
               }}
-              className="w-full text-center text-sm text-teal-600 dark:text-teal-400 hover:underline"
+              className="w-full text-center text-sm text-brand-500 dark:text-brand-400 hover:underline"
             >
               Forgot your password?
             </button>
           )}
 
           {/* Toggle Mode */}
-          <div className="text-center text-sm text-gray-600 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-slate-700">
+          <div className="text-center text-sm text-gray-600 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-neutral-700">
             {isLogin ? (
               <>
                 Don&apos;t have an account?{' '}
                 <button
                   type="button"
                   onClick={toggleMode}
-                  className="text-teal-600 dark:text-teal-400 font-semibold hover:underline"
+                  className="text-brand-500 dark:text-brand-400 font-semibold hover:underline"
                 >
                   Sign up
                 </button>
@@ -379,7 +379,7 @@ export default function AuthModal() {
                 <button
                   type="button"
                   onClick={toggleMode}
-                  className="text-teal-600 dark:text-teal-400 font-semibold hover:underline"
+                  className="text-brand-500 dark:text-brand-400 font-semibold hover:underline"
                 >
                   Sign in
                 </button>

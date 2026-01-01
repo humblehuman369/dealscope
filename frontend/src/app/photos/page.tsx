@@ -146,21 +146,21 @@ export default function PhotosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-neutral-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* No Property Selected - Show Manual Input */}
         {(!currentProperty || !currentProperty.zpid) && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 mb-8">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Manual Photo Lookup</h2>
-              <p className="text-sm text-gray-500">
+              <h2 className="text-lg font-semibold text-navy-900">Manual Photo Lookup</h2>
+              <p className="text-sm text-neutral-500">
                 No property selected. Search for a property on the Dashboard first, or enter a ZPID/URL below.
               </p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="zpid" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="zpid" className="block text-sm font-medium text-neutral-700 mb-1">
                     Zillow Property ID (ZPID)
                   </label>
                   <input
@@ -169,11 +169,11 @@ export default function PhotosPage() {
                     value={zpid}
                     onChange={(e) => setZpid(e.target.value)}
                     placeholder="e.g., 2078546319"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all"
+                    className="w-full px-4 py-3 bg-neutral-100 border border-neutral-300 rounded-xl text-navy-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-200 focus:border-brand-400 transition-all"
                   />
                 </div>
                 <div>
-                  <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="url" className="block text-sm font-medium text-neutral-700 mb-1">
                     Or Zillow Property URL
                   </label>
                   <input
@@ -182,7 +182,7 @@ export default function PhotosPage() {
                     value={propertyUrl}
                     onChange={(e) => setPropertyUrl(e.target.value)}
                     placeholder="e.g., https://www.zillow.com/homedetails/..."
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all"
+                    className="w-full px-4 py-3 bg-neutral-100 border border-neutral-300 rounded-xl text-navy-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-200 focus:border-brand-400 transition-all"
                   />
                 </div>
               </div>
@@ -214,7 +214,7 @@ export default function PhotosPage() {
         {isLoading && (
           <div className="text-center py-16">
             <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mx-auto mb-4" />
-            <p className="text-gray-600">Loading property photos...</p>
+            <p className="text-neutral-600">Loading property photos...</p>
           </div>
         )}
 
@@ -242,8 +242,8 @@ export default function PhotosPage() {
             {/* Toolbar */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-gray-500" />
-                <span className="text-sm text-gray-600">
+                <ImageIcon className="w-5 h-5 text-neutral-500" />
+                <span className="text-sm text-neutral-600">
                   {photos.length} photo{photos.length !== 1 ? 's' : ''}
                 </span>
               </div>
@@ -253,7 +253,7 @@ export default function PhotosPage() {
                   className={`p-2 rounded-lg transition-colors ${
                     viewMode === 'grid' 
                       ? 'bg-indigo-100 text-indigo-600' 
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      : 'bg-neutral-100 text-neutral-500 hover:bg-gray-200'
                   }`}
                   title="Grid view"
                 >
@@ -264,7 +264,7 @@ export default function PhotosPage() {
                   className={`p-2 rounded-lg transition-colors ${
                     viewMode === 'masonry' 
                       ? 'bg-indigo-100 text-indigo-600' 
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      : 'bg-neutral-100 text-neutral-500 hover:bg-gray-200'
                   }`}
                   title="Masonry view"
                 >
@@ -282,7 +282,7 @@ export default function PhotosPage() {
               {photos.map((photo, index) => (
                 <div
                   key={index}
-                  className="group relative bg-gray-100 rounded-xl overflow-hidden cursor-pointer aspect-[4/3] hover:shadow-lg transition-shadow"
+                  className="group relative bg-neutral-100 rounded-xl overflow-hidden cursor-pointer aspect-[4/3] hover:shadow-lg transition-shadow"
                   onClick={() => openLightbox(index)}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -299,7 +299,7 @@ export default function PhotosPage() {
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
-                        <Search className="w-5 h-5 text-gray-700" />
+                        <Search className="w-5 h-5 text-neutral-700" />
                       </div>
                     </div>
                   </div>
@@ -319,11 +319,11 @@ export default function PhotosPage() {
         {/* Empty State - Only show if no current property and not loading */}
         {!isLoading && photos.length === 0 && !error && !currentProperty?.zpid && (
           <div className="text-center py-16">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Camera className="w-10 h-10 text-gray-400" />
+            <div className="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Camera className="w-10 h-10 text-neutral-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Photos Yet</h3>
-            <p className="text-gray-500 max-w-md mx-auto">
+            <h3 className="text-lg font-medium text-navy-900 mb-2">No Photos Yet</h3>
+            <p className="text-neutral-500 max-w-md mx-auto">
               Search for a property on the Dashboard to automatically load photos, or enter a ZPID above.
             </p>
           </div>
