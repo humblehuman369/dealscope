@@ -276,7 +276,7 @@ export default function Landing2Page() {
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-[#07172e] mb-4">6 Investment Strategies</h2>
             <div className="h-1 w-24 bg-[#0465f2] mx-auto mb-6"></div>
-            <p className="text-xl text-[#6b7280]">Instant analytics for every approach</p>
+            <p className="text-xl text-[#6b7280]">Learn alternate methods to maximize profit!</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
