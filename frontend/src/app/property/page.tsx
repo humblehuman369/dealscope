@@ -816,9 +816,9 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
         <span className="text-xs font-medium text-gray-700">{displayValue}</span>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-forest-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} aria-label={label} title={label} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
       </div>
     </div>
@@ -846,19 +846,19 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
         <span className="text-[11px] text-gray-500">{label}</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-gray-700">{formatCurrency(computedValue)}</span>
-          <span className={`text-[10px] font-medium ${adjustment === 0 ? 'text-gray-400' : 'text-teal-600'}`}>
+          <span className={`text-[10px] font-medium ${adjustment === 0 ? 'text-gray-400' : 'text-forest-500'}`}>
             {adjSign}{adjPercent.toFixed(0)}%
           </span>
         </div>
       </div>
       <div className="relative h-1">
         {/* Background gradient - green as value increases */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-crimson-400 via-gray-200 to-forest-500" />
         {/* Center line indicator - thin */}
         <div className="absolute top-0 left-1/2 w-px h-full bg-gray-400 -translate-x-1/2 z-10" />
         <div 
           ref={thumbRef}
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-forest-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb"
         />
         <input 
           type="range" 

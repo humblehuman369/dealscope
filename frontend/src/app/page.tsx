@@ -629,7 +629,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
               <p className="text-xs md:text-sm text-neutral-500 font-semibold mb-1 md:mb-2">Property Value:</p>
               <p className="text-2xl md:text-4xl font-bold text-navy-900 mb-2 md:mb-3">62.5%</p>
               <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-accent-500 to-brand-500" style={{ width: '62.5%' }}></div>
+                <div className="absolute left-0 top-0 h-full rounded-full bg-forest-500" style={{ width: '62.5%' }}></div>
               </div>
               <div className="flex justify-between text-xs text-neutral-500 mt-1">
                 <span>Low</span>
@@ -642,7 +642,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
               <p className="text-xs md:text-sm text-neutral-500 font-semibold mb-1 md:mb-2">Cap Rate:</p>
               <p className="text-2xl md:text-4xl font-bold text-navy-900 mb-1 md:mb-2">6.8%</p>
               <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className="absolute left-0 top-0 h-full rounded-full bg-brand-500" style={{ width: '68%' }}></div>
+                <div className="absolute left-0 top-0 h-full rounded-full bg-forest-500" style={{ width: '68%' }}></div>
               </div>
             </div>
           </div>
@@ -666,14 +666,14 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
               <p className="text-xs text-neutral-500 font-semibold mb-1">Property Value:</p>
               <p className="text-xl font-bold text-navy-900">62.5%</p>
               <div className="relative h-1.5 bg-gray-200 rounded-full overflow-hidden mt-1">
-                <div className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-accent-500 to-brand-500" style={{ width: '62.5%' }}></div>
+                <div className="absolute left-0 top-0 h-full rounded-full bg-forest-500" style={{ width: '62.5%' }}></div>
               </div>
             </div>
             <div className="bg-white rounded-xl shadow-lg p-4">
               <p className="text-xs text-neutral-500 font-semibold mb-1">Cap Rate:</p>
               <p className="text-xl font-bold text-navy-900">6.8%</p>
               <div className="relative h-1.5 bg-gray-200 rounded-full overflow-hidden mt-1">
-                <div className="absolute left-0 top-0 h-full rounded-full bg-brand-500" style={{ width: '68%' }}></div>
+                <div className="absolute left-0 top-0 h-full rounded-full bg-forest-500" style={{ width: '68%' }}></div>
               </div>
             </div>
           </div>

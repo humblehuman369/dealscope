@@ -80,6 +80,32 @@ module.exports = {
           800: '#166534',
           900: '#14532d',
         },
+        // Forest Green (for positive indicators/sliders)
+        forest: {
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#059669',  // Primary forest green
+          600: '#047857',
+          700: '#065f46',
+          800: '#064e3b',
+          900: '#022c22',
+        },
+        // Crimson Red (for negative indicators/sliders)
+        crimson: {
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#dc2626',  // Primary crimson red
+          600: '#b91c1c',
+          700: '#991b1b',
+          800: '#7f1d1d',
+          900: '#450a0a',
+        },
         warning: {
           50: '#fffbeb',
           100: '#fef3c7',
