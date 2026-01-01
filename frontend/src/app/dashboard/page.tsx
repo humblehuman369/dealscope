@@ -174,13 +174,13 @@ function ProfileSection({ user }: ProfileSectionProps) {
   return (
     <div className="bg-white dark:bg-navy-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
       {/* Banner */}
-      <div className="h-24 bg-gradient-brand"></div>
+      <div className="h-24 bg-brand-500"></div>
       
       <div className="relative px-6 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-10">
           {/* Avatar & Info */}
           <div className="flex items-end gap-4">
-            <div className="w-20 h-20 rounded-xl bg-gradient-brand flex items-center justify-center text-white text-3xl font-bold border-4 border-white dark:border-slate-800 shadow-lg">
+            <div className="w-20 h-20 rounded-xl bg-brand-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-white dark:border-navy-800 shadow-lg">
               {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
             </div>
             <div className="mb-1">
@@ -804,7 +804,7 @@ function UserManagementSection() {
                 <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-brand flex items-center justify-center text-white text-sm font-medium">
+                      <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-sm font-medium">
                         {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                       </div>
                       <div>

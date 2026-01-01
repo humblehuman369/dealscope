@@ -103,7 +103,7 @@ export default function Header() {
             {isAuthenticated && pathname === '/dashboard' && (
               <Link
                 href="/search"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-brand text-white text-sm font-medium rounded-lg hover:opacity-90 transition-all shadow-brand"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600 transition-all shadow-brand"
               >
                 <Search className="w-4 h-4" />
                 <span className="hidden sm:inline">Search</span>
@@ -112,7 +112,7 @@ export default function Header() {
             {isAuthenticated && pathname === '/search' && (
               <Link
                 href="/dashboard"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-brand text-white text-sm font-medium rounded-lg hover:opacity-90 transition-all shadow-brand"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600 transition-all shadow-brand"
               >
                 <LayoutDashboard className="w-4 h-4" />
                 <span className="hidden sm:inline">Dashboard</span>
@@ -162,7 +162,7 @@ export default function Header() {
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-navy-800 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-sm">
+                  <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-semibold text-sm">
                     {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                   </div>
                   <span className="hidden sm:block text-sm font-medium text-neutral-700 dark:text-neutral-300">

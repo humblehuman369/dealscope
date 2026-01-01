@@ -144,7 +144,7 @@ export default function ProfilePage() {
         {/* Profile Card */}
         <div className="bg-white dark:bg-navy-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
           {/* Banner */}
-          <div className="h-32 bg-gradient-brand"></div>
+          <div className="h-32 bg-brand-500"></div>
           
           {/* Avatar & Info */}
           <div className="relative px-6 pb-6">
@@ -152,7 +152,7 @@ export default function ProfilePage() {
               <div className="flex items-end gap-4">
                 {/* Avatar */}
                 <div className="relative">
-                  <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-brand flex items-center justify-center text-white text-4xl sm:text-5xl font-bold border-4 border-white dark:border-slate-800 shadow-lg">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-brand-500 flex items-center justify-center text-white text-4xl sm:text-5xl font-bold border-4 border-white dark:border-navy-800 shadow-lg">
                     {user?.full_name?.charAt(0).toUpperCase() || user?.email.charAt(0).toUpperCase()}
                   </div>
                   <button className="absolute bottom-0 right-0 p-2 bg-white dark:bg-navy-700 rounded-full shadow-lg border border-neutral-200 dark:border-neutral-600 hover:bg-gray-50 dark:hover:bg-slate-600 transition-colors">
