@@ -379,13 +379,21 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               </div>
             )}
             {isAuthenticated && user ? (
-              <button
-                onClick={logout}
-                className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full"
-              >
-                <User className="w-3 h-3 text-white" />
-                <span className="text-white text-xs">{user.full_name?.split(' ')[0]}</span>
-              </button>
+              <>
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="flex items-center gap-1 bg-teal-500/80 backdrop-blur-sm px-3 py-1.5 rounded-full"
+                >
+                  <span className="text-white text-xs font-medium">Dashboard</span>
+                </button>
+                <button
+                  onClick={logout}
+                  className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full"
+                >
+                  <User className="w-3 h-3 text-white" />
+                  <span className="text-white text-xs">{user.full_name?.split(' ')[0]}</span>
+                </button>
+              </>
             ) : (
               <button
                 onClick={() => setShowAuthModal('login')}
@@ -684,6 +692,14 @@ function DesktopScannerView({
             {/* Auth Buttons */}
             {isAuthenticated && user ? (
               <div className="flex items-center gap-2">
+                {/* Dashboard Button */}
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium rounded-lg hover:from-teal-600 hover:to-cyan-700 transition-all shadow-sm"
+                >
+                  <Home className="w-4 h-4" />
+                  Dashboard
+                </button>
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
                   isDark ? 'bg-slate-800' : 'bg-gray-100'
                 }`}>
@@ -696,6 +712,7 @@ function DesktopScannerView({
                 </div>
                 <button
                   onClick={logout}
+                  aria-label="Sign out"
                   className={`p-2 rounded-lg transition-colors ${
                     isDark 
                       ? 'text-gray-400 hover:text-white hover:bg-slate-800' 
