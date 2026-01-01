@@ -280,7 +280,7 @@ const formatPercent = (value: number): string => `${(value * 100).toFixed(1)}%`
 // ============================================
 
 const strategies: { id: StrategyId; name: string; shortName: string; description: string; icon: any; color: string; gradient: string }[] = [
-  { id: 'ltr', name: 'Long-Term Rental', shortName: 'LTR', description: 'Buy-and-hold with steady cash flow', icon: Building2, color: 'teal', gradient: 'from-teal-500 to-emerald-600' },
+  { id: 'ltr', name: 'Long-Term Rental', shortName: 'LTR', description: 'Buy-and-hold with steady cash flow', icon: Building2, color: 'forest', gradient: 'from-forest-500 to-emerald-600' },
   { id: 'str', name: 'Short-Term Rental', shortName: 'STR', description: 'Airbnb/VRBO for max revenue', icon: Home, color: 'cyan', gradient: 'from-cyan-500 to-blue-600' },
   { id: 'brrrr', name: 'BRRRR', shortName: 'BRRRR', description: 'Buy, Rehab, Rent, Refi, Repeat', icon: Repeat, color: 'emerald', gradient: 'from-emerald-500 to-green-600' },
   { id: 'flip', name: 'Fix & Flip', shortName: 'Flip', description: 'Renovate and sell for profit', icon: Hammer, color: 'orange', gradient: 'from-orange-500 to-red-500' },
@@ -735,7 +735,7 @@ function TopNav({ property }: { property: PropertyData }) {
             {/* Estimated Value - Line 3 */}
             {estimatedValue > 0 && (
               <div className="mt-1">
-                <span className="text-sm font-semibold text-teal-600 dark:text-brand-400 whitespace-nowrap">
+                <span className="text-sm font-semibold text-brand-500 dark:text-brand-400 whitespace-nowrap">
                   Est. {formatCurrency(estimatedValue)}
                 </span>
               </div>
@@ -753,7 +753,7 @@ function TopNav({ property }: { property: PropertyData }) {
                 ? 'bg-gray-100 text-gray-400 dark:bg-navy-700 dark:text-gray-500 cursor-wait'
                 : saveStatus === 'error'
                 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
-                : 'bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/30 dark:text-brand-400 dark:hover:bg-teal-900/50'
+                : 'bg-brand-50 text-brand-600 hover:bg-brand-100 dark:bg-brand-900/30 dark:text-brand-400 dark:hover:bg-brand-900/50'
             }`}
             title={saveStatus === 'saved' ? 'Property saved to dashboard' : 'Save property to your dashboard'}
           >
@@ -897,7 +897,7 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
         <span className="text-xs font-medium text-gray-700">{displayPercent}%</span>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
         <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
@@ -941,7 +941,7 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
         </div>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
         <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
@@ -982,7 +982,7 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
         <span className="text-xs font-medium text-gray-700">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
         <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
@@ -1023,9 +1023,9 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
         <span className="text-xs font-medium text-gray-700">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-forest-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
           type="range" 
           min={0} 
@@ -1063,9 +1063,9 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
         <span className="text-xs font-medium text-gray-700">{roomsRented} of {totalBedrooms} rooms</span>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-forest-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
           type="range" 
           min={1} 
@@ -1083,7 +1083,7 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
         {Array.from({ length: maxRooms }, (_, i) => i + 1).map(room => (
           <div 
             key={room} 
-            className={`w-1.5 h-1.5 rounded-full ${room <= roomsRented ? 'bg-brand-500' : 'bg-gray-200'}`}
+            className={`w-1.5 h-1.5 rounded-full ${room <= roomsRented ? 'bg-forest-500' : 'bg-gray-200'}`}
           />
         ))}
       </div>
@@ -1095,9 +1095,9 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
 type Rating = 'poor' | 'fair' | 'good' | 'great' | 'excellent'
 
 const ratingConfig: Record<Rating, { label: string; bgColor: string; textColor: string; borderColor: string }> = {
-  poor: { label: 'Poor', bgColor: 'bg-rose-50', textColor: 'text-rose-600', borderColor: 'border-rose-200' },
+  poor: { label: 'Poor', bgColor: 'bg-crimson-50', textColor: 'text-crimson-500', borderColor: 'border-crimson-200' },
   fair: { label: 'Fair', bgColor: 'bg-amber-50', textColor: 'text-amber-600', borderColor: 'border-amber-200' },
-  good: { label: 'Good', bgColor: 'bg-teal-50', textColor: 'text-teal-600', borderColor: 'border-teal-200' },
+  good: { label: 'Good', bgColor: 'bg-forest-50', textColor: 'text-forest-500', borderColor: 'border-forest-200' },
   great: { label: 'Great', bgColor: 'bg-emerald-50', textColor: 'text-emerald-600', borderColor: 'border-emerald-200' },
   excellent: { label: 'Excellent', bgColor: 'bg-emerald-100', textColor: 'text-emerald-700', borderColor: 'border-emerald-300' },
 }
@@ -1168,9 +1168,9 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
   
   // Refined color classes - subtle but clear
   const primaryColor = isLoss 
-    ? 'text-rose-600' 
+    ? 'text-crimson-500' 
     : isProfit 
-      ? 'text-teal-600' 
+      ? 'text-forest-500' 
       : 'text-gray-400'
   
   // Get rating display config
@@ -1381,13 +1381,13 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
         <span className="text-[11px] text-gray-500">After Repair Value</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-gray-700">{formatCurrency(computedArv)}</span>
-          <span className="text-[10px] font-medium text-teal-600">+{displayPercent}%</span>
+          <span className="text-[10px] font-medium text-forest-500">+{displayPercent}%</span>
         </div>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-forest-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
           type="range" 
           min={0} 
@@ -1494,13 +1494,13 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
         <div className="mt-4 pt-3 border-t border-gray-100">
           <a
             href={`/rehab?address=${encodeURIComponent(propertyAddress)}&budget=${rehabBudget}`}
-            className="inline-flex items-center gap-2 text-xs text-gray-500 hover:text-teal-600 transition-colors group"
+            className="inline-flex items-center gap-2 text-xs text-gray-500 hover:text-brand-500 transition-colors group"
           >
             <Wrench className="w-3.5 h-3.5" strokeWidth={1.5} />
             <span className="font-medium">Rehab Estimator</span>
             <span className="text-gray-400">—</span>
             <span>Build your renovation budget item by item</span>
-            <span className="text-teal-600 font-semibold">{formatCurrency(rehabBudget)}</span>
+            <span className="text-brand-500 font-semibold">{formatCurrency(rehabBudget)}</span>
             <ChevronRight className="w-3 h-3 text-gray-400 group-hover:text-brand-500 group-hover:translate-x-0.5 transition-all" />
           </a>
         </div>
@@ -1624,22 +1624,22 @@ function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView
 
 function StatRow({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`flex items-center justify-between py-1.5 ${highlight ? 'bg-teal-50/50 -mx-3 px-3 rounded' : ''}`}>
+    <div className={`flex items-center justify-between py-1.5 ${highlight ? 'bg-forest-50/50 -mx-3 px-3 rounded' : ''}`}>
       <span className="text-[11px] text-gray-500">{label}</span>
-      <span className={`text-xs font-medium ${highlight ? 'text-teal-600' : 'text-gray-700'}`}>{value}</span>
+      <span className={`text-xs font-medium ${highlight ? 'text-forest-500' : 'text-gray-700'}`}>{value}</span>
     </div>
   )
 }
 
 function RuleCheck({ label, value, target, passed }: { label: string; value: string; target: string; passed: boolean }) {
   return (
-    <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-md ${passed ? 'bg-teal-50/50' : 'bg-amber-50/50'}`}>
+    <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-md ${passed ? 'bg-forest-50/50' : 'bg-amber-50/50'}`}>
       <div className="flex items-center gap-1.5">
-        {passed ? <CheckCircle className="w-3 h-3 text-teal-600" /> : <AlertTriangle className="w-3 h-3 text-amber-600" />}
+        {passed ? <CheckCircle className="w-3 h-3 text-forest-500" /> : <AlertTriangle className="w-3 h-3 text-amber-600" />}
         <span className="text-[11px] font-medium text-gray-600">{label}</span>
       </div>
       <div className="flex items-center gap-1">
-        <span className={`text-xs font-medium ${passed ? 'text-teal-600' : 'text-amber-600'}`}>{value}</span>
+        <span className={`text-xs font-medium ${passed ? 'text-forest-500' : 'text-amber-600'}`}>{value}</span>
         <span className="text-[10px] text-gray-400">({target})</span>
       </div>
     </div>
@@ -1697,8 +1697,8 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
           onClick={() => setShowBreakdown(!showBreakdown)}
           className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
             showBreakdown 
-              ? 'border-teal-300 bg-teal-50 text-teal-700' 
-              : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-teal-200 hover:bg-teal-50/50'
+              ? 'border-forest-300 bg-forest-50 text-forest-500' 
+              : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-forest-200 hover:bg-forest-50/50'
           }`}
         >
           <Calculator className="w-4 h-4" />
@@ -1999,7 +1999,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment }: {
       <StepHeader step={3} title="Wholesale Strategy" />
       
       {/* 70% Rule Hero Section */}
-      <div className={`rounded-xl p-4 mb-4 ${calc.isPurchaseBelowMAO ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200' : 'bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200'}`}>
+      <div className={`rounded-xl p-4 mb-4 ${calc.isPurchaseBelowMAO ? 'bg-gradient-to-r from-emerald-50 to-forest-50 border border-emerald-200' : 'bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200'}`}>
         <div className="flex items-center justify-between">
           <div>
             <div className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mb-1">70% Rule Analysis</div>
@@ -2185,7 +2185,7 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
         <div className="space-y-2">
           {/* Gross Income */}
           <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-1 flex items-center gap-1">
+            <div className="text-[10px] font-semibold text-forest-500 uppercase tracking-wide mb-1 flex items-center gap-1">
               <DollarSign className="w-3 h-3" /> Gross Income
             </div>
             <CompactCalcRow label="Monthly Rent" result={formatCurrency(assumptions.monthlyRent)} />
@@ -2547,14 +2547,14 @@ function BRRRRAnalyticBreakdown({ calc, assumptions }: {
 
           {/* After Repair Value */}
           <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-1 flex items-center gap-1">
+            <div className="text-[10px] font-semibold text-forest-500 uppercase tracking-wide mb-1 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" /> Phase 2: Refinance
             </div>
             <CompactCalcRow label="After Repair Value" result={formatCurrency(assumptions.arv)} />
             <CompactCalcRow label="New Loan" formula="75% LTV" result={formatCurrency(refinanceLoanAmount)} />
             <CompactCalcRow label="Pay Off Old Loan" formula="70% of purchase" result={`-${formatCurrency(assumptions.purchasePrice * 0.70)}`} type="subtract" />
             <div className="flex justify-between pt-1 border-t border-gray-200/50 mt-1">
-              <span className="text-[10px] font-medium text-teal-700">Cash Back at Refi</span>
+              <span className="text-[10px] font-medium text-forest-600">Cash Back at Refi</span>
               <span className={`text-xs font-bold ${cashBack > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{formatCurrency(cashBack)}</span>
             </div>
           </div>
@@ -2914,7 +2914,7 @@ function HouseHackAnalyticBreakdown({ calc, assumptions }: {
 
           {/* Housing Cost Calculation */}
           <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-1 flex items-center gap-1">
+            <div className="text-[10px] font-semibold text-forest-500 uppercase tracking-wide mb-1 flex items-center gap-1">
               <Calculator className="w-3 h-3" /> Your Housing Cost
             </div>
             <CompactCalcRow label="Total Expenses" result={formatCurrency(totalMonthlyExpenses)} />
@@ -3009,7 +3009,7 @@ function WholesaleAnalyticBreakdown({ calc, assumptions }: {
 
           {/* Step 2: Apply 70% Rule */}
           <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-1 flex items-center gap-1">
+            <div className="text-[10px] font-semibold text-forest-500 uppercase tracking-wide mb-1 flex items-center gap-1">
               <Percent className="w-3 h-3" /> Step 2: Apply 70% Rule
             </div>
             <CompactCalcRow label="ARV × 70%" formula={`${formatCurrency(calc.arv)} × 0.70`} result={formatCurrency(arvAt70)} type="total" />
