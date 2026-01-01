@@ -1,220 +1,331 @@
+/* ==========================================
+   INVESTIQ DESIGN SYSTEM - Global Styles
+   ========================================== */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Modern system font stack - clean, thin, sophisticated */
-html {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: 'kern' 1, 'liga' 1;
-}
+/* ==========================================
+   Font Imports
+   ========================================== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
-/* Light mode (default) */
-body {
-  background-color: #f8f9fa;
-  color: #1a1a1a;
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Dark mode */
-html.dark body {
-  background-color: #0f172a;
-  color: #e2e8f0;
-}
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.5rem;
-  background-color: #2563eb;
-  padding: 0.625rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: white;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  transition: background-color 0.2s;
-}
-
-.btn-primary:hover {
-  background-color: #1d4ed8;
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.5rem;
-  background-color: white;
-  padding: 0.625rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #111827;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  border: 1px solid #d1d5db;
-  transition: background-color 0.2s;
-}
-
-html.dark .btn-secondary {
-  background-color: #1e293b;
-  color: #e2e8f0;
-  border-color: #334155;
-}
-
-.btn-secondary:hover {
-  background-color: #f9fafb;
-}
-
-html.dark .btn-secondary:hover {
-  background-color: #334155;
-}
-
-.card {
-  background-color: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  border: 1px solid #e5e7eb;
-  overflow: hidden;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-html.dark .card {
-  background-color: #1e293b;
-  border-color: #334155;
-}
-
-.input {
-  display: block;
-  width: 100%;
-  border-radius: 0.5rem;
-  border: none;
-  padding: 0.625rem 1rem;
-  color: #111827;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  outline: 1px solid #d1d5db;
-  font-size: 0.875rem;
-  transition: outline 0.2s, background-color 0.3s ease, color 0.3s ease;
-  background-color: white;
-}
-
-html.dark .input {
-  background-color: #1e293b;
-  color: #e2e8f0;
-  outline-color: #475569;
-}
-
-.input:focus {
-  outline: 2px solid #3b82f6;
-}
-
-.input::placeholder {
-  color: #9ca3af;
-}
-
-html.dark .input::placeholder {
-  color: #64748b;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 9999px;
-  padding: 0.125rem 0.625rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.badge-blue {
-  background-color: #dbeafe;
-  color: #1d4ed8;
-}
-
-.badge-green {
-  background-color: #dcfce7;
-  color: #15803d;
-}
-
-.badge-yellow {
-  background-color: #fef3c7;
-  color: #b45309;
-}
-
-.badge-gray {
-  background-color: #f3f4f6;
-  color: #374151;
-}
-
-.badge-orange {
-  background-color: #ffedd5;
-  color: #c2410c;
-}
-
-.metric-card {
-  background-color: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  border: 1px solid #e5e7eb;
-  padding: 1rem;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-html.dark .metric-card {
-  background-color: #1e293b;
-  border-color: #334155;
-}
-
-.metric-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #111827;
-}
-
-html.dark .metric-value {
-  color: #f1f5f9;
-}
-
-.metric-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-top: 0.25rem;
-}
-
-html.dark .metric-label {
-  color: #94a3b8;
-}
-
-.skeleton {
-  background-color: #e5e7eb;
-  border-radius: 0.25rem;
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-html.dark .skeleton {
-  background-color: #334155;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+/* ==========================================
+   Base Styles
+   ========================================== */
+@layer base {
+  html {
+    @apply antialiased;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+    scroll-behavior: smooth;
   }
-  50% {
-    opacity: 0.5;
+
+  body {
+    @apply bg-neutral-50 text-navy-900 font-sans;
+    @apply transition-colors duration-300;
+  }
+
+  /* Dark mode */
+  html.dark body {
+    @apply bg-navy-900 text-neutral-100;
+  }
+
+  /* Heading styles */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold text-navy-900;
+  }
+
+  html.dark h1,
+  html.dark h2,
+  html.dark h3,
+  html.dark h4,
+  html.dark h5,
+  html.dark h6 {
+    @apply text-white;
+  }
+
+  /* Link base styles */
+  a {
+    @apply transition-colors duration-200;
+  }
+
+  /* Focus styles for accessibility */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
   }
 }
 
-/* Slider dynamic positioning using CSS custom properties */
-.slider-fill {
-  width: var(--slider-fill, 0%);
+/* ==========================================
+   Component Styles
+   ========================================== */
+@layer components {
+  /* ----- Buttons ----- */
+  .btn {
+    @apply inline-flex items-center justify-center font-semibold rounded-xl;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply btn px-6 py-3;
+    @apply bg-brand-500 text-white;
+    @apply hover:bg-brand-600 hover:shadow-brand;
+    @apply focus-visible:ring-brand-500;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none;
+  }
+
+  .btn-secondary {
+    @apply btn px-6 py-3;
+    @apply bg-white text-navy-900 border-2 border-neutral-300;
+    @apply hover:border-brand-500 hover:shadow-card-hover;
+    @apply focus-visible:ring-brand-500;
+  }
+
+  html.dark .btn-secondary {
+    @apply bg-navy-800 text-neutral-100 border-neutral-600;
+    @apply hover:border-brand-400;
+  }
+
+  .btn-ghost {
+    @apply btn px-6 py-3;
+    @apply bg-transparent text-navy-900;
+    @apply hover:bg-navy-50;
+    @apply focus-visible:ring-brand-500;
+  }
+
+  html.dark .btn-ghost {
+    @apply text-neutral-100 hover:bg-navy-800;
+  }
+
+  .btn-accent {
+    @apply btn px-6 py-3;
+    @apply bg-accent-500 text-navy-900 font-bold;
+    @apply hover:bg-accent-400 hover:shadow-glow-cyan;
+    @apply focus-visible:ring-accent-500;
+  }
+
+  .btn-gradient {
+    @apply btn px-6 py-3;
+    @apply bg-gradient-brand text-white font-bold;
+    @apply hover:opacity-90 hover:shadow-brand-lg;
+    @apply focus-visible:ring-brand-500;
+  }
+
+  .btn-sm {
+    @apply px-4 py-2 text-sm;
+  }
+
+  .btn-lg {
+    @apply px-8 py-4 text-lg;
+  }
+
+  /* ----- Cards ----- */
+  .card {
+    @apply bg-white rounded-2xl shadow-card border border-neutral-200;
+    @apply transition-all duration-300;
+  }
+
+  html.dark .card {
+    @apply bg-navy-800 border-neutral-700;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-card-hover hover:border-brand-500;
+  }
+
+  .card-interactive {
+    @apply card-hover cursor-pointer;
+    @apply hover:-translate-y-1;
+  }
+
+  /* ----- Inputs ----- */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl;
+    @apply bg-white text-navy-900 placeholder-neutral-400;
+    @apply border-2 border-neutral-300;
+    @apply transition-all duration-200;
+    @apply focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20;
+  }
+
+  html.dark .input {
+    @apply bg-navy-800 text-neutral-100 border-neutral-600;
+    @apply placeholder-neutral-500;
+    @apply focus:border-brand-400;
+  }
+
+  .input-lg {
+    @apply input py-4 text-lg;
+  }
+
+  /* ----- Badges ----- */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-brand {
+    @apply badge bg-brand-100 text-brand-700;
+  }
+
+  .badge-accent {
+    @apply badge bg-accent-100 text-accent-700;
+  }
+
+  .badge-success {
+    @apply badge bg-success-100 text-success-700;
+  }
+
+  .badge-warning {
+    @apply badge bg-warning-100 text-warning-700;
+  }
+
+  .badge-danger {
+    @apply badge bg-danger-100 text-danger-700;
+  }
+
+  .badge-neutral {
+    @apply badge bg-neutral-100 text-neutral-700;
+  }
+
+  /* ----- Metric Cards ----- */
+  .metric-card {
+    @apply card p-6;
+  }
+
+  .metric-value {
+    @apply text-3xl font-bold text-navy-900;
+  }
+
+  html.dark .metric-value {
+    @apply text-white;
+  }
+
+  .metric-label {
+    @apply text-sm text-neutral-500 mt-1;
+  }
+
+  /* ----- Section Headers ----- */
+  .section-title {
+    @apply text-4xl md:text-5xl font-bold text-navy-900 mb-4;
+  }
+
+  html.dark .section-title {
+    @apply text-white;
+  }
+
+  .section-divider {
+    @apply h-1 w-24 bg-brand-500 mx-auto mb-6;
+  }
+
+  .section-subtitle {
+    @apply text-xl text-neutral-500;
+  }
+
+  /* ----- Text Gradient ----- */
+  .text-gradient {
+    @apply bg-gradient-brand bg-clip-text text-transparent;
+  }
+
+  /* ----- Container ----- */
+  .container-brand {
+    @apply max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8;
+  }
 }
 
-.slider-thumb {
-  left: var(--slider-position, 50%);
+/* ==========================================
+   Utility Classes
+   ========================================== */
+@layer utilities {
+  /* Skeleton loader */
+  .skeleton {
+    @apply bg-neutral-200 rounded animate-pulse;
+  }
+
+  html.dark .skeleton {
+    @apply bg-neutral-700;
+  }
+
+  /* Glow effects */
+  .glow-cyan {
+    @apply shadow-glow-cyan;
+  }
+
+  .glow-blue {
+    @apply shadow-glow-blue;
+  }
+
+  /* Safe area padding for mobile */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Slider dynamic positioning using CSS custom properties */
+  .slider-fill {
+    width: var(--slider-fill, 0%);
+  }
+
+  .slider-thumb {
+    left: var(--slider-position, 50%);
+  }
+
+  /* Hide scrollbar but allow scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Clip path for angled elements */
+  .clip-angled {
+    clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
+  }
+}
+
+/* ==========================================
+   Animation Keyframes (for inline styles fallback)
+   ========================================== */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes float-medium {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes float-fast {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes ping-slow {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Legacy animation classes (for backward compatibility) */
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: float-medium 5s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: float-fast 4s ease-in-out infinite;
+}
+
+.animate-ping-slow {
+  animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
