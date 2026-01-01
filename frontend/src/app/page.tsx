@@ -584,7 +584,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       </nav>
 
       {/* Hero Section */}
-      <section className="min-h-screen pt-28 pb-16 px-[5%] grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-[1400px] mx-auto">
+      <section className="min-h-screen pt-28 pb-16 px-[5%] lg:px-[8%] grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center max-w-[1400px] mx-auto overflow-visible">
         <div className="animate-fadeUp">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0465f2]/10 to-[#00e5ff]/10 border border-[#0465f2]/20 text-[#0465f2] px-4 py-2 rounded-full text-sm font-semibold mb-6">
             <Zap className="w-4 h-4" />
@@ -663,8 +663,27 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
           </div>
         </div>
 
-        <div className="relative animate-fadeUp" style={{ animationDelay: '0.2s' }}>
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-[#07172e]/20">
+        <div className="relative animate-fadeUp hidden lg:block" style={{ animationDelay: '0.2s' }}>
+          {/* Floating Data Card - Monthly Cash Flow (Top Left) */}
+          <div className="absolute top-[5%] left-0 transform -translate-x-1/2 bg-white rounded-2xl p-4 shadow-xl animate-float z-20">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-xl flex items-center justify-center mb-2">
+              <DollarSign className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-xs text-[#64748b] font-medium whitespace-nowrap">Monthly Cash Flow</div>
+            <div className="text-lg font-bold text-[#10b981]">+$1,240</div>
+          </div>
+
+          {/* Floating Data Card - Cap Rate (Bottom Left) */}
+          <div className="absolute bottom-[15%] left-0 transform -translate-x-1/3 bg-white rounded-2xl p-4 shadow-xl animate-float z-20" style={{ animationDelay: '1s' }}>
+            <div className="w-10 h-10 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-xl flex items-center justify-center mb-2">
+              <Home className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-xs text-[#64748b] font-medium">Cap Rate</div>
+            <div className="text-lg font-bold text-[#07172e]">7.2%</div>
+          </div>
+
+          {/* Main Image Container */}
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-[#07172e]/20 mx-8">
             <img 
               src="/images/hero-phone-scan.png" 
               alt="InvestIQ - Point and scan any property" 
@@ -681,29 +700,55 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
             </div>
           </div>
 
-          {/* Floating Data Cards */}
-          <div className="absolute top-[10%] -left-[10%] bg-white rounded-2xl p-4 shadow-xl animate-float z-10">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-xl flex items-center justify-center mb-2">
-              <DollarSign className="w-5 h-5 text-white" />
-            </div>
-            <div className="text-xs text-[#64748b] font-medium">Monthly Cash Flow</div>
-            <div className="text-lg font-bold text-[#10b981]">+$1,240</div>
-          </div>
-
-          <div className="absolute bottom-[25%] -right-[8%] bg-white rounded-2xl p-4 shadow-xl animate-float z-10" style={{ animationDelay: '0.5s' }}>
+          {/* Floating Data Card - Annual ROI (Right Side) */}
+          <div className="absolute bottom-[30%] right-0 transform translate-x-1/3 bg-white rounded-2xl p-4 shadow-xl animate-float z-20" style={{ animationDelay: '0.5s' }}>
             <div className="w-10 h-10 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-xl flex items-center justify-center mb-2">
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
             <div className="text-xs text-[#64748b] font-medium">Annual ROI</div>
             <div className="text-lg font-bold text-[#10b981]">18.5%</div>
           </div>
+        </div>
 
-          <div className="absolute bottom-[5%] -left-[5%] bg-white rounded-2xl p-4 shadow-xl animate-float z-10" style={{ animationDelay: '1s' }}>
-            <div className="w-10 h-10 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-xl flex items-center justify-center mb-2">
-              <Home className="w-5 h-5 text-white" />
+        {/* Mobile/Tablet Image - simplified without floating cards */}
+        <div className="relative animate-fadeUp lg:hidden" style={{ animationDelay: '0.2s' }}>
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-[#07172e]/20">
+            <img 
+              src="/images/hero-phone-scan.png" 
+              alt="InvestIQ - Point and scan any property" 
+              className="w-full rounded-3xl"
+            />
+          </div>
+          
+          {/* Stats cards below image on mobile */}
+          <div className="flex justify-center gap-4 mt-6 flex-wrap">
+            <div className="bg-white rounded-xl p-3 shadow-lg flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-lg flex items-center justify-center">
+                <DollarSign className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <div className="text-[10px] text-[#64748b]">Cash Flow</div>
+                <div className="text-sm font-bold text-[#10b981]">+$1,240</div>
+              </div>
             </div>
-            <div className="text-xs text-[#64748b] font-medium">Cap Rate</div>
-            <div className="text-lg font-bold text-[#07172e]">7.2%</div>
+            <div className="bg-white rounded-xl p-3 shadow-lg flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-lg flex items-center justify-center">
+                <Home className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <div className="text-[10px] text-[#64748b]">Cap Rate</div>
+                <div className="text-sm font-bold text-[#07172e]">7.2%</div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-3 shadow-lg flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <div className="text-[10px] text-[#64748b]">ROI</div>
+                <div className="text-sm font-bold text-[#10b981]">18.5%</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
