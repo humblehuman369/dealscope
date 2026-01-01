@@ -290,9 +290,9 @@ export default function Landing2Page() {
             ].map((strategy, idx) => (
               <div 
                 key={idx}
-                className="bg-white border-2 border-[#d1d5db] rounded-xl p-8 transition-all hover:border-[#0465f2] hover:shadow-lg cursor-pointer group"
+                className="bg-white border-2 border-[#d1d5db] rounded-xl p-6 transition-all hover:border-[#0465f2] hover:shadow-lg cursor-pointer group flex items-center gap-4"
               >
-                <strategy.icon className="w-12 h-12 text-[#0465f2] mb-4 group-hover:scale-110 transition-transform" />
+                <strategy.icon className="w-10 h-10 text-[#0465f2] flex-shrink-0 group-hover:scale-110 transition-transform" />
                 <h3 className="text-xl font-bold text-[#07172e]">{strategy.name}</h3>
               </div>
             ))}
