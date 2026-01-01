@@ -280,7 +280,7 @@ const formatPercent = (value: number): string => `${(value * 100).toFixed(1)}%`
 // ============================================
 
 const strategies: { id: StrategyId; name: string; shortName: string; description: string; icon: any; color: string; gradient: string }[] = [
-  { id: 'ltr', name: 'Long-Term Rental', shortName: 'LTR', description: 'Buy-and-hold with steady cash flow', icon: Building2, color: 'forest', gradient: 'from-forest-500 to-emerald-600' },
+  { id: 'ltr', name: 'Long-Term Rental', shortName: 'LTR', description: 'Buy-and-hold with steady cash flow', icon: Building2, color: 'teal', gradient: 'from-teal-500 to-emerald-600' },
   { id: 'str', name: 'Short-Term Rental', shortName: 'STR', description: 'Airbnb/VRBO for max revenue', icon: Home, color: 'cyan', gradient: 'from-cyan-500 to-blue-600' },
   { id: 'brrrr', name: 'BRRRR', shortName: 'BRRRR', description: 'Buy, Rehab, Rent, Refi, Repeat', icon: Repeat, color: 'emerald', gradient: 'from-emerald-500 to-green-600' },
   { id: 'flip', name: 'Fix & Flip', shortName: 'Flip', description: 'Renovate and sell for profit', icon: Hammer, color: 'orange', gradient: 'from-orange-500 to-red-500' },
@@ -484,8 +484,8 @@ function PhotoCarousel({ zpid, fillHeight = false }: { zpid: string | null | und
   )
 }
 
-// Compact photo strip showing 3 photos side by side
-function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
+// Photo Grid - 4 photos in a row matching HTML design
+function PhotoGrid({ zpid }: { zpid: string | null | undefined }) {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
@@ -517,7 +517,7 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
     setIsLightboxOpen(true)
   }
 
-  // Hide photo strip if no zpid
+  // Hide photo grid if no zpid
   if (!zpid) {
     return null
   }
@@ -525,9 +525,9 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
   // Show loading placeholders while fetching
   if (isLoading) {
     return (
-      <div className="flex gap-2.5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-3">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="w-[140px] h-[100px] bg-gray-100 rounded-xl flex items-center justify-center">
+          <div key={i} className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
             {i === 0 ? (
               <Loader2 className="w-6 h-6 text-gray-300 animate-spin" />
             ) : (
@@ -544,18 +544,18 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
     return null
   }
 
-  // Show first 4 photos
+  // Show first 4 photos in a grid
   const displayPhotos = photos.slice(0, 4)
   const remainingCount = photos.length - 4
 
   return (
     <>
-      <div className="flex gap-2.5 flex-shrink-0">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-3">
         {displayPhotos.map((photo, index) => (
           <button
             key={index}
             onClick={() => openLightbox(index)}
-            className="relative w-[140px] h-[100px] rounded-xl overflow-hidden group cursor-pointer shadow-sm hover:shadow-lg transition-all"
+            className="relative aspect-video rounded-lg overflow-hidden group cursor-pointer shadow-sm hover:shadow-lg transition-all"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -568,8 +568,8 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
             />
             {/* Show remaining count on last photo */}
             {index === 3 && remainingCount > 0 && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-[1px]">
-                <span className="text-white text-xl font-bold">+{remainingCount}</span>
+              <div className="absolute inset-0 bg-black/75 flex items-center justify-center">
+                <span className="text-white text-lg font-semibold">+{remainingCount}</span>
               </div>
             )}
           </button>
@@ -658,7 +658,7 @@ function PhotoStrip({ zpid }: { zpid: string | null | undefined }) {
   )
 }
 
-function TopNav({ property }: { property: PropertyData }) {
+function PropertyHeader({ property }: { property: PropertyData }) {
   const { user, isAuthenticated, setShowAuthModal } = useAuth()
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   
@@ -713,84 +713,73 @@ function TopNav({ property }: { property: PropertyData }) {
   }
   
   return (
-    <div className="mb-4 bg-white dark:bg-navy-800 rounded-xl shadow-sm dark:shadow-lg overflow-hidden transition-colors duration-300">
-      {/* Main row - always horizontal on md+, stacked on mobile */}
-      <div className="flex flex-col md:flex-row md:items-start">
-        {/* Left: Property Info */}
-        <div className="flex items-start gap-3 p-3 md:p-4 flex-1 min-w-0">
-          <a href="/" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors flex-shrink-0 mt-0.5" aria-label="Back to home" title="Back to home">
-            <Menu className="w-5 h-5 text-gray-400 dark:text-gray-500" strokeWidth={1.5} aria-hidden="true" />
-          </a>
-          <div className="flex-1 min-w-0">
-            {/* Full Address - Single Line */}
-            <h1 className="text-base md:text-lg font-bold text-gray-900 dark:text-white leading-tight">
-              {property.address.street}, {property.address.city}, {property.address.state} {property.address.zip_code}
-            </h1>
-            {/* Stats - Line 2 */}
+    <div className="mb-4 bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg p-4 transition-colors duration-300">
+      {/* Top row: Property Info + Save Button */}
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex-1 min-w-0">
+          {/* Full Address */}
+          <h1 className="text-lg font-bold text-navy-900 dark:text-white leading-tight">
+            {property.address.street}, {property.address.city}, {property.address.state} {property.address.zip_code}
+          </h1>
+          {/* Property Details */}
+          <div className="flex gap-2.5 text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <span>{property.details.bedrooms || '—'} bd</span>
+            <span>•</span>
+            <span>{property.details.bathrooms || '—'} ba</span>
+            <span>•</span>
+            <span>{property.details.square_footage?.toLocaleString() || '—'} sqft</span>
+          </div>
+          {/* Estimated Value */}
+          {estimatedValue > 0 && (
             <div className="mt-1">
-              <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
-                {property.details.bedrooms || '—'} bd · {property.details.bathrooms || '—'} ba · {property.details.square_footage?.toLocaleString() || '—'} sqft
+              <span className="text-base font-bold text-brand-500 dark:text-brand-400">
+                Est. {formatCurrency(estimatedValue)}
               </span>
             </div>
-            {/* Estimated Value - Line 3 */}
-            {estimatedValue > 0 && (
-              <div className="mt-1">
-                <span className="text-sm font-semibold text-brand-500 dark:text-brand-400 whitespace-nowrap">
-                  Est. {formatCurrency(estimatedValue)}
-                </span>
-              </div>
-            )}
-          </div>
-          
-          {/* Save Property Button */}
-          <button
-            onClick={handleSaveProperty}
-            disabled={saveStatus === 'saving' || saveStatus === 'saved'}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex-shrink-0 ${
-              saveStatus === 'saved'
-                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 cursor-default'
-                : saveStatus === 'saving'
-                ? 'bg-gray-100 text-gray-400 dark:bg-navy-700 dark:text-gray-500 cursor-wait'
-                : saveStatus === 'error'
-                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
-                : 'bg-brand-50 text-brand-600 hover:bg-brand-100 dark:bg-brand-900/30 dark:text-brand-400 dark:hover:bg-brand-900/50'
-            }`}
-            title={saveStatus === 'saved' ? 'Property saved to dashboard' : 'Save property to your dashboard'}
-          >
-            {saveStatus === 'saving' ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="hidden sm:inline">Saving...</span>
-              </>
-            ) : saveStatus === 'saved' ? (
-              <>
-                <BookmarkCheck className="w-4 h-4" />
-                <span className="hidden sm:inline">Saved</span>
-              </>
-            ) : saveStatus === 'error' ? (
-              <>
-                <AlertTriangle className="w-4 h-4" />
-                <span className="hidden sm:inline">Retry</span>
-              </>
-            ) : (
-              <>
-                <Bookmark className="w-4 h-4" />
-                <span className="hidden sm:inline">Save</span>
-              </>
-            )}
-          </button>
+          )}
         </div>
         
-        {/* Right: Photo Strip - visible on md+ */}
-        <div className="hidden md:flex flex-shrink-0 pr-4 py-3 items-center">
-          <PhotoStrip zpid={property.zpid} />
-        </div>
+        {/* Save Property Button */}
+        <button
+          onClick={handleSaveProperty}
+          disabled={saveStatus === 'saving' || saveStatus === 'saved'}
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[0.8125rem] font-medium border transition-all ${
+            saveStatus === 'saved'
+              ? 'bg-green-50 border-green-200 text-green-700 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400 cursor-default'
+              : saveStatus === 'saving'
+              ? 'bg-gray-50 border-gray-200 text-gray-400 dark:bg-navy-700 dark:border-navy-600 dark:text-gray-500 cursor-wait'
+              : saveStatus === 'error'
+              ? 'bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400 hover:bg-red-100'
+              : 'bg-transparent border-gray-300 text-gray-500 hover:bg-gray-50 hover:border-brand-500 hover:text-brand-500 dark:border-gray-600 dark:text-gray-400 dark:hover:border-brand-400 dark:hover:text-brand-400'
+          }`}
+          title={saveStatus === 'saved' ? 'Property saved to dashboard' : 'Save property to your dashboard'}
+        >
+          {saveStatus === 'saving' ? (
+            <>
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : saveStatus === 'saved' ? (
+            <>
+              <BookmarkCheck className="w-3.5 h-3.5" />
+              <span>Saved</span>
+            </>
+          ) : saveStatus === 'error' ? (
+            <>
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>Retry</span>
+            </>
+          ) : (
+            <>
+              <Bookmark className="w-3.5 h-3.5" />
+              <span>Save</span>
+            </>
+          )}
+        </button>
       </div>
       
-      {/* Mobile only: Photo Strip row */}
-      <div className="flex md:hidden justify-center px-3 pb-3 -mt-1">
-        <PhotoStrip zpid={property.zpid} />
-      </div>
+      {/* Photo Grid */}
+      <PhotoGrid zpid={property.zpid} />
     </div>
   )
 }
@@ -812,13 +801,19 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[11px] text-gray-500">{label}</span>
-        <span className="text-xs font-medium text-gray-700">{displayValue}</span>
+        <span className="text-xs text-gray-500 font-medium">{label}</span>
+        <span className="text-xs font-bold text-navy-900 font-mono">{displayValue}</span>
       </div>
-      <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
-        <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-forest-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+      <div className="relative h-[3px]">
+        <div className="absolute inset-0 rounded-sm bg-gray-200" />
+        <div 
+          className="absolute top-0 left-0 h-full rounded-sm bg-gradient-to-r from-accent-500 to-brand-500" 
+          style={{ width: `${percentage}%` }}
+        />
+        <div 
+          ref={thumbRef}
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb"
+        />
         <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} aria-label={label} title={label} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
       </div>
     </div>
@@ -897,7 +892,7 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
         <span className="text-xs font-medium text-gray-700">{displayPercent}%</span>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
         <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
@@ -941,7 +936,7 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
         </div>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
         <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
@@ -982,7 +977,7 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
         <span className="text-xs font-medium text-gray-700">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
         <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
@@ -1023,9 +1018,9 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
         <span className="text-xs font-medium text-gray-700">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-forest-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
           type="range" 
           min={0} 
@@ -1063,9 +1058,9 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
         <span className="text-xs font-medium text-gray-700">{roomsRented} of {totalBedrooms} rooms</span>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-forest-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
           type="range" 
           min={1} 
@@ -1083,7 +1078,7 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
         {Array.from({ length: maxRooms }, (_, i) => i + 1).map(room => (
           <div 
             key={room} 
-            className={`w-1.5 h-1.5 rounded-full ${room <= roomsRented ? 'bg-forest-500' : 'bg-gray-200'}`}
+            className={`w-1.5 h-1.5 rounded-full ${room <= roomsRented ? 'bg-brand-500' : 'bg-gray-200'}`}
           />
         ))}
       </div>
@@ -1095,9 +1090,9 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
 type Rating = 'poor' | 'fair' | 'good' | 'great' | 'excellent'
 
 const ratingConfig: Record<Rating, { label: string; bgColor: string; textColor: string; borderColor: string }> = {
-  poor: { label: 'Poor', bgColor: 'bg-crimson-50', textColor: 'text-crimson-500', borderColor: 'border-crimson-200' },
+  poor: { label: 'Poor', bgColor: 'bg-rose-50', textColor: 'text-rose-600', borderColor: 'border-rose-200' },
   fair: { label: 'Fair', bgColor: 'bg-amber-50', textColor: 'text-amber-600', borderColor: 'border-amber-200' },
-  good: { label: 'Good', bgColor: 'bg-forest-50', textColor: 'text-forest-500', borderColor: 'border-forest-200' },
+  good: { label: 'Good', bgColor: 'bg-teal-50', textColor: 'text-teal-600', borderColor: 'border-teal-200' },
   great: { label: 'Great', bgColor: 'bg-emerald-50', textColor: 'text-emerald-600', borderColor: 'border-emerald-200' },
   excellent: { label: 'Excellent', bgColor: 'bg-emerald-100', textColor: 'text-emerald-700', borderColor: 'border-emerald-300' },
 }
@@ -1168,9 +1163,9 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
   
   // Refined color classes - subtle but clear
   const primaryColor = isLoss 
-    ? 'text-crimson-500' 
+    ? 'text-rose-600' 
     : isProfit 
-      ? 'text-forest-500' 
+      ? 'text-teal-600' 
       : 'text-gray-400'
   
   // Get rating display config
@@ -1249,8 +1244,8 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
 // Strategy type for the carousel
 type Strategy = { id: StrategyId; name: string; shortName: string; description: string; icon: React.ComponentType<{ className?: string }>; color: string; gradient: string }
 
-// Strategy Carousel - Responsive horizontal scroll with navigation
-function StrategyCarousel({ 
+// Strategy Grid - 6 columns matching HTML design
+function StrategyGrid({ 
   strategies: strategyList, 
   strategyMetrics, 
   selectedStrategy, 
@@ -1261,101 +1256,54 @@ function StrategyCarousel({
   selectedStrategy: StrategyId
   onSelectStrategy: (id: StrategyId) => void
 }) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(false)
-
-  const checkScroll = useCallback(() => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
-      setCanScrollLeft(scrollLeft > 5)
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5)
-    }
-  }, [])
-
-  useEffect(() => {
-    checkScroll()
-    const el = scrollRef.current
-    if (el) {
-      el.addEventListener('scroll', checkScroll)
-      window.addEventListener('resize', checkScroll)
-      return () => {
-        el.removeEventListener('scroll', checkScroll)
-        window.removeEventListener('resize', checkScroll)
-      }
-    }
-  }, [checkScroll])
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const cardWidth = 160 // approximate card width + gap
-      const scrollAmount = direction === 'left' ? -cardWidth * 2 : cardWidth * 2
-      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-    }
-  }
-
-  // Determine if we're at first or last strategy
-  const isFirstStrategy = selectedStrategy === 'ltr'
-  const isLastStrategy = selectedStrategy === 'wholesale'
-
   return (
-    <div className="relative">
-      {/* Left scroll button - hide when first strategy is selected */}
-      {canScrollLeft && !isFirstStrategy && (
-        <button
-          onClick={() => scroll('left')}
-          className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white/95 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all"
-          aria-label="Scroll left"
-        >
-          <ChevronLeft className="w-5 h-5 text-gray-600" />
-        </button>
-      )}
-
-      {/* Right scroll button - hide when last strategy is selected */}
-      {canScrollRight && !isLastStrategy && (
-        <button
-          onClick={() => scroll('right')}
-          className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white/95 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all"
-          aria-label="Scroll right"
-        >
-          <ChevronRight className="w-5 h-5 text-gray-600" />
-        </button>
-      )}
-
-      {/* Scrollable container */}
-      <div
-        ref={scrollRef}
-        className="flex gap-2 overflow-x-auto px-5 pb-4 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-      >
-        {strategyList.map((strategy) => {
-          const isSelected = selectedStrategy === strategy.id
-          return (
-            <div 
-              key={strategy.id} 
-              className="relative flex-shrink-0 snap-start w-[156px] h-[140px]"
-            >
-              <StrategyCard
-                strategy={strategy}
-                metrics={strategyMetrics[strategy.id]}
-                isSelected={isSelected}
-                onClick={() => onSelectStrategy(strategy.id)}
-              />
-              {/* Visual connection bridge - extends from selected card to tabs */}
-              {isSelected && (
-                <div className="absolute -bottom-4 left-0 right-0 h-4 bg-white" />
-              )}
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 px-5 pb-4">
+      {strategyList.map((strategy) => {
+        const isSelected = selectedStrategy === strategy.id
+        const metrics = strategyMetrics[strategy.id]
+        const isProfit = metrics.primaryValue > 0
+        const isLoss = metrics.primaryValue < 0
+        const ratingDisplay = ratingConfig[metrics.rating]
+        
+        return (
+          <button
+            key={strategy.id}
+            onClick={() => onSelectStrategy(strategy.id)}
+            className={`relative bg-white border-2 rounded-[0.625rem] p-3 text-center transition-all cursor-pointer ${
+              isSelected 
+                ? 'border-brand-500 shadow-[0_6px_20px_rgba(4,101,242,0.3)] scale-[1.03] bg-gradient-to-br from-blue-50 to-indigo-50' 
+                : 'border-gray-200 hover:border-brand-500 hover:shadow-lg'
+            }`}
+          >
+            {/* Selected Checkmark */}
+            {isSelected && (
+              <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-brand-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                ✓
+              </div>
+            )}
+            
+            {/* Strategy Name */}
+            <div className="text-[0.8125rem] font-semibold text-navy-900 mb-1.5">{strategy.name}</div>
+            
+            {/* Primary Value */}
+            <div className={`text-lg font-bold font-mono mb-0.5 ${
+              isLoss ? 'text-crimson-500' : isProfit ? 'text-forest-500' : 'text-brand-500'
+            }`}>
+              {metrics.primary}
             </div>
-          )
-        })}
-      </div>
-
-      {/* Gradient fade hints for more content */}
-      {canScrollLeft && !isFirstStrategy && (
-        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
-      )}
-      {canScrollRight && !isLastStrategy && (
-        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none z-10" />
-      )}
+            <div className="text-[0.6875rem] text-gray-500 mb-1.5">{metrics.primaryLabel}</div>
+            
+            {/* Secondary Value */}
+            <div className="text-[0.9375rem] font-bold text-navy-900 mb-0.5">{metrics.secondary}</div>
+            <div className="text-[0.6875rem] text-gray-500 mb-1.5">{metrics.secondaryLabel}</div>
+            
+            {/* Rating Badge */}
+            <span className={`inline-block px-2.5 py-0.5 rounded-full text-[0.6875rem] font-semibold ${ratingDisplay.bgColor} ${ratingDisplay.textColor}`}>
+              {ratingDisplay.label}
+            </span>
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -1381,13 +1329,13 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
         <span className="text-[11px] text-gray-500">After Repair Value</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-gray-700">{formatCurrency(computedArv)}</span>
-          <span className="text-[10px] font-medium text-forest-500">+{displayPercent}%</span>
+          <span className="text-[10px] font-medium text-teal-600">+{displayPercent}%</span>
         </div>
       </div>
       <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-forest-300 to-forest-500" />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-forest-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
           type="range" 
           min={0} 
@@ -1404,16 +1352,16 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
   )
 }
 
-// Step indicator component
+// Step indicator component - matches HTML design
 function StepHeader({ step, title, subtitle }: { step: number; title: string; subtitle?: string }) {
   return (
-    <div className="flex items-center gap-3 mb-4">
-      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-600 text-white text-base font-bold shadow-sm">
+    <div className="flex items-center gap-2.5 mb-3.5">
+      <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold flex-shrink-0">
         {step}
       </div>
       <div>
-        <h2 className="text-base font-semibold text-gray-800">{title}</h2>
-        {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
+        <h2 className="text-base font-bold text-navy-900">{title}</h2>
+        {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
       </div>
     </div>
   )
@@ -1428,8 +1376,8 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
   rehabBudget: number
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-      <div className="px-5 py-4">
+    <div className="bg-white rounded-[0.875rem] shadow-sm p-4">
+      <div>
         <StepHeader step={1} title="Terms" subtitle="Adjust the values to evaluate profitability." />
         
         <div className="grid grid-cols-3 gap-6">
@@ -1494,13 +1442,13 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
         <div className="mt-4 pt-3 border-t border-gray-100">
           <a
             href={`/rehab?address=${encodeURIComponent(propertyAddress)}&budget=${rehabBudget}`}
-            className="inline-flex items-center gap-2 text-xs text-gray-500 hover:text-brand-500 transition-colors group"
+            className="inline-flex items-center gap-2 text-xs text-gray-500 hover:text-teal-600 transition-colors group"
           >
             <Wrench className="w-3.5 h-3.5" strokeWidth={1.5} />
             <span className="font-medium">Rehab Estimator</span>
             <span className="text-gray-400">—</span>
             <span>Build your renovation budget item by item</span>
-            <span className="text-brand-500 font-semibold">{formatCurrency(rehabBudget)}</span>
+            <span className="text-teal-600 font-semibold">{formatCurrency(rehabBudget)}</span>
             <ChevronRight className="w-3 h-3 text-gray-400 group-hover:text-brand-500 group-hover:translate-x-0.5 transition-all" />
           </a>
         </div>
@@ -1584,7 +1532,7 @@ function AssumptionsPanel({ assumptions, update, updateAdjustment, isExpanded, o
 }
 
 function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView; onViewChange: (view: DrillDownView) => void }) {
-  const tabs: { id: DrillDownView; label: string; icon: any; highlight?: boolean }[] = [
+  const tabs: { id: DrillDownView; label: string; icon: any }[] = [
     { id: 'details', label: 'Details', icon: Calculator },
     { id: 'charts', label: 'Charts', icon: LineChart },
     { id: 'projections', label: '10-Year', icon: TrendingUp },
@@ -1594,27 +1542,24 @@ function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView
   ]
   
   return (
-    <div className="flex gap-1 overflow-x-auto">
+    <div className="flex gap-1 border-b-2 border-gray-200">
       {tabs.map(tab => {
         const Icon = tab.icon
         const isActive = activeView === tab.id
-        const isHighlight = tab.highlight
         return (
           <button
             key={tab.id}
             onClick={() => onViewChange(tab.id)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-all ${
+            className={`relative flex items-center gap-1.5 px-5 py-2.5 text-[0.8125rem] font-semibold whitespace-nowrap transition-all ${
               isActive 
-                ? isHighlight 
-                  ? 'bg-orange-500 text-white' 
-                  : 'bg-white text-gray-800 shadow-sm'
-                : isHighlight
-                  ? 'text-orange-500 hover:bg-orange-50'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-white/50'
+                ? 'text-brand-500' 
+                : 'text-gray-500 hover:text-brand-500'
             }`}
           >
-            <Icon className="w-3.5 h-3.5" strokeWidth={1.5} />
             {tab.label}
+            {isActive && (
+              <div className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-brand-500" />
+            )}
           </button>
         )
       })}
@@ -1622,24 +1567,34 @@ function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView
   )
 }
 
+// Metric row matching HTML design
+function MetricRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+      <span className="text-xs text-gray-500">{label}</span>
+      <span className="text-[0.9375rem] font-bold text-navy-900 font-mono">{value}</span>
+    </div>
+  )
+}
+
 function StatRow({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`flex items-center justify-between py-1.5 ${highlight ? 'bg-forest-50/50 -mx-3 px-3 rounded' : ''}`}>
+    <div className={`flex items-center justify-between py-1.5 ${highlight ? 'bg-teal-50/50 -mx-3 px-3 rounded' : ''}`}>
       <span className="text-[11px] text-gray-500">{label}</span>
-      <span className={`text-xs font-medium ${highlight ? 'text-forest-500' : 'text-gray-700'}`}>{value}</span>
+      <span className={`text-xs font-medium ${highlight ? 'text-teal-600' : 'text-gray-700'}`}>{value}</span>
     </div>
   )
 }
 
 function RuleCheck({ label, value, target, passed }: { label: string; value: string; target: string; passed: boolean }) {
   return (
-    <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-md ${passed ? 'bg-forest-50/50' : 'bg-amber-50/50'}`}>
+    <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-md ${passed ? 'bg-teal-50/50' : 'bg-amber-50/50'}`}>
       <div className="flex items-center gap-1.5">
-        {passed ? <CheckCircle className="w-3 h-3 text-forest-500" /> : <AlertTriangle className="w-3 h-3 text-amber-600" />}
+        {passed ? <CheckCircle className="w-3 h-3 text-teal-600" /> : <AlertTriangle className="w-3 h-3 text-amber-600" />}
         <span className="text-[11px] font-medium text-gray-600">{label}</span>
       </div>
       <div className="flex items-center gap-1">
-        <span className={`text-xs font-medium ${passed ? 'text-forest-500' : 'text-amber-600'}`}>{value}</span>
+        <span className={`text-xs font-medium ${passed ? 'text-teal-600' : 'text-amber-600'}`}>{value}</span>
         <span className="text-[10px] text-gray-400">({target})</span>
       </div>
     </div>
@@ -1661,14 +1616,11 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
   
   return (
     <div>
-      {/* Step 3 Header */}
-      <StepHeader step={3} title="Long-Term Rental Strategy" />
-      
-      <div className="grid grid-cols-2 gap-6">
-        {/* LEFT: Fine Tune Strategy (Step 3 content) */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Fine Tune Strategy</h4>
-          <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* LEFT: Fine Tune Strategy */}
+        <div>
+          <h4 className="text-[0.9375rem] font-bold text-navy-900 mb-3.5">Fine Tune Strategy</h4>
+          <div className="space-y-3.5">
             <AdjustmentSlider label="Monthly Rent" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
             <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
             <ManagementSlider value={assumptions.managementPct} onChange={(v) => update('managementPct', v)} annualRent={annualRent} compact />
@@ -1677,37 +1629,29 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
         </div>
         
         {/* RIGHT: Key Metrics (results) */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
-          <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
-            <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 200} />
-            <StatRow label="Annual Cash Flow" value={formatCurrency(calc.annualCashFlow)} />
-            <StatRow label="Cash-on-Cash Return" value={formatPercent(calc.cashOnCash)} highlight={calc.cashOnCash > 0.08} />
-            <StatRow label="Cap Rate" value={formatPercent(calc.capRate)} />
-            <StatRow label="DSCR" value={calc.dscr.toFixed(2)} />
-            <StatRow label="NOI" value={formatCurrency(calc.noi)} />
-            <StatRow label="Cash Required" value={formatCurrency(calc.totalCashRequired)} />
+        <div>
+          <h4 className="text-[0.9375rem] font-bold text-navy-900 mb-3.5">Key Metrics</h4>
+          <div className="space-y-2">
+            <MetricRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} />
+            <MetricRow label="Annual Cash Flow" value={formatCurrency(calc.annualCashFlow)} />
+            <MetricRow label="Cash-on-Cash Return" value={formatPercent(calc.cashOnCash)} />
+            <MetricRow label="Cap Rate" value={formatPercent(calc.capRate)} />
+            <MetricRow label="DSCR" value={calc.dscr.toFixed(2)} />
+            <MetricRow label="NOI" value={formatCurrency(calc.noi)} />
+            <MetricRow label="Cash Required" value={formatCurrency(calc.totalCashRequired)} />
           </div>
         </div>
       </div>
       
-      {/* Full Analytic Breakdown Button */}
-      <div className="mt-6">
+      {/* Full Analytic Breakdown Button - matches HTML design */}
+      <div className="mt-5">
         <button
           onClick={() => setShowBreakdown(!showBreakdown)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
-            showBreakdown 
-              ? 'border-forest-300 bg-forest-50 text-forest-500' 
-              : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-forest-200 hover:bg-forest-50/50'
-          }`}
+          className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-500 font-semibold text-[0.8125rem] flex items-center justify-center gap-2 transition-all"
         >
-          <Calculator className="w-4 h-4" />
-          <span className="font-medium">Full Analytic Breakdown</span>
-          {showBreakdown ? (
-            <ChevronUp className="w-4 h-4 ml-1" />
-          ) : (
-            <ChevronDown className="w-4 h-4 ml-1" />
-          )}
+          <Layers className="w-3.5 h-3.5" />
+          Full Analytic Breakdown
+          {showBreakdown ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
       </div>
       
@@ -1999,7 +1943,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment }: {
       <StepHeader step={3} title="Wholesale Strategy" />
       
       {/* 70% Rule Hero Section */}
-      <div className={`rounded-xl p-4 mb-4 ${calc.isPurchaseBelowMAO ? 'bg-gradient-to-r from-emerald-50 to-forest-50 border border-emerald-200' : 'bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200'}`}>
+      <div className={`rounded-xl p-4 mb-4 ${calc.isPurchaseBelowMAO ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200' : 'bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200'}`}>
         <div className="flex items-center justify-between">
           <div>
             <div className="text-[10px] uppercase tracking-wider text-gray-500 font-medium mb-1">70% Rule Analysis</div>
@@ -2185,7 +2129,7 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
         <div className="space-y-2">
           {/* Gross Income */}
           <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-forest-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+            <div className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-1 flex items-center gap-1">
               <DollarSign className="w-3 h-3" /> Gross Income
             </div>
             <CompactCalcRow label="Monthly Rent" result={formatCurrency(assumptions.monthlyRent)} />
@@ -2547,14 +2491,14 @@ function BRRRRAnalyticBreakdown({ calc, assumptions }: {
 
           {/* After Repair Value */}
           <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-forest-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+            <div className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-1 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" /> Phase 2: Refinance
             </div>
             <CompactCalcRow label="After Repair Value" result={formatCurrency(assumptions.arv)} />
             <CompactCalcRow label="New Loan" formula="75% LTV" result={formatCurrency(refinanceLoanAmount)} />
             <CompactCalcRow label="Pay Off Old Loan" formula="70% of purchase" result={`-${formatCurrency(assumptions.purchasePrice * 0.70)}`} type="subtract" />
             <div className="flex justify-between pt-1 border-t border-gray-200/50 mt-1">
-              <span className="text-[10px] font-medium text-forest-600">Cash Back at Refi</span>
+              <span className="text-[10px] font-medium text-teal-700">Cash Back at Refi</span>
               <span className={`text-xs font-bold ${cashBack > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{formatCurrency(cashBack)}</span>
             </div>
           </div>
@@ -2914,7 +2858,7 @@ function HouseHackAnalyticBreakdown({ calc, assumptions }: {
 
           {/* Housing Cost Calculation */}
           <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-forest-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+            <div className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-1 flex items-center gap-1">
               <Calculator className="w-3 h-3" /> Your Housing Cost
             </div>
             <CompactCalcRow label="Total Expenses" result={formatCurrency(totalMonthlyExpenses)} />
@@ -3009,7 +2953,7 @@ function WholesaleAnalyticBreakdown({ calc, assumptions }: {
 
           {/* Step 2: Apply 70% Rule */}
           <div className="bg-gray-50/50 rounded-lg p-2">
-            <div className="text-[10px] font-semibold text-forest-500 uppercase tracking-wide mb-1 flex items-center gap-1">
+            <div className="text-[10px] font-semibold text-teal-600 uppercase tracking-wide mb-1 flex items-center gap-1">
               <Percent className="w-3 h-3" /> Step 2: Apply 70% Rule
             </div>
             <CompactCalcRow label="ARV × 70%" formula={`${formatCurrency(calc.arv)} × 0.70`} result={formatCurrency(arvAt70)} type="total" />
@@ -3425,7 +3369,7 @@ function PropertyPageContent() {
   return (
     <div className="min-h-screen bg-[#e8eeef] dark:bg-slate-950 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 py-6">
-        <TopNav property={property} />
+        <PropertyHeader property={property} />
         
         {/* STEP 1: Set Your Terms - Always at Top */}
         <div className="mb-6">
@@ -3438,30 +3382,34 @@ function PropertyPageContent() {
           />
         </div>
 
-        {/* STEP 2: Select Investment Strategy + Connected Content Panel */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-          {/* Step 2 Header + Strategy Cards Carousel */}
-          <div className="pt-4 pb-0 relative">
-            <div className="px-5">
-              <StepHeader step={2} title="Investment Strategies" subtitle="Select a strategy to evaluate the details below." />
-            </div>
-            
-            {/* Strategy Cards Carousel - Responsive with horizontal scroll */}
-            <StrategyCarousel
-              strategies={strategies}
-              strategyMetrics={strategyMetrics}
-              selectedStrategy={selectedStrategy}
-              onSelectStrategy={(id) => { setSelectedStrategy(id); setDrillDownView('details'); }}
-            />
+        {/* STEP 2: Select Investment Strategy */}
+        <div className="bg-white rounded-[0.875rem] shadow-sm mb-3.5">
+          <div className="p-4">
+            <StepHeader step={2} title="Investment Strategies" subtitle="Select a strategy to evaluate the details below." />
+          </div>
+          
+          {/* Strategy Cards Grid - 6 columns matching HTML design */}
+          <StrategyGrid
+            strategies={strategies}
+            strategyMetrics={strategyMetrics}
+            selectedStrategy={selectedStrategy}
+            onSelectStrategy={(id) => { setSelectedStrategy(id); setDrillDownView('details'); }}
+          />
+        </div>
+
+        {/* STEP 3: Strategy Details */}
+        <div className="bg-white rounded-[0.875rem] shadow-sm">
+          <div className="p-4 pb-0">
+            <StepHeader step={3} title={`${strategies.find(s => s.id === selectedStrategy)?.name || ''} Strategy`} />
           </div>
 
-          {/* Tabs - Connected to selected strategy with matching gray background */}
-          <div className="px-5 py-3 bg-gray-50">
+          {/* Tabs */}
+          <div className="px-4">
             <DrillDownTabs activeView={drillDownView} onViewChange={setDrillDownView} />
           </div>
 
           {/* Content Area - Key Metrics and Adjust Inputs */}
-          <div className="p-5">
+          <div className="p-4">
             {drillDownView === 'details' && selectedStrategy === 'ltr' && <LTRDetails calc={ltrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
             {drillDownView === 'details' && selectedStrategy === 'str' && <STRDetails calc={strCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
             {drillDownView === 'details' && selectedStrategy === 'brrrr' && <BRRRRDetails calc={brrrrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
@@ -3477,14 +3425,11 @@ function PropertyPageContent() {
           </div>
         </div>
 
-        {/* Compare Link */}
-        <div className="mt-6 text-center">
-          <a href="/compare" className="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] text-gray-600 font-medium transition-all">
-            <GitCompare className="w-4 h-4" />
-            Compare Multiple Properties
-            <ChevronRight className="w-4 h-4" />
-          </a>
-        </div>
+        {/* Compare Multiple Properties Button - matches HTML design */}
+        <button className="w-full mt-5 py-3.5 px-6 bg-white border-2 border-brand-500 rounded-lg text-brand-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-brand-500 hover:text-white transition-all">
+          <TrendingUp className="w-4.5 h-4.5" />
+          Compare Multiple Properties
+        </button>
       </div>
     </div>
   )
