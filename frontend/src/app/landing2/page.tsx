@@ -308,16 +308,7 @@ export default function Landing2Page() {
             <div className="h-1 w-24 bg-[#0465f2] mx-auto"></div>
           </div>
           
-          {/* Dashboard Image */}
-          <div className="max-w-4xl mx-auto">
-            <img 
-              src="/images/dashboard-screenshot.png" 
-              alt="InvestIQ Investment Analytics Dashboard" 
-              className="w-full rounded-2xl shadow-2xl"
-            />
-          </div>
-
-          <div className="text-center mt-12">
+          <div className="text-center mt-8">
             <p className="text-2xl font-bold text-[#07172e] mb-6">Are you ready to profit?</p>
             <button
               onClick={() => setShowAuthModal('register')}
