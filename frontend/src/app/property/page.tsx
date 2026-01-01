@@ -284,7 +284,7 @@ const strategies: { id: StrategyId; name: string; shortName: string; description
   { id: 'str', name: 'Short-Term Rental', shortName: 'STR', description: 'Airbnb/VRBO for max revenue', icon: Home, color: 'cyan', gradient: 'from-cyan-500 to-blue-600' },
   { id: 'brrrr', name: 'BRRRR', shortName: 'BRRRR', description: 'Buy, Rehab, Rent, Refi, Repeat', icon: Repeat, color: 'emerald', gradient: 'from-emerald-500 to-green-600' },
   { id: 'flip', name: 'Fix & Flip', shortName: 'Flip', description: 'Renovate and sell for profit', icon: Hammer, color: 'orange', gradient: 'from-orange-500 to-red-500' },
-  { id: 'house_hack', name: 'House Hacking', shortName: 'Hack', description: 'Live in one, rent the rest', icon: Users, color: 'blue', gradient: 'from-blue-500 to-indigo-600' },
+  { id: 'house_hack', name: 'House Hack', shortName: 'Hack', description: 'Live in one, rent the rest', icon: Users, color: 'blue', gradient: 'from-blue-500 to-indigo-600' },
   { id: 'wholesale', name: 'Wholesale', shortName: 'Wholesale', description: 'Assign contracts for quick profit', icon: FileText, color: 'pink', gradient: 'from-pink-500 to-rose-600' },
 ]
 
@@ -344,7 +344,7 @@ const strategyExplanations: Record<StrategyId, { title: string; content: React.R
     )
   },
   house_hack: {
-    title: 'House Hacking',
+    title: 'House Hack',
     content: (
       <>
         <p className="mb-3"><strong>House hacking</strong> is the <strong>ultimate beginner</strong> strategy where your biggest expense—housing—becomes your biggest asset instead!</p>
@@ -1576,19 +1576,23 @@ function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView
 
 // Metric row matching HTML design
 function MetricRow({ label, value }: { label: string; value: string }) {
+  // Check if value is negative (starts with - or contains negative currency like -$)
+  const isNegative = value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
   return (
     <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
       <span className="text-xs text-gray-500">{label}</span>
-      <span className="text-[0.9375rem] font-bold text-navy-900 font-mono">{value}</span>
+      <span className={`text-[0.9375rem] font-bold font-mono ${isNegative ? 'text-crimson-600' : 'text-navy-900'}`}>{value}</span>
     </div>
   )
 }
 
 function StatRow({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
+  // Check if value is negative
+  const isNegative = value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
   return (
     <div className={`flex items-center justify-between py-1.5 ${highlight ? 'bg-teal-50/50 -mx-3 px-3 rounded' : ''}`}>
       <span className="text-[11px] text-gray-500">{label}</span>
-      <span className={`text-xs font-medium ${highlight ? 'text-teal-600' : 'text-gray-700'}`}>{value}</span>
+      <span className={`text-xs font-medium ${isNegative ? 'text-crimson-600' : highlight ? 'text-brand-500' : 'text-gray-700'}`}>{value}</span>
     </div>
   )
 }
@@ -1643,7 +1647,7 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
             <MetricRow label="Annual Cash Flow" value={formatCurrency(calc.annualCashFlow)} />
             <MetricRow label="Cash-on-Cash Return" value={formatPercent(calc.cashOnCash)} />
             <MetricRow label="Cap Rate" value={formatPercent(calc.capRate)} />
-            <MetricRow label="DSCR" value={calc.dscr.toFixed(2)} />
+            <MetricRow label="Debt Service Coverage Ratio" value={calc.dscr.toFixed(2)} />
             <MetricRow label="NOI" value={formatCurrency(calc.noi)} />
             <MetricRow label="Cash Required" value={formatCurrency(calc.totalCashRequired)} />
           </div>
@@ -1992,8 +1996,8 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment }: {
             <div className="text-[10px] uppercase tracking-wider text-pink-600 font-medium mb-2">70% Rule Formula</div>
             <div className="text-xs text-gray-600 space-y-1">
               <div className="flex justify-between"><span>ARV × 70%</span><span className="font-medium">{formatCurrency(calc.arvMultiple)}</span></div>
-              <div className="flex justify-between"><span>− Repair Costs</span><span className="font-medium text-rose-600">−{formatCurrency(calc.rehabCost)}</span></div>
-              <div className="flex justify-between"><span>− Wholesale Fee</span><span className="font-medium text-rose-600">−{formatCurrency(calc.wholesaleFee)}</span></div>
+              <div className="flex justify-between"><span>− Repair Costs</span><span className="font-medium text-crimson-600">−{formatCurrency(calc.rehabCost)}</span></div>
+              <div className="flex justify-between"><span>− Wholesale Fee</span><span className="font-medium text-crimson-600">−{formatCurrency(calc.wholesaleFee)}</span></div>
               <div className="flex justify-between pt-1 border-t border-pink-200"><span className="font-semibold">= MAO</span><span className="font-bold text-pink-700">{formatCurrency(calc.mao)}</span></div>
             </div>
           </div>
@@ -2120,10 +2124,13 @@ function BreakdownRow({
   const baseClasses = `flex justify-between items-center py-1.5 px-2 ${indent ? 'pl-6' : ''} ${!isTotal ? 'border-b border-slate-100' : ''}`
   const totalClasses = isTotal ? 'bg-sky-50 rounded-lg mt-1 font-bold' : ''
   
+  // Auto-detect negative values from the string if not explicitly specified
+  const detectNegative = isNegative || value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
+  
   // Determine value color
   const getValueColor = () => {
     if (valueColor) return valueColor
-    if (isNegative) return 'text-crimson-600'
+    if (detectNegative) return 'text-crimson-600'
     if (isTotal) return 'text-navy-900'
     return 'text-navy-900'
   }
@@ -2330,15 +2337,15 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
         <div className="grid grid-cols-3 gap-2 mb-3">
           <div className="bg-slate-100 rounded-xl p-2 text-center">
             <div className="text-[0.75rem] text-gray-500 mb-1">CoC Return</div>
-            <div className={`text-[0.875rem] font-bold font-mono ${cashOnCash >= 0.08 ? 'text-brand-500' : 'text-amber-600'}`}>{formatPercent(cashOnCash)}</div>
+            <div className={`text-[0.875rem] font-bold font-mono ${cashOnCash < 0 ? 'text-crimson-600' : cashOnCash >= 0.08 ? 'text-brand-500' : 'text-amber-600'}`}>{formatPercent(cashOnCash)}</div>
           </div>
           <div className="bg-slate-100 rounded-xl p-2 text-center">
             <div className="text-[0.75rem] text-gray-500 mb-1">Cap Rate</div>
-            <div className={`text-[0.875rem] font-bold font-mono ${capRate >= 0.05 ? 'text-brand-500' : 'text-amber-600'}`}>{formatPercent(capRate)}</div>
+            <div className={`text-[0.875rem] font-bold font-mono ${capRate < 0 ? 'text-crimson-600' : capRate >= 0.05 ? 'text-brand-500' : 'text-amber-600'}`}>{formatPercent(capRate)}</div>
           </div>
           <div className="bg-slate-100 rounded-xl p-2 text-center">
-            <div className="text-[0.75rem] text-gray-500 mb-1">DSCR</div>
-            <div className={`text-[0.875rem] font-bold font-mono ${dscr >= 1.25 ? 'text-brand-500' : 'text-amber-600'}`}>{dscr.toFixed(2)}</div>
+            <div className="text-[0.75rem] text-gray-500 mb-1">Debt Service Coverage Ratio</div>
+            <div className={`text-[0.875rem] font-bold font-mono ${dscr < 0 ? 'text-crimson-600' : dscr >= 1.25 ? 'text-brand-500' : 'text-amber-600'}`}>{dscr.toFixed(2)}</div>
           </div>
         </div>
 
@@ -2361,7 +2368,7 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
               statusText={cashOnCash >= 0.08 ? '(Good)' : '(Low)'}
             />
             <MetricExplanation
-              name="DSCR"
+              name="Debt Service Coverage Ratio"
               formula={`${formatCurrency(noi)} ÷ ${formatCurrency(annualDebtService)}`}
               value={dscr.toFixed(2)}
               status={dscr >= 1.25 ? 'success' : 'warning'}
@@ -2508,11 +2515,11 @@ function STRAnalyticBreakdown({ calc, assumptions }: {
         <div className="grid grid-cols-3 gap-2 mb-3">
           <div className="bg-slate-100 rounded-xl p-2 text-center">
             <div className="text-[0.75rem] text-gray-500 mb-1">CoC Return</div>
-            <div className={`text-[0.875rem] font-bold font-mono ${cashOnCash >= 0.12 ? 'text-brand-500' : 'text-amber-600'}`}>{formatPercent(cashOnCash)}</div>
+            <div className={`text-[0.875rem] font-bold font-mono ${cashOnCash < 0 ? 'text-crimson-600' : cashOnCash >= 0.12 ? 'text-brand-500' : 'text-amber-600'}`}>{formatPercent(cashOnCash)}</div>
           </div>
           <div className="bg-slate-100 rounded-xl p-2 text-center">
             <div className="text-[0.75rem] text-gray-500 mb-1">Cap Rate</div>
-            <div className={`text-[0.875rem] font-bold font-mono ${capRate >= 0.06 ? 'text-brand-500' : 'text-amber-600'}`}>{formatPercent(capRate)}</div>
+            <div className={`text-[0.875rem] font-bold font-mono ${capRate < 0 ? 'text-crimson-600' : capRate >= 0.06 ? 'text-brand-500' : 'text-amber-600'}`}>{formatPercent(capRate)}</div>
           </div>
           <div className="bg-slate-100 rounded-xl p-2 text-center">
             <div className="text-[0.75rem] text-gray-500 mb-1">Revenue/Night</div>
@@ -2757,11 +2764,11 @@ function FlipAnalyticBreakdown({ calc, assumptions }: {
               </div>
               <div className="text-center">
                 <div className="text-[0.6875rem] text-gray-500 uppercase tracking-wide">- Purchase</div>
-                <div className="text-lg font-bold font-mono text-navy-900">-{formatCurrency(assumptions.purchasePrice)}</div>
+                <div className="text-lg font-bold font-mono text-crimson-600">-{formatCurrency(assumptions.purchasePrice)}</div>
               </div>
               <div className="text-center">
                 <div className="text-[0.6875rem] text-gray-500 uppercase tracking-wide">- Rehab</div>
-                <div className="text-lg font-bold font-mono text-navy-900">-{formatCurrency(assumptions.rehabCost)}</div>
+                <div className="text-lg font-bold font-mono text-crimson-600">-{formatCurrency(assumptions.rehabCost)}</div>
               </div>
             </div>
             <div className="flex justify-between items-center p-2 bg-white/50 rounded-lg">
