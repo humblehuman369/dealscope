@@ -33,9 +33,11 @@ export default function Landing2Page() {
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-6">
             <a href="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">IQ</span>
-              </div>
+              <img 
+                src="/images/investiq-logo-icon.png" 
+                alt="InvestIQ" 
+                className="w-12 h-12 rounded-xl"
+              />
               <span className="text-2xl font-bold text-[#07172e]">
                 Invest<span className="text-[#0465f2]">IQ</span>
               </span>
@@ -262,7 +264,7 @@ export default function Landing2Page() {
             </div>
             <div>
               <div className="text-6xl font-bold text-[#00e5ff] mb-2">100%</div>
-              <div className="text-xl font-semibold">Data-Driven Decisions</div>
+              <div className="text-xl font-semibold">Data-Driven Intelligence</div>
             </div>
           </div>
         </div>
@@ -316,7 +318,7 @@ export default function Landing2Page() {
           </div>
 
           <div className="text-center mt-12">
-            <p className="text-2xl font-bold text-[#07172e] mb-6">Ready to invest like a Guru?</p>
+            <p className="text-2xl font-bold text-[#07172e] mb-6">Intelligent Data - Smart Investment Decisions</p>
             <button
               onClick={() => setShowAuthModal('register')}
               className="px-12 py-4 h-16 bg-[#0465f2] text-white font-bold text-lg rounded-xl hover:opacity-90 transition-all"
@@ -332,9 +334,11 @@ export default function Landing2Page() {
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">IQ</span>
-              </div>
+              <img 
+                src="/images/investiq-logo-icon.png" 
+                alt="InvestIQ" 
+                className="w-12 h-12 rounded-xl"
+              />
               <span className="text-xl font-bold text-[#07172e]">
                 Invest<span className="text-[#0465f2]">IQ</span>
               </span>
