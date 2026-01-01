@@ -92,6 +92,26 @@ export default function Header() {
 
           {/* Right side - Actions */}
           <div className="flex items-center space-x-2">
+            {/* Context-aware navigation buttons */}
+            {isAuthenticated && pathname === '/dashboard' && (
+              <Link
+                href="/search"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium rounded-lg hover:from-teal-600 hover:to-cyan-700 transition-all shadow-sm"
+              >
+                <Search className="w-4 h-4" />
+                <span className="hidden sm:inline">Search</span>
+              </Link>
+            )}
+            {isAuthenticated && pathname === '/search' && (
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium rounded-lg hover:from-teal-600 hover:to-cyan-700 transition-all shadow-sm"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </Link>
+            )}
+            
             {/* Theme Toggle Switch */}
             <button
               onClick={toggleTheme}
