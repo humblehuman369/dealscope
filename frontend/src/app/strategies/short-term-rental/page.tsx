@@ -50,12 +50,12 @@ export default function ShortTermRentalPage() {
       </div>
 
       {/* Strategy Header */}
-      <div className="bg-gradient-to-r from-[#0465f2] to-[#00e5ff] py-16 text-center text-white mb-12">
-        <div className="max-w-[1280px] mx-auto px-8">
-          <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <TrendingUp className="w-12 h-12 text-[#0465f2]" />
+      <div className="bg-[#0465f2] py-8 text-white mb-12">
+        <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-center gap-6">
+          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center flex-shrink-0">
+            <TrendingUp className="w-10 h-10 text-[#0465f2]" />
           </div>
-          <h1 className="text-5xl font-extrabold">Short-Term Rental</h1>
+          <h1 className="text-4xl font-extrabold">Short-Term Rental</h1>
         </div>
       </div>
 
@@ -72,7 +72,7 @@ export default function ShortTermRentalPage() {
             <p className="text-lg text-[#07172e]">You can block off dates to use the property yourself for vacation!</p>
           </div>
 
-          <button onClick={() => router.push('/landing2')} className="w-full py-5 bg-gradient-to-r from-[#0465f2] to-[#00e5ff] text-white text-xl font-bold rounded-full hover:-translate-y-0.5 transition-transform">
+          <button onClick={() => router.push('/landing2')} className="w-full py-5 bg-[#0465f2] text-white text-xl font-bold rounded-full hover:bg-[#0354d1] transition-all">
             Got it!
           </button>
         </div>

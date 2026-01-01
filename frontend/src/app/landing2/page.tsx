@@ -310,7 +310,7 @@ export default function Landing2Page() {
           </div>
           
           <div className="text-center mt-8">
-            <p className="text-2xl font-bold text-[#07172e] mb-6">Are you ready to profit?</p>
+            <p className="text-2xl font-bold text-[#07172e] mb-6">Stop Guessing. Start Investing.</p>
             <button
               onClick={() => setShowAuthModal('register')}
               className="px-12 py-4 h-16 bg-[#0465f2] text-white font-bold text-lg rounded-xl hover:opacity-90 transition-all"
