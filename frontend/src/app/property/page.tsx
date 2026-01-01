@@ -820,7 +820,7 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
   )
 }
 
-// Adjustment slider for ±50% range with center at 0%
+// Adjustment slider for ±50% range with center at 0% - matches HTML design
 function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = false }: {
   label: string; baseValue: number; adjustment: number; onChange: (adj: number) => void; compact?: boolean
 }) {
@@ -829,31 +829,33 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
   const computedValue = Math.round(baseValue * (1 + adjustment))
   const adjPercent = adjustment * 100
   const adjSign = adjustment >= 0 ? '+' : ''
-  const thumbRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${sliderPosition}%`)
-  }, [sliderPosition])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[11px] text-gray-500">{label}</span>
+        <span className="text-xs text-gray-500 font-medium">{label}</span>
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-medium text-gray-700">{formatCurrency(computedValue)}</span>
-          <span className={`text-[10px] font-medium ${adjustment === 0 ? 'text-gray-400' : 'text-forest-500'}`}>
+          <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(computedValue)}</span>
+          <span className="text-[0.6875rem] font-semibold text-brand-500">
             {adjSign}{adjPercent.toFixed(0)}%
           </span>
         </div>
       </div>
-      <div className="relative h-1">
-        {/* Background gradient - green as value increases */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-crimson-400 via-gray-200 to-forest-500" />
-        {/* Center line indicator - thin */}
-        <div className="absolute top-0 left-1/2 w-px h-full bg-gray-400 -translate-x-1/2 z-10" />
+      <div className="relative h-[3px] mt-1.5">
+        {/* Gray background track */}
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        {/* Gradient fill from left to thumb position */}
         <div 
-          ref={thumbRef}
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-forest-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb"
+          className="absolute top-0 left-0 h-full rounded-sm"
+          style={{ 
+            width: `${sliderPosition}%`,
+            background: 'linear-gradient(90deg, #00e5ff 0%, #0465f2 100%)'
+          }}
+        />
+        {/* Thumb */}
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab"
+          style={{ left: `${sliderPosition}%`, transform: 'translate(-50%, -50%)' }}
         />
         <input 
           type="range" 
@@ -871,30 +873,35 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
   )
 }
 
-// Percentage slider for 0-100% range
+// Percentage slider for 0-100% range - matches HTML design
 function PercentSlider({ label, value, onChange, compact = false, maxPercent = 100 }: {
   label: string; value: number; onChange: (value: number) => void; compact?: boolean; maxPercent?: number
 }) {
   const percentage = Math.round((value / (maxPercent / 100)) * 100)
   const displayPercent = (value * 100).toFixed(1)
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${100 - percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[11px] text-gray-500">{label}</span>
-        <span className="text-xs font-medium text-gray-700">{displayPercent}%</span>
+        <span className="text-xs text-gray-500 font-medium">{label}</span>
+        <span className="text-xs font-bold text-navy-900 font-mono">{displayPercent}%</span>
       </div>
-      <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
-        <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+      <div className="relative h-[3px] mt-1.5">
+        {/* Gray background track */}
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        {/* Gradient fill from left to thumb position */}
+        <div 
+          className="absolute top-0 left-0 h-full rounded-sm"
+          style={{ 
+            width: `${percentage}%`,
+            background: 'linear-gradient(90deg, #00e5ff 0%, #0465f2 100%)'
+          }}
+        />
+        {/* Thumb */}
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab"
+          style={{ left: `${percentage}%`, transform: 'translate(-50%, -50%)' }}
+        />
         <input 
           type="range" 
           min={0} 
@@ -911,34 +918,39 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
   )
 }
 
-// Percentage slider that shows both $ amount and % (for Down Payment, Rehab Cost)
+// Percentage slider that shows both $ amount and % (for Down Payment, Rehab Cost) - matches HTML design
 function PercentDollarSlider({ label, value, baseAmount, onChange, compact = false, maxPercent = 100 }: {
   label: string; value: number; baseAmount: number; onChange: (value: number) => void; compact?: boolean; maxPercent?: number
 }) {
   const percentage = Math.round((value / (maxPercent / 100)) * 100)
   const displayPercent = (value * 100).toFixed(1)
   const dollarValue = Math.round(baseAmount * value)
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${100 - percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[11px] text-gray-500">{label}</span>
+        <span className="text-xs text-gray-500 font-medium">{label}</span>
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-medium text-gray-700">{formatCurrency(dollarValue)}</span>
-          <span className="text-[10px] text-gray-400">({displayPercent}%)</span>
+          <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(dollarValue)}</span>
+          <span className="text-[0.6875rem] font-semibold text-brand-500">({displayPercent}%)</span>
         </div>
       </div>
-      <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
-        <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+      <div className="relative h-[3px] mt-1.5">
+        {/* Gray background track */}
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        {/* Gradient fill from left to thumb position */}
+        <div 
+          className="absolute top-0 left-0 h-full rounded-sm"
+          style={{ 
+            width: `${percentage}%`,
+            background: 'linear-gradient(90deg, #00e5ff 0%, #0465f2 100%)'
+          }}
+        />
+        {/* Thumb */}
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab"
+          style={{ left: `${percentage}%`, transform: 'translate(-50%, -50%)' }}
+        />
         <input 
           type="range" 
           min={0} 
@@ -956,30 +968,33 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
 }
 
 // Maintenance slider that shows both % and calculated $ value
+// Maintenance slider - matches HTML design
 function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
   value: number; onChange: (value: number) => void; annualRent: number; compact?: boolean
 }) {
   const percentage = Math.round((value / 0.30) * 100) // maxPercent is 30%
   const displayPercent = (value * 100).toFixed(1)
   const monthlyValue = Math.round((annualRent * value) / 12) // Monthly calculation
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${100 - percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[11px] text-gray-500">Maintenance</span>
-        <span className="text-xs font-medium text-gray-700">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
+        <span className="text-xs text-gray-500 font-medium">Maintenance</span>
+        <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
-      <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
-        <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+      <div className="relative h-[3px] mt-1.5">
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        <div 
+          className="absolute top-0 left-0 h-full rounded-sm"
+          style={{ 
+            width: `${percentage}%`,
+            background: 'linear-gradient(90deg, #00e5ff 0%, #0465f2 100%)'
+          }}
+        />
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab"
+          style={{ left: `${percentage}%`, transform: 'translate(-50%, -50%)' }}
+        />
         <input 
           type="range" 
           min={0} 
@@ -996,31 +1011,33 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
   )
 }
 
-// Management slider with dollar value display (like Maintenance)
+// Management slider - matches HTML design
 function ManagementSlider({ value, onChange, annualRent, compact = false }: {
   value: number; onChange: (value: number) => void; annualRent: number; compact?: boolean
 }) {
   const percentage = Math.round((value / 0.30) * 100) // maxPercent is 30%
   const displayPercent = (value * 100).toFixed(1)
   const monthlyValue = Math.round((annualRent * value) / 12) // Monthly calculation
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${100 - percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[11px] text-gray-500">Management</span>
-        <span className="text-xs font-medium text-gray-700">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
+        <span className="text-xs text-gray-500 font-medium">Management</span>
+        <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
-      <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
-        <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+      <div className="relative h-[3px] mt-1.5">
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        <div 
+          className="absolute top-0 left-0 h-full rounded-sm"
+          style={{ 
+            width: `${percentage}%`,
+            background: 'linear-gradient(90deg, #00e5ff 0%, #0465f2 100%)'
+          }}
+        />
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab"
+          style={{ left: `${percentage}%`, transform: 'translate(-50%, -50%)' }}
+        />
         <input 
           type="range" 
           min={0} 
@@ -1037,30 +1054,32 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
   )
 }
 
-// Discrete slider for rooms rented (1 to totalBedrooms)
+// Discrete slider for rooms rented - matches HTML design
 function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = false }: {
   roomsRented: number; totalBedrooms: number; onChange: (rooms: number) => void; compact?: boolean
 }) {
   const maxRooms = Math.max(1, totalBedrooms - 1) // Can't rent all rooms - owner needs 1
   const percentage = totalBedrooms > 1 ? ((roomsRented - 1) / (maxRooms - 1)) * 100 : 50
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${100 - percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[11px] text-gray-500">Rooms Rented</span>
-        <span className="text-xs font-medium text-gray-700">{roomsRented} of {totalBedrooms} rooms</span>
+        <span className="text-xs text-gray-500 font-medium">Rooms Rented</span>
+        <span className="text-xs font-bold text-navy-900 font-mono">{roomsRented} of {totalBedrooms} rooms</span>
       </div>
-      <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
-        <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+      <div className="relative h-[3px] mt-1.5">
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        <div 
+          className="absolute top-0 left-0 h-full rounded-sm"
+          style={{ 
+            width: `${percentage}%`,
+            background: 'linear-gradient(90deg, #00e5ff 0%, #0465f2 100%)'
+          }}
+        />
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab"
+          style={{ left: `${percentage}%`, transform: 'translate(-50%, -50%)' }}
+        />
         <input 
           type="range" 
           min={1} 
@@ -1308,34 +1327,36 @@ function StrategyGrid({
   )
 }
 
-// ARV Slider - shows computed value based on Purchase Price + percentage
+// ARV Slider - matches HTML design
 function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
   purchasePrice: number; arvPct: number; onChange: (value: number) => void; compact?: boolean
 }) {
   const computedArv = Math.round(purchasePrice * (1 + arvPct))
   const percentage = Math.round(arvPct * 100)
   const displayPercent = (arvPct * 100).toFixed(0)
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${100 - percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[11px] text-gray-500">After Repair Value</span>
+        <span className="text-xs text-gray-500 font-medium">After Repair Value</span>
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-medium text-gray-700">{formatCurrency(computedArv)}</span>
-          <span className="text-[10px] font-medium text-teal-600">+{displayPercent}%</span>
+          <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(computedArv)}</span>
+          <span className="text-[0.6875rem] font-semibold text-brand-500">+{displayPercent}%</span>
         </div>
       </div>
-      <div className="relative h-1">
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
-        <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+      <div className="relative h-[3px] mt-1.5">
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        <div 
+          className="absolute top-0 left-0 h-full rounded-sm"
+          style={{ 
+            width: `${percentage}%`,
+            background: 'linear-gradient(90deg, #00e5ff 0%, #0465f2 100%)'
+          }}
+        />
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab"
+          style={{ left: `${percentage}%`, transform: 'translate(-50%, -50%)' }}
+        />
         <input 
           type="range" 
           min={0} 
