@@ -666,7 +666,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
         <div className="relative animate-fadeUp" style={{ animationDelay: '0.2s' }}>
           <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-[#07172e]/20">
             <img 
-              src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1973&q=80" 
+              src="/images/hero-phone-scan.png" 
               alt="InvestIQ - Point and scan any property" 
               className="w-full rounded-3xl"
             />
@@ -821,8 +821,8 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
           
           <div className="relative z-10 max-w-[400px] mx-auto lg:mx-0">
             <img 
-              src="https://images.unsplash.com/photo-1560520031-3a4dc4e9de0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1973&q=80" 
-              alt="InvestIQ in action" 
+              src="/images/dashboard-screenshot.png" 
+              alt="InvestIQ Dashboard - Investment Analysis" 
               className="w-full rounded-2xl shadow-2xl shadow-black/30"
             />
           </div>
