@@ -28,20 +28,20 @@ export default function BRRRRPage() {
         <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-between">
           <a href="/" className="flex items-center gap-3">
             <img src="/images/investiq-logo-icon.png" alt="InvestIQ" className="h-12 w-12 rounded-xl" />
-            <span className="text-2xl font-bold text-[#07172e]">Invest<span className="text-[#0465f2]">IQ</span></span>
+            <span className="text-2xl font-bold text-navy-900">Invest<span className="text-brand-500">IQ</span></span>
           </a>
           <nav className="flex items-center gap-4">
             {isAuthenticated && user ? (
               <>
-                <button onClick={() => router.push('/dashboard')} className="px-6 py-3 bg-[#0465f2] text-white font-bold rounded-lg hover:bg-[#0354d1] transition-all flex items-center gap-2">
+                <button onClick={() => router.push('/dashboard')} className="px-6 py-3 bg-brand-500 text-white font-bold rounded-lg hover:bg-brand-600 transition-all flex items-center gap-2">
                   <LayoutGrid className="w-4 h-4" /> Dashboard
                 </button>
-                <button onClick={logout} className="px-6 py-3 bg-transparent text-[#07172e] font-bold rounded-lg hover:bg-black/5 transition-all">Sign Out</button>
+                <button onClick={logout} className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-lg hover:bg-black/5 transition-all">Sign Out</button>
               </>
             ) : (
               <>
-                <button onClick={() => setShowAuthModal('login')} className="px-6 py-3 bg-transparent text-[#07172e] font-bold rounded-lg hover:bg-black/5 transition-all">Sign In</button>
-                <button onClick={() => setShowAuthModal('register')} className="px-6 py-3 bg-[#0465f2] text-white font-bold rounded-lg hover:bg-[#0354d1] transition-all">Get Started</button>
+                <button onClick={() => setShowAuthModal('login')} className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-lg hover:bg-black/5 transition-all">Sign In</button>
+                <button onClick={() => setShowAuthModal('register')} className="px-6 py-3 bg-brand-500 text-white font-bold rounded-lg hover:bg-brand-600 transition-all">Get Started</button>
               </>
             )}
           </nav>
@@ -56,10 +56,10 @@ export default function BRRRRPage() {
       </div>
 
       {/* Strategy Header */}
-      <div className="bg-[#0465f2] py-8 text-white mb-12">
+      <div className="bg-brand-500 py-8 text-white mb-12">
         <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-center gap-6">
           <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center flex-shrink-0">
-            <DollarSign className="w-10 h-10 text-[#0465f2]" />
+            <DollarSign className="w-10 h-10 text-brand-500" />
           </div>
           <h1 className="text-4xl font-extrabold">BRRRR</h1>
         </div>
@@ -68,17 +68,17 @@ export default function BRRRRPage() {
       {/* Main Content */}
       <div className="max-w-[1280px] mx-auto px-8 pb-16">
         <div className="bg-white rounded-3xl p-12 shadow-lg mb-8">
-          <h2 className="text-3xl font-bold text-[#07172e] mb-6">Buy, Rehab, Rent, Refinance, Repeat</h2>
+          <h2 className="text-3xl font-bold text-navy-900 mb-6">Buy, Rehab, Rent, Refinance, Repeat</h2>
           <p className="text-lg text-[#4a5568] leading-relaxed mb-6">
             <strong>BRRRR</strong> stands for Buy, Rehab, Rent, Refinance, Repeat—and it&apos;s the holy grail for serious investors who want to scale FAST!
           </p>
 
-          <div className="bg-gradient-to-r from-[#e0f2fe] to-[#dbeafe] border-l-4 border-[#0465f2] rounded-lg p-6 my-8">
-            <h3 className="text-2xl font-bold text-[#07172e] mb-4">The goal is &quot;infinite return&quot;</h3>
-            <p className="text-lg text-[#07172e]">When you&apos;ve pulled out 100% of your investment but still own a property that pays you every month.</p>
+          <div className="bg-gradient-to-r from-[#e0f2fe] to-[#dbeafe] border-l-4 border-brand-500 rounded-lg p-6 my-8">
+            <h3 className="text-2xl font-bold text-navy-900 mb-4">The goal is &quot;infinite return&quot;</h3>
+            <p className="text-lg text-navy-900">When you&apos;ve pulled out 100% of your investment but still own a property that pays you every month.</p>
           </div>
 
-          <h3 className="text-2xl font-bold text-[#07172e] mb-6">The BRRRR Process:</h3>
+          <h3 className="text-2xl font-bold text-navy-900 mb-6">The BRRRR Process:</h3>
           <div className="space-y-4">
             {steps.map((step) => (
               <div key={step.num} className="bg-gradient-to-r from-[#f0f9ff] to-[#e0f2fe] rounded-xl p-6 flex items-start gap-6">
@@ -86,34 +86,34 @@ export default function BRRRRPage() {
                   {step.num}
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-[#07172e] mb-1">{step.title}</h4>
+                  <h4 className="text-xl font-bold text-navy-900 mb-1">{step.title}</h4>
                   <p className="text-[#4a5568]">{step.desc}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <button onClick={() => router.push('/')} className="w-full py-5 bg-[#0465f2] text-white text-xl font-bold rounded-full hover:bg-[#0354d1] transition-all mt-8">
+          <button onClick={() => router.push('/')} className="w-full py-5 bg-brand-500 text-white text-xl font-bold rounded-full hover:bg-brand-600 transition-all mt-8">
             Got it!
           </button>
         </div>
 
         <div className="bg-white rounded-3xl p-12 shadow-lg">
-          <h2 className="text-3xl font-bold text-[#07172e] mb-8">Why BRRRR Works</h2>
+          <h2 className="text-3xl font-bold text-navy-900 mb-8">Why BRRRR Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center p-8">
               <div className="text-5xl mb-4">♻️</div>
-              <h4 className="text-xl font-bold text-[#07172e] mb-2">Recycle Capital</h4>
+              <h4 className="text-xl font-bold text-navy-900 mb-2">Recycle Capital</h4>
               <p className="text-[#4a5568]">Reuse the same money repeatedly</p>
             </div>
             <div className="text-center p-8">
               <div className="text-5xl mb-4">📊</div>
-              <h4 className="text-xl font-bold text-[#07172e] mb-2">Build Equity Fast</h4>
+              <h4 className="text-xl font-bold text-navy-900 mb-2">Build Equity Fast</h4>
               <p className="text-[#4a5568]">Force appreciation through rehab</p>
             </div>
             <div className="text-center p-8">
               <div className="text-5xl mb-4">🚀</div>
-              <h4 className="text-xl font-bold text-[#07172e] mb-2">Scale Quickly</h4>
+              <h4 className="text-xl font-bold text-navy-900 mb-2">Scale Quickly</h4>
               <p className="text-[#4a5568]">Build a portfolio in months, not years</p>
             </div>
           </div>
@@ -125,11 +125,11 @@ export default function BRRRRPage() {
         <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/images/investiq-logo-icon.png" alt="InvestIQ" className="h-12 w-12 rounded-xl" />
-            <span className="text-xl font-bold text-[#07172e]">Invest<span className="text-[#0465f2]">IQ</span></span>
+            <span className="text-xl font-bold text-navy-900">Invest<span className="text-brand-500">IQ</span></span>
           </div>
           <div className="text-right">
             <p className="text-sm text-[#4a5568]">© 2026 InvestIQ. All rights reserved.</p>
-            <p className="text-sm font-semibold text-[#07172e]">Invest like a Guru!</p>
+            <p className="text-sm font-semibold text-navy-900">Invest like a Guru!</p>
           </div>
         </div>
       </footer>

@@ -95,7 +95,7 @@ function PropertySearchInput({
     <div className="space-y-2">
       <div className="flex gap-2">
         <div className="flex-1 relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
           <input
             type="text"
             value={address}
@@ -418,7 +418,7 @@ function ComparePageContent() {
   const winnerId = sortedProperties[0]?.id
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-neutral-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -496,7 +496,7 @@ function ComparePageContent() {
               {/* Add Property Placeholder */}
               {properties.length < 4 && (
                 <div className="bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center min-h-[400px]">
-                  <div className="text-center text-gray-400">
+                  <div className="text-center text-neutral-400">
                     <Plus className="w-12 h-12 mx-auto mb-2" />
                     <p className="font-medium">Add Property</p>
                     <p className="text-sm">{4 - properties.length} slots remaining</p>
@@ -515,7 +515,7 @@ function ComparePageContent() {
             
             {/* Winner Summary */}
             {properties.length >= 2 && (
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-6 text-white">
+              <div className="bg-gradient-to-r from-brand-500 to-accent-500 rounded-2xl p-6 text-white">
                 <div className="flex items-center gap-4">
                   <Award className="w-12 h-12" />
                   <div>
@@ -562,7 +562,7 @@ function ComparePageContent() {
 export default function ComparePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
       </div>
     }>

@@ -37,17 +37,17 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f5f7]">
+    <div className="min-h-screen bg-neutral-50">
       {/* Hero Section */}
       <section className="px-6 py-16">
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 leading-tight">
             Analyze Any Property<br />
-            <span className="bg-gradient-to-r from-violet-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-brand bg-clip-text text-transparent">
               in Seconds
             </span>
           </h1>
-          <p className="text-gray-400 text-lg mb-10 max-w-xl mx-auto font-light">
+          <p className="text-neutral-500 text-lg mb-10 max-w-xl mx-auto font-light">
             Get instant investment analytics across 6 strategies. Make data-driven decisions with confidence.
           </p>
 
@@ -55,19 +55,19 @@ export default function SearchPage() {
           <div className="bg-white rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-3 max-w-2xl mx-auto">
             <form onSubmit={handleSearch} className="flex items-center gap-2">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" strokeWidth={1.5} />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" strokeWidth={1.5} />
                 <input
                   type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Enter property address..."
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-200 transition-all"
+                  className="w-full pl-12 pr-4 py-4 bg-neutral-100 rounded-2xl text-navy-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-200 transition-all"
                 />
               </div>
               <button
                 type="submit"
                 disabled={isSearching || !address.trim()}
-                className="px-8 py-4 bg-gradient-to-r from-violet-500 via-cyan-500 to-emerald-500 text-white font-semibold rounded-2xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                className="px-8 py-4 bg-gradient-brand text-white font-semibold rounded-2xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
               >
                 {isSearching ? (
                   <span className="flex items-center gap-2">
@@ -88,7 +88,7 @@ export default function SearchPage() {
           <div className="flex items-center justify-center gap-6 mt-6">
             <a
               href="/compare"
-              className="flex items-center gap-1 text-sm text-gray-400 hover:text-violet-500 transition-colors"
+              className="flex items-center gap-1 text-sm text-neutral-500 hover:text-brand-500 transition-colors"
             >
               <BarChart3 className="w-4 h-4" strokeWidth={1.5} />
               Compare properties
@@ -98,18 +98,18 @@ export default function SearchPage() {
           {/* Stats */}
           <div className="flex items-center justify-center gap-12 mt-16">
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-800">6</div>
-              <div className="text-sm text-gray-400 font-light">Strategies</div>
+              <div className="text-3xl font-bold text-navy-900">6</div>
+              <div className="text-sm text-neutral-500 font-light">Strategies</div>
             </div>
-            <div className="w-px h-10 bg-gray-200" />
+            <div className="w-px h-10 bg-neutral-200" />
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-800">&lt;3s</div>
-              <div className="text-sm text-gray-400 font-light">Analysis</div>
+              <div className="text-3xl font-bold text-navy-900">&lt;3s</div>
+              <div className="text-sm text-neutral-500 font-light">Analysis</div>
             </div>
-            <div className="w-px h-10 bg-gray-200" />
+            <div className="w-px h-10 bg-neutral-200" />
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-800">140M+</div>
-              <div className="text-sm text-gray-400 font-light">Properties</div>
+              <div className="text-3xl font-bold text-navy-900">140M+</div>
+              <div className="text-sm text-neutral-500 font-light">Properties</div>
             </div>
           </div>
         </div>
@@ -119,8 +119,8 @@ export default function SearchPage() {
       <section className="px-6 py-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Six Investment Strategies</h2>
-            <p className="text-gray-400 font-light">Find the approach that fits your goals</p>
+            <h2 className="text-2xl font-bold text-navy-900 mb-2">Six Investment Strategies</h2>
+            <p className="text-neutral-500 font-light">Find the approach that fits your goals</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -142,10 +142,10 @@ export default function SearchPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-semibold text-gray-800">{strategy.name}</h3>
+                        <h3 className="font-semibold text-navy-900">{strategy.name}</h3>
                         <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-1 transition-all" />
                       </div>
-                      <p className="text-sm text-gray-400 font-light">{strategy.description}</p>
+                      <p className="text-sm text-neutral-500 font-light">{strategy.description}</p>
                     </div>
                   </div>
                 </div>
@@ -159,8 +159,8 @@ export default function SearchPage() {
       <section className="px-6 py-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Powerful Analytics</h2>
-            <p className="text-gray-400 font-light">Everything you need to make informed decisions</p>
+            <h2 className="text-2xl font-bold text-navy-900 mb-2">Powerful Analytics</h2>
+            <p className="text-neutral-500 font-light">Everything you need to make informed decisions</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -177,8 +177,8 @@ export default function SearchPage() {
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses[feature.color]} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
                     <Icon className="w-6 h-6 text-white" strokeWidth={1.5} />
                   </div>
-                  <h3 className="font-semibold text-gray-800 mb-1">{feature.title}</h3>
-                  <p className="text-sm text-gray-400 font-light">{feature.description}</p>
+                  <h3 className="font-semibold text-navy-900 mb-1">{feature.title}</h3>
+                  <p className="text-sm text-neutral-500 font-light">{feature.description}</p>
                 </div>
               )
             })}
@@ -189,12 +189,12 @@ export default function SearchPage() {
       {/* CTA Section */}
       <section className="px-6 py-16">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-r from-violet-500 via-cyan-500 to-emerald-500 rounded-3xl p-10 text-center text-white shadow-xl">
+          <div className="bg-gradient-brand rounded-3xl p-10 text-center text-white shadow-xl">
             <h2 className="text-3xl font-bold mb-3">Ready to Analyze?</h2>
             <p className="text-white/80 mb-8 font-light">Enter any US property address and get instant investment analytics.</p>
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="px-8 py-4 bg-white text-gray-800 font-semibold rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 mx-auto"
+              className="px-8 py-4 bg-white text-navy-900 font-semibold rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 mx-auto"
             >
               Search Property
               <ArrowRight className="w-5 h-5" />

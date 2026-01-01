@@ -29,7 +29,7 @@ const ChartsView = dynamic(() => import('@/components/ChartsView'), { loading: (
 const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), { loading: () => <LoadingCard /> })
 
 function LoadingCard() {
-  return <div className="animate-pulse bg-gray-100 dark:bg-slate-800 rounded-2xl h-64" />
+  return <div className="animate-pulse bg-gray-100 dark:bg-navy-800 rounded-2xl h-64" />
 }
 
 // ============================================
@@ -713,7 +713,7 @@ function TopNav({ property }: { property: PropertyData }) {
   }
   
   return (
-    <div className="mb-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm dark:shadow-lg overflow-hidden transition-colors duration-300">
+    <div className="mb-4 bg-white dark:bg-navy-800 rounded-xl shadow-sm dark:shadow-lg overflow-hidden transition-colors duration-300">
       {/* Main row - always horizontal on md+, stacked on mobile */}
       <div className="flex flex-col md:flex-row md:items-start">
         {/* Left: Property Info */}
@@ -735,7 +735,7 @@ function TopNav({ property }: { property: PropertyData }) {
             {/* Estimated Value - Line 3 */}
             {estimatedValue > 0 && (
               <div className="mt-1">
-                <span className="text-sm font-semibold text-teal-600 dark:text-teal-400 whitespace-nowrap">
+                <span className="text-sm font-semibold text-teal-600 dark:text-brand-400 whitespace-nowrap">
                   Est. {formatCurrency(estimatedValue)}
                 </span>
               </div>
@@ -750,10 +750,10 @@ function TopNav({ property }: { property: PropertyData }) {
               saveStatus === 'saved'
                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 cursor-default'
                 : saveStatus === 'saving'
-                ? 'bg-gray-100 text-gray-400 dark:bg-slate-700 dark:text-gray-500 cursor-wait'
+                ? 'bg-gray-100 text-gray-400 dark:bg-navy-700 dark:text-gray-500 cursor-wait'
                 : saveStatus === 'error'
                 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
-                : 'bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/30 dark:text-teal-400 dark:hover:bg-teal-900/50'
+                : 'bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-900/30 dark:text-brand-400 dark:hover:bg-teal-900/50'
             }`}
             title={saveStatus === 'saved' ? 'Property saved to dashboard' : 'Save property to your dashboard'}
           >
@@ -818,7 +818,7 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
       <div className="relative h-1">
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} aria-label={label} title={label} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
       </div>
     </div>
@@ -858,7 +858,7 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
         <div className="absolute top-0 left-1/2 w-px h-full bg-gray-400 -translate-x-1/2 z-10" />
         <div 
           ref={thumbRef}
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb"
         />
         <input 
           type="range" 
@@ -899,7 +899,7 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
       <div className="relative h-1">
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
           type="range" 
           min={0} 
@@ -943,7 +943,7 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
       <div className="relative h-1">
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
           type="range" 
           min={0} 
@@ -984,7 +984,7 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
       <div className="relative h-1">
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
           type="range" 
           min={0} 
@@ -1025,7 +1025,7 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
       <div className="relative h-1">
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
           type="range" 
           min={0} 
@@ -1065,7 +1065,7 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
       <div className="relative h-1">
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
           type="range" 
           min={1} 
@@ -1083,7 +1083,7 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
         {Array.from({ length: maxRooms }, (_, i) => i + 1).map(room => (
           <div 
             key={room} 
-            className={`w-1.5 h-1.5 rounded-full ${room <= roomsRented ? 'bg-teal-500' : 'bg-gray-200'}`}
+            className={`w-1.5 h-1.5 rounded-full ${room <= roomsRented ? 'bg-brand-500' : 'bg-gray-200'}`}
           />
         ))}
       </div>
@@ -1179,7 +1179,7 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
   // Accent bar color based on rating
   const accentColor = metrics.rating === 'poor' ? 'bg-rose-500' 
     : metrics.rating === 'fair' ? 'bg-amber-500'
-    : metrics.rating === 'good' ? 'bg-teal-500'
+    : metrics.rating === 'good' ? 'bg-brand-500'
     : 'bg-emerald-500'
   
   const handleInfoClick = (e: React.MouseEvent) => {
@@ -1387,7 +1387,7 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
       <div className="relative h-1">
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-200 via-teal-300 to-teal-500" />
         <div ref={fillRef} className="absolute top-0 right-0 h-full bg-gray-100 rounded-r-full transition-all duration-150 slider-fill" />
-        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-teal-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
+        <div ref={thumbRef} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb" />
         <input 
           type="range" 
           min={0} 
@@ -1408,7 +1408,7 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
 function StepHeader({ step, title, subtitle }: { step: number; title: string; subtitle?: string }) {
   return (
     <div className="flex items-center gap-3 mb-4">
-      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-600 text-white text-base font-bold shadow-sm">
+      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-600 text-white text-base font-bold shadow-sm">
         {step}
       </div>
       <div>
@@ -1501,7 +1501,7 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
             <span className="text-gray-400">—</span>
             <span>Build your renovation budget item by item</span>
             <span className="text-teal-600 font-semibold">{formatCurrency(rehabBudget)}</span>
-            <ChevronRight className="w-3 h-3 text-gray-400 group-hover:text-teal-500 group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="w-3 h-3 text-gray-400 group-hover:text-brand-500 group-hover:translate-x-0.5 transition-all" />
           </a>
         </div>
       </div>
@@ -2176,7 +2176,7 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
     <div className="mt-4 pt-4 border-t border-gray-200">
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
-        <Calculator className="w-4 h-4 text-teal-500" />
+        <Calculator className="w-4 h-4 text-brand-500" />
         <h4 className="text-sm font-semibold text-gray-700">Full Analytic Breakdown</h4>
       </div>
 
@@ -3410,12 +3410,12 @@ function PropertyPageContent() {
   if (error || !property) {
     return (
       <div className="min-h-screen bg-[#e8eeef] dark:bg-slate-950 flex items-center justify-center p-6 transition-colors duration-300">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-8 max-w-md text-center">
+        <div className="bg-white dark:bg-navy-800 rounded-2xl shadow-lg p-8 max-w-md text-center">
           <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto mb-4" strokeWidth={1.5} />
           <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-2">Unable to Load Property</h2>
           <p className="text-gray-400 dark:text-gray-500 text-sm mb-6">{error || 'Property data is null'}</p>
           <div className="flex gap-3 justify-center">
-            <a href="/" className="px-4 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 transition-colors">Back to Search</a>
+            <a href="/" className="px-4 py-2 bg-gray-100 dark:bg-navy-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 transition-colors">Back to Search</a>
           </div>
         </div>
       </div>
