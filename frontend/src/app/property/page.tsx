@@ -1176,25 +1176,17 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
 }) {
   const [showInfoModal, setShowInfoModal] = useState(false)
   
-  // Use actual numeric value for profit/loss coloring
-  const isProfit = metrics.primaryValue > 0
+  // Use actual numeric value for profit/loss coloring - blue for positive, red for negative
   const isLoss = metrics.primaryValue < 0
+  const primaryColor = isLoss ? 'text-crimson-500' : 'text-brand-500'
   
-  // Refined color classes - subtle but clear
-  const primaryColor = isLoss 
-    ? 'text-rose-600' 
-    : isProfit 
-      ? 'text-teal-600' 
-      : 'text-gray-400'
+  // Accent bar color - blue for all
+  const accentColor = 'bg-brand-500'
   
-  // Get rating display config
-  const ratingDisplay = ratingConfig[metrics.rating]
-  
-  // Accent bar color based on rating
-  const accentColor = metrics.rating === 'poor' ? 'bg-rose-500' 
-    : metrics.rating === 'fair' ? 'bg-amber-500'
-    : metrics.rating === 'good' ? 'bg-brand-500'
-    : 'bg-emerald-500'
+  // Shortened names for strategy boxes
+  const displayName = strategy.id === 'ltr' ? 'Long Rental' 
+    : strategy.id === 'str' ? 'Short Rental' 
+    : strategy.name
   
   const handleInfoClick = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent card selection when clicking info
@@ -1226,10 +1218,10 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
         </button>
         
         <div className="px-2.5 py-2 h-full flex flex-col">
-          {/* Strategy Name */}
-          <h3 className="text-[11px] font-semibold text-gray-900 tracking-tight leading-tight mb-1.5 pr-5">{strategy.name}</h3>
+          {/* Strategy Name - shortened for boxes */}
+          <h3 className="text-[11px] font-semibold text-gray-900 tracking-tight leading-tight mb-1.5 pr-5">{displayName}</h3>
           
-          {/* Primary Value - Clear with profit/loss color */}
+          {/* Primary Value - Blue for positive, red for negative */}
           <div className={`text-xl font-semibold tracking-tight leading-none ${primaryColor}`}>
             {metrics.primary}
           </div>
@@ -1237,15 +1229,8 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
           
           {/* Secondary Metric - Value on top, label below */}
           <div className="pt-1.5 border-t border-gray-100/80">
-            <div className={`text-sm font-semibold ${metrics.secondaryLabel.includes('Profit') ? 'text-emerald-600' : 'text-gray-700'}`}>{metrics.secondary}</div>
-            <div className={`text-[9px] font-medium mt-px ${metrics.secondaryLabel.includes('Profit') ? 'text-emerald-500' : 'text-gray-500'}`}>{metrics.secondaryLabel}</div>
-          </div>
-          
-          {/* Rating Badge - Bottom right */}
-          <div className="mt-auto pt-2 flex justify-end">
-            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${ratingDisplay.bgColor} ${ratingDisplay.textColor} ${ratingDisplay.borderColor} border`}>
-              {ratingDisplay.label}
-            </span>
+            <div className="text-sm font-semibold text-gray-700">{metrics.secondary}</div>
+            <div className="text-[9px] font-medium mt-px text-gray-500">{metrics.secondaryLabel}</div>
           </div>
         </div>
       </button>
@@ -1282,7 +1267,11 @@ function StrategyGrid({
         const metrics = strategyMetrics[strategy.id]
         const isProfit = metrics.primaryValue > 0
         const isLoss = metrics.primaryValue < 0
-        const ratingDisplay = ratingConfig[metrics.rating]
+        
+        // Shortened names for strategy boxes only
+        const displayName = strategy.id === 'ltr' ? 'Long Rental' 
+          : strategy.id === 'str' ? 'Short Rental' 
+          : strategy.name
         
         return (
           <button
@@ -1301,12 +1290,12 @@ function StrategyGrid({
               </div>
             )}
             
-            {/* Strategy Name */}
-            <div className="text-[0.8125rem] font-semibold text-navy-900 mb-1.5">{strategy.name}</div>
+            {/* Strategy Name - shortened for boxes */}
+            <div className="text-[0.8125rem] font-semibold text-navy-900 mb-1.5">{displayName}</div>
             
-            {/* Primary Value */}
+            {/* Primary Value - Blue for positive, red for negative */}
             <div className={`text-lg font-bold font-mono mb-0.5 ${
-              isLoss ? 'text-crimson-500' : isProfit ? 'text-forest-500' : 'text-brand-500'
+              isLoss ? 'text-crimson-500' : 'text-brand-500'
             }`}>
               {metrics.primary}
             </div>
@@ -1314,12 +1303,7 @@ function StrategyGrid({
             
             {/* Secondary Value */}
             <div className="text-[0.9375rem] font-bold text-navy-900 mb-0.5">{metrics.secondary}</div>
-            <div className="text-[0.6875rem] text-gray-500 mb-1.5">{metrics.secondaryLabel}</div>
-            
-            {/* Rating Badge */}
-            <span className={`inline-block px-2.5 py-0.5 rounded-full text-[0.6875rem] font-semibold ${ratingDisplay.bgColor} ${ratingDisplay.textColor}`}>
-              {ratingDisplay.label}
-            </span>
+            <div className="text-[0.6875rem] text-gray-500">{metrics.secondaryLabel}</div>
           </button>
         )
       })}
