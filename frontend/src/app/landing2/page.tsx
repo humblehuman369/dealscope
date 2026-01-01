@@ -233,7 +233,7 @@ export default function Landing2Page() {
           <div className="flex items-center gap-4">
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
             <div className="bg-[#00e5ff] text-black py-4 px-8 font-bold text-lg md:text-xl" style={{ clipPath: 'polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%)' }}>
-              &quot;InvestIQ: The fastest path from address to investable...&quot;
+              &quot;The fastest path from address to investable decision.&quot;
             </div>
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
           </div>
@@ -306,14 +306,13 @@ export default function Landing2Page() {
             <div className="h-1 w-24 bg-[#0465f2] mx-auto"></div>
           </div>
           
-          {/* Dashboard Image Placeholder */}
-          <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div className="aspect-video bg-gradient-to-br from-[#07172e] to-[#0d2847] flex items-center justify-center">
-              <div className="text-center text-white/50">
-                <BarChart3 className="w-24 h-24 mx-auto mb-4" />
-                <p className="text-lg">Investment Analytics Dashboard</p>
-              </div>
-            </div>
+          {/* Dashboard Image */}
+          <div className="max-w-4xl mx-auto">
+            <img 
+              src="/images/dashboard-screenshot.png" 
+              alt="InvestIQ Investment Analytics Dashboard" 
+              className="w-full rounded-2xl shadow-2xl"
+            />
           </div>
 
           <div className="text-center mt-12">
