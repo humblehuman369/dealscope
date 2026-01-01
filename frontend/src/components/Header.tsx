@@ -33,19 +33,26 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-50 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-14">
+    <header className="bg-white dark:bg-navy-900 border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-50 transition-colors duration-300">
+      <div className="container-brand">
+        <div className="flex justify-between items-center h-16">
           {/* Left side - Logo & Nav */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center">
-              <span className="text-lg font-semibold text-gray-900 dark:text-white">InvestIQ</span>
+            <Link href="/" className="flex items-center gap-2">
+              <img 
+                src="/images/investiq-logo-icon.png" 
+                alt="InvestIQ" 
+                className="w-8 h-8 rounded-lg"
+              />
+              <span className="text-lg font-bold text-navy-900 dark:text-white">
+                Invest<span className="text-brand-500">IQ</span>
+              </span>
             </Link>
             <nav className="hidden md:flex items-center space-x-5">
               <Link 
                 href="/" 
                 className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  pathname === '/' ? 'text-teal-600 dark:text-teal-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  pathname === '/' ? 'text-brand-500 dark:text-brand-400' : 'text-neutral-600 dark:text-neutral-400 hover:text-navy-900 dark:hover:text-white'
                 }`}
               >
                 <ScanLine className="w-4 h-4" />
@@ -54,7 +61,7 @@ export default function Header() {
               <Link 
                 href="/search" 
                 className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  pathname === '/search' ? 'text-teal-600 dark:text-teal-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  pathname === '/search' ? 'text-brand-500 dark:text-brand-400' : 'text-neutral-600 dark:text-neutral-400 hover:text-navy-900 dark:hover:text-white'
                 }`}
               >
                 <Search className="w-4 h-4" />
@@ -63,7 +70,7 @@ export default function Header() {
               <Link 
                 href="/property" 
                 className={`text-sm font-medium transition-colors ${
-                  pathname?.startsWith('/property') ? 'text-teal-600 dark:text-teal-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  pathname?.startsWith('/property') ? 'text-brand-500 dark:text-brand-400' : 'text-neutral-600 dark:text-neutral-400 hover:text-navy-900 dark:hover:text-white'
                 }`}
               >
                 Property Analytics
@@ -71,7 +78,7 @@ export default function Header() {
               <Link 
                 href="/photos" 
                 className={`text-sm font-medium transition-colors ${
-                  pathname === '/photos' ? 'text-teal-600 dark:text-teal-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  pathname === '/photos' ? 'text-brand-500 dark:text-brand-400' : 'text-neutral-600 dark:text-neutral-400 hover:text-navy-900 dark:hover:text-white'
                 }`}
               >
                 Photos
@@ -80,7 +87,7 @@ export default function Header() {
                 <Link 
                   href="/dashboard" 
                   className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                    pathname === '/dashboard' ? 'text-teal-600 dark:text-teal-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    pathname === '/dashboard' ? 'text-brand-500 dark:text-brand-400' : 'text-neutral-600 dark:text-neutral-400 hover:text-navy-900 dark:hover:text-white'
                   }`}
                 >
                   <LayoutDashboard className="w-4 h-4" />
@@ -96,7 +103,7 @@ export default function Header() {
             {isAuthenticated && pathname === '/dashboard' && (
               <Link
                 href="/search"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium rounded-lg hover:from-teal-600 hover:to-cyan-700 transition-all shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-brand text-white text-sm font-medium rounded-lg hover:opacity-90 transition-all shadow-brand"
               >
                 <Search className="w-4 h-4" />
                 <span className="hidden sm:inline">Search</span>
@@ -105,7 +112,7 @@ export default function Header() {
             {isAuthenticated && pathname === '/search' && (
               <Link
                 href="/dashboard"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-teal-500 to-cyan-600 text-white text-sm font-medium rounded-lg hover:from-teal-600 hover:to-cyan-700 transition-all shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-brand text-white text-sm font-medium rounded-lg hover:opacity-90 transition-all shadow-brand"
               >
                 <LayoutDashboard className="w-4 h-4" />
                 <span className="hidden sm:inline">Dashboard</span>
@@ -115,29 +122,35 @@ export default function Header() {
             {/* Theme Toggle Switch */}
             <button
               onClick={toggleTheme}
-              className="relative inline-flex items-center justify-center p-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors duration-200"
+              className="relative inline-flex items-center justify-center p-2 rounded-lg bg-neutral-100 dark:bg-navy-800 hover:bg-neutral-200 dark:hover:bg-navy-700 transition-colors duration-200"
               aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
-              <div className="relative w-12 h-6 rounded-full bg-gray-300 dark:bg-slate-600 transition-colors duration-300">
+              <div className="relative w-12 h-6 rounded-full bg-neutral-300 dark:bg-neutral-600 transition-colors duration-300">
                 <div 
-                  className={`absolute top-0.5 w-5 h-5 rounded-full bg-white dark:bg-slate-900 shadow-md transition-all duration-300 flex items-center justify-center ${
+                  className={`absolute top-0.5 w-5 h-5 rounded-full bg-white dark:bg-navy-900 shadow-md transition-all duration-300 flex items-center justify-center ${
                     theme === 'dark' ? 'left-[26px]' : 'left-0.5'
                   }`}
                 >
                   {theme === 'light' ? (
-                    <Sun className="w-3 h-3 text-amber-500" />
+                    <Sun className="w-3 h-3 text-warning-500" />
                   ) : (
-                    <Moon className="w-3 h-3 text-indigo-400" />
+                    <Moon className="w-3 h-3 text-brand-400" />
                   )}
                 </div>
               </div>
             </button>
             
-            <button className="relative p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <button 
+              className="relative p-2 text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+              aria-label="Notifications"
+            >
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-pink-500 rounded-full" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-danger-500 rounded-full" />
             </button>
-            <button className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <button 
+              className="p-2 text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+              aria-label="Settings"
+            >
               <Settings className="w-5 h-5" />
             </button>
             
@@ -147,27 +160,27 @@ export default function Header() {
               <div className="relative ml-2" ref={menuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-navy-800 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-semibold text-sm">
+                  <div className="w-8 h-8 rounded-full bg-gradient-brand flex items-center justify-center text-white font-semibold text-sm">
                     {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                   </div>
-                  <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="hidden sm:block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     {user.full_name?.split(' ')[0] || 'User'}
                   </span>
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                  <ChevronDown className="w-4 h-4 text-neutral-400" />
                 </button>
                 
                 {/* Dropdown Menu */}
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-50">
-                    <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{user.full_name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-navy-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 z-50">
+                    <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
+                      <p className="text-sm font-medium text-navy-900 dark:text-white">{user.full_name}</p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{user.email}</p>
                     </div>
                     <Link
                       href="/dashboard"
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-navy-700"
                       onClick={() => setShowUserMenu(false)}
                     >
                       <LayoutDashboard className="w-4 h-4" />
@@ -175,7 +188,7 @@ export default function Header() {
                     </Link>
                     <Link
                       href="/profile"
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-navy-700"
                       onClick={() => {
                         setShowUserMenu(false)
                       }}
@@ -188,7 +201,7 @@ export default function Header() {
                         logout()
                         setShowUserMenu(false)
                       }}
-                      className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-slate-700"
+                      className="flex items-center gap-2 w-full px-4 py-2 text-sm text-danger-600 dark:text-danger-400 hover:bg-neutral-100 dark:hover:bg-navy-700"
                     >
                       <LogOut className="w-4 h-4" />
                       Sign Out
@@ -201,13 +214,13 @@ export default function Header() {
               <div className="hidden sm:flex items-center space-x-2 ml-2">
                 <button 
                   onClick={() => setShowAuthModal('login')}
-                  className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                  className="btn-ghost btn-sm"
                 >
                   Sign In
                 </button>
                 <button 
                   onClick={() => setShowAuthModal('register')}
-                  className="px-3 py-1.5 text-xs font-medium text-white bg-teal-600 rounded-md hover:bg-teal-700 transition-colors"
+                  className="btn-primary btn-sm"
                 >
                   Get Started
                 </button>

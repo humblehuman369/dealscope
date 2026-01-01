@@ -164,7 +164,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
           <div className="flex flex-col gap-3">
             <button
               onClick={() => window.location.reload()}
-              className="w-full py-3 px-6 bg-[#0465f2] text-white rounded-xl font-medium hover:bg-[#0354d1] transition-colors"
+              className="w-full py-3 px-6 bg-brand-500 text-white rounded-xl font-medium hover:bg-[#0354d1] transition-colors"
             >
               Try Again
             </button>
@@ -196,14 +196,14 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         <div className="flex items-center justify-between p-4 pt-safe bg-gradient-to-b from-black/60 to-transparent">
           <div className="flex items-center gap-2">
             <span className="text-white font-bold text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>
-              Invest<span className="text-[#0465f2]">IQ</span>
+              Invest<span className="text-brand-500">IQ</span>
             </span>
           </div>
           
           <div className="flex items-center gap-2">
             {scanner.isLocationReady && (
               <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full">
-                <MapPin className="w-3 h-3 text-[#00e5ff]" />
+                <MapPin className="w-3 h-3 text-accent-500" />
                 <span className="text-white text-xs">GPS Active</span>
               </div>
             )}
@@ -211,7 +211,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               <>
                 <button
                   onClick={() => router.push('/dashboard')}
-                  className="flex items-center gap-1 bg-[#0465f2]/80 backdrop-blur-sm px-3 py-1.5 rounded-full"
+                  className="flex items-center gap-1 bg-brand-500/80 backdrop-blur-sm px-3 py-1.5 rounded-full"
                 >
                   <LayoutGrid className="w-3 h-3 text-white" />
                   <span className="text-white text-xs font-medium">Dashboard</span>
@@ -306,9 +306,9 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               disabled={scanner.isScanning || !scanner.isLocationReady}
               className={`w-20 h-20 rounded-full flex flex-col items-center justify-center gap-1 transition-all ${
                 scanner.isScanning 
-                  ? 'bg-[#0465f2] scale-95' 
+                  ? 'bg-brand-500 scale-95' 
                   : scanner.isLocationReady
-                    ? 'bg-[#0465f2] hover:opacity-90 active:scale-95'
+                    ? 'bg-brand-500 hover:opacity-90 active:scale-95'
                     : 'bg-gray-600'
               }`}
               aria-label="Scan property"
@@ -393,14 +393,9 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-white" style={{ fontFamily: 'Poppins, sans-serif' }}>
-      {/* Load Fonts */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-[#e8eef3] border-b border-[#d1d5db]">
+      <header className="bg-navy-50 border-b border-neutral-300">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-6">
             <a href="/" className="flex items-center gap-3">
@@ -409,19 +404,19 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
                 alt="InvestIQ" 
                 className="w-12 h-12 rounded-xl"
               />
-              <span className="text-2xl font-bold text-[#07172e]">
-                Invest<span className="text-[#0465f2]">IQ</span>
+              <span className="text-2xl font-bold text-navy-900">
+                Invest<span className="text-brand-500">IQ</span>
               </span>
             </a>
             
             <nav className="hidden md:flex items-center gap-6">
-              <a href="/search" className="text-[#6b7280] font-medium hover:text-[#07172e] transition-colors flex items-center gap-2">
+              <a href="/search" className="text-neutral-500 font-medium hover:text-navy-900 transition-colors flex items-center gap-2">
                 <Search className="w-4 h-4" />
                 Search
               </a>
               <button
                 onClick={onSwitchMode}
-                className="text-[#6b7280] font-medium hover:text-[#07172e] transition-colors flex items-center gap-2"
+                className="text-neutral-500 font-medium hover:text-navy-900 transition-colors flex items-center gap-2"
               >
                 <Camera className="w-4 h-4" />
                 Point & Scan
@@ -433,14 +428,14 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
                 <>
                   <button
                     onClick={() => router.push('/dashboard')}
-                    className="px-6 py-3 bg-[#0465f2] text-white font-bold rounded-xl hover:opacity-90 transition-all flex items-center gap-2"
+                    className="px-6 py-3 bg-brand-500 text-white font-bold rounded-xl hover:opacity-90 transition-all flex items-center gap-2"
                   >
                     <LayoutGrid className="w-4 h-4" />
                     Dashboard
                   </button>
                   <button
                     onClick={logout}
-                    className="px-6 py-3 bg-transparent text-[#07172e] font-bold rounded-xl hover:bg-black/5 transition-all flex items-center gap-2"
+                    className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-xl hover:bg-black/5 transition-all flex items-center gap-2"
                   >
                     <LogOut className="w-4 h-4" />
                     Sign Out
@@ -450,13 +445,13 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
                 <>
                   <button
                     onClick={() => setShowAuthModal('login')}
-                    className="px-6 py-3 bg-transparent text-[#07172e] font-bold rounded-xl hover:bg-black/5 transition-all"
+                    className="px-6 py-3 bg-transparent text-navy-900 font-bold rounded-xl hover:bg-black/5 transition-all"
                   >
                     Sign In
                   </button>
                   <button
                     onClick={() => setShowAuthModal('register')}
-                    className="px-6 py-3 h-12 bg-[#0465f2] text-white font-bold rounded-xl hover:opacity-90 transition-all"
+                    className="px-6 py-3 h-12 bg-brand-500 text-white font-bold rounded-xl hover:opacity-90 transition-all"
                   >
                     Get Started
                   </button>
@@ -468,15 +463,15 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-[#e8eef3] py-16 pb-24 overflow-hidden">
+      <section className="bg-navy-50 py-16 pb-24 overflow-hidden">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Hero Title */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#07172e] leading-tight mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-navy-900 leading-tight mb-6">
               Analyze Investment Real Estate<br />
-              in <span className="text-[#0465f2]">60</span> seconds!
+              in <span className="text-brand-500">60</span> seconds!
             </h1>
-            <p className="text-xl md:text-2xl text-[#6b7280] font-medium mb-8">
+            <p className="text-xl md:text-2xl text-neutral-500 font-medium mb-8">
               Point & Scan or simply input address
             </p>
 
@@ -484,19 +479,19 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
             <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8">
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6b7280]" />
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
                   <input
                     type="text"
                     value={searchAddress}
                     onChange={(e) => setSearchAddress(e.target.value)}
                     placeholder="Enter property address..."
-                    className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-[#d1d5db] bg-white text-[#07172e] placeholder-[#6b7280] focus:outline-none focus:border-[#0465f2] transition-colors text-lg"
+                    className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-neutral-300 bg-white text-navy-900 placeholder-[#6b7280] focus:outline-none focus:border-[#0465f2] transition-colors text-lg"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={isSearching || !searchAddress.trim()}
-                  className="px-8 py-4 bg-[#0465f2] text-white font-bold text-lg rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="px-8 py-4 bg-brand-500 text-white font-bold text-lg rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSearching ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -513,7 +508,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
             {/* Point & Scan Button */}
             <button
               onClick={onSwitchMode}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#07172e] text-white font-bold rounded-xl hover:bg-[#0465f2] transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#07172e] text-white font-bold rounded-xl hover:bg-brand-500 transition-all"
             >
               <Camera className="w-5 h-5" />
               Point & Scan Property
@@ -525,8 +520,8 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
             
             {/* Floating Card: ROI - Top Left */}
             <div className="absolute left-0 top-12 bg-white rounded-2xl shadow-xl p-6 w-56 z-10 animate-float-slow hidden lg:block">
-              <p className="text-sm text-[#6b7280] font-semibold mb-2">Estimated ROI:</p>
-              <div className="flex items-center gap-2 text-4xl font-bold text-[#07172e]">
+              <p className="text-sm text-neutral-500 font-semibold mb-2">Estimated ROI:</p>
+              <div className="flex items-center gap-2 text-4xl font-bold text-navy-900">
                 <span>12.5%</span>
                 <svg width="28" height="28" fill="none" stroke="#22c55e" viewBox="0 0 24 24" strokeWidth="3">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
@@ -536,8 +531,8 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
 
             {/* Floating Card: Cash Flow - Top Right */}
             <div className="absolute right-0 top-8 bg-white rounded-2xl shadow-xl p-6 w-56 z-10 animate-float-medium hidden lg:block">
-              <p className="text-sm text-[#6b7280] font-semibold mb-2">Cash Flow:</p>
-              <p className="text-4xl font-bold text-[#07172e] mb-2">$1,200/mo</p>
+              <p className="text-sm text-neutral-500 font-semibold mb-2">Cash Flow:</p>
+              <p className="text-4xl font-bold text-navy-900 mb-2">$1,200/mo</p>
               <svg viewBox="0 0 200 60" className="w-full h-16">
                 <path d="M 0,50 Q 50,30 100,35 T 200,20" fill="none" stroke="#0465f2" strokeWidth="3"/>
                 <rect x="160" y="10" width="8" height="30" fill="#0465f2"/>
@@ -584,14 +579,14 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
                   <div className="flex-1 flex items-center justify-center relative">
                     <div className="relative w-64 h-64">
                       {/* Animated Circles */}
-                      <div className="absolute inset-0 border-4 border-[#00e5ff] rounded-full animate-ping-slow opacity-75"></div>
-                      <div className="absolute inset-4 border-4 border-[#00e5ff] rounded-full opacity-60"></div>
-                      <div className="absolute inset-8 border-4 border-[#00e5ff] rounded-full opacity-40"></div>
+                      <div className="absolute inset-0 border-4 border-accent-500 rounded-full animate-ping-slow opacity-75"></div>
+                      <div className="absolute inset-4 border-4 border-accent-500 rounded-full opacity-60"></div>
+                      <div className="absolute inset-8 border-4 border-accent-500 rounded-full opacity-40"></div>
                       
                       {/* Crosshair */}
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-16 h-16 border-4 border-[#00e5ff] rounded-full bg-[#00e5ff]/20 backdrop-blur-sm flex items-center justify-center">
-                          <div className="w-2 h-2 bg-[#00e5ff] rounded-full"></div>
+                        <div className="w-16 h-16 border-4 border-accent-500 rounded-full bg-accent-500/20 backdrop-blur-sm flex items-center justify-center">
+                          <div className="w-2 h-2 bg-accent-500 rounded-full"></div>
                         </div>
                       </div>
                     </div>
@@ -601,7 +596,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
                       <p className="text-xs text-gray-400 mb-1">Property Located</p>
                       <p className="text-sm font-semibold mb-3">123 Main Street, Anytown</p>
                       <div className="flex gap-2">
-                        <button className="flex-1 py-2 px-4 bg-[#00e5ff] text-black font-bold rounded-lg text-sm">
+                        <button className="flex-1 py-2 px-4 bg-accent-500 text-black font-bold rounded-lg text-sm">
                           Scan
                         </button>
                         <button className="flex-1 py-2 px-4 bg-[#374151] text-white font-bold rounded-lg text-sm">
@@ -617,7 +612,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
                       <button className="w-12 h-12 bg-[#1f2937] rounded-xl flex items-center justify-center text-white" aria-label="Gallery">
                         <ImageIcon className="w-6 h-6" />
                       </button>
-                      <button className="w-20 h-20 bg-[#00e5ff] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,229,255,0.5)]" aria-label="Capture">
+                      <button className="w-20 h-20 bg-accent-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,229,255,0.5)]" aria-label="Capture">
                         <div className="w-16 h-16 border-4 border-black rounded-full"></div>
                       </button>
                       <button className="w-12 h-12 bg-[#1f2937] rounded-xl flex items-center justify-center text-white" aria-label="Download">
@@ -631,12 +626,12 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
 
             {/* Floating Card: Property Value - Bottom Left */}
             <div className="absolute left-12 bottom-16 bg-white rounded-2xl shadow-xl p-6 w-56 z-10 animate-float-fast hidden lg:block">
-              <p className="text-sm text-[#6b7280] font-semibold mb-2">Property Value:</p>
-              <p className="text-4xl font-bold text-[#07172e] mb-3">62.5%</p>
+              <p className="text-sm text-neutral-500 font-semibold mb-2">Property Value:</p>
+              <p className="text-4xl font-bold text-navy-900 mb-3">62.5%</p>
               <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-[#00e5ff] to-[#0465f2]" style={{ width: '62.5%' }}></div>
               </div>
-              <div className="flex justify-between text-xs text-[#6b7280] mt-1">
+              <div className="flex justify-between text-xs text-neutral-500 mt-1">
                 <span>Low</span>
                 <span>High</span>
               </div>
@@ -644,10 +639,10 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
 
             {/* Floating Card: Cap Rate - Bottom Right */}
             <div className="absolute right-12 bottom-20 bg-white rounded-2xl shadow-xl p-6 w-56 z-10 animate-float-medium hidden lg:block" style={{ animationDelay: '0.5s' }}>
-              <p className="text-sm text-[#6b7280] font-semibold mb-2">Cap Rate:</p>
-              <p className="text-4xl font-bold text-[#07172e] mb-2">6.8%</p>
+              <p className="text-sm text-neutral-500 font-semibold mb-2">Cap Rate:</p>
+              <p className="text-4xl font-bold text-navy-900 mb-2">6.8%</p>
               <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className="absolute left-0 top-0 h-full rounded-full bg-[#0465f2]" style={{ width: '68%' }}></div>
+                <div className="absolute left-0 top-0 h-full rounded-full bg-brand-500" style={{ width: '68%' }}></div>
               </div>
             </div>
           </div>
@@ -659,7 +654,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
         <div className="max-w-4xl mx-auto px-4 flex flex-col gap-6">
           <div className="flex items-center gap-4">
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
-            <div className="bg-[#00e5ff] text-black py-4 px-8 font-bold text-lg md:text-xl" style={{ clipPath: 'polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%)' }}>
+            <div className="bg-accent-500 text-black py-4 px-8 font-bold text-lg md:text-xl" style={{ clipPath: 'polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%)' }}>
               &quot;The fastest path from address to investable decision.&quot;
             </div>
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
@@ -667,7 +662,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
           
           <div className="flex items-center gap-4">
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
-            <div className="bg-[#00e5ff] text-black py-4 px-8 font-bold text-lg md:text-xl" style={{ clipPath: 'polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%)' }}>
+            <div className="bg-accent-500 text-black py-4 px-8 font-bold text-lg md:text-xl" style={{ clipPath: 'polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%)' }}>
               &quot;The only tool that delivers institutional-grade analytics on-the-go.&quot;
             </div>
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
@@ -676,19 +671,19 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       </section>
 
       {/* Metrics Section */}
-      <section className="bg-[#0465f2] text-white py-20">
+      <section className="bg-brand-500 text-white py-20">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
             <div>
-              <div className="text-6xl font-bold text-[#00e5ff] mb-2">60</div>
+              <div className="text-6xl font-bold text-accent-500 mb-2">60</div>
               <div className="text-xl font-semibold">Seconds to Analysis</div>
             </div>
             <div>
-              <div className="text-6xl font-bold text-[#00e5ff] mb-2">6</div>
+              <div className="text-6xl font-bold text-accent-500 mb-2">6</div>
               <div className="text-xl font-semibold">Investment Strategies</div>
             </div>
             <div>
-              <div className="text-6xl font-bold text-[#00e5ff] mb-2">100%</div>
+              <div className="text-6xl font-bold text-accent-500 mb-2">100%</div>
               <div className="text-xl font-semibold">Data-Driven Intelligence</div>
             </div>
           </div>
@@ -699,9 +694,9 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       <section className="bg-white py-20">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-[#07172e] mb-4">6 Investment Strategies</h2>
-            <div className="h-1 w-24 bg-[#0465f2] mx-auto mb-6"></div>
-            <p className="text-xl text-[#6b7280]">One property. Six strategies. Unlimited potential.</p>
+            <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4">6 Investment Strategies</h2>
+            <div className="h-1 w-24 bg-brand-500 mx-auto mb-6"></div>
+            <p className="text-xl text-neutral-500">One property. Six strategies. Unlimited potential.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -716,10 +711,10 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
               <a 
                 key={idx}
                 href={strategy.href}
-                className="bg-white border-2 border-[#d1d5db] rounded-xl p-6 transition-all hover:border-[#0465f2] hover:shadow-lg cursor-pointer group flex items-center gap-4"
+                className="bg-white border-2 border-neutral-300 rounded-xl p-6 transition-all hover:border-brand-500 hover:shadow-lg cursor-pointer group flex items-center gap-4"
               >
-                <strategy.icon className="w-10 h-10 text-[#0465f2] flex-shrink-0 group-hover:scale-110 transition-transform" />
-                <h3 className="text-xl font-bold text-[#07172e]">{strategy.name}</h3>
+                <strategy.icon className="w-10 h-10 text-brand-500 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                <h3 className="text-xl font-bold text-navy-900">{strategy.name}</h3>
               </a>
             ))}
           </div>
@@ -727,18 +722,18 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       </section>
 
       {/* Dashboard Section */}
-      <section className="bg-[#e8eef3] py-20">
+      <section className="bg-navy-50 py-20">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-[#07172e] mb-4">Data-Driven Investment Decisions</h2>
-            <div className="h-1 w-24 bg-[#0465f2] mx-auto"></div>
+            <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4">Data-Driven Investment Decisions</h2>
+            <div className="h-1 w-24 bg-brand-500 mx-auto"></div>
           </div>
           
           <div className="text-center mt-8">
-            <p className="text-2xl font-bold text-[#07172e] mb-6">Stop Guessing. Start Investing.</p>
+            <p className="text-2xl font-bold text-navy-900 mb-6">Stop Guessing. Start Investing.</p>
             <button
               onClick={() => setShowAuthModal('register')}
-              className="px-12 py-4 h-16 bg-[#0465f2] text-white font-bold text-lg rounded-xl hover:opacity-90 transition-all"
+              className="px-12 py-4 h-16 bg-brand-500 text-white font-bold text-lg rounded-xl hover:opacity-90 transition-all"
             >
               Get Started Free
             </button>
@@ -747,7 +742,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-[#d1d5db] py-12">
+      <footer className="bg-white border-t border-neutral-300 py-12">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
@@ -756,14 +751,14 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
                 alt="InvestIQ" 
                 className="w-12 h-12 rounded-xl"
               />
-              <span className="text-xl font-bold text-[#07172e]">
-                Invest<span className="text-[#0465f2]">IQ</span>
+              <span className="text-xl font-bold text-navy-900">
+                Invest<span className="text-brand-500">IQ</span>
               </span>
             </div>
             
             <div className="text-center">
-              <p className="text-sm text-[#6b7280]">© 2026 InvestIQ. All rights reserved.</p>
-              <p className="text-sm font-semibold text-[#07172e] mt-1">Invest like a Guru!</p>
+              <p className="text-sm text-neutral-500">© 2026 InvestIQ. All rights reserved.</p>
+              <p className="text-sm font-semibold text-navy-900 mt-1">Invest like a Guru!</p>
             </div>
           </div>
         </div>
