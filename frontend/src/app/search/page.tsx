@@ -67,7 +67,7 @@ export default function SearchPage() {
               <button
                 type="submit"
                 disabled={isSearching || !address.trim()}
-                className="px-8 py-4 bg-gradient-brand text-white font-semibold rounded-2xl shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                className="px-8 py-4 bg-brand-500 text-white font-semibold rounded-2xl shadow-md hover:bg-brand-600 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
               >
                 {isSearching ? (
                   <span className="flex items-center gap-2">
@@ -189,7 +189,7 @@ export default function SearchPage() {
       {/* CTA Section */}
       <section className="px-6 py-16">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-brand rounded-3xl p-10 text-center text-white shadow-xl">
+          <div className="bg-brand-500 rounded-3xl p-10 text-center text-white shadow-xl">
             <h2 className="text-3xl font-bold mb-3">Ready to Analyze?</h2>
             <p className="text-white/80 mb-8 font-light">Enter any US property address and get instant investment analytics.</p>
             <button
