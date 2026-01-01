@@ -1176,9 +1176,10 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
 }) {
   const [showInfoModal, setShowInfoModal] = useState(false)
   
-  // Use actual numeric value for profit/loss coloring - blue for positive, red for negative
+  // Use actual numeric value for profit/loss coloring - blue for positive, gray for breakeven, red for negative
   const isLoss = metrics.primaryValue < 0
-  const primaryColor = isLoss ? 'text-crimson-500' : 'text-brand-500'
+  const isBreakeven = metrics.primaryValue === 0
+  const primaryColor = isLoss ? 'text-crimson-500' : isBreakeven ? 'text-gray-400' : 'text-brand-500'
   
   // Accent bar color - blue for all
   const accentColor = 'bg-brand-500'
@@ -1265,13 +1266,16 @@ function StrategyGrid({
       {strategyList.map((strategy) => {
         const isSelected = selectedStrategy === strategy.id
         const metrics = strategyMetrics[strategy.id]
-        const isProfit = metrics.primaryValue > 0
         const isLoss = metrics.primaryValue < 0
+        const isBreakeven = metrics.primaryValue === 0
         
         // Shortened names for strategy boxes only
         const displayName = strategy.id === 'ltr' ? 'Long Rental' 
           : strategy.id === 'str' ? 'Short Rental' 
           : strategy.name
+        
+        // Color: red for loss, gray for breakeven, blue for profit
+        const primaryColor = isLoss ? 'text-crimson-500' : isBreakeven ? 'text-gray-400' : 'text-brand-500'
         
         return (
           <button
@@ -1293,10 +1297,8 @@ function StrategyGrid({
             {/* Strategy Name - shortened for boxes */}
             <div className="text-[0.8125rem] font-semibold text-navy-900 mb-1.5">{displayName}</div>
             
-            {/* Primary Value - Blue for positive, red for negative */}
-            <div className={`text-lg font-bold font-mono mb-0.5 ${
-              isLoss ? 'text-crimson-500' : 'text-brand-500'
-            }`}>
+            {/* Primary Value - Blue for positive, gray for breakeven, red for negative */}
+            <div className={`text-lg font-bold font-mono mb-0.5 ${primaryColor}`}>
               {metrics.primary}
             </div>
             <div className="text-[0.6875rem] text-gray-500 mb-1.5">{metrics.primaryLabel}</div>
