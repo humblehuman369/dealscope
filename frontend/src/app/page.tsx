@@ -3,37 +3,30 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  Camera, 
-  MapPin, 
-  Search, 
-  Loader2, 
-  AlertCircle,
   Home,
-  ChevronRight,
+  TrendingUp,
+  DollarSign,
+  BarChart3,
+  Users,
+  Repeat,
+  LogOut,
+  LayoutGrid,
+  ChevronLeft,
+  Image as ImageIcon,
+  Download,
+  Camera,
+  MapPin,
+  Search,
+  Loader2,
+  AlertCircle,
   RefreshCw,
   Map,
   ScanLine,
-  Building2,
-  Repeat,
-  Hammer,
-  Users,
-  FileText,
-  Sparkles,
-  X,
   User,
-  LogOut,
-  Compass,
-  BarChart3,
-  TrendingUp,
-  LayoutGrid,
-  Zap,
-  Play,
-  Calendar,
-  DollarSign,
-  Box
+  Compass
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { usePropertyScan, ScanResult } from '@/hooks/usePropertyScan';
+import { usePropertyScan } from '@/hooks/usePropertyScan';
 import { DistanceSlider } from '@/components/scanner/DistanceSlider';
 import { ScanTarget } from '@/components/scanner/ScanTarget';
 import { CompassDisplay } from '@/components/scanner/CompassDisplay';
@@ -57,132 +50,6 @@ function useIsMobile() {
   }, []);
 
   return isMobile;
-}
-
-type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale';
-
-const strategies: { id: StrategyId; name: string; icon: typeof Building2 }[] = [
-  { id: 'ltr', name: 'Long-Term Rental', icon: Home },
-  { id: 'str', name: 'Short-Term Rental', icon: Calendar },
-  { id: 'brrrr', name: 'BRRRR', icon: TrendingUp },
-  { id: 'flip', name: 'Fix & Flip', icon: DollarSign },
-  { id: 'house_hack', name: 'House Hack', icon: Users },
-  { id: 'wholesale', name: 'Wholesale', icon: Box },
-];
-
-// Strategy explanations for the info modal
-const strategyExplanations: Record<StrategyId, { title: string; content: React.ReactNode }> = {
-  ltr: {
-    title: 'Long-Term Rental',
-    content: (
-      <>
-        <p className="mb-3"><strong>Long-term rental</strong> is the classic buy-and-hold strategy that&apos;s made countless millionaires! You purchase a property, rent it out to reliable tenants on an annual lease, and watch your wealth grow on autopilot.</p>
-        <p className="mb-2">The magic happens in three ways:</p>
-        <ol className="list-decimal list-inside mb-3 space-y-1 ml-2">
-          <li>Monthly cash flow puts money in your pocket NOW!</li>
-          <li>Your tenants build equity for you by paying down the loan</li>
-          <li>Appreciation grows your property value over time.</li>
-        </ol>
-        <p>It&apos;s the perfect <strong>&quot;set it and forget it&quot;</strong> strategy—ideal for investors who want to build lasting wealth.</p>
-      </>
-    )
-  },
-  str: {
-    title: 'Short-Term Rental',
-    content: (
-      <>
-        <p className="mb-3"><strong>Short-term rental</strong> is where you turn your property into a high-revenue hospitality business using platforms like Airbnb or VRBO! Properties in hot tourist areas can generate <strong>2-3X more revenue</strong> than traditional rentals.</p>
-        <p><strong>The best part?</strong> You can block off dates to use the property yourself for vacations!</p>
-      </>
-    )
-  },
-  brrrr: {
-    title: 'BRRRR',
-    content: (
-      <>
-        <p className="mb-3"><strong>BRRRR</strong> stands for <strong>Buy, Rehab, Rent, Refinance, Repeat</strong>—and it&apos;s the holy grail for serious investors who want to scale FAST!</p>
-        <p className="mb-3">The goal is &quot;infinite return&quot;—when you&apos;ve pulled out 100% of your investment but still own a property that pays you every month.</p>
-      </>
-    )
-  },
-  flip: {
-    title: 'Fix & Flip',
-    content: (
-      <>
-        <p className="mb-3"><strong>Fix & Flip</strong> is the <strong>fast-cash strategy</strong> where you buy a distressed property at a discount, transform it into something beautiful, and sell it for profit—sometimes in just 3-6 months!</p>
-        <p>A successful flip can net you <strong>$30,000-$100,000+ in profit</strong>!</p>
-      </>
-    )
-  },
-  house_hack: {
-    title: 'House Hacking',
-    content: (
-      <>
-        <p className="mb-3"><strong>House hacking</strong> is the <strong>ultimate beginner</strong> strategy where your biggest expense—housing—becomes your biggest asset instead!</p>
-        <p>You&apos;re essentially <strong>living for FREE</strong> while building equity and learning the landlord game with training wheels on.</p>
-      </>
-    )
-  },
-  wholesale: {
-    title: 'Wholesale',
-    content: (
-      <>
-        <p className="mb-3"><strong>Wholesaling</strong> is how you make money in real estate with <strong>little to no money</strong> of your own!</p>
-        <p><strong>It&apos;s pure deal-finding hustle!</strong> Your job is to be the matchmaker—connecting motivated sellers with cash buyers.</p>
-      </>
-    )
-  }
-};
-
-// Strategy Info Modal Component
-function StrategyInfoModal({ 
-  strategyId, 
-  isOpen, 
-  onClose 
-}: { 
-  strategyId: StrategyId
-  isOpen: boolean
-  onClose: () => void 
-}) {
-  const explanation = strategyExplanations[strategyId];
-  
-  if (!isOpen || !explanation) return null;
-  
-  return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div 
-        className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button 
-          onClick={onClose}
-          className="absolute top-3 right-3 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors z-10"
-          aria-label="Close"
-        >
-          <X className="w-4 h-4 text-gray-500" />
-        </button>
-        
-        <div className="px-5 py-5 overflow-y-auto max-h-[70vh]">
-          <h3 className="text-lg font-bold text-[#07172e] mb-4">{explanation.title}</h3>
-          <div className="text-sm text-gray-700 leading-relaxed pr-6">
-            {explanation.content}
-          </div>
-        </div>
-        
-        <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
-          <button
-            onClick={onClose}
-            className="w-full py-2.5 bg-gradient-to-r from-[#0465f2] to-[#00e5ff] text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
-          >
-            Got it!
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export default function HomePage() {
@@ -306,7 +173,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               className="w-full py-3 px-6 bg-gray-800 text-white rounded-xl font-medium hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
             >
               <Map className="w-4 h-4" />
-              Use Map Instead
+              Use Desktop Mode
             </button>
           </div>
         </div>
@@ -346,6 +213,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
                   onClick={() => router.push('/dashboard')}
                   className="flex items-center gap-1 bg-[#0465f2]/80 backdrop-blur-sm px-3 py-1.5 rounded-full"
                 >
+                  <LayoutGrid className="w-3 h-3 text-white" />
                   <span className="text-white text-xs font-medium">Dashboard</span>
                 </button>
                 <button
@@ -367,7 +235,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
             <button
               onClick={onSwitchMode}
               className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center"
-              aria-label="Switch to map mode"
+              aria-label="Switch to desktop mode"
             >
               <Map className="w-5 h-5 text-white" />
             </button>
@@ -440,7 +308,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
                 scanner.isScanning 
                   ? 'bg-[#0465f2] scale-95' 
                   : scanner.isLocationReady
-                    ? 'bg-gradient-to-br from-[#0465f2] to-[#00e5ff] hover:opacity-90 active:scale-95'
+                    ? 'bg-[#0465f2] hover:opacity-90 active:scale-95'
                     : 'bg-gray-600'
               }`}
               aria-label="Scan property"
@@ -508,427 +376,437 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
 }
 
 /**
- * Desktop Landing Page - New Design
+ * Desktop Landing Page (Landing2 Design)
  */
 function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
   const router = useRouter();
   const { user, isAuthenticated, logout, setShowAuthModal } = useAuth();
   const [searchAddress, setSearchAddress] = useState('');
-  const [isNavigating, setIsNavigating] = useState(false);
-  const [infoModalStrategy, setInfoModalStrategy] = useState<StrategyId | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (searchAddress.trim()) {
-      setIsNavigating(true);
-      window.location.href = `/property?address=${encodeURIComponent(searchAddress)}`;
+      setIsSearching(true);
+      router.push(`/property?address=${encodeURIComponent(searchAddress)}`);
     }
   };
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Poppins, sans-serif' }}>
-      {/* Load Poppins font */}
+      {/* Load Fonts */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-[5%] py-4 flex justify-between items-center bg-white/95 backdrop-blur-[20px] border-b border-black/5">
-        <a href="#" className="flex items-center">
-          <span className="text-2xl font-bold text-[#07172e]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-            Invest<span className="text-[#0465f2]">IQ</span>
-          </span>
-        </a>
-        
-        <div className="hidden md:flex items-center gap-10">
-          <a href="#strategies" className="text-[#64748b] font-medium text-sm hover:text-[#07172e] transition-colors">Strategies</a>
-          <a href="#features" className="text-[#64748b] font-medium text-sm hover:text-[#07172e] transition-colors">Features</a>
-          <a href="#how-it-works" className="text-[#64748b] font-medium text-sm hover:text-[#07172e] transition-colors">How It Works</a>
+      {/* Header */}
+      <header className="bg-[#e8eef3] border-b border-[#d1d5db]">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-6">
+            <a href="/" className="flex items-center gap-3">
+              <img 
+                src="/images/investiq-logo-icon.png" 
+                alt="InvestIQ" 
+                className="w-12 h-12 rounded-xl"
+              />
+              <span className="text-2xl font-bold text-[#07172e]">
+                Invest<span className="text-[#0465f2]">IQ</span>
+              </span>
+            </a>
+            
+            <nav className="hidden md:flex items-center gap-6">
+              <a href="/search" className="text-[#6b7280] font-medium hover:text-[#07172e] transition-colors flex items-center gap-2">
+                <Search className="w-4 h-4" />
+                Search
+              </a>
+              <button
+                onClick={onSwitchMode}
+                className="text-[#6b7280] font-medium hover:text-[#07172e] transition-colors flex items-center gap-2"
+              >
+                <Camera className="w-4 h-4" />
+                Point & Scan
+              </button>
+            </nav>
+            
+            <nav className="flex items-center gap-4">
+              {isAuthenticated && user ? (
+                <>
+                  <button
+                    onClick={() => router.push('/dashboard')}
+                    className="px-6 py-3 bg-[#0465f2] text-white font-bold rounded-xl hover:opacity-90 transition-all flex items-center gap-2"
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                    Dashboard
+                  </button>
+                  <button
+                    onClick={logout}
+                    className="px-6 py-3 bg-transparent text-[#07172e] font-bold rounded-xl hover:bg-black/5 transition-all flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setShowAuthModal('login')}
+                    className="px-6 py-3 bg-transparent text-[#07172e] font-bold rounded-xl hover:bg-black/5 transition-all"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => setShowAuthModal('register')}
+                    className="px-6 py-3 h-12 bg-[#0465f2] text-white font-bold rounded-xl hover:opacity-90 transition-all"
+                  >
+                    Get Started
+                  </button>
+                </>
+              )}
+            </nav>
+          </div>
         </div>
-        
-        <div className="flex gap-3">
-          {isAuthenticated && user ? (
-            <>
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="px-4 py-2.5 bg-gradient-to-r from-[#0465f2] to-[#00e5ff] text-white font-semibold text-sm rounded-[10px] hover:shadow-lg hover:shadow-[#0465f2]/30 transition-all flex items-center gap-2"
-              >
-                <LayoutGrid className="w-4 h-4" />
-                Dashboard
-              </button>
-              <button
-                onClick={logout}
-                className="px-4 py-2.5 bg-transparent text-[#07172e] font-semibold text-sm rounded-[10px] hover:bg-[#e1e8ed] transition-colors flex items-center gap-2"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => setShowAuthModal('login')}
-                className="px-4 py-2.5 bg-transparent text-[#07172e] font-semibold text-sm rounded-[10px] hover:bg-[#e1e8ed] transition-colors"
-              >
-                Sign In
-              </button>
-              <button
-                onClick={() => setShowAuthModal('register')}
-                className="px-4 py-2.5 bg-[#07172e] text-white font-semibold text-sm rounded-[10px] hover:bg-[#0465f2] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#0465f2]/30 transition-all"
-              >
-                Get Started
-              </button>
-            </>
-          )}
-        </div>
-      </nav>
+      </header>
 
       {/* Hero Section */}
-      <section className="min-h-screen pt-28 pb-16 px-[5%] lg:px-[8%] grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center max-w-[1400px] mx-auto overflow-visible">
-        <div className="animate-fadeUp">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#0465f2]/10 to-[#00e5ff]/10 border border-[#0465f2]/20 text-[#0465f2] px-4 py-2 rounded-full text-sm font-semibold mb-6">
-            <Zap className="w-4 h-4" />
-            Instant Property Analysis
-          </div>
-          
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#07172e] leading-tight mb-6">
-            Analyze Investment Real Estate in{' '}
-            <span className="bg-gradient-to-r from-[#0465f2] to-[#00e5ff] bg-clip-text text-transparent">
-              60 Seconds!
-            </span>
-          </h1>
-          
-          <p className="text-xl text-[#64748b] mb-2">
-            Point & Scan — or simply input an address
-          </p>
-          
-          <p className="text-lg text-[#07172e] font-semibold mb-8 flex items-center gap-3">
-            <span className="w-10 h-[3px] bg-gradient-to-r from-[#0465f2] to-[#00e5ff] rounded-full"></span>
-            The fastest path from address to investable decision.
-          </p>
+      <section className="bg-[#e8eef3] py-16 pb-24 overflow-hidden">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Hero Title */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#07172e] leading-tight mb-6">
+              Analyze Investment Real Estate<br />
+              in <span className="text-[#0465f2]">60</span> seconds!
+            </h1>
+            <p className="text-xl md:text-2xl text-[#6b7280] font-medium mb-8">
+              Point & Scan or simply input address
+            </p>
 
-          {/* Search Form */}
-          <form onSubmit={handleSearch} className="mb-8">
-            <div className="flex flex-col sm:flex-row gap-3 max-w-lg">
-              <input
-                type="text"
-                value={searchAddress}
-                onChange={(e) => setSearchAddress(e.target.value)}
-                placeholder="Enter property address..."
-                className="flex-1 px-4 py-3.5 rounded-xl border border-gray-200 text-[#07172e] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0465f2] focus:border-transparent"
-              />
-              <button
-                type="submit"
-                disabled={isNavigating || !searchAddress.trim()}
-                className="px-6 py-3.5 bg-[#07172e] text-white font-semibold rounded-xl hover:bg-[#0465f2] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#0465f2]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {isNavigating ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    <Search className="w-5 h-5" />
-                    Analyze
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-          
-          <div className="flex gap-4 flex-wrap mb-10">
-            <button 
+            {/* Address Search Bar */}
+            <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6b7280]" />
+                  <input
+                    type="text"
+                    value={searchAddress}
+                    onChange={(e) => setSearchAddress(e.target.value)}
+                    placeholder="Enter property address..."
+                    className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-[#d1d5db] bg-white text-[#07172e] placeholder-[#6b7280] focus:outline-none focus:border-[#0465f2] transition-colors text-lg"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSearching || !searchAddress.trim()}
+                  className="px-8 py-4 bg-[#0465f2] text-white font-bold text-lg rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSearching ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Search className="w-5 h-5" />
+                      Analyze
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+
+            {/* Point & Scan Button */}
+            <button
               onClick={onSwitchMode}
-              className="px-6 py-3 bg-gradient-to-r from-[#0465f2] to-[#00e5ff] text-white font-semibold rounded-xl hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#0465f2]/40 transition-all flex items-center gap-2"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#07172e] text-white font-bold rounded-xl hover:bg-[#0465f2] transition-all"
             >
               <Camera className="w-5 h-5" />
-              Point & Scan
+              Point & Scan Property
             </button>
-            <a href="#how-it-works" className="px-6 py-3 bg-transparent text-[#07172e] font-semibold rounded-xl hover:bg-[#e1e8ed] transition-colors">
-              See How It Works
-            </a>
-          </div>
-          
-          <div className="flex gap-10">
-            <div>
-              <div className="text-4xl font-extrabold bg-gradient-to-r from-[#0465f2] to-[#00e5ff] bg-clip-text text-transparent">60s</div>
-              <div className="text-sm text-[#64748b] mt-1">Analysis Time</div>
-            </div>
-            <div>
-              <div className="text-4xl font-extrabold bg-gradient-to-r from-[#0465f2] to-[#00e5ff] bg-clip-text text-transparent">6</div>
-              <div className="text-sm text-[#64748b] mt-1">Strategies</div>
-            </div>
-            <div>
-              <div className="text-4xl font-extrabold bg-gradient-to-r from-[#0465f2] to-[#00e5ff] bg-clip-text text-transparent">150M+</div>
-              <div className="text-sm text-[#64748b] mt-1">Properties</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative animate-fadeUp hidden lg:block" style={{ animationDelay: '0.2s' }}>
-          {/* Floating Data Card - Monthly Cash Flow (Top Left) */}
-          <div className="absolute top-[5%] left-0 transform -translate-x-1/2 bg-white rounded-2xl p-4 shadow-xl animate-float z-20">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-xl flex items-center justify-center mb-2">
-              <DollarSign className="w-5 h-5 text-white" />
-            </div>
-            <div className="text-xs text-[#64748b] font-medium whitespace-nowrap">Monthly Cash Flow</div>
-            <div className="text-lg font-bold text-[#10b981]">+$1,240</div>
           </div>
 
-          {/* Floating Data Card - Cap Rate (Bottom Left) */}
-          <div className="absolute bottom-[15%] left-0 transform -translate-x-1/3 bg-white rounded-2xl p-4 shadow-xl animate-float z-20" style={{ animationDelay: '1s' }}>
-            <div className="w-10 h-10 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-xl flex items-center justify-center mb-2">
-              <Home className="w-5 h-5 text-white" />
-            </div>
-            <div className="text-xs text-[#64748b] font-medium">Cap Rate</div>
-            <div className="text-lg font-bold text-[#07172e]">7.2%</div>
-          </div>
-
-          {/* Main Image Container */}
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-[#07172e]/20 mx-8">
-            <img 
-              src="/images/hero-phone-scan.png" 
-              alt="InvestIQ - Point and scan any property" 
-              className="w-full rounded-3xl"
-            />
+          {/* Phone Mockup Container */}
+          <div className="relative max-w-5xl mx-auto min-h-[600px] flex items-center justify-center">
             
-            {/* Scanner Overlay */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[45%] aspect-square pointer-events-none">
-              <div className="absolute top-0 left-0 w-[20%] h-[20%] border-l-[3px] border-t-[3px] border-[#00e5ff]"></div>
-              <div className="absolute top-0 right-0 w-[20%] h-[20%] border-r-[3px] border-t-[3px] border-[#00e5ff]"></div>
-              <div className="absolute bottom-0 left-0 w-[20%] h-[20%] border-l-[3px] border-b-[3px] border-[#00e5ff]"></div>
-              <div className="absolute bottom-0 right-0 w-[20%] h-[20%] border-r-[3px] border-b-[3px] border-[#00e5ff]"></div>
-              <div className="absolute top-0 left-[10%] right-[10%] h-[2px] bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent animate-scanMove"></div>
+            {/* Floating Card: ROI - Top Left */}
+            <div className="absolute left-0 top-12 bg-white rounded-2xl shadow-xl p-6 w-56 z-10 animate-float-slow hidden lg:block">
+              <p className="text-sm text-[#6b7280] font-semibold mb-2">Estimated ROI:</p>
+              <div className="flex items-center gap-2 text-4xl font-bold text-[#07172e]">
+                <span>12.5%</span>
+                <svg width="28" height="28" fill="none" stroke="#22c55e" viewBox="0 0 24 24" strokeWidth="3">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                </svg>
+              </div>
             </div>
-          </div>
 
-          {/* Floating Data Card - Annual ROI (Right Side) */}
-          <div className="absolute bottom-[30%] right-0 transform translate-x-1/3 bg-white rounded-2xl p-4 shadow-xl animate-float z-20" style={{ animationDelay: '0.5s' }}>
-            <div className="w-10 h-10 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-xl flex items-center justify-center mb-2">
-              <TrendingUp className="w-5 h-5 text-white" />
+            {/* Floating Card: Cash Flow - Top Right */}
+            <div className="absolute right-0 top-8 bg-white rounded-2xl shadow-xl p-6 w-56 z-10 animate-float-medium hidden lg:block">
+              <p className="text-sm text-[#6b7280] font-semibold mb-2">Cash Flow:</p>
+              <p className="text-4xl font-bold text-[#07172e] mb-2">$1,200/mo</p>
+              <svg viewBox="0 0 200 60" className="w-full h-16">
+                <path d="M 0,50 Q 50,30 100,35 T 200,20" fill="none" stroke="#0465f2" strokeWidth="3"/>
+                <rect x="160" y="10" width="8" height="30" fill="#0465f2"/>
+              </svg>
             </div>
-            <div className="text-xs text-[#64748b] font-medium">Annual ROI</div>
-            <div className="text-lg font-bold text-[#10b981]">18.5%</div>
+
+            {/* Phone Frame */}
+            <div className="relative w-[320px] h-[640px] bg-black rounded-[3rem] p-3 shadow-2xl z-20">
+              {/* Phone Notch */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-7 bg-black rounded-b-3xl z-30"></div>
+              
+              {/* Phone Screen */}
+              <div className="relative w-full h-full bg-[#1f2937] rounded-[2.5rem] overflow-hidden">
+                {/* Status Bar */}
+                <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-between px-8 text-white text-xs z-20">
+                  <span>9:41</span>
+                  <div className="flex gap-1">
+                    <div className="w-4 h-3 border border-white rounded-sm"></div>
+                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                  </div>
+                </div>
+
+                {/* Background Image */}
+                <div className="absolute inset-0 z-0">
+                  <div className="w-full h-full bg-gradient-to-br from-[#374151] to-[#1f2937] flex items-center justify-center">
+                    <Home className="w-32 h-32 text-white/10" />
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="absolute inset-0 flex flex-col">
+                  {/* Header */}
+                  <div className="pt-14 px-6 pb-4 bg-gradient-to-b from-black/60 to-transparent relative z-10">
+                    <div className="flex items-center justify-between text-white">
+                      <button className="w-8 h-8" aria-label="Go back">
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <span className="text-sm font-semibold">GPS Targeting</span>
+                      <div className="w-8"></div>
+                    </div>
+                  </div>
+
+                  {/* Targeting Area */}
+                  <div className="flex-1 flex items-center justify-center relative">
+                    <div className="relative w-64 h-64">
+                      {/* Animated Circles */}
+                      <div className="absolute inset-0 border-4 border-[#00e5ff] rounded-full animate-ping-slow opacity-75"></div>
+                      <div className="absolute inset-4 border-4 border-[#00e5ff] rounded-full opacity-60"></div>
+                      <div className="absolute inset-8 border-4 border-[#00e5ff] rounded-full opacity-40"></div>
+                      
+                      {/* Crosshair */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-16 h-16 border-4 border-[#00e5ff] rounded-full bg-[#00e5ff]/20 backdrop-blur-sm flex items-center justify-center">
+                          <div className="w-2 h-2 bg-[#00e5ff] rounded-full"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Property Info Card */}
+                    <div className="absolute bottom-24 left-6 right-6 bg-[#1f2937]/90 backdrop-blur-xl rounded-2xl p-4 text-white">
+                      <p className="text-xs text-gray-400 mb-1">Property Located</p>
+                      <p className="text-sm font-semibold mb-3">123 Main Street, Anytown</p>
+                      <div className="flex gap-2">
+                        <button className="flex-1 py-2 px-4 bg-[#00e5ff] text-black font-bold rounded-lg text-sm">
+                          Scan
+                        </button>
+                        <button className="flex-1 py-2 px-4 bg-[#374151] text-white font-bold rounded-lg text-sm">
+                          Details
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Bar */}
+                  <div className="absolute bottom-0 left-0 right-0 px-6 pb-8 pt-4 bg-gradient-to-t from-black/80 to-transparent">
+                    <div className="flex items-center justify-center gap-12">
+                      <button className="w-12 h-12 bg-[#1f2937] rounded-xl flex items-center justify-center text-white" aria-label="Gallery">
+                        <ImageIcon className="w-6 h-6" />
+                      </button>
+                      <button className="w-20 h-20 bg-[#00e5ff] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,229,255,0.5)]" aria-label="Capture">
+                        <div className="w-16 h-16 border-4 border-black rounded-full"></div>
+                      </button>
+                      <button className="w-12 h-12 bg-[#1f2937] rounded-xl flex items-center justify-center text-white" aria-label="Download">
+                        <Download className="w-6 h-6" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating Card: Property Value - Bottom Left */}
+            <div className="absolute left-12 bottom-16 bg-white rounded-2xl shadow-xl p-6 w-56 z-10 animate-float-fast hidden lg:block">
+              <p className="text-sm text-[#6b7280] font-semibold mb-2">Property Value:</p>
+              <p className="text-4xl font-bold text-[#07172e] mb-3">62.5%</p>
+              <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-[#00e5ff] to-[#0465f2]" style={{ width: '62.5%' }}></div>
+              </div>
+              <div className="flex justify-between text-xs text-[#6b7280] mt-1">
+                <span>Low</span>
+                <span>High</span>
+              </div>
+            </div>
+
+            {/* Floating Card: Cap Rate - Bottom Right */}
+            <div className="absolute right-12 bottom-20 bg-white rounded-2xl shadow-xl p-6 w-56 z-10 animate-float-medium hidden lg:block" style={{ animationDelay: '0.5s' }}>
+              <p className="text-sm text-[#6b7280] font-semibold mb-2">Cap Rate:</p>
+              <p className="text-4xl font-bold text-[#07172e] mb-2">6.8%</p>
+              <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="absolute left-0 top-0 h-full rounded-full bg-[#0465f2]" style={{ width: '68%' }}></div>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Mobile/Tablet Image - simplified without floating cards */}
-        <div className="relative animate-fadeUp lg:hidden" style={{ animationDelay: '0.2s' }}>
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-[#07172e]/20">
-            <img 
-              src="/images/hero-phone-scan.png" 
-              alt="InvestIQ - Point and scan any property" 
-              className="w-full rounded-3xl"
-            />
+      {/* Tagline Section */}
+      <section className="bg-white py-12">
+        <div className="max-w-4xl mx-auto px-4 flex flex-col gap-6">
+          <div className="flex items-center gap-4">
+            <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
+            <div className="bg-[#00e5ff] text-black py-4 px-8 font-bold text-lg md:text-xl" style={{ clipPath: 'polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%)' }}>
+              &quot;The fastest path from address to investable decision.&quot;
+            </div>
+            <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
           </div>
           
-          {/* Stats cards below image on mobile */}
-          <div className="flex justify-center gap-4 mt-6 flex-wrap">
-            <div className="bg-white rounded-xl p-3 shadow-lg flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-lg flex items-center justify-center">
-                <DollarSign className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <div className="text-[10px] text-[#64748b]">Cash Flow</div>
-                <div className="text-sm font-bold text-[#10b981]">+$1,240</div>
-              </div>
+          <div className="flex items-center gap-4">
+            <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
+            <div className="bg-[#00e5ff] text-black py-4 px-8 font-bold text-lg md:text-xl" style={{ clipPath: 'polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%)' }}>
+              &quot;The only tool that delivers institutional-grade analytics on-the-go.&quot;
             </div>
-            <div className="bg-white rounded-xl p-3 shadow-lg flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-lg flex items-center justify-center">
-                <Home className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <div className="text-[10px] text-[#64748b]">Cap Rate</div>
-                <div className="text-sm font-bold text-[#07172e]">7.2%</div>
-              </div>
+            <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
+          </div>
+        </div>
+      </section>
+
+      {/* Metrics Section */}
+      <section className="bg-[#0465f2] text-white py-20">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+            <div>
+              <div className="text-6xl font-bold text-[#00e5ff] mb-2">60</div>
+              <div className="text-xl font-semibold">Seconds to Analysis</div>
             </div>
-            <div className="bg-white rounded-xl p-3 shadow-lg flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <div className="text-[10px] text-[#64748b]">ROI</div>
-                <div className="text-sm font-bold text-[#10b981]">18.5%</div>
-              </div>
+            <div>
+              <div className="text-6xl font-bold text-[#00e5ff] mb-2">6</div>
+              <div className="text-xl font-semibold">Investment Strategies</div>
+            </div>
+            <div>
+              <div className="text-6xl font-bold text-[#00e5ff] mb-2">100%</div>
+              <div className="text-xl font-semibold">Data-Driven Intelligence</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Strategies Section */}
-      <section id="strategies" className="py-24 px-[5%] bg-gradient-to-br from-[#07172e] to-[#0d2847] relative overflow-hidden">
-        <div className="absolute top-[-30%] right-[-10%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(4,101,242,0.15)_0%,transparent_60%)] pointer-events-none"></div>
-        
-        <div className="text-center mb-14 relative z-10">
-          <h2 className="text-4xl font-bold text-white mb-3">6 Investment Strategies</h2>
-          <p className="text-lg text-[#64748b]">Instant analytics for every approach</p>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 max-w-[1200px] mx-auto relative z-10">
-          {strategies.map((strategy) => {
-            const Icon = strategy.icon;
-            return (
-              <button
-                key={strategy.id}
-                onClick={() => setInfoModalStrategy(strategy.id)}
-                className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center transition-all hover:bg-white/10 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/30 hover:border-[#00e5ff] cursor-pointer group"
+      <section className="bg-white py-20">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-[#07172e] mb-4">6 Investment Strategies</h2>
+            <div className="h-1 w-24 bg-[#0465f2] mx-auto mb-6"></div>
+            <p className="text-xl text-[#6b7280]">One property. Six strategies. Unlimited potential.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { icon: Home, name: 'Long-Term Rental', href: '/strategies/long-term-rental' },
+              { icon: TrendingUp, name: 'Short-Term Rental', href: '/strategies/short-term-rental' },
+              { icon: DollarSign, name: 'BRRRR', href: '/strategies/brrrr' },
+              { icon: BarChart3, name: 'Fix & Flip', href: '/strategies/fix-flip' },
+              { icon: Users, name: 'House Hack', href: '/strategies/house-hack' },
+              { icon: Repeat, name: 'Wholesale', href: '/strategies/wholesale' },
+            ].map((strategy, idx) => (
+              <a 
+                key={idx}
+                href={strategy.href}
+                className="bg-white border-2 border-[#d1d5db] rounded-xl p-6 transition-all hover:border-[#0465f2] hover:shadow-lg cursor-pointer group flex items-center gap-4"
               >
-                <div className="w-14 h-14 bg-gradient-to-br from-[#0465f2] to-[#00e5ff] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                <h4 className="text-white text-sm font-semibold">{strategy.name}</h4>
-              </button>
-            );
-          })}
+                <strategy.icon className="w-10 h-10 text-[#0465f2] flex-shrink-0 group-hover:scale-110 transition-transform" />
+                <h3 className="text-xl font-bold text-[#07172e]">{strategy.name}</h3>
+              </a>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-24 px-[5%] bg-white">
-        <div className="text-center mb-14">
-          <h2 className="text-4xl font-bold text-[#07172e] mb-3">Why InvestIQ?</h2>
-          <p className="text-xl font-semibold bg-gradient-to-r from-[#0465f2] to-[#00e5ff] bg-clip-text text-transparent">Invest Like a Guru</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-[1100px] mx-auto">
-          {[
-            { icon: Compass, title: 'GPS Property Detection', desc: 'Point your camera at any property. Our tech instantly identifies it using GPS and compass.' },
-            { icon: BarChart3, title: 'Multi-Strategy Analysis', desc: 'Get instant ROI projections across 6 investment strategies tailored to your goals.' },
-            { icon: Zap, title: 'Real-Time Market Data', desc: 'Access live comps, rental rates, and market trends updated continuously.' },
-            { icon: LayoutGrid, title: 'Cash Flow Projections', desc: 'Detailed monthly and annual forecasts with complete expense breakdowns.' },
-            { icon: Box, title: 'Professional Reports', desc: 'Generate investment-ready reports to share with partners and lenders.' },
-            { icon: Users, title: 'Portfolio Tracking', desc: 'Save properties and track performance of your entire portfolio in one place.' },
-          ].map((feature, idx) => (
-            <div 
-              key={idx} 
-              className="p-8 rounded-2xl bg-[#f8fafc] transition-all relative overflow-hidden group hover:bg-white hover:shadow-xl hover:-translate-y-1"
-            >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#0465f2] to-[#00e5ff] scale-x-0 origin-left transition-transform group-hover:scale-x-100"></div>
-              <div className="w-12 h-12 bg-gradient-to-br from-[#0465f2]/10 to-[#00e5ff]/10 rounded-xl flex items-center justify-center mb-5">
-                <feature.icon className="w-6 h-6 text-[#0465f2]" />
-              </div>
-              <h3 className="text-lg font-semibold text-[#07172e] mb-2">{feature.title}</h3>
-              <p className="text-sm text-[#64748b] leading-relaxed">{feature.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-24 px-[5%] bg-[#f8fafc]">
-        <div className="text-center mb-14">
-          <h2 className="text-4xl font-bold text-[#07172e] mb-3">How It Works</h2>
-          <p className="text-lg text-[#64748b]">From property to investment decision in three simple steps</p>
-        </div>
-        
-        <div className="flex flex-col md:flex-row justify-center gap-8 max-w-[1000px] mx-auto relative">
-          <div className="hidden md:block absolute top-[60px] left-[18%] right-[18%] h-1 bg-gradient-to-r from-[#0465f2] to-[#00e5ff] rounded"></div>
-          
-          {[
-            { icon: Camera, num: 1, title: 'Point at Property', desc: 'Use your camera or enter the address manually' },
-            { icon: Zap, num: 2, title: 'Instant Scan', desc: 'GPS identifies the property in under 2 seconds' },
-            { icon: BarChart3, num: 3, title: 'Get Analytics', desc: 'See strategies, cash flow, and ROI instantly' },
-          ].map((step, idx) => (
-            <div key={idx} className="flex-1 text-center relative group">
-              <div className="w-[120px] h-[120px] bg-white border-4 border-[#0465f2] rounded-full flex items-center justify-center mx-auto mb-6 relative z-10 transition-all group-hover:bg-gradient-to-br group-hover:from-[#0465f2] group-hover:to-[#00e5ff] group-hover:border-transparent group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-[#0465f2]/30">
-                <span className="absolute -top-2 -right-2 w-8 h-8 bg-[#00e5ff] text-[#07172e] rounded-full flex items-center justify-center font-bold text-sm">{step.num}</span>
-                <step.icon className="w-12 h-12 text-[#0465f2] group-hover:text-white transition-colors" />
-              </div>
-              <h3 className="text-lg font-semibold text-[#07172e] mb-2">{step.title}</h3>
-              <p className="text-sm text-[#64748b] leading-relaxed">{step.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24 px-[5%] bg-white">
-        <div className="max-w-[1000px] mx-auto bg-gradient-to-br from-[#07172e] to-[#0d2847] rounded-[32px] p-10 lg:p-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative overflow-hidden">
-          <div className="absolute top-[-50%] right-[-20%] w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(0,229,255,0.15)_0%,transparent_60%)] pointer-events-none"></div>
-          
-          <div className="relative z-10">
-            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-              Ready to <span className="text-[#00e5ff]">Invest Like a Guru?</span>
-            </h2>
-            <p className="text-[#64748b] text-lg mb-8 leading-relaxed">
-              Join thousands of investors making smarter decisions with InvestIQ. Start analyzing properties in seconds.
-            </p>
-            <div className="flex gap-4 flex-wrap">
-              <button
-                onClick={() => setShowAuthModal('register')}
-                className="px-6 py-3 bg-white text-[#07172e] font-semibold rounded-xl hover:-translate-y-0.5 hover:shadow-xl transition-all"
-              >
-                Get Started Free
-              </button>
-              <button className="px-6 py-3 bg-transparent text-white border-2 border-white/30 font-semibold rounded-xl hover:bg-white/10 hover:border-white/50 transition-all">
-                Watch Demo
-              </button>
-            </div>
+      {/* Dashboard Section */}
+      <section className="bg-[#e8eef3] py-20">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-[#07172e] mb-4">Data-Driven Investment Decisions</h2>
+            <div className="h-1 w-24 bg-[#0465f2] mx-auto"></div>
           </div>
           
-          <div className="relative z-10 max-w-[400px] mx-auto lg:mx-0">
-            <img 
-              src="/images/dashboard-screenshot.png" 
-              alt="InvestIQ Dashboard - Investment Analysis" 
-              className="w-full rounded-2xl shadow-2xl shadow-black/30"
-            />
+          <div className="text-center mt-8">
+            <p className="text-2xl font-bold text-[#07172e] mb-6">Stop Guessing. Start Investing.</p>
+            <button
+              onClick={() => setShowAuthModal('register')}
+              className="px-12 py-4 h-16 bg-[#0465f2] text-white font-bold text-lg rounded-xl hover:opacity-90 transition-all"
+            >
+              Get Started Free
+            </button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-[5%] bg-[#07172e] border-t border-white/5">
-        <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center flex-wrap gap-6">
-          <span className="text-xl font-bold text-white/80">
-            Invest<span className="text-[#0465f2]">IQ</span>
-          </span>
-          
-          <div className="flex gap-8 flex-wrap justify-center">
-            {['Features', 'Pricing', 'About', 'Contact', 'Privacy', 'Terms'].map((link) => (
-              <a key={link} href="#" className="text-[#64748b] text-sm hover:text-[#00e5ff] transition-colors">{link}</a>
-            ))}
+      <footer className="bg-white border-t border-[#d1d5db] py-12">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <img 
+                src="/images/investiq-logo-icon.png" 
+                alt="InvestIQ" 
+                className="w-12 h-12 rounded-xl"
+              />
+              <span className="text-xl font-bold text-[#07172e]">
+                Invest<span className="text-[#0465f2]">IQ</span>
+              </span>
+            </div>
+            
+            <div className="text-center">
+              <p className="text-sm text-[#6b7280]">© 2026 InvestIQ. All rights reserved.</p>
+              <p className="text-sm font-semibold text-[#07172e] mt-1">Invest like a Guru!</p>
+            </div>
           </div>
-          
-          <div className="text-[#64748b] text-sm">© 2025 InvestIQ. All rights reserved.</div>
         </div>
       </footer>
 
-      {/* Strategy Info Modal */}
-      {infoModalStrategy && (
-        <StrategyInfoModal
-          strategyId={infoModalStrategy}
-          isOpen={!!infoModalStrategy}
-          onClose={() => setInfoModalStrategy(null)}
-        />
-      )}
-
       {/* Animations */}
       <style jsx global>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(40px); }
-          to { opacity: 1; transform: translateY(0); }
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
         }
         
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
+        @keyframes float-medium {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-15px); }
+        }
+        
+        @keyframes float-fast {
+          0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-10px); }
         }
         
-        @keyframes scanMove {
-          0%, 100% { top: 5%; opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { top: 95%; opacity: 0; }
+        @keyframes ping-slow {
+          75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+          }
         }
         
-        .animate-fadeUp {
-          animation: fadeUp 0.8s ease-out both;
+        .animate-float-slow {
+          animation: float-slow 6s ease-in-out infinite;
         }
         
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
+        .animate-float-medium {
+          animation: float-medium 5s ease-in-out infinite;
         }
         
-        .animate-scanMove {
-          animation: scanMove 2.5s ease-in-out infinite;
+        .animate-float-fast {
+          animation: float-fast 4s ease-in-out infinite;
+        }
+        
+        .animate-ping-slow {
+          animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
         }
       `}</style>
     </div>

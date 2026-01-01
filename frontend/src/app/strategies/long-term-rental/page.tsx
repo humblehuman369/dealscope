@@ -65,7 +65,7 @@ export default function LongTermRentalPage() {
       {/* Back Button */}
       <div className="max-w-[1280px] mx-auto px-8">
         <button
-          onClick={() => router.push('/landing2')}
+          onClick={() => router.push('/')}
           className="flex items-center gap-2 px-6 py-3 bg-[#aab2bd] text-white font-bold rounded-lg hover:bg-[#8a929d] transition-all my-8"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -125,7 +125,7 @@ export default function LongTermRentalPage() {
           </div>
 
           <button
-            onClick={() => router.push('/landing2')}
+            onClick={() => router.push('/')}
             className="w-full py-5 bg-[#0465f2] text-white text-xl font-bold rounded-full hover:bg-[#0354d1] transition-all"
           >
             Got it!
