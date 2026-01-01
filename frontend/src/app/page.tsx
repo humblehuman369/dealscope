@@ -516,36 +516,36 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
           </div>
 
           {/* Phone Mockup Container */}
-          <div className="relative max-w-5xl mx-auto min-h-[600px] flex items-center justify-center">
+          <div className="relative max-w-5xl mx-auto min-h-[500px] md:min-h-[600px] flex items-center justify-center">
             
             {/* Floating Card: ROI - Top Left */}
-            <div className="absolute left-0 top-12 bg-white rounded-2xl shadow-xl p-6 w-56 z-10 animate-float-slow hidden lg:block">
-              <p className="text-sm text-neutral-500 font-semibold mb-2">Estimated ROI:</p>
-              <div className="flex items-center gap-2 text-4xl font-bold text-navy-900">
+            <div className="absolute left-0 md:left-0 top-0 md:top-12 bg-white rounded-2xl shadow-xl p-4 md:p-6 w-40 md:w-56 z-10 animate-float-slow hidden md:block">
+              <p className="text-xs md:text-sm text-neutral-500 font-semibold mb-1 md:mb-2">Estimated ROI:</p>
+              <div className="flex items-center gap-2 text-2xl md:text-4xl font-bold text-navy-900">
                 <span>12.5%</span>
-                <svg width="28" height="28" fill="none" stroke="#22c55e" viewBox="0 0 24 24" strokeWidth="3">
+                <svg width="20" height="20" className="md:w-7 md:h-7" fill="none" stroke="#22c55e" viewBox="0 0 24 24" strokeWidth="3">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
                 </svg>
               </div>
             </div>
 
             {/* Floating Card: Cash Flow - Top Right */}
-            <div className="absolute right-0 top-8 bg-white rounded-2xl shadow-xl p-6 w-56 z-10 animate-float-medium hidden lg:block">
-              <p className="text-sm text-neutral-500 font-semibold mb-2">Cash Flow:</p>
-              <p className="text-4xl font-bold text-navy-900 mb-2">$1,200/mo</p>
-              <svg viewBox="0 0 200 60" className="w-full h-16">
+            <div className="absolute right-0 top-0 md:top-8 bg-white rounded-2xl shadow-xl p-4 md:p-6 w-40 md:w-56 z-10 animate-float-medium hidden md:block">
+              <p className="text-xs md:text-sm text-neutral-500 font-semibold mb-1 md:mb-2">Cash Flow:</p>
+              <p className="text-2xl md:text-4xl font-bold text-navy-900 mb-1 md:mb-2">$1,200/mo</p>
+              <svg viewBox="0 0 200 60" className="w-full h-10 md:h-16">
                 <path d="M 0,50 Q 50,30 100,35 T 200,20" fill="none" stroke="#0465f2" strokeWidth="3"/>
                 <rect x="160" y="10" width="8" height="30" fill="#0465f2"/>
               </svg>
             </div>
 
             {/* Phone Frame */}
-            <div className="relative w-[320px] h-[640px] bg-black rounded-[3rem] p-3 shadow-2xl z-20">
+            <div className="relative w-[260px] h-[520px] md:w-[280px] md:h-[560px] lg:w-[320px] lg:h-[640px] bg-black rounded-[2.5rem] md:rounded-[3rem] p-2 md:p-3 shadow-2xl z-20">
               {/* Phone Notch */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-7 bg-black rounded-b-3xl z-30"></div>
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 md:w-32 lg:w-40 h-5 md:h-6 lg:h-7 bg-black rounded-b-2xl md:rounded-b-3xl z-30"></div>
               
               {/* Phone Screen */}
-              <div className="relative w-full h-full bg-[#1f2937] rounded-[2.5rem] overflow-hidden">
+              <div className="relative w-full h-full bg-[#1f2937] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden">
                 {/* Status Bar */}
                 <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-between px-8 text-white text-xs z-20">
                   <span>9:41</span>
@@ -577,7 +577,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
 
                   {/* Targeting Area */}
                   <div className="flex-1 flex items-center justify-center relative">
-                    <div className="relative w-64 h-64">
+                    <div className="relative w-44 h-44 md:w-52 md:h-52 lg:w-64 lg:h-64">
                       {/* Animated Circles */}
                       <div className="absolute inset-0 border-4 border-accent-500 rounded-full animate-ping-slow opacity-75"></div>
                       <div className="absolute inset-4 border-4 border-accent-500 rounded-full opacity-60"></div>
@@ -625,11 +625,11 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
             </div>
 
             {/* Floating Card: Property Value - Bottom Left */}
-            <div className="absolute left-12 bottom-16 bg-white rounded-2xl shadow-xl p-6 w-56 z-10 animate-float-fast hidden lg:block">
-              <p className="text-sm text-neutral-500 font-semibold mb-2">Property Value:</p>
-              <p className="text-4xl font-bold text-navy-900 mb-3">62.5%</p>
+            <div className="absolute left-0 md:left-4 lg:left-12 bottom-8 md:bottom-16 bg-white rounded-2xl shadow-xl p-4 md:p-6 w-40 md:w-56 z-10 animate-float-fast hidden md:block">
+              <p className="text-xs md:text-sm text-neutral-500 font-semibold mb-1 md:mb-2">Property Value:</p>
+              <p className="text-2xl md:text-4xl font-bold text-navy-900 mb-2 md:mb-3">62.5%</p>
               <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-[#00e5ff] to-[#0465f2]" style={{ width: '62.5%' }}></div>
+                <div className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-accent-500 to-brand-500" style={{ width: '62.5%' }}></div>
               </div>
               <div className="flex justify-between text-xs text-neutral-500 mt-1">
                 <span>Low</span>
@@ -638,10 +638,41 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
             </div>
 
             {/* Floating Card: Cap Rate - Bottom Right */}
-            <div className="absolute right-12 bottom-20 bg-white rounded-2xl shadow-xl p-6 w-56 z-10 animate-float-medium hidden lg:block" style={{ animationDelay: '0.5s' }}>
-              <p className="text-sm text-neutral-500 font-semibold mb-2">Cap Rate:</p>
-              <p className="text-4xl font-bold text-navy-900 mb-2">6.8%</p>
+            <div className="absolute right-0 md:right-4 lg:right-12 bottom-12 md:bottom-20 bg-white rounded-2xl shadow-xl p-4 md:p-6 w-40 md:w-56 z-10 animate-float-medium hidden md:block" style={{ animationDelay: '0.5s' }}>
+              <p className="text-xs md:text-sm text-neutral-500 font-semibold mb-1 md:mb-2">Cap Rate:</p>
+              <p className="text-2xl md:text-4xl font-bold text-navy-900 mb-1 md:mb-2">6.8%</p>
               <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="absolute left-0 top-0 h-full rounded-full bg-brand-500" style={{ width: '68%' }}></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Metrics Cards - Show only on small screens */}
+          <div className="grid grid-cols-2 gap-3 mt-8 md:hidden">
+            <div className="bg-white rounded-xl shadow-lg p-4">
+              <p className="text-xs text-neutral-500 font-semibold mb-1">Estimated ROI:</p>
+              <div className="flex items-center gap-1 text-xl font-bold text-navy-900">
+                <span>12.5%</span>
+                <svg width="16" height="16" fill="none" stroke="#22c55e" viewBox="0 0 24 24" strokeWidth="3">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                </svg>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-4">
+              <p className="text-xs text-neutral-500 font-semibold mb-1">Cash Flow:</p>
+              <p className="text-xl font-bold text-navy-900">$1,200/mo</p>
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-4">
+              <p className="text-xs text-neutral-500 font-semibold mb-1">Property Value:</p>
+              <p className="text-xl font-bold text-navy-900">62.5%</p>
+              <div className="relative h-1.5 bg-gray-200 rounded-full overflow-hidden mt-1">
+                <div className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-accent-500 to-brand-500" style={{ width: '62.5%' }}></div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-4">
+              <p className="text-xs text-neutral-500 font-semibold mb-1">Cap Rate:</p>
+              <p className="text-xl font-bold text-navy-900">6.8%</p>
+              <div className="relative h-1.5 bg-gray-200 rounded-full overflow-hidden mt-1">
                 <div className="absolute left-0 top-0 h-full rounded-full bg-brand-500" style={{ width: '68%' }}></div>
               </div>
             </div>
