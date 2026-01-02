@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import {
-  Hammer, Plus, Minus, Trash2, ChevronDown, ChevronUp,
-  Calculator, DollarSign, AlertTriangle, CheckCircle, Sparkles, Link2
+  Plus, Minus, Trash2, ChevronDown, ChevronUp,
+  AlertTriangle, CheckCircle, ArrowLeft
 } from 'lucide-react'
 import {
   REHAB_CATEGORIES,
@@ -45,71 +45,47 @@ function PresetCard({
   return (
     <button
       onClick={onSelect}
-      className={`p-4 rounded-xl border-2 text-left transition-all ${
+      className={`bg-neutral-50 border-2 rounded-lg p-2 cursor-pointer transition-all text-left ${
         isActive
-          ? 'border-orange-500 bg-orange-50 shadow-lg'
-          : 'border-gray-200 bg-white hover:border-orange-300 hover:shadow'
+          ? 'border-brand-500 bg-gradient-to-br from-blue-50 to-sky-100'
+          : 'border-gray-200 hover:border-brand-500 hover:bg-blue-50'
       }`}
     >
-      <div className="font-bold text-gray-900">{preset.name}</div>
-      <div className="text-sm text-gray-500 mb-2">{preset.description}</div>
-      <div className="flex items-center gap-2">
-        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">{formatCurrency(preset.estimatedCost.low)}</span>
-        <span className="text-xs text-gray-400">-</span>
-        <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">{formatCurrency(preset.estimatedCost.high)}</span>
-      </div>
+      <div className="text-xs font-semibold text-navy-900 mb-1">{preset.name}</div>
+      <div className="text-[0.625rem] text-gray-500 mb-1 leading-tight">{preset.description}</div>
+      <div className="text-sm font-bold text-brand-500">{formatCurrency(preset.estimatedCost.mid)}</div>
     </button>
   )
 }
 
 // ============================================
-// TIER SELECTOR (Synchronized across all items)
+// QUALITY TAB SELECTOR
 // ============================================
 
-function TierSelector({
+function QualityTabs({
   value,
-  onGlobalTierChange,
-  lowCost,
-  midCost,
-  highCost,
-  showLinkIcon = true
+  onChange
 }: {
   value: QualityTier
-  onGlobalTierChange: (tier: QualityTier) => void
-  lowCost: number
-  midCost: number
-  highCost: number
-  showLinkIcon?: boolean
+  onChange: (tier: QualityTier) => void
 }) {
   const tiers = [
-    { id: 'low' as QualityTier, label: 'Budget', cost: lowCost, color: 'blue' },
-    { id: 'mid' as QualityTier, label: 'Standard', cost: midCost, color: 'purple' },
-    { id: 'high' as QualityTier, label: 'Premium', cost: highCost, color: 'orange' },
+    { id: 'low' as QualityTier, label: 'Budget' },
+    { id: 'mid' as QualityTier, label: 'Standard' },
+    { id: 'high' as QualityTier, label: 'Premium' },
   ]
   
   return (
-    <div className="flex items-center gap-1">
-      {showLinkIcon && (
-        <span title="All tiers sync together">
-          <Link2 className="w-3 h-3 text-gray-400 mr-1" />
-        </span>
-      )}
+    <div className="flex gap-1.5">
       {tiers.map((tier) => (
         <button
           key={tier.id}
-          onClick={() => onGlobalTierChange(tier.id)}
-          className={`px-2 py-1 text-xs rounded-lg transition-all ${
+          onClick={() => onChange(tier.id)}
+          className={`px-2.5 py-1 rounded-md text-[0.6875rem] font-semibold cursor-pointer transition-all border ${
             value === tier.id
-              ? `bg-${tier.color}-500 text-white`
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-brand-500 text-white border-brand-500'
+              : 'bg-white text-gray-500 border-gray-200 hover:border-brand-500'
           }`}
-          style={{
-            backgroundColor: value === tier.id 
-              ? tier.color === 'blue' ? '#3b82f6' 
-              : tier.color === 'purple' ? '#8b5cf6' 
-              : '#f97316'
-              : undefined
-          }}
         >
           {tier.label}
         </button>
@@ -119,7 +95,7 @@ function TierSelector({
 }
 
 // ============================================
-// REHAB ITEM ROW
+// REHAB ITEM ROW - Compact Grid Layout
 // ============================================
 
 function RehabItemRow({
@@ -127,67 +103,63 @@ function RehabItemRow({
   selection,
   globalTier,
   onUpdate,
-  onRemove,
-  onGlobalTierChange
+  onRemove
 }: {
   item: RehabItem
   selection: RehabSelection
   globalTier: QualityTier
   onUpdate: (sel: RehabSelection) => void
   onRemove: () => void
-  onGlobalTierChange: (tier: QualityTier) => void
 }) {
-  // Use global tier for display, the actual selection.tier is kept in sync by parent
   const unitCost = globalTier === 'low' ? item.lowCost :
                    globalTier === 'mid' ? item.midCost :
                    item.highCost
   const total = unitCost * selection.quantity
   
   return (
-    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-      <div className="flex-1">
-        <div className="font-medium text-gray-900 text-sm">{item.name}</div>
-        <div className="text-xs text-gray-500">{formatCurrency(unitCost)}/{item.unit}</div>
+    <div className="grid grid-cols-[2fr_0.8fr_0.8fr_0.8fr_auto_auto_1fr_auto] gap-1.5 items-center py-1.5 px-2 border-b border-gray-100 hover:bg-gray-50 text-xs">
+      {/* Item Name */}
+      <div>
+        <div className="font-medium text-navy-900">{item.name}</div>
+        <div className="text-[0.625rem] text-gray-400">{formatCurrency(unitCost)}/{item.unit}</div>
       </div>
       
-      <TierSelector
-        value={globalTier}
-        onGlobalTierChange={onGlobalTierChange}
-        lowCost={item.lowCost}
-        midCost={item.midCost}
-        highCost={item.highCost}
+      {/* Quality Badges */}
+      <div className={`py-0.5 px-1.5 rounded text-[0.625rem] font-semibold text-center ${
+        globalTier === 'low' ? 'bg-sky-100 text-sky-700 border border-sky-300' : 'bg-sky-100 text-sky-700'
+      }`}>Budget</div>
+      <div className={`py-0.5 px-1.5 rounded text-[0.625rem] font-semibold text-center ${
+        globalTier === 'mid' ? 'bg-sky-100 text-brand-500 border border-brand-500' : 'bg-sky-100 text-brand-500'
+      }`}>Standard</div>
+      <div className={`py-0.5 px-1.5 rounded text-[0.625rem] font-semibold text-center ${
+        globalTier === 'high' ? 'bg-cyan-100 text-cyan-700 border border-cyan-300' : 'bg-cyan-100 text-cyan-700'
+      }`}>Premium</div>
+      
+      {/* Quantity Input */}
+      <input
+        type="number"
+        value={selection.quantity}
+        onChange={(e) => onUpdate({ ...selection, quantity: Math.max(0, parseInt(e.target.value) || 0) })}
+        className="w-14 px-1.5 py-1 border border-gray-200 rounded-md text-[0.6875rem] text-center focus:outline-none focus:border-brand-500"
       />
       
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => onUpdate({ ...selection, quantity: Math.max(0, selection.quantity - 1) })}
-          className="w-7 h-7 rounded-lg bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-        >
-          <Minus className="w-3 h-3" />
-        </button>
-        <input
-          type="number"
-          value={selection.quantity}
-          onChange={(e) => onUpdate({ ...selection, quantity: Math.max(0, parseInt(e.target.value) || 0) })}
-          className="w-16 text-center text-sm font-medium border border-gray-200 rounded-lg py-1"
-        />
-        <button
-          onClick={() => onUpdate({ ...selection, quantity: selection.quantity + 1 })}
-          className="w-7 h-7 rounded-lg bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
-        >
-          <Plus className="w-3 h-3" />
-        </button>
-      </div>
+      {/* Minus Button */}
+      <button
+        onClick={() => onUpdate({ ...selection, quantity: Math.max(0, selection.quantity - 1) })}
+        className="w-6 h-6 border border-gray-200 bg-white rounded flex items-center justify-center cursor-pointer text-gray-500 hover:border-brand-500 hover:text-brand-500 transition-all"
+      >
+        <Minus className="w-3 h-3" />
+      </button>
       
-      <div className="w-24 text-right">
-        <div className="font-bold text-gray-900">{formatCurrency(total)}</div>
-      </div>
+      {/* Total */}
+      <div className="font-bold text-navy-900 text-right">{formatCurrency(total)}</div>
       
+      {/* Delete */}
       <button
         onClick={onRemove}
-        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+        className="text-crimson-500 cursor-pointer text-sm hover:text-crimson-600"
       >
-        <Trash2 className="w-4 h-4" />
+        ×
       </button>
     </div>
   )
@@ -203,8 +175,7 @@ function CategorySection({
   globalTier,
   onAddItem,
   onUpdateItem,
-  onRemoveItem,
-  onGlobalTierChange
+  onRemoveItem
 }: {
   category: RehabCategory
   selections: RehabSelection[]
@@ -212,7 +183,6 @@ function CategorySection({
   onAddItem: (itemId: string) => void
   onUpdateItem: (itemId: string, selection: RehabSelection) => void
   onRemoveItem: (itemId: string) => void
-  onGlobalTierChange: (tier: QualityTier) => void
 }) {
   const [expanded, setExpanded] = useState(true)
   const [showAddMenu, setShowAddMenu] = useState(false)
@@ -225,7 +195,6 @@ function CategorySection({
     !selections.some(s => s.itemId === i.id)
   )
   
-  // Use global tier for category total calculation
   const categoryTotal = selectedItems.reduce((sum, sel) => {
     const item = category.items.find(i => i.id === sel.itemId)
     if (!item) return sum
@@ -236,28 +205,24 @@ function CategorySection({
   }, 0)
   
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
+    <div className="mb-3">
+      {/* Category Header */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50"
+        className="w-full flex justify-between items-center p-2 bg-neutral-50 rounded-lg mb-1.5 cursor-pointer hover:bg-gray-100"
       >
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">{category.icon}</span>
-          <div className="text-left">
-            <div className="font-bold text-gray-900">{category.name}</div>
-            <div className="text-sm text-gray-500">{selectedItems.length} items selected</div>
-          </div>
+        <div>
+          <h3 className="text-sm font-semibold text-navy-900">{category.name}</h3>
+          <p className="text-[0.625rem] text-gray-500">{selectedItems.length} items selected</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <div className="font-bold text-gray-900">{formatCurrency(categoryTotal)}</div>
-          </div>
-          {expanded ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+        <div className="flex items-center gap-3">
+          <div className="text-base font-bold text-brand-500">{formatCurrency(categoryTotal)}</div>
+          {expanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
         </div>
       </button>
       
       {expanded && (
-        <div className="p-4 bg-gray-50 border-t border-gray-200 space-y-2">
+        <div>
           {selectedItems.map((sel) => {
             const item = category.items.find(i => i.id === sel.itemId)
             if (!item) return null
@@ -269,7 +234,6 @@ function CategorySection({
                 globalTier={globalTier}
                 onUpdate={(newSel) => onUpdateItem(sel.itemId, newSel)}
                 onRemove={() => onRemoveItem(sel.itemId)}
-                onGlobalTierChange={onGlobalTierChange}
               />
             )
           })}
@@ -278,14 +242,13 @@ function CategorySection({
             <div className="relative">
               <button
                 onClick={() => setShowAddMenu(!showAddMenu)}
-                className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-orange-400 hover:text-orange-500 transition-colors"
+                className="w-full py-1.5 border border-dashed border-gray-300 bg-transparent rounded-md text-gray-500 text-[0.6875rem] font-medium cursor-pointer mt-1.5 hover:border-brand-500 hover:text-brand-500 hover:bg-blue-50 transition-all"
               >
-                <Plus className="w-4 h-4" />
-                Add Item
+                + Add Item
               </button>
               
               {showAddMenu && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 z-10 max-h-48 overflow-auto">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-10 max-h-48 overflow-auto">
                   {availableItems.map((item) => (
                     <button
                       key={item.id}
@@ -293,20 +256,14 @@ function CategorySection({
                         onAddItem(item.id)
                         setShowAddMenu(false)
                       }}
-                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0"
+                      className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-0 text-left"
                     >
-                      <span className="text-sm font-medium text-gray-900">{item.name}</span>
-                      <span className="text-xs text-gray-500">{formatCurrency(item.midCost)}/{item.unit}</span>
+                      <span className="text-xs font-medium text-navy-900">{item.name}</span>
+                      <span className="text-[0.625rem] text-gray-500">{formatCurrency(item.midCost)}/{item.unit}</span>
                     </button>
                   ))}
                 </div>
               )}
-            </div>
-          )}
-          
-          {selectedItems.length === 0 && availableItems.length === 0 && (
-            <div className="text-center py-4 text-gray-400 text-sm">
-              No items in this category
             </div>
           )}
         </div>
@@ -322,16 +279,15 @@ function CategorySection({
 interface RehabEstimatorProps {
   onEstimateChange?: (total: number) => void
   initialBudget?: number
+  propertyAddress?: string
 }
 
-export default function RehabEstimator({ onEstimateChange, initialBudget = 40000 }: RehabEstimatorProps) {
+export default function RehabEstimator({ onEstimateChange, initialBudget = 40000, propertyAddress }: RehabEstimatorProps) {
   const [selections, setSelections] = useState<RehabSelection[]>([])
   const [contingencyPct, setContingencyPct] = useState(0.10)
   const [activePreset, setActivePreset] = useState<string | null>(null)
-  // Global tier state - all items sync to this tier
   const [globalTier, setGlobalTier] = useState<QualityTier>('mid')
   
-  // Sync all selections to global tier when globalTier changes
   const syncedSelections = useMemo(() => {
     return selections.map(s => ({ ...s, tier: globalTier }))
   }, [selections, globalTier])
@@ -341,19 +297,16 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
     [syncedSelections, contingencyPct]
   )
   
-  // Notify parent of changes
   useMemo(() => {
     onEstimateChange?.(estimate.grandTotal)
   }, [estimate.grandTotal, onEstimateChange])
   
-  // Handle global tier change - updates all items at once
   const handleGlobalTierChange = useCallback((tier: QualityTier) => {
     setGlobalTier(tier)
-    setActivePreset(null) // Clear preset since user customized
+    setActivePreset(null)
   }, [])
   
   const handleAddItem = (itemId: string) => {
-    // Find the item to get default quantity
     let defaultQty = 1
     for (const cat of REHAB_CATEGORIES) {
       const item = cat.items.find(i => i.id === itemId)
@@ -362,8 +315,6 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
         break
       }
     }
-    
-    // New items use the current global tier
     setSelections([...selections, { itemId, quantity: defaultQty, tier: globalTier }])
     setActivePreset(null)
   }
@@ -381,43 +332,25 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
   const handlePresetSelect = (preset: RehabPreset) => {
     setSelections(preset.selections)
     setActivePreset(preset.id)
-    // Infer tier from preset (most presets use 'mid', but heavy uses some 'high')
-    // Default to 'mid' when selecting a preset
     setGlobalTier('mid')
   }
   
   const handleClearAll = () => {
     setSelections([])
     setActivePreset(null)
-    setGlobalTier('mid') // Reset to default tier
+    setGlobalTier('mid')
   }
   
-  const budgetDiff = initialBudget - estimate.grandTotal
+  const budgetDiff = estimate.grandTotal - initialBudget
+  const isOverBudget = budgetDiff > 0
+  const budgetPct = initialBudget > 0 ? Math.abs(budgetDiff / initialBudget * 100).toFixed(0) : 0
   
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800">Rehab Estimator</h2>
-          <p className="text-sm text-gray-500">Build your renovation budget item by item</p>
-        </div>
-        
-        {selections.length > 0 && (
-          <button
-            onClick={handleClearAll}
-            className="text-sm text-red-500 hover:text-red-600 flex items-center gap-1"
-          >
-            <Trash2 className="w-4 h-4" />
-            Clear All
-          </button>
-        )}
-      </div>
-
-      {/* Presets */}
+    <div className="space-y-3">
+      {/* Quick Start Presets */}
       <div>
-        <h3 className="font-semibold text-gray-900 mb-3">Quick Start Presets</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="text-sm font-semibold text-navy-900 mb-2">Quick Start Presets</div>
+        <div className="grid grid-cols-4 gap-2">
           {REHAB_PRESETS.map((preset) => (
             <PresetCard
               key={preset.id}
@@ -429,48 +362,16 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
         </div>
       </div>
 
-      {/* Global Tier Selector */}
-      <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-orange-50 rounded-xl p-4 border border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link2 className="w-5 h-5 text-purple-500" />
-            <div>
-              <div className="font-semibold text-gray-900">Quality Level</div>
-              <div className="text-sm text-gray-500">All items update together</div>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {(['low', 'mid', 'high'] as QualityTier[]).map((tier) => {
-              const config = {
-                low: { label: 'Budget', color: '#3b82f6', bgActive: 'bg-blue-500', bgHover: 'hover:bg-blue-100' },
-                mid: { label: 'Standard', color: '#8b5cf6', bgActive: 'bg-purple-500', bgHover: 'hover:bg-purple-100' },
-                high: { label: 'Premium', color: '#f97316', bgActive: 'bg-orange-500', bgHover: 'hover:bg-orange-100' },
-              }[tier]
-              
-              return (
-                <button
-                  key={tier}
-                  onClick={() => handleGlobalTierChange(tier)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
-                    globalTier === tier
-                      ? 'text-white shadow-md transform scale-105'
-                      : `text-gray-600 bg-white ${config.bgHover} border border-gray-200`
-                  }`}
-                  style={{
-                    backgroundColor: globalTier === tier ? config.color : undefined
-                  }}
-                >
-                  {config.label}
-                </button>
-              )
-            })}
-          </div>
+      {/* Quality Level */}
+      <div className="bg-neutral-50 rounded-lg p-2">
+        <div className="flex justify-between items-center">
+          <div className="text-xs font-semibold text-gray-500">Quality Level</div>
+          <QualityTabs value={globalTier} onChange={handleGlobalTierChange} />
         </div>
       </div>
 
       {/* Categories */}
-      <div className="space-y-4">
-        <h3 className="font-semibold text-gray-900">Detailed Breakdown</h3>
+      <div>
         {REHAB_CATEGORIES.map((category) => (
           <CategorySection
             key={category.id}
@@ -480,89 +381,73 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
             onAddItem={handleAddItem}
             onUpdateItem={handleUpdateItem}
             onRemoveItem={handleRemoveItem}
-            onGlobalTierChange={handleGlobalTierChange}
           />
         ))}
       </div>
 
-      {/* Contingency */}
-      <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-600" />
-            <div>
-              <div className="font-semibold text-gray-900">Contingency Reserve</div>
-              <div className="text-sm text-gray-500">Buffer for unexpected costs</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <select
-              value={contingencyPct}
-              onChange={(e) => setContingencyPct(parseFloat(e.target.value))}
-              className="px-3 py-2 border border-amber-300 rounded-lg bg-white text-sm"
-            >
-              <option value={0.05}>5%</option>
-              <option value={0.10}>10%</option>
-              <option value={0.15}>15%</option>
-              <option value={0.20}>20%</option>
-            </select>
-            <div className="text-xl font-bold text-amber-700">
-              {formatCurrency(estimate.contingency)}
-            </div>
-          </div>
+      {/* Contingency Reserve */}
+      <div className="bg-amber-50 border-2 border-amber-400 rounded-lg px-3 py-2 flex justify-between items-center">
+        <div>
+          <h4 className="text-xs font-semibold text-amber-800">Contingency Reserve</h4>
+          <p className="text-[0.625rem] text-amber-700">Buffer for unexpected costs</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={contingencyPct}
+            onChange={(e) => setContingencyPct(parseFloat(e.target.value))}
+            className="px-2 py-1 border border-amber-300 rounded-md bg-white text-xs"
+          >
+            <option value={0.05}>5%</option>
+            <option value={0.10}>10%</option>
+            <option value={0.15}>15%</option>
+            <option value={0.20}>20%</option>
+          </select>
+          <span className="text-base font-bold text-amber-800">{formatCurrency(estimate.contingency)}</span>
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Calculator className="w-6 h-6" />
-            <h3 className="text-lg font-bold">Total Estimate</h3>
+      {/* Total Estimate */}
+      <div className="bg-gradient-to-r from-brand-500 to-sky-600 rounded-xl px-4 py-3 flex justify-between items-center">
+        <div>
+          <h2 className="text-base font-bold text-white mb-1">Total Estimate</h2>
+          <div className="flex gap-4 text-[0.625rem] text-white/90">
+            <div>Base: <span className="font-semibold">{formatCurrency(estimate.subtotal)}</span></div>
+            <div>Contingency: <span className="font-semibold">{formatCurrency(estimate.contingency)}</span></div>
           </div>
-          <div className="text-4xl font-black">{formatCurrency(estimate.grandTotal)}</div>
-        </div>
-        
-        {/* Breakdown */}
-        {estimate.breakdown.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            {estimate.breakdown.slice(0, 4).map((b) => (
-              <div key={b.category} className="bg-white/20 rounded-lg p-3">
-                <div className="text-sm text-orange-100">{b.category}</div>
-                <div className="font-bold">{formatCurrency(b.cost)}</div>
-              </div>
-            ))}
-          </div>
-        )}
-        
-        {/* Budget Comparison */}
-        <div className={`p-4 rounded-xl ${budgetDiff >= 0 ? 'bg-green-500/30' : 'bg-red-500/30'}`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {budgetDiff >= 0 ? (
-                <CheckCircle className="w-5 h-5" />
+          {initialBudget > 0 && (
+            <div className={`mt-1.5 px-3 py-1.5 rounded-md flex items-center gap-2 text-[0.6875rem] text-white ${
+              isOverBudget ? 'bg-white/20' : 'bg-white/20'
+            }`}>
+              {isOverBudget ? (
+                <AlertTriangle className="w-3 h-3" />
               ) : (
-                <AlertTriangle className="w-5 h-5" />
+                <CheckCircle className="w-3 h-3" />
               )}
-              <span>vs. Budget ({formatCurrency(initialBudget)})</span>
+              {budgetPct}% {isOverBudget ? 'Over' : 'Under'} Budget ({formatCurrency(Math.abs(budgetDiff))})
             </div>
-            <div className="text-xl font-bold">
-              {budgetDiff >= 0 ? '+' : ''}{formatCurrency(budgetDiff)}
-              <span className="text-sm font-normal ml-2">
-                {budgetDiff >= 0 ? 'under' : 'over'}
-              </span>
-            </div>
-          </div>
+          )}
         </div>
+        <div className="text-3xl font-bold text-white">{formatCurrency(estimate.grandTotal)}</div>
       </div>
 
-      {/* Empty State */}
-      {selections.length === 0 && (
-        <div className="text-center py-8 bg-gray-50 rounded-xl">
-          <Hammer className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <p className="font-medium text-gray-600">No items selected</p>
-          <p className="text-sm text-gray-400">Choose a preset above or add items manually</p>
-        </div>
+      {/* Back Button */}
+      {propertyAddress && (
+        <a
+          href={`/property?address=${encodeURIComponent(propertyAddress)}`}
+          className="block w-full py-2.5 bg-white border-2 border-gray-200 rounded-lg text-gray-500 text-xs font-semibold text-center cursor-pointer hover:border-brand-500 hover:text-brand-500 transition-all"
+        >
+          ← Back to Property Analytics
+        </a>
+      )}
+
+      {/* Clear All Button */}
+      {selections.length > 0 && (
+        <button
+          onClick={handleClearAll}
+          className="w-full py-2 text-xs text-crimson-500 hover:text-crimson-600 font-medium"
+        >
+          Clear All Items
+        </button>
       )}
     </div>
   )
