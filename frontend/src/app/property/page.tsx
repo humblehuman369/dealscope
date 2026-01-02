@@ -816,7 +816,7 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-500 font-medium">{label}</span>
+        <span className="text-xs text-gray-700 font-medium">{label}</span>
         <span className="text-xs font-bold text-navy-900 font-mono">{displayValue}</span>
       </div>
       <div className="relative h-[3px]">
@@ -848,7 +848,7 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-500 font-medium">{label}</span>
+        <span className="text-xs text-gray-700 font-medium">{label}</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(computedValue)}</span>
           <span className="text-[0.6875rem] font-semibold text-brand-500">
@@ -898,7 +898,7 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-500 font-medium">{label}</span>
+        <span className="text-xs text-gray-700 font-medium">{label}</span>
         <span className="text-xs font-bold text-navy-900 font-mono">{displayPercent}%</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
@@ -944,7 +944,7 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-500 font-medium">{label}</span>
+        <span className="text-xs text-gray-700 font-medium">{label}</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(dollarValue)}</span>
           <span className="text-[0.6875rem] font-semibold text-brand-500">({displayPercent}%)</span>
@@ -994,7 +994,7 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-500 font-medium">Maintenance</span>
+        <span className="text-xs text-gray-700 font-medium">Maintenance</span>
         <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
@@ -1037,7 +1037,7 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-500 font-medium">Management</span>
+        <span className="text-xs text-gray-700 font-medium">Management</span>
         <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
@@ -1079,7 +1079,7 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-500 font-medium">Rooms Rented</span>
+        <span className="text-xs text-gray-700 font-medium">Rooms Rented</span>
         <span className="text-xs font-bold text-navy-900 font-mono">{roomsRented} of {totalBedrooms} rooms</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
@@ -1349,7 +1349,7 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-500 font-medium">After Repair Value</span>
+        <span className="text-xs text-gray-700 font-medium">After Repair Value</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(computedArv)}</span>
           <span className="text-[0.6875rem] font-semibold text-brand-500">+{displayPercent}%</span>
@@ -1667,9 +1667,16 @@ function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView
 function MetricRow({ label, value }: { label: string; value: string }) {
   // Check if value is negative (starts with - or contains negative currency like -$)
   const isNegative = value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
+  // Split label into main label and description (in parentheses)
+  const parenMatch = label.match(/^(.+?)(\s*\(.+\))$/)
+  const mainLabel = parenMatch ? parenMatch[1] : label
+  const description = parenMatch ? parenMatch[2] : ''
   return (
     <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-      <span className="text-xs text-gray-500">{label}</span>
+      <span className="text-xs">
+        <span className="text-gray-700 font-medium">{mainLabel}</span>
+        {description && <span className="text-gray-400">{description}</span>}
+      </span>
       <span className={`text-[0.9375rem] font-bold font-mono ${isNegative ? 'text-crimson-600' : 'text-navy-900'}`}>{value}</span>
     </div>
   )
@@ -1678,9 +1685,16 @@ function MetricRow({ label, value }: { label: string; value: string }) {
 function StatRow({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
   // Check if value is negative
   const isNegative = value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
+  // Split label into main label and description (in parentheses)
+  const parenMatch = label.match(/^(.+?)(\s*\(.+\))$/)
+  const mainLabel = parenMatch ? parenMatch[1] : label
+  const description = parenMatch ? parenMatch[2] : ''
   return (
     <div className={`flex items-center justify-between py-1.5 ${highlight ? 'bg-teal-50/50 -mx-3 px-3 rounded' : ''}`}>
-      <span className="text-[11px] text-gray-500">{label}</span>
+      <span className="text-[11px]">
+        <span className="text-gray-700 font-medium">{mainLabel}</span>
+        {description && <span className="text-gray-400">{description}</span>}
+      </span>
       <span className={`text-xs font-medium ${isNegative ? 'text-crimson-600' : highlight ? 'text-brand-500' : 'text-gray-700'}`}>{value}</span>
     </div>
   )
