@@ -3290,6 +3290,10 @@ function PropertyPageContent() {
   const [selectedStrategy, setSelectedStrategy] = useState<StrategyId>('ltr')
   const [drillDownView, setDrillDownView] = useState<DrillDownView>('details')
   
+  // Track whether ARV is linked to Rehab (ARV = 2x Rehab by default)
+  // Once user manually adjusts ARV, this link is broken
+  const isArvLinkedToRehabRef = useRef(true)
+  
   const [assumptions, setAssumptions] = useState<Assumptions>({
     // Base values from API (for ±50% adjustment sliders) - Est. Value is center
     basePurchasePrice: 425000, baseMonthlyRent: 2100, baseAverageDailyRate: 250,
@@ -3297,8 +3301,8 @@ function PropertyPageContent() {
     purchasePriceAdj: -0.10, monthlyRentAdj: 0, averageDailyRateAdj: 0,
     // Computed values: Purchase Price = 90% of base (Est. Value)
     purchasePrice: 382500, monthlyRent: 2100, averageDailyRate: 250,
-    // ARV = Purchase Price × (1 + arvPct), starts at 0% (= Purchase Price)
-    arvPct: 0.20, arv: 510000,
+    // ARV = Purchase Price × (1 + arvPct) - initially 2x Rehab for linked behavior
+    arvPct: 0.10, arv: 467500, // 10% = 2x of 5% rehabCostPct
     // Standard values
     downPaymentPct: 0.30, interestRate: 0.056, loanTermYears: 30,
     rehabCostPct: 0.05, rehabCost: 21250, propertyTaxes: 4500, insurance: 1500,
@@ -3398,6 +3402,9 @@ function PropertyPageContent() {
           // Wholesale: 0.7% of Est. Market Value
           wholesaleFeePct: 0.007,
         }))
+        
+        // Reset the ARV-Rehab link when loading a new property
+        isArvLinkedToRehabRef.current = true
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : 'Failed to load property'
         // #region agent log
@@ -3413,13 +3420,26 @@ function PropertyPageContent() {
 
   // Update handler for standard fields
   const update = useCallback((key: keyof Assumptions, value: number) => {
+    // If user manually adjusts ARV, break the link to Rehab
+    if (key === 'arvPct') {
+      isArvLinkedToRehabRef.current = false
+    }
+    
     setAssumptions(prev => {
       const updated = { ...prev, [key]: value }
+      
       // Handle derived calculations
       if (key === 'rehabCostPct') {
         // Rehab cost based on market value (basePurchasePrice), not negotiated purchase price
         // This ensures MAO calculation is independent of purchase price adjustments
         updated.rehabCost = Math.round(prev.basePurchasePrice * value)
+        
+        // If ARV is still linked to Rehab, update ARV to 2x the rehab percentage
+        if (isArvLinkedToRehabRef.current) {
+          const linkedArvPct = value * 2
+          updated.arvPct = linkedArvPct
+          updated.arv = Math.round(prev.basePurchasePrice * (1 + linkedArvPct))
+        }
       } else if (key === 'arvPct') {
         // ARV = Est. Market Value × (1 + arvPct) - based on market value, not offer price
         updated.arv = Math.round(prev.basePurchasePrice * (1 + value))
