@@ -3619,7 +3619,7 @@ function PropertyPageContent() {
         </div>
 
         {/* STEP 3: Strategy Details */}
-        <div className="bg-white rounded-[0.875rem] shadow-sm">
+        <div className="bg-white rounded-[0.875rem] shadow-sm border border-[#0465f2]">
           <div className="p-4 pb-0">
             <StepHeader step={3} title={`${strategies.find(s => s.id === selectedStrategy)?.name || ''} Strategy`} />
           </div>
