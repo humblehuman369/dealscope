@@ -40,7 +40,17 @@ interface PropertyData {
   property_id: string
   zpid?: string | null  // Zillow Property ID for photos API
   address: { street: string; city: string; state: string; zip_code: string; full_address: string }
-  details: { property_type: string | null; bedrooms: number | null; bathrooms: number | null; square_footage: number | null }
+  details: { 
+    property_type: string | null
+    bedrooms: number | null
+    bathrooms: number | null
+    square_footage: number | null
+    // Additional fields for RehabIntelligence
+    year_built?: number | null
+    lot_size?: number | null
+    stories?: number | null
+    features?: string[] | null
+  }
   valuations: { 
     current_value_avm: number | null; arv: number | null
     // Raw Zestimate data for default calculations
@@ -58,6 +68,10 @@ interface PropertyData {
     // Mortgage rates from Zillow
     mortgage_rate_arm5: number | null
     mortgage_rate_30yr: number | null
+  }
+  // HOA data for RehabIntelligence
+  financial?: {
+    hoa_monthly?: number | null
   }
 }
 
@@ -1420,13 +1434,42 @@ function FineTuneHeader({ title, prompt }: {
 }
 
 // New "Set Your Terms" panel - always visible, organized in 3 groups
-function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddress, rehabBudget }: {
+function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddress, rehabBudget, propertyDetails }: {
   assumptions: Assumptions
   update: (key: keyof Assumptions, value: number) => void
   updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
   propertyAddress: string
   rehabBudget: number
+  propertyDetails?: {
+    sqft?: number
+    yearBuilt?: number
+    arv?: number
+    zipCode?: string
+    bedrooms?: number
+    bathrooms?: number
+    hasPool?: boolean
+    stories?: number
+  }
 }) {
+  // Build rehab estimator URL with property data for Quick Estimate mode
+  const buildRehabUrl = () => {
+    const params = new URLSearchParams()
+    params.set('address', propertyAddress)
+    params.set('budget', rehabBudget.toString())
+    
+    if (propertyDetails) {
+      if (propertyDetails.sqft) params.set('sqft', propertyDetails.sqft.toString())
+      if (propertyDetails.yearBuilt) params.set('year_built', propertyDetails.yearBuilt.toString())
+      if (propertyDetails.arv) params.set('arv', propertyDetails.arv.toString())
+      if (propertyDetails.zipCode) params.set('zip_code', propertyDetails.zipCode)
+      if (propertyDetails.bedrooms) params.set('bedrooms', propertyDetails.bedrooms.toString())
+      if (propertyDetails.bathrooms) params.set('bathrooms', propertyDetails.bathrooms.toString())
+      if (propertyDetails.hasPool) params.set('has_pool', 'true')
+      if (propertyDetails.stories) params.set('stories', propertyDetails.stories.toString())
+    }
+    
+    return `/rehab?${params.toString()}`
+  }
   return (
     <div className="bg-white rounded-[0.875rem] shadow-sm p-4">
       <div>
@@ -1492,13 +1535,13 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
         {/* Rehab Estimator Link */}
         <div className="mt-4 pt-3 border-t border-gray-100">
           <a
-            href={`/rehab?address=${encodeURIComponent(propertyAddress)}&budget=${rehabBudget}`}
+            href={buildRehabUrl()}
             className="inline-flex items-center gap-2 text-brand-500 hover:text-brand-600 text-xs font-medium underline underline-offset-2 transition-colors group"
           >
             <Wrench className="w-3.5 h-3.5" strokeWidth={1.5} />
             <span>Rehab Estimator</span>
             <span className="text-gray-400">—</span>
-            <span className="text-gray-500 no-underline">Build your renovation budget item by item</span>
+            <span className="text-gray-500 no-underline">AI-powered renovation budget analysis</span>
             <span className="font-semibold">{formatCurrency(rehabBudget)}</span>
             <ChevronRight className="w-3 h-3 text-gray-400 group-hover:text-brand-500 group-hover:translate-x-0.5 transition-all" />
           </a>
@@ -3592,6 +3635,16 @@ function PropertyPageContent() {
             updateAdjustment={updateAdjustment}
             propertyAddress={property.address.full_address}
             rehabBudget={assumptions.rehabCost}
+            propertyDetails={{
+              sqft: property.details?.square_footage ?? undefined,
+              yearBuilt: property.details?.year_built ?? undefined,
+              arv: assumptions.arv,
+              zipCode: property.address?.zip_code,
+              bedrooms: property.details?.bedrooms ?? undefined,
+              bathrooms: property.details?.bathrooms ?? undefined,
+              hasPool: property.details?.features?.some(f => f.toLowerCase().includes('pool')) ?? false,
+              stories: property.details?.stories ?? undefined,
+            }}
           />
         </div>
 

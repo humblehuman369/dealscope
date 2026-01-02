@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import {
   Plus, Minus, Trash2, ChevronDown, ChevronUp,
-  AlertTriangle, CheckCircle, ArrowLeft
+  AlertTriangle, CheckCircle, ArrowLeft, Zap, Wrench
 } from 'lucide-react'
 import {
   REHAB_CATEGORIES,
@@ -14,9 +14,13 @@ import {
   calculateRehabEstimate,
   RehabPreset
 } from '@/lib/analytics'
+import QuickRehabEstimate from './QuickRehabEstimate'
 
 // Type for quality tier
 type QualityTier = 'low' | 'mid' | 'high'
+
+// Type for estimator mode
+type EstimatorMode = 'quick' | 'detailed'
 
 // ============================================
 // FORMATTING
@@ -273,6 +277,45 @@ function CategorySection({
 }
 
 // ============================================
+// MODE TOGGLE
+// ============================================
+
+function ModeToggle({
+  mode,
+  onModeChange
+}: {
+  mode: EstimatorMode
+  onModeChange: (mode: EstimatorMode) => void
+}) {
+  return (
+    <div className="flex gap-1 p-1 bg-gray-100 rounded-lg">
+      <button
+        onClick={() => onModeChange('quick')}
+        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold transition-all ${
+          mode === 'quick'
+            ? 'bg-white text-brand-500 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'
+        }`}
+      >
+        <Zap className="w-3.5 h-3.5" />
+        Quick Estimate
+      </button>
+      <button
+        onClick={() => onModeChange('detailed')}
+        className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold transition-all ${
+          mode === 'detailed'
+            ? 'bg-white text-brand-500 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'
+        }`}
+      >
+        <Wrench className="w-3.5 h-3.5" />
+        Detailed Builder
+      </button>
+    </div>
+  )
+}
+
+// ============================================
 // MAIN COMPONENT
 // ============================================
 
@@ -280,9 +323,34 @@ interface RehabEstimatorProps {
   onEstimateChange?: (total: number) => void
   initialBudget?: number
   propertyAddress?: string
+  // Property data for Quick Estimate mode
+  propertyData?: {
+    square_footage?: number
+    year_built?: number
+    arv?: number
+    current_value_avm?: number
+    zip_code?: string
+    bedrooms?: number
+    bathrooms?: number
+    has_pool?: boolean
+    roof_type?: string
+    stories?: number
+    garage_spaces?: number
+    lot_size?: number
+    hoa_monthly?: number
+  }
+  // Initial mode
+  initialMode?: EstimatorMode
 }
 
-export default function RehabEstimator({ onEstimateChange, initialBudget = 40000, propertyAddress }: RehabEstimatorProps) {
+export default function RehabEstimator({ 
+  onEstimateChange, 
+  initialBudget = 40000, 
+  propertyAddress,
+  propertyData,
+  initialMode = 'quick'
+}: RehabEstimatorProps) {
+  const [mode, setMode] = useState<EstimatorMode>(propertyData ? initialMode : 'detailed')
   const [selections, setSelections] = useState<RehabSelection[]>([])
   const [contingencyPct, setContingencyPct] = useState(0.10)
   const [activePreset, setActivePreset] = useState<string | null>(null)
@@ -345,8 +413,40 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
   const isOverBudget = budgetDiff > 0
   const budgetPct = initialBudget > 0 ? Math.abs(budgetDiff / initialBudget * 100).toFixed(0) : 0
   
+  // If Quick Estimate mode and property data is available
+  if (mode === 'quick' && propertyData) {
+    return (
+      <div className="space-y-4">
+        {/* Mode Toggle */}
+        <ModeToggle mode={mode} onModeChange={setMode} />
+        
+        {/* Quick Estimate Component */}
+        <QuickRehabEstimate
+          propertyData={propertyData}
+          onEstimateChange={onEstimateChange}
+          onSwitchToDetailed={() => setMode('detailed')}
+        />
+        
+        {/* Back Button */}
+        {propertyAddress && (
+          <a
+            href={`/property?address=${encodeURIComponent(propertyAddress)}`}
+            className="block w-full py-2.5 bg-white border-2 border-gray-200 rounded-lg text-gray-500 text-xs font-semibold text-center cursor-pointer hover:border-brand-500 hover:text-brand-500 transition-all"
+          >
+            ← Back to Property Analytics
+          </a>
+        )}
+      </div>
+    )
+  }
+  
   return (
     <div className="space-y-3">
+      {/* Mode Toggle - only show if property data is available */}
+      {propertyData && (
+        <ModeToggle mode={mode} onModeChange={setMode} />
+      )}
+      
       {/* Quick Start Presets */}
       <div>
         <div className="text-sm font-semibold text-navy-900 mb-2">Quick Start Presets</div>
