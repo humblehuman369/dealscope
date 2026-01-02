@@ -33,7 +33,9 @@
 
   /* Heading styles */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-bold text-navy-900;
+    @apply font-bold;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #07172e;
   }
 
   html.dark h1,
@@ -310,6 +312,17 @@
 
   .w-progress-68 {
     width: 68%;
+  }
+
+  /* Explicit text colors for mobile visibility */
+  .text-navy-solid {
+    color: #07172e !important;
+    -webkit-text-fill-color: #07172e;
+  }
+
+  .text-brand-solid {
+    color: #0465f2 !important;
+    -webkit-text-fill-color: #0465f2;
   }
 }
 

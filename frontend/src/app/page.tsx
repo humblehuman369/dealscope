@@ -722,15 +722,15 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       </section>
 
       {/* Strategies Section */}
-      <section className="bg-white py-20">
+      <section className="bg-white py-12 md:py-20">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4">6 Investment Strategies</h2>
-            <div className="h-1 w-24 bg-brand-500 mx-auto mb-6"></div>
-            <p className="text-xl text-neutral-500">One property. Six strategies. Unlimited potential.</p>
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy-solid mb-4">6 Investment Strategies</h2>
+            <div className="h-1 w-24 bg-brand-500 mx-auto mb-4 md:mb-6"></div>
+            <p className="text-lg md:text-xl text-neutral-500">One property. Six strategies. Unlimited potential.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[
               { icon: Home, name: 'Long-Term Rental', href: '/strategies/long-term-rental' },
               { icon: TrendingUp, name: 'Short-Term Rental', href: '/strategies/short-term-rental' },
@@ -742,10 +742,10 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
               <a 
                 key={idx}
                 href={strategy.href}
-                className="bg-white border-2 border-neutral-300 rounded-xl p-6 transition-all hover:border-brand-500 hover:shadow-lg cursor-pointer group flex items-center gap-4"
+                className="bg-white border-2 border-neutral-300 rounded-xl p-4 md:p-6 transition-all hover:border-brand-500 hover:shadow-lg cursor-pointer group flex flex-row items-center gap-3 md:gap-4"
               >
-                <strategy.icon className="w-10 h-10 text-brand-500 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                <h3 className="text-xl font-bold text-navy-900">{strategy.name}</h3>
+                <strategy.icon className="w-8 h-8 md:w-10 md:h-10 text-brand-500 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                <span className="text-lg md:text-xl font-bold text-navy-solid">{strategy.name}</span>
               </a>
             ))}
           </div>
@@ -753,15 +753,15 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       </section>
 
       {/* Dashboard Section */}
-      <section className="bg-navy-50 py-20">
+      <section className="bg-navy-50 py-12 md:py-20">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4">Data-Driven Investment Decisions</h2>
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy-solid mb-4">Data-Driven Investment Decisions</h2>
             <div className="h-1 w-24 bg-brand-500 mx-auto"></div>
           </div>
           
-          <div className="text-center mt-8">
-            <p className="text-2xl font-bold text-navy-900 mb-6">Stop Guessing. Start Investing.</p>
+          <div className="text-center mt-6 md:mt-8">
+            <p className="text-xl md:text-2xl font-bold text-navy-solid mb-6">Stop Guessing. Start Investing.</p>
             <button
               onClick={() => setShowAuthModal('register')}
               className="px-12 py-4 h-16 bg-brand-500 text-white font-bold text-lg rounded-xl hover:opacity-90 transition-all"
