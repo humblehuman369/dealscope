@@ -2289,7 +2289,7 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
   return (
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
-      <div className="bg-white border border-[#07172e] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+      <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 border border-[#0465f2] rounded-xl mb-3">
           <Layers className="w-5 h-5 text-[#0465f2]" />
@@ -2478,7 +2478,7 @@ function STRAnalyticBreakdown({ calc, assumptions }: {
   return (
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
-      <div className="bg-white border border-[#07172e] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+      <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 border border-[#0465f2] rounded-xl mb-3">
           <Layers className="w-5 h-5 text-[#0465f2]" />
@@ -2648,7 +2648,7 @@ function BRRRRAnalyticBreakdown({ calc, assumptions }: {
   return (
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
-      <div className="bg-white border border-[#07172e] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+      <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 border border-[#0465f2] rounded-xl mb-3">
           <Layers className="w-5 h-5 text-[#0465f2]" />
@@ -2802,7 +2802,7 @@ function FlipAnalyticBreakdown({ calc, assumptions }: {
   return (
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
-      <div className="bg-white border border-[#07172e] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+      <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 border border-[#0465f2] rounded-xl mb-3">
           <Layers className="w-5 h-5 text-[#0465f2]" />
@@ -2972,7 +2972,7 @@ function HouseHackAnalyticBreakdown({ calc, assumptions }: {
   return (
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
-      <div className="bg-white border border-[#07172e] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+      <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 border border-[#0465f2] rounded-xl mb-3">
           <Layers className="w-5 h-5 text-[#0465f2]" />
@@ -3109,7 +3109,7 @@ function WholesaleAnalyticBreakdown({ calc, assumptions }: {
   return (
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
-      <div className="bg-white border border-[#07172e] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+      <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 border border-[#0465f2] rounded-xl mb-3">
           <Layers className="w-5 h-5 text-[#0465f2]" />
