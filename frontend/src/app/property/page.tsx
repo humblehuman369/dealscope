@@ -2084,19 +2084,26 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
           </div>
         )}
         
-        {/* Generate LOI Button - Shows when deal works */}
-        {calc.isPurchaseBelowMAO && propertyData && (
-          <div className="mt-4 pt-4 border-t border-emerald-200/50">
+        {/* Generate LOI Button - Always visible in Wholesale view */}
+        {propertyData && (
+          <div className={`mt-4 pt-4 border-t ${calc.isPurchaseBelowMAO ? 'border-emerald-200/50' : 'border-rose-200/50'}`}>
             <button
               onClick={() => setShowLOIModal(true)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-cyan-500/25 transition-all group"
+              className={`w-full flex items-center justify-center gap-2 px-4 py-3 text-white rounded-xl font-semibold hover:shadow-lg transition-all group ${
+                calc.isPurchaseBelowMAO 
+                  ? 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:shadow-cyan-500/25' 
+                  : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:shadow-amber-500/25'
+              }`}
             >
               <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
               <span>Generate Letter of Intent</span>
               <Sparkles className="w-3.5 h-3.5 opacity-75" />
             </button>
-            <p className="text-[10px] text-center text-emerald-600 mt-2">
-              Create a professional LOI in seconds — Analysis to Action
+            <p className={`text-[10px] text-center mt-2 ${calc.isPurchaseBelowMAO ? 'text-emerald-600' : 'text-amber-600'}`}>
+              {calc.isPurchaseBelowMAO 
+                ? 'Create a professional LOI in seconds — Analysis to Action' 
+                : `Make an offer at MAO ($${calc.mao.toLocaleString()}) to make this deal work`
+              }
             </p>
           </div>
         )}
@@ -3728,7 +3735,7 @@ function PropertyPageContent() {
             {drillDownView === 'details' && selectedStrategy === 'brrrr' && <BRRRRDetails calc={brrrrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
             {drillDownView === 'details' && selectedStrategy === 'flip' && <FlipDetails calc={flipCalc} assumptions={assumptions} update={update} />}
             {drillDownView === 'details' && selectedStrategy === 'house_hack' && <HouseHackDetails calc={houseHackCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
-            {drillDownView === 'details' && selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} propertyData={propertyData} />}
+            {drillDownView === 'details' && selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} propertyData={property} />}
             
             {drillDownView === 'charts' && <ChartsView projections={projections} totalCashInvested={ltrCalc.totalCashRequired} />}
             {drillDownView === 'projections' && <ProjectionsView assumptions={projectionAssumptions} />}
