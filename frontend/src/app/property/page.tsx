@@ -2291,9 +2291,9 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
       {/* Main Card - matches HTML design */}
       <div className="bg-[#07172e] border-2 border-brand-500 rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-brand-500 rounded-xl mb-3">
-          <Layers className="w-5 h-5 text-brand-500" />
-          <h4 className="text-[0.9375rem] font-bold text-brand-500">Full Analytic Breakdown</h4>
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 rounded-xl mb-3">
+          <Layers className="w-5 h-5 text-[#07172e]" />
+          <h4 className="text-[0.9375rem] font-bold text-[#07172e]">Full Analytic Breakdown</h4>
         </div>
 
         {/* Two Column Layout */}
@@ -2480,9 +2480,9 @@ function STRAnalyticBreakdown({ calc, assumptions }: {
       {/* Main Card - matches HTML design */}
       <div className="bg-[#07172e] border-2 border-brand-500 rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-brand-500 rounded-xl mb-3">
-          <Layers className="w-5 h-5 text-brand-500" />
-          <h4 className="text-[0.9375rem] font-bold text-brand-500">Full Analytic Breakdown</h4>
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 rounded-xl mb-3">
+          <Layers className="w-5 h-5 text-[#07172e]" />
+          <h4 className="text-[0.9375rem] font-bold text-[#07172e]">Full Analytic Breakdown</h4>
         </div>
 
         {/* STR Revenue Section */}
@@ -2650,9 +2650,9 @@ function BRRRRAnalyticBreakdown({ calc, assumptions }: {
       {/* Main Card - matches HTML design */}
       <div className="bg-[#07172e] border-2 border-brand-500 rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-brand-500 rounded-xl mb-3">
-          <Layers className="w-5 h-5 text-brand-500" />
-          <h4 className="text-[0.9375rem] font-bold text-brand-500">Full Analytic Breakdown</h4>
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 rounded-xl mb-3">
+          <Layers className="w-5 h-5 text-[#07172e]" />
+          <h4 className="text-[0.9375rem] font-bold text-[#07172e]">Full Analytic Breakdown</h4>
         </div>
 
         {/* Two Column Layout for Phases */}
@@ -2804,9 +2804,9 @@ function FlipAnalyticBreakdown({ calc, assumptions }: {
       {/* Main Card - matches HTML design */}
       <div className="bg-[#07172e] border-2 border-brand-500 rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-brand-500 rounded-xl mb-3">
-          <Layers className="w-5 h-5 text-brand-500" />
-          <h4 className="text-[0.9375rem] font-bold text-brand-500">Full Analytic Breakdown</h4>
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 rounded-xl mb-3">
+          <Layers className="w-5 h-5 text-[#07172e]" />
+          <h4 className="text-[0.9375rem] font-bold text-[#07172e]">Full Analytic Breakdown</h4>
         </div>
 
         {/* Step 1: The Opportunity - Flip Margin Box */}
@@ -2974,9 +2974,9 @@ function HouseHackAnalyticBreakdown({ calc, assumptions }: {
       {/* Main Card - matches HTML design */}
       <div className="bg-[#07172e] border-2 border-brand-500 rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-brand-500 rounded-xl mb-3">
-          <Layers className="w-5 h-5 text-brand-500" />
-          <h4 className="text-[0.9375rem] font-bold text-brand-500">Full Analytic Breakdown</h4>
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 rounded-xl mb-3">
+          <Layers className="w-5 h-5 text-[#07172e]" />
+          <h4 className="text-[0.9375rem] font-bold text-[#07172e]">Full Analytic Breakdown</h4>
         </div>
 
         {/* Two Column Layout */}
@@ -3111,9 +3111,9 @@ function WholesaleAnalyticBreakdown({ calc, assumptions }: {
       {/* Main Card - matches HTML design */}
       <div className="bg-[#07172e] border-2 border-brand-500 rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-brand-500 rounded-xl mb-3">
-          <Layers className="w-5 h-5 text-brand-500" />
-          <h4 className="text-[0.9375rem] font-bold text-brand-500">Full Analytic Breakdown</h4>
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 rounded-xl mb-3">
+          <Layers className="w-5 h-5 text-[#07172e]" />
+          <h4 className="text-[0.9375rem] font-bold text-[#07172e]">Full Analytic Breakdown</h4>
         </div>
 
         {/* Title Section */}
