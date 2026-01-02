@@ -274,12 +274,23 @@
 
   /* Hide scrollbar but allow scrolling */
   .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    -ms-overflow-style: none; /* IE and Edge */
   }
 
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  /*
+   * Progressive enhancement for modern scrollbar hiding.
+   * - Firefox 64+ and Chrome 121+ support scrollbar-width: none
+   * - Older browsers use the ::-webkit-scrollbar solution above
+   * - The @supports query ensures graceful degradation
+   */
+  @supports (scrollbar-width: none) {
+    .scrollbar-hide {
+      scrollbar-width: none; /* csslint allow: scrollbar-width */
+    }
   }
 
   /* Clip path for angled elements */
