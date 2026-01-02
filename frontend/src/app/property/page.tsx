@@ -1171,7 +1171,7 @@ function StrategyInfoModal({
 }
 
 function StrategyCard({ strategy, metrics, isSelected, onClick }: {
-  strategy: typeof strategies[0]; metrics: { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; rating: Rating; primaryValue: number }
+  strategy: typeof strategies[0]; metrics: { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; rating: Rating; primaryValue: number; secondaryValue: number }
   isSelected: boolean; onClick: () => void
 }) {
   const [showInfoModal, setShowInfoModal] = useState(false)
@@ -1180,6 +1180,11 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
   const isLoss = metrics.primaryValue < 0
   const isBreakeven = metrics.primaryValue === 0
   const primaryColor = isLoss ? 'text-crimson-500' : isBreakeven ? 'text-gray-400' : 'text-brand-500'
+  
+  // Secondary value coloring - blue for positive, gray for zero, red for negative
+  const isSecondaryLoss = metrics.secondaryValue < 0
+  const isSecondaryBreakeven = metrics.secondaryValue === 0
+  const secondaryColor = isSecondaryLoss ? 'text-crimson-500' : isSecondaryBreakeven ? 'text-gray-400' : 'text-brand-500'
   
   // Accent bar color - blue for all
   const accentColor = 'bg-brand-500'
@@ -1228,9 +1233,9 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
           </div>
           <div className="text-[9px] font-medium text-gray-500 tracking-wide mt-0.5 mb-1.5">{metrics.primaryLabel}</div>
           
-          {/* Secondary Metric - Value on top, label below */}
+          {/* Secondary Metric - Value on top, label below - Blue for positive, red for negative */}
           <div className="pt-1.5 border-t border-gray-100/80">
-            <div className="text-sm font-semibold text-gray-700">{metrics.secondary}</div>
+            <div className={`text-sm font-semibold ${secondaryColor}`}>{metrics.secondary}</div>
             <div className="text-[9px] font-medium mt-px text-gray-500">{metrics.secondaryLabel}</div>
           </div>
         </div>
@@ -1257,7 +1262,7 @@ function StrategyGrid({
   onSelectStrategy 
 }: {
   strategies: Strategy[]
-  strategyMetrics: Record<StrategyId, { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; rating: Rating; primaryValue: number }>
+  strategyMetrics: Record<StrategyId, { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; rating: Rating; primaryValue: number; secondaryValue: number }>
   selectedStrategy: StrategyId
   onSelectStrategy: (id: StrategyId) => void
 }) {
@@ -1269,6 +1274,10 @@ function StrategyGrid({
         const isLoss = metrics.primaryValue < 0
         const isBreakeven = metrics.primaryValue === 0
         
+        // Secondary value coloring
+        const isSecondaryLoss = metrics.secondaryValue < 0
+        const isSecondaryBreakeven = metrics.secondaryValue === 0
+        
         // Shortened names for strategy boxes only
         const displayName = strategy.id === 'ltr' ? 'Long Rental' 
           : strategy.id === 'str' ? 'Short Rental' 
@@ -1276,6 +1285,7 @@ function StrategyGrid({
         
         // Color: red for loss, gray for breakeven, blue for profit
         const primaryColor = isLoss ? 'text-crimson-500' : isBreakeven ? 'text-gray-400' : 'text-brand-500'
+        const secondaryColor = isSecondaryLoss ? 'text-crimson-500' : isSecondaryBreakeven ? 'text-gray-400' : 'text-brand-500'
         
         return (
           <button
@@ -1303,8 +1313,8 @@ function StrategyGrid({
             </div>
             <div className="text-[0.6875rem] text-gray-500 mb-1.5">{metrics.primaryLabel}</div>
             
-            {/* Secondary Value */}
-            <div className="text-[0.9375rem] font-bold text-navy-900 mb-0.5">{metrics.secondary}</div>
+            {/* Secondary Value - Blue for positive, gray for breakeven, red for negative */}
+            <div className={`text-[0.9375rem] font-bold mb-0.5 ${secondaryColor}`}>{metrics.secondary}</div>
             <div className="text-[0.6875rem] text-gray-500">{metrics.secondaryLabel}</div>
           </button>
         )
@@ -3444,8 +3454,8 @@ function PropertyPageContent() {
   const houseHackCalc = useMemo(() => calculateHouseHack(assumptions), [assumptions])
   const wholesaleCalc = useMemo(() => calculateWholesale(assumptions), [assumptions])
 
-  // Strategy metrics for cards - includes primaryValue for profit/loss color coding
-  const strategyMetrics: Record<StrategyId, { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; rating: Rating; score: number; primaryValue: number }> = useMemo(() => ({
+  // Strategy metrics for cards - includes primaryValue and secondaryValue for profit/loss color coding
+  const strategyMetrics: Record<StrategyId, { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; rating: Rating; score: number; primaryValue: number; secondaryValue: number }> = useMemo(() => ({
     ltr: {
       primary: formatCurrency(ltrCalc.monthlyCashFlow),
       primaryLabel: 'Monthly Cash Flow',
@@ -3454,7 +3464,8 @@ function PropertyPageContent() {
       // Rating based on Cash-on-Cash %: >15% Excellent, >12% Great, >8% Good, >5% Fair, <5% Poor
       rating: (ltrCalc.cashOnCash >= 0.15 ? 'excellent' : ltrCalc.cashOnCash >= 0.12 ? 'great' : ltrCalc.cashOnCash >= 0.08 ? 'good' : ltrCalc.cashOnCash >= 0.05 ? 'fair' : 'poor') as Rating,
       score: ltrCalc.cashOnCash * 100,
-      primaryValue: ltrCalc.monthlyCashFlow
+      primaryValue: ltrCalc.monthlyCashFlow,
+      secondaryValue: ltrCalc.cashOnCash
     },
     str: {
       primary: formatCurrency(strCalc.monthlyCashFlow),
@@ -3464,7 +3475,8 @@ function PropertyPageContent() {
       // Rating based on Cash-on-Cash %: >25% Excellent, >20% Great, >15% Good, >10% Fair, <10% Poor (higher for STR)
       rating: (strCalc.cashOnCash >= 0.25 ? 'excellent' : strCalc.cashOnCash >= 0.20 ? 'great' : strCalc.cashOnCash >= 0.15 ? 'good' : strCalc.cashOnCash >= 0.10 ? 'fair' : 'poor') as Rating,
       score: strCalc.cashOnCash * 100,
-      primaryValue: strCalc.monthlyCashFlow
+      primaryValue: strCalc.monthlyCashFlow,
+      secondaryValue: strCalc.cashOnCash
     },
     brrrr: {
       primary: formatCurrency(brrrrCalc.monthlyCashFlow),
@@ -3474,7 +3486,8 @@ function PropertyPageContent() {
       // Rating based on Cash-on-Cash % (Infinity = all money back): ∞ Excellent, >50% Great, >25% Good, >10% Fair, <10% Poor
       rating: (brrrrCalc.cashOnCash === Infinity ? 'excellent' : brrrrCalc.cashOnCash >= 0.50 ? 'great' : brrrrCalc.cashOnCash >= 0.25 ? 'good' : brrrrCalc.cashOnCash >= 0.10 ? 'fair' : 'poor') as Rating,
       score: brrrrCalc.cashOnCash === Infinity ? 100 : brrrrCalc.cashOnCash * 100,
-      primaryValue: brrrrCalc.monthlyCashFlow
+      primaryValue: brrrrCalc.monthlyCashFlow,
+      secondaryValue: brrrrCalc.cashOnCash === Infinity ? 1 : brrrrCalc.cashOnCash
     },
     flip: {
       primary: formatCurrency(flipCalc.flipMargin),
@@ -3484,7 +3497,8 @@ function PropertyPageContent() {
       // Rating based on Flip Margin %: >30% Excellent, >20% Great, >15% Good, >10% Fair, <10% Poor
       rating: (flipCalc.flipMarginPct >= 0.30 ? 'excellent' : flipCalc.flipMarginPct >= 0.20 ? 'great' : flipCalc.flipMarginPct >= 0.15 ? 'good' : flipCalc.flipMarginPct >= 0.10 ? 'fair' : 'poor') as Rating,
       score: flipCalc.flipMarginPct * 100,
-      primaryValue: flipCalc.flipMargin
+      primaryValue: flipCalc.flipMargin,
+      secondaryValue: flipCalc.flipMarginPct
     },
     house_hack: {
       primary: formatCurrency(houseHackCalc.monthlySavings),
@@ -3498,7 +3512,9 @@ function PropertyPageContent() {
       // Rating: Live free = Excellent, otherwise based on savings vs typical market rent ratio
       rating: (houseHackCalc.effectiveHousingCost <= 0 ? 'excellent' : houseHackCalc.effectiveHousingCost <= houseHackCalc.rentPerRoom * 0.25 ? 'great' : houseHackCalc.effectiveHousingCost <= houseHackCalc.rentPerRoom * 0.50 ? 'good' : houseHackCalc.monthlySavings >= 0 ? 'fair' : 'poor') as Rating,
       score: houseHackCalc.monthlySavings > 0 ? 80 : 40,
-      primaryValue: houseHackCalc.monthlySavings
+      primaryValue: houseHackCalc.monthlySavings,
+      // For house hack: negative effective housing cost = profit (good), positive = cost (neutral, not bad)
+      secondaryValue: houseHackCalc.effectiveHousingCost <= 0 ? Math.abs(houseHackCalc.effectiveHousingCost) : 0
     },
     wholesale: {
       primary: formatCurrency(wholesaleCalc.mao),
@@ -3508,7 +3524,9 @@ function PropertyPageContent() {
       // Rating based on Purchase Price as % of ARV (70% Rule): <70% Excellent, 70-75% Great, 75-80% Good, 80-85% Fair, >85% Poor
       rating: (wholesaleCalc.purchasePctOfArv < 0.70 ? 'excellent' : wholesaleCalc.purchasePctOfArv <= 0.75 ? 'great' : wholesaleCalc.purchasePctOfArv <= 0.80 ? 'good' : wholesaleCalc.purchasePctOfArv <= 0.85 ? 'fair' : 'poor') as Rating,
       score: (1 - wholesaleCalc.purchasePctOfArv) * 100,
-      primaryValue: wholesaleCalc.mao
+      primaryValue: wholesaleCalc.mao,
+      // For wholesale: below 70% = good deal (positive), treat as positive indicator
+      secondaryValue: wholesaleCalc.purchasePctOfArv <= 0.70 ? 1 : 0
     },
   }), [ltrCalc, strCalc, brrrrCalc, flipCalc, houseHackCalc, wholesaleCalc])
 
