@@ -2291,7 +2291,7 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
       {/* Main Card - matches HTML design */}
       <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3">
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
           <Layers className="w-5 h-5 text-[#0465f2]" />
           <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
         </div>
@@ -2480,7 +2480,7 @@ function STRAnalyticBreakdown({ calc, assumptions }: {
       {/* Main Card - matches HTML design */}
       <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3">
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
           <Layers className="w-5 h-5 text-[#0465f2]" />
           <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
         </div>
@@ -2650,7 +2650,7 @@ function BRRRRAnalyticBreakdown({ calc, assumptions }: {
       {/* Main Card - matches HTML design */}
       <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3">
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
           <Layers className="w-5 h-5 text-[#0465f2]" />
           <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
         </div>
@@ -2804,7 +2804,7 @@ function FlipAnalyticBreakdown({ calc, assumptions }: {
       {/* Main Card - matches HTML design */}
       <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3">
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
           <Layers className="w-5 h-5 text-[#0465f2]" />
           <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
         </div>
@@ -2974,7 +2974,7 @@ function HouseHackAnalyticBreakdown({ calc, assumptions }: {
       {/* Main Card - matches HTML design */}
       <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3">
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
           <Layers className="w-5 h-5 text-[#0465f2]" />
           <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
         </div>
@@ -3111,7 +3111,7 @@ function WholesaleAnalyticBreakdown({ calc, assumptions }: {
       {/* Main Card - matches HTML design */}
       <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3">
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
           <Layers className="w-5 h-5 text-[#0465f2]" />
           <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
         </div>
@@ -3631,12 +3631,20 @@ function PropertyPageContent() {
 
           {/* Content Area - Key Metrics and Adjust Inputs */}
           <div className="p-4">
-            {drillDownView === 'details' && selectedStrategy === 'ltr' && <LTRDetails calc={ltrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
-            {drillDownView === 'details' && selectedStrategy === 'str' && <STRDetails calc={strCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
-            {drillDownView === 'details' && selectedStrategy === 'brrrr' && <BRRRRDetails calc={brrrrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
-            {drillDownView === 'details' && selectedStrategy === 'flip' && <FlipDetails calc={flipCalc} assumptions={assumptions} update={update} />}
-            {drillDownView === 'details' && selectedStrategy === 'house_hack' && <HouseHackDetails calc={houseHackCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
-            {drillDownView === 'details' && selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} propertyData={property} />}
+            {drillDownView === 'details' && (
+              <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                  <Calculator className="w-5 h-5 text-[#0465f2]" />
+                  <h4 className="text-base font-semibold text-navy-900">Strategy Metrics</h4>
+                </div>
+                {selectedStrategy === 'ltr' && <LTRDetails calc={ltrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
+                {selectedStrategy === 'str' && <STRDetails calc={strCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
+                {selectedStrategy === 'brrrr' && <BRRRRDetails calc={brrrrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
+                {selectedStrategy === 'flip' && <FlipDetails calc={flipCalc} assumptions={assumptions} update={update} />}
+                {selectedStrategy === 'house_hack' && <HouseHackDetails calc={houseHackCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
+                {selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} propertyData={property} />}
+              </div>
+            )}
             
             {drillDownView === 'breakdown' && selectedStrategy === 'ltr' && <LTRAnalyticBreakdown calc={ltrCalc} assumptions={assumptions} />}
             {drillDownView === 'breakdown' && selectedStrategy === 'str' && <STRAnalyticBreakdown calc={strCalc} assumptions={assumptions} />}
@@ -3645,11 +3653,51 @@ function PropertyPageContent() {
             {drillDownView === 'breakdown' && selectedStrategy === 'house_hack' && <HouseHackAnalyticBreakdown calc={houseHackCalc} assumptions={assumptions} />}
             {drillDownView === 'breakdown' && selectedStrategy === 'wholesale' && <WholesaleAnalyticBreakdown calc={wholesaleCalc} assumptions={assumptions} />}
             
-            {drillDownView === 'charts' && <ChartsView projections={projections} totalCashInvested={ltrCalc.totalCashRequired} />}
-            {drillDownView === 'projections' && <ProjectionsView assumptions={projectionAssumptions} />}
-            {drillDownView === 'score' && <DealScoreCard metrics={{ monthlyCashFlow: ltrCalc.monthlyCashFlow, cashOnCash: ltrCalc.cashOnCash, capRate: ltrCalc.capRate, onePercentRule: ltrCalc.onePercentRule, dscr: ltrCalc.dscr, purchasePrice: assumptions.purchasePrice, arv: assumptions.arv, totalCashRequired: ltrCalc.totalCashRequired, monthlyRent: assumptions.monthlyRent }} />}
-            {drillDownView === 'sensitivity' && <SensitivityAnalysisView assumptions={{ purchasePrice: assumptions.purchasePrice, downPaymentPct: assumptions.downPaymentPct, interestRate: assumptions.interestRate, loanTermYears: assumptions.loanTermYears, monthlyRent: assumptions.monthlyRent, propertyTaxes: assumptions.propertyTaxes, insurance: assumptions.insurance, vacancyRate: assumptions.vacancyRate, managementPct: assumptions.managementPct, maintenancePct: assumptions.maintenancePct }} />}
-            {drillDownView === 'compare' && <ScenarioComparison currentAssumptions={projectionAssumptions} propertyAddress={property.address.full_address} />}
+            {drillDownView === 'charts' && (
+              <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                  <LineChart className="w-5 h-5 text-[#0465f2]" />
+                  <h4 className="text-base font-semibold text-navy-900">10-Year Projections</h4>
+                </div>
+                <ChartsView projections={projections} totalCashInvested={ltrCalc.totalCashRequired} />
+              </div>
+            )}
+            {drillDownView === 'projections' && (
+              <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                  <TrendingUp className="w-5 h-5 text-[#0465f2]" />
+                  <h4 className="text-base font-semibold text-navy-900">Growth Analysis</h4>
+                </div>
+                <ProjectionsView assumptions={projectionAssumptions} />
+              </div>
+            )}
+            {drillDownView === 'score' && (
+              <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                  <Award className="w-5 h-5 text-[#0465f2]" />
+                  <h4 className="text-base font-semibold text-navy-900">Deal Score</h4>
+                </div>
+                <DealScoreCard metrics={{ monthlyCashFlow: ltrCalc.monthlyCashFlow, cashOnCash: ltrCalc.cashOnCash, capRate: ltrCalc.capRate, onePercentRule: ltrCalc.onePercentRule, dscr: ltrCalc.dscr, purchasePrice: assumptions.purchasePrice, arv: assumptions.arv, totalCashRequired: ltrCalc.totalCashRequired, monthlyRent: assumptions.monthlyRent }} />
+              </div>
+            )}
+            {drillDownView === 'sensitivity' && (
+              <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                  <Activity className="w-5 h-5 text-[#0465f2]" />
+                  <h4 className="text-base font-semibold text-navy-900">What-If Analysis</h4>
+                </div>
+                <SensitivityAnalysisView assumptions={{ purchasePrice: assumptions.purchasePrice, downPaymentPct: assumptions.downPaymentPct, interestRate: assumptions.interestRate, loanTermYears: assumptions.loanTermYears, monthlyRent: assumptions.monthlyRent, propertyTaxes: assumptions.propertyTaxes, insurance: assumptions.insurance, vacancyRate: assumptions.vacancyRate, managementPct: assumptions.managementPct, maintenancePct: assumptions.maintenancePct }} />
+              </div>
+            )}
+            {drillDownView === 'compare' && (
+              <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                  <GitCompare className="w-5 h-5 text-[#0465f2]" />
+                  <h4 className="text-base font-semibold text-navy-900">Scenario Comparison</h4>
+                </div>
+                <ScenarioComparison currentAssumptions={projectionAssumptions} propertyAddress={property.address.full_address} />
+              </div>
+            )}
           </div>
         </div>
 
