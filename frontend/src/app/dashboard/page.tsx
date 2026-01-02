@@ -174,7 +174,7 @@ function ProfileSection({ user }: ProfileSectionProps) {
   return (
     <div className="bg-white dark:bg-navy-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
       {/* Banner */}
-      <div className="h-24 bg-brand-500"></div>
+      <div className="h-16 bg-brand-500"></div>
       
       <div className="relative px-6 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-10">
