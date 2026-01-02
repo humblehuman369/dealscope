@@ -192,6 +192,85 @@ export interface WholesaleResults {
   [key: string]: any
 }
 
+// LOI (Letter of Intent) Types
+export interface LOIBuyerInfo {
+  name: string
+  company?: string
+  address?: string
+  city?: string
+  state?: string
+  zip_code?: string
+  phone?: string
+  email?: string
+}
+
+export interface LOIPropertyInfo {
+  address: string
+  city: string
+  state: string
+  zip_code: string
+  county?: string
+  parcel_id?: string
+  legal_description?: string
+  property_type?: string
+  bedrooms?: number
+  bathrooms?: number
+  square_footage?: number
+  year_built?: number
+  lot_size?: number
+}
+
+export interface LOITerms {
+  offer_price: number
+  earnest_money: number
+  earnest_money_holder: string
+  inspection_period_days: number
+  closing_period_days: number
+  offer_expiration_days: number
+  allow_assignment: boolean
+  contingencies: string[]
+  is_cash_offer: boolean
+  seller_concessions: number
+  additional_terms?: string
+}
+
+export interface LOIAnalysisData {
+  arv?: number
+  estimated_rehab?: number
+  max_allowable_offer?: number
+  deal_viability?: string
+  include_in_loi: boolean
+}
+
+export interface GenerateLOIRequest {
+  buyer: LOIBuyerInfo
+  seller?: { name?: string; address?: string }
+  property_info: LOIPropertyInfo
+  terms: LOITerms
+  analysis?: LOIAnalysisData
+  format: 'pdf' | 'text' | 'html'
+  include_cover_letter?: boolean
+  professional_letterhead?: boolean
+  include_signature_lines?: boolean
+}
+
+export interface LOIDocument {
+  id: string
+  created_at: string
+  content_text: string
+  content_html?: string
+  pdf_base64?: string
+  property_address: string
+  offer_price: number
+  earnest_money: number
+  inspection_days: number
+  closing_days: number
+  expiration_date: string
+  buyer_name: string
+  seller_name?: string
+  format_generated: string
+}
+
 // API Functions
 export const api = {
   // Health check
@@ -250,6 +329,52 @@ export const api = {
       apiRequest<any>('/api/v1/sensitivity/analyze', {
         method: 'POST',
         body: data,
+      }),
+  },
+
+  // LOI (Letter of Intent) endpoints
+  loi: {
+    generate: (data: GenerateLOIRequest) =>
+      apiRequest<LOIDocument>('/api/v1/loi/generate', {
+        method: 'POST',
+        body: data,
+      }),
+
+    quickGenerate: (params: {
+      property_address: string
+      property_city: string
+      property_state?: string
+      property_zip?: string
+      offer_price: number
+      earnest_money?: number
+      inspection_days?: number
+      closing_days?: number
+      buyer_name: string
+      buyer_company?: string
+      buyer_email?: string
+      buyer_phone?: string
+      include_assignment?: boolean
+      format?: string
+    }) => {
+      const searchParams = new URLSearchParams()
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) searchParams.set(key, String(value))
+      })
+      return apiRequest<LOIDocument>(`/api/v1/loi/quick-generate?${searchParams}`, {
+        method: 'POST',
+      })
+    },
+
+    templates: () =>
+      apiRequest<Array<{ id: string; name: string; description: string; is_default: boolean }>>('/api/v1/loi/templates'),
+
+    preferences: () =>
+      apiRequest<any>('/api/v1/loi/preferences'),
+
+    savePreferences: (prefs: any) =>
+      apiRequest<any>('/api/v1/loi/preferences', {
+        method: 'POST',
+        body: prefs,
       }),
   },
 }
