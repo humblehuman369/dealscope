@@ -97,7 +97,7 @@ interface Assumptions {
 }
 
 type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
-type DrillDownView = 'details' | 'charts' | 'projections' | 'score' | 'sensitivity' | 'rehab' | 'compare'
+type DrillDownView = 'details' | 'breakdown' | 'charts' | 'projections' | 'score' | 'sensitivity' | 'rehab' | 'compare'
 
 // ============================================
 // API FUNCTIONS
@@ -1628,9 +1628,10 @@ function AssumptionsPanel({ assumptions, update, updateAdjustment, isExpanded, o
 
 function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView; onViewChange: (view: DrillDownView) => void }) {
   const tabs: { id: DrillDownView; label: string; icon: any }[] = [
-    { id: 'details', label: 'Details', icon: Calculator },
-    { id: 'charts', label: 'Charts', icon: LineChart },
-    { id: 'projections', label: '10-Year', icon: TrendingUp },
+    { id: 'details', label: 'Metrics', icon: Calculator },
+    { id: 'breakdown', label: 'Breakdown', icon: Layers },
+    { id: 'charts', label: '10-Year', icon: LineChart },
+    { id: 'projections', label: 'Growth', icon: TrendingUp },
     { id: 'score', label: 'Score', icon: Award },
     { id: 'sensitivity', label: 'What-If', icon: Activity },
     { id: 'compare', label: 'Compare', icon: GitCompare },
@@ -1711,7 +1712,6 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
 }) {
   // Calculate annual rent for maintenance $ calculation
   const annualRent = assumptions.monthlyRent * 12
-  const [showBreakdown, setShowBreakdown] = useState(true)
   
   return (
     <div>
@@ -1744,23 +1744,6 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
           </div>
         </div>
       </div>
-      
-      {/* Full Analytic Breakdown Button - matches HTML design */}
-      <div className="mt-5">
-        <button
-          onClick={() => setShowBreakdown(!showBreakdown)}
-          className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-500 font-semibold text-[0.8125rem] flex items-center justify-center gap-2 transition-all"
-        >
-          <Layers className="w-3.5 h-3.5" />
-          Full Analytic Breakdown
-          {showBreakdown ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-        </button>
-      </div>
-      
-      {/* Expandable Breakdown Section */}
-      {showBreakdown && (
-        <LTRAnalyticBreakdown calc={calc} assumptions={assumptions} />
-      )}
     </div>
   )
 }
@@ -1771,7 +1754,6 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
   updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj' | 'averageDailyRateAdj', value: number) => void
 }) {
   const annualSTRRevenue = assumptions.averageDailyRate * 365 * assumptions.occupancyRate
-  const [showBreakdown, setShowBreakdown] = useState(true)
   
   return (
     <div>
@@ -1807,21 +1789,6 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
           </div>
         </div>
       </div>
-      
-      <div className="mt-6">
-        <button
-          onClick={() => setShowBreakdown(!showBreakdown)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
-            showBreakdown ? 'border-cyan-300 bg-cyan-50 text-cyan-700' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-cyan-200 hover:bg-cyan-50/50'
-          }`}
-        >
-          <Calculator className="w-4 h-4" />
-          <span className="font-medium">Full Analytic Breakdown</span>
-          {showBreakdown ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
-        </button>
-      </div>
-      
-      {showBreakdown && <STRAnalyticBreakdown calc={calc} assumptions={assumptions} />}
     </div>
   )
 }
@@ -1832,7 +1799,6 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
   updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
 }) {
   const annualRent = assumptions.monthlyRent * 12
-  const [showBreakdown, setShowBreakdown] = useState(true)
   
   return (
     <div>
@@ -1869,28 +1835,11 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
           </div>
         </div>
       </div>
-      
-      <div className="mt-6">
-        <button
-          onClick={() => setShowBreakdown(!showBreakdown)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
-            showBreakdown ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-emerald-200 hover:bg-emerald-50/50'
-          }`}
-        >
-          <Calculator className="w-4 h-4" />
-          <span className="font-medium">Full Analytic Breakdown</span>
-          {showBreakdown ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
-        </button>
-      </div>
-      
-      {showBreakdown && <BRRRRAnalyticBreakdown calc={calc} assumptions={assumptions} />}
     </div>
   )
 }
 
 function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateFlip>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
-  const [showBreakdown, setShowBreakdown] = useState(true)
-  
   return (
     <div>
       {/* Step 3 Header */}
@@ -1967,21 +1916,6 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
           </div>
         </div>
       </div>
-      
-      <div className="mt-6">
-        <button
-          onClick={() => setShowBreakdown(!showBreakdown)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
-            showBreakdown ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-orange-200 hover:bg-orange-50/50'
-          }`}
-        >
-          <Calculator className="w-4 h-4" />
-          <span className="font-medium">Full Analytic Breakdown</span>
-          {showBreakdown ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
-        </button>
-      </div>
-      
-      {showBreakdown && <FlipAnalyticBreakdown calc={calc} assumptions={assumptions} />}
     </div>
   )
 }
@@ -1991,8 +1925,6 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
   update: (k: keyof Assumptions, v: number) => void
   updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
 }) {
-  const [showBreakdown, setShowBreakdown] = useState(true)
-  
   return (
     <div>
       {/* Step 3 Header */}
@@ -2025,21 +1957,6 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
           </div>
         </div>
       </div>
-      
-      <div className="mt-6">
-        <button
-          onClick={() => setShowBreakdown(!showBreakdown)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
-            showBreakdown ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-blue-200 hover:bg-blue-50/50'
-          }`}
-        >
-          <Calculator className="w-4 h-4" />
-          <span className="font-medium">Full Analytic Breakdown</span>
-          {showBreakdown ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
-        </button>
-      </div>
-      
-      {showBreakdown && <HouseHackAnalyticBreakdown calc={calc} assumptions={assumptions} />}
     </div>
   )
 }
@@ -2050,7 +1967,6 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
   updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
   propertyData?: PropertyData | null
 }) {
-  const [showBreakdown, setShowBreakdown] = useState(true)
   const [showLOIModal, setShowLOIModal] = useState(false)
   
   return (
@@ -2176,21 +2092,6 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
           </div>
         </div>
       </div>
-      
-      <div className="mt-6">
-        <button
-          onClick={() => setShowBreakdown(!showBreakdown)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border transition-all ${
-            showBreakdown ? 'border-pink-300 bg-pink-50 text-pink-700' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-pink-200 hover:bg-pink-50/50'
-          }`}
-        >
-          <Calculator className="w-4 h-4" />
-          <span className="font-medium">Full Analytic Breakdown</span>
-          {showBreakdown ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
-        </button>
-      </div>
-      
-      {showBreakdown && <WholesaleAnalyticBreakdown calc={calc} assumptions={assumptions} />}
     </div>
   )
 }
@@ -3736,6 +3637,13 @@ function PropertyPageContent() {
             {drillDownView === 'details' && selectedStrategy === 'flip' && <FlipDetails calc={flipCalc} assumptions={assumptions} update={update} />}
             {drillDownView === 'details' && selectedStrategy === 'house_hack' && <HouseHackDetails calc={houseHackCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
             {drillDownView === 'details' && selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} propertyData={property} />}
+            
+            {drillDownView === 'breakdown' && selectedStrategy === 'ltr' && <LTRAnalyticBreakdown calc={ltrCalc} assumptions={assumptions} />}
+            {drillDownView === 'breakdown' && selectedStrategy === 'str' && <STRAnalyticBreakdown calc={strCalc} assumptions={assumptions} />}
+            {drillDownView === 'breakdown' && selectedStrategy === 'brrrr' && <BRRRRAnalyticBreakdown calc={brrrrCalc} assumptions={assumptions} />}
+            {drillDownView === 'breakdown' && selectedStrategy === 'flip' && <FlipAnalyticBreakdown calc={flipCalc} assumptions={assumptions} />}
+            {drillDownView === 'breakdown' && selectedStrategy === 'house_hack' && <HouseHackAnalyticBreakdown calc={houseHackCalc} assumptions={assumptions} />}
+            {drillDownView === 'breakdown' && selectedStrategy === 'wholesale' && <WholesaleAnalyticBreakdown calc={wholesaleCalc} assumptions={assumptions} />}
             
             {drillDownView === 'charts' && <ChartsView projections={projections} totalCashInvested={ltrCalc.totalCashRequired} />}
             {drillDownView === 'projections' && <ProjectionsView assumptions={projectionAssumptions} />}
