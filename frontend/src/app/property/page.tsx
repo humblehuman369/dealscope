@@ -3516,8 +3516,8 @@ function PropertyPageContent() {
       rating: (houseHackCalc.effectiveHousingCost <= 0 ? 'excellent' : houseHackCalc.effectiveHousingCost <= houseHackCalc.rentPerRoom * 0.25 ? 'great' : houseHackCalc.effectiveHousingCost <= houseHackCalc.rentPerRoom * 0.50 ? 'good' : houseHackCalc.monthlySavings >= 0 ? 'fair' : 'poor') as Rating,
       score: houseHackCalc.monthlySavings > 0 ? 80 : 40,
       primaryValue: houseHackCalc.monthlySavings,
-      // For house hack: negative effective housing cost = profit (good), positive = cost (neutral, not bad)
-      secondaryValue: houseHackCalc.effectiveHousingCost <= 0 ? Math.abs(houseHackCalc.effectiveHousingCost) : 0
+      // For house hack: always show secondary metric in blue - it's informational (cost or profit)
+      secondaryValue: houseHackCalc.effectiveHousingCost <= 0 ? Math.abs(houseHackCalc.effectiveHousingCost) : houseHackCalc.effectiveHousingCost
     },
     wholesale: {
       primary: formatCurrency(wholesaleCalc.mao),
@@ -3528,8 +3528,8 @@ function PropertyPageContent() {
       rating: (wholesaleCalc.purchasePctOfArv < 0.70 ? 'excellent' : wholesaleCalc.purchasePctOfArv <= 0.75 ? 'great' : wholesaleCalc.purchasePctOfArv <= 0.80 ? 'good' : wholesaleCalc.purchasePctOfArv <= 0.85 ? 'fair' : 'poor') as Rating,
       score: (1 - wholesaleCalc.purchasePctOfArv) * 100,
       primaryValue: wholesaleCalc.mao,
-      // For wholesale: below 70% = good deal (positive), treat as positive indicator
-      secondaryValue: wholesaleCalc.purchasePctOfArv <= 0.70 ? 1 : 0
+      // For wholesale: always show secondary metric in blue - it's informational (% of ARV)
+      secondaryValue: wholesaleCalc.purchasePctOfArv * 100
     },
   }), [ltrCalc, strCalc, brrrrCalc, flipCalc, houseHackCalc, wholesaleCalc])
 
