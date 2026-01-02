@@ -179,7 +179,7 @@ export default function DealScoreCard({ metrics, compact = false }: DealScoreCar
           <ScoreBar label="Cash-on-Cash" score={score.cashOnCash} maxScore={20} icon={Percent} />
           <ScoreBar label="Cap Rate" score={score.capRate} maxScore={15} icon={TrendingUp} />
           <ScoreBar label="1% Rule" score={score.onePercentRule} maxScore={15} icon={Target} />
-          <ScoreBar label="DSCR" score={score.dscr} maxScore={15} icon={Shield} />
+          <ScoreBar label="Debt Service Coverage Ratio" score={score.dscr} maxScore={15} icon={Shield} />
           <ScoreBar label="Equity Potential" score={score.equityPotential} maxScore={10} icon={Zap} />
           <ScoreBar label="Risk Buffer" score={score.riskLevel} maxScore={5} icon={Shield} />
         </div>
@@ -244,7 +244,7 @@ export default function DealScoreCard({ metrics, compact = false }: DealScoreCar
         </div>
         <div className="bg-gray-50 rounded-lg p-2.5 text-center">
           <div className="text-base font-semibold text-gray-900">{metrics.dscr.toFixed(2)}</div>
-          <div className="text-[10px] text-gray-400 uppercase tracking-wide">DSCR</div>
+          <div className="text-[10px] text-gray-400 uppercase tracking-wide">Debt Service Coverage Ratio</div>
         </div>
       </div>
     </div>
