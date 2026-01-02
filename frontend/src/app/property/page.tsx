@@ -1667,7 +1667,7 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
 }) {
   // Calculate annual rent for maintenance $ calculation
   const annualRent = assumptions.monthlyRent * 12
-  const [showBreakdown, setShowBreakdown] = useState(false)
+  const [showBreakdown, setShowBreakdown] = useState(true)
   
   return (
     <div>
@@ -1727,7 +1727,7 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
   updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj' | 'averageDailyRateAdj', value: number) => void
 }) {
   const annualSTRRevenue = assumptions.averageDailyRate * 365 * assumptions.occupancyRate
-  const [showBreakdown, setShowBreakdown] = useState(false)
+  const [showBreakdown, setShowBreakdown] = useState(true)
   
   return (
     <div>
@@ -1788,7 +1788,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
   updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
 }) {
   const annualRent = assumptions.monthlyRent * 12
-  const [showBreakdown, setShowBreakdown] = useState(false)
+  const [showBreakdown, setShowBreakdown] = useState(true)
   
   return (
     <div>
@@ -1845,7 +1845,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
 }
 
 function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateFlip>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
-  const [showBreakdown, setShowBreakdown] = useState(false)
+  const [showBreakdown, setShowBreakdown] = useState(true)
   
   return (
     <div>
@@ -1947,7 +1947,7 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
   update: (k: keyof Assumptions, v: number) => void
   updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
 }) {
-  const [showBreakdown, setShowBreakdown] = useState(false)
+  const [showBreakdown, setShowBreakdown] = useState(true)
   
   return (
     <div>
@@ -2005,7 +2005,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment }: {
   update: (k: keyof Assumptions, v: number) => void
   updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
 }) {
-  const [showBreakdown, setShowBreakdown] = useState(false)
+  const [showBreakdown, setShowBreakdown] = useState(true)
   
   return (
     <div>
