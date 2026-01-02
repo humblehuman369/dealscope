@@ -149,7 +149,7 @@ export default function AuthModal() {
           >
             <X className="w-5 h-5" />
           </button>
-          <h2 className="text-2xl font-bold">
+          <h2 className="text-2xl font-bold text-white">
             {showForgotPassword ? 'Reset Password' : isLogin ? 'Welcome Back!' : 'Create Account'}
           </h2>
           <p className="text-white/80 mt-1">

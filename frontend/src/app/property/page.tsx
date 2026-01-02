@@ -3308,10 +3308,11 @@ function PropertyPageContent() {
         setProperty(data)
         
         // Update the header store with current property info
+        // Use full_address for URL navigation, street for display
         setCurrentPropertyInfo({
           propertyId: data.property_id,
           zpid: data.zpid || null,  // Zillow Property ID for photos
-          address: data.address.street,
+          address: data.address.full_address || `${data.address.street}, ${data.address.city}, ${data.address.state} ${data.address.zip_code}`,
           city: data.address.city,
           state: data.address.state,
           zipCode: data.address.zip_code,
