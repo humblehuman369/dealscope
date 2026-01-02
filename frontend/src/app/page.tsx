@@ -195,7 +195,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 pt-safe bg-gradient-to-b from-black/60 to-transparent">
           <div className="flex items-center gap-2">
-            <span className="text-white font-bold text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            <span className="text-white font-bold text-lg font-display">
               Invest<span className="text-brand-500">IQ</span>
             </span>
           </div>
@@ -629,7 +629,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
               <p className="text-xs md:text-sm text-neutral-500 font-semibold mb-1 md:mb-2">Property Value:</p>
               <p className="text-2xl md:text-4xl font-bold text-navy-900 mb-2 md:mb-3">62.5%</p>
               <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className="absolute left-0 top-0 h-full rounded-full bg-forest-500" style={{ width: '62.5%' }}></div>
+                <div className="absolute left-0 top-0 h-full rounded-full bg-forest-500 w-progress-62"></div>
               </div>
               <div className="flex justify-between text-xs text-neutral-500 mt-1">
                 <span>Low</span>
@@ -638,11 +638,11 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
             </div>
 
             {/* Floating Card: Cap Rate - Bottom Right */}
-            <div className="absolute right-0 md:right-4 lg:right-12 bottom-12 md:bottom-20 bg-white rounded-2xl shadow-xl p-4 md:p-6 w-40 md:w-56 z-10 animate-float-medium hidden md:block" style={{ animationDelay: '0.5s' }}>
+            <div className="absolute right-0 md:right-4 lg:right-12 bottom-12 md:bottom-20 bg-white rounded-2xl shadow-xl p-4 md:p-6 w-40 md:w-56 z-10 animate-float-medium animation-delay-500 hidden md:block">
               <p className="text-xs md:text-sm text-neutral-500 font-semibold mb-1 md:mb-2">Cap Rate:</p>
               <p className="text-2xl md:text-4xl font-bold text-navy-900 mb-1 md:mb-2">6.8%</p>
               <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className="absolute left-0 top-0 h-full rounded-full bg-forest-500" style={{ width: '68%' }}></div>
+                <div className="absolute left-0 top-0 h-full rounded-full bg-forest-500 w-progress-68"></div>
               </div>
             </div>
           </div>
@@ -666,14 +666,14 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
               <p className="text-xs text-neutral-500 font-semibold mb-1">Property Value:</p>
               <p className="text-xl font-bold text-navy-900">62.5%</p>
               <div className="relative h-1.5 bg-gray-200 rounded-full overflow-hidden mt-1">
-                <div className="absolute left-0 top-0 h-full rounded-full bg-forest-500" style={{ width: '62.5%' }}></div>
+                <div className="absolute left-0 top-0 h-full rounded-full bg-forest-500 w-progress-62"></div>
               </div>
             </div>
             <div className="bg-white rounded-xl shadow-lg p-4">
               <p className="text-xs text-neutral-500 font-semibold mb-1">Cap Rate:</p>
               <p className="text-xl font-bold text-navy-900">6.8%</p>
               <div className="relative h-1.5 bg-gray-200 rounded-full overflow-hidden mt-1">
-                <div className="absolute left-0 top-0 h-full rounded-full bg-forest-500" style={{ width: '68%' }}></div>
+                <div className="absolute left-0 top-0 h-full rounded-full bg-forest-500 w-progress-68"></div>
               </div>
             </div>
           </div>
@@ -685,7 +685,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
         <div className="max-w-4xl mx-auto px-4 flex flex-col gap-6">
           <div className="flex items-center gap-4">
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
-            <div className="bg-accent-500 text-black py-4 px-8 font-bold text-lg md:text-xl" style={{ clipPath: 'polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%)' }}>
+            <div className="bg-accent-500 text-black py-4 px-8 font-bold text-lg md:text-xl clip-angled">
               &quot;The fastest path from address to investable decision.&quot;
             </div>
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
@@ -693,7 +693,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
           
           <div className="flex items-center gap-4">
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
-            <div className="bg-accent-500 text-black py-4 px-8 font-bold text-lg md:text-xl" style={{ clipPath: 'polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%)' }}>
+            <div className="bg-accent-500 text-black py-4 px-8 font-bold text-lg md:text-xl clip-angled">
               &quot;The only tool that delivers institutional-grade analytics on-the-go.&quot;
             </div>
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>

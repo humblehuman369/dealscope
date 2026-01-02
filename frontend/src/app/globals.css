@@ -297,6 +297,20 @@
   .clip-angled {
     clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
   }
+
+  /* Animation delays */
+  .animation-delay-500 {
+    animation-delay: 0.5s;
+  }
+
+  /* Progress bar widths */
+  .w-progress-62 {
+    width: 62.5%;
+  }
+
+  .w-progress-68 {
+    width: 68%;
+  }
 }
 
 /* ==========================================
