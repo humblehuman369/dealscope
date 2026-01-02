@@ -27,6 +27,7 @@ const DealScoreCard = dynamic(() => import('@/components/DealScoreCard'), { load
 const SensitivityAnalysisView = dynamic(() => import('@/components/SensitivityAnalysis'), { loading: () => <LoadingCard /> })
 const ChartsView = dynamic(() => import('@/components/ChartsView'), { loading: () => <LoadingCard /> })
 const RehabEstimator = dynamic(() => import('@/components/RehabEstimator'), { loading: () => <LoadingCard /> })
+const GenerateLOIModal = dynamic(() => import('@/components/GenerateLOIModal'), { ssr: false })
 
 function LoadingCard() {
   return <div className="animate-pulse bg-gray-100 dark:bg-navy-800 rounded-2xl h-64" />
@@ -2043,12 +2044,14 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
   )
 }
 
-function WholesaleDetails({ calc, assumptions, update, updateAdjustment }: { 
+function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propertyData }: { 
   calc: ReturnType<typeof calculateWholesale>; assumptions: Assumptions; 
   update: (k: keyof Assumptions, v: number) => void
   updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
+  propertyData?: PropertyData | null
 }) {
   const [showBreakdown, setShowBreakdown] = useState(true)
+  const [showLOIModal, setShowLOIModal] = useState(false)
   
   return (
     <div>
@@ -2080,7 +2083,51 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment }: {
             </span>
           </div>
         )}
+        
+        {/* Generate LOI Button - Shows when deal works */}
+        {calc.isPurchaseBelowMAO && propertyData && (
+          <div className="mt-4 pt-4 border-t border-emerald-200/50">
+            <button
+              onClick={() => setShowLOIModal(true)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-cyan-500/25 transition-all group"
+            >
+              <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span>Generate Letter of Intent</span>
+              <Sparkles className="w-3.5 h-3.5 opacity-75" />
+            </button>
+            <p className="text-[10px] text-center text-emerald-600 mt-2">
+              Create a professional LOI in seconds — Analysis to Action
+            </p>
+          </div>
+        )}
       </div>
+      
+      {/* LOI Modal */}
+      {propertyData && (
+        <GenerateLOIModal
+          isOpen={showLOIModal}
+          onClose={() => setShowLOIModal(false)}
+          propertyData={{
+            address: propertyData.address.street,
+            city: propertyData.address.city,
+            state: propertyData.address.state,
+            zip_code: propertyData.address.zip_code,
+            property_type: propertyData.details.property_type || undefined,
+            bedrooms: propertyData.details.bedrooms || undefined,
+            bathrooms: propertyData.details.bathrooms || undefined,
+            square_footage: propertyData.details.square_footage || undefined,
+            year_built: propertyData.details.year_built || undefined,
+          }}
+          wholesaleCalc={{
+            mao: calc.mao,
+            arv: calc.arv,
+            rehabCost: calc.rehabCost,
+            spreadFromPurchase: calc.spreadFromPurchase,
+            isPurchaseBelowMAO: calc.isPurchaseBelowMAO,
+          }}
+          purchasePrice={assumptions.purchasePrice}
+        />
+      )}
 
       <div className="grid grid-cols-2 gap-6">
         {/* LEFT: Fine Tune Strategy */}
@@ -3681,7 +3728,7 @@ function PropertyPageContent() {
             {drillDownView === 'details' && selectedStrategy === 'brrrr' && <BRRRRDetails calc={brrrrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
             {drillDownView === 'details' && selectedStrategy === 'flip' && <FlipDetails calc={flipCalc} assumptions={assumptions} update={update} />}
             {drillDownView === 'details' && selectedStrategy === 'house_hack' && <HouseHackDetails calc={houseHackCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
-            {drillDownView === 'details' && selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
+            {drillDownView === 'details' && selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} propertyData={propertyData} />}
             
             {drillDownView === 'charts' && <ChartsView projections={projections} totalCashInvested={ltrCalc.totalCashRequired} />}
             {drillDownView === 'projections' && <ProjectionsView assumptions={projectionAssumptions} />}

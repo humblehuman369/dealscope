@@ -58,6 +58,7 @@ auth_router = None
 users_router = None
 saved_properties_router = None
 admin_router = None
+loi_router = None
 try:
     print(">>> Attempting to load auth routers...", flush=True)
     from app.routers.auth import router as auth_router
@@ -71,6 +72,14 @@ except Exception as e:
     print(f">>> AUTH ROUTER ERROR: {e}", flush=True)
     print(f">>> TRACEBACK:\n{traceback.format_exc()}", flush=True)
     logger.error(f"Auth routers failed to load: {e}")
+
+# Import LOI router (Letter of Intent - Wholesale feature)
+try:
+    from app.routers.loi import router as loi_router
+    logger.info("LOI router loaded successfully")
+except Exception as e:
+    logger.warning(f"LOI router failed to load (OK for initial setup): {e}")
+    loi_router = None
 
 # Import database session for cleanup
 try:
@@ -179,6 +188,11 @@ if admin_router is not None:
     app.include_router(admin_router)
     logger.info("Admin router included")
 
+# LOI (Letter of Intent) router - Wholesale feature
+if loi_router is not None:
+    app.include_router(loi_router, prefix="/api/v1")
+    logger.info("LOI router included")
+
 
 # ============================================
 # HEALTH CHECK
@@ -220,6 +234,7 @@ async def root():
             "users": "/api/v1/users",
             "properties": "/api/v1/properties",
             "analytics": "/api/v1/analytics",
+            "loi": "/api/v1/loi",
         }
     }
 
