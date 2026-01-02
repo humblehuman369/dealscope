@@ -1434,60 +1434,61 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
       <div>
         <StepHeader step={1} title="Terms" subtitle="Adjust the values to evaluate profitability." />
         
-        <div className="grid grid-cols-3 gap-6">
-          {/* Group 1: Property Values */}
-          <div className="space-y-1">
-            <AdjustmentSlider 
-              label="Purchase Price" 
-              baseValue={assumptions.basePurchasePrice} 
-              adjustment={assumptions.purchasePriceAdj} 
-              onChange={(v) => updateAdjustment('purchasePriceAdj', v)} 
-              compact 
-            />
-            <AdjustmentSlider 
-              label="Monthly Rent" 
-              baseValue={assumptions.baseMonthlyRent} 
-              adjustment={assumptions.monthlyRentAdj} 
-              onChange={(v) => updateAdjustment('monthlyRentAdj', v)} 
-              compact 
-            />
-          </div>
+        {/* Single column layout - one slider per row for responsive scaling */}
+        <div className="flex flex-col gap-2">
+          {/* 1. Purchase Price */}
+          <AdjustmentSlider 
+            label="Purchase Price" 
+            baseValue={assumptions.basePurchasePrice} 
+            adjustment={assumptions.purchasePriceAdj} 
+            onChange={(v) => updateAdjustment('purchasePriceAdj', v)} 
+            compact 
+          />
           
-          {/* Group 2: Financing Terms */}
-          <div className="space-y-1">
-            <PercentDollarSlider 
-              label="Down Payment" 
-              value={assumptions.downPaymentPct} 
-              baseAmount={assumptions.purchasePrice}
-              onChange={(v) => update('downPaymentPct', v)} 
-              compact 
-            />
-            <PercentSlider 
-              label="Interest Rate" 
-              value={assumptions.interestRate} 
-              onChange={(v) => update('interestRate', v)} 
-              compact 
-              maxPercent={30}
-            />
-          </div>
+          {/* 2. Monthly Rent */}
+          <AdjustmentSlider 
+            label="Monthly Rent" 
+            baseValue={assumptions.baseMonthlyRent} 
+            adjustment={assumptions.monthlyRentAdj} 
+            onChange={(v) => updateAdjustment('monthlyRentAdj', v)} 
+            compact 
+          />
           
-          {/* Group 3: Value-Add Potential */}
-          <div className="space-y-1">
-            <PercentDollarSlider 
-              label="Rehab Cost" 
-              value={assumptions.rehabCostPct} 
-              baseAmount={assumptions.basePurchasePrice}
-              onChange={(v) => update('rehabCostPct', v)} 
-              compact 
-              maxPercent={50}
-            />
-            <ArvSlider
-              purchasePrice={assumptions.purchasePrice}
-              arvPct={assumptions.arvPct}
-              onChange={(v) => update('arvPct', v)}
-              compact
-            />
-          </div>
+          {/* 3. Down Payment */}
+          <PercentDollarSlider 
+            label="Down Payment" 
+            value={assumptions.downPaymentPct} 
+            baseAmount={assumptions.purchasePrice}
+            onChange={(v) => update('downPaymentPct', v)} 
+            compact 
+          />
+          
+          {/* 4. Rehab Cost */}
+          <PercentDollarSlider 
+            label="Rehab Cost" 
+            value={assumptions.rehabCostPct} 
+            baseAmount={assumptions.basePurchasePrice}
+            onChange={(v) => update('rehabCostPct', v)} 
+            compact 
+            maxPercent={50}
+          />
+          
+          {/* 5. Interest Rate */}
+          <PercentSlider 
+            label="Interest Rate" 
+            value={assumptions.interestRate} 
+            onChange={(v) => update('interestRate', v)} 
+            compact 
+            maxPercent={30}
+          />
+          
+          {/* 6. After Repair Value */}
+          <ArvSlider
+            purchasePrice={assumptions.purchasePrice}
+            arvPct={assumptions.arvPct}
+            onChange={(v) => update('arvPct', v)}
+            compact
+          />
         </div>
         
         {/* Rehab Estimator Link - Compact inline style */}
