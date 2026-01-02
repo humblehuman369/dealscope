@@ -1432,8 +1432,8 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
       <div>
         <StepHeader step={1} title="Terms" subtitle="Adjust the values to evaluate profitability." />
         
-        {/* Single column layout - one slider per row for responsive scaling */}
-        <div className="flex flex-col gap-2">
+        {/* Responsive grid: 1 col on small, 2 cols on medium, 3 cols on large screens */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
           {/* 1. Purchase Price */}
           <AdjustmentSlider 
             label="Purchase Price" 
