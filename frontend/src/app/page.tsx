@@ -54,9 +54,9 @@ function useIsMobile() {
 
 export default function HomePage() {
   const isMobile = useIsMobile();
-  const [mode, setMode] = useState<'auto' | 'camera' | 'map'>('auto');
+  const [mode, setMode] = useState<'camera' | 'map'>('map');
   
-  const showCameraMode = mode === 'camera' || (mode === 'auto' && isMobile);
+  const showCameraMode = mode === 'camera';
   
   return (
     <>
