@@ -1,11 +1,12 @@
 'use client'
 
-import { Bell, Settings, ScanLine, Search, Sun, Moon, User, LogOut, ChevronDown, LayoutDashboard } from 'lucide-react'
+import { Bell, Settings, ScanLine, Search, Sun, Moon, User, LogOut, ChevronDown, LayoutDashboard, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
+import { usePropertyStore } from '@/stores'
 
 export default function Header() {
   const pathname = usePathname()
@@ -13,6 +14,23 @@ export default function Header() {
   const { user, isAuthenticated, logout, setShowAuthModal } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  
+  // Get the last viewed property from the store
+  const { currentProperty, recentSearches } = usePropertyStore()
+  
+  // Get the property analytics URL - use last viewed property if available
+  const propertyAnalyticsUrl = useMemo(() => {
+    // First check currentProperty
+    if (currentProperty?.address) {
+      return `/property?address=${encodeURIComponent(currentProperty.address)}`
+    }
+    // Fall back to most recent search
+    if (recentSearches.length > 0) {
+      return `/property?address=${encodeURIComponent(recentSearches[0].address)}`
+    }
+    // Default to base property page
+    return '/property'
+  }, [currentProperty, recentSearches])
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -68,11 +86,13 @@ export default function Header() {
                 Search
               </Link>
               <Link 
-                href="/property" 
-                className={`text-sm font-medium transition-colors ${
+                href={propertyAnalyticsUrl} 
+                className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   pathname?.startsWith('/property') ? 'text-brand-500 dark:text-brand-400' : 'text-neutral-600 dark:text-neutral-400 hover:text-navy-900 dark:hover:text-white'
                 }`}
+                title={currentProperty?.address || recentSearches[0]?.address || 'Property Analytics'}
               >
+                <BarChart3 className="w-4 h-4" />
                 Property Analytics
               </Link>
               <Link 

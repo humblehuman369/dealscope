@@ -174,29 +174,31 @@ function ProfileSection({ user }: ProfileSectionProps) {
   return (
     <div className="bg-white dark:bg-navy-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
       {/* Banner */}
-      <div className="h-16 bg-brand-500"></div>
+      <div className="h-24 bg-brand-500 relative">
+        {/* Avatar positioned on banner */}
+        <div className="absolute bottom-0 left-6 translate-y-1/2">
+          <div className="w-20 h-20 rounded-xl bg-brand-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-white dark:border-navy-800 shadow-lg">
+            {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
+          </div>
+        </div>
+      </div>
       
-      <div className="relative px-6 pb-6">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-10">
-          {/* Avatar & Info */}
-          <div className="flex items-end gap-4">
-            <div className="w-20 h-20 rounded-xl bg-brand-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-white dark:border-navy-800 shadow-lg">
-              {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
-            </div>
-            <div className="mb-1">
-              <h2 className="text-xl font-bold text-navy-900 dark:text-white flex items-center gap-2">
-                {user.full_name || 'User'}
-                {user.is_superuser && (
-                  <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
-                    Admin
-                  </span>
-                )}
-              </h2>
-              <p className="text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5 text-sm">
-                <Mail className="w-3.5 h-3.5" />
-                {user.email}
-              </p>
-            </div>
+      <div className="px-6 pb-6 pt-14">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+          {/* User Info */}
+          <div>
+            <h2 className="text-xl font-bold text-navy-900 dark:text-white flex items-center gap-2">
+              {user.full_name || 'User'}
+              {user.is_superuser && (
+                <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+                  Admin
+                </span>
+              )}
+            </h2>
+            <p className="text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5 text-sm mt-1">
+              <Mail className="w-3.5 h-3.5" />
+              {user.email}
+            </p>
           </div>
           
           {/* Edit Profile Link */}
