@@ -316,14 +316,25 @@
 
   /* Explicit text colors for mobile visibility */
   .text-navy-solid {
-    color: #07172e !important;
+    color: #07172e;
     -webkit-text-fill-color: #07172e;
   }
 
   .text-brand-solid {
-    color: #0465f2 !important;
+    color: #0465f2;
     -webkit-text-fill-color: #0465f2;
   }
+}
+
+/* Dark mode overrides for solid text colors */
+html.dark .text-navy-solid {
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+}
+
+html.dark .text-brand-solid {
+  color: #66a5f9;
+  -webkit-text-fill-color: #66a5f9;
 }
 
 /* ==========================================
