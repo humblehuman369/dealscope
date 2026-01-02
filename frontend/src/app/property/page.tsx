@@ -525,9 +525,9 @@ function PhotoGrid({ zpid }: { zpid: string | null | undefined }) {
   // Show loading placeholders while fetching
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-3">
+      <div className="flex gap-2.5 mt-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+          <div key={i} className="flex-shrink-0 w-[200px] aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
             {i === 0 ? (
               <Loader2 className="w-6 h-6 text-gray-300 animate-spin" />
             ) : (
@@ -544,18 +544,18 @@ function PhotoGrid({ zpid }: { zpid: string | null | undefined }) {
     return null
   }
 
-  // Show first 4 photos in a grid
+  // Show first 4 photos in a horizontal scrolling carousel
   const displayPhotos = photos.slice(0, 4)
   const remainingCount = photos.length - 4
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-3">
+      <div className="flex gap-2.5 mt-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
         {displayPhotos.map((photo, index) => (
           <button
             key={index}
             onClick={() => openLightbox(index)}
-            className="relative aspect-video rounded-lg overflow-hidden group cursor-pointer shadow-sm hover:shadow-lg transition-all"
+            className="relative flex-shrink-0 w-[200px] aspect-video rounded-lg overflow-hidden group cursor-pointer shadow-sm hover:shadow-lg transition-all"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
