@@ -411,7 +411,7 @@ export default function RehabEstimator({ onEstimateChange, initialBudget = 40000
         <div>
           <h2 className="text-base font-bold text-white mb-1">Total Estimate</h2>
           <div className="flex gap-4 text-[0.625rem] text-white/90">
-            <div>Base: <span className="font-semibold">{formatCurrency(estimate.subtotal)}</span></div>
+            <div>Base: <span className="font-semibold">{formatCurrency(estimate.totalCost)}</span></div>
             <div>Contingency: <span className="font-semibold">{formatCurrency(estimate.contingency)}</span></div>
           </div>
           {initialBudget > 0 && (
