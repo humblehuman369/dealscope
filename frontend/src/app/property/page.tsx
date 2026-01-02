@@ -2293,7 +2293,7 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 border border-[#07172e] rounded-xl mb-3">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-[0.9375rem] font-bold text-[#07172e]">Full Analytic Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
         </div>
 
         {/* Two Column Layout */}
@@ -2482,7 +2482,7 @@ function STRAnalyticBreakdown({ calc, assumptions }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 border border-[#07172e] rounded-xl mb-3">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-[0.9375rem] font-bold text-[#07172e]">Full Analytic Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
         </div>
 
         {/* STR Revenue Section */}
@@ -2652,7 +2652,7 @@ function BRRRRAnalyticBreakdown({ calc, assumptions }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 border border-[#07172e] rounded-xl mb-3">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-[0.9375rem] font-bold text-[#07172e]">Full Analytic Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
         </div>
 
         {/* Two Column Layout for Phases */}
@@ -2806,7 +2806,7 @@ function FlipAnalyticBreakdown({ calc, assumptions }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 border border-[#07172e] rounded-xl mb-3">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-[0.9375rem] font-bold text-[#07172e]">Full Analytic Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
         </div>
 
         {/* Step 1: The Opportunity - Flip Margin Box */}
@@ -2976,7 +2976,7 @@ function HouseHackAnalyticBreakdown({ calc, assumptions }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 border border-[#07172e] rounded-xl mb-3">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-[0.9375rem] font-bold text-[#07172e]">Full Analytic Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
         </div>
 
         {/* Two Column Layout */}
@@ -3113,7 +3113,7 @@ function WholesaleAnalyticBreakdown({ calc, assumptions }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-sky-100 to-blue-100 border border-[#07172e] rounded-xl mb-3">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-[0.9375rem] font-bold text-[#07172e]">Full Analytic Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
         </div>
 
         {/* Title Section */}
