@@ -1436,68 +1436,57 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
         
         <div className="grid grid-cols-3 gap-6">
           {/* Group 1: Property Values */}
-          <div>
-            <ActionPrompt icon="💰" text="What if you negotiate the price down?" variant="accent" />
-            <div className="space-y-1">
-              <AdjustmentSlider 
-                label="Purchase Price" 
-                baseValue={assumptions.basePurchasePrice} 
-                adjustment={assumptions.purchasePriceAdj} 
-                onChange={(v) => updateAdjustment('purchasePriceAdj', v)} 
-                compact 
-              />
-              <AdjustmentSlider 
-                label="Monthly Rent" 
-                baseValue={assumptions.baseMonthlyRent} 
-                adjustment={assumptions.monthlyRentAdj} 
-                onChange={(v) => updateAdjustment('monthlyRentAdj', v)} 
-                compact 
-              />
-            </div>
+          <div className="space-y-1">
+            <AdjustmentSlider 
+              label="Purchase Price" 
+              baseValue={assumptions.basePurchasePrice} 
+              adjustment={assumptions.purchasePriceAdj} 
+              onChange={(v) => updateAdjustment('purchasePriceAdj', v)} 
+              compact 
+            />
+            <AdjustmentSlider 
+              label="Monthly Rent" 
+              baseValue={assumptions.baseMonthlyRent} 
+              adjustment={assumptions.monthlyRentAdj} 
+              onChange={(v) => updateAdjustment('monthlyRentAdj', v)} 
+              compact 
+            />
           </div>
           
           {/* Group 2: Financing Terms */}
-          <div>
-            <ActionPrompt icon="📊" text="See how rates affect your cash flow" variant="accent" />
-            <div className="space-y-1">
-              <PercentDollarSlider 
-                label="Down Payment" 
-                value={assumptions.downPaymentPct} 
-                baseAmount={assumptions.purchasePrice}
-                onChange={(v) => update('downPaymentPct', v)} 
-                compact 
-              />
-              <PercentSlider 
-                label="Interest Rate" 
-                value={assumptions.interestRate} 
-                onChange={(v) => update('interestRate', v)} 
-                compact 
-                maxPercent={30}
-              />
-            </div>
+          <div className="space-y-1">
+            <PercentDollarSlider 
+              label="Down Payment" 
+              value={assumptions.downPaymentPct} 
+              baseAmount={assumptions.purchasePrice}
+              onChange={(v) => update('downPaymentPct', v)} 
+              compact 
+            />
+            <PercentSlider 
+              label="Interest Rate" 
+              value={assumptions.interestRate} 
+              onChange={(v) => update('interestRate', v)} 
+              compact 
+              maxPercent={30}
+            />
           </div>
           
           {/* Group 3: Value-Add Potential */}
-          <div>
-            <ActionPrompt icon="🔧" text="Add rehab to unlock forced appreciation" variant="accent" />
-            <div className="space-y-1">
-              <div className="relative">
-                <PercentDollarSlider 
-                  label="Rehab Cost" 
-                  value={assumptions.rehabCostPct} 
-                  baseAmount={assumptions.basePurchasePrice}
-                  onChange={(v) => update('rehabCostPct', v)} 
-                  compact 
-                  maxPercent={50}
-                />
-              </div>
-              <ArvSlider
-                purchasePrice={assumptions.purchasePrice}
-                arvPct={assumptions.arvPct}
-                onChange={(v) => update('arvPct', v)}
-                compact
-              />
-            </div>
+          <div className="space-y-1">
+            <PercentDollarSlider 
+              label="Rehab Cost" 
+              value={assumptions.rehabCostPct} 
+              baseAmount={assumptions.basePurchasePrice}
+              onChange={(v) => update('rehabCostPct', v)} 
+              compact 
+              maxPercent={50}
+            />
+            <ArvSlider
+              purchasePrice={assumptions.purchasePrice}
+              arvPct={assumptions.arvPct}
+              onChange={(v) => update('arvPct', v)}
+              compact
+            />
           </div>
         </div>
         
