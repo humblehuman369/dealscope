@@ -76,7 +76,7 @@ For text, borders, and backgrounds.
 |-------|-------|-------|
 | `font-sans` | Poppins, system-ui | **Primary font** |
 | `font-display` | Poppins | Headlines |
-| `font-mono` | IBM Plex Mono | Numbers, code |
+| `font-mono` | Poppins | Numbers, metrics |
 
 **Example:**
 ```jsx
