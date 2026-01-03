@@ -263,7 +263,7 @@ export default function ScenarioComparison({
             <tbody>
               {/* Key Assumptions */}
               <tr className="bg-gray-50">
-                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-bold text-gray-700 uppercase tracking-wide">
                   Key Assumptions
                 </td>
               </tr>
@@ -295,7 +295,7 @@ export default function ScenarioComparison({
               
               {/* Year 1 Performance */}
               <tr className="bg-gray-50">
-                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-bold text-gray-700 uppercase tracking-wide">
                   Year 1 Performance
                 </td>
               </tr>
@@ -319,7 +319,7 @@ export default function ScenarioComparison({
               
               {/* 10-Year Summary */}
               <tr className="bg-emerald-50">
-                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-semibold text-emerald-700 uppercase tracking-wide">
+                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-bold text-emerald-800 uppercase tracking-wide">
                   10-Year Summary
                 </td>
               </tr>
@@ -412,15 +412,15 @@ export default function ScenarioComparison({
       
       {/* Best Scenario Highlight */}
       {scenarios.length > 0 && (
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-3 border border-amber-200">
-          <h3 className="text-xs font-medium text-gray-800 mb-1">Best Performing Scenario</h3>
-          <p className="text-xs text-gray-600">
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-4 border border-amber-300">
+          <h3 className="text-sm font-bold text-gray-900 mb-1.5">Best Performing Scenario</h3>
+          <p className="text-sm text-gray-700">
             Based on 10-year total wealth, 
-            <span className="font-medium text-amber-700">
+            <span className="font-bold text-amber-700">
               {' '}{[...compareScenarios].sort((a, b) => b.summary.totalWealth - a.summary.totalWealth)[0].name}
             </span>
             {' '}generates the highest returns with{' '}
-            <span className="font-medium">
+            <span className="font-bold text-gray-900">
               {formatCompact([...compareScenarios].sort((a, b) => b.summary.totalWealth - a.summary.totalWealth)[0].summary.totalWealth)}
             </span>
             {' '}in total wealth.
