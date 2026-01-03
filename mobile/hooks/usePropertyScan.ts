@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { usePropertyScanner } from './usePropertyScanner';
 import { 
   calculateTargetPoint, 
@@ -8,7 +9,9 @@ import {
   queryParcelsInArea, 
   findParcelAtPoint 
 } from '../services/parcelLookup';
-import { fetchPropertyAnalytics } from '../services/analytics';
+import { fetchPropertyAnalytics, InvestmentAnalytics } from '../services/analytics';
+import { saveScannedProperty } from '../database';
+import { dbQueryKeys } from './useDatabase';
 
 interface PropertyData {
   apn: string;
@@ -23,18 +26,6 @@ interface PropertyData {
   sqft?: number;
   yearBuilt?: number;
   lotSize?: number;
-}
-
-interface InvestmentAnalytics {
-  listPrice: number;
-  strategies: {
-    longTermRental: StrategyResult;
-    shortTermRental: StrategyResult;
-    brrrr: StrategyResult;
-    fixAndFlip: StrategyResult;
-    houseHack: StrategyResult;
-    wholesale: StrategyResult;
-  };
 }
 
 interface StrategyResult {
@@ -52,13 +43,16 @@ export interface ScanResult {
   scanTime: number;
   heading: number;
   distance: number;
+  savedId?: string; // ID of the saved record in database
 }
 
 /**
  * Hook for performing property scans using GPS, compass, and parcel data.
+ * Automatically saves scan results to the local database.
  */
 export function usePropertyScan() {
   const scanner = usePropertyScanner();
+  const queryClient = useQueryClient();
   const [isScanning, setIsScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -178,7 +172,50 @@ export function usePropertyScan() {
       console.log('Fetching analytics for:', fullAddress);
       const analytics = await fetchPropertyAnalytics(fullAddress);
 
-      // Step 6: Build result
+      // Step 6: Save to local database
+      let savedId: string | undefined;
+      try {
+        // Prepare property data for storage
+        const propertyData = {
+          bedrooms: analytics.property?.bedrooms,
+          bathrooms: analytics.property?.bathrooms,
+          sqft: analytics.property?.sqft,
+          yearBuilt: analytics.property?.yearBuilt,
+          lotSize: analytics.property?.lotSize,
+          propertyType: analytics.property?.propertyType,
+        };
+        
+        // Prepare analytics data for storage
+        const analyticsData = {
+          listPrice: analytics.pricing?.listPrice,
+          estimatedValue: analytics.pricing?.estimatedValue,
+          rentEstimate: analytics.pricing?.rentEstimate,
+          strEstimate: analytics.pricing?.strEstimate,
+          strategies: analytics.strategies,
+        };
+        
+        savedId = await saveScannedProperty(
+          matchedParcel.address,
+          matchedParcel.city,
+          matchedParcel.state,
+          matchedParcel.zip,
+          matchedParcel.lat,
+          matchedParcel.lng,
+          propertyData,
+          analyticsData
+        );
+        
+        console.log('Saved scan to database with ID:', savedId);
+        
+        // Invalidate queries to refresh the history list
+        queryClient.invalidateQueries({ queryKey: dbQueryKeys.scannedProperties });
+        queryClient.invalidateQueries({ queryKey: dbQueryKeys.databaseStats });
+      } catch (dbError) {
+        console.warn('Failed to save scan to database:', dbError);
+        // Don't fail the scan if database save fails
+      }
+
+      // Step 7: Build result
       const scanResult: ScanResult = {
         property: matchedParcel,
         analytics,
@@ -186,6 +223,7 @@ export function usePropertyScan() {
         scanTime: Date.now() - startTime,
         heading: scanner.heading,
         distance: estimatedDistance,
+        savedId,
       };
 
       setResult(scanResult);
@@ -197,7 +235,7 @@ export function usePropertyScan() {
     } finally {
       setIsScanning(false);
     }
-  }, [scanner]);
+  }, [scanner, queryClient]);
 
   const clearResult = useCallback(() => {
     setResult(null);
@@ -213,4 +251,3 @@ export function usePropertyScan() {
     clearResult,
   };
 }
-

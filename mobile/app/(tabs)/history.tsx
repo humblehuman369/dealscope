@@ -1,19 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   TouchableOpacity,
   FlatList,
+  RefreshControl,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Reanimated, { SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 
 import { colors } from '../../theme/colors';
 import { formatCurrency, formatPercent } from '../../services/analytics';
+import { 
+  useScannedProperties, 
+  useToggleFavorite, 
+  useDeleteScannedProperty,
+  useDatabaseInit,
+  parseAnalyticsData,
+} from '../../hooks/useDatabase';
+import { ScannedProperty, AnalyticsData } from '../../database';
 
-interface ScannedProperty {
+// Display interface for the list
+interface DisplayProperty {
   id: string;
   address: string;
   city: string;
@@ -25,99 +40,214 @@ interface ScannedProperty {
   isFavorite: boolean;
 }
 
-// Mock data - will be replaced with actual database
-const mockHistory: ScannedProperty[] = [
-  {
-    id: '1',
-    address: '3788 Moon Bay Cir',
-    city: 'Wellington',
-    state: 'FL',
-    scannedAt: new Date(),
-    topStrategy: 'Short-Term Rental',
-    monthlyProfit: 6872,
-    cashOnCash: 0.545,
-    isFavorite: true,
-  },
-  {
-    id: '2',
-    address: '1234 Palm Beach Dr',
-    city: 'Palm Beach',
-    state: 'FL',
-    scannedAt: new Date(Date.now() - 86400000),
-    topStrategy: 'Long-Term Rental',
-    monthlyProfit: 2150,
-    cashOnCash: 0.189,
-    isFavorite: false,
-  },
-];
+/**
+ * Transform database record to display format.
+ */
+function transformToDisplayProperty(dbProperty: ScannedProperty): DisplayProperty {
+  const analytics = parseAnalyticsData(dbProperty.analytics_data);
+  
+  // Find the best strategy (highest cash flow)
+  let topStrategy = 'Long-Term Rental';
+  let monthlyProfit = 0;
+  let cashOnCash = 0;
+  
+  if (analytics?.strategies) {
+    const strategies = Object.entries(analytics.strategies);
+    let bestValue = -Infinity;
+    
+    for (const [key, data] of strategies) {
+      if (data && data.primaryValue > bestValue) {
+        bestValue = data.primaryValue;
+        topStrategy = data.primaryLabel === 'Monthly Cash Flow' 
+          ? getStrategyName(key) 
+          : getStrategyName(key);
+        monthlyProfit = data.primaryValue;
+        cashOnCash = data.secondaryValue;
+      }
+    }
+  }
+  
+  return {
+    id: dbProperty.id,
+    address: dbProperty.address,
+    city: dbProperty.city || '',
+    state: dbProperty.state || '',
+    scannedAt: new Date(dbProperty.scanned_at * 1000),
+    topStrategy,
+    monthlyProfit,
+    cashOnCash,
+    isFavorite: dbProperty.is_favorite === 1,
+  };
+}
+
+function getStrategyName(key: string): string {
+  const names: Record<string, string> = {
+    longTermRental: 'Long-Term Rental',
+    shortTermRental: 'Short-Term Rental',
+    brrrr: 'BRRRR',
+    fixAndFlip: 'Fix & Flip',
+    houseHack: 'House Hacking',
+    wholesale: 'Wholesale',
+  };
+  return names[key] || key;
+}
+
+function parseAnalyticsData(json: string | null): AnalyticsData | null {
+  if (!json) return null;
+  try {
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
 
 export default function HistoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<'all' | 'favorites'>('all');
+  
+  // Database initialization
+  const { isReady: dbReady } = useDatabaseInit();
+  
+  // Fetch properties from database
+  const { 
+    data: properties, 
+    isLoading, 
+    refetch,
+    isRefetching,
+  } = useScannedProperties({ 
+    favoritesOnly: filter === 'favorites' 
+  });
+  
+  // Mutations
+  const toggleFavorite = useToggleFavorite();
+  const deleteProperty = useDeleteScannedProperty();
+  
+  // Transform database properties to display format
+  const displayProperties: DisplayProperty[] = (properties || []).map(transformToDisplayProperty);
+  
+  const handlePropertyPress = useCallback((property: DisplayProperty) => {
+    const fullAddress = `${property.address}, ${property.city}, ${property.state}`;
+    router.push(`/property/${encodeURIComponent(fullAddress)}`);
+  }, [router]);
+  
+  const handleToggleFavorite = useCallback(async (id: string) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    toggleFavorite.mutate(id);
+  }, [toggleFavorite]);
+  
+  const handleDelete = useCallback((id: string, address: string) => {
+    Alert.alert(
+      'Delete Scan',
+      `Remove "${address}" from history?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            deleteProperty.mutate(id);
+          }
+        },
+      ]
+    );
+  }, [deleteProperty]);
+  
+  const renderRightActions = useCallback((
+    progress: SharedValue<number>,
+    dragX: SharedValue<number>,
+    id: string,
+    address: string
+  ) => {
+    return (
+      <TouchableOpacity 
+        style={styles.deleteAction}
+        onPress={() => handleDelete(id, address)}
+      >
+        <Ionicons name="trash-outline" size={24} color="#fff" />
+        <Text style={styles.deleteActionText}>Delete</Text>
+      </TouchableOpacity>
+    );
+  }, [handleDelete]);
 
-  const filteredHistory = filter === 'favorites'
-    ? mockHistory.filter(p => p.isFavorite)
-    : mockHistory;
-
-  const handlePropertyPress = (property: ScannedProperty) => {
-    router.push(`/property/${encodeURIComponent(`${property.address}, ${property.city}, ${property.state}`)}`);
-  };
-
-  const renderProperty = ({ item }: { item: ScannedProperty }) => (
-    <TouchableOpacity 
-      style={styles.propertyCard}
-      onPress={() => handlePropertyPress(item)}
+  const renderProperty = useCallback(({ item }: { item: DisplayProperty }) => (
+    <Swipeable
+      friction={2}
+      rightThreshold={40}
+      renderRightActions={(progress, dragX) => 
+        renderRightActions(progress, dragX, item.id, item.address)
+      }
     >
-      <View style={styles.cardHeader}>
-        <View style={styles.addressContainer}>
-          <Text style={styles.address}>{item.address}</Text>
-          <Text style={styles.location}>{item.city}, {item.state}</Text>
+      <TouchableOpacity 
+        style={styles.propertyCard}
+        onPress={() => handlePropertyPress(item)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.cardHeader}>
+          <View style={styles.addressContainer}>
+            <Text style={styles.address} numberOfLines={1}>{item.address}</Text>
+            <Text style={styles.location}>{item.city}, {item.state}</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.favoriteButton}
+            onPress={() => handleToggleFavorite(item.id)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons 
+              name={item.isFavorite ? "heart" : "heart-outline"} 
+              size={22} 
+              color={item.isFavorite ? colors.loss.main : colors.gray[400]} 
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.favoriteButton}>
-          <Ionicons 
-            name={item.isFavorite ? "heart" : "heart-outline"} 
-            size={22} 
-            color={item.isFavorite ? colors.loss.main : colors.gray[400]} 
-          />
-        </TouchableOpacity>
-      </View>
 
-      <View style={styles.cardMetrics}>
-        <View style={styles.metric}>
-          <Text style={styles.metricLabel}>Top Strategy</Text>
-          <Text style={styles.metricValue}>{item.topStrategy}</Text>
+        <View style={styles.cardMetrics}>
+          <View style={styles.metric}>
+            <Text style={styles.metricLabel}>Top Strategy</Text>
+            <Text style={styles.metricValue} numberOfLines={1}>{item.topStrategy}</Text>
+          </View>
+          <View style={styles.metricDivider} />
+          <View style={styles.metric}>
+            <Text style={styles.metricLabel}>Monthly Profit</Text>
+            <Text style={[
+              styles.metricValue,
+              item.monthlyProfit > 0 ? styles.profitText : styles.lossText
+            ]}>
+              {formatCurrency(item.monthlyProfit)}
+            </Text>
+          </View>
+          <View style={styles.metricDivider} />
+          <View style={styles.metric}>
+            <Text style={styles.metricLabel}>Cash-on-Cash</Text>
+            <Text style={[
+              styles.metricValue,
+              item.cashOnCash > 0 ? styles.profitText : styles.lossText
+            ]}>
+              {formatPercent(item.cashOnCash)}
+            </Text>
+          </View>
         </View>
-        <View style={styles.metricDivider} />
-        <View style={styles.metric}>
-          <Text style={styles.metricLabel}>Monthly Profit</Text>
-          <Text style={[
-            styles.metricValue,
-            item.monthlyProfit > 0 ? styles.profitText : styles.lossText
-          ]}>
-            {formatCurrency(item.monthlyProfit)}
-          </Text>
-        </View>
-        <View style={styles.metricDivider} />
-        <View style={styles.metric}>
-          <Text style={styles.metricLabel}>Cash-on-Cash</Text>
-          <Text style={[
-            styles.metricValue,
-            item.cashOnCash > 0 ? styles.profitText : styles.lossText
-          ]}>
-            {formatPercent(item.cashOnCash)}
-          </Text>
-        </View>
-      </View>
 
-      <View style={styles.cardFooter}>
-        <Text style={styles.timestamp}>
-          {formatRelativeTime(item.scannedAt)}
-        </Text>
-        <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} />
+        <View style={styles.cardFooter}>
+          <Text style={styles.timestamp}>
+            {formatRelativeTime(item.scannedAt)}
+          </Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} />
+        </View>
+      </TouchableOpacity>
+    </Swipeable>
+  ), [handlePropertyPress, handleToggleFavorite, renderRightActions]);
+
+  // Show loading state while database initializes
+  if (!dbReady || isLoading) {
+    return (
+      <View style={[styles.container, styles.centerContent, { paddingTop: insets.top }]}>
+        <ActivityIndicator size="large" color={colors.primary[600]} />
+        <Text style={styles.loadingText}>Loading history...</Text>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -153,18 +283,46 @@ export default function HistoryScreen() {
 
       {/* Property List */}
       <FlatList
-        data={filteredHistory}
+        data={displayProperties}
         renderItem={renderProperty}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          displayProperties.length === 0 && styles.listContentEmpty
+        ]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={colors.primary[600]}
+            colors={[colors.primary[600]]}
+          />
+        }
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Ionicons name="time-outline" size={48} color={colors.gray[300]} />
-            <Text style={styles.emptyTitle}>No scans yet</Text>
-            <Text style={styles.emptyText}>
-              Properties you scan will appear here
+            <Ionicons 
+              name={filter === 'favorites' ? "heart-outline" : "time-outline"} 
+              size={48} 
+              color={colors.gray[300]} 
+            />
+            <Text style={styles.emptyTitle}>
+              {filter === 'favorites' ? 'No favorites yet' : 'No scans yet'}
             </Text>
+            <Text style={styles.emptyText}>
+              {filter === 'favorites' 
+                ? 'Tap the heart icon to save favorites'
+                : 'Properties you scan will appear here'
+              }
+            </Text>
+            {filter === 'favorites' && (
+              <TouchableOpacity 
+                style={styles.viewAllButton}
+                onPress={() => setFilter('all')}
+              >
+                <Text style={styles.viewAllButtonText}>View All Scans</Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
@@ -192,6 +350,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.gray[50],
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 15,
+    color: colors.gray[600],
   },
   header: {
     paddingHorizontal: 20,
@@ -235,6 +402,9 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
+  listContentEmpty: {
+    flex: 1,
+  },
   propertyCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -253,6 +423,7 @@ const styles = StyleSheet.create({
   },
   addressContainer: {
     flex: 1,
+    marginRight: 8,
   },
   address: {
     fontWeight: '600',
@@ -314,8 +485,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.gray[400],
   },
-  emptyState: {
+  deleteAction: {
+    backgroundColor: colors.loss.main,
+    justifyContent: 'center',
     alignItems: 'center',
+    width: 80,
+    height: '100%',
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
+  },
+  deleteActionText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingTop: 80,
   },
   emptyTitle: {
@@ -329,6 +517,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.gray[500],
     marginTop: 4,
+    textAlign: 'center',
+    paddingHorizontal: 32,
+  },
+  viewAllButton: {
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: colors.primary[100],
+    borderRadius: 20,
+  },
+  viewAllButtonText: {
+    color: colors.primary[700],
+    fontWeight: '600',
+    fontSize: 14,
   },
 });
-

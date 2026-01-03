@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { 
   View, 
   Text, 
@@ -8,7 +8,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,14 +16,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors } from '../../theme/colors';
 import { formatCurrency } from '../../services/analytics';
+import { 
+  useScannedProperties, 
+  useDatabaseInit,
+  parseAnalyticsData,
+} from '../../hooks/useDatabase';
+import { ScannedProperty, AnalyticsData } from '../../database';
 
-interface NearbyProperty {
+interface MapProperty {
   id: string;
   address: string;
   lat: number;
   lng: number;
   monthlyProfit: number;
   strategy: string;
+  city?: string;
+  state?: string;
 }
 
 // Default region (South Florida)
@@ -33,6 +41,66 @@ const DEFAULT_REGION = {
   latitudeDelta: 0.05,
   longitudeDelta: 0.05,
 };
+
+// Strategy name mapping
+function getStrategyName(key: string): string {
+  const names: Record<string, string> = {
+    longTermRental: 'Long-Term Rental',
+    shortTermRental: 'Short-Term Rental',
+    brrrr: 'BRRRR',
+    fixAndFlip: 'Fix & Flip',
+    houseHack: 'House Hacking',
+    wholesale: 'Wholesale',
+  };
+  return names[key] || key;
+}
+
+// Transform database record to map marker format
+function transformToMapProperty(dbProperty: ScannedProperty): MapProperty | null {
+  if (!dbProperty.lat || !dbProperty.lng) return null;
+  
+  const analytics = parseAnalyticsData(dbProperty.analytics_data);
+  
+  // Find best strategy and monthly profit
+  let topStrategy = 'Long-Term Rental';
+  let monthlyProfit = 0;
+  
+  if (analytics?.strategies) {
+    const strategies = Object.entries(analytics.strategies);
+    let bestValue = -Infinity;
+    
+    for (const [key, data] of strategies) {
+      if (data && typeof data === 'object' && 'primaryValue' in data) {
+        const value = (data as any).primaryValue;
+        if (value > bestValue) {
+          bestValue = value;
+          topStrategy = getStrategyName(key);
+          monthlyProfit = value;
+        }
+      }
+    }
+  }
+  
+  return {
+    id: dbProperty.id,
+    address: dbProperty.address,
+    lat: dbProperty.lat,
+    lng: dbProperty.lng,
+    monthlyProfit,
+    strategy: topStrategy,
+    city: dbProperty.city || undefined,
+    state: dbProperty.state || undefined,
+  };
+}
+
+function parseAnalyticsData(json: string | null): AnalyticsData | null {
+  if (!json) return null;
+  try {
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
 
 export default function MapScreen() {
   const router = useRouter();
@@ -45,9 +113,46 @@ export default function MapScreen() {
     latitude: number;
     longitude: number;
   } | null>(null);
-  const [region, setRegion] = useState(DEFAULT_REGION);
-  const [nearbyProperties, setNearbyProperties] = useState<NearbyProperty[]>([]);
-  const [selectedProperty, setSelectedProperty] = useState<NearbyProperty | null>(null);
+  const [region, setRegion] = useState<Region>(DEFAULT_REGION);
+  const [selectedProperty, setSelectedProperty] = useState<MapProperty | null>(null);
+  const [strategyFilter, setStrategyFilter] = useState<string | null>(null);
+  
+  // Database hooks
+  const { isReady: dbReady } = useDatabaseInit();
+  const { data: scannedProperties } = useScannedProperties();
+  
+  // Transform and filter properties for map display
+  const mapProperties = useMemo(() => {
+    if (!scannedProperties) return [];
+    
+    const transformed = scannedProperties
+      .map(transformToMapProperty)
+      .filter((p): p is MapProperty => p !== null);
+    
+    // Filter by strategy if selected
+    if (strategyFilter) {
+      return transformed.filter(p => 
+        p.strategy.toLowerCase().includes(strategyFilter.toLowerCase())
+      );
+    }
+    
+    return transformed;
+  }, [scannedProperties, strategyFilter]);
+  
+  // Filter properties within current map viewport
+  const visibleProperties = useMemo(() => {
+    if (!region) return mapProperties;
+    
+    const latMin = region.latitude - region.latitudeDelta / 2;
+    const latMax = region.latitude + region.latitudeDelta / 2;
+    const lngMin = region.longitude - region.longitudeDelta / 2;
+    const lngMax = region.longitude + region.longitudeDelta / 2;
+    
+    return mapProperties.filter(p => 
+      p.lat >= latMin && p.lat <= latMax &&
+      p.lng >= lngMin && p.lng <= lngMax
+    );
+  }, [mapProperties, region]);
 
   useEffect(() => {
     async function getLocation() {
@@ -92,17 +197,32 @@ export default function MapScreen() {
     getLocation();
   }, []);
 
-  const handlePropertyPress = (property: NearbyProperty) => {
+  const handlePropertyPress = useCallback((property: MapProperty) => {
     setSelectedProperty(property);
-  };
-
-  const handleViewDetails = () => {
-    if (selectedProperty) {
-      router.push(`/property/${encodeURIComponent(selectedProperty.address)}`);
+    
+    // Center map on property
+    if (mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: property.lat,
+        longitude: property.lng,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }, 300);
     }
-  };
+  }, []);
 
-  const handleCenterOnLocation = () => {
+  const handleViewDetails = useCallback(() => {
+    if (selectedProperty) {
+      const fullAddress = [
+        selectedProperty.address,
+        selectedProperty.city,
+        selectedProperty.state,
+      ].filter(Boolean).join(', ');
+      router.push(`/property/${encodeURIComponent(fullAddress)}`);
+    }
+  }, [selectedProperty, router]);
+
+  const handleCenterOnLocation = useCallback(() => {
     if (userLocation && mapRef.current) {
       mapRef.current.animateToRegion({
         ...userLocation,
@@ -110,13 +230,23 @@ export default function MapScreen() {
         longitudeDelta: 0.02,
       }, 500);
     }
-  };
+  }, [userLocation]);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (searchQuery.trim()) {
       router.push(`/property/${encodeURIComponent(searchQuery.trim())}`);
     }
-  };
+  }, [searchQuery, router]);
+  
+  const handleMapPress = useCallback(() => {
+    setSelectedProperty(null);
+  }, []);
+
+  const handleRegionChange = useCallback((newRegion: Region) => {
+    setRegion(newRegion);
+  }, []);
+
+  const hasScannedProperties = mapProperties.length > 0;
 
   return (
     <View style={styles.container}>
@@ -128,9 +258,10 @@ export default function MapScreen() {
         showsUserLocation
         showsMyLocationButton={false}
         initialRegion={region}
-        onRegionChangeComplete={setRegion}
+        onRegionChangeComplete={handleRegionChange}
+        onPress={handleMapPress}
       >
-        {nearbyProperties.map((property) => (
+        {visibleProperties.map((property) => (
           <Marker
             key={property.id}
             coordinate={{ latitude: property.lat, longitude: property.lng }}
@@ -176,6 +307,16 @@ export default function MapScreen() {
           <Ionicons name="add" size={22} color={colors.primary[600]} />
         </TouchableOpacity>
       </View>
+      
+      {/* Property Count Badge */}
+      {hasScannedProperties && !isLoadingLocation && (
+        <View style={styles.countBadge}>
+          <Ionicons name="home" size={14} color={colors.primary[600]} />
+          <Text style={styles.countText}>
+            {visibleProperties.length} of {mapProperties.length} properties
+          </Text>
+        </View>
+      )}
 
       {/* Loading Indicator */}
       {isLoadingLocation && (
@@ -228,8 +369,8 @@ export default function MapScreen() {
         </View>
       )}
 
-      {/* Empty State - only show after location is loaded */}
-      {!isLoadingLocation && nearbyProperties.length === 0 && (
+      {/* Empty State - only show after location is loaded and if no scanned properties */}
+      {!isLoadingLocation && dbReady && !hasScannedProperties && (
         <View style={styles.emptyState}>
           <Ionicons name="compass-outline" size={40} color={colors.primary[400]} />
           <Text style={styles.emptyStateTitle}>Explore Properties</Text>
@@ -297,6 +438,28 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+  },
+  countBadge: {
+    position: 'absolute',
+    top: 120,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fff',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  countText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.gray[700],
   },
   loadingContainer: {
     position: 'absolute',
