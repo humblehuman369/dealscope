@@ -123,48 +123,18 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.headerButton}
-          onPress={handleGoBack}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons
-            name={canGoBack ? 'chevron-back' : 'close'}
-            size={24}
-            color={colors.gray[900]}
-          />
-        </TouchableOpacity>
-
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerBrand}>InvestIQ</Text>
-          <Text style={styles.headerSubtitle} numberOfLines={1}>
-            {address}
-          </Text>
-        </View>
-
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={handleRefresh}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="refresh-outline" size={22} color={colors.gray[700]} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={handleShare}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons
-              name={Platform.OS === 'ios' ? 'share-outline' : 'share-social-outline'}
-              size={22}
-              color={colors.gray[700]}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+      {/* Floating Close Button */}
+      <TouchableOpacity
+        style={styles.floatingCloseButton}
+        onPress={handleGoBack}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <Ionicons
+          name={canGoBack ? 'chevron-back' : 'close'}
+          size={22}
+          color={colors.gray[700]}
+        />
+      </TouchableOpacity>
 
       {/* WebView or Error View */}
       <View style={styles.webViewContainer}>
@@ -273,38 +243,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
   },
-  header: {
-    flexDirection: 'row',
+  floatingCloseButton: {
+    position: 'absolute',
+    top: 8,
+    left: 12,
+    zIndex: 100,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[200],
-    backgroundColor: colors.white,
-  },
-  headerButton: {
-    padding: 6,
-    borderRadius: 8,
-  },
-  headerTitleContainer: {
-    flex: 1,
-    marginHorizontal: 12,
-  },
-  headerBrand: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.primary[700],
-    letterSpacing: -0.5,
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: colors.gray[500],
-    marginTop: 1,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
   webViewContainer: {
     flex: 1,
