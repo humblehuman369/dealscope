@@ -1443,7 +1443,7 @@ function StepHeader({ step, title, callToAction }: { step: number; title: string
         </div>
         <h2 className="text-base font-bold text-navy-900">{title}</h2>
       </div>
-      {callToAction && <p className="text-sm font-semibold text-gray-600 text-center mt-1">{callToAction}</p>}
+      {callToAction && <p className="text-base font-bold text-navy-900 text-center mt-1">{callToAction}</p>}
     </div>
   )
 }
