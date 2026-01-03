@@ -1,40 +1,76 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import * as Location from 'expo-location';
-import { Magnetometer } from 'expo-sensors';
+import { Magnetometer, Accelerometer } from 'expo-sensors';
+import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 // Coordinate precision constants
 // 6 decimal places = ~0.11m accuracy (optimal for property scanning)
 const COORDINATE_PRECISION = 6;
 
+// Storage key for calibration settings
+const CALIBRATION_STORAGE_KEY = '@scanner_calibration';
+
+interface CalibrationSettings {
+  headingOffset: number;      // Manual heading offset in degrees (-180 to 180)
+  tiltCompensation: boolean;  // Whether to use accelerometer for tilt compensation
+  lastCalibrated: string | null;
+}
+
 interface ScannerState {
   userLat: number;
   userLng: number;
-  heading: number;
+  heading: number;           // Calibrated heading
+  rawHeading: number;        // Raw (uncalibrated) heading for debugging
   accuracy: number;
+  tiltAngle: number;         // Phone tilt from vertical (0 = vertical, 90 = flat)
   isLocationReady: boolean;
   isCompassReady: boolean;
+  needsCalibration: boolean; // True if magnetometer readings are unstable
   error: string | null;
 }
 
+interface CalibrationControls {
+  headingOffset: number;
+  setHeadingOffset: (offset: number) => void;
+  tiltCompensation: boolean;
+  setTiltCompensation: (enabled: boolean) => void;
+  resetCalibration: () => void;
+  saveCalibration: () => Promise<void>;
+}
+
 // Low-pass filter coefficient for magnetometer smoothing
-// Higher value = more smoothing, slower response (0.0-1.0)
-const MAGNETOMETER_SMOOTHING = 0.15;
+// Lower value = less smoothing, faster response (better for aiming)
+const MAGNETOMETER_SMOOTHING = 0.25;
+
+// Threshold for detecting unstable magnetometer (needs calibration)
+const CALIBRATION_THRESHOLD = 50; // If variance exceeds this, suggest calibration
 
 /**
  * Hook to manage GPS location and compass heading for property scanning.
  * Provides real-time updates of user position and direction they're facing.
+ * 
+ * Includes calibration controls to improve accuracy:
+ * - headingOffset: Manual offset to correct systematic compass errors
+ * - tiltCompensation: Uses accelerometer to correct for phone not being vertical
  */
-export function usePropertyScanner() {
+export function usePropertyScanner(): ScannerState & CalibrationControls {
   const [state, setState] = useState<ScannerState>({
     userLat: 0,
     userLng: 0,
     heading: 0,
+    rawHeading: 0,
     accuracy: 0,
+    tiltAngle: 0,
     isLocationReady: false,
     isCompassReady: false,
+    needsCalibration: false,
     error: null,
   });
+
+  // Calibration settings
+  const [headingOffset, setHeadingOffsetState] = useState(0);
+  const [tiltCompensation, setTiltCompensationState] = useState(true);
 
   // Raw magnetometer data
   const magnetometerData = useRef({ x: 0, y: 0, z: 0 });
@@ -42,10 +78,69 @@ export function usePropertyScanner() {
   const smoothedMagData = useRef({ x: 0, y: 0, z: 0 });
   // Previous heading for additional smoothing
   const previousHeading = useRef(0);
+  // Accelerometer data for tilt compensation
+  const accelerometerData = useRef({ x: 0, y: 0, z: 0 });
+  // Heading variance tracker (for calibration detection)
+  const headingHistory = useRef<number[]>([]);
+  // Heading offset ref (for use in callbacks)
+  const headingOffsetRef = useRef(0);
+  const tiltCompensationRef = useRef(true);
+  
+  // Keep refs in sync with state
+  headingOffsetRef.current = headingOffset;
+  tiltCompensationRef.current = tiltCompensation;
+
+  // Load saved calibration settings on mount
+  useEffect(() => {
+    async function loadCalibration() {
+      try {
+        const saved = await SecureStore.getItemAsync(CALIBRATION_STORAGE_KEY);
+        if (saved) {
+          const settings: CalibrationSettings = JSON.parse(saved);
+          setHeadingOffsetState(settings.headingOffset);
+          setTiltCompensationState(settings.tiltCompensation);
+        }
+      } catch (e) {
+        console.log('Failed to load calibration settings:', e);
+      }
+    }
+    loadCalibration();
+  }, []);
+
+  // Calibration controls
+  const setHeadingOffset = useCallback((offset: number) => {
+    // Clamp to -180 to 180
+    const clamped = Math.max(-180, Math.min(180, offset));
+    setHeadingOffsetState(clamped);
+  }, []);
+
+  const setTiltCompensation = useCallback((enabled: boolean) => {
+    setTiltCompensationState(enabled);
+  }, []);
+
+  const resetCalibration = useCallback(() => {
+    setHeadingOffsetState(0);
+    setTiltCompensationState(true);
+  }, []);
+
+  const saveCalibration = useCallback(async () => {
+    try {
+      const settings: CalibrationSettings = {
+        headingOffset,
+        tiltCompensation,
+        lastCalibrated: new Date().toISOString(),
+      };
+      await SecureStore.setItemAsync(CALIBRATION_STORAGE_KEY, JSON.stringify(settings));
+      console.log('Calibration saved:', settings);
+    } catch (e) {
+      console.log('Failed to save calibration:', e);
+    }
+  }, [headingOffset, tiltCompensation]);
 
   useEffect(() => {
     let locationSubscription: Location.LocationSubscription | null = null;
     let magnetometerSubscription: { remove: () => void } | null = null;
+    let accelerometerSubscription: { remove: () => void } | null = null;
 
     async function setupSensors() {
       try {
@@ -93,6 +188,15 @@ export function usePropertyScanner() {
           }
         );
 
+        // Setup accelerometer for tilt compensation
+        const isAccelerometerAvailable = await Accelerometer.isAvailableAsync();
+        if (isAccelerometerAvailable) {
+          Accelerometer.setUpdateInterval(100);
+          accelerometerSubscription = Accelerometer.addListener((data) => {
+            accelerometerData.current = data;
+          });
+        }
+
         // Setup magnetometer for compass heading
         const isMagnetometerAvailable = await Magnetometer.isAvailableAsync();
         if (isMagnetometerAvailable) {
@@ -111,8 +215,19 @@ export function usePropertyScanner() {
               z: smoothedMagData.current.z + MAGNETOMETER_SMOOTHING * (data.z - smoothedMagData.current.z),
             };
             
-            // Calculate heading from smoothed data
-            const rawHeading = calculateHeading(smoothedMagData.current);
+            // Calculate tilt angle from accelerometer
+            const accel = accelerometerData.current;
+            const tiltAngle = calculateTiltAngle(accel);
+            
+            // Calculate heading with optional tilt compensation
+            let rawHeading: number;
+            if (tiltCompensationRef.current && Math.abs(tiltAngle) < 60) {
+              // Use tilt-compensated heading when phone is reasonably upright
+              rawHeading = calculateHeadingWithTilt(smoothedMagData.current, accel);
+            } else {
+              // Fallback to simple heading for extreme tilts
+              rawHeading = calculateHeading(smoothedMagData.current);
+            }
             
             // Apply additional heading smoothing to prevent jumpiness
             // Handle wrap-around at 0°/360° boundary
@@ -120,16 +235,32 @@ export function usePropertyScanner() {
             if (headingDiff > 180) headingDiff -= 360;
             if (headingDiff < -180) headingDiff += 360;
             
-            let smoothedHeading = previousHeading.current + headingDiff * 0.3;
+            // Use faster smoothing (0.4 instead of 0.3) for more responsive aiming
+            let smoothedHeading = previousHeading.current + headingDiff * 0.4;
             if (smoothedHeading < 0) smoothedHeading += 360;
             if (smoothedHeading >= 360) smoothedHeading -= 360;
             
             previousHeading.current = smoothedHeading;
             
+            // Track heading variance to detect need for calibration
+            headingHistory.current.push(rawHeading);
+            if (headingHistory.current.length > 30) {
+              headingHistory.current.shift();
+            }
+            const needsCalibration = calculateVariance(headingHistory.current) > CALIBRATION_THRESHOLD;
+            
+            // Apply user's heading offset calibration
+            let calibratedHeading = smoothedHeading + headingOffsetRef.current;
+            if (calibratedHeading < 0) calibratedHeading += 360;
+            if (calibratedHeading >= 360) calibratedHeading -= 360;
+            
             setState(prev => ({
               ...prev,
-              heading: Math.round(smoothedHeading),
+              heading: Math.round(calibratedHeading),
+              rawHeading: Math.round(smoothedHeading),
+              tiltAngle: Math.round(tiltAngle),
               isCompassReady: true,
+              needsCalibration,
             }));
           });
         } else {
@@ -153,10 +284,97 @@ export function usePropertyScanner() {
       if (magnetometerSubscription) {
         magnetometerSubscription.remove();
       }
+      if (accelerometerSubscription) {
+        accelerometerSubscription.remove();
+      }
     };
   }, []);
 
-  return state;
+  return {
+    ...state,
+    headingOffset,
+    setHeadingOffset,
+    tiltCompensation,
+    setTiltCompensation,
+    resetCalibration,
+    saveCalibration,
+  };
+}
+
+/**
+ * Calculate tilt angle from accelerometer data.
+ * Returns angle from vertical in degrees (0 = upright, 90 = flat).
+ */
+function calculateTiltAngle(accel: { x: number; y: number; z: number }): number {
+  const { x, y, z } = accel;
+  // Calculate angle from vertical (Z-axis when flat, Y-axis when upright)
+  // For a phone held vertically, Y points up
+  const magnitude = Math.sqrt(x * x + y * y + z * z);
+  if (magnitude < 0.1) return 0;
+  
+  // Tilt from vertical is the angle between gravity vector and Y-axis
+  const tilt = Math.acos(Math.abs(y) / magnitude) * (180 / Math.PI);
+  return tilt;
+}
+
+/**
+ * Calculate variance of an array of numbers.
+ */
+function calculateVariance(values: number[]): number {
+  if (values.length < 2) return 0;
+  
+  // Handle circular mean for heading values
+  let sinSum = 0, cosSum = 0;
+  for (const v of values) {
+    sinSum += Math.sin(v * Math.PI / 180);
+    cosSum += Math.cos(v * Math.PI / 180);
+  }
+  const meanAngle = Math.atan2(sinSum / values.length, cosSum / values.length) * 180 / Math.PI;
+  
+  // Calculate variance with circular awareness
+  let variance = 0;
+  for (const v of values) {
+    let diff = v - meanAngle;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+    variance += diff * diff;
+  }
+  return variance / values.length;
+}
+
+/**
+ * Calculate heading with tilt compensation.
+ * Uses accelerometer data to correct for phone not being perfectly vertical.
+ */
+function calculateHeadingWithTilt(
+  mag: { x: number; y: number; z: number },
+  accel: { x: number; y: number; z: number }
+): number {
+  // Normalize accelerometer
+  const aMag = Math.sqrt(accel.x ** 2 + accel.y ** 2 + accel.z ** 2);
+  if (aMag < 0.1) return calculateHeading(mag);
+  
+  const ax = accel.x / aMag;
+  const ay = accel.y / aMag;
+  const az = accel.z / aMag;
+  
+  // Calculate pitch and roll from accelerometer
+  const pitch = Math.asin(-ax);
+  const roll = Math.atan2(az, ay);
+  
+  // Tilt-compensated magnetic components
+  const mX = mag.x * Math.cos(pitch) + mag.z * Math.sin(pitch);
+  const mY = mag.x * Math.sin(roll) * Math.sin(pitch) + 
+             mag.y * Math.cos(roll) - 
+             mag.z * Math.sin(roll) * Math.cos(pitch);
+  
+  // Calculate heading from compensated components
+  let heading = Math.atan2(mX, mY) * (180 / Math.PI);
+  
+  // Normalize to 0-360
+  if (heading < 0) heading += 360;
+  
+  return heading % 360;
 }
 
 /**

@@ -123,13 +123,16 @@ export function calculateDistance(
  * Creates a fan of points extending from the user's position
  * in the direction they're facing.
  * 
+ * Uses a weighted approach where points at the center of the cone
+ * (directly where the user is pointing) are prioritized.
+ * 
  * @param userLat - User's latitude
  * @param userLng - User's longitude
  * @param heading - Compass heading in degrees
  * @param minDistance - Minimum distance to scan (meters)
  * @param maxDistance - Maximum distance to scan (meters)
- * @param coneAngle - Half-angle of the scan cone (degrees)
- * @returns Array of points to check
+ * @param coneAngle - Half-angle of the scan cone (degrees) - KEEP NARROW for accuracy
+ * @returns Array of points to check, sorted by priority (center first)
  */
 export function generateScanCone(
   userLat: number,
@@ -137,31 +140,40 @@ export function generateScanCone(
   heading: number,
   minDistance: number = 10,
   maxDistance: number = 100,
-  coneAngle: number = 20
-): Array<{ lat: number; lng: number; distance: number; angle: number }> {
-  const points: Array<{ lat: number; lng: number; distance: number; angle: number }> = [];
+  coneAngle: number = 15 // Reduced from 20 to 15 for better accuracy
+): Array<{ lat: number; lng: number; distance: number; angle: number; priority: number }> {
+  const points: Array<{ lat: number; lng: number; distance: number; angle: number; priority: number }> = [];
   
-  // Distance steps (every 10 meters)
-  const distanceStep = 10;
+  // Finer distance steps (every 5 meters) for better resolution
+  const distanceStep = 5;
   
-  // Angle steps (every 5 degrees within the cone)
-  const angleStep = 5;
+  // Finer angle steps (every 3 degrees within the cone)
+  const angleStep = 3;
   
+  // Generate points with priority weighting
   for (let d = minDistance; d <= maxDistance; d += distanceStep) {
     for (let angle = -coneAngle; angle <= coneAngle; angle += angleStep) {
       const adjustedHeading = (heading + angle + 360) % 360;
       const point = calculateTargetPoint(userLat, userLng, adjustedHeading, d);
       
+      // Calculate priority: center angles and closer to target distance = higher priority
+      // Priority formula: favor center (angle close to 0) and near estimated distance
+      const anglePenalty = Math.abs(angle) / coneAngle; // 0 at center, 1 at edge
+      const distanceFromMid = Math.abs(d - (minDistance + maxDistance) / 2);
+      const distancePenalty = distanceFromMid / ((maxDistance - minDistance) / 2);
+      const priority = 1 - (anglePenalty * 0.7 + distancePenalty * 0.3);
+      
       points.push({
         ...point,
         distance: d,
         angle,
+        priority,
       });
     }
   }
   
-  // Sort by distance from center (closest to heading first)
-  points.sort((a, b) => Math.abs(a.angle) - Math.abs(b.angle));
+  // Sort by priority (highest priority = center of cone first)
+  points.sort((a, b) => b.priority - a.priority);
   
   return points;
 }

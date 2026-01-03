@@ -20,6 +20,7 @@ import { ScanTarget } from '../../components/scanner/ScanTarget';
 import { CompassDisplay } from '../../components/scanner/CompassDisplay';
 import { DistanceSlider } from '../../components/scanner/DistanceSlider';
 import { ScanResultSheet } from '../../components/scanner/ScanResultSheet';
+import { CalibrationPanel } from '../../components/scanner/CalibrationPanel';
 import { colors } from '../../theme/colors';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -31,6 +32,7 @@ export default function ScanScreen() {
   
   // Scanner state
   const [distance, setDistance] = useState(50);
+  const [showCalibration, setShowCalibration] = useState(false);
   const scanner = usePropertyScanner();
   const { isScanning, result, error, performScan, clearResult } = usePropertyScan();
   
@@ -104,12 +106,28 @@ export default function ScanScreen() {
         <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
           <View style={styles.headerContent}>
             <Text style={styles.logo}>InvestIQ</Text>
-            {scanner.userLat !== 0 && (
-              <View style={styles.locationBadge}>
-                <Ionicons name="location" size={12} color={colors.primary[600]} />
-                <Text style={styles.locationText}>GPS Active</Text>
-              </View>
-            )}
+            <View style={styles.headerRight}>
+              {scanner.needsCalibration && (
+                <TouchableOpacity 
+                  style={styles.calibrationWarning}
+                  onPress={() => setShowCalibration(true)}
+                >
+                  <Ionicons name="warning" size={14} color={colors.loss.main} />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity 
+                style={styles.settingsButton}
+                onPress={() => setShowCalibration(true)}
+              >
+                <Ionicons name="settings-outline" size={18} color="#fff" />
+              </TouchableOpacity>
+              {scanner.userLat !== 0 && (
+                <View style={styles.locationBadge}>
+                  <Ionicons name="location" size={12} color={colors.primary[600]} />
+                  <Text style={styles.locationText}>GPS Active</Text>
+                </View>
+              )}
+            </View>
           </View>
         </View>
 
@@ -201,6 +219,11 @@ export default function ScanScreen() {
                 ? `📍 ${scanner.userLat.toFixed(5)}, ${scanner.userLng.toFixed(5)}`
                 : '⏳ Waiting for GPS...'}
             </Text>
+            {scanner.headingOffset !== 0 && (
+              <Text style={[styles.statusText, { fontSize: 10, opacity: 0.7 }]}>
+                Offset: {scanner.headingOffset > 0 ? '+' : ''}{scanner.headingOffset}°
+              </Text>
+            )}
           </View>
 
           {/* Error Display */}
@@ -221,6 +244,22 @@ export default function ScanScreen() {
           onViewDetails={handleViewDetails}
         />
       )}
+
+      {/* Calibration Panel */}
+      <CalibrationPanel
+        visible={showCalibration}
+        onClose={() => setShowCalibration(false)}
+        headingOffset={scanner.headingOffset}
+        onHeadingOffsetChange={scanner.setHeadingOffset}
+        tiltCompensation={scanner.tiltCompensation}
+        onTiltCompensationChange={scanner.setTiltCompensation}
+        onReset={scanner.resetCalibration}
+        onSave={scanner.saveCalibration}
+        currentHeading={scanner.heading}
+        rawHeading={scanner.rawHeading}
+        tiltAngle={scanner.tiltAngle}
+        needsCalibration={scanner.needsCalibration}
+      />
     </View>
   );
 }
@@ -257,10 +296,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   logo: {
     fontWeight: '700',
     fontSize: 20,
     color: '#fff',
+  },
+  settingsButton: {
+    padding: 8,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 8,
+  },
+  calibrationWarning: {
+    padding: 8,
+    backgroundColor: 'rgba(244,63,94,0.3)',
+    borderRadius: 8,
   },
   locationBadge: {
     flexDirection: 'row',
