@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from '../context/AuthContext';
+import { AnimatedSplash } from '../components/AnimatedSplash';
 
 // Prevent splash screen from hiding until app is ready
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -23,16 +24,27 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
+  const [showAnimatedSplash, setShowAnimatedSplash] = useState(true);
+  const [appReady, setAppReady] = useState(false);
+
   useEffect(() => {
-    // Hide splash screen after a brief delay
-    const timer = setTimeout(async () => {
+    // Hide native splash screen immediately to show our animated one
+    const hideNativeSplash = async () => {
       try {
         await SplashScreen.hideAsync();
       } catch {
         // Ignore - splash screen may already be hidden in Expo Go
       }
-    }, 500);
+      setAppReady(true);
+    };
+    
+    // Small delay to ensure smooth transition
+    const timer = setTimeout(hideNativeSplash, 100);
     return () => clearTimeout(timer);
+  }, []);
+
+  const handleAnimationComplete = useCallback(() => {
+    setShowAnimatedSplash(false);
   }, []);
 
   return (
@@ -58,6 +70,11 @@ export default function RootLayout() {
                 }} 
               />
             </Stack>
+            
+            {/* Animated Splash Screen with pulsating logo */}
+            {appReady && showAnimatedSplash && (
+              <AnimatedSplash onAnimationComplete={handleAnimationComplete} />
+            )}
           </GestureHandlerRootView>
         </SafeAreaProvider>
       </AuthProvider>
