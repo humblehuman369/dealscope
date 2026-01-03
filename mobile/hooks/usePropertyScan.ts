@@ -104,20 +104,22 @@ export function usePropertyScan() {
       console.log(`Target point: ${targetPoint.lat}, ${targetPoint.lng}`);
 
       // Step 2: Generate scan cone for property matching
+      // Use a NARROW cone (15°) for better accuracy - wide cones catch neighboring properties
       const scanPoints = generateScanCone(
         userLat,
         userLng,
         heading,
-        Math.max(10, estimatedDistance - 20),
-        estimatedDistance + 30,
-        25 // 25° cone angle for better accuracy
+        Math.max(5, estimatedDistance - 15),  // Start closer to estimated distance
+        estimatedDistance + 20,                // Less overshoot
+        15 // NARROWER 15° cone angle for better accuracy (was 25°)
       );
 
       // Step 3: Query parcels in the target area
+      // Use smaller radius (100m instead of 150m) to reduce false matches
       const parcels = await queryParcelsInArea(
         targetPoint.lat,
         targetPoint.lng,
-        150 // 150m radius
+        100 // Reduced from 150m to 100m for tighter matching
       );
 
       if (parcels.length === 0) {
