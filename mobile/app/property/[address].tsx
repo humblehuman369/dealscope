@@ -39,6 +39,18 @@ export default function PropertyDetailScreen() {
   const decodedAddress = decodeURIComponent(address || '');
   const [assumptions, setAssumptions] = useState<Assumptions>(DEFAULT_ASSUMPTIONS);
 
+  // Move useQuery BEFORE any conditional returns to follow Rules of Hooks
+  const { data: analytics, isLoading, error } = useQuery({
+    queryKey: ['property', decodedAddress],
+    queryFn: () => fetchPropertyAnalytics(decodedAddress),
+    enabled: !!decodedAddress,
+  });
+
+  const toggleStrategy = (key: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedStrategy(expandedStrategy === key ? null : key);
+  };
+
   // If full view mode, render WebView with complete web app features
   if (viewMode === 'full') {
     return (
@@ -52,17 +64,6 @@ export default function PropertyDetailScreen() {
       />
     );
   }
-
-  const toggleStrategy = (key: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedStrategy(expandedStrategy === key ? null : key);
-  };
-
-  const { data: analytics, isLoading, error } = useQuery({
-    queryKey: ['property', decodedAddress],
-    queryFn: () => fetchPropertyAnalytics(decodedAddress),
-    enabled: !!decodedAddress,
-  });
 
   if (isLoading) {
     return (
