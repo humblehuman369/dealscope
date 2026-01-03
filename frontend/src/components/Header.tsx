@@ -51,7 +51,7 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-white dark:bg-navy-900 border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-50 transition-colors duration-300">
+    <header className="bg-navy-50 dark:bg-navy-900 border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-50 transition-colors duration-300">
       <div className="container-brand">
         <div className="flex justify-between items-center h-16">
           {/* Left side - Logo & Nav */}

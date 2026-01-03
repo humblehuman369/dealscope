@@ -681,7 +681,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       </section>
 
       {/* Tagline Section */}
-      <section className="bg-white py-12">
+      <section className="bg-navy-50 py-12">
         <div className="max-w-5xl mx-auto px-8 md:px-16 flex flex-col gap-6">
           <div className="flex items-center gap-4">
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
