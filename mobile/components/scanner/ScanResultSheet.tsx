@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -6,6 +6,7 @@ import {
   TouchableOpacity, 
   Pressable,
   Dimensions,
+  Alert,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -16,10 +17,14 @@ import Animated, {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 
 import { ScanResult } from '../../hooks/usePropertyScan';
 import { formatCurrency, InvestmentAnalytics } from '../../services/analytics';
 import { colors } from '../../theme/colors';
+import { useAuth } from '../../context/AuthContext';
+import { AuthRequiredModal } from '../AuthRequiredModal';
+import { togglePropertyFavorite } from '../../database';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_MIN_HEIGHT = 280;
@@ -34,6 +39,7 @@ interface ScanResultSheetProps {
 /**
  * Simplified bottom sheet displaying property confirmation after scan.
  * Shows: address, beds, baths, sqft, estimated value, and View Full Analysis CTA.
+ * Includes a Save button that requires authentication.
  */
 export function ScanResultSheet({ 
   result, 
@@ -43,6 +49,50 @@ export function ScanResultSheet({
   const insets = useSafeAreaInsets();
   const translateY = useSharedValue(0);
   const context = useSharedValue({ y: 0 });
+  
+  // Auth state
+  const { isAuthenticated } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Handle save property action
+  const handleSaveProperty = useCallback(async () => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      setShowAuthModal(true);
+      return;
+    }
+
+    // User is authenticated, save the property
+    if (result.savedId) {
+      try {
+        setIsSaving(true);
+        await togglePropertyFavorite(result.savedId);
+        setIsSaved(true);
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert(
+          'Property Saved! 🏠',
+          'This property has been added to your saved properties.',
+          [{ text: 'OK' }]
+        );
+      } catch (error) {
+        console.error('Failed to save property:', error);
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Alert.alert('Error', 'Failed to save property. Please try again.');
+      } finally {
+        setIsSaving(false);
+      }
+    } else {
+      // Property wasn't saved during scan (shouldn't happen normally)
+      Alert.alert(
+        'Scan Again',
+        'Please scan the property again to save it.',
+        [{ text: 'OK' }]
+      );
+    }
+  }, [isAuthenticated, result.savedId]);
 
   const gesture = Gesture.Pan()
     .onStart(() => {
@@ -144,18 +194,46 @@ export function ScanResultSheet({
             </Text>
           </View>
 
-          {/* View Full Analysis Button */}
-          <Pressable 
-            style={({ pressed }) => [
-              styles.ctaButton,
-              pressed && styles.ctaButtonPressed
-            ]}
-            onPress={onViewDetails}
-          >
-            <Text style={styles.ctaButtonText}>View Full Analysis</Text>
-            <Ionicons name="arrow-forward" size={20} color="#fff" />
-          </Pressable>
+          {/* Action Buttons */}
+          <View style={styles.buttonRow}>
+            {/* Save Button */}
+            <TouchableOpacity
+              style={[
+                styles.saveButton,
+                isSaved && styles.saveButtonSaved,
+              ]}
+              onPress={handleSaveProperty}
+              disabled={isSaving || isSaved}
+              activeOpacity={0.8}
+            >
+              <Ionicons 
+                name={isSaved ? "heart" : "heart-outline"} 
+                size={22} 
+                color={isSaved ? colors.loss.main : colors.gray[600]} 
+              />
+            </TouchableOpacity>
+
+            {/* View Full Analysis Button */}
+            <Pressable 
+              style={({ pressed }) => [
+                styles.ctaButton,
+                pressed && styles.ctaButtonPressed
+              ]}
+              onPress={onViewDetails}
+            >
+              <Text style={styles.ctaButtonText}>View Full Analysis</Text>
+              <Ionicons name="arrow-forward" size={20} color="#fff" />
+            </Pressable>
+          </View>
         </View>
+
+        {/* Auth Required Modal */}
+        <AuthRequiredModal
+          visible={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          feature="save properties"
+          onContinueWithoutAuth={onViewDetails}
+        />
       </Animated.View>
     </GestureDetector>
   );
@@ -265,16 +343,35 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: colors.primary[700],
   },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  saveButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: colors.gray[100],
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.gray[200],
+  },
+  saveButtonSaved: {
+    backgroundColor: colors.loss.light,
+    borderColor: colors.loss.main,
+  },
   ctaButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
     backgroundColor: colors.primary[600],
     paddingVertical: 16,
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     borderRadius: 14,
-    width: '100%',
     shadowColor: colors.primary[600],
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,

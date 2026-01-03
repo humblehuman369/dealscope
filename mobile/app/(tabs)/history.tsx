@@ -26,6 +26,8 @@ import {
   parseAnalyticsData,
 } from '../../hooks/useDatabase';
 import { ScannedProperty, AnalyticsData } from '../../database';
+import { useAuth } from '../../context/AuthContext';
+import { AuthRequiredModal } from '../../components/AuthRequiredModal';
 
 // Display interface for the list
 interface DisplayProperty {
@@ -96,6 +98,11 @@ export default function HistoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<'all' | 'favorites'>('all');
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [pendingFavoriteId, setPendingFavoriteId] = useState<string | null>(null);
+  
+  // Auth state
+  const { isAuthenticated } = useAuth();
   
   // Database initialization
   const { isReady: dbReady } = useDatabaseInit();
@@ -123,9 +130,17 @@ export default function HistoryScreen() {
   }, [router]);
   
   const handleToggleFavorite = useCallback(async (id: string) => {
+    // Check if user is authenticated before allowing favorites
+    if (!isAuthenticated) {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      setPendingFavoriteId(id);
+      setShowAuthModal(true);
+      return;
+    }
+    
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     toggleFavorite.mutate(id);
-  }, [toggleFavorite]);
+  }, [toggleFavorite, isAuthenticated]);
   
   const handleDelete = useCallback((id: string, address: string) => {
     Alert.alert(
@@ -242,6 +257,16 @@ export default function HistoryScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Auth Required Modal */}
+      <AuthRequiredModal
+        visible={showAuthModal}
+        onClose={() => {
+          setShowAuthModal(false);
+          setPendingFavoriteId(null);
+        }}
+        feature="save and organize properties"
+      />
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Scan History</Text>
