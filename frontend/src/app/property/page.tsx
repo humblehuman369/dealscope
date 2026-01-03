@@ -1385,16 +1385,16 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
 }
 
 // Step indicator component - matches HTML design
-function StepHeader({ step, title, subtitle }: { step: number; title: string; subtitle?: string }) {
+function StepHeader({ step, title, rightLabel }: { step: number; title: string; rightLabel?: string }) {
   return (
-    <div className="flex items-center gap-2.5 mb-3.5">
-      <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold flex-shrink-0">
-        {step}
-      </div>
-      <div>
+    <div className="flex items-center justify-between mb-3.5">
+      <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold flex-shrink-0">
+          {step}
+        </div>
         <h2 className="text-base font-bold text-navy-900">{title}</h2>
-        {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
       </div>
+      {rightLabel && <span className="text-sm text-gray-500">{rightLabel}</span>}
     </div>
   )
 }
@@ -1472,9 +1472,9 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
     return `/rehab?${params.toString()}`
   }
   return (
-    <div className="bg-white rounded-[0.875rem] shadow-sm p-4">
+    <div className="bg-white rounded-[0.875rem] shadow-sm border border-[#0465f2] p-4">
       <div>
-        <StepHeader step={1} title="Terms" subtitle="Adjust the values to evaluate profitability." />
+        <StepHeader step={1} title="Terms" rightLabel="Optimize Scenario" />
         
         {/* Responsive grid: 1 col on small, 2 cols on medium, 3 cols on large screens */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
@@ -1730,10 +1730,10 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* LEFT: Fine Tune Strategy */}
+        {/* LEFT: Tune The Deal */}
         <div>
           <FineTuneHeader 
-            title="Fine Tune Strategy" 
+            title="Tune The Deal" 
             prompt="What if vacancy hits 10%? Test your cushion." 
           />
           <div className="space-y-3.5">
@@ -1771,14 +1771,11 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
   
   return (
     <div>
-      {/* Step 3 Header */}
-      <StepHeader step={3} title="Short-Term Rental Strategy" />
-      
       <div className="grid grid-cols-2 gap-6">
-        {/* LEFT: Fine Tune Strategy */}
+        {/* LEFT: Tune The Deal */}
         <div className="space-y-4">
           <FineTuneHeader 
-            title="Fine Tune Strategy" 
+            title="Tune The Deal" 
             prompt="Adjust occupancy to see seasonal impacts" 
           />
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
@@ -1816,14 +1813,11 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
   
   return (
     <div>
-      {/* Step 3 Header */}
-      <StepHeader step={3} title="BRRRR Strategy" />
-      
       <div className="grid grid-cols-2 gap-6">
-        {/* LEFT: Fine Tune Strategy */}
+        {/* LEFT: Tune The Deal */}
         <div className="space-y-4">
           <FineTuneHeader 
-            title="Fine Tune Strategy" 
+            title="Tune The Deal" 
             prompt="Dial in rehab costs — where's your profit sweet spot?" 
           />
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
@@ -1856,14 +1850,11 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
 function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateFlip>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
   return (
     <div>
-      {/* Step 3 Header */}
-      <StepHeader step={3} title="Fix & Flip Strategy" />
-      
       <div className="grid grid-cols-2 gap-6">
-        {/* LEFT: Fine Tune Strategy */}
+        {/* LEFT: Tune The Deal */}
         <div className="space-y-4">
           <FineTuneHeader 
-            title="Fine Tune Strategy" 
+            title="Tune The Deal" 
             prompt="What's your true flip margin after costs?" 
           />
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
@@ -1941,14 +1932,11 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
 }) {
   return (
     <div>
-      {/* Step 3 Header */}
-      <StepHeader step={3} title="House Hack Strategy" />
-      
       <div className="grid grid-cols-2 gap-6">
-        {/* LEFT: Fine Tune Strategy */}
+        {/* LEFT: Tune The Deal */}
         <div className="space-y-4">
           <FineTuneHeader 
-            title="Fine Tune Strategy" 
+            title="Tune The Deal" 
             prompt="How many rooms to break even? Find out." 
           />
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
@@ -1985,9 +1973,6 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
   
   return (
     <div>
-      {/* Step 3 Header */}
-      <StepHeader step={3} title="Wholesale Strategy" />
-      
       {/* 70% Rule Hero Section */}
       <div className={`rounded-xl p-4 mb-4 ${calc.isPurchaseBelowMAO ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200' : 'bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200'}`}>
         <div className="flex items-center justify-between">
@@ -2067,10 +2052,10 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
       )}
 
       <div className="grid grid-cols-2 gap-6">
-        {/* LEFT: Fine Tune Strategy */}
+        {/* LEFT: Tune The Deal */}
         <div className="space-y-4">
           <FineTuneHeader 
-            title="Fine Tune Strategy" 
+            title="Tune The Deal" 
             prompt="Is this deal below MAO? Adjust to find out." 
           />
           <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
@@ -2276,9 +2261,10 @@ function MetricExplanation({
   )
 }
 
-function LTRAnalyticBreakdown({ calc, assumptions }: { 
+function LTRAnalyticBreakdown({ calc, assumptions, strategyName = 'Long-Term Rental' }: { 
   calc: ReturnType<typeof calculateLTR>
-  assumptions: Assumptions 
+  assumptions: Assumptions
+  strategyName?: string 
 }) {
   const annualGrossRent = assumptions.monthlyRent * 12
   const vacancyLoss = annualGrossRent * assumptions.vacancyRate
@@ -2307,7 +2293,7 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
         </div>
 
         {/* Two Column Layout */}
@@ -2466,9 +2452,10 @@ function LTRAnalyticBreakdown({ calc, assumptions }: {
 // FULL ANALYTIC BREAKDOWN - STR (Compact)
 // ============================================
 
-function STRAnalyticBreakdown({ calc, assumptions }: { 
+function STRAnalyticBreakdown({ calc, assumptions, strategyName = 'Short-Term Rental' }: { 
   calc: ReturnType<typeof calculateSTR>
-  assumptions: Assumptions 
+  assumptions: Assumptions
+  strategyName?: string 
 }) {
   const annualGrossRevenue = assumptions.averageDailyRate * 365 * assumptions.occupancyRate
   const managementFee = annualGrossRevenue * 0.20
@@ -2496,7 +2483,7 @@ function STRAnalyticBreakdown({ calc, assumptions }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
         </div>
 
         {/* STR Revenue Section */}
@@ -2637,9 +2624,10 @@ function STRAnalyticBreakdown({ calc, assumptions }: {
 // FULL ANALYTIC BREAKDOWN - BRRRR (Compact)
 // ============================================
 
-function BRRRRAnalyticBreakdown({ calc, assumptions }: { 
+function BRRRRAnalyticBreakdown({ calc, assumptions, strategyName = 'BRRRR' }: { 
   calc: ReturnType<typeof calculateBRRRR>
-  assumptions: Assumptions 
+  assumptions: Assumptions
+  strategyName?: string 
 }) {
   // BRRRR specific calculations
   const initialPurchaseDown = assumptions.purchasePrice * 0.30
@@ -2666,7 +2654,7 @@ function BRRRRAnalyticBreakdown({ calc, assumptions }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
         </div>
 
         {/* Two Column Layout for Phases */}
@@ -2796,9 +2784,10 @@ function BRRRRAnalyticBreakdown({ calc, assumptions }: {
 // FULL ANALYTIC BREAKDOWN - FLIP (Compact)
 // ============================================
 
-function FlipAnalyticBreakdown({ calc, assumptions }: { 
+function FlipAnalyticBreakdown({ calc, assumptions, strategyName = 'Fix & Flip' }: { 
   calc: ReturnType<typeof calculateFlip>
-  assumptions: Assumptions 
+  assumptions: Assumptions
+  strategyName?: string 
 }) {
   // Detailed cost breakdowns
   const purchaseCosts = assumptions.purchasePrice * assumptions.closingCostsPct
@@ -2820,7 +2809,7 @@ function FlipAnalyticBreakdown({ calc, assumptions }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
         </div>
 
         {/* Step 1: The Opportunity - Flip Margin Box */}
@@ -2961,9 +2950,10 @@ function FlipAnalyticBreakdown({ calc, assumptions }: {
 // FULL ANALYTIC BREAKDOWN - HOUSE HACK (Compact)
 // ============================================
 
-function HouseHackAnalyticBreakdown({ calc, assumptions }: { 
+function HouseHackAnalyticBreakdown({ calc, assumptions, strategyName = 'House Hack' }: { 
   calc: ReturnType<typeof calculateHouseHack>
-  assumptions: Assumptions 
+  assumptions: Assumptions
+  strategyName?: string 
 }) {
   const totalBedrooms = assumptions.totalBedrooms || 4
   const roomsRented = assumptions.roomsRented || Math.max(1, totalBedrooms - 1)
@@ -2990,7 +2980,7 @@ function HouseHackAnalyticBreakdown({ calc, assumptions }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
         </div>
 
         {/* Two Column Layout */}
@@ -3113,9 +3103,10 @@ function HouseHackAnalyticBreakdown({ calc, assumptions }: {
 // FULL ANALYTIC BREAKDOWN - WHOLESALE (Compact)
 // ============================================
 
-function WholesaleAnalyticBreakdown({ calc, assumptions }: { 
+function WholesaleAnalyticBreakdown({ calc, assumptions, strategyName = 'Wholesale' }: { 
   calc: ReturnType<typeof calculateWholesale>
-  assumptions: Assumptions 
+  assumptions: Assumptions
+  strategyName?: string 
 }) {
   const wholesaleFee = assumptions.basePurchasePrice * assumptions.wholesaleFeePct
   const arvAt70 = calc.arv * 0.70
@@ -3127,7 +3118,7 @@ function WholesaleAnalyticBreakdown({ calc, assumptions }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">Full Analytic Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
         </div>
 
         {/* Title Section */}
@@ -3618,9 +3609,9 @@ function PropertyPageContent() {
         </div>
 
         {/* STEP 2: Select Investment Strategy */}
-        <div className="bg-white rounded-[0.875rem] shadow-sm mb-3.5">
+        <div className="bg-white rounded-[0.875rem] shadow-sm border border-[#0465f2] mb-3.5">
           <div className="p-4">
-            <StepHeader step={2} title="Investment Strategies" subtitle="Select a strategy to evaluate the details below." />
+            <StepHeader step={2} title="Investment Strategies" rightLabel="Explore Strategies" />
           </div>
           
           {/* Strategy Cards Grid - 6 columns matching HTML design */}
@@ -3635,7 +3626,7 @@ function PropertyPageContent() {
         {/* STEP 3: Strategy Details */}
         <div className="bg-white rounded-[0.875rem] shadow-sm border border-[#0465f2]">
           <div className="p-4 pb-0">
-            <StepHeader step={3} title={`${strategies.find(s => s.id === selectedStrategy)?.name || ''} Strategy`} />
+            <StepHeader step={3} title="Strategy Details" />
           </div>
 
           {/* Tabs */}
@@ -3645,73 +3636,93 @@ function PropertyPageContent() {
 
           {/* Content Area - Key Metrics and Adjust Inputs */}
           <div className="p-4">
-            {drillDownView === 'details' && (
-              <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
-                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
-                  <Calculator className="w-5 h-5 text-[#0465f2]" />
-                  <h4 className="text-base font-semibold text-navy-900">Strategy Metrics</h4>
-                </div>
-                {selectedStrategy === 'ltr' && <LTRDetails calc={ltrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
-                {selectedStrategy === 'str' && <STRDetails calc={strCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
-                {selectedStrategy === 'brrrr' && <BRRRRDetails calc={brrrrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
-                {selectedStrategy === 'flip' && <FlipDetails calc={flipCalc} assumptions={assumptions} update={update} />}
-                {selectedStrategy === 'house_hack' && <HouseHackDetails calc={houseHackCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
-                {selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} propertyData={property} />}
-              </div>
-            )}
-            
-            {drillDownView === 'breakdown' && selectedStrategy === 'ltr' && <LTRAnalyticBreakdown calc={ltrCalc} assumptions={assumptions} />}
-            {drillDownView === 'breakdown' && selectedStrategy === 'str' && <STRAnalyticBreakdown calc={strCalc} assumptions={assumptions} />}
-            {drillDownView === 'breakdown' && selectedStrategy === 'brrrr' && <BRRRRAnalyticBreakdown calc={brrrrCalc} assumptions={assumptions} />}
-            {drillDownView === 'breakdown' && selectedStrategy === 'flip' && <FlipAnalyticBreakdown calc={flipCalc} assumptions={assumptions} />}
-            {drillDownView === 'breakdown' && selectedStrategy === 'house_hack' && <HouseHackAnalyticBreakdown calc={houseHackCalc} assumptions={assumptions} />}
-            {drillDownView === 'breakdown' && selectedStrategy === 'wholesale' && <WholesaleAnalyticBreakdown calc={wholesaleCalc} assumptions={assumptions} />}
-            
-            {drillDownView === 'charts' && (
-              <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
-                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
-                  <LineChart className="w-5 h-5 text-[#0465f2]" />
-                  <h4 className="text-base font-semibold text-navy-900">10-Year Projections</h4>
-                </div>
-                <ChartsView projections={projections} totalCashInvested={ltrCalc.totalCashRequired} />
-              </div>
-            )}
-            {drillDownView === 'projections' && (
-              <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
-                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
-                  <TrendingUp className="w-5 h-5 text-[#0465f2]" />
-                  <h4 className="text-base font-semibold text-navy-900">Growth Analysis</h4>
-                </div>
-                <ProjectionsView assumptions={projectionAssumptions} />
-              </div>
-            )}
-            {drillDownView === 'score' && (
-              <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
-                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
-                  <Award className="w-5 h-5 text-[#0465f2]" />
-                  <h4 className="text-base font-semibold text-navy-900">Deal Score</h4>
-                </div>
-                <DealScoreCard metrics={{ monthlyCashFlow: ltrCalc.monthlyCashFlow, cashOnCash: ltrCalc.cashOnCash, capRate: ltrCalc.capRate, onePercentRule: ltrCalc.onePercentRule, dscr: ltrCalc.dscr, purchasePrice: assumptions.purchasePrice, arv: assumptions.arv, totalCashRequired: ltrCalc.totalCashRequired, monthlyRent: assumptions.monthlyRent }} />
-              </div>
-            )}
-            {drillDownView === 'sensitivity' && (
-              <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
-                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
-                  <Activity className="w-5 h-5 text-[#0465f2]" />
-                  <h4 className="text-base font-semibold text-navy-900">What-If Analysis</h4>
-                </div>
-                <SensitivityAnalysisView assumptions={{ purchasePrice: assumptions.purchasePrice, downPaymentPct: assumptions.downPaymentPct, interestRate: assumptions.interestRate, loanTermYears: assumptions.loanTermYears, monthlyRent: assumptions.monthlyRent, propertyTaxes: assumptions.propertyTaxes, insurance: assumptions.insurance, vacancyRate: assumptions.vacancyRate, managementPct: assumptions.managementPct, maintenancePct: assumptions.maintenancePct }} />
-              </div>
-            )}
-            {drillDownView === 'compare' && (
-              <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
-                <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
-                  <GitCompare className="w-5 h-5 text-[#0465f2]" />
-                  <h4 className="text-base font-semibold text-navy-900">Scenario Comparison</h4>
-                </div>
-                <ScenarioComparison currentAssumptions={projectionAssumptions} propertyAddress={property.address.full_address} />
-              </div>
-            )}
+            {(() => {
+              const strategyName = strategies.find(s => s.id === selectedStrategy)?.name || ''
+              const tabLabels: Record<DrillDownView, string> = {
+                details: 'Metrics',
+                breakdown: 'Breakdown',
+                charts: '10-Year',
+                projections: 'Growth',
+                score: 'Score',
+                sensitivity: 'What-If',
+                compare: 'Compare',
+                rehab: 'Rehab'
+              }
+              const currentTabLabel = tabLabels[drillDownView] || ''
+              const bannerTitle = `${strategyName} Strategy - ${currentTabLabel}`
+              
+              return (
+                <>
+                  {drillDownView === 'details' && (
+                    <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                        <Calculator className="w-5 h-5 text-[#0465f2]" />
+                        <h4 className="text-base font-semibold text-navy-900">{bannerTitle}</h4>
+                      </div>
+                      {selectedStrategy === 'ltr' && <LTRDetails calc={ltrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
+                      {selectedStrategy === 'str' && <STRDetails calc={strCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
+                      {selectedStrategy === 'brrrr' && <BRRRRDetails calc={brrrrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
+                      {selectedStrategy === 'flip' && <FlipDetails calc={flipCalc} assumptions={assumptions} update={update} />}
+                      {selectedStrategy === 'house_hack' && <HouseHackDetails calc={houseHackCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
+                      {selectedStrategy === 'wholesale' && <WholesaleDetails calc={wholesaleCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} propertyData={property} />}
+                    </div>
+                  )}
+                  
+                  {drillDownView === 'breakdown' && selectedStrategy === 'ltr' && <LTRAnalyticBreakdown calc={ltrCalc} assumptions={assumptions} strategyName={strategyName} />}
+                  {drillDownView === 'breakdown' && selectedStrategy === 'str' && <STRAnalyticBreakdown calc={strCalc} assumptions={assumptions} strategyName={strategyName} />}
+                  {drillDownView === 'breakdown' && selectedStrategy === 'brrrr' && <BRRRRAnalyticBreakdown calc={brrrrCalc} assumptions={assumptions} strategyName={strategyName} />}
+                  {drillDownView === 'breakdown' && selectedStrategy === 'flip' && <FlipAnalyticBreakdown calc={flipCalc} assumptions={assumptions} strategyName={strategyName} />}
+                  {drillDownView === 'breakdown' && selectedStrategy === 'house_hack' && <HouseHackAnalyticBreakdown calc={houseHackCalc} assumptions={assumptions} strategyName={strategyName} />}
+                  {drillDownView === 'breakdown' && selectedStrategy === 'wholesale' && <WholesaleAnalyticBreakdown calc={wholesaleCalc} assumptions={assumptions} strategyName={strategyName} />}
+                  
+                  {drillDownView === 'charts' && (
+                    <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                        <LineChart className="w-5 h-5 text-[#0465f2]" />
+                        <h4 className="text-base font-semibold text-navy-900">{bannerTitle}</h4>
+                      </div>
+                      <ChartsView projections={projections} totalCashInvested={ltrCalc.totalCashRequired} />
+                    </div>
+                  )}
+                  {drillDownView === 'projections' && (
+                    <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                        <TrendingUp className="w-5 h-5 text-[#0465f2]" />
+                        <h4 className="text-base font-semibold text-navy-900">{bannerTitle}</h4>
+                      </div>
+                      <ProjectionsView assumptions={projectionAssumptions} />
+                    </div>
+                  )}
+                  {drillDownView === 'score' && (
+                    <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                        <Award className="w-5 h-5 text-[#0465f2]" />
+                        <h4 className="text-base font-semibold text-navy-900">{bannerTitle}</h4>
+                      </div>
+                      <DealScoreCard metrics={{ monthlyCashFlow: ltrCalc.monthlyCashFlow, cashOnCash: ltrCalc.cashOnCash, capRate: ltrCalc.capRate, onePercentRule: ltrCalc.onePercentRule, dscr: ltrCalc.dscr, purchasePrice: assumptions.purchasePrice, arv: assumptions.arv, totalCashRequired: ltrCalc.totalCashRequired, monthlyRent: assumptions.monthlyRent }} />
+                    </div>
+                  )}
+                  {drillDownView === 'sensitivity' && (
+                    <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                        <Activity className="w-5 h-5 text-[#0465f2]" />
+                        <h4 className="text-base font-semibold text-navy-900">{bannerTitle}</h4>
+                      </div>
+                      <SensitivityAnalysisView assumptions={{ purchasePrice: assumptions.purchasePrice, downPaymentPct: assumptions.downPaymentPct, interestRate: assumptions.interestRate, loanTermYears: assumptions.loanTermYears, monthlyRent: assumptions.monthlyRent, propertyTaxes: assumptions.propertyTaxes, insurance: assumptions.insurance, vacancyRate: assumptions.vacancyRate, managementPct: assumptions.managementPct, maintenancePct: assumptions.maintenancePct }} />
+                    </div>
+                  )}
+                  {drillDownView === 'compare' && (
+                    <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                        <GitCompare className="w-5 h-5 text-[#0465f2]" />
+                        <h4 className="text-base font-semibold text-navy-900">{bannerTitle}</h4>
+                      </div>
+                      <ScenarioComparison currentAssumptions={projectionAssumptions} propertyAddress={property.address.full_address} />
+                    </div>
+                  )}
+                </>
+              )
+            })()}
           </div>
         </div>
 
