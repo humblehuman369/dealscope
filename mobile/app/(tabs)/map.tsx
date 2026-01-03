@@ -93,15 +93,6 @@ function transformToMapProperty(dbProperty: ScannedProperty): MapProperty | null
   };
 }
 
-function parseAnalyticsData(json: string | null): AnalyticsData | null {
-  if (!json) return null;
-  try {
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
-
 export default function MapScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
