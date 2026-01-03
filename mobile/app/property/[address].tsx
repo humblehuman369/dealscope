@@ -19,6 +19,8 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchPropertyAnalytics, formatCurrency, formatPercent, InvestmentAnalytics } from '../../services/analytics';
 import { colors } from '../../theme/colors';
 import PropertyWebView from '../../components/PropertyWebView';
+import { PropertyChartsSection } from '../../components/PropertyCharts';
+import { AssumptionsSection, Assumptions, DEFAULT_ASSUMPTIONS } from '../../components/AssumptionsSliders';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -35,6 +37,7 @@ export default function PropertyDetailScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('native'); // Default to native view (works offline)
   
   const decodedAddress = decodeURIComponent(address || '');
+  const [assumptions, setAssumptions] = useState<Assumptions>(DEFAULT_ASSUMPTIONS);
 
   // If full view mode, render WebView with complete web app features
   if (viewMode === 'full') {
@@ -167,6 +170,13 @@ export default function PropertyDetailScreen() {
           </View>
         </View>
 
+        {/* Assumptions Sliders */}
+        <AssumptionsSection
+          assumptions={assumptions}
+          purchasePrice={analytics.pricing.listPrice}
+          onAssumptionsChange={setAssumptions}
+        />
+
         {/* Strategy Cards */}
         <Text style={[styles.sectionTitle, { marginHorizontal: 16, marginTop: 8 }]}>
           Investment Strategies
@@ -273,6 +283,9 @@ export default function PropertyDetailScreen() {
             </View>
           </View>
         </View>
+
+        {/* Investment Charts */}
+        <PropertyChartsSection analytics={analytics} />
 
         {/* Switch to Full View CTA */}
         <TouchableOpacity
