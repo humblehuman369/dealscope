@@ -26,182 +26,226 @@ const formatCompact = (value: number): string => {
 }
 
 // ============================================
-// 1. CASH FLOW - LOLLIPOP CHART WITH GLOW
+// 1. CASH FLOW - INTERACTIVE RADIAL + BAR CHART
 // ============================================
 
 function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
-  const [animationComplete, setAnimationComplete] = useState(false)
+  const [selectedYear, setSelectedYear] = useState(9)
+  const [isPlaying, setIsPlaying] = useState(false)
   
+  // Auto-play animation
   useEffect(() => {
-    const timer = setTimeout(() => setAnimationComplete(true), 500)
-    return () => clearTimeout(timer)
-  }, [])
+    if (!isPlaying) return
+    const interval = setInterval(() => {
+      setSelectedYear(prev => {
+        if (prev >= 9) {
+          setIsPlaying(false)
+          return 9
+        }
+        return prev + 1
+      })
+    }, 800)
+    return () => clearInterval(interval)
+  }, [isPlaying])
   
-  const maxCF = Math.max(...data.map(d => d.cashFlow))
-  const minCF = Math.min(...data.map(d => d.cashFlow))
-  const range = maxCF - minCF
-  
+  const yearData = data[selectedYear]
   const totalCF = data.reduce((sum, d) => sum + d.cashFlow, 0)
-  const avgCF = totalCF / data.length
+  const maxCumulative = data[9].cumulativeCashFlow
+  const currentCumulative = yearData.cumulativeCashFlow
+  const cumulativePercent = maxCumulative > 0 ? (currentCumulative / maxCumulative) * 100 : 0
+  
+  // Radial chart settings
+  const radius = 65
+  const strokeWidth = 14
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference - (cumulativePercent / 100) * circumference
   
   return (
-    <div className="space-y-4">
-      {/* Summary Cards - Compact */}
-      <div className="grid grid-cols-4 gap-2">
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-3 text-white">
-          <div className="text-emerald-100 text-[10px] uppercase tracking-wide">Total 10-Year</div>
-          <div className="text-lg font-bold">{formatCompact(totalCF)}</div>
-        </div>
-        <div className="bg-white rounded-xl p-3 border border-gray-100">
-          <div className="text-gray-400 text-[10px] uppercase tracking-wide">Average/Year</div>
-          <div className="text-lg font-bold text-gray-900">{formatCompact(avgCF)}</div>
-        </div>
-        <div className="bg-white rounded-xl p-3 border border-gray-100">
-          <div className="text-gray-400 text-[10px] uppercase tracking-wide">Year 1</div>
-          <div className="text-lg font-bold text-emerald-600">{formatCompact(data[0].cashFlow)}</div>
-        </div>
-        <div className="bg-white rounded-xl p-3 border border-gray-100">
-          <div className="text-gray-400 text-[10px] uppercase tracking-wide">Year 10</div>
-          <div className="text-lg font-bold text-emerald-600">{formatCompact(data[9].cashFlow)}</div>
+    <div className="space-y-6">
+      {/* Top Summary */}
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-xl p-4 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-emerald-200 text-[10px] uppercase tracking-wide">Annual Cash Flow</div>
+            <div className="text-xl font-bold">{formatCompact(yearData.cashFlow)}</div>
+          </div>
+          <div className="text-3xl font-thin text-white/30">→</div>
+          <div className="text-right">
+            <div className="text-emerald-200 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Cumulative</div>
+            <div className="text-2xl font-bold">{formatCompact(currentCumulative)}</div>
+          </div>
+          <div className="text-right pl-4 border-l border-white/20">
+            <div className="text-emerald-200 text-[10px] uppercase tracking-wide">10-Year Total</div>
+            <div className="text-xl font-bold text-cyan-300">{formatCompact(totalCF)}</div>
+          </div>
         </div>
       </div>
       
-      {/* Lollipop Chart */}
-      <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-4 relative overflow-hidden">
-        {/* Background glow */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500 rounded-full blur-[100px]" />
-        </div>
-        
-        {/* Grid lines */}
-        <div className="absolute inset-6 flex flex-col justify-between pointer-events-none">
-          {[0, 1, 2, 3].map(i => (
-            <div key={i} className="border-b border-white/5 w-full" />
-          ))}
-        </div>
-        
-        {/* Chart */}
-        <div className="relative h-52 flex items-end justify-around px-3">
-          {data.map((d, i) => {
-            const height = range > 0 ? ((d.cashFlow - minCF) / range) * 200 + 40 : 120
-            const isHovered = hoveredIndex === i
-            const isPositive = d.cashFlow >= 0
-            
-            return (
-              <div
-                key={i}
-                className="flex flex-col items-center cursor-pointer group"
-                onMouseEnter={() => setHoveredIndex(i)}
-                onMouseLeave={() => setHoveredIndex(null)}
+      {/* Radial Progress + Bar Chart */}
+      <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="flex items-center gap-8">
+          {/* Radial Chart */}
+          <div className="relative flex-shrink-0">
+            <svg width={(radius + strokeWidth) * 2 + 20} height={(radius + strokeWidth) * 2 + 20}>
+              <defs>
+                <linearGradient id="cashFlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#10b981" />
+                  <stop offset="100%" stopColor="#06b6d4" />
+                </linearGradient>
+                <filter id="cashGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#10b981" floodOpacity="0.5" />
+                </filter>
+              </defs>
+              
+              {/* Background track */}
+              <circle
+                cx={radius + strokeWidth + 10}
+                cy={radius + strokeWidth + 10}
+                r={radius}
+                fill="none"
+                stroke="#e5e7eb"
+                strokeWidth={strokeWidth}
+              />
+              
+              {/* Progress arc */}
+              <circle
+                cx={radius + strokeWidth + 10}
+                cy={radius + strokeWidth + 10}
+                r={radius}
+                fill="none"
+                stroke="url(#cashFlowGrad)"
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                transform={`rotate(-90 ${radius + strokeWidth + 10} ${radius + strokeWidth + 10})`}
+                filter="url(#cashGlow)"
+                className="transition-all duration-500"
+              />
+              
+              {/* Center text */}
+              <text
+                x={radius + strokeWidth + 10}
+                y={radius + strokeWidth + 5}
+                textAnchor="middle"
+                className="text-2xl font-bold fill-gray-900"
+                fontSize="20"
               >
-                {/* Tooltip */}
-                {isHovered && (
-                  <div className="absolute bottom-full mb-4 bg-white rounded-xl px-4 py-3 shadow-2xl z-20 min-w-[160px]">
-                    <div className="text-xs text-gray-400 mb-1">Year {d.year} Cash Flow</div>
-                    <div className={`text-2xl font-black ${isPositive ? 'text-emerald-600' : 'text-red-500'}`}>
-                      {formatCurrency(d.cashFlow)}
-                    </div>
-                    <div className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                      {d.cashFlow > data[0].cashFlow ? (
-                        <><ArrowUpRight className="w-3 h-3 text-emerald-500" /> +{((d.cashFlow / data[0].cashFlow - 1) * 100).toFixed(0)}% from Y1</>
-                      ) : (
-                        <><ArrowDownRight className="w-3 h-3 text-red-500" /> {((d.cashFlow / data[0].cashFlow - 1) * 100).toFixed(0)}% from Y1</>
-                      )}
-                    </div>
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full">
-                      <div className="border-8 border-transparent border-t-white" />
-                    </div>
-                  </div>
-                )}
+                {formatCompact(currentCumulative)}
+              </text>
+              <text
+                x={radius + strokeWidth + 10}
+                y={radius + strokeWidth + 22}
+                textAnchor="middle"
+                className="fill-gray-400"
+                fontSize="10"
+              >
+                Cumulative
+              </text>
+            </svg>
+          </div>
+          
+          {/* Bar Chart */}
+          <div className="flex-1">
+            <div className="text-sm font-medium text-gray-700 mb-3">Annual Cash Flow by Year</div>
+            <div className="flex items-end gap-1.5 h-32">
+              {data.map((d, i) => {
+                const maxCF = Math.max(...data.map(x => x.cashFlow))
+                const height = maxCF > 0 ? (d.cashFlow / maxCF) * 100 : 0
+                const isSelected = i === selectedYear
+                const isPositive = d.cashFlow >= 0
                 
-                {/* Stem */}
-                <div 
-                  className="w-1 bg-gradient-to-t from-emerald-500/20 to-emerald-400/60 rounded-full transition-all duration-500"
-                  style={{ 
-                    height: animationComplete ? height : 0,
-                    transitionDelay: `${i * 50}ms`
-                  }}
-                />
-                
-                {/* Dot with glow */}
-                <div 
-                  className={`relative -mt-3 transition-all duration-300 ${isHovered ? 'scale-150' : 'scale-100'}`}
-                  style={{ 
-                    opacity: animationComplete ? 1 : 0,
-                    transitionDelay: `${i * 50 + 200}ms`
-                  }}
-                >
-                  {/* Glow ring */}
-                  <div className={`absolute inset-0 rounded-full bg-emerald-400 blur-md transition-opacity ${isHovered ? 'opacity-80' : 'opacity-40'}`} 
-                    style={{ transform: 'scale(2)' }}
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedYear(i)}
+                    className={`flex-1 rounded-t-lg transition-all duration-300 cursor-pointer hover:opacity-80 ${
+                      isSelected 
+                        ? isPositive ? 'bg-gradient-to-t from-emerald-600 to-teal-500' : 'bg-gradient-to-t from-red-600 to-red-400'
+                        : isPositive ? 'bg-gradient-to-t from-emerald-200 to-emerald-100' : 'bg-gradient-to-t from-red-200 to-red-100'
+                    }`}
+                    style={{ height: `${Math.max(height, 10)}%` }}
+                    title={`Year ${d.year}: ${formatCurrency(d.cashFlow)}`}
                   />
-                  {/* Dot */}
-                  <div className={`relative w-4 h-4 rounded-full ${
-                    isPositive 
-                      ? 'bg-gradient-to-br from-emerald-300 to-emerald-500' 
-                      : 'bg-gradient-to-br from-red-300 to-red-500'
-                  } border-2 border-white shadow-lg`} />
-                </div>
-                
-                {/* Value label */}
-                <div className={`mt-4 text-xs font-bold transition-colors ${isHovered ? 'text-white' : 'text-white/50'}`}>
-                  {formatCompact(d.cashFlow)}
-                </div>
-                
-                {/* Year label */}
-                <div className={`mt-1 text-xs transition-colors ${isHovered ? 'text-emerald-400' : 'text-white/30'}`}>
+                )
+              })}
+            </div>
+            <div className="flex gap-1.5 mt-2">
+              {data.map((d, i) => (
+                <div 
+                  key={i} 
+                  className={`flex-1 text-center text-[10px] transition-colors ${
+                    i === selectedYear ? 'text-emerald-600 font-bold' : 'text-gray-400'
+                  }`}
+                >
                   Y{d.year}
                 </div>
-              </div>
-            )
-          })}
+              ))}
+            </div>
+          </div>
         </div>
-        
-        {/* Connecting line */}
-        <svg className="absolute inset-6 pointer-events-none" style={{ top: 24, height: 'calc(100% - 96px)' }}>
-          <defs>
-            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#34d399" stopOpacity="0.3" />
-              <stop offset="50%" stopColor="#10b981" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#34d399" stopOpacity="0.3" />
-            </linearGradient>
-          </defs>
-          <path
-            d={data.map((d, i) => {
-              const x = (i / (data.length - 1)) * 100
-              const y = 100 - (range > 0 ? ((d.cashFlow - minCF) / range) * 70 + 15 : 50)
-              return `${i === 0 ? 'M' : 'L'} ${x}% ${y}%`
-            }).join(' ')}
-            fill="none"
-            stroke="url(#lineGradient)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            className={`transition-all duration-1000 ${animationComplete ? 'opacity-100' : 'opacity-0'}`}
-          />
-        </svg>
       </div>
       
-      {/* Cumulative Growth Bar */}
-      <div className="bg-white rounded-2xl p-5 border border-gray-100">
+      {/* Year Selector with Playback */}
+      <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-semibold text-gray-700">Cumulative Cash Flow Growth</span>
-          <span className="text-lg font-black text-emerald-600">{formatCompact(data[9].cumulativeCashFlow)}</span>
+          <div className="text-white/70 text-sm">Year Timeline</div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSelectedYear(0)}
+              className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              title="Reset to Year 1"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-white" />
+            </button>
+            <button
+              onClick={() => {
+                if (selectedYear >= 9) setSelectedYear(0)
+                setIsPlaying(!isPlaying)
+              }}
+              className="p-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 transition-colors"
+              title={isPlaying ? 'Pause' : 'Play'}
+            >
+              {isPlaying ? <Pause className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 text-white" />}
+            </button>
+          </div>
         </div>
-        <div className="flex gap-1">
-          {data.map((d, i) => (
-            <div key={i} className="flex-1 group relative">
-              <div 
-                className="h-10 rounded-lg bg-gradient-to-t from-emerald-500 to-emerald-400 transition-all duration-300 hover:from-emerald-600 hover:to-emerald-500"
-                style={{ 
-                  opacity: 0.3 + (i / data.length) * 0.7,
-                }}
+        
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSelectedYear(Math.max(0, selectedYear - 1))}
+            disabled={selectedYear === 0}
+            className="p-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4 text-white" />
+          </button>
+          
+          <div className="flex-1 flex items-center gap-1">
+            {data.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setSelectedYear(i)}
+                className={`flex-1 h-2 rounded-full transition-all duration-300 ${
+                  i <= selectedYear 
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-400' 
+                    : 'bg-white/20'
+                } ${i === selectedYear ? 'scale-y-150' : ''}`}
               />
-              <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap transition-opacity">
-                Y{d.year}: {formatCompact(d.cumulativeCashFlow)}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          
+          <button
+            onClick={() => setSelectedYear(Math.min(9, selectedYear + 1))}
+            disabled={selectedYear === 9}
+            className="p-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30 transition-colors"
+          >
+            <ChevronRight className="w-4 h-4 text-white" />
+          </button>
+        </div>
+        
+        <div className="text-center mt-2">
+          <span className="text-emerald-400 font-bold">Year {selectedYear + 1}</span>
+          <span className="text-white/50 text-sm ml-2">of 10</span>
         </div>
       </div>
     </div>
@@ -209,254 +253,296 @@ function CashFlowLollipopChart({ data }: { data: YearlyProjection[] }) {
 }
 
 // ============================================
-// 2. EQUITY - MIRROR AREA CHART
+// 2. EQUITY - INTERACTIVE STACKED BAR + DONUT
 // ============================================
 
 function EquityMirrorChart({ data, totalCashInvested }: { data: YearlyProjection[]; totalCashInvested: number }) {
-  const [hoveredYear, setHoveredYear] = useState<number | null>(null)
+  const [selectedYear, setSelectedYear] = useState(9)
+  const [isPlaying, setIsPlaying] = useState(false)
   
-  const maxValue = Math.max(
-    ...data.map(d => d.totalEquity),
-    ...data.map(d => d.loanBalance)
-  )
+  // Auto-play animation
+  useEffect(() => {
+    if (!isPlaying) return
+    const interval = setInterval(() => {
+      setSelectedYear(prev => {
+        if (prev >= 9) {
+          setIsPlaying(false)
+          return 9
+        }
+        return prev + 1
+      })
+    }, 800)
+    return () => clearInterval(interval)
+  }, [isPlaying])
   
-  // Find crossover point
+  const yearData = data[selectedYear]
   const crossoverYear = data.findIndex(d => d.totalEquity > d.loanBalance)
+  
+  // Equity components
+  const equityComponents = [
+    { label: 'Down Payment', value: totalCashInvested, color: '#6366f1', icon: DollarSign },
+    { label: 'Loan Paydown', value: yearData.equityFromPaydown, color: '#3b82f6', icon: Building2 },
+    { label: 'Appreciation', value: yearData.equityFromAppreciation, color: '#10b981', icon: TrendingUp },
+  ]
+  
+  const totalEquity = yearData.totalEquity
+  const maxEquity = data[9].totalEquity
+  
+  // Donut chart settings
+  const radius = 60
+  const strokeWidth = 16
+  const circumference = 2 * Math.PI * radius
+  
+  let cumulativePercent = 0
   
   return (
     <div className="space-y-6">
-      {/* Header Stats - Compact */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-3 text-white">
-          <div className="text-blue-200 text-[10px] uppercase tracking-wide mb-1">Year 10 Equity</div>
-          <div className="text-xl font-bold">{formatCompact(data[9].totalEquity)}</div>
-          <div className="text-blue-200 text-xs mt-0.5">
-            +{formatCompact(data[9].totalEquity - totalCashInvested)} gain
+      {/* Top Summary */}
+      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-xl p-4 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-blue-200 text-[10px] uppercase tracking-wide">Year {selectedYear + 1} Equity</div>
+            <div className="text-2xl font-bold">{formatCompact(totalEquity)}</div>
           </div>
-        </div>
-        
-        <div className="bg-white rounded-xl p-3 border border-gray-100">
-          <div className="text-gray-400 text-[10px] uppercase tracking-wide mb-1">Loan Remaining</div>
-          <div className="text-xl font-bold text-gray-900">{formatCompact(data[9].loanBalance)}</div>
-          <div className="text-orange-500 text-xs mt-0.5">
-            {((1 - data[9].loanBalance / data[0].loanBalance) * 100).toFixed(0)}% paid off
+          <div className="text-3xl font-thin text-white/30">→</div>
+          <div className="text-right">
+            <div className="text-blue-200 text-[10px] uppercase tracking-wide">Year 10 Equity</div>
+            <div className="text-xl font-bold">{formatCompact(maxEquity)}</div>
           </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-200">
-          <div className="text-emerald-600 text-[10px] uppercase tracking-wide mb-1">Crossover Point</div>
-          <div className="text-xl font-bold text-emerald-700">Year {crossoverYear > 0 ? crossoverYear + 1 : '—'}</div>
-          <div className="text-emerald-600 text-xs mt-0.5">
-            Equity exceeds loan
+          <div className="text-right pl-4 border-l border-white/20">
+            <div className="text-blue-200 text-[10px] uppercase tracking-wide">Equity Gain</div>
+            <div className="text-xl font-bold text-emerald-300">
+              +{formatCompact(totalEquity - totalCashInvested)}
+            </div>
           </div>
         </div>
       </div>
       
-      {/* Mirror Chart */}
-      <div className="bg-white rounded-3xl border border-gray-100 p-6 relative overflow-hidden">
-        {/* Center line label */}
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-          <div className="bg-gray-900 text-white px-3 py-1 rounded-full text-xs font-bold">
-            $0
-          </div>
-        </div>
-        
-        <div className="relative h-80">
-          <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
-            <defs>
-              {/* Equity gradient (top) */}
-              <linearGradient id="equityGrad" x1="0" y1="1" x2="0" y2="0">
-                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.1" />
-                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.6" />
-              </linearGradient>
+      {/* Donut + Breakdown */}
+      <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="flex items-center gap-8">
+          {/* Donut Chart */}
+          <div className="relative flex-shrink-0">
+            <svg width={(radius + strokeWidth) * 2 + 20} height={(radius + strokeWidth) * 2 + 20}>
+              <defs>
+                {equityComponents.map((seg, i) => (
+                  <linearGradient key={i} id={`eqGrad-${i}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor={seg.color} stopOpacity="1" />
+                    <stop offset="100%" stopColor={seg.color} stopOpacity="0.7" />
+                  </linearGradient>
+                ))}
+                <filter id="eqShadow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feDropShadow dx="0" dy="2" stdDeviation="4" floodOpacity="0.15" />
+                </filter>
+              </defs>
               
-              {/* Loan gradient (bottom) */}
-              <linearGradient id="loanGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f97316" stopOpacity="0.1" />
-                <stop offset="100%" stopColor="#f97316" stopOpacity="0.6" />
-              </linearGradient>
-            </defs>
-            
-            {/* Center line */}
-            <line x1="8" y1="50" x2="98" y2="50" stroke="#e5e7eb" strokeWidth="0.5" />
-            
-            {/* Equity area (above center) */}
-            <path
-              d={`M 10 50 ${data.map((d, i) => {
-                const x = 10 + (i / (data.length - 1)) * 85
-                const y = 50 - (d.totalEquity / maxValue) * 45
-                return `L ${x} ${y}`
-              }).join(' ')} L 95 50 Z`}
-              fill="url(#equityGrad)"
-            />
-            
-            {/* Loan area (below center) */}
-            <path
-              d={`M 10 50 ${data.map((d, i) => {
-                const x = 10 + (i / (data.length - 1)) * 85
-                const y = 50 + (d.loanBalance / maxValue) * 45
-                return `L ${x} ${y}`
-              }).join(' ')} L 95 50 Z`}
-              fill="url(#loanGrad)"
-            />
-            
-            {/* Equity line */}
-            <path
-              d={`M ${data.map((d, i) => {
-                const x = 10 + (i / (data.length - 1)) * 85
-                const y = 50 - (d.totalEquity / maxValue) * 45
-                return `${i === 0 ? '' : 'L'} ${x} ${y}`
-              }).join(' ')}`}
-              fill="none"
-              stroke="#3b82f6"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            
-            {/* Loan line */}
-            <path
-              d={`M ${data.map((d, i) => {
-                const x = 10 + (i / (data.length - 1)) * 85
-                const y = 50 + (d.loanBalance / maxValue) * 45
-                return `${i === 0 ? '' : 'L'} ${x} ${y}`
-              }).join(' ')}`}
-              fill="none"
-              stroke="#f97316"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeDasharray="4,2"
-            />
-            
-            {/* Interactive points */}
-            {data.map((d, i) => {
-              const x = 10 + (i / (data.length - 1)) * 85
-              const equityY = 50 - (d.totalEquity / maxValue) * 45
-              const loanY = 50 + (d.loanBalance / maxValue) * 45
-              const isHovered = hoveredYear === i
+              {/* Background track */}
+              <circle
+                cx={radius + strokeWidth + 10}
+                cy={radius + strokeWidth + 10}
+                r={radius}
+                fill="none"
+                stroke="#e5e7eb"
+                strokeWidth={strokeWidth}
+              />
+              
+              {/* Segments */}
+              {equityComponents.map((seg, i) => {
+                const percent = totalEquity > 0 ? (seg.value / totalEquity) * 100 : 0
+                const offset = circumference - (percent / 100) * circumference
+                const rotation = (cumulativePercent / 100) * 360 - 90
+                cumulativePercent += percent
+                
+                return (
+                  <circle
+                    key={i}
+                    cx={radius + strokeWidth + 10}
+                    cy={radius + strokeWidth + 10}
+                    r={radius}
+                    fill="none"
+                    stroke={`url(#eqGrad-${i})`}
+                    strokeWidth={strokeWidth}
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    strokeLinecap="round"
+                    transform={`rotate(${rotation} ${radius + strokeWidth + 10} ${radius + strokeWidth + 10})`}
+                    filter="url(#eqShadow)"
+                    className="transition-all duration-500"
+                  />
+                )
+              })}
+              
+              {/* Center text */}
+              <text
+                x={radius + strokeWidth + 10}
+                y={radius + strokeWidth + 5}
+                textAnchor="middle"
+                className="text-xl font-bold fill-gray-900"
+                fontSize="18"
+              >
+                {formatCompact(totalEquity)}
+              </text>
+              <text
+                x={radius + strokeWidth + 10}
+                y={radius + strokeWidth + 20}
+                textAnchor="middle"
+                className="fill-gray-400"
+                fontSize="9"
+              >
+                Total Equity
+              </text>
+            </svg>
+          </div>
+          
+          {/* Breakdown */}
+          <div className="flex-1 space-y-3">
+            <div className="text-sm font-medium text-gray-700 mb-4">Equity Breakdown</div>
+            {(() => { cumulativePercent = 0; return null; })()}
+            {equityComponents.map((seg, i) => {
+              const percent = totalEquity > 0 ? (seg.value / totalEquity) * 100 : 0
+              const Icon = seg.icon
               
               return (
-                <g key={i}>
-                  {/* Hover column */}
-                  <rect
-                    x={x - 4}
-                    y={5}
-                    width={8}
-                    height={90}
-                    fill="transparent"
-                    className="cursor-pointer"
-                    onMouseEnter={() => setHoveredYear(i)}
-                    onMouseLeave={() => setHoveredYear(null)}
-                  />
-                  
-                  {/* Vertical line on hover */}
-                  {isHovered && (
-                    <line x1={x} y1={equityY} x2={x} y2={loanY} stroke="#9ca3af" strokeWidth="0.5" strokeDasharray="2,2" />
-                  )}
-                  
-                  {/* Equity dot */}
-                  <circle
-                    cx={x}
-                    cy={equityY}
-                    r={isHovered ? 4 : 2.5}
-                    fill="#3b82f6"
-                    stroke="white"
-                    strokeWidth="1.5"
-                    className="transition-all duration-200"
-                  />
-                  
-                  {/* Loan dot */}
-                  <circle
-                    cx={x}
-                    cy={loanY}
-                    r={isHovered ? 4 : 2.5}
-                    fill="#f97316"
-                    stroke="white"
-                    strokeWidth="1.5"
-                    className="transition-all duration-200"
-                  />
-                  
-                  {/* Year label */}
-                  <text x={x} y={98} fontSize="3.5" fill={isHovered ? '#1f2937' : '#9ca3af'} textAnchor="middle" fontWeight={isHovered ? 'bold' : 'normal'}>
-                    Y{d.year}
-                  </text>
-                </g>
+                <div key={i} className="flex items-center gap-3">
+                  <div 
+                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: seg.color + '20' }}
+                  >
+                    <Icon className="w-4 h-4" style={{ color: seg.color }} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-gray-700">{seg.label}</span>
+                      <span className="text-sm font-bold" style={{ color: seg.color }}>
+                        {formatCompact(seg.value)}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ 
+                          width: `${percent}%`,
+                          backgroundColor: seg.color
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-xs text-gray-400 w-10 text-right">{percent.toFixed(0)}%</span>
+                </div>
               )
             })}
-            
-            {/* Crossover marker */}
-            {crossoverYear > 0 && (
-              <g>
-                <circle
-                  cx={10 + (crossoverYear / (data.length - 1)) * 85}
-                  cy={50}
-                  r="5"
-                  fill="#10b981"
-                  stroke="white"
-                  strokeWidth="2"
-                />
-                <text
-                  x={10 + (crossoverYear / (data.length - 1)) * 85}
-                  y={44}
-                  fontSize="3"
-                  fill="#10b981"
-                  textAnchor="middle"
-                  fontWeight="bold"
-                >
-                  ★ CROSSOVER
-                </text>
-              </g>
-            )}
-          </svg>
-          
-          {/* Hover Info Card */}
-          {hoveredYear !== null && (
-            <div 
-              className="absolute bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-20 min-w-[180px]"
-              style={{
-                left: `${10 + (hoveredYear / (data.length - 1)) * 75}%`,
-                top: '10%',
-                transform: 'translateX(-50%)'
-              }}
-            >
-              <div className="text-sm font-bold text-gray-900 mb-3">Year {data[hoveredYear].year}</div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-500" />
-                    <span className="text-sm text-gray-600">Equity</span>
-                  </div>
-                  <span className="font-bold text-blue-600">{formatCompact(data[hoveredYear].totalEquity)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-orange-500" />
-                    <span className="text-sm text-gray-600">Loan</span>
-                  </div>
-                  <span className="font-bold text-orange-600">{formatCompact(data[hoveredYear].loanBalance)}</span>
-                </div>
-                <div className="pt-2 border-t border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Net Position</span>
-                    <span className={`font-bold ${data[hoveredYear].totalEquity > data[hoveredYear].loanBalance ? 'text-emerald-600' : 'text-gray-600'}`}>
-                      {formatCompact(data[hoveredYear].totalEquity - data[hoveredYear].loanBalance)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Equity vs Loan Comparison */}
+      <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-xl p-5 border border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm font-medium text-gray-700">Equity vs Loan Balance</div>
+          {crossoverYear > 0 && selectedYear >= crossoverYear && (
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-100 rounded-full">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-xs font-medium text-emerald-700">Equity exceeds loan!</span>
             </div>
           )}
         </div>
         
-        {/* Legend */}
-        <div className="flex items-center justify-center gap-8 mt-4">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-gradient-to-r from-blue-400 to-blue-600" />
-            <span className="text-sm text-gray-600">Total Equity (↑ Growing)</span>
+        <div className="space-y-3">
+          {/* Equity Bar */}
+          <div className="flex items-center gap-3">
+            <div className="w-20 text-xs text-gray-500">Equity</div>
+            <div className="flex-1 h-8 bg-white rounded-lg overflow-hidden border border-gray-200">
+              <div 
+                className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-end px-2 transition-all duration-500"
+                style={{ width: `${(totalEquity / Math.max(totalEquity, yearData.loanBalance)) * 100}%` }}
+              >
+                <span className="text-xs font-bold text-white">{formatCompact(totalEquity)}</span>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-1 border-t-2 border-dashed border-orange-500" />
-            <span className="text-sm text-gray-600">Loan Balance (↓ Shrinking)</span>
+          
+          {/* Loan Bar */}
+          <div className="flex items-center gap-3">
+            <div className="w-20 text-xs text-gray-500">Loan</div>
+            <div className="flex-1 h-8 bg-white rounded-lg overflow-hidden border border-gray-200">
+              <div 
+                className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-lg flex items-center justify-end px-2 transition-all duration-500"
+                style={{ width: `${(yearData.loanBalance / Math.max(totalEquity, yearData.loanBalance)) * 100}%` }}
+              >
+                <span className="text-xs font-bold text-white">{formatCompact(yearData.loanBalance)}</span>
+              </div>
+            </div>
           </div>
+        </div>
+        
+        {crossoverYear > 0 && (
+          <div className="mt-4 pt-3 border-t border-gray-200 text-center">
+            <span className="text-xs text-gray-500">Crossover Point: </span>
+            <span className="text-xs font-bold text-emerald-600">Year {crossoverYear + 1}</span>
+          </div>
+        )}
+      </div>
+      
+      {/* Year Selector with Playback */}
+      <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-white/70 text-sm">Year Timeline</div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSelectedYear(0)}
+              className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              title="Reset to Year 1"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-white" />
+            </button>
+            <button
+              onClick={() => {
+                if (selectedYear >= 9) setSelectedYear(0)
+                setIsPlaying(!isPlaying)
+              }}
+              className="p-1.5 rounded-full bg-blue-500 hover:bg-blue-400 transition-colors"
+              title={isPlaying ? 'Pause' : 'Play'}
+            >
+              {isPlaying ? <Pause className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 text-white" />}
+            </button>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSelectedYear(Math.max(0, selectedYear - 1))}
+            disabled={selectedYear === 0}
+            className="p-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4 text-white" />
+          </button>
+          
+          <div className="flex-1 flex items-center gap-1">
+            {data.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setSelectedYear(i)}
+                className={`flex-1 h-2 rounded-full transition-all duration-300 ${
+                  i <= selectedYear 
+                    ? 'bg-gradient-to-r from-blue-500 to-indigo-400' 
+                    : 'bg-white/20'
+                } ${i === selectedYear ? 'scale-y-150' : ''}`}
+              />
+            ))}
+          </div>
+          
+          <button
+            onClick={() => setSelectedYear(Math.min(9, selectedYear + 1))}
+            disabled={selectedYear === 9}
+            className="p-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30 transition-colors"
+          >
+            <ChevronRight className="w-4 h-4 text-white" />
+          </button>
+        </div>
+        
+        <div className="text-center mt-2">
+          <span className="text-blue-400 font-bold">Year {selectedYear + 1}</span>
+          <span className="text-white/50 text-sm ml-2">of 10</span>
         </div>
       </div>
     </div>
