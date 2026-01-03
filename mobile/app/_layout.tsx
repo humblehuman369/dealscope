@@ -9,7 +9,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '../context/AuthContext';
 
 // Prevent splash screen from hiding until app is ready
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {
+  // Splash screen may already be hidden in Expo Go
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,8 +25,12 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   useEffect(() => {
     // Hide splash screen after a brief delay
-    const timer = setTimeout(() => {
-      SplashScreen.hideAsync();
+    const timer = setTimeout(async () => {
+      try {
+        await SplashScreen.hideAsync();
+      } catch {
+        // Ignore - splash screen may already be hidden in Expo Go
+      }
     }, 500);
     return () => clearTimeout(timer);
   }, []);
