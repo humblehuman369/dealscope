@@ -1,126 +1,90 @@
 /**
- * Property Analysis Charts using victory-native.
+ * Property Analysis Charts using react-native-chart-kit.
  * Displays cash flow projections and strategy comparisons.
  */
 
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { 
-  VictoryChart, 
-  VictoryLine, 
-  VictoryBar, 
-  VictoryAxis, 
-  VictoryTheme,
-  VictoryTooltip,
-  VictoryVoronoiContainer,
-  VictoryLabel,
-  VictoryGroup,
-  VictoryLegend,
-} from 'victory-native';
+import { BarChart, LineChart } from 'react-native-chart-kit';
 
 import { colors } from '../theme/colors';
 import { InvestmentAnalytics, formatCurrency } from '../services/analytics';
 
 const screenWidth = Dimensions.get('window').width;
-const chartWidth = screenWidth - 32;
+const chartWidth = screenWidth - 64;
 
 interface PropertyChartsProps {
   analytics: InvestmentAnalytics;
 }
 
+const chartConfig = {
+  backgroundColor: '#fff',
+  backgroundGradientFrom: '#fff',
+  backgroundGradientTo: '#fff',
+  decimalPlaces: 0,
+  color: (opacity = 1) => `rgba(79, 70, 229, ${opacity})`,
+  labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
+  style: {
+    borderRadius: 16,
+  },
+  propsForDots: {
+    r: '4',
+    strokeWidth: '2',
+    stroke: colors.primary[600],
+  },
+  propsForBackgroundLines: {
+    strokeDasharray: '4,4',
+    stroke: colors.gray[200],
+  },
+};
+
 /**
- * Cash Flow Projection Chart - shows monthly cash flow over 5 years.
+ * Cash Flow Projection Chart - shows annual cash flow over 5 years.
  */
 export function CashFlowProjectionChart({ analytics }: PropertyChartsProps) {
   const data = useMemo(() => {
-    const monthlyRent = analytics.pricing.rentEstimate;
-    const annualAppreciation = 0.03; // 3% annual appreciation
     const annualRentGrowth = 0.025; // 2.5% annual rent growth
     const cashFlow = analytics.strategies.longTermRental?.primaryValue || 0;
     
-    // Generate 5 years of monthly cash flow projections
-    const projections: { x: number; y: number }[] = [];
-    let currentCashFlow = cashFlow;
-    
+    const values: number[] = [];
     for (let year = 1; year <= 5; year++) {
-      // Apply rent growth annually
       const yearlyGrowthFactor = Math.pow(1 + annualRentGrowth, year - 1);
-      const adjustedCashFlow = cashFlow * yearlyGrowthFactor;
-      
-      projections.push({
-        x: year,
-        y: Math.round(adjustedCashFlow * 12), // Annual cash flow
-      });
+      values.push(Math.round(cashFlow * yearlyGrowthFactor * 12)); // Annual
     }
     
-    return projections;
+    return {
+      labels: ['Y1', 'Y2', 'Y3', 'Y4', 'Y5'],
+      datasets: [{ data: values.map(v => Math.max(0, v)) }], // Chart needs positive values
+    };
   }, [analytics]);
 
-  const maxValue = Math.max(...data.map(d => Math.abs(d.y)));
-  const isAllPositive = data.every(d => d.y >= 0);
-  const isAllNegative = data.every(d => d.y <= 0);
+  const allNegative = data.datasets[0].data.every(v => v === 0);
 
   return (
     <View style={styles.chartContainer}>
       <Text style={styles.chartTitle}>5-Year Cash Flow Projection</Text>
       <Text style={styles.chartSubtitle}>Annual cash flow with 2.5% rent growth</Text>
       
-      <VictoryChart
-        width={chartWidth}
-        height={200}
-        padding={{ left: 60, right: 20, top: 20, bottom: 40 }}
-        theme={VictoryTheme.material}
-        domainPadding={{ x: 30, y: 20 }}
-      >
-        <VictoryAxis
-          label="Year"
-          tickValues={[1, 2, 3, 4, 5]}
-          style={{
-            axis: { stroke: colors.gray[300] },
-            tickLabels: { fill: colors.gray[600], fontSize: 11 },
-            axisLabel: { fill: colors.gray[500], fontSize: 12, padding: 30 },
-          }}
-        />
-        <VictoryAxis
-          dependentAxis
-          tickFormat={(t) => `$${(t / 1000).toFixed(0)}k`}
-          style={{
-            axis: { stroke: colors.gray[300] },
-            tickLabels: { fill: colors.gray[600], fontSize: 11 },
-            grid: { stroke: colors.gray[200], strokeDasharray: '4,4' },
-          }}
-        />
-        <VictoryBar
-          data={data}
-          style={{
-            data: {
-              fill: ({ datum }) => datum.y >= 0 ? colors.profit.main : colors.loss.main,
-              width: 40,
-            },
-          }}
-          cornerRadius={{ top: 4 }}
-          labels={({ datum }) => formatCurrency(datum.y)}
-          labelComponent={
-            <VictoryLabel
-              dy={-10}
-              style={{ fontSize: 10, fill: colors.gray[700], fontWeight: '600' }}
-            />
-          }
-        />
-      </VictoryChart>
-      
-      <View style={styles.chartLegend}>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: colors.profit.main }]} />
-          <Text style={styles.legendText}>Positive Cash Flow</Text>
+      {allNegative ? (
+        <View style={styles.noDataContainer}>
+          <Text style={styles.noDataText}>Negative cash flow projected</Text>
         </View>
-        {!isAllPositive && (
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: colors.loss.main }]} />
-            <Text style={styles.legendText}>Negative Cash Flow</Text>
-          </View>
-        )}
-      </View>
+      ) : (
+        <BarChart
+          data={data}
+          width={chartWidth}
+          height={180}
+          yAxisLabel="$"
+          yAxisSuffix=""
+          chartConfig={{
+            ...chartConfig,
+            color: (opacity = 1) => `rgba(34, 197, 94, ${opacity})`,
+          }}
+          style={styles.chart}
+          showValuesOnTopOfBars
+          fromZero
+        />
+      )}
     </View>
   );
 }
@@ -129,103 +93,49 @@ export function CashFlowProjectionChart({ analytics }: PropertyChartsProps) {
  * Strategy Comparison Bar Chart - compares all strategies.
  */
 export function StrategyComparisonChart({ analytics }: PropertyChartsProps) {
-  const data = useMemo(() => {
+  const { data, bestStrategy } = useMemo(() => {
     const strategies = [
-      { 
-        name: 'LTR', 
-        fullName: 'Long-Term',
-        value: analytics.strategies.longTermRental?.primaryValue || 0,
-      },
-      { 
-        name: 'STR', 
-        fullName: 'Short-Term',
-        value: analytics.strategies.shortTermRental?.primaryValue || 0,
-      },
-      { 
-        name: 'BRRRR', 
-        fullName: 'BRRRR',
-        value: analytics.strategies.brrrr?.primaryValue || 0,
-      },
-      { 
-        name: 'Flip', 
-        fullName: 'Fix & Flip',
-        value: analytics.strategies.fixAndFlip?.primaryValue || 0,
-      },
-      { 
-        name: 'Hack', 
-        fullName: 'House Hack',
-        value: analytics.strategies.houseHack?.primaryValue || 0,
-      },
-      { 
-        name: 'Whole', 
-        fullName: 'Wholesale',
-        value: analytics.strategies.wholesale?.primaryValue || 0,
-      },
+      { name: 'LTR', value: analytics.strategies.longTermRental?.primaryValue || 0 },
+      { name: 'STR', value: analytics.strategies.shortTermRental?.primaryValue || 0 },
+      { name: 'BRRRR', value: analytics.strategies.brrrr?.primaryValue || 0 },
+      { name: 'Flip', value: analytics.strategies.fixAndFlip?.primaryValue || 0 },
+      { name: 'Hack', value: analytics.strategies.houseHack?.primaryValue || 0 },
     ];
     
-    return strategies.map((s, i) => ({
-      x: s.name,
-      y: s.value,
-      fullName: s.fullName,
-    }));
+    const sorted = [...strategies].sort((a, b) => b.value - a.value);
+    const best = sorted[0];
+    
+    return {
+      data: {
+        labels: strategies.map(s => s.name),
+        datasets: [{ data: strategies.map(s => Math.max(0, s.value)) }],
+      },
+      bestStrategy: best,
+    };
   }, [analytics]);
-
-  // Find best and worst strategies
-  const sortedByValue = [...data].sort((a, b) => b.y - a.y);
-  const bestStrategy = sortedByValue[0];
 
   return (
     <View style={styles.chartContainer}>
       <Text style={styles.chartTitle}>Strategy Comparison</Text>
       <Text style={styles.chartSubtitle}>Monthly cash flow by investment strategy</Text>
       
-      <VictoryChart
+      <BarChart
+        data={data}
         width={chartWidth}
-        height={220}
-        padding={{ left: 60, right: 20, top: 20, bottom: 50 }}
-        theme={VictoryTheme.material}
-        domainPadding={{ x: 20, y: 20 }}
-      >
-        <VictoryAxis
-          style={{
-            axis: { stroke: colors.gray[300] },
-            tickLabels: { 
-              fill: colors.gray[600], 
-              fontSize: 10,
-              angle: -45,
-              textAnchor: 'end',
-            },
-          }}
-        />
-        <VictoryAxis
-          dependentAxis
-          tickFormat={(t) => `$${(t / 1000).toFixed(0)}k`}
-          style={{
-            axis: { stroke: colors.gray[300] },
-            tickLabels: { fill: colors.gray[600], fontSize: 11 },
-            grid: { stroke: colors.gray[200], strokeDasharray: '4,4' },
-          }}
-        />
-        <VictoryBar
-          data={data}
-          style={{
-            data: {
-              fill: ({ datum }) => {
-                if (datum.x === bestStrategy?.x) return colors.primary[600];
-                return datum.y >= 0 ? colors.profit.main : colors.loss.main;
-              },
-              width: 35,
-            },
-          }}
-          cornerRadius={{ top: 4 }}
-        />
-      </VictoryChart>
+        height={200}
+        yAxisLabel="$"
+        yAxisSuffix=""
+        chartConfig={chartConfig}
+        style={styles.chart}
+        showValuesOnTopOfBars
+        fromZero
+      />
       
-      {bestStrategy && (
+      {bestStrategy && bestStrategy.value > 0 && (
         <View style={styles.bestStrategyBadge}>
           <Text style={styles.bestStrategyLabel}>Best Strategy:</Text>
           <Text style={styles.bestStrategyValue}>
-            {bestStrategy.fullName} ({formatCurrency(bestStrategy.y)}/mo)
+            {bestStrategy.name} ({formatCurrency(bestStrategy.value)}/mo)
           </Text>
         </View>
       )}
@@ -234,36 +144,23 @@ export function StrategyComparisonChart({ analytics }: PropertyChartsProps) {
 }
 
 /**
- * Cash-on-Cash Return Comparison Chart.
+ * Cash-on-Cash Return Comparison.
  */
 export function CashOnCashChart({ analytics }: PropertyChartsProps) {
   const data = useMemo(() => {
     const strategies = [
-      { 
-        name: 'LTR',
-        value: analytics.strategies.longTermRental?.secondaryValue || 0,
-      },
-      { 
-        name: 'STR',
-        value: analytics.strategies.shortTermRental?.secondaryValue || 0,
-      },
-      { 
-        name: 'BRRRR',
-        value: analytics.strategies.brrrr?.secondaryValue || 0,
-      },
-      { 
-        name: 'Hack',
-        value: analytics.strategies.houseHack?.secondaryValue || 0,
-      },
+      { name: 'LTR', value: (analytics.strategies.longTermRental?.secondaryValue || 0) * 100 },
+      { name: 'STR', value: (analytics.strategies.shortTermRental?.secondaryValue || 0) * 100 },
+      { name: 'BRRRR', value: (analytics.strategies.brrrr?.secondaryValue || 0) * 100 },
+      { name: 'Hack', value: (analytics.strategies.houseHack?.secondaryValue || 0) * 100 },
     ];
     
-    return strategies.map(s => ({
-      x: s.name,
-      y: s.value * 100, // Convert to percentage
-    }));
+    return {
+      labels: strategies.map(s => s.name),
+      datasets: [{ data: strategies.map(s => Math.max(0, s.value)) }],
+    };
   }, [analytics]);
 
-  // Target line at 8%
   const targetReturn = 8;
 
   return (
@@ -271,61 +168,25 @@ export function CashOnCashChart({ analytics }: PropertyChartsProps) {
       <Text style={styles.chartTitle}>Cash-on-Cash Return</Text>
       <Text style={styles.chartSubtitle}>Return on invested capital by strategy</Text>
       
-      <VictoryChart
+      <BarChart
+        data={data}
         width={chartWidth}
         height={180}
-        padding={{ left: 60, right: 20, top: 20, bottom: 40 }}
-        theme={VictoryTheme.material}
-        domainPadding={{ x: 40, y: 20 }}
-      >
-        <VictoryAxis
-          style={{
-            axis: { stroke: colors.gray[300] },
-            tickLabels: { fill: colors.gray[600], fontSize: 11 },
-          }}
-        />
-        <VictoryAxis
-          dependentAxis
-          tickFormat={(t) => `${t.toFixed(0)}%`}
-          style={{
-            axis: { stroke: colors.gray[300] },
-            tickLabels: { fill: colors.gray[600], fontSize: 11 },
-            grid: { stroke: colors.gray[200], strokeDasharray: '4,4' },
-          }}
-        />
-        {/* Target line at 8% */}
-        <VictoryLine
-          data={[
-            { x: data[0]?.x || 'LTR', y: targetReturn },
-            { x: data[data.length - 1]?.x || 'Hack', y: targetReturn },
-          ]}
-          style={{
-            data: { stroke: colors.warning.main, strokeDasharray: '6,3', strokeWidth: 2 },
-          }}
-        />
-        <VictoryBar
-          data={data}
-          style={{
-            data: {
-              fill: ({ datum }) => datum.y >= targetReturn ? colors.profit.main : colors.info.main,
-              width: 40,
-            },
-          }}
-          cornerRadius={{ top: 4 }}
-          labels={({ datum }) => `${datum.y.toFixed(1)}%`}
-          labelComponent={
-            <VictoryLabel
-              dy={-8}
-              style={{ fontSize: 10, fill: colors.gray[700], fontWeight: '600' }}
-            />
-          }
-        />
-      </VictoryChart>
+        yAxisLabel=""
+        yAxisSuffix="%"
+        chartConfig={{
+          ...chartConfig,
+          color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
+        }}
+        style={styles.chart}
+        showValuesOnTopOfBars
+        fromZero
+      />
       
       <View style={styles.chartLegend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendLine, { backgroundColor: colors.warning.main }]} />
-          <Text style={styles.legendText}>8% Target Return</Text>
+          <Text style={styles.legendText}>Target: 8% CoC Return</Text>
         </View>
       </View>
     </View>
@@ -380,7 +241,22 @@ const styles = StyleSheet.create({
   chartSubtitle: {
     fontSize: 12,
     color: colors.gray[500],
-    marginBottom: 8,
+    marginBottom: 12,
+  },
+  chart: {
+    marginVertical: 8,
+    borderRadius: 12,
+  },
+  noDataContainer: {
+    height: 180,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.gray[50],
+    borderRadius: 12,
+  },
+  noDataText: {
+    fontSize: 14,
+    color: colors.gray[500],
   },
   chartLegend: {
     flexDirection: 'row',
@@ -430,4 +306,3 @@ const styles = StyleSheet.create({
 });
 
 export default PropertyChartsSection;
-
