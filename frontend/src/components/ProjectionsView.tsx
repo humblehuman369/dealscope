@@ -277,68 +277,19 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
   
   return (
     <div className="space-y-4">
-      {/* 10-YEAR RESULTS HERO - The Main Attraction */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 text-white relative overflow-hidden">
-        {/* Background decorations */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500 rounded-full blur-[100px]" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500 rounded-full blur-[100px]" />
-        </div>
-        
-        <div className="relative">
-          {/* Top row - Investment Journey */}
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="text-center">
-              <div className="text-gray-400 text-xs uppercase tracking-wider mb-1">You Invest</div>
-              <div className="text-2xl font-bold text-white">{formatCompact(totalCashInvested)}</div>
-            </div>
-            <div className="flex items-center gap-2 px-4">
-              <div className="w-8 h-[2px] bg-gradient-to-r from-gray-600 to-emerald-500" />
-              <div className="text-emerald-400 text-sm font-medium">10 Years</div>
-              <div className="w-8 h-[2px] bg-gradient-to-r from-emerald-500 to-emerald-400" />
-              <ArrowUpRight className="w-5 h-5 text-emerald-400" />
-            </div>
-            <div className="text-center">
-              <div className="text-emerald-400 text-xs uppercase tracking-wider mb-1">You Own</div>
-              <div className="text-2xl font-bold text-emerald-400">{formatCompact(year10.totalWealth)}</div>
+      {/* 10-Year Result Summary - Clean & Prominent */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-5 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-emerald-100 text-xs uppercase tracking-wide">10-Year Net Gain</div>
+            <div className="text-3xl font-bold mt-1">+{formatCompact(year10.totalWealth - totalCashInvested)}</div>
+            <div className="text-emerald-200 text-sm mt-1">
+              {formatCompact(totalCashInvested)} → {formatCompact(year10.totalWealth)}
             </div>
           </div>
-          
-          {/* Center - The Big Number */}
-          <div className="text-center py-6 border-y border-gray-700/50">
-            <div className="text-gray-400 text-sm uppercase tracking-wider mb-2">Total Net Gain</div>
-            <div className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400">
-              +{formatCompact(year10.totalWealth - totalCashInvested)}
-            </div>
-            <div className="flex items-center justify-center gap-6 mt-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                <span className="text-gray-400 text-sm">{summary.equityMultiple.toFixed(1)}x Equity Multiple</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-cyan-500" />
-                <span className="text-gray-400 text-sm">{formatPercent(summary.irr)} IRR</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Bottom row - Breakdown */}
-          <div className="grid grid-cols-3 gap-4 mt-6">
-            <div className="text-center p-3 rounded-xl bg-white/5">
-              <Wallet className="w-5 h-5 text-purple-400 mx-auto mb-2" />
-              <div className="text-xl font-bold text-white">{formatCompact(year10.cumulativeCashFlow)}</div>
-              <div className="text-gray-400 text-xs">Cash Flow</div>
-            </div>
-            <div className="text-center p-3 rounded-xl bg-white/5">
-              <Building2 className="w-5 h-5 text-blue-400 mx-auto mb-2" />
-              <div className="text-xl font-bold text-white">{formatCompact(year10.equityFromPaydown)}</div>
-              <div className="text-gray-400 text-xs">Loan Paydown</div>
-            </div>
-            <div className="text-center p-3 rounded-xl bg-white/5">
-              <TrendingUp className="w-5 h-5 text-emerald-400 mx-auto mb-2" />
-              <div className="text-xl font-bold text-white">{formatCompact(year10.equityFromAppreciation)}</div>
-              <div className="text-gray-400 text-xs">Appreciation</div>
-            </div>
+          <div className="text-right">
+            <div className="text-4xl font-bold">{summary.equityMultiple.toFixed(1)}x</div>
+            <div className="text-emerald-200 text-sm">Return Multiple</div>
           </div>
         </div>
       </div>
