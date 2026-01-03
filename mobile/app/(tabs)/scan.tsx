@@ -21,6 +21,7 @@ import { CompassDisplay } from '../../components/scanner/CompassDisplay';
 import { DistanceSlider } from '../../components/scanner/DistanceSlider';
 import { ScanResultSheet } from '../../components/scanner/ScanResultSheet';
 import { CalibrationPanel } from '../../components/scanner/CalibrationPanel';
+import { ScanHelpTooltip } from '../../components/scanner/ScanHelpTooltip';
 import { colors } from '../../theme/colors';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -33,6 +34,7 @@ export default function ScanScreen() {
   // Scanner state
   const [distance, setDistance] = useState(50);
   const [showCalibration, setShowCalibration] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const scanner = usePropertyScanner();
   const { isScanning, result, error, performScan, clearResult } = usePropertyScan();
   
@@ -107,6 +109,13 @@ export default function ScanScreen() {
           <View style={styles.headerContent}>
             <Text style={styles.logo}>InvestIQ</Text>
             <View style={styles.headerRight}>
+              {/* Help Button */}
+              <TouchableOpacity 
+                style={styles.helpButton}
+                onPress={() => setShowHelp(true)}
+              >
+                <Ionicons name="help-circle-outline" size={20} color="#fff" />
+              </TouchableOpacity>
               {scanner.needsCalibration && (
                 <TouchableOpacity 
                   style={styles.calibrationWarning}
@@ -260,6 +269,12 @@ export default function ScanScreen() {
         tiltAngle={scanner.tiltAngle}
         needsCalibration={scanner.needsCalibration}
       />
+
+      {/* Help Tooltip */}
+      <ScanHelpTooltip
+        visible={showHelp}
+        onClose={() => setShowHelp(false)}
+      />
     </View>
   );
 }
@@ -305,6 +320,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 20,
     color: '#fff',
+  },
+  helpButton: {
+    padding: 8,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 8,
   },
   settingsButton: {
     padding: 8,
