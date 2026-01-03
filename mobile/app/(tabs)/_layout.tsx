@@ -6,6 +6,7 @@ import { colors } from '../../theme/colors';
 export default function TabLayout() {
   return (
     <Tabs
+      initialRouteName="map"
       screenOptions={{
         tabBarActiveTintColor: colors.primary[600],
         tabBarInactiveTintColor: colors.gray[400],
