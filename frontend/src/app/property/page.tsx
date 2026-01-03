@@ -100,6 +100,61 @@ type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
 type DrillDownView = 'details' | 'breakdown' | 'charts' | 'projections' | 'score' | 'sensitivity' | 'rehab' | 'compare'
 
 // ============================================
+// METRIC TOOLTIPS
+// ============================================
+
+const METRIC_TOOLTIPS: Record<string, { short: string; expanded: string }> = {
+  // LTR / STR Metrics
+  'Monthly Cash Flow': { short: 'Money left each month after all costs and the mortgage.', expanded: 'Monthly income minus expenses like mortgage, taxes, insurance, utilities, and maintenance. Positive means profit.' },
+  'Annual Cash Flow': { short: 'Yearly profit from the property (monthly cash flow × 12).', expanded: 'Your total cash flow over one year after all operating costs and debt payments.' },
+  'Cash-on-Cash Return': { short: 'Annual return on the cash you invested.', expanded: 'Annual cash flow divided by your cash invested. Helps compare deals based on your real out-of-pocket money.' },
+  'Cap Rate': { short: 'Property return based on income, ignoring financing.', expanded: 'NOI divided by purchase price. Useful for comparing properties without the impact of different loan terms.' },
+  'Debt Service Coverage Ratio': { short: 'How many times income covers the debt payment.', expanded: 'NOI divided by annual debt service. Lenders typically want 1.25+ for investment properties.' },
+  'Net Operating Income': { short: 'Income after operating expenses, before the mortgage.', expanded: 'Rental income minus operating costs like taxes, insurance, repairs, management, and utilities (if paid by owner).' },
+  'Cash Required': { short: 'Upfront cash needed to buy the property.', expanded: 'Typically includes down payment, closing costs, and any immediate repairs or reserves required at purchase.' },
+  'Annual Gross Revenue': { short: 'Total yearly rental income before expenses.', expanded: 'The property\'s total income collected in a year (rent + other rental revenue) before any costs are subtracted.' },
+  // BRRRR Metrics
+  'Initial Cash Needed': { short: 'Total cash needed to buy, renovate, and close.', expanded: 'Your full upfront investment before refinancing—purchase costs, rehab budget, and closing costs combined.' },
+  'Cash Back at Refi': { short: 'Cash returned to you when you refinance.', expanded: 'The portion of your original cash you recover from the new loan after the rehab and refinance.' },
+  'Cash Left in Deal': { short: 'Your money still tied up after refinancing.', expanded: 'Initial cash needed minus cash back at refi. Lower is better if your goal is to recycle capital.' },
+  'Cash-on-Cash': { short: 'Annual return based on the cash left in the deal.', expanded: 'Annual cash flow divided by cash left in deal. Shows performance after you\'ve pulled money back out.' },
+  'Equity Created': { short: 'Value gained from renovations, not the market.', expanded: 'The difference between post-rehab value and total cost basis. Often the main "win" in BRRRR.' },
+  // Fix & Flip Metrics
+  'Purchase Price': { short: 'What you pay to buy the property.', expanded: 'The negotiated price (plus any direct acquisition costs if you choose to include them).' },
+  'Rehab Budget': { short: 'Estimated cost to renovate and repair the property.', expanded: 'Labor + materials + permits + contingency. Underestimating this is one of the biggest flip risks.' },
+  'After Repair Value': { short: 'Estimated market value after renovations.', expanded: 'The expected resale value once repairs are completed—usually based on comparable sales (comps).' },
+  // House Hack Metrics
+  'Effective Housing Cost': { short: 'Your monthly cost after rental income offsets it.', expanded: 'Mortgage + expenses minus roommate/tenant rent. This is what it really costs you to live there.' },
+  'Monthly Savings': { short: 'What you save vs. paying rent somewhere else.', expanded: 'Your market rent alternative minus your effective housing cost.' },
+  'Rental Income': { short: 'Total rent collected from rooms/units you rent out.', expanded: 'The combined monthly rent from roommates or tenants that helps cover your housing payment.' },
+  'Rent per Room': { short: 'Average rent charged per room.', expanded: 'Total rental income divided by the number of rented rooms—useful for pricing and scenario testing.' },
+  'Mortgage Payment': { short: 'The loan payment for principal and interest each month.', expanded: 'Does not include taxes/insurance unless showing PITI—make sure labels are clear.' },
+  // Wholesale Metrics
+  'Maximum Allowable Offer': { short: 'Highest price you can offer and still profit.', expanded: 'A ceiling price that leaves room for repairs, investor profit, and your wholesale fee.' },
+  'Purchase as % of ARV': { short: 'Purchase price compared to ARV.', expanded: 'Lower percentages generally mean more margin for repairs, profit, and resale risk.' },
+  'Wholesale Fee': { short: 'Your profit from assigning the deal.', expanded: 'The amount the end buyer pays you (assignment or spread) for placing them into the contract.' },
+  '70% of ARV': { short: 'Rule of thumb: 70% of ARV minus repairs.', expanded: 'A common quick filter investors use to leave enough margin for rehab risk and resale costs.' },
+  'Estimated Repairs': { short: 'Expected cost to fix and renovate the property.', expanded: 'A rough estimate used to size rehab scope and determine whether the deal meets investor margins.' },
+}
+
+// Tooltip component with hover
+function MetricTooltip({ label }: { label: string }) {
+  const tooltip = METRIC_TOOLTIPS[label]
+  if (!tooltip) return null
+  
+  return (
+    <span className="relative group inline-flex ml-1">
+      <HelpCircle className="w-3 h-3 text-gray-400 cursor-help" />
+      <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-navy-900 text-white text-[11px] rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-56 z-50 shadow-lg pointer-events-none">
+        <span className="font-medium block mb-1">{tooltip.short}</span>
+        <span className="text-gray-300 block leading-relaxed">{tooltip.expanded}</span>
+        <span className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-navy-900" />
+      </span>
+    </span>
+  )
+}
+
+// ============================================
 // API FUNCTIONS
 // ============================================
 
@@ -1657,19 +1712,15 @@ function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView
   )
 }
 
-// Metric row matching HTML design
+// Metric row matching HTML design - with tooltip
 function MetricRow({ label, value }: { label: string; value: string }) {
   // Check if value is negative (starts with - or contains negative currency like -$)
   const isNegative = value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
-  // Split label into main label and description (in parentheses)
-  const parenMatch = label.match(/^(.+?)(\s*\(.+\))$/)
-  const mainLabel = parenMatch ? parenMatch[1] : label
-  const description = parenMatch ? parenMatch[2] : ''
   return (
     <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-      <span className="text-xs">
-        <span className="text-gray-700 font-medium">{mainLabel}</span>
-        {description && <span className="text-gray-400">{description}</span>}
+      <span className="text-xs text-gray-700 font-medium flex items-center">
+        {label}
+        <MetricTooltip label={label} />
       </span>
       <span className={`text-[0.9375rem] font-bold font-mono ${isNegative ? 'text-crimson-600' : 'text-navy-900'}`}>{value}</span>
     </div>
@@ -1679,15 +1730,11 @@ function MetricRow({ label, value }: { label: string; value: string }) {
 function StatRow({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
   // Check if value is negative
   const isNegative = value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
-  // Split label into main label and description (in parentheses)
-  const parenMatch = label.match(/^(.+?)(\s*\(.+\))$/)
-  const mainLabel = parenMatch ? parenMatch[1] : label
-  const description = parenMatch ? parenMatch[2] : ''
   return (
     <div className={`flex items-center justify-between py-1.5 ${highlight ? 'bg-teal-50/50 -mx-3 px-3 rounded' : ''}`}>
-      <span className="text-[11px]">
-        <span className="text-gray-700 font-medium">{mainLabel}</span>
-        {description && <span className="text-gray-400">{description}</span>}
+      <span className="text-[11px] text-gray-700 font-medium flex items-center">
+        {label}
+        <MetricTooltip label={label} />
       </span>
       <span className={`text-xs font-medium ${isNegative ? 'text-crimson-600' : highlight ? 'text-brand-500' : 'text-gray-700'}`}>{value}</span>
     </div>
@@ -1742,13 +1789,13 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
         <div>
           <h4 className="text-[0.9375rem] font-bold text-navy-900 mb-3.5">Key Metrics</h4>
           <div className="space-y-2">
-            <MetricRow label="Monthly Cash Flow (net after debt service & costs)" value={formatCurrency(calc.monthlyCashFlow)} />
-            <MetricRow label="Annual Cash Flow (net after debt service & costs)" value={formatCurrency(calc.annualCashFlow)} />
-            <MetricRow label="Cash-on-Cash Return (annual return on cash invested)" value={formatPercent(calc.cashOnCash)} />
-            <MetricRow label="Cap Rate (property's earning potential)" value={formatPercent(calc.capRate)} />
-            <MetricRow label="Debt Service Coverage Ratio (income covers debt X times)" value={calc.dscr.toFixed(2)} />
-            <MetricRow label="Net Operating Income (income before debt service)" value={formatCurrency(calc.noi)} />
-            <MetricRow label="Cash Required (based on the selected terms)" value={formatCurrency(calc.totalCashRequired)} />
+            <MetricRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} />
+            <MetricRow label="Annual Cash Flow" value={formatCurrency(calc.annualCashFlow)} />
+            <MetricRow label="Cash-on-Cash Return" value={formatPercent(calc.cashOnCash)} />
+            <MetricRow label="Cap Rate" value={formatPercent(calc.capRate)} />
+            <MetricRow label="Debt Service Coverage Ratio" value={calc.dscr.toFixed(2)} />
+            <MetricRow label="Net Operating Income" value={formatCurrency(calc.noi)} />
+            <MetricRow label="Cash Required" value={formatCurrency(calc.totalCashRequired)} />
           </div>
         </div>
       </div>
@@ -1785,12 +1832,12 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
         <div className="space-y-4">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
-            <StatRow label="Monthly Cash Flow (net after debt service & costs)" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 500} />
-            <StatRow label="Annual Gross Revenue (before expenses)" value={formatCurrency(calc.annualGrossRent)} />
-            <StatRow label="Cash-on-Cash Return (annual return on cash invested)" value={formatPercent(calc.cashOnCash)} highlight={calc.cashOnCash > 0.12} />
-            <StatRow label="Cap Rate (property's earning potential)" value={formatPercent(calc.capRate)} />
-            <StatRow label="Net Operating Income (income before debt service)" value={formatCurrency(calc.noi)} />
-            <StatRow label="Cash Required (based on the selected terms)" value={formatCurrency(calc.totalCashRequired)} />
+            <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 500} />
+            <StatRow label="Annual Gross Revenue" value={formatCurrency(calc.annualGrossRent)} />
+            <StatRow label="Cash-on-Cash Return" value={formatPercent(calc.cashOnCash)} highlight={calc.cashOnCash > 0.12} />
+            <StatRow label="Cap Rate" value={formatPercent(calc.capRate)} />
+            <StatRow label="Net Operating Income" value={formatCurrency(calc.noi)} />
+            <StatRow label="Cash Required" value={formatCurrency(calc.totalCashRequired)} />
           </div>
         </div>
       </div>
@@ -1828,12 +1875,12 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
         <div className="space-y-4">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
-            <StatRow label="Initial Cash Needed (purchase + rehab + closing)" value={formatCurrency(calc.initialCash)} />
-            <StatRow label="Cash Back at Refi (returned to you after refinance)" value={formatCurrency(calc.cashBack)} highlight={calc.cashBack > 0} />
-            <StatRow label="Cash Left in Deal (your remaining investment)" value={formatCurrency(calc.cashLeftInDeal)} highlight={calc.cashLeftInDeal < 10000} />
-            <StatRow label="Monthly Cash Flow (net after debt service & costs)" value={formatCurrency(calc.monthlyCashFlow)} />
-            <StatRow label="Cash-on-Cash (annual return on cash invested)" value={calc.cashOnCash === Infinity ? '∞' : formatPercent(calc.cashOnCash)} highlight />
-            <StatRow label="Equity Created (forced appreciation from rehab)" value={formatCurrency(calc.equityCreated)} />
+            <StatRow label="Initial Cash Needed" value={formatCurrency(calc.initialCash)} />
+            <StatRow label="Cash Back at Refi" value={formatCurrency(calc.cashBack)} highlight={calc.cashBack > 0} />
+            <StatRow label="Cash Left in Deal" value={formatCurrency(calc.cashLeftInDeal)} highlight={calc.cashLeftInDeal < 10000} />
+            <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} />
+            <StatRow label="Cash-on-Cash" value={calc.cashOnCash === Infinity ? '∞' : formatPercent(calc.cashOnCash)} highlight />
+            <StatRow label="Equity Created" value={formatCurrency(calc.equityCreated)} />
           </div>
         </div>
       </div>
@@ -1909,9 +1956,9 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
           
           {/* Quick Stats */}
           <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
-            <StatRow label="Purchase Price (your acquisition cost)" value={formatCurrency(assumptions.purchasePrice)} />
-            <StatRow label="Rehab Budget (renovation investment)" value={formatCurrency(assumptions.rehabCost)} />
-            <StatRow label="After Repair Value (projected sale price)" value={formatCurrency(assumptions.arv)} highlight />
+            <StatRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
+            <StatRow label="Rehab Budget" value={formatCurrency(assumptions.rehabCost)} />
+            <StatRow label="After Repair Value" value={formatCurrency(assumptions.arv)} highlight />
           </div>
         </div>
       </div>
@@ -1944,12 +1991,12 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
         <div className="space-y-4">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
-            <StatRow label="Effective Housing Cost (your actual monthly cost)" value={formatCurrency(calc.effectiveHousingCost)} highlight={calc.effectiveHousingCost < 500} />
-            <StatRow label="Monthly Savings (vs. renting elsewhere)" value={formatCurrency(calc.monthlySavings)} highlight={calc.monthlySavings > 500} />
-            <StatRow label="Rental Income (from rented rooms)" value={formatCurrency(calc.monthlyRentalIncome)} />
-            <StatRow label="Rent per Room (average per rented room)" value={formatCurrency(calc.rentPerRoom)} />
-            <StatRow label="Mortgage Payment (principal + interest)" value={formatCurrency(calc.monthlyPI)} />
-            <StatRow label="Cash Required (FHA 3.5% down + closing)" value={formatCurrency(calc.totalCashRequired)} />
+            <StatRow label="Effective Housing Cost" value={formatCurrency(calc.effectiveHousingCost)} highlight={calc.effectiveHousingCost < 500} />
+            <StatRow label="Monthly Savings" value={formatCurrency(calc.monthlySavings)} highlight={calc.monthlySavings > 500} />
+            <StatRow label="Rental Income" value={formatCurrency(calc.monthlyRentalIncome)} />
+            <StatRow label="Rent per Room" value={formatCurrency(calc.rentPerRoom)} />
+            <StatRow label="Mortgage Payment" value={formatCurrency(calc.monthlyPI)} />
+            <StatRow label="Cash Required" value={formatCurrency(calc.totalCashRequired)} />
           </div>
         </div>
       </div>
@@ -2075,13 +2122,13 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
         <div className="space-y-4">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
-            <StatRow label="Maximum Allowable Offer (highest price for profit)" value={formatCurrency(calc.mao)} highlight={calc.isPurchaseBelowMAO} />
-            <StatRow label="Purchase Price (current asking or contract)" value={formatCurrency(assumptions.purchasePrice)} />
-            <StatRow label="Purchase as % of ARV (lower is better)" value={`${(calc.purchasePctOfArv * 100).toFixed(1)}%`} highlight={calc.purchasePctOfArv <= 0.70} />
-            <StatRow label="Wholesale Fee (your assignment profit)" value={formatCurrency(calc.wholesaleFee)} highlight />
-            <StatRow label="After Repair Value (property's post-rehab value)" value={formatCurrency(calc.arv)} />
-            <StatRow label="70% of ARV (investor's target max price)" value={formatCurrency(calc.arvMultiple)} />
-            <StatRow label="Estimated Repairs (rehab budget for buyer)" value={formatCurrency(calc.rehabCost)} />
+            <StatRow label="Maximum Allowable Offer" value={formatCurrency(calc.mao)} highlight={calc.isPurchaseBelowMAO} />
+            <StatRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
+            <StatRow label="Purchase as % of ARV" value={`${(calc.purchasePctOfArv * 100).toFixed(1)}%`} highlight={calc.purchasePctOfArv <= 0.70} />
+            <StatRow label="Wholesale Fee" value={formatCurrency(calc.wholesaleFee)} highlight />
+            <StatRow label="After Repair Value" value={formatCurrency(calc.arv)} />
+            <StatRow label="70% of ARV" value={formatCurrency(calc.arvMultiple)} />
+            <StatRow label="Estimated Repairs" value={formatCurrency(calc.rehabCost)} />
           </div>
         </div>
       </div>
