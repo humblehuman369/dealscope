@@ -1385,7 +1385,7 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
 function StepHeader({ step, title, callToAction }: { step: number; title: string; callToAction?: string }) {
   return (
     <div className="mb-3.5">
-      <div className="flex items-center gap-2.5 justify-center">
+      <div className="flex items-center gap-2.5">
         <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold flex-shrink-0">
           {step}
         </div>
