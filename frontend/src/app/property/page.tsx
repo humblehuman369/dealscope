@@ -542,7 +542,7 @@ function PhotoGrid({ zpid }: { zpid: string | null | undefined }) {
     return (
       <div className="flex gap-2.5 mt-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="flex-shrink-0 w-[200px] aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+          <div key={i} className="flex-shrink-0 w-[220px] aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
             {i === 0 ? (
               <Loader2 className="w-6 h-6 text-gray-300 animate-spin" />
             ) : (
@@ -570,7 +570,7 @@ function PhotoGrid({ zpid }: { zpid: string | null | undefined }) {
           <button
             key={index}
             onClick={() => openLightbox(index)}
-            className="relative flex-shrink-0 w-[200px] aspect-video rounded-lg overflow-hidden group cursor-pointer shadow-sm hover:shadow-lg transition-all"
+            className="relative flex-shrink-0 w-[220px] aspect-video rounded-lg overflow-hidden group cursor-pointer shadow-sm hover:shadow-lg transition-all"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -728,7 +728,7 @@ function PropertyHeader({ property }: { property: PropertyData }) {
   }
   
   return (
-    <div className="mb-4 bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg p-4 transition-colors duration-300">
+    <div className="mb-4 bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg p-4 transition-colors duration-300 border border-[#0465f2]">
       {/* Top row: Property Info + Save Button */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1 min-w-0">
@@ -736,22 +736,19 @@ function PropertyHeader({ property }: { property: PropertyData }) {
           <h1 className="text-lg font-bold text-navy-900 dark:text-white leading-tight">
             {property.address.street}, {property.address.city}, {property.address.state} {property.address.zip_code}
           </h1>
-          {/* Property Details */}
-          <div className="flex gap-2.5 text-xs text-gray-500 dark:text-gray-400 mt-1">
-            <span>{property.details.bedrooms || '—'} bd</span>
-            <span>•</span>
-            <span>{property.details.bathrooms || '—'} ba</span>
-            <span>•</span>
-            <span>{property.details.square_footage?.toLocaleString() || '—'} sqft</span>
-          </div>
-          {/* Estimated Value */}
-          {estimatedValue > 0 && (
-            <div className="mt-1">
+          {/* Estimated Value + Property Details */}
+          <div className="flex items-center gap-2.5 text-xs mt-1">
+            {estimatedValue > 0 && (
               <span className="text-base font-bold text-brand-500 dark:text-brand-400">
                 Est. {formatCurrency(estimatedValue)}
               </span>
-            </div>
-          )}
+            )}
+            <span className="text-gray-500 dark:text-gray-400">{property.details.bedrooms || '—'} bd</span>
+            <span className="text-gray-500 dark:text-gray-400">•</span>
+            <span className="text-gray-500 dark:text-gray-400">{property.details.bathrooms || '—'} ba</span>
+            <span className="text-gray-500 dark:text-gray-400">•</span>
+            <span className="text-gray-500 dark:text-gray-400">{property.details.square_footage?.toLocaleString() || '—'} sqft</span>
+          </div>
         </div>
         
         {/* Save Property Button */}
@@ -1385,16 +1382,16 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
 }
 
 // Step indicator component - matches HTML design
-function StepHeader({ step, title, rightLabel }: { step: number; title: string; rightLabel?: string }) {
+function StepHeader({ step, title, callToAction }: { step: number; title: string; callToAction?: string }) {
   return (
-    <div className="flex items-center justify-between mb-3.5">
-      <div className="flex items-center gap-2.5">
+    <div className="mb-3.5">
+      <div className="flex items-center gap-2.5 justify-center">
         <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold flex-shrink-0">
           {step}
         </div>
         <h2 className="text-base font-bold text-navy-900">{title}</h2>
       </div>
-      {rightLabel && <span className="text-sm text-gray-500">{rightLabel}</span>}
+      {callToAction && <p className="text-sm font-semibold text-gray-600 text-center mt-1">{callToAction}</p>}
     </div>
   )
 }
@@ -1474,7 +1471,7 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
   return (
     <div className="bg-white rounded-[0.875rem] shadow-sm border border-[#0465f2] p-4">
       <div>
-        <StepHeader step={1} title="Terms" rightLabel="Optimize Scenario" />
+        <StepHeader step={1} title="Terms" callToAction="Optimize Scenario" />
         
         {/* Responsive grid: 1 col on small, 2 cols on medium, 3 cols on large screens */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
@@ -3611,7 +3608,7 @@ function PropertyPageContent() {
         {/* STEP 2: Select Investment Strategy */}
         <div className="bg-white rounded-[0.875rem] shadow-sm border border-[#0465f2] mb-3.5">
           <div className="p-4">
-            <StepHeader step={2} title="Investment Strategies" rightLabel="Explore Strategies" />
+            <StepHeader step={2} title="Investment Strategies" callToAction="Explore Strategies" />
           </div>
           
           {/* Strategy Cards Grid - 6 columns matching HTML design */}
