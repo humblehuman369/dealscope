@@ -34,7 +34,7 @@ export default function PropertyDetailScreen() {
   const insets = useSafeAreaInsets();
   const { address } = useLocalSearchParams<{ address: string }>();
   const [expandedStrategy, setExpandedStrategy] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('native'); // Default to native view (works offline)
+  const [viewMode, setViewMode] = useState<ViewMode>('full'); // Default to full WebView (better UX)
   
   const decodedAddress = decodeURIComponent(address || '');
   const [assumptions, setAssumptions] = useState<Assumptions>(DEFAULT_ASSUMPTIONS);
