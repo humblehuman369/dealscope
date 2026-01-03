@@ -1443,7 +1443,7 @@ function StepHeader({ step, title, callToAction }: { step: number; title: string
         </div>
         <h2 className="text-base font-bold text-navy-900">{title}</h2>
       </div>
-      {callToAction && <p className="text-base font-bold text-navy-900 text-center mt-1">{callToAction}</p>}
+      {callToAction && <p className="text-base font-bold text-navy-900 text-center -mt-0.5">{callToAction}</p>}
     </div>
   )
 }
@@ -1770,9 +1770,9 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
   
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 px-4">
         {/* LEFT: Tune The Deal */}
-        <div>
+        <div className="pl-2">
           <FineTuneHeader 
             title="Tune The Deal" 
             prompt="What if vacancy hits 10%? Test your cushion." 
@@ -1786,7 +1786,7 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
         </div>
         
         {/* RIGHT: Key Metrics (results) */}
-        <div>
+        <div className="pr-2">
           <h4 className="text-[0.9375rem] font-bold text-navy-900 mb-3.5">Key Metrics</h4>
           <div className="space-y-2">
             <MetricRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} />
@@ -1812,9 +1812,9 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
   
   return (
     <div>
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-10 px-4">
         {/* LEFT: Tune The Deal */}
-        <div className="space-y-4">
+        <div className="space-y-4 pl-2">
           <FineTuneHeader 
             title="Tune The Deal" 
             prompt="Adjust occupancy to see seasonal impacts" 
@@ -1829,7 +1829,7 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
         </div>
         
         {/* RIGHT: Key Metrics */}
-        <div className="space-y-4">
+        <div className="space-y-4 pr-2">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
             <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 500} />
@@ -1854,9 +1854,9 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
   
   return (
     <div>
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-10 px-4">
         {/* LEFT: Tune The Deal */}
-        <div className="space-y-4">
+        <div className="space-y-4 pl-2">
           <FineTuneHeader 
             title="Tune The Deal" 
             prompt="Dial in rehab costs — where's your profit sweet spot?" 
@@ -1872,7 +1872,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
         </div>
         
         {/* RIGHT: Key Metrics */}
-        <div className="space-y-4">
+        <div className="space-y-4 pr-2">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
             <StatRow label="Initial Cash Needed" value={formatCurrency(calc.initialCash)} />
@@ -1891,9 +1891,9 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
 function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateFlip>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
   return (
     <div>
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-10 px-4">
         {/* LEFT: Tune The Deal */}
-        <div className="space-y-4">
+        <div className="space-y-4 pl-2">
           <FineTuneHeader 
             title="Tune The Deal" 
             prompt="What's your true flip margin after costs?" 
@@ -1925,7 +1925,7 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
         </div>
         
         {/* RIGHT: Deal Opportunity (Key Metrics) */}
-        <div className="space-y-4">
+        <div className="space-y-4 pr-2">
           <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5"><span>💰</span>Deal Opportunity</h4>
           {/* Flip Margin Hero */}
           <div className={`rounded-lg p-4 ${calc.flipMargin >= 50000 ? 'bg-emerald-50 border border-emerald-200' : calc.flipMargin >= 20000 ? 'bg-amber-50 border border-amber-200' : 'bg-rose-50 border border-rose-200'}`}>
@@ -1973,9 +1973,9 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
 }) {
   return (
     <div>
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-10 px-4">
         {/* LEFT: Tune The Deal */}
-        <div className="space-y-4">
+        <div className="space-y-4 pl-2">
           <FineTuneHeader 
             title="Tune The Deal" 
             prompt="How many rooms to break even? Find out." 
@@ -1988,7 +1988,7 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
         </div>
         
         {/* RIGHT: Key Metrics */}
-        <div className="space-y-4">
+        <div className="space-y-4 pr-2">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
             <StatRow label="Effective Housing Cost" value={formatCurrency(calc.effectiveHousingCost)} highlight={calc.effectiveHousingCost < 500} />
@@ -2092,9 +2092,9 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
         />
       )}
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-10 px-4">
         {/* LEFT: Tune The Deal */}
-        <div className="space-y-4">
+        <div className="space-y-4 pl-2">
           <FineTuneHeader 
             title="Tune The Deal" 
             prompt="Is this deal below MAO? Adjust to find out." 
@@ -2119,7 +2119,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
         </div>
         
         {/* RIGHT: Key Metrics */}
-        <div className="space-y-4">
+        <div className="space-y-4 pr-2">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
             <StatRow label="Maximum Allowable Offer" value={formatCurrency(calc.mao)} highlight={calc.isPurchaseBelowMAO} />
