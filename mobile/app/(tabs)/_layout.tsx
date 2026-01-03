@@ -26,6 +26,13 @@ export default function TabLayout() {
         headerShown: false,
       }}
     >
+      {/* Hidden index route that redirects to map */}
+      <Tabs.Screen
+        name="index"
+        options={{
+          href: null, // Hide from tab bar
+        }}
+      />
       <Tabs.Screen
         name="map"
         options={{
