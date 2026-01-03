@@ -3651,7 +3651,7 @@ function PropertyPageContent() {
 
         {/* STEP 2: Select Investment Strategy */}
         <div className="bg-white rounded-[0.875rem] shadow-sm border border-[#0465f2] mb-3.5">
-          <div className="p-4">
+          <div className="px-4 pt-3 pb-0">
             <StepHeader step={2} title="Investment Strategies" callToAction="Explore Strategies" />
           </div>
           
