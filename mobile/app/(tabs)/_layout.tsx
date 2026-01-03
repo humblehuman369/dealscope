@@ -27,20 +27,20 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="scan"
-        options={{
-          title: 'Scan',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="scan-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="map"
         options={{
           title: 'Map',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="map-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="scan"
+        options={{
+          title: 'Scan',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="scan-outline" size={size} color={color} />
           ),
         }}
       />
