@@ -952,11 +952,8 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
         <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
         {/* Gradient fill from left to thumb position */}
         <div 
-          className="absolute top-0 left-0 h-full rounded-sm"
-          style={{ 
-            width: `${percentage}%`,
-            background: 'linear-gradient(90deg, #00e5ff 0%, #0465f2 100%)'
-          }}
+          className="absolute top-0 left-0 h-full rounded-sm bg-gradient-to-r from-accent-500 to-brand-500"
+          style={{ width: `${percentage}%` }}
         />
         {/* Thumb */}
         <div 
