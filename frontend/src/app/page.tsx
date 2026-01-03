@@ -682,10 +682,10 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
 
       {/* Tagline Section */}
       <section className="bg-white py-12">
-        <div className="max-w-4xl mx-auto px-4 flex flex-col gap-6">
+        <div className="max-w-5xl mx-auto px-8 md:px-16 flex flex-col gap-6">
           <div className="flex items-center gap-4">
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
-            <div className="bg-accent-500 text-black py-4 px-8 font-bold text-lg md:text-xl clip-angled">
+            <div className="bg-accent-500 text-black py-4 px-10 font-bold text-base md:text-lg clip-angled">
               &quot;The fastest path from address to investable decision.&quot;
             </div>
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
@@ -693,7 +693,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
           
           <div className="flex items-center gap-4">
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
-            <div className="bg-accent-500 text-black py-4 px-8 font-bold text-lg md:text-xl clip-angled">
+            <div className="bg-accent-500 text-black py-4 px-10 font-bold text-base md:text-lg clip-angled">
               &quot;The only tool that delivers institutional-grade analytics on-the-go.&quot;
             </div>
             <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
