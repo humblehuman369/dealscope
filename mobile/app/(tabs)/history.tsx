@@ -92,15 +92,6 @@ function getStrategyName(key: string): string {
   return names[key] || key;
 }
 
-function parseAnalyticsData(json: string | null): AnalyticsData | null {
-  if (!json) return null;
-  try {
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
-
 export default function HistoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
