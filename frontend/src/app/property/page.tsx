@@ -3895,11 +3895,14 @@ function PropertyPageContent() {
           </div>
         </div>
 
-        {/* Compare Multiple Properties Button - matches HTML design */}
-        <button className="w-full mt-5 py-3.5 px-6 bg-white border-2 border-brand-500 rounded-lg text-brand-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-brand-500 hover:text-white transition-all">
+        {/* Compare Multiple Properties Button - navigates to /compare page */}
+        <a 
+          href={`/compare?address=${encodeURIComponent(property.address.full_address)}`}
+          className="w-full mt-5 py-3.5 px-6 bg-white dark:bg-navy-800 border-2 border-brand-500 rounded-lg text-brand-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-brand-500 hover:text-white transition-all"
+        >
           <TrendingUp className="w-4.5 h-4.5" />
           Compare Multiple Properties
-        </button>
+        </a>
       </div>
     </div>
   )
