@@ -1875,9 +1875,9 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
   
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 px-1 sm:px-2">
         {/* LEFT: Tune The Deal */}
-        <div className="pl-2">
+        <div>
           <FineTuneHeader 
             title="Tune The Deal" 
             prompt="What if vacancy hits 10%? Test your cushion." 
@@ -1891,9 +1891,9 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
         </div>
         
         {/* RIGHT: Key Metrics (results) */}
-        <div className="pr-2">
+        <div>
           <h4 className="text-[0.9375rem] font-bold text-navy-900 dark:text-white mb-3.5">Key Metrics</h4>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <MetricRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} />
             <MetricRow label="Annual Cash Flow" value={formatCurrency(calc.annualCashFlow)} />
             <MetricRow label="Cash-on-Cash Return" value={formatPercent(calc.cashOnCash)} />
@@ -1917,9 +1917,9 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
   
   return (
     <div>
-      <div className="grid grid-cols-2 gap-10 px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 px-1 sm:px-2">
         {/* LEFT: Tune The Deal */}
-        <div className="space-y-4 pl-2">
+        <div className="space-y-3">
           <FineTuneHeader 
             title="Tune The Deal" 
             prompt="Adjust occupancy to see seasonal impacts" 
@@ -1934,9 +1934,9 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
         </div>
         
         {/* RIGHT: Key Metrics */}
-        <div className="space-y-4 pr-2">
+        <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Key Metrics</h4>
-          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 divide-y divide-gray-100 dark:divide-navy-600">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 500} />
             <StatRow label="Annual Gross Revenue" value={formatCurrency(calc.annualGrossRent)} />
             <StatRow label="Cash-on-Cash Return" value={formatPercent(calc.cashOnCash)} highlight={calc.cashOnCash > 0.12} />
@@ -1959,14 +1959,14 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
   
   return (
     <div>
-      <div className="grid grid-cols-2 gap-10 px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 px-1 sm:px-2">
         {/* LEFT: Tune The Deal */}
-        <div className="space-y-4 pl-2">
+        <div className="space-y-3">
           <FineTuneHeader 
             title="Tune The Deal" 
             prompt="Dial in rehab costs — where's your profit sweet spot?" 
           />
-          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 space-y-0">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 space-y-0">
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
             <AdjustmentSlider label="Monthly Rent" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
@@ -1977,9 +1977,9 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
         </div>
         
         {/* RIGHT: Key Metrics */}
-        <div className="space-y-4 pr-2">
+        <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
-          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 divide-y divide-gray-100 dark:divide-navy-600">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Initial Cash Needed" value={formatCurrency(calc.initialCash)} />
             <StatRow label="Cash Back at Refi" value={formatCurrency(calc.cashBack)} highlight={calc.cashBack > 0} />
             <StatRow label="Cash Left in Deal" value={formatCurrency(calc.cashLeftInDeal)} highlight={calc.cashLeftInDeal < 10000} />
@@ -1996,14 +1996,14 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
 function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof calculateFlip>; assumptions: Assumptions; update: (k: keyof Assumptions, v: number) => void }) {
   return (
     <div>
-      <div className="grid grid-cols-2 gap-10 px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 px-1 sm:px-2">
         {/* LEFT: Tune The Deal */}
-        <div className="space-y-4 pl-2">
+        <div className="space-y-3">
           <FineTuneHeader 
             title="Tune The Deal" 
             prompt="What's your true flip margin after costs?" 
           />
-          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 space-y-0">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 space-y-0">
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
             <GradientSlider label="Holding Period" value={assumptions.holdingPeriodMonths} min={3} max={12} step={1} onChange={(v) => update('holdingPeriodMonths', v)} formatType="months" compact />
@@ -2078,14 +2078,14 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
 }) {
   return (
     <div>
-      <div className="grid grid-cols-2 gap-10 px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 px-1 sm:px-2">
         {/* LEFT: Tune The Deal */}
-        <div className="space-y-4 pl-2">
+        <div className="space-y-3">
           <FineTuneHeader 
             title="Tune The Deal" 
             prompt="How many rooms to break even? Find out." 
           />
-          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 space-y-0">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 space-y-0">
             <RoomsRentedSlider roomsRented={assumptions.roomsRented} totalBedrooms={assumptions.totalBedrooms} onChange={(v) => update('roomsRented', v)} compact />
             <AdjustmentSlider label="Total Rent (all rooms)" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
             <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
@@ -2093,9 +2093,9 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
         </div>
         
         {/* RIGHT: Key Metrics */}
-        <div className="space-y-4 pr-2">
+        <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
-          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 divide-y divide-gray-100 dark:divide-navy-600">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Effective Housing Cost" value={formatCurrency(calc.effectiveHousingCost)} highlight={calc.effectiveHousingCost < 500} />
             <StatRow label="Monthly Savings" value={formatCurrency(calc.monthlySavings)} highlight={calc.monthlySavings > 500} />
             <StatRow label="Rental Income" value={formatCurrency(calc.monthlyRentalIncome)} />
@@ -2197,14 +2197,14 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
         />
       )}
 
-      <div className="grid grid-cols-2 gap-10 px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 px-1 sm:px-2">
         {/* LEFT: Tune The Deal */}
-        <div className="space-y-4 pl-2">
+        <div className="space-y-3">
           <FineTuneHeader 
             title="Tune The Deal" 
             prompt="Is this deal below MAO? Adjust to find out." 
           />
-          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 space-y-0">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 space-y-0">
             <AdjustmentSlider label="Purchase Price" baseValue={assumptions.basePurchasePrice} adjustment={assumptions.purchasePriceAdj} onChange={(v) => updateAdjustment('purchasePriceAdj', v)} compact />
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Estimate" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
@@ -2212,7 +2212,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
           </div>
           
           {/* 70% Rule Formula */}
-          <div className="bg-pink-50/50 rounded-lg p-3 mt-2">
+          <div className="bg-pink-50/50 rounded-lg p-2 sm:p-3 mt-2">
             <div className="text-[10px] uppercase tracking-wider text-pink-600 font-medium mb-2">70% Rule Formula</div>
             <div className="text-xs text-gray-600 space-y-1">
               <div className="flex justify-between"><span>ARV × 70%</span><span className="font-medium">{formatCurrency(calc.arvMultiple)}</span></div>
@@ -2224,9 +2224,9 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
         </div>
         
         {/* RIGHT: Key Metrics */}
-        <div className="space-y-4 pr-2">
+        <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
-          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 divide-y divide-gray-100 dark:divide-navy-600">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Maximum Allowable Offer" value={formatCurrency(calc.mao)} highlight={calc.isPurchaseBelowMAO} />
             <StatRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
             <StatRow label="Purchase as % of ARV" value={`${(calc.purchasePctOfArv * 100).toFixed(1)}%`} highlight={calc.purchasePctOfArv <= 0.70} />
