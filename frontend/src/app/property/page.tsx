@@ -1511,16 +1511,15 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
 }
 
 // Step indicator component - matches HTML design
-function StepHeader({ step, title, callToAction }: { step: number; title: string; callToAction?: string }) {
+function StepHeader({ step, title }: { step: number; title: string }) {
   return (
-    <div className="mb-3.5">
+    <div className="mb-2">
       <div className="flex items-center gap-2.5">
         <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold flex-shrink-0">
           {step}
         </div>
         <h2 className="text-base font-bold text-navy-900 dark:text-white">{title}</h2>
       </div>
-      {callToAction && <p className="text-base font-bold text-navy-900 dark:text-white text-center -mt-0.5">{callToAction}</p>}
     </div>
   )
 }
@@ -1618,8 +1617,8 @@ function SetYourTermsPanel({
   return (
     <div className="bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg border border-[#0465f2] p-4 transition-colors duration-300">
       <div>
-        <StepHeader step={1} title="Terms" callToAction="Optimize Scenario" />
-        
+        <StepHeader step={1} title="Define Terms" />
+
         {/* Responsive grid: 1 col on small, 2 cols on medium, 3 cols on large screens */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
           {/* 1. Purchase Price */}
@@ -3763,7 +3762,7 @@ function PropertyPageContent() {
         {/* STEP 2: Select Investment Strategy - Hidden on mobile (shown inline in Section 1) */}
         <div className="hidden md:block bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg border border-[#0465f2] mb-3.5 transition-colors duration-300">
           <div className="px-4 pt-3 pb-0">
-            <StepHeader step={2} title="Investment Strategies" callToAction="Explore Strategies" />
+            <StepHeader step={2} title="Compare Strategies" />
           </div>
           
           {/* Strategy Cards Grid - 6 columns matching HTML design */}
@@ -3778,7 +3777,7 @@ function PropertyPageContent() {
         {/* STEP 3: Strategy Details */}
         <div className="bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg border border-[#0465f2] transition-colors duration-300">
           <div className="p-4 pb-0">
-            <StepHeader step={3} title="Strategy Details" />
+            <StepHeader step={3} title="Strategy Overview" />
           </div>
 
           {/* Tabs */}
