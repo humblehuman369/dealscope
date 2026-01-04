@@ -122,6 +122,9 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
         /* Optimize body padding for embedded view */
         body { padding-top: 0 !important; }
         
+        /* Remove top padding from main container - fill the gap at top */
+        .max-w-7xl { padding-top: 8px !important; }
+        
         /* Improve touch targets */
         button, a, input, select { min-height: 44px; }
         
@@ -138,7 +141,7 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
 
   return (
     <View style={styles.container}>
-      {/* Floating Close Button */}
+      {/* Floating Close Button - positioned on the RIGHT side */}
       <TouchableOpacity
         style={[styles.floatingCloseButton, { top: insets.top + 8 }]}
         onPress={handleGoBack}
@@ -261,7 +264,7 @@ const styles = StyleSheet.create({
   floatingCloseButton: {
     position: 'absolute',
     top: 8,
-    left: 12,
+    right: 12,
     zIndex: 100,
     width: 36,
     height: 36,
