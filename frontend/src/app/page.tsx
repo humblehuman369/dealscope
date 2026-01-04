@@ -83,9 +83,59 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   const [cameraReady, setCameraReady] = useState(false);
   const [distance, setDistance] = useState(50);
   const [manualHeading, setManualHeading] = useState<number | null>(null);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   
   const scanner = usePropertyScan();
   const { user, isAuthenticated, logout, setShowAuthModal } = useAuth();
+
+  // Handle "Use your current location" for desktop users without camera
+  const handleUseCurrentLocation = async () => {
+    setIsGettingLocation(true);
+    
+    try {
+      // Get user's current GPS position
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      });
+      
+      const { latitude, longitude } = position.coords;
+      
+      // Use Google Maps reverse geocode to find property at location
+      const GOOGLE_MAPS_API_KEY = 'AIzaSyCKp7Tt4l2zu2h2EV6PXPz7xbZLoPrtziw';
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude.toFixed(6)},${longitude.toFixed(6)}&key=${GOOGLE_MAPS_API_KEY}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.status === 'OK' && data.results?.length > 0) {
+        // Get the formatted address
+        const result = data.results[0];
+        const address = result.formatted_address;
+        
+        // Navigate to property page with the address
+        router.push(`/property?address=${encodeURIComponent(address)}`);
+      } else {
+        throw new Error('Could not find an address at your location');
+      }
+    } catch (error) {
+      console.error('Location error:', error);
+      // If geolocation fails, show a message but still let them use the app
+      if (error instanceof GeolocationPositionError) {
+        if (error.code === error.PERMISSION_DENIED) {
+          alert('Location access denied. Please enable location services and try again, or use the address search.');
+        } else {
+          alert('Could not determine your location. Please try the address search instead.');
+        }
+      } else {
+        alert('Could not find a property at your location. Please try the address search.');
+      }
+    } finally {
+      setIsGettingLocation(false);
+    }
+  };
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -156,26 +206,53 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
     return (
       <div className="fixed inset-0 bg-gray-900 flex items-center justify-center p-6">
         <div className="text-center max-w-md">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gray-800 flex items-center justify-center">
-            <Camera className="w-8 h-8 text-gray-400" />
+          {/* Animated location pulse effect */}
+          <div className="relative w-24 h-24 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full bg-brand-500/20 animate-ping"></div>
+            <div className="absolute inset-2 rounded-full bg-brand-500/30 animate-pulse"></div>
+            <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/30">
+              <MapPin className="w-10 h-10 text-white" />
+            </div>
           </div>
-          <h2 className="text-xl font-bold text-white mb-3">Camera Access Required</h2>
-          <p className="text-gray-400 mb-6">{cameraError}</p>
+          
+          <h2 className="text-2xl font-bold text-white mb-3">Experience Instant Analytics</h2>
+          <p className="text-gray-300 mb-2">
+            Camera not available on this device, but you can still see the magic!
+          </p>
+          <p className="text-gray-400 text-sm mb-8">
+            We&apos;ll use your GPS to find properties near you and show you our instant property analysis.
+          </p>
+          
           <div className="flex flex-col gap-3">
             <button
-              onClick={() => window.location.reload()}
-              className="w-full py-3 px-6 bg-brand-500 text-white rounded-xl font-medium hover:bg-[#0354d1] transition-colors"
+              onClick={handleUseCurrentLocation}
+              disabled={isGettingLocation}
+              className="w-full py-4 px-6 bg-brand-500 text-white rounded-xl font-bold text-lg hover:bg-[#0354d1] transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
             >
-              Try Again
+              {isGettingLocation ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Finding your location...
+                </>
+              ) : (
+                <>
+                  <MapPin className="w-5 h-5" />
+                  Use your current location
+                </>
+              )}
             </button>
             <button
               onClick={onSwitchMode}
               className="w-full py-3 px-6 bg-gray-800 text-white rounded-xl font-medium hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
             >
-              <Map className="w-4 h-4" />
-              Use Desktop Mode
+              <Search className="w-4 h-4" />
+              Search by Address Instead
             </button>
           </div>
+          
+          <p className="text-gray-500 text-xs mt-6">
+            ✨ Try the mobile app for the full Point & Scan experience
+          </p>
         </div>
       </div>
     );
