@@ -24,7 +24,7 @@
         }
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://localhost:8000"
+        "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app"
       }
     },
     "preview": {
