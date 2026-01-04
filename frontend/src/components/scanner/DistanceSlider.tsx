@@ -25,6 +25,8 @@ export function DistanceSlider({ value, onChange, min = 10, max = 200 }: Distanc
       <div className="relative">
         <input
           type="range"
+          id="distance-slider"
+          aria-label={`Distance: ${value} meters`}
           min={min}
           max={max}
           value={value}
