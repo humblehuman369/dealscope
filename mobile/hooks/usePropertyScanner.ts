@@ -8,8 +8,8 @@ import { Platform } from 'react-native';
 // 6 decimal places = ~0.11m accuracy (optimal for property scanning)
 const COORDINATE_PRECISION = 6;
 
-// Storage key for calibration settings
-const CALIBRATION_STORAGE_KEY = '@scanner_calibration';
+// Storage key for calibration settings (no @ symbol - SecureStore doesn't allow it)
+const CALIBRATION_STORAGE_KEY = 'scanner_calibration';
 
 interface CalibrationSettings {
   headingOffset: number;      // Manual heading offset in degrees (-180 to 180)
@@ -154,20 +154,57 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
           return;
         }
 
-        // Get initial location with highest precision
-        const initialLocation = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.BestForNavigation,
-        });
+        // STEP 1: Try to use last known location IMMEDIATELY (instant)
+        const lastKnown = await Location.getLastKnownPositionAsync();
+        if (lastKnown) {
+          console.log('Using last known location for instant start');
+          setState(prev => ({
+            ...prev,
+            userLat: Number(lastKnown.coords.latitude.toFixed(COORDINATE_PRECISION)),
+            userLng: Number(lastKnown.coords.longitude.toFixed(COORDINATE_PRECISION)),
+            accuracy: lastKnown.coords.accuracy ?? 100,
+            isLocationReady: true,
+          }));
+        }
 
-        // Store coordinates with full precision (6+ decimal places)
-        // JavaScript numbers handle this natively, but we ensure it's preserved
-        setState(prev => ({
-          ...prev,
-          userLat: Number(initialLocation.coords.latitude.toFixed(COORDINATE_PRECISION)),
-          userLng: Number(initialLocation.coords.longitude.toFixed(COORDINATE_PRECISION)),
-          accuracy: initialLocation.coords.accuracy ?? 10,
-          isLocationReady: true,
-        }));
+        // STEP 2: Get current location with balanced accuracy (fast, 5s timeout)
+        try {
+          const fastLocation = await Promise.race([
+            Location.getCurrentPositionAsync({
+              accuracy: Location.Accuracy.Balanced,
+            }),
+            new Promise<null>((_, reject) => 
+              setTimeout(() => reject(new Error('timeout')), 5000)
+            )
+          ]) as Location.LocationObject | null;
+          
+          if (fastLocation) {
+            setState(prev => ({
+              ...prev,
+              userLat: Number(fastLocation.coords.latitude.toFixed(COORDINATE_PRECISION)),
+              userLng: Number(fastLocation.coords.longitude.toFixed(COORDINATE_PRECISION)),
+              accuracy: fastLocation.coords.accuracy ?? 50,
+              isLocationReady: true,
+            }));
+          }
+        } catch (e) {
+          console.log('Fast location timed out, continuing with watch...');
+        }
+
+        // Then try to get high accuracy location (but don't block)
+        Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.BestForNavigation,
+        }).then((preciseLocation) => {
+          setState(prev => ({
+            ...prev,
+            userLat: Number(preciseLocation.coords.latitude.toFixed(COORDINATE_PRECISION)),
+            userLng: Number(preciseLocation.coords.longitude.toFixed(COORDINATE_PRECISION)),
+            accuracy: preciseLocation.coords.accuracy ?? 10,
+            isLocationReady: true,
+          }));
+        }).catch(e => {
+          console.log('High accuracy location failed:', e);
+        });
 
         // Subscribe to location updates with high precision
         locationSubscription = await Location.watchPositionAsync(
