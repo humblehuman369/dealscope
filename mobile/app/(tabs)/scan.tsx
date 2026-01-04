@@ -447,8 +447,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[700],
   },
   scanButtonAnalyzing: {
-    backgroundColor: '#1a4a7a',
-    shadowColor: '#1a4a7a',
+    backgroundColor: colors.navy[600],
+    shadowColor: colors.navy[600],
   },
   scanningIndicator: {
     flexDirection: 'row',
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
   analyzingAreaText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#4ade80',
+    color: colors.accent[500],
     letterSpacing: 0.5,
   },
   scanButtonText: {

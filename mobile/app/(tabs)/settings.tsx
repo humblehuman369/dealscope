@@ -214,7 +214,7 @@ export default function SettingsScreen() {
           <Text style={styles.sectionTitle}>Preferences</Text>
           <View style={styles.sectionContent}>
             <View style={styles.settingItem}>
-              <View style={[styles.menuIcon, { backgroundColor: colors.info[100] }]}>
+              <View style={[styles.menuIcon, { backgroundColor: colors.info.light }]}>
                 <Ionicons name="notifications" size={18} color={colors.info.main} />
               </View>
               <Text style={styles.settingTitle}>Push Notifications</Text>
@@ -228,7 +228,7 @@ export default function SettingsScreen() {
             <View style={styles.divider} />
 
             <View style={styles.settingItem}>
-              <View style={[styles.menuIcon, { backgroundColor: colors.warning[100] }]}>
+              <View style={[styles.menuIcon, { backgroundColor: colors.warning.light }]}>
                 <Ionicons name="phone-portrait" size={18} color={colors.warning.main} />
               </View>
               <Text style={styles.settingTitle}>Haptic Feedback</Text>
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
     color: colors.gray[700],
   },
   pendingBadge: {
-    backgroundColor: colors.warning[100],
+    backgroundColor: colors.warning.light,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
