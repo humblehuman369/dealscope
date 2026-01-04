@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -7,6 +7,7 @@ import {
   Animated,
   Dimensions,
   Platform,
+  Easing,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
@@ -38,8 +39,33 @@ export default function ScanScreen() {
   const scanner = usePropertyScanner();
   const { isScanning, result, error, performScan, clearResult } = usePropertyScan();
   
-  // Animation
+  // Animations
   const scanAnimation = useRef(new Animated.Value(1)).current;
+  const pulseAnimation = useRef(new Animated.Value(0.6)).current;
+  
+  // Pulsing animation for "Analyzing Area Data" state
+  useEffect(() => {
+    if (!scanner.isLocationReady) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnimation, {
+            toValue: 1,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnimation, {
+            toValue: 0.6,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    }
+  }, [scanner.isLocationReady, pulseAnimation]);
 
   const handleScan = useCallback(async () => {
     // Haptic feedback
@@ -185,7 +211,7 @@ export default function ScanScreen() {
                 style={[
                   styles.scanButton,
                   isScanning && styles.scanButtonScanning,
-                  !scanner.isLocationReady && styles.scanButtonDisabled,
+                  !scanner.isLocationReady && styles.scanButtonAnalyzing,
                 ]}
                 onPress={handleScan}
                 disabled={isScanning || !scanner.isLocationReady}
@@ -197,10 +223,10 @@ export default function ScanScreen() {
                     <Text style={styles.scanButtonText}>Scanning...</Text>
                   </View>
                 ) : !scanner.isLocationReady ? (
-                  <>
-                    <Ionicons name="location-outline" size={32} color="#fff" />
-                    <Text style={styles.scanButtonText}>GPS...</Text>
-                  </>
+                  <Animated.View style={[styles.analyzingIndicator, { opacity: pulseAnimation }]}>
+                    <Ionicons name="radio-outline" size={28} color="#fff" />
+                    <Text style={styles.analyzingText}>ANALYZING</Text>
+                  </Animated.View>
                 ) : (
                   <>
                     <Ionicons name="scan-outline" size={32} color="#fff" />
@@ -221,13 +247,17 @@ export default function ScanScreen() {
             </Text>
           </View>
           
-          {/* Debug GPS Info */}
+          {/* GPS Status Info */}
           <View style={styles.statusRow}>
-            <Text style={[styles.statusText, { fontSize: 10, opacity: 0.7 }]}>
-              {scanner.userLat !== 0 
-                ? `📍 ${scanner.userLat.toFixed(5)}, ${scanner.userLng.toFixed(5)}`
-                : '⏳ Waiting for GPS...'}
-            </Text>
+            {scanner.userLat !== 0 ? (
+              <Text style={[styles.statusText, { fontSize: 10, opacity: 0.7 }]}>
+                📍 {scanner.userLat.toFixed(5)}, {scanner.userLng.toFixed(5)}
+              </Text>
+            ) : (
+              <Animated.Text style={[styles.analyzingAreaText, { opacity: pulseAnimation }]}>
+                🛰️ Analyzing Area Data...
+              </Animated.Text>
+            )}
             {scanner.headingOffset !== 0 && (
               <Text style={[styles.statusText, { fontSize: 10, opacity: 0.7 }]}>
                 Offset: {scanner.headingOffset > 0 ? '+' : ''}{scanner.headingOffset}°
@@ -413,14 +443,31 @@ const styles = StyleSheet.create({
   scanButtonScanning: {
     backgroundColor: colors.primary[700],
   },
-  scanButtonDisabled: {
-    backgroundColor: colors.gray[600],
-    shadowOpacity: 0,
+  scanButtonAnalyzing: {
+    backgroundColor: '#1a4a7a',
+    shadowColor: '#1a4a7a',
   },
   scanningIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  analyzingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  analyzingText: {
+    fontWeight: '700',
+    fontSize: 14,
+    color: '#fff',
+    letterSpacing: 2,
+  },
+  analyzingAreaText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#4ade80',
+    letterSpacing: 0.5,
   },
   scanButtonText: {
     fontWeight: '700',
