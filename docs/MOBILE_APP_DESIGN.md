@@ -937,41 +937,51 @@ export const apiGateway = new APIGateway();
 ```typescript
 // theme/colors.ts
 export const colors = {
-  // Primary - Teal (matches web app)
+  // Primary - Brand Blue (matches web app)
   primary: {
-    50: '#f0fdfa',
-    100: '#ccfbf1',
-    200: '#99f6e4',
-    300: '#5eead4',
-    400: '#2dd4bf',
-    500: '#14b8a6', // Main brand color
-    600: '#0d9488',
-    700: '#0f766e',
-    800: '#115e59',
-    900: '#134e4a',
+    50: '#e6f0fe',
+    100: '#cce1fd',
+    200: '#99c3fb',
+    300: '#66a5f9',
+    400: '#3387f7',
+    500: '#0465f2',  // Main brand blue
+    600: '#0354d1',
+    700: '#0243b0',
+    800: '#02328f',
+    900: '#01216e',
+  },
+  
+  // Accent - Electric Cyan
+  accent: {
+    500: '#00e5ff',  // Main accent cyan
+  },
+  
+  // Navy - Dark backgrounds & text
+  navy: {
+    900: '#07172e',  // Primary dark navy
   },
   
   // Profit/Positive
   profit: {
     light: '#d1fae5',
-    main: '#10b981',
-    dark: '#047857',
+    main: '#22c55e',
+    dark: '#16a34a',
   },
   
   // Loss/Negative
   loss: {
     light: '#ffe4e6',
-    main: '#f43f5e',
-    dark: '#be123c',
+    main: '#ef4444',
+    dark: '#dc2626',
   },
   
-  // Neutral
+  // Neutral Gray - Cool tones
   gray: {
-    50: '#f9fafb',
-    100: '#f3f4f6',
-    200: '#e5e7eb',
-    300: '#d1d5db',
-    400: '#9ca3af',
+    50: '#f8fafc',
+    100: '#e1e8ed',  // Icy Silver
+    200: '#d1d9e0',
+    300: '#aab2bd',  // Cool Gray
+    400: '#8b95a2',
     500: '#6b7280',
     600: '#4b5563',
     700: '#374151',
@@ -981,12 +991,12 @@ export const colors = {
   
   // Strategy colors
   strategies: {
-    longTermRental: '#0d9488',
+    longTermRental: '#0465f2',  // Brand blue
     shortTermRental: '#8b5cf6',
     brrrr: '#f59e0b',
     fixAndFlip: '#ef4444',
-    houseHack: '#3b82f6',
-    wholesale: '#10b981',
+    houseHack: '#00e5ff',  // Accent cyan
+    wholesale: '#22c55e',
   },
 };
 ```

@@ -230,7 +230,7 @@ function FeatureCard({ icon, title, description }: { icon: string; title: string
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4f8',
+    backgroundColor: colors.background.secondary,
   },
   keyboardView: {
     flex: 1,
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#1a2b4a',
+    color: colors.navy[900],
   },
   logoAccent: {
     color: colors.primary[600],
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   signInText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1a2b4a',
+    color: colors.navy[900],
   },
 
   // Hero Section
@@ -289,14 +289,14 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#1a2b4a',
+    color: colors.navy[900],
     textAlign: 'center',
     lineHeight: 40,
   },
   heroHighlight: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#1a2b4a',
+    color: colors.navy[900],
     textAlign: 'center',
     marginTop: 4,
   },
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 56,
     fontSize: 16,
-    color: '#1a2b4a',
+    color: colors.navy[900],
   },
   clearButton: {
     padding: 4,
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   featuresTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1a2b4a',
+    color: colors.navy[900],
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1a2b4a',
+    color: colors.navy[900],
     marginBottom: 4,
   },
   featureDescription: {

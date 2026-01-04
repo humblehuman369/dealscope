@@ -365,7 +365,7 @@ function formatRelativeTime(date: Date): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e8eeef', // Match property analytics page background
+    backgroundColor: colors.background.tertiary, // Match property analytics page background
   },
   centerContent: {
     justifyContent: 'center',
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 12,
-    backgroundColor: '#e8eeef',
+    backgroundColor: colors.background.tertiary,
   },
   title: {
     fontWeight: '700',
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#0465f2', // Blue border like property analytics
+    borderColor: colors.primary[500], // Blue border like property analytics
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
