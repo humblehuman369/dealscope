@@ -268,6 +268,11 @@
   /* Slider dynamic positioning using CSS custom properties */
   .slider-fill {
     width: var(--slider-fill, 0%);
+    background: linear-gradient(90deg, #00e5ff 0%, #0465f2 100%);
+  }
+
+  .slider-fill-tailwind {
+    width: var(--slider-fill, 0%);
   }
 
   .slider-thumb {

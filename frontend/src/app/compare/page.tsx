@@ -117,6 +117,7 @@ function CompactPropertyCard({
           {/* Remove Button */}
           <button
             onClick={onRemove}
+            aria-label="Remove property from comparison"
             className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
           >
             <X className="w-4 h-4 text-gray-400 hover:text-red-500" />
@@ -453,6 +454,7 @@ function ComparePageContent() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
+              aria-label="Go back"
               className="p-2 hover:bg-gray-100 dark:hover:bg-navy-700 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
