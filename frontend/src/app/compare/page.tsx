@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Plus, Trash2, Search, Loader2, Building2, MapPin,
@@ -328,11 +328,22 @@ function ComparePageContent() {
   const [loading, setLoading] = useState(false)
   const [initialLoadDone, setInitialLoadDone] = useState(false)
   
+  // Track if URL parameter has been processed to prevent duplicate loads
+  const urlLoadAttempted = useRef(false)
+  // Store loaded properties for duplicate checking without causing re-renders
+  const propertiesRef = useRef<PropertyComparison[]>([])
+  
+  // Keep ref in sync with state
+  useEffect(() => {
+    propertiesRef.current = properties
+  }, [properties])
+  
   // Load saved comparisons on mount
   useEffect(() => {
     const saved = loadPropertyComparisons()
     if (saved.length > 0) {
       setProperties(saved)
+      propertiesRef.current = saved
     }
     setInitialLoadDone(true)
   }, [])
@@ -344,10 +355,24 @@ function ComparePageContent() {
     const addressParam = searchParams.get('address')
     if (!addressParam) return
     
-    const alreadyExists = properties.some(p => 
+    // Prevent duplicate load attempts
+    if (urlLoadAttempted.current) return
+    urlLoadAttempted.current = true
+    
+    // Check 4-property limit
+    if (propertiesRef.current.length >= 4) {
+      router.replace('/compare', { scroll: false })
+      return
+    }
+    
+    // Check if property already exists
+    const alreadyExists = propertiesRef.current.some(p => 
       p.address.toLowerCase() === addressParam.toLowerCase()
     )
-    if (alreadyExists) return
+    if (alreadyExists) {
+      router.replace('/compare', { scroll: false })
+      return
+    }
     
     const loadPropertyFromUrl = async () => {
       setLoading(true)
@@ -370,7 +395,13 @@ function ComparePageContent() {
             monthlyRent: data.rentals.monthly_rent_ltr || 2000,
             propertyTaxes: data.market.property_taxes_annual || 4000
           })
-          setProperties(prev => [...prev, comparison])
+          
+          // Final check before adding (in case state changed during fetch)
+          setProperties(prev => {
+            if (prev.length >= 4) return prev
+            if (prev.some(p => p.address.toLowerCase() === data.address.full_address.toLowerCase())) return prev
+            return [...prev, comparison]
+          })
         }
       } catch (err) {
         console.error('Failed to load property from URL:', err)
@@ -381,7 +412,7 @@ function ComparePageContent() {
     }
     
     loadPropertyFromUrl()
-  }, [initialLoadDone, searchParams, properties, router])
+  }, [initialLoadDone, searchParams, router])
   
   // Save when properties change
   useEffect(() => {
