@@ -1427,7 +1427,8 @@ function MobileStrategyPreview({
             : strategy.id === 'brrrr' ? 'BRRRR'
             : strategy.id === 'flip' ? 'Flip'
             : strategy.id === 'house_hack' ? 'Hack'
-            : 'Whole'
+            : strategy.id === 'wholesale' ? 'Whole'
+            : strategy.name // Fallback to full name for any unknown strategy
           
           // Color based on profit/loss
           const valueColor = isLoss ? 'text-crimson-500' : isBreakeven ? 'text-gray-400' : 'text-brand-500'
