@@ -365,7 +365,7 @@ function formatRelativeTime(date: Date): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[50],
+    backgroundColor: '#e8eeef', // Match property analytics page background
   },
   centerContent: {
     justifyContent: 'center',
@@ -377,18 +377,16 @@ const styles = StyleSheet.create({
     color: colors.gray[600],
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[200],
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 12,
+    backgroundColor: '#e8eeef',
   },
   title: {
     fontWeight: '700',
-    fontSize: 24,
+    fontSize: 22,
     color: colors.gray[900],
-    marginBottom: 16,
+    marginBottom: 12,
   },
   filterTabs: {
     flexDirection: 'row',
@@ -415,41 +413,45 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   listContent: {
-    padding: 16,
-    gap: 12,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 16,
+    gap: 10,
   },
   listContentEmpty: {
     flex: 1,
   },
   propertyCard: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#0465f2', // Blue border like property analytics
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
     elevation: 2,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 14,
+    marginBottom: 10,
   },
   addressContainer: {
     flex: 1,
     marginRight: 8,
   },
   address: {
-    fontWeight: '600',
-    fontSize: 16,
+    fontWeight: '700',
+    fontSize: 15,
     color: colors.gray[900],
-    marginBottom: 2,
+    marginBottom: 1,
   },
   location: {
     fontWeight: '400',
-    fontSize: 13,
+    fontSize: 12,
     color: colors.gray[500],
   },
   favoriteButton: {
@@ -458,8 +460,8 @@ const styles = StyleSheet.create({
   cardMetrics: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 14,
-    paddingBottom: 14,
+    paddingTop: 10,
+    paddingBottom: 10,
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: colors.gray[100],
@@ -469,19 +471,19 @@ const styles = StyleSheet.create({
   },
   metricDivider: {
     width: 1,
-    height: 28,
+    height: 24,
     backgroundColor: colors.gray[200],
-    marginHorizontal: 12,
+    marginHorizontal: 8,
   },
   metricLabel: {
     fontWeight: '400',
-    fontSize: 11,
+    fontSize: 10,
     color: colors.gray[500],
-    marginBottom: 2,
+    marginBottom: 1,
   },
   metricValue: {
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: '700',
+    fontSize: 13,
     color: colors.gray[800],
   },
   profitText: {
@@ -494,11 +496,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 8,
   },
   timestamp: {
     fontWeight: '400',
-    fontSize: 12,
+    fontSize: 11,
     color: colors.gray[400],
   },
   deleteAction: {
