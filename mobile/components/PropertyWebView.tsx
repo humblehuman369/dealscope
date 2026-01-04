@@ -8,6 +8,7 @@ import {
   Platform,
   Share,
   Linking,
+  useColorScheme,
 } from 'react-native';
 import { WebView, WebViewNavigation } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,6 +29,7 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
   const [canGoBack, setCanGoBack] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const colorScheme = useColorScheme(); // Detect device dark/light mode
 
   // Get the web app URL from environment or use a deployed URL
   // For production, set EXPO_PUBLIC_WEB_APP_URL in your .env or app.json
@@ -97,8 +99,19 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
   };
 
   // Inject CSS to hide web header/footer and optimize for mobile
+  // Also apply dark mode class based on device color scheme
+  const isDarkMode = colorScheme === 'dark';
   const injectedStyles = `
     (function() {
+      // Apply dark mode class based on device preference
+      if (${isDarkMode}) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+      
       const style = document.createElement('style');
       style.textContent = \`
         /* Hide web header if needed - the mobile app provides navigation */
