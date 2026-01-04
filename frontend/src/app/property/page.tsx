@@ -3421,6 +3421,20 @@ function PropertyPageContent() {
   const [selectedStrategy, setSelectedStrategy] = useState<StrategyId>('ltr')
   const [drillDownView, setDrillDownView] = useState<DrillDownView>('details')
   
+  // Ref for Section 3 to enable auto-scroll when strategy is selected on mobile
+  const section3Ref = useRef<HTMLDivElement>(null)
+  
+  // Handler for selecting strategy - scrolls to Section 3 on mobile for better UX
+  const handleSelectStrategy = (id: StrategyId) => {
+    setSelectedStrategy(id)
+    setDrillDownView('details')
+    // Scroll to Section 3 with smooth animation
+    // Small delay to allow state update before scroll
+    setTimeout(() => {
+      section3Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
+  }
+  
   // Track whether ARV is linked to Rehab (ARV = 2x Rehab by default)
   // Once user manually adjusts ARV, this link is broken
   const isArvLinkedToRehabRef = useRef(true)
@@ -3756,7 +3770,7 @@ function PropertyPageContent() {
             strategies={strategies}
             strategyMetrics={strategyMetrics}
             selectedStrategy={selectedStrategy}
-            onSelectStrategy={(id) => { setSelectedStrategy(id); setDrillDownView('details'); }}
+            onSelectStrategy={handleSelectStrategy}
           />
         </div>
 
@@ -3771,12 +3785,15 @@ function PropertyPageContent() {
             strategies={strategies}
             strategyMetrics={strategyMetrics}
             selectedStrategy={selectedStrategy}
-            onSelectStrategy={(id) => { setSelectedStrategy(id); setDrillDownView('details'); }}
+            onSelectStrategy={handleSelectStrategy}
           />
         </div>
 
-        {/* STEP 3: Strategy Details */}
-        <div className="bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg border border-[#0465f2] transition-colors duration-300">
+        {/* STEP 3: Strategy Overview - ref for auto-scroll when strategy selected */}
+        <div 
+          ref={section3Ref}
+          className="bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg border border-[#0465f2] transition-colors duration-300 scroll-mt-4"
+        >
           <div className="p-4 pb-0">
             <StepHeader step={3} title="Strategy Overview" />
           </div>
