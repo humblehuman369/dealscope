@@ -377,6 +377,7 @@ function ComparePageContent() {
   const searchParams = useSearchParams()
   const [properties, setProperties] = useState<PropertyComparison[]>([])
   const [loading, setLoading] = useState(false)
+  const [initialLoadDone, setInitialLoadDone] = useState(false)
   
   // Load saved comparisons on mount
   useEffect(() => {
@@ -384,7 +385,57 @@ function ComparePageContent() {
     if (saved.length > 0) {
       setProperties(saved)
     }
+    setInitialLoadDone(true)
   }, [])
+  
+  // Auto-load property from URL parameter (when coming from property page)
+  useEffect(() => {
+    if (!initialLoadDone) return
+    
+    const addressParam = searchParams.get('address')
+    if (!addressParam) return
+    
+    // Check if property already exists in comparison
+    const alreadyExists = properties.some(p => 
+      p.address.toLowerCase() === addressParam.toLowerCase()
+    )
+    if (alreadyExists) return
+    
+    // Fetch and add the property
+    const loadPropertyFromUrl = async () => {
+      setLoading(true)
+      try {
+        const response = await fetch('/api/v1/properties/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ address: addressParam })
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          const comparison = createPropertyComparison({
+            address: data.address.full_address,
+            propertyType: data.details.property_type || 'Single Family',
+            beds: data.details.bedrooms || 3,
+            baths: data.details.bathrooms || 2,
+            sqft: data.details.square_footage || 1500,
+            purchasePrice: data.valuations.current_value_avm || 400000,
+            monthlyRent: data.rentals.monthly_rent_ltr || 2000,
+            propertyTaxes: data.market.property_taxes_annual || 4000
+          })
+          setProperties(prev => [...prev, comparison])
+        }
+      } catch (err) {
+        console.error('Failed to load property from URL:', err)
+      } finally {
+        setLoading(false)
+        // Clear the URL parameter after loading
+        router.replace('/compare', { scroll: false })
+      }
+    }
+    
+    loadPropertyFromUrl()
+  }, [initialLoadDone, searchParams, properties, router])
   
   // Save when properties change
   useEffect(() => {
