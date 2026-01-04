@@ -900,17 +900,17 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-700 font-medium">{label}</span>
+        <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">{label}</span>
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(computedValue)}</span>
-          <span className="text-[0.6875rem] font-semibold text-brand-500">
+          <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedValue)}</span>
+          <span className="text-[0.6875rem] font-semibold text-brand-500 dark:text-brand-400">
             {adjSign}{adjPercent.toFixed(0)}%
           </span>
         </div>
       </div>
       <div className="relative h-[3px] mt-1.5">
         {/* Gray background track */}
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
         {/* Gradient fill from left to thumb position */}
         <div 
           className="absolute top-0 left-0 h-full rounded-sm"
@@ -950,12 +950,12 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-700 font-medium">{label}</span>
-        <span className="text-xs font-bold text-navy-900 font-mono">{displayPercent}%</span>
+        <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">{label}</span>
+        <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{displayPercent}%</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
         {/* Gray background track */}
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
         {/* Gradient fill from left to thumb position */}
         <div 
           className="absolute top-0 left-0 h-full rounded-sm"
@@ -1269,8 +1269,8 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
         onClick={onClick}
         className={`relative rounded-md text-left transition-all duration-200 overflow-hidden w-full h-full ${
           isSelected 
-            ? 'bg-white ring-1 ring-gray-200' 
-            : 'bg-gray-500/15 hover:bg-gray-500/10'
+            ? 'bg-white dark:bg-navy-700 ring-1 ring-gray-200 dark:ring-navy-600' 
+            : 'bg-gray-500/15 dark:bg-navy-800/50 hover:bg-gray-500/10 dark:hover:bg-navy-700/50'
         }`}
       >
         {/* Thin top accent bar */}
@@ -1280,27 +1280,27 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
         <button 
           type="button"
           onClick={handleInfoClick}
-          className="absolute top-2 right-1.5 w-5 h-5 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center cursor-pointer transition-colors z-10 group"
+          className="absolute top-2 right-1.5 w-5 h-5 bg-gray-100 dark:bg-navy-600 hover:bg-gray-200 dark:hover:bg-navy-500 rounded-full flex items-center justify-center cursor-pointer transition-colors z-10 group"
           title={`What is ${strategy.name}?`}
           aria-label={`Learn about ${strategy.name}`}
         >
-          <Info className="w-3 h-3 text-gray-400 group-hover:text-gray-600" />
+          <Info className="w-3 h-3 text-gray-400 dark:text-gray-300 group-hover:text-gray-600 dark:group-hover:text-white" />
         </button>
         
         <div className="px-2.5 py-2 h-full flex flex-col">
           {/* Strategy Name - shortened for boxes */}
-          <h3 className="text-[11px] font-semibold text-gray-900 tracking-tight leading-tight mb-1.5 pr-5">{displayName}</h3>
+          <h3 className="text-[11px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight mb-1.5 pr-5">{displayName}</h3>
           
           {/* Primary Value - Blue for positive, red for negative */}
           <div className={`text-xl font-semibold tracking-tight leading-none ${primaryColor}`}>
             {metrics.primary}
           </div>
-          <div className="text-[9px] font-medium text-gray-500 tracking-wide mt-0.5 mb-1.5">{metrics.primaryLabel}</div>
+          <div className="text-[9px] font-medium text-gray-500 dark:text-gray-400 tracking-wide mt-0.5 mb-1.5">{metrics.primaryLabel}</div>
           
           {/* Secondary Metric - Value on top, label below - Blue for positive, red for negative */}
-          <div className="pt-1.5 border-t border-gray-100/80">
+          <div className="pt-1.5 border-t border-gray-100/80 dark:border-navy-600">
             <div className={`text-sm font-semibold ${secondaryColor}`}>{metrics.secondary}</div>
-            <div className="text-[9px] font-medium mt-px text-gray-500">{metrics.secondaryLabel}</div>
+            <div className="text-[9px] font-medium mt-px text-gray-500 dark:text-gray-400">{metrics.secondaryLabel}</div>
           </div>
         </div>
       </button>
@@ -1441,9 +1441,9 @@ function StepHeader({ step, title, callToAction }: { step: number; title: string
         <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold flex-shrink-0">
           {step}
         </div>
-        <h2 className="text-base font-bold text-navy-900">{title}</h2>
+        <h2 className="text-base font-bold text-navy-900 dark:text-white">{title}</h2>
       </div>
-      {callToAction && <p className="text-base font-bold text-navy-900 text-center -mt-0.5">{callToAction}</p>}
+      {callToAction && <p className="text-base font-bold text-navy-900 dark:text-white text-center -mt-0.5">{callToAction}</p>}
     </div>
   )
 }
@@ -1475,10 +1475,10 @@ function FineTuneHeader({ title, prompt }: {
 }) {
   return (
     <div className="mb-3">
-      <h4 className="text-[0.9375rem] font-bold text-navy-900">
+      <h4 className="text-[0.9375rem] font-bold text-navy-900 dark:text-white">
         {title}
       </h4>
-      <p className="text-[0.6875rem] text-gray-500 mt-0.5">{prompt}</p>
+      <p className="text-[0.6875rem] text-gray-500 dark:text-gray-400 mt-0.5">{prompt}</p>
     </div>
   )
 }
@@ -1521,7 +1521,7 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
     return `/rehab?${params.toString()}`
   }
   return (
-    <div className="bg-white rounded-[0.875rem] shadow-sm border border-[#0465f2] p-4">
+    <div className="bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg border border-[#0465f2] p-4 transition-colors duration-300">
       <div>
         <StepHeader step={1} title="Terms" callToAction="Optimize Scenario" />
         
@@ -1610,7 +1610,7 @@ function AssumptionsPanel({ assumptions, update, updateAdjustment, isExpanded, o
 }) {
   return (
     <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
-      <button onClick={onToggle} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50/50 transition-colors">
+      <button onClick={onToggle} className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50/50 dark:bg-navy-700/50 transition-colors">
         <div className="flex items-center gap-2.5">
           <SlidersHorizontal className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
           <div className="text-left">
@@ -1687,7 +1687,7 @@ function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView
   ]
   
   return (
-    <div className="flex gap-1 border-b-2 border-gray-200">
+    <div className="flex gap-1 border-b-2 border-gray-200 dark:border-navy-600">
       {tabs.map(tab => {
         const Icon = tab.icon
         const isActive = activeView === tab.id
@@ -1697,13 +1697,13 @@ function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView
             onClick={() => onViewChange(tab.id)}
             className={`relative flex items-center gap-1.5 px-5 py-2.5 text-[0.8125rem] font-semibold whitespace-nowrap transition-all ${
               isActive 
-                ? 'text-brand-500' 
-                : 'text-gray-500 hover:text-brand-500'
+                ? 'text-brand-500 dark:text-brand-400' 
+                : 'text-gray-500 dark:text-gray-400 hover:text-brand-500 dark:hover:text-brand-400'
             }`}
           >
             {tab.label}
             {isActive && (
-              <div className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-brand-500" />
+              <div className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-brand-500 dark:bg-brand-400" />
             )}
           </button>
         )
@@ -1717,12 +1717,12 @@ function MetricRow({ label, value }: { label: string; value: string }) {
   // Check if value is negative (starts with - or contains negative currency like -$)
   const isNegative = value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
   return (
-    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-      <span className="text-xs text-gray-700 font-medium flex items-center">
+    <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-navy-600 last:border-b-0">
+      <span className="text-xs text-gray-700 dark:text-gray-300 font-medium flex items-center">
         {label}
         <MetricTooltip label={label} />
       </span>
-      <span className={`text-[0.9375rem] font-bold font-mono ${isNegative ? 'text-crimson-600' : 'text-navy-900'}`}>{value}</span>
+      <span className={`text-[0.9375rem] font-bold font-mono ${isNegative ? 'text-crimson-600 dark:text-crimson-400' : 'text-navy-900 dark:text-white'}`}>{value}</span>
     </div>
   )
 }
@@ -1731,12 +1731,12 @@ function StatRow({ label, value, highlight = false }: { label: string; value: st
   // Check if value is negative
   const isNegative = value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
   return (
-    <div className={`flex items-center justify-between py-1.5 ${highlight ? 'bg-teal-50/50 -mx-3 px-3 rounded' : ''}`}>
-      <span className="text-[11px] text-gray-700 font-medium flex items-center">
+    <div className={`flex items-center justify-between py-1.5 ${highlight ? 'bg-teal-50/50 dark:bg-teal-900/20 -mx-3 px-3 rounded' : ''}`}>
+      <span className="text-[11px] text-gray-700 dark:text-gray-300 font-medium flex items-center">
         {label}
         <MetricTooltip label={label} />
       </span>
-      <span className={`text-xs font-medium ${isNegative ? 'text-crimson-600' : highlight ? 'text-brand-500' : 'text-gray-700'}`}>{value}</span>
+      <span className={`text-xs font-medium ${isNegative ? 'text-crimson-600 dark:text-crimson-400' : highlight ? 'text-brand-500 dark:text-brand-400' : 'text-gray-700 dark:text-gray-300'}`}>{value}</span>
     </div>
   )
 }
@@ -1787,7 +1787,7 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics (results) */}
         <div className="pr-2">
-          <h4 className="text-[0.9375rem] font-bold text-navy-900 mb-3.5">Key Metrics</h4>
+          <h4 className="text-[0.9375rem] font-bold text-navy-900 dark:text-white mb-3.5">Key Metrics</h4>
           <div className="space-y-2">
             <MetricRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} />
             <MetricRow label="Annual Cash Flow" value={formatCurrency(calc.annualCashFlow)} />
@@ -1819,7 +1819,7 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
             title="Tune The Deal" 
             prompt="Adjust occupancy to see seasonal impacts" 
           />
-          <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 space-y-0">
             <AdjustmentSlider label="Daily Rate" baseValue={assumptions.baseAverageDailyRate} adjustment={assumptions.averageDailyRateAdj} onChange={(v) => updateAdjustment('averageDailyRateAdj', v)} compact />
             <PercentSlider label="Occupancy Rate" value={assumptions.occupancyRate} onChange={(v) => update('occupancyRate', v)} compact maxPercent={95} />
             <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
@@ -1830,8 +1830,8 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-4 pr-2">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
-          <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Key Metrics</h4>
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 500} />
             <StatRow label="Annual Gross Revenue" value={formatCurrency(calc.annualGrossRent)} />
             <StatRow label="Cash-on-Cash Return" value={formatPercent(calc.cashOnCash)} highlight={calc.cashOnCash > 0.12} />
@@ -1861,7 +1861,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
             title="Tune The Deal" 
             prompt="Dial in rehab costs — where's your profit sweet spot?" 
           />
-          <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 space-y-0">
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
             <AdjustmentSlider label="Monthly Rent" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
@@ -1874,7 +1874,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
         {/* RIGHT: Key Metrics */}
         <div className="space-y-4 pr-2">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
-          <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Initial Cash Needed" value={formatCurrency(calc.initialCash)} />
             <StatRow label="Cash Back at Refi" value={formatCurrency(calc.cashBack)} highlight={calc.cashBack > 0} />
             <StatRow label="Cash Left in Deal" value={formatCurrency(calc.cashLeftInDeal)} highlight={calc.cashLeftInDeal < 10000} />
@@ -1898,7 +1898,7 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
             title="Tune The Deal" 
             prompt="What's your true flip margin after costs?" 
           />
-          <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 space-y-0">
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
             <GradientSlider label="Holding Period" value={assumptions.holdingPeriodMonths} min={3} max={12} step={1} onChange={(v) => update('holdingPeriodMonths', v)} formatType="months" compact />
@@ -1955,7 +1955,7 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
           </div>
           
           {/* Quick Stats */}
-          <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
             <StatRow label="Rehab Budget" value={formatCurrency(assumptions.rehabCost)} />
             <StatRow label="After Repair Value" value={formatCurrency(assumptions.arv)} highlight />
@@ -1980,7 +1980,7 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
             title="Tune The Deal" 
             prompt="How many rooms to break even? Find out." 
           />
-          <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 space-y-0">
             <RoomsRentedSlider roomsRented={assumptions.roomsRented} totalBedrooms={assumptions.totalBedrooms} onChange={(v) => update('roomsRented', v)} compact />
             <AdjustmentSlider label="Total Rent (all rooms)" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
             <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
@@ -1990,7 +1990,7 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
         {/* RIGHT: Key Metrics */}
         <div className="space-y-4 pr-2">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
-          <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Effective Housing Cost" value={formatCurrency(calc.effectiveHousingCost)} highlight={calc.effectiveHousingCost < 500} />
             <StatRow label="Monthly Savings" value={formatCurrency(calc.monthlySavings)} highlight={calc.monthlySavings > 500} />
             <StatRow label="Rental Income" value={formatCurrency(calc.monthlyRentalIncome)} />
@@ -2099,7 +2099,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
             title="Tune The Deal" 
             prompt="Is this deal below MAO? Adjust to find out." 
           />
-          <div className="bg-gray-50/50 rounded-lg p-3 space-y-0">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 space-y-0">
             <AdjustmentSlider label="Purchase Price" baseValue={assumptions.basePurchasePrice} adjustment={assumptions.purchasePriceAdj} onChange={(v) => updateAdjustment('purchasePriceAdj', v)} compact />
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Estimate" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
@@ -2121,7 +2121,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
         {/* RIGHT: Key Metrics */}
         <div className="space-y-4 pr-2">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
-          <div className="bg-gray-50/50 rounded-lg p-3 divide-y divide-gray-100">
+          <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Maximum Allowable Offer" value={formatCurrency(calc.mao)} highlight={calc.isPurchaseBelowMAO} />
             <StatRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
             <StatRow label="Purchase as % of ARV" value={`${(calc.purchasePctOfArv * 100).toFixed(1)}%`} highlight={calc.purchasePctOfArv <= 0.70} />
@@ -2330,9 +2330,9 @@ function LTRAnalyticBreakdown({ calc, assumptions, strategyName = 'Long-Term Ren
   return (
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
-      <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+      <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
           <Layers className="w-5 h-5 text-[#0465f2]" />
           <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
         </div>
@@ -2520,9 +2520,9 @@ function STRAnalyticBreakdown({ calc, assumptions, strategyName = 'Short-Term Re
   return (
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
-      <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+      <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
           <Layers className="w-5 h-5 text-[#0465f2]" />
           <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
         </div>
@@ -2691,9 +2691,9 @@ function BRRRRAnalyticBreakdown({ calc, assumptions, strategyName = 'BRRRR' }: {
   return (
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
-      <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+      <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
           <Layers className="w-5 h-5 text-[#0465f2]" />
           <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
         </div>
@@ -2846,9 +2846,9 @@ function FlipAnalyticBreakdown({ calc, assumptions, strategyName = 'Fix & Flip' 
   return (
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
-      <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+      <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
           <Layers className="w-5 h-5 text-[#0465f2]" />
           <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
         </div>
@@ -3017,9 +3017,9 @@ function HouseHackAnalyticBreakdown({ calc, assumptions, strategyName = 'House H
   return (
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
-      <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+      <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
           <Layers className="w-5 h-5 text-[#0465f2]" />
           <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
         </div>
@@ -3155,9 +3155,9 @@ function WholesaleAnalyticBreakdown({ calc, assumptions, strategyName = 'Wholesa
   return (
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
-      <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
+      <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
         {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
           <Layers className="w-5 h-5 text-[#0465f2]" />
           <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
         </div>
@@ -3650,7 +3650,7 @@ function PropertyPageContent() {
         </div>
 
         {/* STEP 2: Select Investment Strategy */}
-        <div className="bg-white rounded-[0.875rem] shadow-sm border border-[#0465f2] mb-3.5">
+        <div className="bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg border border-[#0465f2] mb-3.5 transition-colors duration-300">
           <div className="px-4 pt-3 pb-0">
             <StepHeader step={2} title="Investment Strategies" callToAction="Explore Strategies" />
           </div>
@@ -3665,7 +3665,7 @@ function PropertyPageContent() {
         </div>
 
         {/* STEP 3: Strategy Details */}
-        <div className="bg-white rounded-[0.875rem] shadow-sm border border-[#0465f2]">
+        <div className="bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg border border-[#0465f2] transition-colors duration-300">
           <div className="p-4 pb-0">
             <StepHeader step={3} title="Strategy Details" />
           </div>
@@ -3695,10 +3695,10 @@ function PropertyPageContent() {
               return (
                 <>
                   {drillDownView === 'details' && (
-                    <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
-                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                    <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
                         <Calculator className="w-5 h-5 text-[#0465f2]" />
-                        <h4 className="text-base font-semibold text-navy-900">{bannerTitle}</h4>
+                        <h4 className="text-base font-semibold text-navy-900 dark:text-white">{bannerTitle}</h4>
                       </div>
                       {selectedStrategy === 'ltr' && <LTRDetails calc={ltrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
                       {selectedStrategy === 'str' && <STRDetails calc={strCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
@@ -3717,46 +3717,46 @@ function PropertyPageContent() {
                   {drillDownView === 'breakdown' && selectedStrategy === 'wholesale' && <WholesaleAnalyticBreakdown calc={wholesaleCalc} assumptions={assumptions} strategyName={strategyName} />}
                   
                   {drillDownView === 'charts' && (
-                    <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
-                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                    <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
                         <LineChart className="w-5 h-5 text-[#0465f2]" />
-                        <h4 className="text-base font-semibold text-navy-900">{bannerTitle}</h4>
+                        <h4 className="text-base font-semibold text-navy-900 dark:text-white">{bannerTitle}</h4>
                       </div>
                       <ChartsView projections={projections} totalCashInvested={ltrCalc.totalCashRequired} />
                     </div>
                   )}
                   {drillDownView === 'projections' && (
-                    <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
-                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                    <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
                         <TrendingUp className="w-5 h-5 text-[#0465f2]" />
-                        <h4 className="text-base font-semibold text-navy-900">{bannerTitle}</h4>
+                        <h4 className="text-base font-semibold text-navy-900 dark:text-white">{bannerTitle}</h4>
                       </div>
                       <ProjectionsView assumptions={projectionAssumptions} />
                     </div>
                   )}
                   {drillDownView === 'score' && (
-                    <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
-                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                    <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
                         <Award className="w-5 h-5 text-[#0465f2]" />
-                        <h4 className="text-base font-semibold text-navy-900">{bannerTitle}</h4>
+                        <h4 className="text-base font-semibold text-navy-900 dark:text-white">{bannerTitle}</h4>
                       </div>
                       <DealScoreCard metrics={{ monthlyCashFlow: ltrCalc.monthlyCashFlow, cashOnCash: ltrCalc.cashOnCash, capRate: ltrCalc.capRate, onePercentRule: ltrCalc.onePercentRule, dscr: ltrCalc.dscr, purchasePrice: assumptions.purchasePrice, arv: assumptions.arv, totalCashRequired: ltrCalc.totalCashRequired, monthlyRent: assumptions.monthlyRent }} />
                     </div>
                   )}
                   {drillDownView === 'sensitivity' && (
-                    <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
-                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                    <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
                         <Activity className="w-5 h-5 text-[#0465f2]" />
-                        <h4 className="text-base font-semibold text-navy-900">{bannerTitle}</h4>
+                        <h4 className="text-base font-semibold text-navy-900 dark:text-white">{bannerTitle}</h4>
                       </div>
                       <SensitivityAnalysisView assumptions={{ purchasePrice: assumptions.purchasePrice, downPaymentPct: assumptions.downPaymentPct, interestRate: assumptions.interestRate, loanTermYears: assumptions.loanTermYears, monthlyRent: assumptions.monthlyRent, propertyTaxes: assumptions.propertyTaxes, insurance: assumptions.insurance, vacancyRate: assumptions.vacancyRate, managementPct: assumptions.managementPct, maintenancePct: assumptions.maintenancePct }} />
                     </div>
                   )}
                   {drillDownView === 'compare' && (
-                    <div className="bg-white border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)]">
-                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)]">
+                    <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
+                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
                         <GitCompare className="w-5 h-5 text-[#0465f2]" />
-                        <h4 className="text-base font-semibold text-navy-900">{bannerTitle}</h4>
+                        <h4 className="text-base font-semibold text-navy-900 dark:text-white">{bannerTitle}</h4>
                       </div>
                       <ScenarioComparison currentAssumptions={projectionAssumptions} propertyAddress={property.address.full_address} />
                     </div>
