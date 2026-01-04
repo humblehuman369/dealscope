@@ -46,6 +46,9 @@ export default function ScanScreen() {
   // Pulsing animation for "Analyzing Area Data" state
   useEffect(() => {
     if (!scanner.isLocationReady) {
+      // Reset to initial value to prevent jump/glitch when animation restarts
+      pulseAnimation.setValue(0.6);
+      
       const pulse = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnimation, {
