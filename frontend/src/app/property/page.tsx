@@ -1355,10 +1355,10 @@ function StrategyGrid({
           <button
             key={strategy.id}
             onClick={() => onSelectStrategy(strategy.id)}
-            className={`relative bg-white border-2 rounded-[0.625rem] p-3 text-center transition-all cursor-pointer ${
+            className={`relative bg-white dark:bg-navy-700 border-2 rounded-[0.625rem] p-3 text-center transition-all cursor-pointer ${
               isSelected 
-                ? 'border-brand-500 shadow-[0_6px_20px_rgba(4,101,242,0.3)] scale-[1.03] bg-gradient-to-br from-blue-50 to-indigo-50' 
-                : 'border-gray-200 hover:border-brand-500 hover:shadow-lg'
+                ? 'border-brand-500 shadow-[0_6px_20px_rgba(4,101,242,0.3)] scale-[1.03] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-600 dark:to-navy-500' 
+                : 'border-gray-200 dark:border-navy-600 hover:border-brand-500 hover:shadow-lg'
             }`}
           >
             {/* Selected Checkmark */}
@@ -1369,20 +1369,97 @@ function StrategyGrid({
             )}
             
             {/* Strategy Name - shortened for boxes */}
-            <div className="text-base font-semibold text-navy-900 mb-1.5">{displayName}</div>
+            <div className="text-base font-semibold text-navy-900 dark:text-white mb-1.5">{displayName}</div>
             
             {/* Primary Value - Blue for positive, gray for breakeven, red for negative */}
             <div className={`text-lg font-bold font-mono mb-0.5 ${primaryColor}`}>
               {metrics.primary}
             </div>
-            <div className="text-[0.6875rem] text-gray-500 mb-1.5">{metrics.primaryLabel}</div>
+            <div className="text-[0.6875rem] text-gray-500 dark:text-gray-400 mb-1.5">{metrics.primaryLabel}</div>
             
             {/* Secondary Value - Blue for positive, gray for breakeven, red for negative */}
             <div className={`text-[0.9375rem] font-bold mb-0.5 ${secondaryColor}`}>{metrics.secondary}</div>
-            <div className="text-[0.6875rem] text-gray-500">{metrics.secondaryLabel}</div>
+            <div className="text-[0.6875rem] text-gray-500 dark:text-gray-400">{metrics.secondaryLabel}</div>
           </button>
         )
       })}
+    </div>
+  )
+}
+
+// Mobile Strategy Preview - Compact 2x3 grid for real-time feedback on mobile
+// Shows strategy results inline with Section 1 sliders so users see changes immediately
+function MobileStrategyPreview({ 
+  strategies: strategyList, 
+  strategyMetrics, 
+  selectedStrategy, 
+  onSelectStrategy 
+}: {
+  strategies: Strategy[]
+  strategyMetrics: Record<StrategyId, { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; primaryValue: number; secondaryValue: number }>
+  selectedStrategy: StrategyId
+  onSelectStrategy: (id: StrategyId) => void
+}) {
+  return (
+    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-navy-600">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-brand-500 text-white text-[10px] font-bold">
+            2
+          </div>
+          <span className="text-xs font-bold text-navy-900 dark:text-white">Live Results</span>
+        </div>
+        <span className="text-[10px] text-gray-400 dark:text-gray-500">Tap to select strategy</span>
+      </div>
+      
+      {/* Compact 2x3 Grid */}
+      <div className="grid grid-cols-3 gap-2">
+        {strategyList.map((strategy) => {
+          const isSelected = selectedStrategy === strategy.id
+          const metrics = strategyMetrics[strategy.id]
+          const isLoss = metrics.primaryValue < 0
+          const isBreakeven = metrics.primaryValue === 0
+          
+          // Shortened names for compact view
+          const displayName = strategy.id === 'ltr' ? 'Long' 
+            : strategy.id === 'str' ? 'Short' 
+            : strategy.id === 'brrrr' ? 'BRRRR'
+            : strategy.id === 'flip' ? 'Flip'
+            : strategy.id === 'house_hack' ? 'Hack'
+            : 'Whole'
+          
+          // Color based on profit/loss
+          const valueColor = isLoss ? 'text-crimson-500' : isBreakeven ? 'text-gray-400' : 'text-brand-500'
+          
+          return (
+            <button
+              key={strategy.id}
+              onClick={() => onSelectStrategy(strategy.id)}
+              className={`relative rounded-lg p-2 text-center transition-all ${
+                isSelected 
+                  ? 'bg-brand-500 text-white shadow-md scale-[1.02]' 
+                  : 'bg-gray-50 dark:bg-navy-700 hover:bg-gray-100 dark:hover:bg-navy-600'
+              }`}
+            >
+              {/* Strategy Name */}
+              <div className={`text-[10px] font-semibold mb-0.5 ${isSelected ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
+                {displayName}
+              </div>
+              
+              {/* Primary Value (Cash Flow / Profit) */}
+              <div className={`text-sm font-bold font-mono leading-tight ${isSelected ? 'text-white' : valueColor}`}>
+                {metrics.primary}
+              </div>
+              
+              {/* Secondary Value (CoC / Margin) */}
+              <div className={`text-[10px] font-semibold ${isSelected ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'}`}>
+                {metrics.secondary}
+              </div>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -1484,7 +1561,20 @@ function FineTuneHeader({ title, prompt }: {
 }
 
 // New "Set Your Terms" panel - always visible, organized in 3 groups
-function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddress, rehabBudget, propertyDetails }: {
+// On mobile, includes MobileStrategyPreview for real-time feedback
+function SetYourTermsPanel({ 
+  assumptions, 
+  update, 
+  updateAdjustment, 
+  propertyAddress, 
+  rehabBudget, 
+  propertyDetails,
+  // Mobile strategy preview props
+  strategies,
+  strategyMetrics,
+  selectedStrategy,
+  onSelectStrategy
+}: {
   assumptions: Assumptions
   update: (key: keyof Assumptions, value: number) => void
   updateAdjustment: (key: 'purchasePriceAdj' | 'monthlyRentAdj', value: number) => void
@@ -1500,6 +1590,11 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
     hasPool?: boolean
     stories?: number
   }
+  // Mobile strategy preview props
+  strategies: Strategy[]
+  strategyMetrics: Record<StrategyId, { primary: string; primaryLabel: string; secondary: string; secondaryLabel: string; primaryValue: number; secondaryValue: number }>
+  selectedStrategy: StrategyId
+  onSelectStrategy: (id: StrategyId) => void
 }) {
   // Build rehab estimator URL with property data for Quick Estimate mode
   const buildRehabUrl = () => {
@@ -1582,8 +1677,18 @@ function SetYourTermsPanel({ assumptions, update, updateAdjustment, propertyAddr
           />
         </div>
         
+        {/* Mobile Strategy Preview - Only visible on mobile for real-time feedback */}
+        <div className="md:hidden">
+          <MobileStrategyPreview
+            strategies={strategies}
+            strategyMetrics={strategyMetrics}
+            selectedStrategy={selectedStrategy}
+            onSelectStrategy={onSelectStrategy}
+          />
+        </div>
+        
         {/* Rehab Estimator Link */}
-        <div className="mt-4 pt-3 border-t border-gray-100">
+        <div className="mt-4 pt-3 border-t border-gray-100 dark:border-navy-600">
           <a
             href={buildRehabUrl()}
             className="inline-flex items-center gap-2 text-brand-500 hover:text-brand-600 text-xs font-medium underline underline-offset-2 transition-colors group"
@@ -3629,6 +3734,7 @@ function PropertyPageContent() {
         <PropertyHeader property={property} />
         
         {/* STEP 1: Set Your Terms - Always at Top */}
+        {/* On mobile, includes inline MobileStrategyPreview for real-time feedback */}
         <div className="mb-6">
           <SetYourTermsPanel
             assumptions={assumptions}
@@ -3646,11 +3752,16 @@ function PropertyPageContent() {
               hasPool: property.details?.features?.some(f => f.toLowerCase().includes('pool')) ?? false,
               stories: property.details?.stories ?? undefined,
             }}
+            // Mobile strategy preview props
+            strategies={strategies}
+            strategyMetrics={strategyMetrics}
+            selectedStrategy={selectedStrategy}
+            onSelectStrategy={(id) => { setSelectedStrategy(id); setDrillDownView('details'); }}
           />
         </div>
 
-        {/* STEP 2: Select Investment Strategy */}
-        <div className="bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg border border-[#0465f2] mb-3.5 transition-colors duration-300">
+        {/* STEP 2: Select Investment Strategy - Hidden on mobile (shown inline in Section 1) */}
+        <div className="hidden md:block bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg border border-[#0465f2] mb-3.5 transition-colors duration-300">
           <div className="px-4 pt-3 pb-0">
             <StepHeader step={2} title="Investment Strategies" callToAction="Explore Strategies" />
           </div>
