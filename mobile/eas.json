@@ -18,10 +18,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
-        "simulator": false,
-        "entitlements": {
-          "aps-environment": "development"
-        }
+        "simulator": false
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app"
