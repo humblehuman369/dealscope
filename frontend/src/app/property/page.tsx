@@ -1767,27 +1767,29 @@ function DrillDownTabs({ activeView, onViewChange }: { activeView: DrillDownView
   ]
   
   return (
-    <div className="flex gap-1 border-b-2 border-gray-200 dark:border-navy-600">
-      {tabs.map(tab => {
-        const Icon = tab.icon
-        const isActive = activeView === tab.id
-        return (
-          <button
-            key={tab.id}
-            onClick={() => onViewChange(tab.id)}
-            className={`relative flex items-center gap-1.5 px-5 py-2.5 text-[0.8125rem] font-semibold whitespace-nowrap transition-all ${
-              isActive 
-                ? 'text-brand-500 dark:text-brand-400' 
-                : 'text-gray-500 dark:text-gray-400 hover:text-brand-500 dark:hover:text-brand-400'
-            }`}
-          >
-            {tab.label}
-            {isActive && (
-              <div className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-brand-500 dark:bg-brand-400" />
-            )}
-          </button>
-        )
-      })}
+    <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+      <div className="flex gap-1 border-b-2 border-gray-200 dark:border-navy-600 min-w-max">
+        {tabs.map(tab => {
+          const Icon = tab.icon
+          const isActive = activeView === tab.id
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onViewChange(tab.id)}
+              className={`relative flex items-center gap-1.5 px-3 sm:px-5 py-2.5 text-[0.8125rem] font-semibold whitespace-nowrap transition-all ${
+                isActive 
+                  ? 'text-brand-500 dark:text-brand-400' 
+                  : 'text-gray-500 dark:text-gray-400 hover:text-brand-500 dark:hover:text-brand-400'
+              }`}
+            >
+              {tab.label}
+              {isActive && (
+                <div className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-brand-500 dark:bg-brand-400" />
+              )}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -2414,7 +2416,7 @@ function LTRAnalyticBreakdown({ calc, assumptions, strategyName = 'Long-Term Ren
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
         </div>
 
         {/* Two Column Layout */}
@@ -2604,7 +2606,7 @@ function STRAnalyticBreakdown({ calc, assumptions, strategyName = 'Short-Term Re
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
         </div>
 
         {/* STR Revenue Section */}
@@ -2775,7 +2777,7 @@ function BRRRRAnalyticBreakdown({ calc, assumptions, strategyName = 'BRRRR' }: {
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
         </div>
 
         {/* Two Column Layout for Phases */}
@@ -2930,7 +2932,7 @@ function FlipAnalyticBreakdown({ calc, assumptions, strategyName = 'Fix & Flip' 
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
         </div>
 
         {/* Step 1: The Opportunity - Flip Margin Box */}
@@ -3101,7 +3103,7 @@ function HouseHackAnalyticBreakdown({ calc, assumptions, strategyName = 'House H
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
         </div>
 
         {/* Two Column Layout */}
@@ -3239,7 +3241,7 @@ function WholesaleAnalyticBreakdown({ calc, assumptions, strategyName = 'Wholesa
         {/* Header */}
         <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
           <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">{strategyName} Strategy - Breakdown</h4>
+          <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
         </div>
 
         {/* Title Section */}
@@ -3793,7 +3795,7 @@ function PropertyPageContent() {
                 rehab: 'Rehab'
               }
               const currentTabLabel = tabLabels[drillDownView] || ''
-              const bannerTitle = `${strategyName} Strategy - ${currentTabLabel}`
+              const bannerTitle = `${strategyName} - ${currentTabLabel}`
               
               return (
                 <>

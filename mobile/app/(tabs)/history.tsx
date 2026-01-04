@@ -8,6 +8,7 @@ import {
   RefreshControl,
   Alert,
   ActivityIndicator,
+  useColorScheme,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,6 +29,18 @@ import {
 import { ScannedProperty, AnalyticsData } from '../../database';
 import { useAuth } from '../../context/AuthContext';
 import { AuthRequiredModal } from '../../components/AuthRequiredModal';
+
+// Brand Colors
+const BRAND = {
+  navy: '#07172e',      // Black/Blue - primary dark
+  blue: '#0465f2',      // Medium Blue - primary accent
+  cyan: '#00e5ff',      // Electric Cyan - highlight
+  silver: '#e1e8ed',    // Icy Silver - light bg
+  gray: '#aab2bd',      // Cool Gray - secondary text
+  white: '#ffffff',
+  profit: '#22c55e',
+  loss: '#ef4444',
+};
 
 // Display interface for the list
 interface DisplayProperty {
@@ -97,6 +110,9 @@ function getStrategyName(key: string): string {
 export default function HistoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  
   const [filter, setFilter] = useState<'all' | 'favorites'>('all');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingFavoriteId, setPendingFavoriteId] = useState<string | null>(null);
@@ -177,6 +193,59 @@ export default function HistoryScreen() {
     );
   }, [handleDelete]);
 
+  // Dynamic styles based on dark/light mode
+  const dynamicStyles = {
+    container: {
+      backgroundColor: isDark ? BRAND.navy : BRAND.silver,
+    },
+    header: {
+      backgroundColor: isDark ? BRAND.navy : BRAND.silver,
+    },
+    title: {
+      color: isDark ? BRAND.white : BRAND.navy,
+    },
+    card: {
+      backgroundColor: isDark ? '#0b2236' : BRAND.white,
+      borderColor: BRAND.blue,
+    },
+    address: {
+      color: isDark ? BRAND.white : BRAND.navy,
+    },
+    location: {
+      color: isDark ? BRAND.gray : BRAND.gray,
+    },
+    metricLabel: {
+      color: isDark ? BRAND.gray : BRAND.gray,
+    },
+    metricValue: {
+      color: isDark ? BRAND.white : BRAND.navy,
+    },
+    metricDivider: {
+      backgroundColor: isDark ? '#1a3a5c' : BRAND.silver,
+    },
+    metricBorder: {
+      borderColor: isDark ? '#1a3a5c' : BRAND.silver,
+    },
+    timestamp: {
+      color: BRAND.gray,
+    },
+    tabInactive: {
+      backgroundColor: isDark ? '#0b2236' : BRAND.silver,
+    },
+    tabTextInactive: {
+      color: isDark ? BRAND.gray : BRAND.gray,
+    },
+    emptyTitle: {
+      color: isDark ? BRAND.white : BRAND.navy,
+    },
+    emptyText: {
+      color: BRAND.gray,
+    },
+    loadingText: {
+      color: BRAND.gray,
+    },
+  };
+
   const renderProperty = useCallback(({ item }: { item: DisplayProperty }) => (
     <Swipeable
       friction={2}
@@ -186,14 +255,18 @@ export default function HistoryScreen() {
       }
     >
       <TouchableOpacity 
-        style={styles.propertyCard}
+        style={[styles.propertyCard, dynamicStyles.card]}
         onPress={() => handlePropertyPress(item)}
         activeOpacity={0.7}
       >
         <View style={styles.cardHeader}>
           <View style={styles.addressContainer}>
-            <Text style={styles.address} numberOfLines={1}>{item.address}</Text>
-            <Text style={styles.location}>{item.city}, {item.state}</Text>
+            <Text style={[styles.address, dynamicStyles.address]} numberOfLines={1}>
+              {item.address}
+            </Text>
+            <Text style={[styles.location, dynamicStyles.location]}>
+              {item.city}, {item.state}
+            </Text>
           </View>
           <TouchableOpacity 
             style={styles.favoriteButton}
@@ -203,19 +276,21 @@ export default function HistoryScreen() {
             <Ionicons 
               name={item.isFavorite ? "heart" : "heart-outline"} 
               size={22} 
-              color={item.isFavorite ? colors.loss.main : colors.gray[400]} 
+              color={item.isFavorite ? BRAND.loss : BRAND.gray} 
             />
           </TouchableOpacity>
         </View>
 
-        <View style={styles.cardMetrics}>
+        <View style={[styles.cardMetrics, dynamicStyles.metricBorder]}>
           <View style={styles.metric}>
-            <Text style={styles.metricLabel}>Top Strategy</Text>
-            <Text style={styles.metricValue} numberOfLines={1}>{item.topStrategy}</Text>
+            <Text style={[styles.metricLabel, dynamicStyles.metricLabel]}>Top Strategy</Text>
+            <Text style={[styles.metricValue, dynamicStyles.metricValue]} numberOfLines={1}>
+              {item.topStrategy}
+            </Text>
           </View>
-          <View style={styles.metricDivider} />
+          <View style={[styles.metricDivider, dynamicStyles.metricDivider]} />
           <View style={styles.metric}>
-            <Text style={styles.metricLabel}>Monthly Profit</Text>
+            <Text style={[styles.metricLabel, dynamicStyles.metricLabel]}>Monthly Profit</Text>
             <Text style={[
               styles.metricValue,
               item.monthlyProfit > 0 ? styles.profitText : styles.lossText
@@ -223,9 +298,9 @@ export default function HistoryScreen() {
               {formatCurrency(item.monthlyProfit)}
             </Text>
           </View>
-          <View style={styles.metricDivider} />
+          <View style={[styles.metricDivider, dynamicStyles.metricDivider]} />
           <View style={styles.metric}>
-            <Text style={styles.metricLabel}>Cash-on-Cash</Text>
+            <Text style={[styles.metricLabel, dynamicStyles.metricLabel]}>Cash-on-Cash</Text>
             <Text style={[
               styles.metricValue,
               item.cashOnCash > 0 ? styles.profitText : styles.lossText
@@ -236,27 +311,27 @@ export default function HistoryScreen() {
         </View>
 
         <View style={styles.cardFooter}>
-          <Text style={styles.timestamp}>
+          <Text style={[styles.timestamp, dynamicStyles.timestamp]}>
             {formatRelativeTime(item.scannedAt)}
           </Text>
-          <Ionicons name="chevron-forward" size={18} color={colors.gray[400]} />
+          <Ionicons name="chevron-forward" size={18} color={BRAND.gray} />
         </View>
       </TouchableOpacity>
     </Swipeable>
-  ), [handlePropertyPress, handleToggleFavorite, renderRightActions]);
+  ), [handlePropertyPress, handleToggleFavorite, renderRightActions, isDark]);
 
   // Show loading state while database initializes
   if (!dbReady || isLoading) {
     return (
-      <View style={[styles.container, styles.centerContent, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color={colors.primary[600]} />
-        <Text style={styles.loadingText}>Loading history...</Text>
+      <View style={[styles.container, styles.centerContent, dynamicStyles.container, { paddingTop: insets.top }]}>
+        <ActivityIndicator size="large" color={BRAND.blue} />
+        <Text style={[styles.loadingText, dynamicStyles.loadingText]}>Loading history...</Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, dynamicStyles.container, { paddingTop: insets.top }]}>
       {/* Auth Required Modal */}
       <AuthRequiredModal
         visible={showAuthModal}
@@ -268,30 +343,36 @@ export default function HistoryScreen() {
       />
 
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Scan History</Text>
+      <View style={[styles.header, dynamicStyles.header]}>
+        <Text style={[styles.title, dynamicStyles.title]}>Scan History</Text>
         <View style={styles.filterTabs}>
           <TouchableOpacity 
-            style={[styles.tab, filter === 'all' && styles.tabActive]}
+            style={[
+              styles.tab, 
+              filter === 'all' ? styles.tabActive : dynamicStyles.tabInactive
+            ]}
             onPress={() => setFilter('all')}
           >
             <Text style={[
               styles.tabText,
-              filter === 'all' && styles.tabTextActive
+              filter === 'all' ? styles.tabTextActive : dynamicStyles.tabTextInactive
             ]}>All</Text>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.tab, filter === 'favorites' && styles.tabActive]}
+            style={[
+              styles.tab, 
+              filter === 'favorites' ? styles.tabActive : dynamicStyles.tabInactive
+            ]}
             onPress={() => setFilter('favorites')}
           >
             <Ionicons 
               name="heart" 
               size={14} 
-              color={filter === 'favorites' ? '#fff' : colors.gray[500]} 
+              color={filter === 'favorites' ? '#fff' : BRAND.gray} 
             />
             <Text style={[
               styles.tabText,
-              filter === 'favorites' && styles.tabTextActive
+              filter === 'favorites' ? styles.tabTextActive : dynamicStyles.tabTextInactive
             ]}>Favorites</Text>
           </TouchableOpacity>
         </View>
@@ -311,8 +392,8 @@ export default function HistoryScreen() {
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={refetch}
-            tintColor={colors.primary[600]}
-            colors={[colors.primary[600]]}
+            tintColor={BRAND.blue}
+            colors={[BRAND.blue]}
           />
         }
         ListEmptyComponent={
@@ -320,12 +401,12 @@ export default function HistoryScreen() {
             <Ionicons 
               name={filter === 'favorites' ? "heart-outline" : "time-outline"} 
               size={48} 
-              color={colors.gray[300]} 
+              color={BRAND.gray} 
             />
-            <Text style={styles.emptyTitle}>
+            <Text style={[styles.emptyTitle, dynamicStyles.emptyTitle]}>
               {filter === 'favorites' ? 'No favorites yet' : 'No scans yet'}
             </Text>
-            <Text style={styles.emptyText}>
+            <Text style={[styles.emptyText, dynamicStyles.emptyText]}>
               {filter === 'favorites' 
                 ? 'Tap the heart icon to save favorites'
                 : 'Properties you scan will appear here'
@@ -365,7 +446,6 @@ function formatRelativeTime(date: Date): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background.tertiary, // Match property analytics page background
   },
   centerContent: {
     justifyContent: 'center',
@@ -374,19 +454,20 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 15,
-    color: colors.gray[600],
+    fontFamily: 'System',
+    fontWeight: '400',
   },
   header: {
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 12,
-    backgroundColor: colors.background.tertiary,
   },
   title: {
+    fontFamily: 'System',
     fontWeight: '700',
-    fontSize: 22,
-    color: colors.gray[900],
+    fontSize: 28,
     marginBottom: 12,
+    letterSpacing: -0.5,
   },
   filterTabs: {
     flexDirection: 'row',
@@ -399,15 +480,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: colors.gray[100],
   },
   tabActive: {
-    backgroundColor: colors.primary[600],
+    backgroundColor: BRAND.blue,
   },
   tabText: {
-    fontWeight: '500',
+    fontFamily: 'System',
+    fontWeight: '600',
     fontSize: 13,
-    color: colors.gray[600],
   },
   tabTextActive: {
     color: '#fff',
@@ -422,37 +502,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   propertyCard: {
-    backgroundColor: '#fff',
     borderRadius: 14,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: colors.primary[500], // Blue border like property analytics
+    padding: 14,
+    borderWidth: 1.5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   addressContainer: {
     flex: 1,
     marginRight: 8,
   },
   address: {
+    fontFamily: 'System',
     fontWeight: '700',
-    fontSize: 15,
-    color: colors.gray[900],
-    marginBottom: 1,
+    fontSize: 16,
+    marginBottom: 2,
+    letterSpacing: -0.3,
   },
   location: {
+    fontFamily: 'System',
     fontWeight: '400',
-    fontSize: 12,
-    color: colors.gray[500],
+    fontSize: 13,
   },
   favoriteButton: {
     padding: 4,
@@ -460,61 +539,62 @@ const styles = StyleSheet.create({
   cardMetrics: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingTop: 12,
+    paddingBottom: 12,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: colors.gray[100],
   },
   metric: {
     flex: 1,
   },
   metricDivider: {
     width: 1,
-    height: 24,
-    backgroundColor: colors.gray[200],
+    height: 28,
     marginHorizontal: 8,
   },
   metricLabel: {
+    fontFamily: 'System',
     fontWeight: '400',
-    fontSize: 10,
-    color: colors.gray[500],
-    marginBottom: 1,
+    fontSize: 11,
+    marginBottom: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
   metricValue: {
+    fontFamily: 'System',
     fontWeight: '700',
-    fontSize: 13,
-    color: colors.gray[800],
+    fontSize: 14,
   },
   profitText: {
-    color: colors.profit.main,
+    color: BRAND.profit,
   },
   lossText: {
-    color: colors.loss.main,
+    color: BRAND.loss,
   },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 10,
   },
   timestamp: {
+    fontFamily: 'System',
     fontWeight: '400',
-    fontSize: 11,
-    color: colors.gray[400],
+    fontSize: 12,
   },
   deleteAction: {
-    backgroundColor: colors.loss.main,
+    backgroundColor: BRAND.loss,
     justifyContent: 'center',
     alignItems: 'center',
     width: 80,
     height: '100%',
-    borderTopRightRadius: 16,
-    borderBottomRightRadius: 16,
+    borderTopRightRadius: 14,
+    borderBottomRightRadius: 14,
   },
   deleteActionText: {
     color: '#fff',
     fontSize: 12,
+    fontFamily: 'System',
     fontWeight: '600',
     marginTop: 4,
   },
@@ -525,28 +605,30 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   emptyTitle: {
-    fontWeight: '600',
-    fontSize: 18,
-    color: colors.gray[700],
+    fontFamily: 'System',
+    fontWeight: '700',
+    fontSize: 20,
     marginTop: 16,
   },
   emptyText: {
+    fontFamily: 'System',
     fontWeight: '400',
     fontSize: 14,
-    color: colors.gray[500],
-    marginTop: 4,
+    marginTop: 6,
     textAlign: 'center',
     paddingHorizontal: 32,
+    lineHeight: 20,
   },
   viewAllButton: {
-    marginTop: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: colors.primary[100],
-    borderRadius: 20,
+    marginTop: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: BRAND.blue,
+    borderRadius: 24,
   },
   viewAllButtonText: {
-    color: colors.primary[700],
+    color: '#fff',
+    fontFamily: 'System',
     fontWeight: '600',
     fontSize: 14,
   },

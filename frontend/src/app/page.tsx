@@ -544,9 +544,9 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Hero Title */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-brand-500 leading-tight mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-brand-500 dark:text-brand-500 leading-tight mb-6">
               Analyze Investment Real Estate<br />
-              in <span className="text-accent-500">60</span> seconds!
+              in <span className="text-accent-500 dark:text-accent-500">60</span> seconds!
             </h1>
             <p className="text-xl md:text-2xl text-neutral-500 font-medium mb-8">
               Point & Scan or simply input address
