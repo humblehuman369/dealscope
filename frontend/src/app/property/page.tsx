@@ -857,13 +857,6 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
 }) {
   const percentage = Math.round(((value - min) / (max - min)) * 100)
   const displayValue = formatType === 'currency' ? formatCurrency(value) : formatType === 'percent' ? `${(value * 100).toFixed(1)}%` : formatType === 'years' ? `${value} yrs` : `${value} mo`
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
@@ -874,12 +867,12 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
       <div className="relative h-[3px]">
         <div className="absolute inset-0 rounded-sm bg-gray-200" />
         <div 
-          ref={fillRef}
           className="absolute top-0 left-0 h-full rounded-sm slider-fill-tailwind bg-gradient-to-r from-accent-500 to-brand-500" 
+          style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
         <div 
-          ref={thumbRef}
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb"
+          style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} aria-label={label} title={label} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
       </div>
@@ -891,18 +884,11 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
 function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = false }: {
   label: string; baseValue: number; adjustment: number; onChange: (adj: number) => void; compact?: boolean
 }) {
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
   // adjustment is -0.5 to +0.5, convert to 0-100 slider position (50 = center)
   const sliderPosition = Math.round((adjustment + 0.5) * 100)
   const computedValue = Math.round(baseValue * (1 + adjustment))
   const adjPercent = adjustment * 100
   const adjSign = adjustment >= 0 ? '+' : ''
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${sliderPosition}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${sliderPosition}%`)
-  }, [sliderPosition])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
@@ -920,13 +906,13 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
         <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
         {/* Gradient fill from left to thumb position */}
         <div 
-          ref={fillRef}
           className="absolute top-0 left-0 h-full rounded-sm slider-fill"
+          style={{ '--slider-fill': `${sliderPosition}%` } as React.CSSProperties}
         />
         {/* Thumb */}
         <div 
-          ref={thumbRef}
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          style={{ '--slider-position': `${sliderPosition}%` } as React.CSSProperties}
         />
         <input 
           type="range" 
@@ -948,15 +934,8 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
 function PercentSlider({ label, value, onChange, compact = false, maxPercent = 100 }: {
   label: string; value: number; onChange: (value: number) => void; compact?: boolean; maxPercent?: number
 }) {
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
   const percentage = Math.round((value / (maxPercent / 100)) * 100)
   const displayPercent = (value * 100).toFixed(1)
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
@@ -969,13 +948,13 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
         <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
         {/* Gradient fill from left to thumb position */}
         <div 
-          ref={fillRef}
           className="absolute top-0 left-0 h-full rounded-sm slider-fill"
+          style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
         {/* Thumb */}
         <div 
-          ref={thumbRef}
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input 
           type="range" 
@@ -997,16 +976,9 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
 function PercentDollarSlider({ label, value, baseAmount, onChange, compact = false, maxPercent = 100 }: {
   label: string; value: number; baseAmount: number; onChange: (value: number) => void; compact?: boolean; maxPercent?: number
 }) {
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
   const percentage = Math.round((value / (maxPercent / 100)) * 100)
   const displayPercent = (value * 100).toFixed(1)
   const dollarValue = Math.round(baseAmount * value)
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
@@ -1022,13 +994,13 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
         <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
         {/* Gradient fill from left to thumb position */}
         <div 
-          ref={fillRef}
           className="absolute top-0 left-0 h-full rounded-sm slider-fill-tailwind bg-gradient-to-r from-accent-500 to-brand-500"
+          style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
         {/* Thumb */}
         <div 
-          ref={thumbRef}
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input 
           type="range" 
@@ -1051,16 +1023,9 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
 function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
   value: number; onChange: (value: number) => void; annualRent: number; compact?: boolean
 }) {
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
   const percentage = Math.round((value / 0.30) * 100) // maxPercent is 30%
   const displayPercent = (value * 100).toFixed(1)
   const monthlyValue = Math.round((annualRent * value) / 12) // Monthly calculation
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
@@ -1071,12 +1036,12 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
       <div className="relative h-[3px] mt-1.5">
         <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
         <div 
-          ref={fillRef}
           className="absolute top-0 left-0 h-full rounded-sm slider-fill"
+          style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
         <div 
-          ref={thumbRef}
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input 
           type="range" 
@@ -1098,16 +1063,9 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
 function ManagementSlider({ value, onChange, annualRent, compact = false }: {
   value: number; onChange: (value: number) => void; annualRent: number; compact?: boolean
 }) {
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
   const percentage = Math.round((value / 0.30) * 100) // maxPercent is 30%
   const displayPercent = (value * 100).toFixed(1)
   const monthlyValue = Math.round((annualRent * value) / 12) // Monthly calculation
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
@@ -1118,12 +1076,12 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
       <div className="relative h-[3px] mt-1.5">
         <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
         <div 
-          ref={fillRef}
           className="absolute top-0 left-0 h-full rounded-sm slider-fill"
+          style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
         <div 
-          ref={thumbRef}
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input 
           type="range" 
@@ -1145,15 +1103,8 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
 function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = false }: {
   roomsRented: number; totalBedrooms: number; onChange: (rooms: number) => void; compact?: boolean
 }) {
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
   const maxRooms = Math.max(1, totalBedrooms - 1) // Can't rent all rooms - owner needs 1
   const percentage = totalBedrooms > 1 ? ((roomsRented - 1) / (maxRooms - 1)) * 100 : 50
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
@@ -1164,12 +1115,12 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
       <div className="relative h-[3px] mt-1.5">
         <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
         <div 
-          ref={fillRef}
           className="absolute top-0 left-0 h-full rounded-sm slider-fill"
+          style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
         <div 
-          ref={thumbRef}
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input 
           type="range" 
@@ -1496,16 +1447,9 @@ function MobileStrategyPreview({
 function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
   purchasePrice: number; arvPct: number; onChange: (value: number) => void; compact?: boolean
 }) {
-  const fillRef = useRef<HTMLDivElement>(null)
-  const thumbRef = useRef<HTMLDivElement>(null)
   const computedArv = Math.round(purchasePrice * (1 + arvPct))
   const percentage = Math.round(arvPct * 100)
   const displayPercent = (arvPct * 100).toFixed(0)
-
-  useEffect(() => {
-    if (fillRef.current) fillRef.current.style.setProperty('--slider-fill', `${percentage}%`)
-    if (thumbRef.current) thumbRef.current.style.setProperty('--slider-position', `${percentage}%`)
-  }, [percentage])
 
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
@@ -1519,12 +1463,12 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
       <div className="relative h-[3px] mt-1.5">
         <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
         <div 
-          ref={fillRef}
           className="absolute top-0 left-0 h-full rounded-sm slider-fill"
+          style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
         <div 
-          ref={thumbRef}
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input 
           type="range" 
