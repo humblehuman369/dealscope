@@ -7,6 +7,9 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "ios": {
+        "simulator": false
+      },
       "env": {
         "EXPO_PUBLIC_API_URL": "http://localhost:8000"
       }
@@ -27,13 +30,12 @@
     "beta": {
       "distribution": "internal",
       "channel": "beta",
-      "autoIncrement": "version",
+      "autoIncrement": true,
       "android": {
         "buildType": "apk"
       },
       "ios": {
-        "simulator": false,
-        "enterpriseProvisioning": "adhoc"
+        "simulator": false
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app"
@@ -42,39 +44,12 @@
     "production": {
       "distribution": "store",
       "channel": "production",
-      "autoIncrement": "buildNumber",
+      "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
       },
-      "ios": {
-        "autoIncrement": "buildNumber"
-      },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app"
-      }
-    }
-  },
-  "submit": {
-    "production": {
-      "ios": {
-        "appleId": "",
-        "ascAppId": "",
-        "appleTeamId": ""
-      },
-      "android": {
-        "serviceAccountKeyPath": "",
-        "track": "internal"
-      }
-    },
-    "beta": {
-      "ios": {
-        "appleId": "",
-        "ascAppId": "",
-        "appleTeamId": ""
-      },
-      "android": {
-        "serviceAccountKeyPath": "",
-        "track": "internal"
       }
     }
   }
