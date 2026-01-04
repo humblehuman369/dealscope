@@ -6,7 +6,7 @@ import { colors } from '../../theme/colors';
 export default function TabLayout() {
   return (
     <Tabs
-      initialRouteName="map"
+      initialRouteName="home"
       screenOptions={{
         tabBarActiveTintColor: colors.primary[600],
         tabBarInactiveTintColor: colors.gray[400],
@@ -26,11 +26,20 @@ export default function TabLayout() {
         headerShown: false,
       }}
     >
-      {/* Hidden index route that redirects to map */}
+      {/* Hidden index route that redirects to home */}
       <Tabs.Screen
         name="index"
         options={{
           href: null, // Hide from tab bar
+        }}
+      />
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
