@@ -31,20 +31,10 @@
     @apply bg-navy-900 text-neutral-100;
   }
 
-  /* Heading styles */
+  /* Heading styles - default color, can be overridden by utility classes */
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #07172e;
-  }
-
-  html.dark h1,
-  html.dark h2,
-  html.dark h3,
-  html.dark h4,
-  html.dark h5,
-  html.dark h6 {
-    @apply text-white;
   }
 
   /* Link base styles */
