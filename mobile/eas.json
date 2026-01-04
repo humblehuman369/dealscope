@@ -8,7 +8,20 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
-        "simulator": false
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://localhost:8000"
+      }
+    },
+    "development-device": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": false,
+        "entitlements": {
+          "aps-environment": "development"
+        }
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "http://localhost:8000"
