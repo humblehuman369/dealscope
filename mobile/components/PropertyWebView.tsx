@@ -104,7 +104,9 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
   const injectedStyles = `
     (function() {
       // Apply dark mode class based on device preference
-      if (${isDarkMode}) {
+      // Use JSON.stringify to ensure boolean is properly injected (not as truthy string)
+      var isDark = ${JSON.stringify(isDarkMode)};
+      if (isDark) {
         document.documentElement.classList.add('dark');
         localStorage.setItem('theme', 'dark');
       } else {
