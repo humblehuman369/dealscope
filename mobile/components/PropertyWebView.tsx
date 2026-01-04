@@ -140,10 +140,10 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
   `;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Floating Close Button - positioned on the RIGHT side */}
       <TouchableOpacity
-        style={[styles.floatingCloseButton, { top: insets.top + 8 }]}
+        style={styles.floatingCloseButton}
         onPress={handleGoBack}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
