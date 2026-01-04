@@ -62,5 +62,8 @@
         "EXPO_PUBLIC_API_URL": "https://dealscope-production.up.railway.app"
       }
     }
+  },
+  "submit": {
+    "production": {}
   }
 }
