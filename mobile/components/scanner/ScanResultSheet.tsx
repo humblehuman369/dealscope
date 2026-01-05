@@ -119,7 +119,13 @@ export function ScanResultSheet({
   const { property, analytics } = result;
 
   // Cast analytics to full type (API returns complete data)
-  const fullAnalytics = analytics as unknown as InvestmentAnalytics;
+  const fullAnalytics = analytics as unknown as InvestmentAnalytics & { 
+    isEstimated?: boolean; 
+    estimateReason?: string;
+  };
+  
+  // Check if this is estimated data (fallback when API fails)
+  const isEstimatedData = (fullAnalytics as any).isEstimated === true;
   
   // Use property details from analytics (API data) which has full property info
   const propertyDetails = fullAnalytics.property || property;
@@ -150,11 +156,27 @@ export function ScanResultSheet({
         <View style={styles.content}>
           {/* Checkmark Icon */}
           <View style={styles.checkmarkContainer}>
-            <Ionicons name="checkmark-circle" size={48} color={colors.profit.main} />
+            <Ionicons 
+              name={isEstimatedData ? "alert-circle" : "checkmark-circle"} 
+              size={48} 
+              color={isEstimatedData ? colors.warning?.main || '#F59E0B' : colors.profit.main} 
+            />
           </View>
 
           {/* Address */}
-          <Text style={styles.addressTitle}>Property Found</Text>
+          <Text style={styles.addressTitle}>
+            {isEstimatedData ? 'Property Located' : 'Property Found'}
+          </Text>
+          
+          {/* Estimated Data Banner */}
+          {isEstimatedData && (
+            <View style={styles.estimatedBanner}>
+              <Ionicons name="information-circle" size={16} color="#92400E" />
+              <Text style={styles.estimatedBannerText}>
+                Showing estimated data - tap for full analysis
+              </Text>
+            </View>
+          )}
           <Text style={styles.address} numberOfLines={2}>
             {propertyDetails.address || property.address}
           </Text>
@@ -287,6 +309,23 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  estimatedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+  },
+  estimatedBannerText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#92400E',
   },
   address: {
     fontWeight: '600',
