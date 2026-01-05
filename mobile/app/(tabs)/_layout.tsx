@@ -24,6 +24,8 @@ export default function TabLayout() {
           marginTop: 4,
         },
         headerShown: false,
+        // Disable swipe gesture between tabs to prevent conflicts with sliders
+        swipeEnabled: false,
       }}
     >
       {/* Hidden index route that redirects to home */}
