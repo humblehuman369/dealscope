@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -25,6 +26,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, isAuthenticated } = useAuth();
+  const { theme, isDark } = useTheme();
   const [searchAddress, setSearchAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<TextInput>(null);
@@ -45,8 +47,34 @@ export default function HomeScreen() {
     router.push('/(tabs)/map');
   };
 
+  // Dynamic styles based on theme
+  const dynamicStyles = {
+    container: { backgroundColor: theme.background },
+    logoText: { color: theme.text },
+    signInText: { color: theme.text },
+    heroTitle: { color: theme.text },
+    heroHighlight: { color: theme.text },
+    heroSubtitle: { color: theme.textMuted },
+    searchInputContainer: { 
+      backgroundColor: theme.card, 
+      borderColor: isDark ? theme.border : colors.gray[200] 
+    },
+    searchInput: { color: theme.text },
+    featuresTitle: { color: theme.text },
+    featureCard: { backgroundColor: theme.card },
+    featureTitle: { color: theme.text },
+    featureDescription: { color: theme.textMuted },
+    featureIconContainer: { 
+      backgroundColor: isDark ? colors.primary[900] : colors.primary[50] 
+    },
+    mapButton: { 
+      backgroundColor: theme.card,
+      borderColor: isDark ? colors.primary[700] : colors.primary[200],
+    },
+  };
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, dynamicStyles.container, { paddingTop: insets.top }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -64,7 +92,7 @@ export default function HomeScreen() {
                 style={styles.logo}
                 resizeMode="contain"
               />
-              <Text style={styles.logoText}>
+              <Text style={[styles.logoText, dynamicStyles.logoText]}>
                 Invest<Text style={styles.logoAccent}>IQ</Text>
               </Text>
             </View>
@@ -74,40 +102,40 @@ export default function HomeScreen() {
                 style={styles.profileButton}
                 onPress={() => router.push('/(tabs)/settings')}
               >
-                <Ionicons name="person-circle-outline" size={32} color={colors.primary[600]} />
+                <Ionicons name="person-circle-outline" size={32} color={colors.primary[isDark ? 400 : 600]} />
               </TouchableOpacity>
             ) : (
               <TouchableOpacity 
                 style={styles.signInButton}
                 onPress={() => router.push('/auth/login')}
               >
-                <Text style={styles.signInText}>Sign In</Text>
+                <Text style={[styles.signInText, dynamicStyles.signInText]}>Sign In</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {/* Hero Section */}
           <View style={styles.heroSection}>
-            <Text style={styles.heroTitle}>
+            <Text style={[styles.heroTitle, dynamicStyles.heroTitle]}>
               Analyze Investment{'\n'}Real Estate
             </Text>
-            <Text style={styles.heroHighlight}>
+            <Text style={[styles.heroHighlight, dynamicStyles.heroHighlight]}>
               in <Text style={styles.heroAccent}>60</Text> seconds!
             </Text>
-            <Text style={styles.heroSubtitle}>
+            <Text style={[styles.heroSubtitle, dynamicStyles.heroSubtitle]}>
               Point & Scan or simply input address
             </Text>
           </View>
 
           {/* Search Section */}
           <View style={styles.searchSection}>
-            <View style={styles.searchInputContainer}>
-              <Ionicons name="location-outline" size={22} color={colors.gray[400]} style={styles.searchIcon} />
+            <View style={[styles.searchInputContainer, dynamicStyles.searchInputContainer]}>
+              <Ionicons name="location-outline" size={22} color={theme.textMuted} style={styles.searchIcon} />
               <TextInput
                 ref={inputRef}
-                style={styles.searchInput}
+                style={[styles.searchInput, dynamicStyles.searchInput]}
                 placeholder="Enter property address..."
-                placeholderTextColor={colors.gray[400]}
+                placeholderTextColor={theme.textMuted}
                 value={searchAddress}
                 onChangeText={setSearchAddress}
                 onSubmitEditing={handleSearch}
@@ -120,7 +148,7 @@ export default function HomeScreen() {
                   onPress={() => setSearchAddress('')}
                   style={styles.clearButton}
                 >
-                  <Ionicons name="close-circle" size={20} color={colors.gray[400]} />
+                  <Ionicons name="close-circle" size={20} color={theme.textMuted} />
                 </TouchableOpacity>
               )}
             </View>
@@ -153,36 +181,44 @@ export default function HomeScreen() {
               </LinearGradient>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.mapButton} onPress={handleMapPress}>
-              <Ionicons name="map-outline" size={22} color={colors.primary[600]} />
-              <Text style={styles.mapButtonText}>Explore Map</Text>
+            <TouchableOpacity style={[styles.mapButton, dynamicStyles.mapButton]} onPress={handleMapPress}>
+              <Ionicons name="map-outline" size={22} color={colors.primary[isDark ? 400 : 600]} />
+              <Text style={[styles.mapButtonText, { color: colors.primary[isDark ? 400 : 600] }]}>Explore Map</Text>
             </TouchableOpacity>
           </View>
 
           {/* Features Section */}
           <View style={styles.featuresSection}>
-            <Text style={styles.featuresTitle}>Instant Property Analytics</Text>
+            <Text style={[styles.featuresTitle, dynamicStyles.featuresTitle]}>Instant Property Analytics</Text>
             
             <View style={styles.featureGrid}>
               <FeatureCard
                 icon="cash-outline"
                 title="Cash Flow"
                 description="Monthly & annual projections"
+                theme={theme}
+                isDark={isDark}
               />
               <FeatureCard
                 icon="trending-up-outline"
                 title="ROI Analysis"
                 description="Cap rate, CoC return"
+                theme={theme}
+                isDark={isDark}
               />
               <FeatureCard
                 icon="layers-outline"
                 title="6 Strategies"
                 description="LTR, STR, BRRRR & more"
+                theme={theme}
+                isDark={isDark}
               />
               <FeatureCard
                 icon="calculator-outline"
                 title="Deal Tuning"
                 description="Adjust & compare scenarios"
+                theme={theme}
+                isDark={isDark}
               />
             </View>
           </View>
@@ -215,14 +251,20 @@ export default function HomeScreen() {
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: string; title: string; description: string }) {
+function FeatureCard({ icon, title, description, theme, isDark }: { 
+  icon: string; 
+  title: string; 
+  description: string;
+  theme: any;
+  isDark: boolean;
+}) {
   return (
-    <View style={styles.featureCard}>
-      <View style={styles.featureIconContainer}>
-        <Ionicons name={icon as any} size={24} color={colors.primary[600]} />
+    <View style={[styles.featureCard, { backgroundColor: theme.card }]}>
+      <View style={[styles.featureIconContainer, { backgroundColor: isDark ? colors.primary[900] : colors.primary[50] }]}>
+        <Ionicons name={icon as any} size={24} color={colors.primary[isDark ? 400 : 600]} />
       </View>
-      <Text style={styles.featureTitle}>{title}</Text>
-      <Text style={styles.featureDescription}>{description}</Text>
+      <Text style={[styles.featureTitle, { color: theme.text }]}>{title}</Text>
+      <Text style={[styles.featureDescription, { color: theme.textMuted }]}>{description}</Text>
     </View>
   );
 }

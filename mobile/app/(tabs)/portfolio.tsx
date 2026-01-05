@@ -29,6 +29,7 @@ import {
   useDatabaseInit,
 } from '../../hooks/useDatabase';
 import { PortfolioProperty } from '../../database';
+import { useTheme } from '../../context/ThemeContext';
 
 const STRATEGY_OPTIONS = [
   { label: 'Long-Term Rental', value: 'long_term_rental' },
@@ -42,6 +43,7 @@ const STRATEGY_OPTIONS = [
 export default function PortfolioScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { theme, isDark } = useTheme();
   const [showAddModal, setShowAddModal] = useState(false);
   
   // Database hooks
@@ -88,12 +90,31 @@ export default function PortfolioScreen() {
     monthlyIncome: 0,
   };
 
+  // Dynamic styles based on theme
+  const dynamicStyles = {
+    container: { backgroundColor: theme.background },
+    header: { backgroundColor: theme.headerBackground, borderBottomColor: theme.headerBorder },
+    title: { color: theme.text },
+    summaryCard: { backgroundColor: theme.card, borderColor: isDark ? colors.primary[700] : colors.primary[200] },
+    summaryValue: { color: theme.text },
+    summaryLabel: { color: theme.textMuted },
+    sectionTitle: { color: theme.text },
+    propertyCard: { backgroundColor: theme.card, borderColor: isDark ? colors.primary[700] : colors.primary[200] },
+    propertyAddress: { color: theme.text },
+    propertyLocation: { color: theme.textMuted },
+    metricLabel: { color: theme.textMuted },
+    metricValue: { color: theme.text },
+    emptyTitle: { color: theme.text },
+    emptyText: { color: theme.textMuted },
+    loadingText: { color: theme.textMuted },
+  };
+
   // Loading state
   if (!dbReady || isLoading) {
     return (
-      <View style={[styles.container, styles.centerContent, { paddingTop: insets.top }]}>
+      <View style={[styles.container, styles.centerContent, dynamicStyles.container, { paddingTop: insets.top }]}>
         <ActivityIndicator size="large" color={colors.primary[600]} />
-        <Text style={styles.loadingText}>Loading portfolio...</Text>
+        <Text style={[styles.loadingText, dynamicStyles.loadingText]}>Loading portfolio...</Text>
       </View>
     );
   }
@@ -101,10 +122,10 @@ export default function PortfolioScreen() {
   const hasProperties = properties && properties.length > 0;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, dynamicStyles.container, { paddingTop: insets.top }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Portfolio</Text>
+      <View style={[styles.header, dynamicStyles.header]}>
+        <Text style={[styles.title, dynamicStyles.title]}>Portfolio</Text>
         <TouchableOpacity style={styles.addButton} onPress={handleAddProperty}>
           <Ionicons name="add" size={24} color="#fff" />
         </TouchableOpacity>
@@ -124,51 +145,53 @@ export default function PortfolioScreen() {
       >
         {/* Portfolio Summary Cards */}
         <View style={styles.summaryCards}>
-          <View style={styles.summaryCard}>
-            <Ionicons name="home" size={24} color={colors.primary[600]} />
-            <Text style={styles.summaryValue}>
+          <View style={[styles.summaryCard, dynamicStyles.summaryCard]}>
+            <Ionicons name="home" size={24} color={colors.primary[isDark ? 400 : 600]} />
+            <Text style={[styles.summaryValue, dynamicStyles.summaryValue]}>
               {portfolioSummary.totalProperties}
             </Text>
-            <Text style={styles.summaryLabel}>Properties</Text>
+            <Text style={[styles.summaryLabel, dynamicStyles.summaryLabel]}>Properties</Text>
           </View>
 
-          <View style={styles.summaryCard}>
+          <View style={[styles.summaryCard, dynamicStyles.summaryCard]}>
             <Ionicons name="trending-up" size={24} color={colors.profit.main} />
-            <Text style={styles.summaryValue}>
+            <Text style={[styles.summaryValue, dynamicStyles.summaryValue]}>
               {formatCompact(portfolioSummary.totalValue)}
             </Text>
-            <Text style={styles.summaryLabel}>Total Value</Text>
+            <Text style={[styles.summaryLabel, dynamicStyles.summaryLabel]}>Total Value</Text>
           </View>
 
-          <View style={styles.summaryCard}>
+          <View style={[styles.summaryCard, dynamicStyles.summaryCard]}>
             <Ionicons name="cash" size={24} color={colors.info.main} />
-            <Text style={styles.summaryValue}>
+            <Text style={[styles.summaryValue, dynamicStyles.summaryValue]}>
               {formatCurrency(portfolioSummary.monthlyIncome)}
             </Text>
-            <Text style={styles.summaryLabel}>Monthly Income</Text>
+            <Text style={[styles.summaryLabel, dynamicStyles.summaryLabel]}>Monthly Income</Text>
           </View>
         </View>
 
         {/* Property List or Empty State */}
         {hasProperties ? (
           <View style={styles.propertiesList}>
-            <Text style={styles.sectionTitle}>Your Properties</Text>
+            <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Your Properties</Text>
             {properties.map((property) => (
               <PropertyCard
                 key={property.id}
                 property={property}
                 onPress={() => handlePropertyPress(property)}
                 onDelete={() => handleDeleteProperty(property.id, property.address)}
+                theme={theme}
+                isDark={isDark}
               />
             ))}
           </View>
         ) : (
           <View style={styles.emptyState}>
-            <View style={styles.emptyIconContainer}>
-              <Ionicons name="briefcase-outline" size={64} color={colors.gray[300]} />
+            <View style={[styles.emptyIconContainer, { backgroundColor: isDark ? colors.navy[800] : colors.gray[100] }]}>
+              <Ionicons name="briefcase-outline" size={64} color={isDark ? colors.gray[500] : colors.gray[300]} />
             </View>
-            <Text style={styles.emptyTitle}>Build Your Portfolio</Text>
-            <Text style={styles.emptyText}>
+            <Text style={[styles.emptyTitle, dynamicStyles.emptyTitle]}>Build Your Portfolio</Text>
+            <Text style={[styles.emptyText, dynamicStyles.emptyText]}>
               Add properties you've purchased to track your investment performance over time.
             </Text>
             
@@ -202,19 +225,28 @@ interface PropertyCardProps {
   property: PortfolioProperty;
   onPress: () => void;
   onDelete: () => void;
+  theme: any;
+  isDark: boolean;
 }
 
-function PropertyCard({ property, onPress, onDelete }: PropertyCardProps) {
+function PropertyCard({ property, onPress, onDelete, theme, isDark }: PropertyCardProps) {
   const purchaseDate = property.purchase_date 
     ? new Date(property.purchase_date * 1000).toLocaleDateString()
     : null;
 
   return (
-    <TouchableOpacity style={styles.propertyCard} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity 
+      style={[
+        styles.propertyCard, 
+        { backgroundColor: theme.card, borderColor: isDark ? colors.primary[700] : colors.primary[200] }
+      ]} 
+      onPress={onPress} 
+      activeOpacity={0.7}
+    >
       <View style={styles.cardHeader}>
         <View style={styles.cardAddressContainer}>
-          <Text style={styles.cardAddress} numberOfLines={1}>{property.address}</Text>
-          <Text style={styles.cardLocation}>
+          <Text style={[styles.cardAddress, { color: theme.text }]} numberOfLines={1}>{property.address}</Text>
+          <Text style={[styles.cardLocation, { color: theme.textMuted }]}>
             {[property.city, property.state].filter(Boolean).join(', ')}
           </Text>
         </View>
@@ -226,30 +258,30 @@ function PropertyCard({ property, onPress, onDelete }: PropertyCardProps) {
           }}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="trash-outline" size={18} color={colors.gray[400]} />
+          <Ionicons name="trash-outline" size={18} color={theme.textMuted} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.cardMetrics}>
         <View style={styles.cardMetric}>
-          <Text style={styles.cardMetricLabel}>Purchase Price</Text>
-          <Text style={styles.cardMetricValue}>
+          <Text style={[styles.cardMetricLabel, { color: theme.textMuted }]}>Purchase Price</Text>
+          <Text style={[styles.cardMetricValue, { color: theme.text }]}>
             {property.purchase_price ? formatCurrency(property.purchase_price) : '—'}
           </Text>
         </View>
         <View style={styles.cardMetric}>
-          <Text style={styles.cardMetricLabel}>Strategy</Text>
-          <Text style={styles.cardMetricValue}>
+          <Text style={[styles.cardMetricLabel, { color: theme.textMuted }]}>Strategy</Text>
+          <Text style={[styles.cardMetricValue, { color: theme.text }]}>
             {STRATEGY_OPTIONS.find(s => s.value === property.strategy)?.label || property.strategy || '—'}
           </Text>
         </View>
         <View style={styles.cardMetric}>
-          <Text style={styles.cardMetricLabel}>Cash Flow</Text>
+          <Text style={[styles.cardMetricLabel, { color: theme.textMuted }]}>Cash Flow</Text>
           <Text style={[
             styles.cardMetricValue,
-            property.monthly_cash_flow && property.monthly_cash_flow > 0 
-              ? styles.profitText 
-              : styles.lossText
+            { color: property.monthly_cash_flow && property.monthly_cash_flow > 0 
+              ? colors.profit.main 
+              : colors.loss.main }
           ]}>
             {property.monthly_cash_flow ? formatCurrency(property.monthly_cash_flow) : '—'}
           </Text>
@@ -257,7 +289,7 @@ function PropertyCard({ property, onPress, onDelete }: PropertyCardProps) {
       </View>
 
       {purchaseDate && (
-        <Text style={styles.cardDate}>Purchased {purchaseDate}</Text>
+        <Text style={[styles.cardDate, { color: theme.textMuted }]}>Purchased {purchaseDate}</Text>
       )}
     </TouchableOpacity>
   );

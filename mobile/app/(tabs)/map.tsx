@@ -22,6 +22,7 @@ import {
   parseAnalyticsData,
 } from '../../hooks/useDatabase';
 import { ScannedProperty, AnalyticsData } from '../../database';
+import { useTheme } from '../../context/ThemeContext';
 
 interface MapProperty {
   id: string;
@@ -96,6 +97,7 @@ function transformToMapProperty(dbProperty: ScannedProperty): MapProperty | null
 export default function MapScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { theme, isDark } = useTheme();
   const mapRef = useRef<MapView>(null);
   
   const [searchQuery, setSearchQuery] = useState('');
