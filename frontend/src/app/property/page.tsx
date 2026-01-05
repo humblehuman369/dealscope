@@ -2303,7 +2303,7 @@ function BreakdownRow({
   indent?: boolean
   valueColor?: string
 }) {
-  const baseClasses = `flex justify-between items-center py-1.5 px-2 ${indent ? 'pl-6' : ''} ${!isTotal ? 'border-b border-slate-100' : ''}`
+  const baseClasses = `flex flex-wrap sm:flex-nowrap justify-between items-center gap-1 py-1.5 px-2 ${indent ? 'pl-4 sm:pl-6' : ''} ${!isTotal ? 'border-b border-slate-100' : ''}`
   const totalClasses = isTotal ? 'bg-sky-50 rounded-lg mt-1 font-bold' : ''
   
   // Auto-detect negative values from the string if not explicitly specified
@@ -2319,11 +2319,11 @@ function BreakdownRow({
   
   return (
     <div className={`${baseClasses} ${totalClasses}`}>
-      <div className="flex items-center gap-2">
-        <span className={`text-[0.8125rem] ${isTotal ? 'font-semibold text-navy-900' : 'text-gray-600'}`}>{label}</span>
-        {formula && <span className="text-[0.6875rem] text-gray-400">({formula})</span>}
+      <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-shrink">
+        <span className={`text-[0.75rem] sm:text-[0.8125rem] ${isTotal ? 'font-semibold text-navy-900' : 'text-gray-600'} truncate`}>{label}</span>
+        {formula && <span className="text-[0.625rem] sm:text-[0.6875rem] text-gray-400 whitespace-nowrap">({formula})</span>}
       </div>
-      <span className={`text-[0.875rem] font-semibold font-mono ${getValueColor()}`}>{value}</span>
+      <span className={`text-[0.8125rem] sm:text-[0.875rem] font-semibold font-mono whitespace-nowrap ${getValueColor()}`}>{value}</span>
     </div>
   )
 }
@@ -2419,13 +2419,13 @@ function LTRAnalyticBreakdown({ calc, assumptions, strategyName = 'Long-Term Ren
           <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        {/* Two Column Layout - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3">
           {/* LEFT: Gross Income Section */}
-          <div className="bg-slate-50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-              <DollarSign className="w-4 h-4 text-brand-500" />
-              <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Gross Income</span>
+          <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
+            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+              <DollarSign className="w-4 h-4 text-brand-500 flex-shrink-0" />
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Gross Income</span>
             </div>
             <div className="space-y-1">
               <BreakdownRow label="Monthly Rent" value={formatCurrency(assumptions.monthlyRent)} />
@@ -2434,10 +2434,10 @@ function LTRAnalyticBreakdown({ calc, assumptions, strategyName = 'Long-Term Ren
           </div>
 
           {/* RIGHT: Vacancy Section */}
-          <div className="bg-slate-50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-              <Minus className="w-4 h-4 text-crimson-600" />
-              <span className="text-[0.8125rem] font-bold text-crimson-600 uppercase tracking-wide">Vacancy</span>
+          <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
+            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+              <Minus className="w-4 h-4 text-crimson-600 flex-shrink-0" />
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-crimson-600 uppercase tracking-wide">Vacancy</span>
             </div>
             <div className="space-y-1">
               <BreakdownRow label="Vacancy Loss" value={`-${formatCurrency(vacancyLoss)}`} formula={formatPercent(assumptions.vacancyRate)} isNegative />
@@ -2447,10 +2447,10 @@ function LTRAnalyticBreakdown({ calc, assumptions, strategyName = 'Long-Term Ren
         </div>
 
         {/* Operating Expenses Section */}
-        <div className="bg-slate-50 rounded-xl p-3 mb-3">
-          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-            <DollarSign className="w-4 h-4 text-brand-500" />
-            <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Operating Expenses</span>
+        <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+            <DollarSign className="w-4 h-4 text-brand-500 flex-shrink-0" />
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Operating Expenses</span>
           </div>
           <div className="space-y-1">
             <BreakdownRow label="Property Taxes" value={`-${formatCurrency(assumptions.propertyTaxes)}`} isNegative indent />
@@ -2462,21 +2462,21 @@ function LTRAnalyticBreakdown({ calc, assumptions, strategyName = 'Long-Term Ren
         </div>
 
         {/* NOI Highlight Box */}
-        <div className={`rounded-xl p-3 mb-3 ${noi >= 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100' : 'bg-gradient-to-br from-rose-50 to-red-100'}`}>
-          <div className="flex justify-between items-center">
-            <span className="text-[0.8125rem] font-bold text-navy-900">Net Operating Income</span>
-            <span className={`text-[0.9375rem] font-bold font-mono ${noi >= 0 ? 'text-forest-700' : 'text-crimson-600'}`}>{formatCurrency(noi)}</span>
+        <div className={`rounded-xl p-2.5 sm:p-3 mb-3 ${noi >= 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30' : 'bg-gradient-to-br from-rose-50 to-red-100 dark:from-rose-900/30 dark:to-red-900/30'}`}>
+          <div className="flex flex-wrap sm:flex-nowrap justify-between items-center gap-1">
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-navy-900 dark:text-white">Net Operating Income</span>
+            <span className={`text-[0.875rem] sm:text-[0.9375rem] font-bold font-mono ${noi >= 0 ? 'text-forest-700 dark:text-emerald-400' : 'text-crimson-600 dark:text-rose-400'}`}>{formatCurrency(noi)}</span>
           </div>
-          <p className="text-[0.6875rem] text-gray-500 italic mt-0.5">Income before mortgage payments</p>
+          <p className="text-[0.625rem] sm:text-[0.6875rem] text-gray-500 dark:text-gray-400 italic mt-0.5">Income before mortgage payments</p>
         </div>
 
-        {/* Two Column: Financing & Debt Service */}
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        {/* Two Column: Financing & Debt Service - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3">
           {/* Financing */}
-          <div className="bg-slate-50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-              <Building2 className="w-4 h-4 text-brand-500" />
-              <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Financing</span>
+          <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
+            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+              <Building2 className="w-4 h-4 text-brand-500 flex-shrink-0" />
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Financing</span>
             </div>
             <div className="space-y-1">
               <BreakdownRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
@@ -2487,10 +2487,10 @@ function LTRAnalyticBreakdown({ calc, assumptions, strategyName = 'Long-Term Ren
           </div>
 
           {/* Debt Service */}
-          <div className="bg-slate-50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-              <Calendar className="w-4 h-4 text-brand-500" />
-              <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Debt Service</span>
+          <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
+            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+              <Calendar className="w-4 h-4 text-brand-500 flex-shrink-0" />
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Debt Service</span>
             </div>
             <div className="space-y-1">
               <BreakdownRow label="Loan Amount" value={formatCurrency(loanAmount)} />
@@ -2501,40 +2501,40 @@ function LTRAnalyticBreakdown({ calc, assumptions, strategyName = 'Long-Term Ren
         </div>
 
         {/* Cash Flow Summary */}
-        <div className={`rounded-xl p-3 mb-3 ${annualCashFlow >= 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100' : 'bg-gradient-to-br from-rose-50 to-red-100'}`}>
-          <div className="flex justify-between items-center text-[0.8125rem] text-gray-600 mb-1">
+        <div className={`rounded-xl p-2.5 sm:p-3 mb-3 ${annualCashFlow >= 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30' : 'bg-gradient-to-br from-rose-50 to-red-100 dark:from-rose-900/30 dark:to-red-900/30'}`}>
+          <div className="flex flex-wrap sm:flex-nowrap justify-between items-center text-[0.75rem] sm:text-[0.8125rem] text-gray-600 dark:text-gray-400 mb-1 gap-1">
             <span>NOI − Debt Service</span>
-            <span className="font-mono text-gray-500">{formatCurrency(noi)} − {formatCurrency(annualDebtService)}</span>
+            <span className="font-mono text-gray-500 dark:text-gray-400 text-[0.6875rem] sm:text-[0.75rem]">{formatCurrency(noi)} − {formatCurrency(annualDebtService)}</span>
           </div>
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-[0.8125rem] font-bold text-navy-900">Annual Cash Flow</span>
-            <span className={`text-[0.9375rem] font-bold font-mono ${annualCashFlow >= 0 ? 'text-forest-700' : 'text-crimson-600'}`}>{formatCurrency(annualCashFlow)}</span>
+          <div className="flex flex-wrap sm:flex-nowrap justify-between items-center mb-1 gap-1">
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-navy-900 dark:text-white">Annual Cash Flow</span>
+            <span className={`text-[0.875rem] sm:text-[0.9375rem] font-bold font-mono ${annualCashFlow >= 0 ? 'text-forest-700 dark:text-emerald-400' : 'text-crimson-600 dark:text-rose-400'}`}>{formatCurrency(annualCashFlow)}</span>
           </div>
-          <div className="flex justify-between items-center pt-1 border-t border-gray-200/50">
-            <span className="text-[0.8125rem] font-bold text-navy-900">Monthly Cash Flow</span>
-            <span className={`text-lg font-bold font-mono ${monthlyCashFlow >= 0 ? 'text-forest-700' : 'text-crimson-600'}`}>{formatCurrency(monthlyCashFlow)}</span>
+          <div className="flex flex-wrap sm:flex-nowrap justify-between items-center pt-1 border-t border-gray-200/50 dark:border-navy-600/50 gap-1">
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-navy-900 dark:text-white">Monthly Cash Flow</span>
+            <span className={`text-base sm:text-lg font-bold font-mono ${monthlyCashFlow >= 0 ? 'text-forest-700 dark:text-emerald-400' : 'text-crimson-600 dark:text-rose-400'}`}>{formatCurrency(monthlyCashFlow)}</span>
           </div>
         </div>
 
-        {/* Quick Metrics Grid */}
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="bg-slate-100 rounded-xl p-2 text-center">
-            <div className="text-[0.75rem] text-gray-500 mb-1">CoC Return</div>
-            <div className={`text-[0.875rem] font-bold font-mono ${cashOnCash < 0 ? 'text-crimson-600' : cashOnCash >= 0.08 ? 'text-brand-500' : 'text-amber-600'}`}>{formatPercent(cashOnCash)}</div>
+        {/* Quick Metrics Grid - 2 cols on tiny mobile, 3 cols on larger */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+          <div className="bg-slate-100 dark:bg-navy-700/50 rounded-xl p-2 text-center">
+            <div className="text-[0.6875rem] sm:text-[0.75rem] text-gray-500 dark:text-gray-400 mb-1">CoC Return</div>
+            <div className={`text-[0.8125rem] sm:text-[0.875rem] font-bold font-mono ${cashOnCash < 0 ? 'text-crimson-600 dark:text-rose-400' : cashOnCash >= 0.08 ? 'text-brand-500' : 'text-amber-600 dark:text-amber-400'}`}>{formatPercent(cashOnCash)}</div>
           </div>
-          <div className="bg-slate-100 rounded-xl p-2 text-center">
-            <div className="text-[0.75rem] text-gray-500 mb-1">Cap Rate</div>
-            <div className={`text-[0.875rem] font-bold font-mono ${capRate < 0 ? 'text-crimson-600' : capRate >= 0.05 ? 'text-brand-500' : 'text-amber-600'}`}>{formatPercent(capRate)}</div>
+          <div className="bg-slate-100 dark:bg-navy-700/50 rounded-xl p-2 text-center">
+            <div className="text-[0.6875rem] sm:text-[0.75rem] text-gray-500 dark:text-gray-400 mb-1">Cap Rate</div>
+            <div className={`text-[0.8125rem] sm:text-[0.875rem] font-bold font-mono ${capRate < 0 ? 'text-crimson-600 dark:text-rose-400' : capRate >= 0.05 ? 'text-brand-500' : 'text-amber-600 dark:text-amber-400'}`}>{formatPercent(capRate)}</div>
           </div>
-          <div className="bg-slate-100 rounded-xl p-2 text-center">
-            <div className="text-[0.75rem] text-gray-500 mb-1">Debt Service Coverage Ratio</div>
-            <div className={`text-[0.875rem] font-bold font-mono ${dscr < 0 ? 'text-crimson-600' : dscr >= 1.25 ? 'text-brand-500' : 'text-amber-600'}`}>{dscr.toFixed(2)}</div>
+          <div className="bg-slate-100 dark:bg-navy-700/50 rounded-xl p-2 text-center col-span-2 sm:col-span-1">
+            <div className="text-[0.6875rem] sm:text-[0.75rem] text-gray-500 dark:text-gray-400 mb-1">DSCR</div>
+            <div className={`text-[0.8125rem] sm:text-[0.875rem] font-bold font-mono ${dscr < 0 ? 'text-crimson-600 dark:text-rose-400' : dscr >= 1.25 ? 'text-brand-500' : 'text-amber-600 dark:text-amber-400'}`}>{dscr.toFixed(2)}</div>
           </div>
         </div>
 
         {/* Key Metrics Explained */}
-        <div className="border-t-2 border-gray-200 pt-3">
-          <div className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide mb-2">Key Metrics Explained</div>
+        <div className="border-t-2 border-gray-200 dark:border-navy-600 pt-3">
+          <div className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide mb-2">Key Metrics Explained</div>
           <div className="space-y-2">
             <MetricExplanation
               name="Cap Rate"
@@ -2610,10 +2610,10 @@ function STRAnalyticBreakdown({ calc, assumptions, strategyName = 'Short-Term Re
         </div>
 
         {/* STR Revenue Section */}
-        <div className="bg-slate-50 rounded-xl p-3 mb-3">
-          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-            <DollarSign className="w-4 h-4 text-brand-500" />
-            <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">STR Revenue</span>
+        <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+            <DollarSign className="w-4 h-4 text-brand-500 flex-shrink-0" />
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">STR Revenue</span>
           </div>
           <div className="space-y-1">
             <BreakdownRow label="Daily Rate" value={formatCurrency(assumptions.averageDailyRate)} />
@@ -2623,39 +2623,39 @@ function STRAnalyticBreakdown({ calc, assumptions, strategyName = 'Short-Term Re
         </div>
 
         {/* Operating Expenses Section */}
-        <div className="bg-slate-50 rounded-xl p-3 mb-3">
-          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-            <DollarSign className="w-4 h-4 text-brand-500" />
-            <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Operating Expenses</span>
+        <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+            <DollarSign className="w-4 h-4 text-brand-500 flex-shrink-0" />
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Operating Expenses</span>
           </div>
           <div className="space-y-1">
             <BreakdownRow label="Property Taxes" value={`-${formatCurrency(assumptions.propertyTaxes)}`} isNegative indent />
             <BreakdownRow label="Insurance" value={`-${formatCurrency(assumptions.insurance)}`} isNegative indent />
-            <BreakdownRow label="STR Management" value={`-${formatCurrency(managementFee)}`} formula="20%" isNegative indent />
+            <BreakdownRow label="STR Mgmt" value={`-${formatCurrency(managementFee)}`} formula="20%" isNegative indent />
             <BreakdownRow label="Platform Fees" value={`-${formatCurrency(platformFees)}`} formula="3%" isNegative indent />
             <BreakdownRow label="Utilities" value={`-${formatCurrency(utilities)}`} isNegative indent />
-            <BreakdownRow label="Supplies/Turnover" value={`-${formatCurrency(supplies)}`} isNegative indent />
+            <BreakdownRow label="Supplies" value={`-${formatCurrency(supplies)}`} isNegative indent />
             <BreakdownRow label="Maintenance" value={`-${formatCurrency(maintenance)}`} formula={formatPercent(assumptions.maintenancePct)} isNegative indent />
             <BreakdownRow label="Total OpEx" value={`-${formatCurrency(totalOperatingExpenses)}`} isTotal isNegative />
           </div>
         </div>
 
         {/* NOI Highlight Box */}
-        <div className={`rounded-xl p-3 mb-3 ${noi >= 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100' : 'bg-gradient-to-br from-rose-50 to-red-100'}`}>
-          <div className="flex justify-between items-center">
-            <span className="text-[0.8125rem] font-bold text-navy-900">Net Operating Income</span>
-            <span className={`text-[0.9375rem] font-bold font-mono ${noi >= 0 ? 'text-forest-700' : 'text-crimson-600'}`}>{formatCurrency(noi)}</span>
+        <div className={`rounded-xl p-2.5 sm:p-3 mb-3 ${noi >= 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30' : 'bg-gradient-to-br from-rose-50 to-red-100 dark:from-rose-900/30 dark:to-red-900/30'}`}>
+          <div className="flex flex-wrap sm:flex-nowrap justify-between items-center gap-1">
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-navy-900 dark:text-white">Net Operating Income</span>
+            <span className={`text-[0.875rem] sm:text-[0.9375rem] font-bold font-mono ${noi >= 0 ? 'text-forest-700 dark:text-emerald-400' : 'text-crimson-600 dark:text-rose-400'}`}>{formatCurrency(noi)}</span>
           </div>
-          <p className="text-[0.6875rem] text-gray-500 italic mt-0.5">Income before mortgage payments</p>
+          <p className="text-[0.625rem] sm:text-[0.6875rem] text-gray-500 dark:text-gray-400 italic mt-0.5">Income before mortgage payments</p>
         </div>
 
-        {/* Two Column: Financing & Debt Service */}
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        {/* Two Column: Financing & Debt Service - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3">
           {/* Financing */}
-          <div className="bg-slate-50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-              <Building2 className="w-4 h-4 text-brand-500" />
-              <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Financing</span>
+          <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
+            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+              <Building2 className="w-4 h-4 text-brand-500 flex-shrink-0" />
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Financing</span>
             </div>
             <div className="space-y-1">
               <BreakdownRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
@@ -2666,10 +2666,10 @@ function STRAnalyticBreakdown({ calc, assumptions, strategyName = 'Short-Term Re
           </div>
 
           {/* Debt Service */}
-          <div className="bg-slate-50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-              <Calendar className="w-4 h-4 text-brand-500" />
-              <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Debt Service</span>
+          <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
+            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+              <Calendar className="w-4 h-4 text-brand-500 flex-shrink-0" />
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Debt Service</span>
             </div>
             <div className="space-y-1">
               <BreakdownRow label="Loan Amount" value={formatCurrency(loanAmount)} />
@@ -2680,40 +2680,40 @@ function STRAnalyticBreakdown({ calc, assumptions, strategyName = 'Short-Term Re
         </div>
 
         {/* Cash Flow Summary */}
-        <div className={`rounded-xl p-3 mb-3 ${annualCashFlow >= 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100' : 'bg-gradient-to-br from-rose-50 to-red-100'}`}>
-          <div className="flex justify-between items-center text-[0.8125rem] text-gray-600 mb-1">
+        <div className={`rounded-xl p-2.5 sm:p-3 mb-3 ${annualCashFlow >= 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30' : 'bg-gradient-to-br from-rose-50 to-red-100 dark:from-rose-900/30 dark:to-red-900/30'}`}>
+          <div className="flex flex-wrap sm:flex-nowrap justify-between items-center text-[0.75rem] sm:text-[0.8125rem] text-gray-600 dark:text-gray-400 mb-1 gap-1">
             <span>NOI − Debt Service</span>
-            <span className="font-mono text-gray-500">{formatCurrency(noi)} − {formatCurrency(annualDebtService)}</span>
+            <span className="font-mono text-gray-500 dark:text-gray-400 text-[0.6875rem] sm:text-[0.75rem]">{formatCurrency(noi)} − {formatCurrency(annualDebtService)}</span>
           </div>
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-[0.8125rem] font-bold text-navy-900">Annual Cash Flow</span>
-            <span className={`text-[0.9375rem] font-bold font-mono ${annualCashFlow >= 0 ? 'text-forest-700' : 'text-crimson-600'}`}>{formatCurrency(annualCashFlow)}</span>
+          <div className="flex flex-wrap sm:flex-nowrap justify-between items-center mb-1 gap-1">
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-navy-900 dark:text-white">Annual Cash Flow</span>
+            <span className={`text-[0.875rem] sm:text-[0.9375rem] font-bold font-mono ${annualCashFlow >= 0 ? 'text-forest-700 dark:text-emerald-400' : 'text-crimson-600 dark:text-rose-400'}`}>{formatCurrency(annualCashFlow)}</span>
           </div>
-          <div className="flex justify-between items-center pt-1 border-t border-gray-200/50">
-            <span className="text-[0.8125rem] font-bold text-navy-900">Monthly Cash Flow</span>
-            <span className={`text-lg font-bold font-mono ${monthlyCashFlow >= 0 ? 'text-forest-700' : 'text-crimson-600'}`}>{formatCurrency(monthlyCashFlow)}</span>
+          <div className="flex flex-wrap sm:flex-nowrap justify-between items-center pt-1 border-t border-gray-200/50 dark:border-navy-600/50 gap-1">
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-navy-900 dark:text-white">Monthly Cash Flow</span>
+            <span className={`text-base sm:text-lg font-bold font-mono ${monthlyCashFlow >= 0 ? 'text-forest-700 dark:text-emerald-400' : 'text-crimson-600 dark:text-rose-400'}`}>{formatCurrency(monthlyCashFlow)}</span>
           </div>
         </div>
 
-        {/* Quick Metrics Grid */}
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="bg-slate-100 rounded-xl p-2 text-center">
-            <div className="text-[0.75rem] text-gray-500 mb-1">CoC Return</div>
-            <div className={`text-[0.875rem] font-bold font-mono ${cashOnCash < 0 ? 'text-crimson-600' : cashOnCash >= 0.12 ? 'text-brand-500' : 'text-amber-600'}`}>{formatPercent(cashOnCash)}</div>
+        {/* Quick Metrics Grid - 2 cols on tiny mobile, 3 cols on larger */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+          <div className="bg-slate-100 dark:bg-navy-700/50 rounded-xl p-2 text-center">
+            <div className="text-[0.6875rem] sm:text-[0.75rem] text-gray-500 dark:text-gray-400 mb-1">CoC Return</div>
+            <div className={`text-[0.8125rem] sm:text-[0.875rem] font-bold font-mono ${cashOnCash < 0 ? 'text-crimson-600 dark:text-rose-400' : cashOnCash >= 0.12 ? 'text-brand-500' : 'text-amber-600 dark:text-amber-400'}`}>{formatPercent(cashOnCash)}</div>
           </div>
-          <div className="bg-slate-100 rounded-xl p-2 text-center">
-            <div className="text-[0.75rem] text-gray-500 mb-1">Cap Rate</div>
-            <div className={`text-[0.875rem] font-bold font-mono ${capRate < 0 ? 'text-crimson-600' : capRate >= 0.06 ? 'text-brand-500' : 'text-amber-600'}`}>{formatPercent(capRate)}</div>
+          <div className="bg-slate-100 dark:bg-navy-700/50 rounded-xl p-2 text-center">
+            <div className="text-[0.6875rem] sm:text-[0.75rem] text-gray-500 dark:text-gray-400 mb-1">Cap Rate</div>
+            <div className={`text-[0.8125rem] sm:text-[0.875rem] font-bold font-mono ${capRate < 0 ? 'text-crimson-600 dark:text-rose-400' : capRate >= 0.06 ? 'text-brand-500' : 'text-amber-600 dark:text-amber-400'}`}>{formatPercent(capRate)}</div>
           </div>
-          <div className="bg-slate-100 rounded-xl p-2 text-center">
-            <div className="text-[0.75rem] text-gray-500 mb-1">Revenue/Night</div>
-            <div className="text-[0.875rem] font-bold font-mono text-brand-500">{formatCurrency(assumptions.averageDailyRate)}</div>
+          <div className="bg-slate-100 dark:bg-navy-700/50 rounded-xl p-2 text-center col-span-2 sm:col-span-1">
+            <div className="text-[0.6875rem] sm:text-[0.75rem] text-gray-500 dark:text-gray-400 mb-1">Rev/Night</div>
+            <div className="text-[0.8125rem] sm:text-[0.875rem] font-bold font-mono text-brand-500">{formatCurrency(assumptions.averageDailyRate)}</div>
           </div>
         </div>
 
         {/* STR Key Metrics */}
-        <div className="border-t-2 border-gray-200 pt-3">
-          <div className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide mb-2">STR Key Metrics</div>
+        <div className="border-t-2 border-gray-200 dark:border-navy-600 pt-3">
+          <div className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide mb-2">STR Key Metrics</div>
           <div className="space-y-2">
             <MetricExplanation
               name="Cash-on-Cash"
@@ -2780,28 +2780,28 @@ function BRRRRAnalyticBreakdown({ calc, assumptions, strategyName = 'BRRRR' }: {
           <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
         </div>
 
-        {/* Two Column Layout for Phases */}
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        {/* Two Column Layout for Phases - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3">
           {/* Phase 1: Buy & Rehab */}
-          <div className="bg-slate-50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-              <Home className="w-4 h-4 text-brand-500" />
-              <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Phase 1: Buy & Rehab</span>
+          <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
+            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+              <Home className="w-4 h-4 text-brand-500 flex-shrink-0" />
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Buy & Rehab</span>
             </div>
             <div className="space-y-1">
               <BreakdownRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
               <BreakdownRow label="Initial Down" value={formatCurrency(initialPurchaseDown)} formula="30%" />
               <BreakdownRow label="Rehab Budget" value={formatCurrency(assumptions.rehabCost)} formula={formatPercent(assumptions.rehabCostPct)} />
               <BreakdownRow label="Closing Costs" value={formatCurrency(purchaseClosingCosts)} formula={formatPercent(assumptions.closingCostsPct)} />
-              <BreakdownRow label="Initial Cash Needed" value={formatCurrency(initialCash)} isTotal valueColor="text-brand-500" />
+              <BreakdownRow label="Cash Needed" value={formatCurrency(initialCash)} isTotal valueColor="text-brand-500" />
             </div>
           </div>
 
           {/* Phase 2: Rent */}
-          <div className="bg-slate-50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-              <Building2 className="w-4 h-4 text-brand-500" />
-              <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Phase 2: Rent</span>
+          <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
+            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+              <Building2 className="w-4 h-4 text-brand-500 flex-shrink-0" />
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Rent</span>
             </div>
             <div className="space-y-1">
               <BreakdownRow label="Monthly Rent" value={formatCurrency(assumptions.monthlyRent)} />
@@ -2813,67 +2813,67 @@ function BRRRRAnalyticBreakdown({ calc, assumptions, strategyName = 'BRRRR' }: {
           </div>
         </div>
 
-        {/* Phase 2: Refinance Section */}
-        <div className="bg-slate-50 rounded-xl p-3 mb-3">
-          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-            <TrendingUp className="w-4 h-4 text-brand-500" />
-            <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Phase 2: Refinance</span>
+        {/* Refinance Section */}
+        <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+            <TrendingUp className="w-4 h-4 text-brand-500 flex-shrink-0" />
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Refinance</span>
           </div>
           <div className="space-y-1">
-            <BreakdownRow label="After Repair Value" value={formatCurrency(assumptions.arv)} />
+            <BreakdownRow label="ARV" value={formatCurrency(assumptions.arv)} />
             <BreakdownRow label="New Loan" value={formatCurrency(refinanceLoanAmount)} formula="75% LTV" />
-            <BreakdownRow label="Pay Off Old Loan" value={`-${formatCurrency(assumptions.purchasePrice * 0.70)}`} formula="70% of purchase" isNegative />
-            <BreakdownRow label="Cash Back at Refi" value={formatCurrency(cashBack)} isTotal valueColor={cashBack > 0 ? 'text-forest-700' : 'text-crimson-600'} />
+            <BreakdownRow label="Pay Off Old" value={`-${formatCurrency(assumptions.purchasePrice * 0.70)}`} formula="70%" isNegative />
+            <BreakdownRow label="Cash Back" value={formatCurrency(cashBack)} isTotal valueColor={cashBack > 0 ? 'text-forest-700' : 'text-crimson-600'} />
           </div>
         </div>
 
         {/* Cash Left in Deal - Warning Box */}
-        <div className={`rounded-xl p-3 mb-3 ${cashLeftInDeal < 10000 ? 'bg-gradient-to-br from-emerald-50 to-green-100' : 'bg-gradient-to-br from-amber-50 to-yellow-100'}`}>
-          <div className="flex justify-between items-center">
-            <span className="text-[0.8125rem] font-bold text-navy-900">Cash Left in Deal</span>
-            <span className={`text-lg font-bold font-mono ${cashLeftInDeal < 10000 ? 'text-forest-700' : 'text-amber-600'}`}>{formatCurrency(cashLeftInDeal)}</span>
+        <div className={`rounded-xl p-2.5 sm:p-3 mb-3 ${cashLeftInDeal < 10000 ? 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30' : 'bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30'}`}>
+          <div className="flex flex-wrap sm:flex-nowrap justify-between items-center gap-1">
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-navy-900 dark:text-white">Cash Left in Deal</span>
+            <span className={`text-base sm:text-lg font-bold font-mono ${cashLeftInDeal < 10000 ? 'text-forest-700 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>{formatCurrency(cashLeftInDeal)}</span>
           </div>
-          <p className="text-[0.6875rem] text-gray-500 italic mt-0.5">{cashLeftInDeal < 5000 ? 'Near infinite returns!' : cashLeftInDeal < 20000 ? 'Good - recycled most capital' : 'Capital still tied up'}</p>
+          <p className="text-[0.625rem] sm:text-[0.6875rem] text-gray-500 dark:text-gray-400 italic mt-0.5">{cashLeftInDeal < 5000 ? 'Near infinite returns!' : cashLeftInDeal < 20000 ? 'Good - recycled most capital' : 'Capital still tied up'}</p>
         </div>
 
         {/* Post-Refi Debt Section */}
-        <div className="bg-slate-50 rounded-xl p-3 mb-3">
-          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-            <Calendar className="w-4 h-4 text-brand-500" />
-            <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Post-Refi Debt</span>
+        <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+            <Calendar className="w-4 h-4 text-brand-500 flex-shrink-0" />
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Post-Refi Debt</span>
           </div>
           <div className="space-y-1">
-            <BreakdownRow label="Refinance Loan" value={formatCurrency(refinanceLoanAmount)} />
+            <BreakdownRow label="Refi Loan" value={formatCurrency(refinanceLoanAmount)} />
             <BreakdownRow label="Monthly P&I" value={formatCurrency(monthlyMortgage)} formula={`${formatPercent(assumptions.interestRate)}, ${assumptions.loanTermYears}yr`} />
             <BreakdownRow label="Annual Debt" value={formatCurrency(annualDebtService)} formula="× 12" isTotal />
           </div>
         </div>
 
         {/* Cash Flow - Danger/Success Box */}
-        <div className={`rounded-xl p-3 mb-3 ${monthlyCashFlow >= 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100' : 'bg-gradient-to-br from-rose-50 to-red-100'}`}>
-          <div className="flex justify-between items-center">
-            <span className="text-[0.8125rem] font-bold text-navy-900">Monthly Cash Flow</span>
-            <span className={`text-lg font-bold font-mono ${monthlyCashFlow >= 0 ? 'text-forest-700' : 'text-crimson-600'}`}>{formatCurrency(monthlyCashFlow)}</span>
+        <div className={`rounded-xl p-2.5 sm:p-3 mb-3 ${monthlyCashFlow >= 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30' : 'bg-gradient-to-br from-rose-50 to-red-100 dark:from-rose-900/30 dark:to-red-900/30'}`}>
+          <div className="flex flex-wrap sm:flex-nowrap justify-between items-center gap-1">
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-navy-900 dark:text-white">Monthly Cash Flow</span>
+            <span className={`text-base sm:text-lg font-bold font-mono ${monthlyCashFlow >= 0 ? 'text-forest-700 dark:text-emerald-400' : 'text-crimson-600 dark:text-rose-400'}`}>{formatCurrency(monthlyCashFlow)}</span>
           </div>
         </div>
 
         {/* Quick Metrics Grid */}
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-slate-100 rounded-xl p-2 text-center">
-            <div className="text-[0.75rem] text-gray-500 mb-1">CoC Return</div>
-            <div className={`text-[0.875rem] font-bold font-mono ${cashOnCash === Infinity || cashOnCash >= 0.15 ? 'text-brand-500' : 'text-amber-600'}`}>
+          <div className="bg-slate-100 dark:bg-navy-700/50 rounded-xl p-2 text-center">
+            <div className="text-[0.6875rem] sm:text-[0.75rem] text-gray-500 dark:text-gray-400 mb-1">CoC Return</div>
+            <div className={`text-[0.8125rem] sm:text-[0.875rem] font-bold font-mono ${cashOnCash === Infinity || cashOnCash >= 0.15 ? 'text-brand-500' : 'text-amber-600 dark:text-amber-400'}`}>
               {cashOnCash === Infinity ? '∞' : formatPercent(cashOnCash)}
             </div>
           </div>
-          <div className="bg-slate-100 rounded-xl p-2 text-center">
-            <div className="text-[0.75rem] text-gray-500 mb-1">Equity Created</div>
-            <div className="text-[0.875rem] font-bold font-mono text-brand-500">{formatCurrency(equityCreated)}</div>
+          <div className="bg-slate-100 dark:bg-navy-700/50 rounded-xl p-2 text-center">
+            <div className="text-[0.6875rem] sm:text-[0.75rem] text-gray-500 dark:text-gray-400 mb-1">Equity Created</div>
+            <div className="text-[0.8125rem] sm:text-[0.875rem] font-bold font-mono text-brand-500">{formatCurrency(equityCreated)}</div>
           </div>
         </div>
 
         {/* BRRRR Success Metrics */}
-        <div className="border-t-2 border-gray-200 pt-3">
-          <div className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide mb-2">BRRRR Success Metrics</div>
+        <div className="border-t-2 border-gray-200 dark:border-navy-600 pt-3">
+          <div className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide mb-2">BRRRR Success Metrics</div>
           <div className="space-y-2">
             <MetricExplanation
               name="Cash Left in Deal"
@@ -2937,69 +2937,69 @@ function FlipAnalyticBreakdown({ calc, assumptions, strategyName = 'Fix & Flip' 
 
         {/* Step 1: The Opportunity - Flip Margin Box */}
         <div className="mb-3">
-          <div className="bg-gradient-to-br from-amber-50 to-yellow-100 rounded-xl p-3 mb-2">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[0.8125rem] font-bold text-amber-700 uppercase tracking-wide">Step 1: The Opportunity (Flip Margin)</span>
+          <div className="bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 rounded-xl p-2.5 sm:p-3 mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">Step 1: Flip Margin</span>
             </div>
           </div>
-          <div className={`rounded-xl p-3 ${calc.flipMargin >= 50000 ? 'bg-gradient-to-br from-emerald-50 to-green-100' : calc.flipMargin >= 20000 ? 'bg-gradient-to-br from-amber-50 to-yellow-100' : 'bg-gradient-to-br from-rose-50 to-red-100'}`}>
-            <div className="grid grid-cols-3 gap-3 mb-3">
+          <div className={`rounded-xl p-2.5 sm:p-3 ${calc.flipMargin >= 50000 ? 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30' : calc.flipMargin >= 20000 ? 'bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30' : 'bg-gradient-to-br from-rose-50 to-red-100 dark:from-rose-900/30 dark:to-red-900/30'}`}>
+            <div className="grid grid-cols-3 gap-1 sm:gap-3 mb-3">
               <div className="text-center">
-                <div className="text-[0.6875rem] text-gray-500 uppercase tracking-wide">ARV</div>
-                <div className="text-lg font-bold font-mono text-navy-900">{formatCurrency(assumptions.arv)}</div>
+                <div className="text-[0.5625rem] sm:text-[0.6875rem] text-gray-500 dark:text-gray-400 uppercase tracking-wide">ARV</div>
+                <div className="text-sm sm:text-lg font-bold font-mono text-navy-900 dark:text-white">{formatCurrency(assumptions.arv)}</div>
               </div>
               <div className="text-center">
-                <div className="text-[0.6875rem] text-gray-500 uppercase tracking-wide">- Purchase</div>
-                <div className="text-lg font-bold font-mono text-crimson-600">-{formatCurrency(assumptions.purchasePrice)}</div>
+                <div className="text-[0.5625rem] sm:text-[0.6875rem] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Purchase</div>
+                <div className="text-sm sm:text-lg font-bold font-mono text-crimson-600 dark:text-rose-400">-{formatCurrency(assumptions.purchasePrice)}</div>
               </div>
               <div className="text-center">
-                <div className="text-[0.6875rem] text-gray-500 uppercase tracking-wide">- Rehab</div>
-                <div className="text-lg font-bold font-mono text-crimson-600">-{formatCurrency(assumptions.rehabCost)}</div>
+                <div className="text-[0.5625rem] sm:text-[0.6875rem] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Rehab</div>
+                <div className="text-sm sm:text-lg font-bold font-mono text-crimson-600 dark:text-rose-400">-{formatCurrency(assumptions.rehabCost)}</div>
               </div>
             </div>
-            <div className="flex justify-between items-center p-2 bg-white/50 rounded-lg">
-              <span className="text-[0.8125rem] font-semibold text-gray-700">= Flip Margin</span>
-              <span className={`text-xl font-bold font-mono ${calc.flipMargin >= 50000 ? 'text-forest-700' : calc.flipMargin >= 20000 ? 'text-amber-600' : 'text-crimson-600'}`}>
-                {formatCurrency(calc.flipMargin)} <span className="text-sm text-gray-500">({formatPercent(calc.flipMarginPct)})</span>
+            <div className="flex flex-wrap sm:flex-nowrap justify-between items-center p-2 bg-white/50 dark:bg-navy-700/50 rounded-lg gap-1">
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-semibold text-gray-700 dark:text-gray-300">= Flip Margin</span>
+              <span className={`text-base sm:text-xl font-bold font-mono ${calc.flipMargin >= 50000 ? 'text-forest-700 dark:text-emerald-400' : calc.flipMargin >= 20000 ? 'text-amber-600 dark:text-amber-400' : 'text-crimson-600 dark:text-rose-400'}`}>
+                {formatCurrency(calc.flipMargin)} <span className="text-[0.625rem] sm:text-sm text-gray-500 dark:text-gray-400">({formatPercent(calc.flipMarginPct)})</span>
               </span>
             </div>
-            <p className="text-[0.6875rem] text-gray-500 italic mt-2">This is your "spread" — the raw profit potential before accounting for transaction and holding costs.</p>
+            <p className="text-[0.5625rem] sm:text-[0.6875rem] text-gray-500 dark:text-gray-400 italic mt-2">Raw profit potential before transaction and holding costs.</p>
           </div>
         </div>
 
-        {/* Step 2: What Eats Into Your Margin */}
+        {/* Step 2: What Eats Into Your Margin - Stack on mobile */}
         <div className="mb-3">
-          <div className="bg-gradient-to-br from-amber-50 to-yellow-100 rounded-xl p-3 mb-2">
-            <span className="text-[0.8125rem] font-bold text-amber-700 uppercase tracking-wide">Step 2: What Eats Into Your Margin</span>
+          <div className="bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 rounded-xl p-2.5 sm:p-3 mb-2">
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">Step 2: Costs</span>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
             {/* Left: Closing & Holding Costs */}
             <div className="space-y-2">
-              <div className="bg-slate-50 rounded-xl p-3">
+              <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <DollarSign className="w-4 h-4 text-gray-500" />
-                  <span className="text-[0.8125rem] font-bold text-navy-900">Closing Costs</span>
+                  <DollarSign className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-navy-900 dark:text-white">Closing Costs</span>
                 </div>
-                <BreakdownRow label="Purchase Closing" value={formatCurrency(purchaseCosts)} formula={formatPercent(assumptions.closingCostsPct)} />
-                <BreakdownRow label="Selling Costs" value={formatCurrency(sellingCosts)} formula={formatPercent(assumptions.sellingCostsPct)} />
+                <BreakdownRow label="Purchase" value={formatCurrency(purchaseCosts)} formula={formatPercent(assumptions.closingCostsPct)} />
+                <BreakdownRow label="Selling" value={formatCurrency(sellingCosts)} formula={formatPercent(assumptions.sellingCostsPct)} />
               </div>
-              <div className="bg-slate-50 rounded-xl p-3">
+              <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="w-4 h-4 text-gray-500" />
-                  <span className="text-[0.8125rem] font-bold text-navy-900">Holding ({assumptions.holdingPeriodMonths} mo)</span>
+                  <Calendar className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-navy-900 dark:text-white">Holding ({assumptions.holdingPeriodMonths} mo)</span>
                 </div>
                 <BreakdownRow label="Interest" value={formatCurrency(monthlyInterest * assumptions.holdingPeriodMonths)} formula={formatPercent(assumptions.interestRate)} />
-                <BreakdownRow label="Taxes + Ins" value={formatCurrency((monthlyTaxes + monthlyInsurance) * assumptions.holdingPeriodMonths)} />
+                <BreakdownRow label="Taxes+Ins" value={formatCurrency((monthlyTaxes + monthlyInsurance) * assumptions.holdingPeriodMonths)} />
               </div>
             </div>
 
             {/* Right: Total Costs Summary */}
-            <div className="bg-gradient-to-br from-rose-50 to-red-100 rounded-xl p-3">
-              <div className="text-[0.75rem] text-gray-600 mb-2">Total Costs Eating Margin</div>
+            <div className="bg-gradient-to-br from-rose-50 to-red-100 dark:from-rose-900/30 dark:to-red-900/30 rounded-xl p-2.5 sm:p-3">
+              <div className="text-[0.6875rem] sm:text-[0.75rem] text-gray-600 dark:text-gray-400 mb-2">Total Costs</div>
               <div className="space-y-1">
-                <BreakdownRow label="Closing (buy+sell)" value={`-${formatCurrency(purchaseCosts + sellingCosts)}`} isNegative />
-                <BreakdownRow label="Holding Costs" value={`-${formatCurrency(holdingCosts)}`} isNegative />
-                <BreakdownRow label="Total Costs" value={`-${formatCurrency(totalCosts)}`} isTotal isNegative />
+                <BreakdownRow label="Closing" value={`-${formatCurrency(purchaseCosts + sellingCosts)}`} isNegative />
+                <BreakdownRow label="Holding" value={`-${formatCurrency(holdingCosts)}`} isNegative />
+                <BreakdownRow label="Total" value={`-${formatCurrency(totalCosts)}`} isTotal isNegative />
               </div>
             </div>
           </div>
@@ -3007,22 +3007,22 @@ function FlipAnalyticBreakdown({ calc, assumptions, strategyName = 'Fix & Flip' 
 
         {/* Step 3: Estimated Net Profit */}
         <div className="mb-3">
-          <div className="bg-gradient-to-br from-amber-50 to-yellow-100 rounded-xl p-3 mb-2">
-            <span className="text-[0.8125rem] font-bold text-amber-700 uppercase tracking-wide">Step 3: Estimated Net Profit</span>
+          <div className="bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 rounded-xl p-2.5 sm:p-3 mb-2">
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">Step 3: Net Profit</span>
           </div>
-          <div className={`rounded-xl p-3 ${estimatedNetProfit >= 30000 ? 'bg-gradient-to-br from-emerald-50 to-green-100' : estimatedNetProfit >= 0 ? 'bg-gradient-to-br from-amber-50 to-yellow-100' : 'bg-gradient-to-br from-rose-50 to-red-100'}`}>
-            <div className="grid grid-cols-3 gap-3">
+          <div className={`rounded-xl p-2.5 sm:p-3 ${estimatedNetProfit >= 30000 ? 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30' : estimatedNetProfit >= 0 ? 'bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30' : 'bg-gradient-to-br from-rose-50 to-red-100 dark:from-rose-900/30 dark:to-red-900/30'}`}>
+            <div className="grid grid-cols-3 gap-1 sm:gap-3">
               <div className="text-center">
-                <div className="text-[0.75rem] text-gray-500">Flip Margin</div>
-                <div className="text-base font-bold font-mono text-forest-700">{formatCurrency(calc.flipMargin)}</div>
+                <div className="text-[0.625rem] sm:text-[0.75rem] text-gray-500 dark:text-gray-400">Margin</div>
+                <div className="text-sm sm:text-base font-bold font-mono text-forest-700 dark:text-emerald-400">{formatCurrency(calc.flipMargin)}</div>
               </div>
               <div className="text-center">
-                <div className="text-[0.75rem] text-gray-500">Total Costs</div>
-                <div className="text-base font-bold font-mono text-crimson-600">-{formatCurrency(totalCosts)}</div>
+                <div className="text-[0.625rem] sm:text-[0.75rem] text-gray-500 dark:text-gray-400">Costs</div>
+                <div className="text-sm sm:text-base font-bold font-mono text-crimson-600 dark:text-rose-400">-{formatCurrency(totalCosts)}</div>
               </div>
-              <div className="text-center border-l border-gray-200 pl-2">
-                <div className="text-[0.75rem] text-gray-500">Net Profit</div>
-                <div className={`text-lg font-bold font-mono ${estimatedNetProfit >= 30000 ? 'text-forest-700' : estimatedNetProfit >= 0 ? 'text-amber-600' : 'text-crimson-600'}`}>
+              <div className="text-center border-l border-gray-200 dark:border-navy-600 pl-1 sm:pl-2">
+                <div className="text-[0.625rem] sm:text-[0.75rem] text-gray-500 dark:text-gray-400">Net</div>
+                <div className={`text-base sm:text-lg font-bold font-mono ${estimatedNetProfit >= 30000 ? 'text-forest-700 dark:text-emerald-400' : estimatedNetProfit >= 0 ? 'text-amber-600 dark:text-amber-400' : 'text-crimson-600 dark:text-rose-400'}`}>
                   {formatCurrency(estimatedNetProfit)}
                 </div>
               </div>
@@ -3031,8 +3031,8 @@ function FlipAnalyticBreakdown({ calc, assumptions, strategyName = 'Fix & Flip' 
         </div>
 
         {/* Quick Reference Metrics */}
-        <div className="border-t-2 border-gray-200 pt-3">
-          <div className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide mb-2">Quick Reference Metrics</div>
+        <div className="border-t-2 border-gray-200 dark:border-navy-600 pt-3">
+          <div className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide mb-2">Reference Metrics</div>
           <div className="space-y-2">
             <MetricExplanation
               name="Flip Margin"
@@ -3106,45 +3106,45 @@ function HouseHackAnalyticBreakdown({ calc, assumptions, strategyName = 'House H
           <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        {/* Two Column Layout - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3">
           {/* Rental Income */}
-          <div className="bg-slate-50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-              <Home className="w-4 h-4 text-brand-500" />
-              <span className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Rental Income</span>
+          <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
+            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+              <Home className="w-4 h-4 text-brand-500 flex-shrink-0" />
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide">Rental Income</span>
             </div>
             <div className="space-y-1">
-              <BreakdownRow label="Total Monthly Rent" value={formatCurrency(assumptions.monthlyRent)} />
-              <BreakdownRow label="Bedrooms" value={`${totalBedrooms} total`} />
-              <BreakdownRow label="Rent per Room" value={formatCurrency(rentPerRoom)} formula={`÷ ${totalBedrooms}`} />
-              <BreakdownRow label="Rooms Rented" value={`${roomsRented} of ${totalBedrooms}`} />
-              <BreakdownRow label="Monthly Income" value={formatCurrency(monthlyRentalIncome)} isTotal valueColor="text-brand-500" />
+              <BreakdownRow label="Monthly Rent" value={formatCurrency(assumptions.monthlyRent)} />
+              <BreakdownRow label="Bedrooms" value={`${totalBedrooms}`} />
+              <BreakdownRow label="Per Room" value={formatCurrency(rentPerRoom)} formula={`÷ ${totalBedrooms}`} />
+              <BreakdownRow label="Rooms Rented" value={`${roomsRented}/${totalBedrooms}`} />
+              <BreakdownRow label="Income" value={formatCurrency(monthlyRentalIncome)} isTotal valueColor="text-brand-500" />
             </div>
           </div>
 
           {/* Monthly Expenses */}
-          <div className="bg-slate-50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-              <DollarSign className="w-4 h-4 text-crimson-600" />
-              <span className="text-[0.8125rem] font-bold text-crimson-600 uppercase tracking-wide">Monthly Expenses</span>
+          <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
+            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+              <DollarSign className="w-4 h-4 text-crimson-600 flex-shrink-0" />
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-crimson-600 uppercase tracking-wide">Expenses</span>
             </div>
             <div className="space-y-1">
-              <BreakdownRow label="Mortgage (P&I)" value={formatCurrency(monthlyPI)} />
-              <BreakdownRow label="Property Taxes" value={formatCurrency(monthlyTaxes)} />
+              <BreakdownRow label="Mortgage" value={formatCurrency(monthlyPI)} />
+              <BreakdownRow label="Taxes" value={formatCurrency(monthlyTaxes)} />
               <BreakdownRow label="Insurance" value={formatCurrency(monthlyInsurance)} />
-              <BreakdownRow label="Vacancy Reserve" value={formatCurrency(monthlyVacancy)} formula={formatPercent(assumptions.vacancyRate)} />
-              <BreakdownRow label="Maintenance" value={formatCurrency(monthlyMaintenance)} formula={formatPercent(assumptions.maintenancePct)} />
-              <BreakdownRow label="Total Expenses" value={formatCurrency(totalMonthlyExpenses)} isTotal isNegative />
+              <BreakdownRow label="Vacancy" value={formatCurrency(monthlyVacancy)} formula={formatPercent(assumptions.vacancyRate)} />
+              <BreakdownRow label="Maint." value={formatCurrency(monthlyMaintenance)} formula={formatPercent(assumptions.maintenancePct)} />
+              <BreakdownRow label="Total" value={formatCurrency(totalMonthlyExpenses)} isTotal isNegative />
             </div>
           </div>
         </div>
 
         {/* FHA Financing Section */}
-        <div className="bg-slate-50 rounded-xl p-3 mb-3">
-          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-            <Building2 className="w-4 h-4 text-violet-600" />
-            <span className="text-[0.8125rem] font-bold text-violet-600 uppercase tracking-wide">FHA Financing (3.5% Down)</span>
+        <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+            <Building2 className="w-4 h-4 text-violet-600 flex-shrink-0" />
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-violet-600 uppercase tracking-wide">FHA (3.5% Down)</span>
           </div>
           <div className="space-y-1">
             <BreakdownRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
@@ -3155,10 +3155,10 @@ function HouseHackAnalyticBreakdown({ calc, assumptions, strategyName = 'House H
         </div>
 
         {/* Your Housing Cost Calculation */}
-        <div className="bg-slate-50 rounded-xl p-3 mb-3">
-          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-            <Calculator className="w-4 h-4 text-forest-700" />
-            <span className="text-[0.8125rem] font-bold text-forest-700 uppercase tracking-wide">Your Housing Cost</span>
+        <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+            <Calculator className="w-4 h-4 text-forest-700 flex-shrink-0" />
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-forest-700 dark:text-emerald-400 uppercase tracking-wide">Your Cost</span>
           </div>
           <div className="space-y-1">
             <BreakdownRow label="Total Expenses" value={formatCurrency(totalMonthlyExpenses)} />
@@ -3167,32 +3167,32 @@ function HouseHackAnalyticBreakdown({ calc, assumptions, strategyName = 'House H
         </div>
 
         {/* Housing Cost Result Box */}
-        <div className={`rounded-xl p-3 mb-3 ${effectiveHousingCost <= 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100' : 'bg-gradient-to-br from-amber-50 to-yellow-100'}`}>
+        <div className={`rounded-xl p-2.5 sm:p-3 mb-3 ${effectiveHousingCost <= 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30' : 'bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30'}`}>
           <div className="text-center">
-            <div className="text-xl font-bold font-mono mb-1 ${effectiveHousingCost <= 0 ? 'text-forest-700' : 'text-amber-600'}">
+            <div className={`text-base sm:text-xl font-bold font-mono mb-1 ${effectiveHousingCost <= 0 ? 'text-forest-700 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
               {effectiveHousingCost <= 0 ? `FREE + ${formatCurrency(Math.abs(effectiveHousingCost))}` : formatCurrency(effectiveHousingCost)}
             </div>
-            <div className="text-[0.6875rem] text-gray-500 italic">
+            <div className="text-[0.5625rem] sm:text-[0.6875rem] text-gray-500 dark:text-gray-400 italic">
               {effectiveHousingCost <= 0 ? 'You live for free and make money!' : `vs. ${formatCurrency(marketRent)} market rent`}
             </div>
           </div>
         </div>
 
         {/* Monthly Savings Box */}
-        <div className={`rounded-xl p-3 mb-3 ${monthlySavings > 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100' : 'bg-gradient-to-br from-rose-50 to-red-100'}`}>
+        <div className={`rounded-xl p-2.5 sm:p-3 mb-3 ${monthlySavings > 0 ? 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30' : 'bg-gradient-to-br from-rose-50 to-red-100 dark:from-rose-900/30 dark:to-red-900/30'}`}>
           <div className="text-center">
-            <div className={`text-xl font-bold font-mono mb-1 ${monthlySavings > 0 ? 'text-forest-700' : 'text-crimson-600'}`}>
+            <div className={`text-base sm:text-xl font-bold font-mono mb-1 ${monthlySavings > 0 ? 'text-forest-700 dark:text-emerald-400' : 'text-crimson-600 dark:text-rose-400'}`}>
               {formatCurrency(monthlySavings)}
             </div>
-            <div className="text-[0.6875rem] text-gray-500 italic">
-              vs. renting at market rate ({formatCurrency(marketRent)}/mo)
+            <div className="text-[0.5625rem] sm:text-[0.6875rem] text-gray-500 dark:text-gray-400 italic">
+              vs. renting ({formatCurrency(marketRent)}/mo)
             </div>
           </div>
         </div>
 
         {/* House Hack Success Metrics */}
-        <div className="border-t-2 border-gray-200 pt-3">
-          <div className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide mb-2">House Hack Success Metrics</div>
+        <div className="border-t-2 border-gray-200 dark:border-navy-600 pt-3">
+          <div className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide mb-2">Success Metrics</div>
           <div className="space-y-2">
             <MetricExplanation
               name="Effective Housing Cost"
@@ -3245,40 +3245,40 @@ function WholesaleAnalyticBreakdown({ calc, assumptions, strategyName = 'Wholesa
         </div>
 
         {/* Title Section */}
-        <div className="bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl p-2 mb-3 text-center">
-          <h3 className="text-[0.9375rem] font-bold text-rose-600">📋 70% Rule – Full Breakdown</h3>
+        <div className="bg-gradient-to-br from-pink-100 to-rose-100 dark:from-rose-900/30 dark:to-pink-900/30 rounded-xl p-2 mb-3 text-center">
+          <h3 className="text-[0.8125rem] sm:text-[0.9375rem] font-bold text-rose-600 dark:text-rose-400">📋 70% Rule Breakdown</h3>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        {/* Two Column Layout - Stack on mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3">
           {/* Step 1: After Repair Value */}
-          <div className="bg-slate-50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-              <TrendingUp className="w-4 h-4 text-crimson-600" />
-              <span className="text-[0.8125rem] font-bold text-crimson-600 uppercase tracking-wide">Step 1: After Repair Value</span>
+          <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
+            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+              <TrendingUp className="w-4 h-4 text-crimson-600 flex-shrink-0" />
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-crimson-600 uppercase tracking-wide">ARV</span>
             </div>
             <div className="space-y-1">
-              <BreakdownRow label="After Repair Value (ARV)" value={formatCurrency(calc.arv)} />
+              <BreakdownRow label="After Repair Value" value={formatCurrency(calc.arv)} />
             </div>
-            <p className="text-[0.6875rem] text-gray-500 italic mt-2">What the property will be worth after repairs</p>
+            <p className="text-[0.5625rem] sm:text-[0.6875rem] text-gray-500 dark:text-gray-400 italic mt-2">Value after repairs</p>
           </div>
 
           {/* Price Comparison */}
-          <div className="bg-slate-50 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-              <DollarSign className="w-4 h-4 text-pink-600" />
-              <span className="text-[0.8125rem] font-bold text-pink-600 uppercase tracking-wide">Price Comparison</span>
+          <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3">
+            <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+              <DollarSign className="w-4 h-4 text-pink-600 flex-shrink-0" />
+              <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-pink-600 uppercase tracking-wide">Compare</span>
             </div>
             <div className="space-y-1">
-              <BreakdownRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
-              <BreakdownRow label="Your MAO" value={formatCurrency(calc.mao)} valueColor="text-brand-500" />
+              <BreakdownRow label="Purchase" value={formatCurrency(assumptions.purchasePrice)} />
+              <BreakdownRow label="MAO" value={formatCurrency(calc.mao)} valueColor="text-brand-500" />
               <BreakdownRow 
-                label="Purchase as % of ARV" 
+                label="% of ARV" 
                 value={`${(calc.purchasePctOfArv * 100).toFixed(1)}%`} 
                 valueColor={calc.purchasePctOfArv <= 0.70 ? 'text-forest-700' : calc.purchasePctOfArv <= 0.80 ? 'text-amber-600' : 'text-crimson-600'}
               />
               <BreakdownRow 
-                label="Spread (MAO - Purchase)" 
+                label="Spread" 
                 value={`${calc.spreadFromPurchase > 0 ? '+' : ''}${formatCurrency(calc.spreadFromPurchase)}`} 
                 isTotal 
                 isNegative={calc.spreadFromPurchase < 0}
@@ -3289,70 +3289,70 @@ function WholesaleAnalyticBreakdown({ calc, assumptions, strategyName = 'Wholesa
         </div>
 
         {/* Step 2: Apply 70% Rule */}
-        <div className="bg-slate-50 rounded-xl p-3 mb-3">
-          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-            <Percent className="w-4 h-4 text-amber-600" />
-            <span className="text-[0.8125rem] font-bold text-amber-600 uppercase tracking-wide">Step 2: Apply 70% Rule</span>
+        <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+            <Percent className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-amber-600 uppercase tracking-wide">70% Rule</span>
           </div>
           <div className="space-y-1">
             <BreakdownRow label="ARV × 70%" value={formatCurrency(arvAt70)} />
           </div>
-          <p className="text-[0.6875rem] text-gray-500 italic mt-2">Industry standard leaves 30% margin for profit + closing costs</p>
+          <p className="text-[0.5625rem] sm:text-[0.6875rem] text-gray-500 dark:text-gray-400 italic mt-2">30% margin for profit + costs</p>
         </div>
 
         {/* Step 3: Subtract Costs */}
-        <div className="bg-slate-50 rounded-xl p-3 mb-3">
-          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200">
-            <Minus className="w-4 h-4 text-crimson-600" />
-            <span className="text-[0.8125rem] font-bold text-crimson-600 uppercase tracking-wide">Step 3: Subtract Costs</span>
+        <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3 mb-3">
+          <div className="flex items-center gap-2 mb-2 pb-1 border-b-2 border-gray-200 dark:border-navy-600">
+            <Minus className="w-4 h-4 text-crimson-600 flex-shrink-0" />
+            <span className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-crimson-600 uppercase tracking-wide">Subtract Costs</span>
           </div>
           <div className="space-y-1">
             <BreakdownRow label="70% of ARV" value={formatCurrency(arvAt70)} />
-            <BreakdownRow label="− Repair Costs" value={`-${formatCurrency(calc.rehabCost)}`} isNegative />
-            <BreakdownRow label="− Your Wholesale Fee" value={`-${formatCurrency(wholesaleFee)}`} isNegative />
-            <BreakdownRow label="= Maximum Allowable Offer" value={formatCurrency(calc.mao)} isTotal isNegative />
+            <BreakdownRow label="Repairs" value={`-${formatCurrency(calc.rehabCost)}`} isNegative />
+            <BreakdownRow label="Fee" value={`-${formatCurrency(wholesaleFee)}`} isNegative />
+            <BreakdownRow label="MAO" value={formatCurrency(calc.mao)} isTotal isNegative />
           </div>
         </div>
 
         {/* MAO Box */}
-        <div className={`rounded-xl p-3 mb-3 ${calc.isPurchaseBelowMAO ? 'bg-gradient-to-br from-emerald-50 to-green-100' : 'bg-gradient-to-br from-rose-50 to-red-100'}`}>
+        <div className={`rounded-xl p-2.5 sm:p-3 mb-3 ${calc.isPurchaseBelowMAO ? 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/30 dark:to-green-900/30' : 'bg-gradient-to-br from-rose-50 to-red-100 dark:from-rose-900/30 dark:to-red-900/30'}`}>
           <div className="text-center">
-            <div className="text-[0.75rem] text-gray-600 font-semibold uppercase tracking-wide mb-1">Maximum Allowable Offer</div>
-            <div className={`text-2xl font-bold font-mono mb-1 ${calc.isPurchaseBelowMAO ? 'text-forest-700' : 'text-crimson-600'}`}>
+            <div className="text-[0.6875rem] sm:text-[0.75rem] text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide mb-1">Max Allowable Offer</div>
+            <div className={`text-xl sm:text-2xl font-bold font-mono mb-1 ${calc.isPurchaseBelowMAO ? 'text-forest-700 dark:text-emerald-400' : 'text-crimson-600 dark:text-rose-400'}`}>
               {formatCurrency(calc.mao)}
             </div>
-            <div className={`text-[0.6875rem] font-medium ${calc.isPurchaseBelowMAO ? 'text-forest-700' : 'text-crimson-600'}`}>
-              {calc.isPurchaseBelowMAO ? 'Purchase price is below MAO ✓' : 'Purchase price exceeds MAO ✗'}
+            <div className={`text-[0.5625rem] sm:text-[0.6875rem] font-medium ${calc.isPurchaseBelowMAO ? 'text-forest-700 dark:text-emerald-400' : 'text-crimson-600 dark:text-rose-400'}`}>
+              {calc.isPurchaseBelowMAO ? 'Below MAO ✓' : 'Exceeds MAO ✗'}
             </div>
           </div>
         </div>
 
         {/* Why the 70% Rule? */}
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-3 mb-3">
-          <div className="text-[0.8125rem] font-bold text-blue-800 mb-2">Why the 70% Rule?</div>
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl p-2.5 sm:p-3 mb-3">
+          <div className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-blue-800 dark:text-blue-300 mb-2">Why 70%?</div>
           <div className="space-y-1.5">
             <div className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-forest-700 mt-0.5 flex-shrink-0" />
-              <span className="text-[0.75rem] text-blue-900">Leaves 30% margin for end buyer profit</span>
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-forest-700 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="text-[0.6875rem] sm:text-[0.75rem] text-blue-900 dark:text-blue-200">30% margin for buyer profit</span>
             </div>
             <div className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-forest-700 mt-0.5 flex-shrink-0" />
-              <span className="text-[0.75rem] text-blue-900">Accounts for holding & closing costs</span>
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-forest-700 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="text-[0.6875rem] sm:text-[0.75rem] text-blue-900 dark:text-blue-200">Holding & closing costs</span>
             </div>
             <div className="flex items-start gap-2">
-              <CheckCircle className="w-4 h-4 text-forest-700 mt-0.5 flex-shrink-0" />
-              <span className="text-[0.75rem] text-blue-900">Built-in safety margin for surprises</span>
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-forest-700 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+              <span className="text-[0.6875rem] sm:text-[0.75rem] text-blue-900 dark:text-blue-200">Safety margin</span>
             </div>
             <div className="flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-              <span className="text-[0.75rem] text-blue-900">Some flippers use 65-75% depending on market</span>
+              <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+              <span className="text-[0.6875rem] sm:text-[0.75rem] text-blue-900 dark:text-blue-200">65-75% varies by market</span>
             </div>
           </div>
         </div>
 
         {/* 70% Rule Metrics */}
-        <div className="border-t-2 border-gray-200 pt-3">
-          <div className="text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide mb-2">70% Rule Metrics</div>
+        <div className="border-t-2 border-gray-200 dark:border-navy-600 pt-3">
+          <div className="text-[0.75rem] sm:text-[0.8125rem] font-bold text-brand-500 uppercase tracking-wide mb-2">Rule Metrics</div>
           <div className="space-y-2">
             <MetricExplanation
               name="Maximum Allowable Offer"
