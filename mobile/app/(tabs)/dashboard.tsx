@@ -17,7 +17,6 @@ import * as Haptics from 'expo-haptics';
 
 import { colors } from '../../theme/colors';
 import { useTheme } from '../../context/ThemeContext';
-import { useAuth } from '../../context/AuthContext';
 
 /**
  * Get the web app URL from environment or config
@@ -32,7 +31,6 @@ function getWebAppUrl(): string {
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const { isDark, theme } = useTheme();
-  const { isAuthenticated } = useAuth();
   const webViewRef = useRef<WebView>(null);
   
   const [isLoading, setIsLoading] = useState(true);
@@ -40,8 +38,8 @@ export default function DashboardScreen() {
   const [canGoBack, setCanGoBack] = useState(false);
   
   const baseUrl = getWebAppUrl();
-  // Direct to dashboard if authenticated, otherwise to home
-  const dashboardUrl = isAuthenticated ? `${baseUrl}/dashboard` : baseUrl;
+  // Always go to dashboard - the web app will handle auth redirect if needed
+  const dashboardUrl = `${baseUrl}/dashboard`;
 
   const handleRefresh = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
