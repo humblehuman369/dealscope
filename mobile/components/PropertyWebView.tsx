@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -13,8 +13,10 @@ import {
 import { WebView, WebViewNavigation } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../theme/colors';
 import Constants from 'expo-constants';
+import BottomNavigationSheet from './BottomNavigationSheet';
 
 interface PropertyWebViewProps {
   address: string;
@@ -29,6 +31,7 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
   const [canGoBack, setCanGoBack] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showMenu, setShowMenu] = useState(false);
   const colorScheme = useColorScheme(); // Detect device dark/light mode
 
   // Get the web app URL from environment or use a deployed URL
@@ -49,8 +52,9 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
   const baseUrl = getWebAppUrl();
   const propertyUrl = `${baseUrl}/property?address=${encodeURIComponent(address)}`;
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     try {
+      setShowMenu(false);
       await Share.share({
         message: `Check out this property analysis: ${address}`,
         url: propertyUrl,
@@ -58,7 +62,16 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
     } catch (error) {
       console.error('Error sharing:', error);
     }
-  };
+  }, [address, propertyUrl]);
+
+  const handleOpenMenu = useCallback(async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setShowMenu(true);
+  }, []);
+
+  const handleCloseMenu = useCallback(() => {
+    setShowMenu(false);
+  }, []);
 
   const handleRefresh = () => {
     setHasError(false);
@@ -90,13 +103,14 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
     }
   };
 
-  const handleOpenInBrowser = async () => {
+  const handleOpenInBrowser = useCallback(async () => {
     try {
+      setShowMenu(false);
       await Linking.openURL(propertyUrl);
     } catch (error) {
       console.error('Error opening URL:', error);
     }
-  };
+  }, [propertyUrl]);
 
   // Inject CSS to hide web header/footer and optimize for mobile
   // Also apply dark mode class based on device color scheme
@@ -141,18 +155,30 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Floating Close Button - positioned on the RIGHT side */}
-      <TouchableOpacity
-        style={styles.floatingCloseButton}
-        onPress={handleGoBack}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <Ionicons
-          name={canGoBack ? 'chevron-back' : 'close'}
-          size={22}
-          color={colors.gray[700]}
-        />
-      </TouchableOpacity>
+      {/* Floating Header Buttons */}
+      <View style={styles.floatingHeader}>
+        {/* Back/Close Button - LEFT side */}
+        <TouchableOpacity
+          style={styles.floatingButton}
+          onPress={handleGoBack}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons
+            name={canGoBack ? 'chevron-back' : 'close'}
+            size={22}
+            color={colors.gray[700]}
+          />
+        </TouchableOpacity>
+        
+        {/* Menu Button - RIGHT side */}
+        <TouchableOpacity
+          style={[styles.floatingButton, styles.menuButton]}
+          onPress={handleOpenMenu}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="menu" size={22} color={colors.primary[600]} />
+        </TouchableOpacity>
+      </View>
 
       {/* WebView or Error View */}
       <View style={styles.webViewContainer}>
@@ -252,6 +278,15 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
           </>
         )}
       </View>
+      
+      {/* Bottom Navigation Sheet */}
+      <BottomNavigationSheet
+        visible={showMenu}
+        onClose={handleCloseMenu}
+        onShare={handleShare}
+        onOpenInBrowser={handleOpenInBrowser}
+        propertyAddress={address}
+      />
     </View>
   );
 }
@@ -261,14 +296,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
   },
-  floatingCloseButton: {
+  floatingHeader: {
     position: 'absolute',
     top: 8,
+    left: 12,
     right: 12,
     zIndex: 100,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  floatingButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -277,6 +318,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 4,
+  },
+  menuButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    borderWidth: 1,
+    borderColor: colors.primary[100],
   },
   webViewContainer: {
     flex: 1,
