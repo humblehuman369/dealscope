@@ -17,6 +17,7 @@ import * as Haptics from 'expo-haptics';
 
 import { colors } from '../../theme/colors';
 import { useTheme } from '../../context/ThemeContext';
+import { getAccessToken } from '../../services/authService';
 
 /**
  * Get the web app URL from environment or config
@@ -36,10 +37,27 @@ export default function DashboardScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [canGoBack, setCanGoBack] = useState(false);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [tokenLoaded, setTokenLoaded] = useState(false);
   
   const baseUrl = getWebAppUrl();
   // Always go to dashboard - the web app will handle auth redirect if needed
   const dashboardUrl = `${baseUrl}/dashboard`;
+
+  // Load access token on mount
+  useEffect(() => {
+    async function loadToken() {
+      try {
+        const token = await getAccessToken();
+        setAccessToken(token);
+      } catch (error) {
+        console.warn('Failed to get access token:', error);
+      } finally {
+        setTokenLoaded(true);
+      }
+    }
+    loadToken();
+  }, []);
 
   const handleRefresh = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -53,7 +71,21 @@ export default function DashboardScreen() {
     webViewRef.current?.goBack();
   }, []);
 
-  // Inject dark mode CSS if needed
+  // JavaScript to inject auth token into localStorage BEFORE content loads
+  // This must run before the page JavaScript executes
+  const injectedJSBeforeLoad = accessToken ? `
+    (function() {
+      try {
+        localStorage.setItem('access_token', '${accessToken}');
+        console.log('[Dashboard] Auth token injected into localStorage');
+      } catch (e) {
+        console.warn('[Dashboard] Failed to inject auth token:', e);
+      }
+    })();
+    true;
+  ` : '';
+
+  // Inject dark mode CSS after content loads
   const injectedJS = isDark ? `
     (function() {
       document.documentElement.classList.add('dark');
@@ -67,6 +99,29 @@ export default function DashboardScreen() {
     })();
     true;
   `;
+
+  // Don't render WebView until token check is complete
+  if (!tokenLoaded) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+        <View style={[
+          styles.header, 
+          { 
+            paddingTop: insets.top + 8,
+            backgroundColor: theme.headerBackground,
+            borderBottomColor: theme.headerBorder,
+          }
+        ]}>
+          <Text style={[styles.headerTitle, { color: theme.text }]}>Dashboard</Text>
+        </View>
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={colors.primary[600]} />
+          <Text style={[styles.loadingText, { color: theme.textMuted }]}>Loading...</Text>
+        </View>
+      </View>
+    );
+  }
 
   if (hasError) {
     return (
@@ -127,12 +182,15 @@ export default function DashboardScreen() {
         onNavigationStateChange={(navState) => {
           setCanGoBack(navState.canGoBack);
         }}
+        injectedJavaScriptBeforeContentLoaded={injectedJSBeforeLoad}
         injectedJavaScript={injectedJS}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         startInLoadingState={true}
         scalesPageToFit={true}
         allowsBackForwardNavigationGestures={true}
+        sharedCookiesEnabled={true}
+        thirdPartyCookiesEnabled={true}
         renderLoading={() => (
           <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
             <ActivityIndicator size="large" color={colors.primary[600]} />
