@@ -7,8 +7,13 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
 
-// Disable mock data - use real API
-const USE_MOCK_DATA_ON_ERROR = false;
+// Enable fallback analytics when API is unavailable
+// This allows the app to show estimated data even when the backend is down
+const USE_FALLBACK_ON_ERROR = true;
+
+// Track API health for better error messaging
+let lastApiError: { timestamp: number; message: string } | null = null;
+const API_ERROR_CACHE_MS = 60000; // Cache API errors for 1 minute
 
 export interface StrategyResult {
   name: string;
@@ -72,20 +77,58 @@ export interface InvestmentAnalytics {
 }
 
 /**
- * Generate mock analytics data for development/demo purposes.
+ * Check if the API appears to be healthy based on recent errors.
  */
-function generateMockAnalytics(address: string): InvestmentAnalytics {
-  const listPrice = 250000 + Math.floor(Math.random() * 300000);
-  const rentEstimate = Math.floor(listPrice * 0.007);
+export function isApiHealthy(): boolean {
+  if (!lastApiError) return true;
+  const now = Date.now();
+  return now - lastApiError.timestamp > API_ERROR_CACHE_MS;
+}
+
+/**
+ * Get the last API error message if recent.
+ */
+export function getLastApiError(): string | null {
+  if (!lastApiError) return null;
+  const now = Date.now();
+  if (now - lastApiError.timestamp > API_ERROR_CACHE_MS) return null;
+  return lastApiError.message;
+}
+
+/**
+ * Generate estimated analytics using local calculations.
+ * This provides a reasonable fallback when the backend API is unavailable.
+ * 
+ * @param address - Property address
+ * @param parcelData - Optional parcel data from Google Maps for better estimates
+ */
+export function generateEstimatedAnalytics(
+  address: string, 
+  parcelData?: { city?: string; state?: string; zip?: string; lat?: number; lng?: number }
+): InvestmentAnalytics {
+  // Use location-based price estimation
+  // These are rough median home price estimates by state (simplified)
+  const statePriceMultipliers: Record<string, number> = {
+    'CA': 1.8, 'NY': 1.5, 'FL': 1.1, 'TX': 0.95, 'AZ': 1.05,
+    'CO': 1.2, 'WA': 1.3, 'MA': 1.4, 'NJ': 1.3, 'GA': 0.9,
+    'NC': 0.85, 'VA': 1.0, 'TN': 0.8, 'OH': 0.7, 'IL': 0.85,
+  };
+  
+  const state = parcelData?.state || 'FL';
+  const multiplier = statePriceMultipliers[state.toUpperCase()] || 1.0;
+  
+  // Base median home price ~$350K, adjusted by state
+  const listPrice = Math.floor(350000 * multiplier);
+  const rentEstimate = Math.floor(listPrice * 0.006); // ~0.6% price-to-rent ratio
   const strEstimate = Math.floor(rentEstimate / 20);
   
   return {
     property: {
       address,
-      city: 'Demo City',
-      state: 'FL',
-      zip: '33000',
-      bedrooms: 3,
+      city: parcelData?.city || '',
+      state: parcelData?.state || '',
+      zip: parcelData?.zip || '',
+      bedrooms: 3, // Estimated typical value
       bathrooms: 2,
       sqft: 1800,
       yearBuilt: 2005,
@@ -188,20 +231,19 @@ function generateMockAnalytics(address: string): InvestmentAnalytics {
  * Fetch complete investment analytics for a property.
  * 
  * @param address - Full property address
+ * @param parcelData - Optional parcel data for fallback estimates
  * @returns Investment analytics for all 6 strategies
  */
 export async function fetchPropertyAnalytics(
-  address: string
+  address: string,
+  parcelData?: { city?: string; state?: string; zip?: string; lat?: number; lng?: number }
 ): Promise<InvestmentAnalytics> {
-  // In development mode with mock parcel data, use mock analytics too
-  // This ensures consistent mock data flow for testing
-  if (USE_MOCK_DATA_ON_ERROR && address.includes('Demo City')) {
-    console.log('Using mock analytics data for development (mock address detected)');
-    return generateMockAnalytics(address);
-  }
+  console.log(`[Analytics] Fetching analytics for: ${address}`);
+  console.log(`[Analytics] API URL: ${API_BASE_URL}`);
 
   try {
     // Step 1: Search for the property
+    console.log('[Analytics] Step 1: Searching property...');
     const searchResponse = await axios.post(
       `${API_BASE_URL}/api/v1/properties/search`,
       { address },
@@ -209,8 +251,10 @@ export async function fetchPropertyAnalytics(
     );
 
     const propertyData = searchResponse.data;
+    console.log('[Analytics] Property found:', propertyData.property_id);
     
     // Step 2: Calculate analytics
+    console.log('[Analytics] Step 2: Calculating analytics...');
     const analyticsResponse = await axios.post(
       `${API_BASE_URL}/api/v1/analytics/calculate`,
       { 
@@ -221,24 +265,65 @@ export async function fetchPropertyAnalytics(
     );
 
     const analytics = analyticsResponse.data;
+    console.log('[Analytics] Analytics calculated successfully');
+    
+    // Clear any previous API errors on success
+    lastApiError = null;
     
     // Transform backend response to mobile app format
     return transformBackendResponse(propertyData, analytics);
   } catch (error) {
-    console.error('Analytics fetch error:', error);
+    console.error('[Analytics] Fetch error:', error);
     
-    // In development, return mock data when API is unreachable
-    if (USE_MOCK_DATA_ON_ERROR) {
-      console.log('Using mock analytics data for development');
-      return generateMockAnalytics(address);
+    // Track the API error
+    let errorMessage = 'Unknown error';
+    let statusCode: number | undefined;
+    
+    if (axios.isAxiosError(error)) {
+      statusCode = error.response?.status;
+      errorMessage = error.response?.data?.detail || error.message;
+      console.error(`[Analytics] API Error - Status: ${statusCode}, Message: ${errorMessage}`);
+      
+      // Log response data for debugging
+      if (error.response?.data) {
+        console.error('[Analytics] Response data:', JSON.stringify(error.response.data));
+      }
     }
     
-    // If API fails, try to calculate locally with minimal data
-    if (axios.isAxiosError(error) && error.response?.status === 404) {
-      throw new Error('Property not found. Please verify the address.');
+    lastApiError = {
+      timestamp: Date.now(),
+      message: errorMessage,
+    };
+    
+    // Handle specific error cases
+    if (statusCode === 404) {
+      throw new Error('Property not found in our database. Try a different address.');
     }
     
-    throw new Error('Unable to analyze property. Please try again.');
+    if (statusCode === 429) {
+      throw new Error('Too many requests. Please wait a moment and try again.');
+    }
+    
+    // Use fallback analytics when API fails
+    if (USE_FALLBACK_ON_ERROR) {
+      console.log('[Analytics] Using fallback estimated analytics');
+      const estimated = generateEstimatedAnalytics(address, parcelData);
+      
+      // Mark the analytics as estimated (for UI indication)
+      (estimated as any).isEstimated = true;
+      (estimated as any).estimateReason = statusCode === 500 
+        ? 'Backend service temporarily unavailable'
+        : 'Could not connect to analytics service';
+      
+      return estimated;
+    }
+    
+    // If fallback is disabled, throw with detailed error
+    if (statusCode === 500) {
+      throw new Error('Analytics service error. Our team has been notified.');
+    }
+    
+    throw new Error(`Unable to analyze property: ${errorMessage}`);
   }
 }
 
@@ -409,6 +494,57 @@ export async function fetchMarketData(zipCode: string): Promise<{
       vacancyRate: 0.05,
       strOccupancy: 0.65,
       strAdr: 150,
+    };
+  }
+}
+
+/**
+ * Check backend API health status.
+ * Useful for debugging connectivity issues.
+ */
+export async function checkBackendHealth(): Promise<{
+  healthy: boolean;
+  url: string;
+  latency?: number;
+  error?: string;
+  features?: Record<string, boolean>;
+}> {
+  const startTime = Date.now();
+  
+  try {
+    const response = await axios.get(`${API_BASE_URL}/health`, {
+      timeout: 10000,
+    });
+    
+    const latency = Date.now() - startTime;
+    
+    return {
+      healthy: response.data?.status === 'healthy',
+      url: API_BASE_URL,
+      latency,
+      features: response.data?.features,
+    };
+  } catch (error) {
+    const latency = Date.now() - startTime;
+    let errorMessage = 'Unknown error';
+    
+    if (axios.isAxiosError(error)) {
+      if (error.code === 'ECONNABORTED') {
+        errorMessage = 'Request timed out';
+      } else if (error.code === 'ENOTFOUND') {
+        errorMessage = 'Server not found';
+      } else if (error.response) {
+        errorMessage = `HTTP ${error.response.status}: ${error.response.statusText}`;
+      } else {
+        errorMessage = error.message;
+      }
+    }
+    
+    return {
+      healthy: false,
+      url: API_BASE_URL,
+      latency,
+      error: errorMessage,
     };
   }
 }

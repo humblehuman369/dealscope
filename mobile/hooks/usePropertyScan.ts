@@ -193,7 +193,15 @@ export function usePropertyScan() {
       ].filter(Boolean).join(', ');
       
       console.log('Fetching analytics for:', fullAddress);
-      const analytics = await fetchPropertyAnalytics(fullAddress);
+      
+      // Pass parcel data for fallback estimation if API fails
+      const analytics = await fetchPropertyAnalytics(fullAddress, {
+        city: matchedParcel.city,
+        state: matchedParcel.state,
+        zip: matchedParcel.zip,
+        lat: matchedParcel.lat,
+        lng: matchedParcel.lng,
+      });
 
       // Step 6: Save to local database
       let savedId: string | undefined;
@@ -258,9 +266,27 @@ export function usePropertyScan() {
       setResult(scanResult);
 
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Scan failed. Please try again.';
-      setError(message);
       console.error('Property scan error:', err);
+      
+      // Provide more specific error messages based on error type
+      let message: string;
+      if (err instanceof Error) {
+        message = err.message;
+        
+        // Add helpful hints for common errors
+        if (message.includes('No properties found')) {
+          message = 'No properties found at this location. Try moving closer or adjusting your aim.';
+        } else if (message.includes('Could not identify')) {
+          message = 'Unable to identify the exact property. Try reducing the distance setting.';
+        } else if (message.includes('Backend service')) {
+          // Analytics API is down but we have fallback data
+          message = 'Using estimated data - full analysis unavailable.';
+        }
+      } else {
+        message = 'Scan failed unexpectedly. Please try again.';
+      }
+      
+      setError(message);
     } finally {
       setIsScanning(false);
     }

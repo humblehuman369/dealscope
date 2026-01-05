@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,13 @@ import {
   TouchableOpacity,
   Modal,
   Animated,
+  ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
+import { checkBackendHealth } from '../../services/analytics';
 
 interface CalibrationPanelProps {
   visible: boolean;
@@ -40,10 +43,34 @@ export function CalibrationPanel({
   tiltAngle,
   needsCalibration,
 }: CalibrationPanelProps) {
+  // Network diagnostics state
+  const [isCheckingHealth, setIsCheckingHealth] = useState(false);
+  const [healthStatus, setHealthStatus] = useState<{
+    healthy: boolean;
+    latency?: number;
+    error?: string;
+    url?: string;
+  } | null>(null);
+
   const handleSaveAndClose = () => {
     onSave();
     onClose();
   };
+
+  const handleCheckHealth = useCallback(async () => {
+    setIsCheckingHealth(true);
+    try {
+      const result = await checkBackendHealth();
+      setHealthStatus(result);
+    } catch (error) {
+      setHealthStatus({
+        healthy: false,
+        error: 'Failed to check connection',
+      });
+    } finally {
+      setIsCheckingHealth(false);
+    }
+  }, []);
 
   return (
     <Modal
@@ -193,6 +220,65 @@ export function CalibrationPanel({
                 • Avoid scanning near large metal objects
               </Text>
             </View>
+          </View>
+
+          {/* Network Diagnostics */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Network Diagnostics</Text>
+            <Text style={styles.sectionDescription}>
+              Check connection to the analytics server
+            </Text>
+            
+            <TouchableOpacity 
+              style={styles.diagnosticButton}
+              onPress={handleCheckHealth}
+              disabled={isCheckingHealth}
+            >
+              {isCheckingHealth ? (
+                <ActivityIndicator size="small" color={colors.primary[600]} />
+              ) : (
+                <>
+                  <Ionicons name="pulse-outline" size={18} color={colors.primary[600]} />
+                  <Text style={styles.diagnosticButtonText}>Test Connection</Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            {healthStatus && (
+              <View style={[
+                styles.healthResult,
+                healthStatus.healthy ? styles.healthResultSuccess : styles.healthResultError
+              ]}>
+                <Ionicons 
+                  name={healthStatus.healthy ? "checkmark-circle" : "close-circle"} 
+                  size={20} 
+                  color={healthStatus.healthy ? colors.profit.main : colors.loss.main} 
+                />
+                <View style={styles.healthResultContent}>
+                  <Text style={[
+                    styles.healthResultTitle,
+                    healthStatus.healthy ? styles.healthResultTitleSuccess : styles.healthResultTitleError
+                  ]}>
+                    {healthStatus.healthy ? 'Connected' : 'Connection Failed'}
+                  </Text>
+                  {healthStatus.latency !== undefined && (
+                    <Text style={styles.healthResultDetail}>
+                      Latency: {healthStatus.latency}ms
+                    </Text>
+                  )}
+                  {healthStatus.error && (
+                    <Text style={styles.healthResultDetail}>
+                      Error: {healthStatus.error}
+                    </Text>
+                  )}
+                  {healthStatus.url && (
+                    <Text style={[styles.healthResultDetail, { fontSize: 9 }]} numberOfLines={1}>
+                      {healthStatus.url}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
           </View>
 
           {/* Action Buttons */}
@@ -426,6 +512,61 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#fff',
+  },
+  diagnosticButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: colors.primary[50],
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: colors.primary[200],
+  },
+  diagnosticButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.primary[600],
+  },
+  healthResult: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 12,
+  },
+  healthResultSuccess: {
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.3)',
+  },
+  healthResultError: {
+    backgroundColor: 'rgba(244, 63, 94, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(244, 63, 94, 0.3)',
+  },
+  healthResultContent: {
+    flex: 1,
+  },
+  healthResultTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  healthResultTitleSuccess: {
+    color: colors.profit.dark,
+  },
+  healthResultTitleError: {
+    color: colors.loss.main,
+  },
+  healthResultDetail: {
+    fontSize: 11,
+    color: colors.gray[600],
+    marginTop: 2,
   },
 });
 
