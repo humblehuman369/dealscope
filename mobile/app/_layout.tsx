@@ -95,6 +95,7 @@ function AppContent({
             presentation: 'fullScreenModal',
             headerShown: false,
             animation: 'slide_from_bottom',
+            gestureEnabled: false, // Disable swipe gestures to prevent conflicts with sliders
           }} 
         />
       </Stack>

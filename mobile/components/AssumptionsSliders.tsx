@@ -3,7 +3,7 @@
  * Allows users to adjust key investment assumptions.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { colors } from '../theme/colors';
 import { formatCurrency, formatPercent } from '../services/analytics';
@@ -235,21 +236,36 @@ export function AssumptionsModal({
     return `${value}${config.suffix || ''}`;
   };
   
+  // Track which slider is being touched to disable scroll
+  const [activeSlider, setActiveSlider] = useState<string | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  
+  // Create a native gesture that blocks parent gestures when touching slider area
+  const createSliderGesture = (key: string) => {
+    return Gesture.Native()
+      .onBegin(() => {
+        setActiveSlider(key);
+      })
+      .onFinalize(() => {
+        setActiveSlider(null);
+      });
+  };
+
   return (
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
       <View style={[styles.modalContainer, { paddingTop: insets.top }]}>
         {/* Header */}
         <View style={styles.modalHeader}>
-          <TouchableOpacity onPress={onClose}>
+          <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
           <Text style={styles.modalTitle}>Investment Assumptions</Text>
-          <TouchableOpacity onPress={handleSave}>
+          <TouchableOpacity onPress={handleSave} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
             <Text style={styles.saveText}>Apply</Text>
           </TouchableOpacity>
         </View>
@@ -272,11 +288,23 @@ export function AssumptionsModal({
           </View>
         </View>
         
-        {/* Sliders */}
+        {/* Sliders - Scroll disabled when touching sliders */}
         <ScrollView 
+          ref={scrollViewRef}
           style={styles.scrollContent}
           contentContainerStyle={[styles.scrollContentContainer, { paddingBottom: insets.bottom + 80 }]}
+          scrollEnabled={activeSlider === null}
+          showsVerticalScrollIndicator={true}
+          bounces={activeSlider === null}
         >
+          {/* Tip for users */}
+          <View style={styles.sliderTip}>
+            <Ionicons name="finger-print-outline" size={16} color={colors.primary[600]} />
+            <Text style={styles.sliderTipText}>
+              Tap and drag on the slider track to adjust values
+            </Text>
+          </View>
+          
           {SLIDER_CONFIGS.map((config) => (
             <View key={config.key} style={styles.sliderContainer}>
               <View style={styles.sliderHeader}>
@@ -289,20 +317,28 @@ export function AssumptionsModal({
                 </Text>
               </View>
               
-              <View style={styles.sliderTrack}>
-                <Slider
-                  style={styles.slider}
-                  minimumValue={config.min}
-                  maximumValue={config.max}
-                  step={config.step}
-                  value={localAssumptions[config.key] as number}
-                  onValueChange={(value) => handleSliderChange(config.key, value)}
-                  onSlidingComplete={handleSliderComplete}
-                  minimumTrackTintColor={colors.primary[500]}
-                  maximumTrackTintColor={colors.gray[200]}
-                  thumbTintColor={Platform.OS === 'ios' ? undefined : colors.primary[600]}
-                />
-              </View>
+              {/* Wrap slider in gesture detector to prioritize slider touch over scroll */}
+              <GestureDetector gesture={createSliderGesture(config.key)}>
+                <View 
+                  style={styles.sliderTrackWrapper}
+                  onStartShouldSetResponder={() => true}
+                  onStartShouldSetResponderCapture={() => true}
+                >
+                  <Slider
+                    style={styles.slider}
+                    minimumValue={config.min}
+                    maximumValue={config.max}
+                    step={config.step}
+                    value={localAssumptions[config.key] as number}
+                    onValueChange={(value) => handleSliderChange(config.key, value)}
+                    onSlidingComplete={handleSliderComplete}
+                    minimumTrackTintColor={colors.primary[500]}
+                    maximumTrackTintColor={colors.gray[200]}
+                    thumbTintColor={Platform.OS === 'ios' ? undefined : colors.primary[600]}
+                    tapToSeek={true}
+                  />
+                </View>
+              </GestureDetector>
               
               <View style={styles.sliderMinMax}>
                 <Text style={styles.sliderMinMaxText}>
@@ -477,7 +513,6 @@ const styles = StyleSheet.create({
     color: colors.primary[600],
   },
   loanSummaryCard: {
-    backgroundColor: '#fff',
     margin: 16,
     padding: 16,
     borderRadius: 12,
@@ -537,12 +572,29 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.primary[600],
   },
-  sliderTrack: {
+  sliderTip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.primary[50],
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  sliderTipText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.primary[700],
+  },
+  sliderTrackWrapper: {
+    paddingVertical: 16,
+    marginVertical: -8,
     marginHorizontal: -8,
+    paddingHorizontal: 8,
   },
   slider: {
     width: '100%',
-    height: 40,
+    height: 44,
   },
   sliderMinMax: {
     flexDirection: 'row',
