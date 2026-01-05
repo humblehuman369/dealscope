@@ -692,7 +692,7 @@ const styles = StyleSheet.create({
   },
   strategyName: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 23,  // Increased 50% from 15
     fontWeight: '600',
     color: colors.gray[900],
   },
@@ -702,7 +702,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   profitBadgeText: {
-    fontSize: 11,
+    fontSize: 14,  // Increased for better visibility
     fontWeight: '600',
   },
   strategyMetrics: {
@@ -712,17 +712,17 @@ const styles = StyleSheet.create({
   },
   strategyMetric: {},
   strategyMetricLabel: {
-    fontSize: 12,
+    fontSize: 16,  // Increased 35% from 12
     fontWeight: '500',
     color: colors.gray[600],
   },
   strategyMetricValue: {
-    fontSize: 18,
+    fontSize: 24,  // Increased 35% from 18
     fontWeight: '700',
     marginTop: 2,
   },
   strategyMetricSecondary: {
-    fontSize: 16,
+    fontSize: 22,  // Increased 35% from 16
     fontWeight: '600',
     color: colors.gray[700],
     marginTop: 2,
@@ -738,7 +738,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   ruleCheckText: {
-    fontSize: 11,
+    fontSize: 14,  // Increased for better visibility
     fontWeight: '600',
   },
   rentCard: {

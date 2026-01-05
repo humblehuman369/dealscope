@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   summaryTitle: {
-    fontSize: 15,
+    fontSize: 19,  // Increased to match slider titles
     fontWeight: '600',
     color: colors.gray[900],
   },
@@ -462,12 +462,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   summaryItemLabel: {
-    fontSize: 11,
+    fontSize: 14,  // Increased to match slider min/max text
     color: colors.gray[500],
     marginBottom: 2,
   },
   summaryItemValue: {
-    fontSize: 14,
+    fontSize: 18,  // Increased to match slider values
     fontWeight: '700',
     color: colors.gray[900],
   },
@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.gray[100],
   },
   loanInfoText: {
-    fontSize: 12,
+    fontSize: 15,  // Increased to match slider text
     color: colors.gray[500],
     textAlign: 'center',
   },
@@ -529,12 +529,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loanSummaryLabel: {
-    fontSize: 11,
+    fontSize: 14,  // Increased to match slider labels
     color: colors.gray[600],
     marginBottom: 4,
   },
   loanSummaryValue: {
-    fontSize: 16,
+    fontSize: 20,  // Increased to match slider values
     fontWeight: '700',
     color: colors.gray[900],
   },
@@ -563,12 +563,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   sliderLabel: {
-    fontSize: 15,
+    fontSize: 19,  // Increased 25% from 15
     fontWeight: '500',
     color: colors.gray[800],
   },
   sliderValue: {
-    fontSize: 16,
+    fontSize: 20,  // Increased 25% from 16
     fontWeight: '700',
     color: colors.primary[600],
   },
@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     marginTop: -8,
   },
   sliderMinMaxText: {
-    fontSize: 11,
+    fontSize: 14,  // Increased 25% from 11
     color: colors.gray[400],
   },
   resetButton: {
