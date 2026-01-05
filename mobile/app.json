@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.investiq.mobile",
-      "buildNumber": "9",
+      "buildNumber": "11",
       "infoPlist": {
         "NSCameraUsageDescription": "InvestIQ needs camera access to scan properties for instant investment analysis.",
         "NSLocationWhenInUseUsageDescription": "InvestIQ needs your location to identify properties you're looking at and show nearby investment opportunities.",
