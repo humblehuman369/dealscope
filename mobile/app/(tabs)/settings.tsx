@@ -39,8 +39,6 @@ export default function SettingsScreen() {
   
   // Settings state
   const [notifications, setNotifications] = useState(true);
-  const [haptics, setHaptics] = useState(true);
-  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
   // Load settings from database
   useEffect(() => {
@@ -48,14 +46,9 @@ export default function SettingsScreen() {
       if (!dbReady) return;
       try {
         const notifSetting = await getSetting('notifications');
-        const hapticsSetting = await getSetting('haptics');
-        
         if (notifSetting !== null) setNotifications(notifSetting === 'true');
-        if (hapticsSetting !== null) setHaptics(hapticsSetting === 'true');
       } catch (error) {
         console.warn('Failed to load settings:', error);
-      } finally {
-        setIsLoadingSettings(false);
       }
     }
     loadSettings();
@@ -71,21 +64,15 @@ export default function SettingsScreen() {
   }, []);
 
   const handleNotificationsChange = useCallback(async (value: boolean) => {
-    if (haptics) await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setNotifications(value);
     saveSetting('notifications', value);
-  }, [haptics, saveSetting]);
-
-  const handleHapticsChange = useCallback(async (value: boolean) => {
-    if (value) await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setHaptics(value);
-    saveSetting('haptics', value);
   }, [saveSetting]);
 
   const handleThemeChange = useCallback(async (newMode: ThemeMode) => {
-    if (haptics) await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setThemeMode(newMode);
-  }, [haptics, setThemeMode]);
+  }, [setThemeMode]);
 
   const handleClearCache = useCallback(() => {
     Alert.alert(
@@ -97,14 +84,14 @@ export default function SettingsScreen() {
           text: 'Clear Data',
           style: 'destructive',
           onPress: async () => {
-            if (haptics) await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
             clearAllData.mutate();
             Alert.alert('Success', 'All local data has been cleared.');
           },
         },
       ]
     );
-  }, [clearAllData, haptics]);
+  }, [clearAllData]);
 
   const handleLogout = useCallback(() => {
     Alert.alert(
@@ -116,18 +103,18 @@ export default function SettingsScreen() {
           text: 'Sign Out',
           style: 'destructive',
           onPress: async () => {
-            if (haptics) await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             await logout();
           },
         },
       ]
     );
-  }, [logout, haptics]);
+  }, [logout]);
 
   const handleSync = useCallback(() => {
-    if (haptics) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     syncStatus.triggerSync();
-  }, [syncStatus, haptics]);
+  }, [syncStatus]);
 
   // Calculate approximate cache size
   const cacheSize = dbStats 
@@ -331,7 +318,7 @@ export default function SettingsScreen() {
 
         {/* Preferences Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Preferences</Text>
+          <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Notifications</Text>
           <View style={[styles.sectionContent, dynamicStyles.sectionContent]}>
             <View style={styles.settingItem}>
               <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.info.dark + '30' : colors.info.light }]}>
@@ -343,21 +330,6 @@ export default function SettingsScreen() {
                 onValueChange={handleNotificationsChange}
                 trackColor={{ false: isDark ? colors.navy[700] : colors.gray[300], true: colors.primary[500] }}
                 thumbColor={notifications ? '#fff' : isDark ? colors.gray[400] : '#fff'}
-              />
-            </View>
-
-            <View style={[styles.divider, dynamicStyles.divider]} />
-
-            <View style={styles.settingItem}>
-              <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.warning.dark + '30' : colors.warning.light }]}>
-                <Ionicons name="phone-portrait" size={18} color={colors.warning.main} />
-              </View>
-              <Text style={[styles.settingTitle, dynamicStyles.settingTitle]}>Haptic Feedback</Text>
-              <Switch
-                value={haptics}
-                onValueChange={handleHapticsChange}
-                trackColor={{ false: isDark ? colors.navy[700] : colors.gray[300], true: colors.primary[500] }}
-                thumbColor={haptics ? '#fff' : isDark ? colors.gray[400] : '#fff'}
               />
             </View>
           </View>
