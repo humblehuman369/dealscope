@@ -27,6 +27,14 @@ import { colors } from '../../theme/colors';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+// Loading messages to cycle through during initialization
+const LOADING_MESSAGES = [
+  'Acquiring GPS signal...',
+  'Analyzing neighborhood data...',
+  'Loading property database...',
+  'Preparing scanner...',
+];
+
 export default function ScanScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -36,8 +44,9 @@ export default function ScanScreen() {
   const [distance, setDistance] = useState(50);
   const [showCalibration, setShowCalibration] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const scanner = usePropertyScanner();
-  const { isScanning, result, error, performScan, clearResult } = usePropertyScan();
+  const { isScanning, result, error, performScan, clearResult, clearError } = usePropertyScan();
   
   // Animations
   const scanAnimation = useRef(new Animated.Value(1)).current;
@@ -45,9 +54,30 @@ export default function ScanScreen() {
   const rotateAnimation = useRef(new Animated.Value(0)).current;
   const dotAnimation = useRef(new Animated.Value(0)).current;
   
-  // Pulsing and rotating animation for "Analyzing Area Data" state
+  // Cycle through loading messages during initialization
   useEffect(() => {
     if (!scanner.isLocationReady) {
+      const messageInterval = setInterval(() => {
+        setLoadingMessageIndex(prev => (prev + 1) % LOADING_MESSAGES.length);
+      }, 2500); // Change message every 2.5 seconds
+      
+      return () => clearInterval(messageInterval);
+    } else {
+      // Reset to first message for next time
+      setLoadingMessageIndex(0);
+    }
+  }, [scanner.isLocationReady]);
+
+  // Clear any previous errors when location becomes ready
+  useEffect(() => {
+    if (scanner.isLocationReady && error) {
+      clearError();
+    }
+  }, [scanner.isLocationReady, error, clearError]);
+
+  // Pulsing and rotating animation for "Analyzing Area Data" state
+  useEffect(() => {
+    if (!scanner.isLocationReady || isScanning) {
       // Reset to initial value to prevent jump/glitch when animation restarts
       pulseAnimation.setValue(0.6);
       rotateAnimation.setValue(0);
@@ -101,7 +131,7 @@ export default function ScanScreen() {
         dots.stop();
       };
     }
-  }, [scanner.isLocationReady, pulseAnimation, rotateAnimation, dotAnimation]);
+  }, [scanner.isLocationReady, isScanning, pulseAnimation, rotateAnimation, dotAnimation]);
   
   // Interpolate rotation
   const spin = rotateAnimation.interpolate({
@@ -253,7 +283,7 @@ export default function ScanScreen() {
                 style={[
                   styles.scanButton,
                   isScanning && styles.scanButtonScanning,
-                  !scanner.isLocationReady && styles.scanButtonAnalyzing,
+                  !scanner.isLocationReady && styles.scanButtonDisabled,
                 ]}
                 onPress={handleScan}
                 disabled={isScanning || !scanner.isLocationReady}
@@ -264,14 +294,14 @@ export default function ScanScreen() {
                     <Animated.View style={{ transform: [{ rotate: spin }] }}>
                       <Ionicons name="sync" size={28} color="#fff" />
                     </Animated.View>
-                    <Text style={styles.scanButtonText}>Scanning...</Text>
+                    <Text style={styles.scanButtonText}>Analyzing...</Text>
                   </View>
                 ) : !scanner.isLocationReady ? (
                   <Animated.View style={[styles.analyzingIndicator, { opacity: pulseAnimation }]}>
                     <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                      <Ionicons name="globe-outline" size={26} color="#fff" />
+                      <Ionicons name="navigate-circle-outline" size={28} color={colors.gray[400]} />
                     </Animated.View>
-                    <Text style={styles.analyzingText}>PLEASE WAIT</Text>
+                    <Text style={styles.disabledButtonText}>PLEASE WAIT</Text>
                   </Animated.View>
                 ) : (
                   <>
@@ -282,6 +312,31 @@ export default function ScanScreen() {
               </TouchableOpacity>
             </Animated.View>
           </View>
+
+          {/* Loading Status Banner - shows when initializing */}
+          {!scanner.isLocationReady && (
+            <Animated.View style={[styles.loadingBanner, { opacity: pulseAnimation }]}>
+              <View style={styles.loadingBannerContent}>
+                <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                  <Ionicons name="planet-outline" size={20} color={colors.accent[500]} />
+                </Animated.View>
+                <View style={styles.loadingTextContainer}>
+                  <Text style={styles.loadingBannerTitle}>Initializing Scanner</Text>
+                  <Text style={styles.loadingBannerMessage}>{LOADING_MESSAGES[loadingMessageIndex]}</Text>
+                </View>
+              </View>
+              <View style={styles.loadingProgressBar}>
+                <Animated.View 
+                  style={[
+                    styles.loadingProgressFill,
+                    { 
+                      width: `${((loadingMessageIndex + 1) / LOADING_MESSAGES.length) * 100}%`,
+                    }
+                  ]} 
+                />
+              </View>
+            </Animated.View>
+          )}
 
           {/* Status Info */}
           <View style={styles.statusRow}>
@@ -295,19 +350,10 @@ export default function ScanScreen() {
           
           {/* GPS Status Info */}
           <View style={styles.statusRow}>
-            {scanner.userLat !== 0 ? (
+            {scanner.userLat !== 0 && scanner.isLocationReady && (
               <Text style={[styles.statusText, { fontSize: 10, opacity: 0.7 }]}>
                 📍 {scanner.userLat.toFixed(5)}, {scanner.userLng.toFixed(5)}
               </Text>
-            ) : (
-              <Animated.View style={[styles.analyzingAreaContainer, { opacity: pulseAnimation }]}>
-                <Animated.View style={{ transform: [{ rotate: spin }] }}>
-                  <Ionicons name="planet-outline" size={14} color={colors.accent[500]} />
-                </Animated.View>
-                <Text style={styles.analyzingAreaText}>
-                  Analyzing neighborhood data...
-                </Text>
-              </Animated.View>
             )}
             {scanner.headingOffset !== 0 && (
               <Text style={[styles.statusText, { fontSize: 10, opacity: 0.7 }]}>
@@ -316,12 +362,21 @@ export default function ScanScreen() {
             )}
           </View>
 
-          {/* Error Display - Only show when location is ready (real error, not loading) */}
-          {error && scanner.isLocationReady && (
-            <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle" size={16} color={colors.loss.main} />
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
+          {/* Error Display - Only show when location is ready AND not currently scanning */}
+          {error && scanner.isLocationReady && !isScanning && (
+            <TouchableOpacity 
+              style={styles.errorContainer}
+              onPress={clearError}
+              activeOpacity={0.8}
+            >
+              <View style={styles.errorContent}>
+                <Ionicons name="alert-circle" size={18} color={colors.loss.main} />
+                <View style={styles.errorTextContainer}>
+                  <Text style={styles.errorText}>{error}</Text>
+                  <Text style={styles.errorHint}>Tap to dismiss • Try adjusting distance or aim</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
           )}
         </View>
       </View>
@@ -494,9 +549,10 @@ const styles = StyleSheet.create({
   scanButtonScanning: {
     backgroundColor: colors.primary[700],
   },
-  scanButtonAnalyzing: {
-    backgroundColor: colors.navy[600],
-    shadowColor: colors.navy[600],
+  scanButtonDisabled: {
+    backgroundColor: colors.gray[700],
+    shadowColor: colors.gray[700],
+    shadowOpacity: 0.2,
   },
   scanningIndicator: {
     flexDirection: 'row',
@@ -508,22 +564,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  analyzingText: {
+  disabledButtonText: {
     fontWeight: '700',
-    fontSize: 14,
-    color: '#fff',
-    letterSpacing: 2,
+    fontSize: 12,
+    color: colors.gray[400],
+    letterSpacing: 1,
   },
-  analyzingAreaContainer: {
+  loadingBanner: {
+    marginTop: 16,
+    backgroundColor: 'rgba(0, 229, 255, 0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 229, 255, 0.3)',
+    overflow: 'hidden',
+  },
+  loadingBannerContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    padding: 12,
+    gap: 12,
   },
-  analyzingAreaText: {
-    fontSize: 12,
-    fontWeight: '600',
+  loadingTextContainer: {
+    flex: 1,
+  },
+  loadingBannerTitle: {
+    fontWeight: '700',
+    fontSize: 13,
     color: colors.accent[500],
-    letterSpacing: 0.3,
+    marginBottom: 2,
+  },
+  loadingBannerMessage: {
+    fontWeight: '500',
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  loadingProgressBar: {
+    height: 3,
+    backgroundColor: 'rgba(0, 229, 255, 0.2)',
+  },
+  loadingProgressFill: {
+    height: '100%',
+    backgroundColor: colors.accent[500],
   },
   scanButtonText: {
     fontWeight: '700',
@@ -542,20 +623,32 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.7)',
   },
   errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
     marginTop: 12,
-    backgroundColor: 'rgba(244,63,94,0.2)',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    backgroundColor: 'rgba(244,63,94,0.15)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(244,63,94,0.3)',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  errorContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  errorTextContainer: {
+    flex: 1,
   },
   errorText: {
-    fontWeight: '500',
-    fontSize: 12,
+    fontWeight: '600',
+    fontSize: 13,
     color: colors.loss.main,
+    marginBottom: 4,
+  },
+  errorHint: {
+    fontWeight: '400',
+    fontSize: 11,
+    color: 'rgba(244,63,94,0.7)',
   },
   permissionContainer: {
     flex: 1,
