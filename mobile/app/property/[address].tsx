@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 19,  // Matched to section 3 title size
     fontWeight: '600',
     color: colors.gray[900],
     marginBottom: 12,
