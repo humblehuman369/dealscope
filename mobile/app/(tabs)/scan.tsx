@@ -15,7 +15,6 @@ import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { usePropertyScanner } from '../../hooks/usePropertyScanner';
 import { usePropertyScan } from '../../hooks/usePropertyScan';
 import { ScanTarget } from '../../components/scanner/ScanTarget';
 import { CompassDisplay } from '../../components/scanner/CompassDisplay';
@@ -40,13 +39,12 @@ export default function ScanScreen() {
   const insets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
   
-  // Scanner state
+  // Scanner state - use the scanner from usePropertyScan to ensure single instance
   const [distance, setDistance] = useState(50);
   const [showCalibration, setShowCalibration] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const scanner = usePropertyScanner();
-  const { isScanning, result, error, performScan, clearResult, clearError } = usePropertyScan();
+  const { scanner, isScanning, result, error, performScan, clearResult, clearError } = usePropertyScan();
   
   // Animations
   const scanAnimation = useRef(new Animated.Value(1)).current;
@@ -362,8 +360,8 @@ export default function ScanScreen() {
             )}
           </View>
 
-          {/* Error Display - Only show when location is ready AND not currently scanning */}
-          {error && scanner.isLocationReady && !isScanning && (
+          {/* Error Display - Show scan errors or scanner errors */}
+          {(error || scanner.error) && scanner.isLocationReady && !isScanning && (
             <TouchableOpacity 
               style={styles.errorContainer}
               onPress={clearError}
@@ -372,8 +370,12 @@ export default function ScanScreen() {
               <View style={styles.errorContent}>
                 <Ionicons name="alert-circle" size={18} color={colors.loss.main} />
                 <View style={styles.errorTextContainer}>
-                  <Text style={styles.errorText}>{error}</Text>
-                  <Text style={styles.errorHint}>Tap to dismiss • Try adjusting distance or aim</Text>
+                  <Text style={styles.errorText}>{error || scanner.error}</Text>
+                  <Text style={styles.errorHint}>
+                    {scanner.error 
+                      ? 'Check location settings and try again' 
+                      : 'Tap to dismiss • Try adjusting distance or aim'}
+                  </Text>
                 </View>
               </View>
             </TouchableOpacity>
