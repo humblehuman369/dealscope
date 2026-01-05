@@ -232,6 +232,26 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Features Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Features</Text>
+          <View style={[styles.sectionContent, dynamicStyles.sectionContent]}>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => router.push('/(tabs)/map')}
+            >
+              <View style={[styles.menuIcon, { backgroundColor: isDark ? colors.primary[800] : colors.primary[100] }]}>
+                <Ionicons name="map" size={18} color={colors.primary[isDark ? 300 : 600]} />
+              </View>
+              <View style={styles.menuTextContainer}>
+                <Text style={[styles.menuTitle, dynamicStyles.menuTitle]}>Property Map</Text>
+                <Text style={[styles.menuSubtitle, dynamicStyles.menuSubtitle]}>Explore properties on an interactive map</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Account Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Account</Text>
