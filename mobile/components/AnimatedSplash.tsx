@@ -4,12 +4,9 @@ import {
   StyleSheet,
   Animated,
 } from 'react-native';
-import { colors } from '../theme/colors';
 
-// Original splash image size (you can adjust based on actual asset)
-const ORIGINAL_SIZE = 200;
-// Reduced by 40% = 60% of original
-const REDUCED_SIZE = ORIGINAL_SIZE * 0.6;
+// Logo size - larger to fill the space
+const LOGO_SIZE = 180;
 
 interface AnimatedSplashProps {
   onAnimationComplete: () => void;
@@ -29,7 +26,7 @@ export function AnimatedSplash({ onAnimationComplete }: AnimatedSplashProps) {
       // Pulse 1
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.15,
+          toValue: 1.1,
           duration: 400,
           useNativeDriver: true,
         }),
@@ -44,7 +41,7 @@ export function AnimatedSplash({ onAnimationComplete }: AnimatedSplashProps) {
       // Pulse 2
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.15,
+          toValue: 1.1,
           duration: 400,
           useNativeDriver: true,
         }),
@@ -59,7 +56,7 @@ export function AnimatedSplash({ onAnimationComplete }: AnimatedSplashProps) {
       // Pulse 3 (slightly bigger for emphasis)
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.2,
+          toValue: 1.15,
           duration: 350,
           useNativeDriver: true,
         }),
@@ -107,17 +104,6 @@ export function AnimatedSplash({ onAnimationComplete }: AnimatedSplashProps) {
           resizeMode="contain"
         />
       </Animated.View>
-      
-      {/* Subtle glow effect that pulses with the logo */}
-      <Animated.View
-        style={[
-          styles.glow,
-          {
-            transform: [{ scale: pulseAnim }],
-            opacity: Animated.multiply(pulseAnim, 0.3),
-          },
-        ]}
-      />
     </Animated.View>
   );
 }
@@ -135,16 +121,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: REDUCED_SIZE,
-    height: REDUCED_SIZE,
-  },
-  glow: {
-    position: 'absolute',
-    width: REDUCED_SIZE * 1.5,
-    height: REDUCED_SIZE * 1.5,
-    borderRadius: REDUCED_SIZE * 0.75,
-    backgroundColor: colors.primary[400],
-    opacity: 0.2,
+    width: LOGO_SIZE,
+    height: LOGO_SIZE,
   },
 });
-

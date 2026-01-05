@@ -42,13 +42,18 @@ export default function ScanScreen() {
   // Animations
   const scanAnimation = useRef(new Animated.Value(1)).current;
   const pulseAnimation = useRef(new Animated.Value(0.6)).current;
+  const rotateAnimation = useRef(new Animated.Value(0)).current;
+  const dotAnimation = useRef(new Animated.Value(0)).current;
   
-  // Pulsing animation for "Analyzing Area Data" state
+  // Pulsing and rotating animation for "Analyzing Area Data" state
   useEffect(() => {
     if (!scanner.isLocationReady) {
       // Reset to initial value to prevent jump/glitch when animation restarts
       pulseAnimation.setValue(0.6);
+      rotateAnimation.setValue(0);
+      dotAnimation.setValue(0);
       
+      // Pulse animation
       const pulse = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnimation, {
@@ -65,10 +70,44 @@ export default function ScanScreen() {
           }),
         ])
       );
+      
+      // Rotate animation for the icon
+      const rotate = Animated.loop(
+        Animated.timing(rotateAnimation, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      );
+      
+      // Dot animation for loading text
+      const dots = Animated.loop(
+        Animated.timing(dotAnimation, {
+          toValue: 3,
+          duration: 1500,
+          easing: Easing.linear,
+          useNativeDriver: false,
+        })
+      );
+      
       pulse.start();
-      return () => pulse.stop();
+      rotate.start();
+      dots.start();
+      
+      return () => {
+        pulse.stop();
+        rotate.stop();
+        dots.stop();
+      };
     }
-  }, [scanner.isLocationReady, pulseAnimation]);
+  }, [scanner.isLocationReady, pulseAnimation, rotateAnimation, dotAnimation]);
+  
+  // Interpolate rotation
+  const spin = rotateAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   const handleScan = useCallback(async () => {
     // Haptic feedback
@@ -222,13 +261,17 @@ export default function ScanScreen() {
               >
                 {isScanning ? (
                   <View style={styles.scanningIndicator}>
-                    <Ionicons name="scan" size={32} color="#fff" />
+                    <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                      <Ionicons name="sync" size={28} color="#fff" />
+                    </Animated.View>
                     <Text style={styles.scanButtonText}>Scanning...</Text>
                   </View>
                 ) : !scanner.isLocationReady ? (
                   <Animated.View style={[styles.analyzingIndicator, { opacity: pulseAnimation }]}>
-                    <Ionicons name="radio-outline" size={28} color="#fff" />
-                    <Text style={styles.analyzingText}>ANALYZING</Text>
+                    <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                      <Ionicons name="globe-outline" size={26} color="#fff" />
+                    </Animated.View>
+                    <Text style={styles.analyzingText}>PLEASE WAIT</Text>
                   </Animated.View>
                 ) : (
                   <>
@@ -257,9 +300,14 @@ export default function ScanScreen() {
                 📍 {scanner.userLat.toFixed(5)}, {scanner.userLng.toFixed(5)}
               </Text>
             ) : (
-              <Animated.Text style={[styles.analyzingAreaText, { opacity: pulseAnimation }]}>
-                🛰️ Analyzing Area Data...
-              </Animated.Text>
+              <Animated.View style={[styles.analyzingAreaContainer, { opacity: pulseAnimation }]}>
+                <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                  <Ionicons name="planet-outline" size={14} color={colors.accent[500]} />
+                </Animated.View>
+                <Text style={styles.analyzingAreaText}>
+                  Analyzing neighborhood data...
+                </Text>
+              </Animated.View>
             )}
             {scanner.headingOffset !== 0 && (
               <Text style={[styles.statusText, { fontSize: 10, opacity: 0.7 }]}>
@@ -268,8 +316,8 @@ export default function ScanScreen() {
             )}
           </View>
 
-          {/* Error Display */}
-          {error && (
+          {/* Error Display - Only show when location is ready (real error, not loading) */}
+          {error && scanner.isLocationReady && (
             <View style={styles.errorContainer}>
               <Ionicons name="alert-circle" size={16} color={colors.loss.main} />
               <Text style={styles.errorText}>{error}</Text>
@@ -466,11 +514,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     letterSpacing: 2,
   },
+  analyzingAreaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   analyzingAreaText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     color: colors.accent[500],
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   scanButtonText: {
     fontWeight: '700',
