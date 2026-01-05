@@ -32,6 +32,7 @@ import { ScanTarget } from '@/components/scanner/ScanTarget';
 import { CompassDisplay } from '@/components/scanner/CompassDisplay';
 import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
 import { getCardinalDirection } from '@/lib/geoCalculations';
+import { MobileLandingPage } from '@/components/MobileLandingPage';
 
 // Detect if user is on mobile device
 function useIsMobile() {
@@ -54,23 +55,25 @@ function useIsMobile() {
 
 export default function HomePage() {
   const isMobile = useIsMobile();
-  const [mode, setMode] = useState<'camera' | 'map'>('map');
+  const [mode, setMode] = useState<'landing' | 'camera' | 'desktop'>('landing');
   
-  const showCameraMode = mode === 'camera';
+  // Determine initial mode based on device
+  useEffect(() => {
+    if (mode === 'landing') {
+      // Stay on landing page initially for both mobile and desktop
+    }
+  }, [isMobile, mode]);
+
+  if (mode === 'camera') {
+    return <MobileScannerView onSwitchMode={() => setMode('landing')} />;
+  }
+
+  // Show mobile landing page on mobile devices, desktop landing on larger screens
+  if (isMobile) {
+    return <MobileLandingPage onPointAndScan={() => setMode('camera')} />;
+  }
   
-  return (
-    <>
-      {showCameraMode ? (
-        <MobileScannerView 
-          onSwitchMode={() => setMode('map')} 
-        />
-      ) : (
-        <DesktopLandingPage 
-          onSwitchMode={() => setMode('camera')}
-        />
-      )}
-    </>
-  );
+  return <DesktopLandingPage onSwitchMode={() => setMode('camera')} />;
 }
 
 /**

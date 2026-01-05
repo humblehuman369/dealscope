@@ -373,3 +373,19 @@ html.dark .text-brand-solid {
 .animate-ping-slow {
   animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
+
+/* Phone scanner animations */
+@keyframes bracket-pulse {
+  0%, 100% { 
+    filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.5));
+    opacity: 0.8;
+  }
+  50% { 
+    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.8));
+    opacity: 1;
+  }
+}
+
+.animate-bracket-pulse {
+  animation: bracket-pulse 3s ease-in-out infinite;
+}
