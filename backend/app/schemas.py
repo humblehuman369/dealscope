@@ -1,7 +1,7 @@
 """
 Pydantic schemas for API request/response validation.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 from enum import Enum
@@ -94,6 +94,16 @@ class PropertyDetails(BaseModel):
     year_built: Optional[int] = None
     num_units: Optional[int] = 1
     features: Optional[List[str]] = []
+    
+    @field_validator('square_footage', 'lot_size', 'bedrooms', 'year_built', 'num_units', mode='before')
+    @classmethod
+    def convert_float_to_int(cls, v):
+        """Convert float values to int (API sometimes returns floats for int fields)."""
+        if v is None:
+            return None
+        if isinstance(v, float):
+            return int(round(v))
+        return v
 
 
 class ValuationData(BaseModel):
