@@ -278,9 +278,12 @@ export function usePropertyScan() {
           message = 'No properties found at this location. Try moving closer or adjusting your aim.';
         } else if (message.includes('Could not identify')) {
           message = 'Unable to identify the exact property. Try reducing the distance setting.';
-        } else if (message.includes('Backend service')) {
-          // Analytics API is down but we have fallback data
-          message = 'Using estimated data - full analysis unavailable.';
+        } else if (message.includes('Property not found')) {
+          message = 'Property not found in our database. Try a nearby address.';
+        } else if (message.includes('Too many requests')) {
+          message = 'Too many requests. Please wait a moment and try again.';
+        } else if (message.includes('Analytics service error')) {
+          message = 'Analytics service temporarily unavailable. Please try again later.';
         }
       } else {
         message = 'Scan failed unexpectedly. Please try again.';
