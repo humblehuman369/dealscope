@@ -141,6 +141,8 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
     let locationSubscription: Location.LocationSubscription | null = null;
     let magnetometerSubscription: { remove: () => void } | null = null;
     let accelerometerSubscription: { remove: () => void } | null = null;
+    let locationTimeoutId: ReturnType<typeof setTimeout> | null = null;
+    let locationAcquired = false;
 
     async function setupSensors() {
       try {
@@ -150,20 +152,41 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
           setState(prev => ({
             ...prev,
             error: 'Location permission denied',
+            isLocationReady: true, // Set to true so we show the error, not loading
           }));
           return;
         }
+
+        // Set a safety timeout - if we don't get location in 15 seconds, show error
+        locationTimeoutId = setTimeout(() => {
+          if (!locationAcquired) {
+            console.log('Location acquisition timed out after 15 seconds');
+            setState(prev => {
+              // Only set error if we still don't have a location
+              if (!prev.isLocationReady) {
+                return {
+                  ...prev,
+                  error: 'Unable to acquire GPS signal. Please check location settings and try again.',
+                  isLocationReady: true, // Set true so user sees error, not infinite loading
+                };
+              }
+              return prev;
+            });
+          }
+        }, 15000);
 
         // STEP 1: Try to use last known location IMMEDIATELY (instant)
         const lastKnown = await Location.getLastKnownPositionAsync();
         if (lastKnown) {
           console.log('Using last known location for instant start');
+          locationAcquired = true;
           setState(prev => ({
             ...prev,
             userLat: Number(lastKnown.coords.latitude.toFixed(COORDINATE_PRECISION)),
             userLng: Number(lastKnown.coords.longitude.toFixed(COORDINATE_PRECISION)),
             accuracy: lastKnown.coords.accuracy ?? 100,
             isLocationReady: true,
+            error: null, // Clear any previous error
           }));
         }
 
@@ -179,12 +202,14 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
           ]) as Location.LocationObject | null;
           
           if (fastLocation) {
+            locationAcquired = true;
             setState(prev => ({
               ...prev,
               userLat: Number(fastLocation.coords.latitude.toFixed(COORDINATE_PRECISION)),
               userLng: Number(fastLocation.coords.longitude.toFixed(COORDINATE_PRECISION)),
               accuracy: fastLocation.coords.accuracy ?? 50,
               isLocationReady: true,
+              error: null,
             }));
           }
         } catch (e) {
@@ -195,12 +220,14 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
         Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.BestForNavigation,
         }).then((preciseLocation) => {
+          locationAcquired = true;
           setState(prev => ({
             ...prev,
             userLat: Number(preciseLocation.coords.latitude.toFixed(COORDINATE_PRECISION)),
             userLng: Number(preciseLocation.coords.longitude.toFixed(COORDINATE_PRECISION)),
             accuracy: preciseLocation.coords.accuracy ?? 10,
             isLocationReady: true,
+            error: null,
           }));
         }).catch(e => {
           console.log('High accuracy location failed:', e);
@@ -215,12 +242,14 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
           },
           (location) => {
             // Preserve coordinate precision (6 decimal places = ~0.11m)
+            locationAcquired = true;
             setState(prev => ({
               ...prev,
               userLat: Number(location.coords.latitude.toFixed(COORDINATE_PRECISION)),
               userLng: Number(location.coords.longitude.toFixed(COORDINATE_PRECISION)),
               accuracy: location.coords.accuracy ?? 10,
               isLocationReady: true,
+              error: null,
             }));
           }
         );
@@ -315,6 +344,10 @@ export function usePropertyScanner(): ScannerState & CalibrationControls {
     setupSensors();
 
     return () => {
+      // Clear safety timeout
+      if (locationTimeoutId) {
+        clearTimeout(locationTimeoutId);
+      }
       if (locationSubscription) {
         locationSubscription.remove();
       }
