@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePropertyScanner } from './usePropertyScanner';
 import { 
@@ -56,23 +56,44 @@ export function usePropertyScan() {
   const [isScanning, setIsScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // Use refs to always get the latest scanner values in callbacks
+  // This prevents stale closure issues
+  const scannerRef = useRef(scanner);
+  useEffect(() => {
+    scannerRef.current = scanner;
+  }, [scanner]);
 
   const performScan = useCallback(async (
     estimatedDistance: number = 50, 
     overrideLocation?: { lat: number; lng: number; heading?: number }
   ) => {
+    // Get the latest scanner values from ref
+    const currentScanner = scannerRef.current;
+    
     // If override location provided (for demo/testing), skip GPS check
     const useOverride = overrideLocation && overrideLocation.lat !== 0;
     
+    console.log('performScan called with:', {
+      distance: estimatedDistance,
+      isLocationReady: currentScanner.isLocationReady,
+      userLat: currentScanner.userLat,
+      userLng: currentScanner.userLng,
+      heading: currentScanner.heading,
+      useOverride,
+    });
+    
     if (!useOverride) {
       // Validate scanner is ready for real scans
-      if (!scanner.isLocationReady) {
+      if (!currentScanner.isLocationReady) {
         setError('GPS not ready. Please wait for location lock.');
+        console.log('Scan failed: GPS not ready');
         return;
       }
 
-      if (scanner.userLat === 0 || scanner.userLng === 0) {
+      if (currentScanner.userLat === 0 || currentScanner.userLng === 0) {
         setError('Unable to determine your location');
+        console.log('Scan failed: Location is 0,0');
         return;
       }
     }
@@ -84,12 +105,12 @@ export function usePropertyScan() {
     const startTime = Date.now();
 
     try {
-      // Use override or real scanner values
-      const userLat = useOverride ? overrideLocation!.lat : scanner.userLat;
-      const userLng = useOverride ? overrideLocation!.lng : scanner.userLng;
+      // Use override or real scanner values (from ref for latest values)
+      const userLat = useOverride ? overrideLocation!.lat : currentScanner.userLat;
+      const userLng = useOverride ? overrideLocation!.lng : currentScanner.userLng;
       const heading = useOverride && overrideLocation!.heading !== undefined 
         ? overrideLocation!.heading 
-        : scanner.heading;
+        : currentScanner.heading;
 
       console.log(`Scanning from: ${userLat}, ${userLng} heading ${heading}°`);
 
@@ -223,10 +244,16 @@ export function usePropertyScan() {
         analytics,
         confidence: Math.round(bestConfidence * 100),
         scanTime: Date.now() - startTime,
-        heading: scanner.heading,
+        heading: heading, // Use the heading captured at scan start
         distance: estimatedDistance,
         savedId,
       };
+
+      console.log('Scan successful:', {
+        address: matchedParcel.address,
+        confidence: scanResult.confidence,
+        scanTime: scanResult.scanTime,
+      });
 
       setResult(scanResult);
 
@@ -237,7 +264,7 @@ export function usePropertyScan() {
     } finally {
       setIsScanning(false);
     }
-  }, [scanner, queryClient]);
+  }, [queryClient]); // Remove scanner from deps since we use ref
 
   const clearResult = useCallback(() => {
     setResult(null);
