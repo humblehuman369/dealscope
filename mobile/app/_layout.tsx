@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from '../context/AuthContext';
+import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { AnimatedSplash } from '../components/AnimatedSplash';
 
 // Prevent splash screen from hiding until app is ready
@@ -50,34 +51,58 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SafeAreaProvider>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <StatusBar style="auto" />
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: '#f9fafb' },
-              }}
-            >
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="auth" options={{ headerShown: false }} />
-              <Stack.Screen 
-                name="property/[address]" 
-                options={{ 
-                  presentation: 'fullScreenModal',
-                  headerShown: false, // WebView provides its own header
-                  animation: 'slide_from_bottom',
-                }} 
+        <ThemeProvider>
+          <SafeAreaProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <AppContent 
+                appReady={appReady} 
+                showAnimatedSplash={showAnimatedSplash}
+                onAnimationComplete={handleAnimationComplete}
               />
-            </Stack>
-            
-            {/* Animated Splash Screen with pulsating logo */}
-            {appReady && showAnimatedSplash && (
-              <AnimatedSplash onAnimationComplete={handleAnimationComplete} />
-            )}
-          </GestureHandlerRootView>
-        </SafeAreaProvider>
+            </GestureHandlerRootView>
+          </SafeAreaProvider>
+        </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>
+  );
+}
+
+function AppContent({ 
+  appReady, 
+  showAnimatedSplash, 
+  onAnimationComplete 
+}: { 
+  appReady: boolean; 
+  showAnimatedSplash: boolean; 
+  onAnimationComplete: () => void;
+}) {
+  const { theme } = useTheme();
+
+  return (
+    <>
+      <StatusBar style={theme.statusBar} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: theme.background },
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="auth" options={{ headerShown: false }} />
+        <Stack.Screen 
+          name="property/[address]" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_bottom',
+          }} 
+        />
+      </Stack>
+      
+      {/* Animated Splash Screen with pulsating logo */}
+      {appReady && showAnimatedSplash && (
+        <AnimatedSplash onAnimationComplete={onAnimationComplete} />
+      )}
+    </>
   );
 }
