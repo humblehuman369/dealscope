@@ -112,13 +112,25 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
     }
   }, [propertyUrl]);
 
+  // Handle messages from WebView (e.g., menu button click)
+  const handleWebViewMessage = useCallback(async (event: any) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === 'OPEN_MENU') {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setShowMenu(true);
+      }
+    } catch (error) {
+      console.error('Error parsing WebView message:', error);
+    }
+  }, []);
+
   // Inject CSS to hide web header/footer and optimize for mobile
   // Also apply dark mode class based on device color scheme
   const isDarkMode = colorScheme === 'dark';
   const injectedStyles = `
     (function() {
       // Apply dark mode class based on device preference
-      // Use JSON.stringify to ensure boolean is properly injected (not as truthy string)
       var isDark = ${JSON.stringify(isDarkMode)};
       if (isDark) {
         document.documentElement.classList.add('dark');
@@ -130,16 +142,50 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
       
       const style = document.createElement('style');
       style.textContent = \`
-        /* Hide notification bell and settings gear - mobile app provides these via Menu button */
+        /* AGGRESSIVELY hide notification bell and settings gear */
+        /* Target by aria-label */
         button[aria-label="Notifications"],
-        button[aria-label="Settings"] {
+        button[aria-label="Settings"],
+        /* Target by SVG content - bell and settings icons */
+        button:has(svg.lucide-bell),
+        button:has(svg.lucide-settings),
+        /* Target buttons in header right section that aren't the theme toggle */
+        header button:not(:has(svg.lucide-sun)):not(:has(svg.lucide-moon)):not(.mobile-menu-btn) {
           display: none !important;
+          visibility: hidden !important;
+          width: 0 !important;
+          height: 0 !important;
+          overflow: hidden !important;
+          position: absolute !important;
+          pointer-events: none !important;
+        }
+        
+        /* Style for the injected menu button */
+        .mobile-menu-btn {
+          display: flex !important;
+          visibility: visible !important;
+          width: auto !important;
+          height: auto !important;
+          position: relative !important;
+          pointer-events: auto !important;
+          padding: 8px !important;
+          cursor: pointer !important;
+          color: #6b7280 !important;
+        }
+        .mobile-menu-btn:hover {
+          color: #374151 !important;
+        }
+        .dark .mobile-menu-btn {
+          color: #9ca3af !important;
+        }
+        .dark .mobile-menu-btn:hover {
+          color: #e5e7eb !important;
         }
         
         /* Optimize body padding for embedded view */
         body { padding-top: 0 !important; }
         
-        /* Remove top padding from main container - fill the gap at top */
+        /* Remove top padding from main container */
         .max-w-7xl { padding-top: 8px !important; }
         
         /* Improve touch targets */
@@ -152,36 +198,71 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
         html { scroll-behavior: smooth; }
       \`;
       document.head.appendChild(style);
+      
+      // Wait for DOM to be ready, then inject menu button
+      function injectMenuButton() {
+        // Find the header's right section (contains theme toggle, bell, gear)
+        var header = document.querySelector('header');
+        if (!header) {
+          setTimeout(injectMenuButton, 100);
+          return;
+        }
+        
+        // Find the container with the action buttons
+        var actionsContainer = header.querySelector('.flex.items-center.space-x-2');
+        if (!actionsContainer) {
+          setTimeout(injectMenuButton, 100);
+          return;
+        }
+        
+        // Check if menu button already exists
+        if (document.querySelector('.mobile-menu-btn')) return;
+        
+        // Create menu button
+        var menuBtn = document.createElement('button');
+        menuBtn.className = 'mobile-menu-btn';
+        menuBtn.setAttribute('aria-label', 'Menu');
+        menuBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>';
+        
+        // Add click handler that posts message to React Native
+        menuBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'OPEN_MENU' }));
+        });
+        
+        // Insert at the end of actions container
+        actionsContainer.appendChild(menuBtn);
+      }
+      
+      // Run when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', injectMenuButton);
+      } else {
+        injectMenuButton();
+      }
+      
+      // Also run after a delay to handle dynamic content
+      setTimeout(injectMenuButton, 500);
+      setTimeout(injectMenuButton, 1000);
     })();
     true;
   `;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Floating Header Buttons */}
-      <View style={styles.floatingHeader}>
-        {/* Back Button - LEFT side (always back arrow, more subtle) */}
-        <TouchableOpacity
-          style={styles.floatingButton}
-          onPress={handleGoBack}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons
-            name="chevron-back"
-            size={24}
-            color={colors.gray[600]}
-          />
-        </TouchableOpacity>
-        
-        {/* Menu Button - RIGHT side */}
-        <TouchableOpacity
-          style={[styles.floatingButton, styles.menuButton]}
-          onPress={handleOpenMenu}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons name="menu-outline" size={26} color={colors.gray[600]} />
-        </TouchableOpacity>
-      </View>
+      {/* Floating Back Button - LEFT side only */}
+      <TouchableOpacity
+        style={[styles.floatingBackButton, { top: 8 }]}
+        onPress={handleGoBack}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <Ionicons
+          name="chevron-back"
+          size={26}
+          color={colors.gray[700]}
+        />
+      </TouchableOpacity>
 
       {/* WebView or Error View */}
       <View style={styles.webViewContainer}>
@@ -249,6 +330,7 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
               }}
               onError={handleError}
               onHttpError={handleHttpError}
+              onMessage={handleWebViewMessage}
               injectedJavaScript={injectedStyles}
               // Performance optimizations
               javaScriptEnabled
@@ -299,26 +381,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
   },
-  floatingHeader: {
+  floatingBackButton: {
     position: 'absolute',
-    top: 8,
-    left: 12,
-    right: 12,
+    left: 8,
     zIndex: 100,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  floatingButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  menuButton: {
-    // Menu button matches the subtle style
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   webViewContainer: {
     flex: 1,
