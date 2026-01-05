@@ -244,6 +244,10 @@ export function usePropertyScan() {
     setError(null);
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     scanner,
     isScanning,
@@ -251,5 +255,6 @@ export function usePropertyScan() {
     error,
     performScan,
     clearResult,
+    clearError,
   };
 }
