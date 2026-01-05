@@ -43,11 +43,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="map"
+        name="dashboard"
         options={{
-          title: 'Map',
+          title: 'Dashboard',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="map-outline" size={size} color={color} />
+            <Ionicons name="grid-outline" size={size} color={color} />
           ),
         }}
       />
@@ -58,6 +58,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="scan-outline" size={size} color={color} />
           ),
+        }}
+      />
+      {/* Map is hidden from tab bar but accessible from More/Settings */}
+      <Tabs.Screen
+        name="map"
+        options={{
+          href: null, // Hide from tab bar - accessible via More menu
         }}
       />
       <Tabs.Screen
