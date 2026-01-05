@@ -56,13 +56,19 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Left side - Logo & Nav */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2">
-              <img 
-                src="/images/investiq-logo-icon.png" 
-                alt="InvestIQ" 
-                className="w-8 h-8 rounded-lg"
-              />
-              <span className="text-lg font-bold text-navy-900 dark:text-white">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="relative w-10 h-10">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 via-brand-500 to-blue-700 shadow-lg shadow-brand-500/30" />
+                <img 
+                  src="/images/investiq-logo-icon.png" 
+                  alt="InvestIQ" 
+                  className="relative w-10 h-10 rounded-full object-cover"
+                  style={{ 
+                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.3), 0 4px 12px rgba(14, 99, 246, 0.25)'
+                  }}
+                />
+              </div>
+              <span className="text-xl font-bold text-navy-900 dark:text-white tracking-tight">
                 Invest<span className="text-brand-500">IQ</span>
               </span>
             </Link>

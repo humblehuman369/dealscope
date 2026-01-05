@@ -476,12 +476,18 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-6">
             <a href="/" className="flex items-center gap-3">
-              <img 
-                src="/images/investiq-logo-icon.png" 
-                alt="InvestIQ" 
-                className="w-12 h-12 rounded-xl"
-              />
-              <span className="text-2xl font-bold text-navy-900">
+              <div className="relative w-12 h-12">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 via-brand-500 to-blue-700 shadow-lg shadow-brand-500/30" />
+                <img 
+                  src="/images/investiq-logo-icon.png" 
+                  alt="InvestIQ" 
+                  className="relative w-12 h-12 rounded-full object-cover"
+                  style={{ 
+                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.3), 0 4px 12px rgba(14, 99, 246, 0.25)'
+                  }}
+                />
+              </div>
+              <span className="text-2xl font-bold text-navy-900 tracking-tight">
                 Invest<span className="text-brand-500">IQ</span>
               </span>
             </a>
