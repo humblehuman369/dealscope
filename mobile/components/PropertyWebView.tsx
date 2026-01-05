@@ -130,8 +130,11 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
       
       const style = document.createElement('style');
       style.textContent = \`
-        /* Hide web header if needed - the mobile app provides navigation */
-        header.bg-white.border-b { display: none !important; }
+        /* Hide notification bell and settings gear - mobile app provides these via Menu button */
+        button[aria-label="Notifications"],
+        button[aria-label="Settings"] {
+          display: none !important;
+        }
         
         /* Optimize body padding for embedded view */
         body { padding-top: 0 !important; }
@@ -157,16 +160,16 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Floating Header Buttons */}
       <View style={styles.floatingHeader}>
-        {/* Back/Close Button - LEFT side */}
+        {/* Back Button - LEFT side (always back arrow, more subtle) */}
         <TouchableOpacity
           style={styles.floatingButton}
           onPress={handleGoBack}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <Ionicons
-            name={canGoBack ? 'chevron-back' : 'close'}
-            size={22}
-            color={colors.gray[700]}
+            name="chevron-back"
+            size={24}
+            color={colors.gray[600]}
           />
         </TouchableOpacity>
         
@@ -176,7 +179,7 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
           onPress={handleOpenMenu}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="menu" size={22} color={colors.primary[600]} />
+          <Ionicons name="menu-outline" size={26} color={colors.gray[600]} />
         </TouchableOpacity>
       </View>
 
@@ -307,22 +310,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   floatingButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
   },
   menuButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
-    borderWidth: 1,
-    borderColor: colors.primary[100],
+    // Menu button matches the subtle style
   },
   webViewContainer: {
     flex: 1,
