@@ -8,7 +8,6 @@ import {
   RefreshControl,
   Alert,
   ActivityIndicator,
-  useColorScheme,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,6 +27,7 @@ import {
 } from '../../hooks/useDatabase';
 import { ScannedProperty, AnalyticsData } from '../../database';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { AuthRequiredModal } from '../../components/AuthRequiredModal';
 
 // Brand Colors
@@ -110,8 +110,7 @@ function getStrategyName(key: string): string {
 export default function HistoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { isDark } = useTheme();
   
   const [filter, setFilter] = useState<'all' | 'favorites'>('all');
   const [showAuthModal, setShowAuthModal] = useState(false);

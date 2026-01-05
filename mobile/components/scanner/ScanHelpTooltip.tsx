@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -43,11 +43,15 @@ function TipItem({ icon, title, description, iconColor = colors.primary[600] }: 
 
 export function ScanHelpTooltip({ visible, onClose }: ScanHelpTooltipProps) {
   const insets = useSafeAreaInsets();
-  const [fadeAnim] = useState(new Animated.Value(0));
-  const [slideAnim] = useState(new Animated.Value(50));
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
 
   useEffect(() => {
     if (visible) {
+      // Reset values before animating in
+      fadeAnim.setValue(0);
+      slideAnim.setValue(50);
+      
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -61,18 +65,13 @@ export function ScanHelpTooltip({ visible, onClose }: ScanHelpTooltipProps) {
           useNativeDriver: true,
         }),
       ]).start();
-    } else {
-      fadeAnim.setValue(0);
-      slideAnim.setValue(50);
     }
-  }, [visible]);
-
-  if (!visible) return null;
+  }, [visible, fadeAnim, slideAnim]);
 
   return (
     <Modal
       visible={visible}
-      animationType="none"
+      animationType="fade"
       transparent
       onRequestClose={onClose}
     >
