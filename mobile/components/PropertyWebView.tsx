@@ -142,15 +142,13 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
       
       const style = document.createElement('style');
       style.textContent = \`
-        /* AGGRESSIVELY hide notification bell and settings gear */
+        /* Hide notification bell and settings gear specifically */
         /* Target by aria-label */
         button[aria-label="Notifications"],
         button[aria-label="Settings"],
         /* Target by SVG content - bell and settings icons */
         button:has(svg.lucide-bell),
-        button:has(svg.lucide-settings),
-        /* Target buttons in header right section that aren't the theme toggle */
-        header button:not(:has(svg.lucide-sun)):not(:has(svg.lucide-moon)):not(.mobile-menu-btn) {
+        button:has(svg.lucide-settings) {
           display: none !important;
           visibility: hidden !important;
           width: 0 !important;
@@ -200,23 +198,33 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
       document.head.appendChild(style);
       
       // Wait for DOM to be ready, then inject menu button
+      // Max 30 retries (3 seconds total) to prevent infinite loops
+      var menuButtonRetries = 0;
+      var maxMenuButtonRetries = 30;
+      
       function injectMenuButton() {
+        // Check if menu button already exists
+        if (document.querySelector('.mobile-menu-btn')) return;
+        
         // Find the header's right section (contains theme toggle, bell, gear)
         var header = document.querySelector('header');
         if (!header) {
-          setTimeout(injectMenuButton, 100);
+          if (menuButtonRetries < maxMenuButtonRetries) {
+            menuButtonRetries++;
+            setTimeout(injectMenuButton, 100);
+          }
           return;
         }
         
         // Find the container with the action buttons
         var actionsContainer = header.querySelector('.flex.items-center.space-x-2');
         if (!actionsContainer) {
-          setTimeout(injectMenuButton, 100);
+          if (menuButtonRetries < maxMenuButtonRetries) {
+            menuButtonRetries++;
+            setTimeout(injectMenuButton, 100);
+          }
           return;
         }
-        
-        // Check if menu button already exists
-        if (document.querySelector('.mobile-menu-btn')) return;
         
         // Create menu button
         var menuBtn = document.createElement('button');
@@ -235,9 +243,9 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
         actionsContainer.appendChild(menuBtn);
       }
       
-      // Run when DOM is ready
+      // Run when DOM is ready, using { once: true } to auto-remove listener
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injectMenuButton);
+        document.addEventListener('DOMContentLoaded', injectMenuButton, { once: true });
       } else {
         injectMenuButton();
       }
