@@ -799,12 +799,12 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       </section>
 
       {/* Strategies Section */}
-      <section className="bg-white py-12 md:py-20">
+      <section className="bg-white dark:bg-navy-900 py-12 md:py-20">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy-solid mb-4">6 Investment Strategies</h2>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy-900 dark:text-white mb-4">6 Investment Strategies</h2>
             <div className="h-1 w-24 bg-brand-500 mx-auto mb-4 md:mb-6"></div>
-            <p className="text-lg md:text-xl text-neutral-500">One property. Six strategies. Unlimited potential.</p>
+            <p className="text-lg md:text-xl text-neutral-500 dark:text-neutral-400">One property. Six strategies. Unlimited potential.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -819,10 +819,10 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
               <a 
                 key={idx}
                 href={strategy.href}
-                className="bg-white border-2 border-neutral-300 rounded-xl p-4 md:p-6 transition-all hover:border-brand-500 hover:shadow-lg cursor-pointer group flex flex-row items-center gap-3 md:gap-4"
+                className="bg-white dark:bg-navy-800 border-2 border-neutral-300 dark:border-navy-600 rounded-xl p-4 md:p-6 transition-all hover:border-brand-500 hover:shadow-lg cursor-pointer group flex flex-row items-center gap-3 md:gap-4"
               >
                 <strategy.icon className="w-8 h-8 md:w-10 md:h-10 text-brand-500 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                <span className="text-lg md:text-xl font-bold text-navy-solid">{strategy.name}</span>
+                <span className="text-lg md:text-xl font-bold text-navy-900 dark:text-white">{strategy.name}</span>
               </a>
             ))}
           </div>
@@ -830,15 +830,15 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       </section>
 
       {/* Dashboard Section */}
-      <section className="bg-navy-50 py-12 md:py-20">
+      <section className="bg-navy-50 dark:bg-navy-800 py-12 md:py-20">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy-solid mb-4">Data-Driven Investment Decisions</h2>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy-900 dark:text-white mb-4">Data-Driven Investment Decisions</h2>
             <div className="h-1 w-24 bg-brand-500 mx-auto"></div>
           </div>
           
           <div className="text-center mt-6 md:mt-8">
-            <p className="text-xl md:text-2xl font-bold text-navy-solid mb-6">Stop Guessing. Start Investing.</p>
+            <p className="text-xl md:text-2xl font-bold text-navy-900 dark:text-white mb-6">Stop Guessing. Start Investing.</p>
             <button
               onClick={() => setShowAuthModal('register')}
               className="px-12 py-4 h-16 bg-brand-500 text-white font-bold text-lg rounded-xl hover:opacity-90 transition-all"
@@ -850,7 +850,7 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-neutral-300 py-12">
+      <footer className="bg-white dark:bg-navy-900 border-t border-neutral-300 dark:border-navy-700 py-12">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
@@ -859,14 +859,14 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
                 alt="InvestIQ" 
                 className="w-12 h-12 rounded-xl"
               />
-              <span className="text-xl font-bold text-navy-900">
+              <span className="text-xl font-bold text-navy-900 dark:text-white">
                 Invest<span className="text-brand-500">IQ</span>
               </span>
             </div>
             
             <div className="text-center">
-              <p className="text-sm text-neutral-500">© 2026 InvestIQ. All rights reserved.</p>
-              <p className="text-sm font-semibold text-navy-900 mt-1">Invest like a Guru!</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">© 2026 InvestIQ. All rights reserved.</p>
+              <p className="text-sm font-semibold text-navy-900 dark:text-white mt-1">Invest like a Guru!</p>
             </div>
           </div>
         </div>
