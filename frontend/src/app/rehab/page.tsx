@@ -101,10 +101,10 @@ function RehabPageContent() {
   }, [address, searchParams])
 
   return (
-    <div className="min-h-screen bg-[#f5f7fa] p-2">
+    <div className="min-h-screen bg-[#f5f7fa] dark:bg-navy-900 p-2 transition-colors">
       <div className="max-w-[800px] mx-auto">
         {/* Main Container */}
-        <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.1)]">
+        <div className="bg-white dark:bg-navy-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.1)] dark:shadow-lg border border-[#0465f2]">
           {/* Header */}
           <div className="bg-gradient-to-r from-brand-500 to-sky-600 px-4 py-3 rounded-t-xl flex justify-between items-center">
             <div>
@@ -125,7 +125,7 @@ function RehabPageContent() {
           <div className="p-3">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+                <Loader2 className="w-8 h-8 text-gray-400 dark:text-gray-500 animate-spin" />
               </div>
             ) : (
               <RehabEstimator 

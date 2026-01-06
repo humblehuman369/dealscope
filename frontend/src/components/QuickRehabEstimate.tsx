@@ -102,12 +102,12 @@ function ConditionSelector({
           onClick={() => onChange(cond.id)}
           className={`p-2 rounded-lg border-2 text-left transition-all ${
             value === cond.id
-              ? `${cond.color} border-current`
-              : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+              ? `${cond.color} border-current dark:bg-opacity-20`
+              : 'bg-white dark:bg-navy-700 text-gray-600 dark:text-gray-300 border-[#0465f2] hover:border-brand-400'
           }`}
         >
-          <div className="text-xs font-semibold">{cond.label}</div>
-          <div className="text-[0.625rem] opacity-75 leading-tight">{cond.description}</div>
+          <div className="text-[13px] font-semibold">{cond.label}</div>
+          <div className="text-[11px] opacity-75 leading-tight">{cond.description}</div>
         </button>
       ))}
     </div>
@@ -138,11 +138,11 @@ function PropertyContextCard({
   }
   
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl p-4 space-y-3">
+    <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-navy-700 dark:to-navy-600 rounded-xl p-4 space-y-3 border border-[#0465f2]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Building2 className="w-4 h-4 text-brand-500" />
-          <span className="text-sm font-semibold text-navy-900">Property Analysis</span>
+          <span className="text-sm font-semibold text-navy-900 dark:text-white">Property Analysis</span>
         </div>
         <span className={`px-2 py-0.5 rounded-full text-[0.625rem] font-semibold ${assetClassColors[estimate.asset_class]}`}>
           {assetClassLabels[estimate.asset_class]} Class
@@ -151,25 +151,25 @@ function PropertyContextCard({
       
       <div className="grid grid-cols-3 gap-3">
         {/* Square Footage */}
-        <div className="bg-white rounded-lg p-2.5 shadow-sm">
-          <div className="text-[0.625rem] text-gray-500 mb-0.5">Square Feet</div>
-          <div className="text-sm font-bold text-navy-900">
+        <div className="bg-white dark:bg-navy-800 rounded-lg p-2.5 shadow-sm">
+          <div className="text-[0.625rem] text-gray-500 dark:text-gray-400 mb-0.5">Square Feet</div>
+          <div className="text-sm font-bold text-navy-900 dark:text-white">
             {formatNumber(propertyData.square_footage || 0)}
           </div>
         </div>
         
         {/* Year Built */}
-        <div className="bg-white rounded-lg p-2.5 shadow-sm">
-          <div className="text-[0.625rem] text-gray-500 mb-0.5">Year Built</div>
-          <div className="text-sm font-bold text-navy-900">
+        <div className="bg-white dark:bg-navy-800 rounded-lg p-2.5 shadow-sm">
+          <div className="text-[0.625rem] text-gray-500 dark:text-gray-400 mb-0.5">Year Built</div>
+          <div className="text-sm font-bold text-navy-900 dark:text-white">
             {propertyData.year_built || 'N/A'}
           </div>
         </div>
         
         {/* Property Age */}
-        <div className="bg-white rounded-lg p-2.5 shadow-sm">
-          <div className="text-[0.625rem] text-gray-500 mb-0.5">Property Age</div>
-          <div className="text-sm font-bold text-navy-900">
+        <div className="bg-white dark:bg-navy-800 rounded-lg p-2.5 shadow-sm">
+          <div className="text-[0.625rem] text-gray-500 dark:text-gray-400 mb-0.5">Property Age</div>
+          <div className="text-sm font-bold text-navy-900 dark:text-white">
             {propertyData.year_built 
               ? `${new Date().getFullYear() - propertyData.year_built} years`
               : 'N/A'
@@ -179,10 +179,10 @@ function PropertyContextCard({
       </div>
       
       {/* Location Factor */}
-      <div className="bg-white rounded-lg p-2.5 shadow-sm flex items-center justify-between">
+      <div className="bg-white dark:bg-navy-800 rounded-lg p-2.5 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-2">
           <MapPin className="w-3.5 h-3.5 text-brand-500" />
-          <span className="text-xs text-gray-600">{estimate.location_market}</span>
+          <span className="text-xs text-gray-600 dark:text-gray-300">{estimate.location_market}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-[0.625rem] text-gray-400">Labor Factor</span>
@@ -229,14 +229,14 @@ function CapExWarningsCard({ warnings }: { warnings: CapExWarning[] }) {
   }
   
   return (
-    <div className="bg-red-50 border border-red-200 rounded-xl overflow-hidden">
+    <div className="bg-red-50 dark:bg-red-900/20 border border-[#0465f2] rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full p-3 flex items-center justify-between hover:bg-red-100/50 transition-colors"
+        className="w-full p-3 flex items-center justify-between hover:bg-red-100/50 dark:hover:bg-red-900/30 transition-colors"
       >
         <div className="flex items-center gap-2">
           <Flame className="w-4 h-4 text-red-500" />
-          <span className="text-sm font-semibold text-red-800">
+          <span className="text-sm font-semibold text-red-800 dark:text-red-400">
             CapEx Warnings ({warnings.length})
           </span>
           {criticalCount > 0 && (
@@ -246,7 +246,7 @@ function CapExWarningsCard({ warnings }: { warnings: CapExWarning[] }) {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-red-700">{formatCurrency(totalCost)}</span>
+          <span className="text-sm font-bold text-red-700 dark:text-red-400">{formatCurrency(totalCost)}</span>
           {expanded ? <ChevronUp className="w-4 h-4 text-red-400" /> : <ChevronDown className="w-4 h-4 text-red-400" />}
         </div>
       </button>
@@ -256,16 +256,16 @@ function CapExWarningsCard({ warnings }: { warnings: CapExWarning[] }) {
           {warnings.map((warning, idx) => (
             <div 
               key={idx} 
-              className={`p-2.5 rounded-lg border ${priorityColors[warning.priority]}`}
+              className={`p-2.5 rounded-lg border border-[#0465f2] ${priorityColors[warning.priority]} dark:bg-navy-700`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
                   {priorityIcons[warning.priority]}
-                  <span className="text-xs font-semibold">{warning.item}</span>
+                  <span className="text-xs font-semibold dark:text-white">{warning.item}</span>
                 </div>
-                <span className="text-xs font-bold">{formatCurrency(warning.estimated_cost)}</span>
+                <span className="text-xs font-bold dark:text-white">{formatCurrency(warning.estimated_cost)}</span>
               </div>
-              <p className="text-[0.625rem] mt-1 leading-relaxed opacity-90">{warning.notes}</p>
+              <p className="text-[0.625rem] mt-1 leading-relaxed opacity-90 dark:text-gray-300">{warning.notes}</p>
             </div>
           ))}
         </div>
@@ -303,14 +303,14 @@ function CostBreakdownCard({ estimate }: { estimate: RehabEstimate }) {
   const remainingCategories = categories.slice(4)
   
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full p-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        className="w-full p-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-navy-700 transition-colors"
       >
         <div className="flex items-center gap-2">
           <Wrench className="w-4 h-4 text-brand-500" />
-          <span className="text-sm font-semibold text-navy-900">Cost Breakdown</span>
+          <span className="text-sm font-semibold text-navy-900 dark:text-white">Cost Breakdown</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-brand-500">{formatCurrency(breakdown.construction_total)}</span>
@@ -322,12 +322,12 @@ function CostBreakdownCard({ estimate }: { estimate: RehabEstimate }) {
         {/* Always show top categories */}
         <div className="grid grid-cols-2 gap-2">
           {topCategories.map((cat, idx) => (
-            <div key={idx} className="bg-gray-50 rounded-lg p-2 flex items-center justify-between">
+            <div key={idx} className="bg-gray-50 dark:bg-navy-700 rounded-lg p-2 flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <span className="text-sm">{cat.icon}</span>
-                <span className="text-[0.6875rem] text-gray-600">{cat.label}</span>
+                <span className="text-[0.6875rem] text-gray-600 dark:text-gray-300">{cat.label}</span>
               </div>
-              <span className="text-[0.6875rem] font-semibold text-navy-900">{formatCurrency(cat.value)}</span>
+              <span className="text-[0.6875rem] font-semibold text-navy-900 dark:text-white">{formatCurrency(cat.value)}</span>
             </div>
           ))}
         </div>
@@ -336,12 +336,12 @@ function CostBreakdownCard({ estimate }: { estimate: RehabEstimate }) {
         {expanded && remainingCategories.length > 0 && (
           <div className="grid grid-cols-2 gap-2 mt-2">
             {remainingCategories.map((cat, idx) => (
-              <div key={idx} className="bg-gray-50 rounded-lg p-2 flex items-center justify-between">
+              <div key={idx} className="bg-gray-50 dark:bg-navy-700 rounded-lg p-2 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">{cat.icon}</span>
-                  <span className="text-[0.6875rem] text-gray-600">{cat.label}</span>
+                  <span className="text-[0.6875rem] text-gray-600 dark:text-gray-300">{cat.label}</span>
                 </div>
-                <span className="text-[0.6875rem] font-semibold text-navy-900">{formatCurrency(cat.value)}</span>
+                <span className="text-[0.6875rem] font-semibold text-navy-900 dark:text-white">{formatCurrency(cat.value)}</span>
               </div>
             ))}
           </div>
@@ -356,12 +356,12 @@ function CostBreakdownCard({ estimate }: { estimate: RehabEstimate }) {
         )}
         
         {/* Contingency */}
-        <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+        <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-[0.6875rem] text-amber-700">Contingency (10%)</span>
+            <span className="text-[0.6875rem] text-amber-700 dark:text-amber-400">Contingency (10%)</span>
           </div>
-          <span className="text-[0.6875rem] font-semibold text-amber-700">{formatCurrency(breakdown.contingency)}</span>
+          <span className="text-[0.6875rem] font-semibold text-amber-700 dark:text-amber-400">{formatCurrency(breakdown.contingency)}</span>
         </div>
       </div>
     </div>
@@ -377,46 +377,46 @@ function HoldingCostsCard({ estimate }: { estimate: RehabEstimate }) {
   if (!holding) return null
   
   return (
-    <div className="bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-xl p-3 space-y-2">
+    <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 border border-[#0465f2] rounded-xl p-3 space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-violet-500" />
-          <span className="text-sm font-semibold text-violet-800">Holding Costs</span>
-          <span className="text-[0.625rem] text-violet-500 font-medium">
+          <span className="text-sm font-semibold text-violet-800 dark:text-violet-300">Holding Costs</span>
+          <span className="text-[0.625rem] text-violet-500 dark:text-violet-400 font-medium">
             &quot;The Silent Killer&quot;
           </span>
         </div>
-        <span className="text-sm font-bold text-violet-700">{formatCurrency(holding.total_holding)}</span>
+        <span className="text-sm font-bold text-violet-700 dark:text-violet-300">{formatCurrency(holding.total_holding)}</span>
       </div>
       
-      <div className="bg-white/70 rounded-lg p-2">
+      <div className="bg-white/70 dark:bg-navy-700/70 rounded-lg p-2">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[0.6875rem] text-violet-600">Estimated Timeline</span>
-          <span className="text-sm font-bold text-violet-800">{holding.duration_months} months</span>
+          <span className="text-[0.6875rem] text-violet-600 dark:text-violet-400">Estimated Timeline</span>
+          <span className="text-sm font-bold text-violet-800 dark:text-violet-300">{holding.duration_months} months</span>
         </div>
         
         <div className="grid grid-cols-2 gap-2 text-[0.625rem]">
           <div className="flex justify-between">
-            <span className="text-gray-500">Interest</span>
-            <span className="font-medium text-gray-700">{formatCurrency(holding.monthly_interest)}/mo</span>
+            <span className="text-gray-500 dark:text-gray-400">Interest</span>
+            <span className="font-medium text-gray-700 dark:text-white">{formatCurrency(holding.monthly_interest)}/mo</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Taxes</span>
-            <span className="font-medium text-gray-700">{formatCurrency(holding.monthly_taxes)}/mo</span>
+            <span className="text-gray-500 dark:text-gray-400">Taxes</span>
+            <span className="font-medium text-gray-700 dark:text-white">{formatCurrency(holding.monthly_taxes)}/mo</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Insurance</span>
-            <span className="font-medium text-gray-700">{formatCurrency(holding.monthly_insurance)}/mo</span>
+            <span className="text-gray-500 dark:text-gray-400">Insurance</span>
+            <span className="font-medium text-gray-700 dark:text-white">{formatCurrency(holding.monthly_insurance)}/mo</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Utilities</span>
-            <span className="font-medium text-gray-700">{formatCurrency(holding.monthly_utilities)}/mo</span>
+            <span className="text-gray-500 dark:text-gray-400">Utilities</span>
+            <span className="font-medium text-gray-700 dark:text-white">{formatCurrency(holding.monthly_utilities)}/mo</span>
           </div>
         </div>
         
-        <div className="mt-2 pt-2 border-t border-violet-200 flex justify-between">
-          <span className="text-[0.6875rem] font-medium text-violet-600">Monthly Burn Rate</span>
-          <span className="text-sm font-bold text-violet-700">{formatCurrency(holding.monthly_total)}/mo</span>
+        <div className="mt-2 pt-2 border-t border-violet-200 dark:border-violet-700 flex justify-between">
+          <span className="text-[0.6875rem] font-medium text-violet-600 dark:text-violet-400">Monthly Burn Rate</span>
+          <span className="text-sm font-bold text-violet-700 dark:text-violet-300">{formatCurrency(holding.monthly_total)}/mo</span>
         </div>
       </div>
     </div>
@@ -475,14 +475,14 @@ export default function QuickRehabEstimate({
             <Zap className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-navy-900">Quick Estimate</h3>
-            <p className="text-[0.625rem] text-gray-500">AI-powered rehab analysis</p>
+            <h3 className="text-sm font-bold text-navy-900 dark:text-white">Quick Estimate</h3>
+            <p className="text-[0.625rem] text-gray-500 dark:text-gray-400">AI-powered rehab analysis</p>
           </div>
         </div>
         {onSwitchToDetailed && (
           <button
             onClick={onSwitchToDetailed}
-            className="px-3 py-1.5 text-[0.6875rem] font-medium text-brand-500 border border-brand-200 rounded-lg hover:bg-brand-50 transition-colors"
+            className="px-3 py-1.5 text-[0.6875rem] font-medium text-brand-500 border border-brand-200 dark:border-brand-700 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors"
           >
             Switch to Detailed Mode
           </button>
@@ -494,7 +494,7 @@ export default function QuickRehabEstimate({
       
       {/* Condition Selector */}
       <div>
-        <label className="text-xs font-semibold text-gray-700 mb-2 block">Property Condition</label>
+        <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 block">Property Condition</label>
         <ConditionSelector value={condition} onChange={setCondition} />
       </div>
       
@@ -511,32 +511,32 @@ export default function QuickRehabEstimate({
             type="checkbox"
             checked={includeHolding}
             onChange={(e) => setIncludeHolding(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
+            className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-brand-500 focus:ring-brand-500 dark:bg-navy-700"
           />
-          <span className="text-xs text-gray-600">Include holding costs</span>
+          <span className="text-xs text-gray-600 dark:text-gray-300">Include holding costs</span>
         </label>
       </div>
       
       {includeHolding && <HoldingCostsCard estimate={estimate} />}
       
       {/* Contingency Selector */}
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex justify-between items-center">
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-[#0465f2] rounded-lg p-3 flex justify-between items-center">
         <div>
-          <h4 className="text-xs font-semibold text-amber-800">Contingency Reserve</h4>
-          <p className="text-[0.625rem] text-amber-600">Buffer for unexpected costs</p>
+          <h4 className="text-xs font-semibold text-amber-800 dark:text-amber-400">Contingency Reserve</h4>
+          <p className="text-[0.625rem] text-amber-600 dark:text-amber-500">Buffer for unexpected costs</p>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={contingencyPct}
             onChange={(e) => setContingencyPct(parseFloat(e.target.value))}
-            className="px-2 py-1 border border-amber-300 rounded-md bg-white text-xs"
+            className="px-2 py-1 border border-amber-300 dark:border-amber-700 rounded-md bg-white dark:bg-navy-700 dark:text-white text-xs"
           >
             <option value={0.05}>5%</option>
             <option value={0.10}>10%</option>
             <option value={0.15}>15%</option>
             <option value={0.20}>20%</option>
           </select>
-          <span className="text-sm font-bold text-amber-800">{formatCurrency(estimate.breakdown.contingency)}</span>
+          <span className="text-sm font-bold text-amber-800 dark:text-amber-400">{formatCurrency(estimate.breakdown.contingency)}</span>
         </div>
       </div>
       
@@ -572,7 +572,7 @@ export default function QuickRehabEstimate({
         {onSwitchToDetailed && (
           <button
             onClick={onSwitchToDetailed}
-            className="flex-1 py-2.5 bg-white border-2 border-brand-500 text-brand-500 rounded-lg text-xs font-semibold hover:bg-brand-50 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 bg-white dark:bg-navy-700 border-2 border-brand-500 text-brand-500 rounded-lg text-xs font-semibold hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors flex items-center justify-center gap-2"
           >
             <Wrench className="w-3.5 h-3.5" />
             Customize Line Items
