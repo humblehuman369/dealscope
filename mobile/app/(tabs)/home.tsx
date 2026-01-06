@@ -37,7 +37,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, isAuthenticated } = useAuth();
-  const { theme, isDark } = useTheme();
+  const { theme, isDark, toggleTheme } = useTheme();
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchAddress, setSearchAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -63,7 +63,6 @@ export default function HomeScreen() {
   // Dynamic styles based on theme
   const dynamicStyles = {
     container: { backgroundColor: isDark ? colors.navy[900] : colors.gray[50] },
-    logoText: { color: isDark ? '#fff' : colors.navy[900] },
     headerButton: { 
       backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
       borderColor: isDark ? 'rgba(255,255,255,0.15)' : colors.gray[200],
@@ -113,35 +112,44 @@ export default function HomeScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Image
-                source={isDark 
-                  ? require('../../assets/InvestIQ Logo 3D (Dark View).png')
-                  : require('../../assets/InvestIQ Logo 3D (Light View).png')
-                }
-                style={styles.logo}
-                resizeMode="contain"
-              />
-              <Text style={[styles.logoText, dynamicStyles.logoText]}>
-                Invest<Text style={styles.logoAccent}>IQ</Text>
-              </Text>
-            </View>
+            <Image
+              source={isDark 
+                ? require('../../assets/InvestIQ Logo 3D (Dark View).png')
+                : require('../../assets/InvestIQ Logo 3D (Light View).png')
+              }
+              style={styles.logoLarge}
+              resizeMode="contain"
+            />
             
-            {isAuthenticated && user ? (
+            <View style={styles.headerRight}>
+              {/* Theme Toggle */}
               <TouchableOpacity 
-                style={[styles.headerButton, dynamicStyles.headerButton]}
-                onPress={() => router.push('/(tabs)/dashboard')}
+                style={[styles.themeToggle, dynamicStyles.headerButton]}
+                onPress={toggleTheme}
               >
-                <Text style={[styles.headerButtonText, dynamicStyles.headerButtonText]}>Dashboard</Text>
+                <Ionicons 
+                  name={isDark ? 'sunny' : 'moon'} 
+                  size={20} 
+                  color={isDark ? colors.accent[500] : colors.navy[900]} 
+                />
               </TouchableOpacity>
-            ) : (
-              <TouchableOpacity 
-                style={[styles.headerButton, dynamicStyles.headerButton]}
-                onPress={() => router.push('/auth/login')}
-              >
-                <Text style={[styles.headerButtonText, dynamicStyles.headerButtonText]}>Sign In</Text>
-              </TouchableOpacity>
-            )}
+
+              {isAuthenticated && user ? (
+                <TouchableOpacity 
+                  style={[styles.headerButton, dynamicStyles.headerButton]}
+                  onPress={() => router.push('/(tabs)/dashboard')}
+                >
+                  <Text style={[styles.headerButtonText, dynamicStyles.headerButtonText]}>Dashboard</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity 
+                  style={[styles.headerButton, dynamicStyles.headerButton]}
+                  onPress={() => router.push('/auth/login')}
+                >
+                  <Text style={[styles.headerButtonText, dynamicStyles.headerButtonText]}>Sign In</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
           {/* Hero Section */}
@@ -153,7 +161,7 @@ export default function HomeScreen() {
               Before You Buy.
             </Text>
             <Text style={[styles.heroSubtitle, dynamicStyles.heroSubtitle]}>
-              Instantly reveal a property's{'\n'}real investment potential{'\n'}— in under 60 seconds.
+              Instantly reveal a property's real{'\n'}investment potential in 60 seconds.
             </Text>
           </View>
 
@@ -458,22 +466,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
-  logoContainer: {
+  logoLarge: {
+    width: 140,
+    height: 44,
+  },
+  headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
-  logo: {
-    width: 36,
-    height: 36,
+  themeToggle: {
+    width: 40,
+    height: 40,
     borderRadius: 10,
-  },
-  logoText: {
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  logoAccent: {
-    color: colors.accent[500],
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerButton: {
     paddingHorizontal: 20,
