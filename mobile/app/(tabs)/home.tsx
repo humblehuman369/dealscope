@@ -19,6 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Rect, Circle, G } from 'react-native-svg';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -36,6 +37,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, isAuthenticated } = useAuth();
+  const { theme, isDark } = useTheme();
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchAddress, setSearchAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -58,8 +60,46 @@ export default function HomeScreen() {
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
 
+  // Dynamic styles based on theme
+  const dynamicStyles = {
+    container: { backgroundColor: isDark ? colors.navy[900] : colors.gray[50] },
+    logoText: { color: isDark ? '#fff' : colors.navy[900] },
+    headerButton: { 
+      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+      borderColor: isDark ? 'rgba(255,255,255,0.15)' : colors.gray[200],
+    },
+    headerButtonText: { color: isDark ? '#e1e8ed' : colors.navy[900] },
+    heroTitle: { color: isDark ? '#fff' : colors.navy[900] },
+    heroSubtitle: { color: isDark ? '#fff' : colors.gray[600] },
+    searchToggleText: { color: isDark ? '#fff' : colors.primary[600] },
+    searchDropdown: {
+      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+      borderColor: isDark ? 'rgba(255,255,255,0.1)' : colors.gray[200],
+    },
+    searchInputContainer: {
+      backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#fff',
+      borderColor: isDark ? 'rgba(255,255,255,0.1)' : colors.gray[200],
+    },
+    searchInput: { color: isDark ? '#fff' : colors.navy[900] },
+    searchPlaceholder: isDark ? 'rgba(255,255,255,0.5)' : colors.gray[400],
+    phoneFrame: { backgroundColor: isDark ? '#1a2a3a' : '#e0e8f0' },
+    phoneScreen: { backgroundColor: isDark ? '#0a1628' : '#1a2a3a' },
+    resultsSection: { backgroundColor: isDark ? '#0a1628' : colors.gray[100] },
+    resultsTitle: { color: isDark ? '#fff' : colors.navy[900] },
+    mobileCard: {
+      backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#fff',
+      borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.gray[200],
+    },
+    mobileCardName: { color: isDark ? '#fff' : colors.navy[900] },
+    mobileCardRoi: { color: isDark ? '#fff' : colors.navy[900] },
+    mobileCardRoiLabel: { color: isDark ? '#fff' : colors.gray[600] },
+    statsRow: { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#fff' },
+    statLabel: { color: isDark ? '#fff' : colors.gray[600] },
+    bottomCtaSubtext: { color: isDark ? '#fff' : colors.gray[600] },
+  };
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, dynamicStyles.container, { paddingTop: insets.top }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -78,35 +118,35 @@ export default function HomeScreen() {
                 style={styles.logo}
                 resizeMode="contain"
               />
-              <Text style={styles.logoText}>
+              <Text style={[styles.logoText, dynamicStyles.logoText]}>
                 Invest<Text style={styles.logoAccent}>IQ</Text>
               </Text>
             </View>
             
             {isAuthenticated && user ? (
               <TouchableOpacity 
-                style={styles.headerButton}
+                style={[styles.headerButton, dynamicStyles.headerButton]}
                 onPress={() => router.push('/(tabs)/dashboard')}
               >
-                <Text style={styles.headerButtonText}>Dashboard</Text>
+                <Text style={[styles.headerButtonText, dynamicStyles.headerButtonText]}>Dashboard</Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity 
-                style={styles.headerButton}
+                style={[styles.headerButton, dynamicStyles.headerButton]}
                 onPress={() => router.push('/auth/login')}
               >
-                <Text style={styles.headerButtonText}>Sign In</Text>
+                <Text style={[styles.headerButtonText, dynamicStyles.headerButtonText]}>Sign In</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {/* Hero Section */}
           <View style={styles.heroSection}>
-            <Text style={styles.heroTitle}>
+            <Text style={[styles.heroTitle, dynamicStyles.heroTitle]}>
               Analyze Any Property's{'\n'}Potential in
             </Text>
             <Text style={styles.heroTitleAccentLine}>60 Seconds</Text>
-            <Text style={styles.heroSubtitle}>
+            <Text style={[styles.heroSubtitle, dynamicStyles.heroSubtitle]}>
               Compare 6 investment strategies and discover your best path to profit
             </Text>
           </View>
@@ -130,23 +170,23 @@ export default function HomeScreen() {
               style={styles.searchToggle}
               onPress={() => setShowSearchBar(!showSearchBar)}
             >
-              <Text style={styles.searchToggleText}>Or search by address</Text>
+              <Text style={[styles.searchToggleText, dynamicStyles.searchToggleText]}>Or search by address</Text>
               <Ionicons 
                 name={showSearchBar ? 'chevron-up' : 'chevron-down'} 
                 size={16} 
-                color="#fff" 
+                color={isDark ? '#fff' : colors.primary[600]} 
               />
             </TouchableOpacity>
 
             {/* Search Dropdown */}
             {showSearchBar && (
-              <View style={styles.searchDropdown}>
-                <View style={styles.searchInputContainer}>
+              <View style={[styles.searchDropdown, dynamicStyles.searchDropdown]}>
+                <View style={[styles.searchInputContainer, dynamicStyles.searchInputContainer]}>
                   <Ionicons name="location" size={20} color={colors.accent[500]} />
                   <TextInput
-                    style={styles.searchInput}
+                    style={[styles.searchInput, dynamicStyles.searchInput]}
                     placeholder="Enter property address..."
-                    placeholderTextColor="rgba(255,255,255,0.5)"
+                    placeholderTextColor={dynamicStyles.searchPlaceholder}
                     value={searchAddress}
                     onChangeText={setSearchAddress}
                     onSubmitEditing={handleAnalyze}
@@ -186,8 +226,8 @@ export default function HomeScreen() {
           </View>
 
           {/* Results Section - Redesigned for Mobile */}
-          <View style={styles.resultsSection}>
-            <Text style={styles.resultsTitle}>
+          <View style={[styles.resultsSection, dynamicStyles.resultsSection]}>
+            <Text style={[styles.resultsTitle, dynamicStyles.resultsTitle]}>
               See Your <Text style={styles.resultsTitleAccent}>Profit Potential</Text>
             </Text>
             
@@ -199,25 +239,25 @@ export default function HomeScreen() {
               style={styles.strategyScrollContainer}
             >
               {strategies.map((strategy, idx) => (
-                <MobileStrategyCard key={idx} {...strategy} />
+                <MobileStrategyCard key={idx} {...strategy} isDark={isDark} />
               ))}
             </ScrollView>
 
             {/* Compact Stats Row */}
-            <View style={styles.statsRow}>
+            <View style={[styles.statsRow, dynamicStyles.statsRow]}>
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>10K+</Text>
-                <Text style={styles.statLabel}>Analyzed</Text>
+                <Text style={[styles.statLabel, dynamicStyles.statLabel]}>Analyzed</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
                 <Text style={[styles.statValue, { color: colors.profit.main }]}>$2.4M</Text>
-                <Text style={styles.statLabel}>Profit Found</Text>
+                <Text style={[styles.statLabel, dynamicStyles.statLabel]}>Profit Found</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>60s</Text>
-                <Text style={styles.statLabel}>Analysis</Text>
+                <Text style={[styles.statLabel, dynamicStyles.statLabel]}>Analysis</Text>
               </View>
             </View>
 
@@ -232,7 +272,7 @@ export default function HomeScreen() {
                 <Text style={styles.bottomCtaText}>Start Analyzing Now</Text>
               </LinearGradient>
             </TouchableOpacity>
-            <Text style={styles.bottomCtaSubtext}>Free • No credit card required</Text>
+            <Text style={[styles.bottomCtaSubtext, dynamicStyles.bottomCtaSubtext]}>Free • No credit card required</Text>
           </View>
 
           <View style={{ height: insets.bottom + 20 }} />
@@ -323,16 +363,27 @@ function PhoneMockup() {
 }
 
 // Mobile Strategy Card - Horizontal scroll optimized
-function MobileStrategyCard({ name, roi, icon, multiplier, profit, featured }: {
+function MobileStrategyCard({ name, roi, icon, multiplier, profit, featured, isDark }: {
   name: string;
   roi: string;
   icon: string;
   multiplier: string;
   profit: string;
   featured: boolean;
+  isDark: boolean;
 }) {
+  const cardStyles = {
+    card: {
+      backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#fff',
+      borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.gray[200],
+    },
+    name: { color: isDark ? '#fff' : colors.navy[900] },
+    roi: { color: isDark ? '#fff' : colors.navy[900] },
+    roiLabel: { color: isDark ? '#fff' : colors.gray[600] },
+  };
+
   return (
-    <View style={[styles.mobileCard, featured && styles.mobileCardFeatured]}>
+    <View style={[styles.mobileCard, cardStyles.card, featured && styles.mobileCardFeatured]}>
       {/* Badge */}
       {featured ? (
         <View style={styles.mobileBestBadge}>
@@ -354,11 +405,11 @@ function MobileStrategyCard({ name, roi, icon, multiplier, profit, featured }: {
       </View>
       
       {/* Name */}
-      <Text style={styles.mobileCardName} numberOfLines={2}>{name}</Text>
+      <Text style={[styles.mobileCardName, cardStyles.name]} numberOfLines={2}>{name}</Text>
       
       {/* ROI */}
-      <Text style={[styles.mobileCardRoi, featured && styles.mobileCardRoiFeatured]}>{roi}</Text>
-      <Text style={styles.mobileCardRoiLabel}>ROI</Text>
+      <Text style={[styles.mobileCardRoi, cardStyles.roi, featured && styles.mobileCardRoiFeatured]}>{roi}</Text>
+      <Text style={[styles.mobileCardRoiLabel, cardStyles.roiLabel]}>ROI</Text>
       
       {/* Profit */}
       <View style={styles.mobileCardProfit}>
@@ -385,7 +436,6 @@ function FeatureItem({ icon, text }: { icon: string; text: string }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.navy[900],
   },
   keyboardView: {
     flex: 1,
@@ -415,7 +465,6 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#fff',
   },
   logoAccent: {
     color: colors.accent[500],
@@ -423,13 +472,10 @@ const styles = StyleSheet.create({
   headerButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
   },
   headerButtonText: {
-    color: '#e1e8ed',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -443,7 +489,6 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#fff',
     textAlign: 'center',
     lineHeight: 30,
   },
@@ -459,7 +504,6 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     fontSize: 14,
-    color: '#fff',
     textAlign: 'center',
     marginTop: 8,
     lineHeight: 20,
@@ -502,7 +546,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   searchToggleText: {
-    color: '#fff',
     fontSize: 14,
     textDecorationLine: 'underline',
   },
@@ -510,25 +553,20 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 16,
     padding: 16,
-    backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
   },
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
     gap: 10,
   },
   searchInput: {
     flex: 1,
-    color: '#fff',
     fontSize: 14,
   },
   analyzeButton: {
@@ -700,13 +738,11 @@ const styles = StyleSheet.create({
 
   // Results Section
   resultsSection: {
-    backgroundColor: '#0a1628',
     paddingVertical: 32,
   },
   resultsTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#fff',
     textAlign: 'center',
     marginBottom: 20,
     paddingHorizontal: 20,
@@ -725,11 +761,9 @@ const styles = StyleSheet.create({
   },
   mobileCard: {
     width: 130,
-    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
     alignItems: 'center',
   },
   mobileCardFeatured: {
@@ -779,7 +813,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,229,255,0.2)',
   },
   mobileCardName: {
-    color: '#fff',
     fontSize: 13,
     fontWeight: '600',
     textAlign: 'center',
@@ -787,7 +820,6 @@ const styles = StyleSheet.create({
     minHeight: 32,
   },
   mobileCardRoi: {
-    color: '#fff',
     fontSize: 28,
     fontWeight: '800',
   },
@@ -795,7 +827,6 @@ const styles = StyleSheet.create({
     color: colors.accent[400],
   },
   mobileCardRoiLabel: {
-    color: '#fff',
     fontSize: 13,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -824,7 +855,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: 'rgba(255,255,255,0.04)',
     borderRadius: 12,
     marginBottom: 24,
   },
@@ -838,7 +868,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   statLabel: {
-    color: '#fff',
     fontSize: 13,
     marginTop: 2,
   },
@@ -864,7 +893,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   bottomCtaSubtext: {
-    color: '#fff',
     fontSize: 13,
     textAlign: 'center',
     marginTop: 10,

@@ -17,12 +17,14 @@ import * as Haptics from 'expo-haptics';
 
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { validateEmail, validatePassword } from '../../services/authService';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { register, isLoading, error, clearError } = useAuth();
+  const { theme, isDark } = useTheme();
   
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -93,9 +95,30 @@ export default function RegisterScreen() {
     password.length < 8 ? 1 :
     (validatePassword(password).valid ? 3 : 2);
 
+  // Dynamic styles based on theme
+  const dynamicStyles = {
+    container: { backgroundColor: theme.background },
+    backIcon: isDark ? colors.gray[100] : colors.gray[900],
+    logo: { color: isDark ? colors.primary[400] : colors.primary[600] },
+    title: { color: theme.text },
+    subtitle: { color: theme.textMuted },
+    label: { color: isDark ? colors.gray[300] : colors.gray[700] },
+    inputContainer: { 
+      backgroundColor: isDark ? colors.navy[800] : colors.gray[50],
+      borderColor: isDark ? colors.navy[600] : colors.gray[200],
+    },
+    input: { color: theme.text },
+    inputIcon: isDark ? colors.gray[500] : colors.gray[400],
+    strengthBar: { backgroundColor: isDark ? colors.navy[600] : colors.gray[200] },
+    strengthText: { color: theme.textMuted },
+    passwordHint: { color: isDark ? colors.gray[500] : colors.gray[400] },
+    terms: { color: theme.textMuted },
+    signinText: { color: isDark ? colors.gray[400] : colors.gray[600] },
+  };
+
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, dynamicStyles.container]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
@@ -112,14 +135,14 @@ export default function RegisterScreen() {
           onPress={() => router.back()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.gray[900]} />
+          <Ionicons name="arrow-back" size={24} color={dynamicStyles.backIcon} />
         </TouchableOpacity>
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.logo}>InvestIQ</Text>
-          <Text style={styles.title}>Create account</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.logo, dynamicStyles.logo]}>InvestIQ</Text>
+          <Text style={[styles.title, dynamicStyles.title]}>Create account</Text>
+          <Text style={[styles.subtitle, dynamicStyles.subtitle]}>
             Join thousands of real estate investors
           </Text>
         </View>
@@ -128,13 +151,13 @@ export default function RegisterScreen() {
         <View style={styles.form}>
           {/* Full Name Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Full Name</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="person-outline" size={20} color={colors.gray[400]} />
+            <Text style={[styles.label, dynamicStyles.label]}>Full Name</Text>
+            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
+              <Ionicons name="person-outline" size={20} color={dynamicStyles.inputIcon} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, dynamicStyles.input]}
                 placeholder="John Smith"
-                placeholderTextColor={colors.gray[400]}
+                placeholderTextColor={dynamicStyles.inputIcon}
                 value={fullName}
                 onChangeText={setFullName}
                 autoCapitalize="words"
@@ -146,13 +169,13 @@ export default function RegisterScreen() {
 
           {/* Email Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={20} color={colors.gray[400]} />
+            <Text style={[styles.label, dynamicStyles.label]}>Email</Text>
+            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
+              <Ionicons name="mail-outline" size={20} color={dynamicStyles.inputIcon} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, dynamicStyles.input]}
                 placeholder="you@example.com"
-                placeholderTextColor={colors.gray[400]}
+                placeholderTextColor={dynamicStyles.inputIcon}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -166,13 +189,13 @@ export default function RegisterScreen() {
 
           {/* Password Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color={colors.gray[400]} />
+            <Text style={[styles.label, dynamicStyles.label]}>Password</Text>
+            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
+              <Ionicons name="lock-closed-outline" size={20} color={dynamicStyles.inputIcon} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, dynamicStyles.input]}
                 placeholder="Create a strong password"
-                placeholderTextColor={colors.gray[400]}
+                placeholderTextColor={dynamicStyles.inputIcon}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -187,7 +210,7 @@ export default function RegisterScreen() {
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color={colors.gray[400]}
+                  color={dynamicStyles.inputIcon}
                 />
               </TouchableOpacity>
             </View>
@@ -198,19 +221,23 @@ export default function RegisterScreen() {
                 <View style={styles.strengthBars}>
                   <View style={[
                     styles.strengthBar,
+                    dynamicStyles.strengthBar,
                     passwordStrength >= 1 && styles.strengthBarWeak
                   ]} />
                   <View style={[
                     styles.strengthBar,
+                    dynamicStyles.strengthBar,
                     passwordStrength >= 2 && styles.strengthBarMedium
                   ]} />
                   <View style={[
                     styles.strengthBar,
+                    dynamicStyles.strengthBar,
                     passwordStrength >= 3 && styles.strengthBarStrong
                   ]} />
                 </View>
                 <Text style={[
                   styles.strengthText,
+                  dynamicStyles.strengthText,
                   passwordStrength === 1 && { color: colors.loss.main },
                   passwordStrength === 2 && { color: '#f59e0b' },
                   passwordStrength === 3 && { color: colors.profit.main },
@@ -222,20 +249,20 @@ export default function RegisterScreen() {
               </View>
             )}
             
-            <Text style={styles.passwordHint}>
+            <Text style={[styles.passwordHint, dynamicStyles.passwordHint]}>
               Min 8 characters, one uppercase, one number
             </Text>
           </View>
 
           {/* Confirm Password Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Confirm Password</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color={colors.gray[400]} />
+            <Text style={[styles.label, dynamicStyles.label]}>Confirm Password</Text>
+            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
+              <Ionicons name="lock-closed-outline" size={20} color={dynamicStyles.inputIcon} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, dynamicStyles.input]}
                 placeholder="Confirm your password"
-                placeholderTextColor={colors.gray[400]}
+                placeholderTextColor={dynamicStyles.inputIcon}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showPassword}
@@ -281,7 +308,7 @@ export default function RegisterScreen() {
           </TouchableOpacity>
 
           {/* Terms */}
-          <Text style={styles.terms}>
+          <Text style={[styles.terms, dynamicStyles.terms]}>
             By creating an account, you agree to our{' '}
             <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
             <Text style={styles.termsLink}>Privacy Policy</Text>
@@ -290,7 +317,7 @@ export default function RegisterScreen() {
 
         {/* Sign In Link */}
         <View style={styles.signinRow}>
-          <Text style={styles.signinText}>Already have an account? </Text>
+          <Text style={[styles.signinText, dynamicStyles.signinText]}>Already have an account? </Text>
           <Link href="/auth/login" asChild>
             <TouchableOpacity>
               <Text style={styles.signinLink}>Sign in</Text>
@@ -305,7 +332,6 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   scrollContent: {
     flexGrow: 1,
@@ -322,18 +348,15 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 24,
     fontWeight: '700',
-    color: colors.primary[600],
     marginBottom: 24,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.gray[900],
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: colors.gray[500],
     lineHeight: 24,
   },
   form: {
@@ -345,15 +368,12 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.gray[700],
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.gray[50],
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.gray[200],
     paddingHorizontal: 14,
     gap: 10,
   },
@@ -361,7 +381,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     fontSize: 16,
-    color: colors.gray[900],
   },
   strengthContainer: {
     flexDirection: 'row',
@@ -376,7 +395,6 @@ const styles = StyleSheet.create({
   strengthBar: {
     width: 32,
     height: 4,
-    backgroundColor: colors.gray[200],
     borderRadius: 2,
   },
   strengthBarWeak: {
@@ -391,11 +409,9 @@ const styles = StyleSheet.create({
   strengthText: {
     fontSize: 12,
     fontWeight: '500',
-    color: colors.gray[500],
   },
   passwordHint: {
     fontSize: 12,
-    color: colors.gray[400],
   },
   errorContainer: {
     flexDirection: 'row',
@@ -436,7 +452,6 @@ const styles = StyleSheet.create({
   },
   terms: {
     fontSize: 13,
-    color: colors.gray[500],
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -451,7 +466,6 @@ const styles = StyleSheet.create({
   },
   signinText: {
     fontSize: 15,
-    color: colors.gray[600],
   },
   signinLink: {
     fontSize: 15,
