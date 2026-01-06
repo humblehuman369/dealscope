@@ -7,6 +7,7 @@ import {
   Pressable,
   Dimensions,
   Alert,
+  useColorScheme,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -49,6 +50,8 @@ export function ScanResultSheet({
   const insets = useSafeAreaInsets();
   const translateY = useSharedValue(0);
   const context = useSharedValue({ y: 0 });
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
   
   // Auth state
   const { isAuthenticated } = useAuth();
@@ -133,23 +136,38 @@ export function ScanResultSheet({
   // Get estimated value (Zestimate / AVM)
   const estimatedValue = fullAnalytics.pricing?.estimatedValue || fullAnalytics.pricing?.listPrice || 0;
 
+  // Dark mode theme colors
+  const theme = {
+    background: isDarkMode ? '#0f1f36' : '#fff',
+    text: isDarkMode ? '#fff' : colors.gray[900],
+    textSecondary: isDarkMode ? colors.gray[400] : colors.gray[500],
+    statsBackground: isDarkMode ? 'rgba(255,255,255,0.08)' : colors.gray[50],
+    statsDivider: isDarkMode ? 'rgba(255,255,255,0.15)' : colors.gray[200],
+    handle: isDarkMode ? 'rgba(255,255,255,0.3)' : colors.gray[300],
+    closeIcon: isDarkMode ? colors.gray[400] : colors.gray[500],
+    saveButtonBg: isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray[100],
+    saveButtonBorder: isDarkMode ? 'rgba(255,255,255,0.2)' : colors.gray[200],
+    valueAmount: isDarkMode ? colors.primary[400] : colors.primary[700],
+    iconColor: isDarkMode ? colors.gray[400] : colors.gray[600],
+  };
+
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View 
         style={[
           styles.sheet, 
           sheetStyle,
-          { paddingBottom: insets.bottom + 20 }
+          { paddingBottom: insets.bottom + 20, backgroundColor: theme.background }
         ]}
       >
         {/* Handle */}
         <View style={styles.handleContainer}>
-          <View style={styles.handle} />
+          <View style={[styles.handle, { backgroundColor: theme.handle }]} />
         </View>
 
         {/* Close Button */}
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Ionicons name="close" size={22} color={colors.gray[500]} />
+          <Ionicons name="close" size={22} color={theme.closeIcon} />
         </TouchableOpacity>
 
         {/* Property Confirmation Header */}
@@ -164,7 +182,7 @@ export function ScanResultSheet({
           </View>
 
           {/* Address */}
-          <Text style={styles.addressTitle}>
+          <Text style={[styles.addressTitle, isDarkMode && { color: colors.profit.light }]}>
             {isEstimatedData ? 'Property Located' : 'Property Found'}
           </Text>
           
@@ -177,41 +195,41 @@ export function ScanResultSheet({
               </Text>
             </View>
           )}
-          <Text style={styles.address} numberOfLines={2}>
+          <Text style={[styles.address, { color: theme.text }]} numberOfLines={2}>
             {propertyDetails.address || property.address}
           </Text>
 
           {/* Property Stats */}
-          <View style={styles.statsContainer}>
+          <View style={[styles.statsContainer, { backgroundColor: theme.statsBackground }]}>
             <View style={styles.statItem}>
-              <Ionicons name="bed-outline" size={20} color={colors.gray[600]} />
-              <Text style={styles.statValue}>{propertyDetails.bedrooms || '—'}</Text>
-              <Text style={styles.statLabel}>Beds</Text>
+              <Ionicons name="bed-outline" size={20} color={theme.iconColor} />
+              <Text style={[styles.statValue, { color: theme.text }]}>{propertyDetails.bedrooms || '—'}</Text>
+              <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Beds</Text>
             </View>
             
-            <View style={styles.statDivider} />
+            <View style={[styles.statDivider, { backgroundColor: theme.statsDivider }]} />
             
             <View style={styles.statItem}>
-              <Ionicons name="water-outline" size={20} color={colors.gray[600]} />
-              <Text style={styles.statValue}>{propertyDetails.bathrooms || '—'}</Text>
-              <Text style={styles.statLabel}>Baths</Text>
+              <Ionicons name="water-outline" size={20} color={theme.iconColor} />
+              <Text style={[styles.statValue, { color: theme.text }]}>{propertyDetails.bathrooms || '—'}</Text>
+              <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Baths</Text>
             </View>
             
-            <View style={styles.statDivider} />
+            <View style={[styles.statDivider, { backgroundColor: theme.statsDivider }]} />
             
             <View style={styles.statItem}>
-              <Ionicons name="resize-outline" size={20} color={colors.gray[600]} />
-              <Text style={styles.statValue}>
+              <Ionicons name="resize-outline" size={20} color={theme.iconColor} />
+              <Text style={[styles.statValue, { color: theme.text }]}>
                 {propertyDetails.sqft ? propertyDetails.sqft.toLocaleString() : '—'}
               </Text>
-              <Text style={styles.statLabel}>Sq Ft</Text>
+              <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Sq Ft</Text>
             </View>
           </View>
 
           {/* Estimated Value */}
           <View style={styles.valueContainer}>
-            <Text style={styles.valueLabel}>Estimated Market Value</Text>
-            <Text style={styles.valueAmount}>
+            <Text style={[styles.valueLabel, { color: theme.textSecondary }]}>Estimated Market Value</Text>
+            <Text style={[styles.valueAmount, { color: theme.valueAmount }]}>
               {estimatedValue > 0 ? formatCurrency(estimatedValue) : '—'}
             </Text>
           </View>
@@ -222,6 +240,7 @@ export function ScanResultSheet({
             <TouchableOpacity
               style={[
                 styles.saveButton,
+                { backgroundColor: theme.saveButtonBg, borderColor: theme.saveButtonBorder },
                 isSaved && styles.saveButtonSaved,
               ]}
               onPress={handleSaveProperty}
@@ -231,7 +250,7 @@ export function ScanResultSheet({
               <Ionicons 
                 name={isSaved ? "heart" : "heart-outline"} 
                 size={22} 
-                color={isSaved ? colors.loss.main : colors.gray[600]} 
+                color={isSaved ? colors.loss.main : theme.iconColor} 
               />
             </TouchableOpacity>
 
