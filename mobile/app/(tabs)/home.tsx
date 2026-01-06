@@ -121,35 +121,17 @@ export default function HomeScreen() {
               resizeMode="contain"
             />
             
-            <View style={styles.headerRight}>
-              {/* Theme Toggle */}
-              <TouchableOpacity 
-                style={[styles.themeToggle, dynamicStyles.headerButton]}
-                onPress={toggleTheme}
-              >
-                <Ionicons 
-                  name={isDark ? 'sunny' : 'moon'} 
-                  size={20} 
-                  color={isDark ? colors.accent[500] : colors.navy[900]} 
-                />
-              </TouchableOpacity>
-
-              {isAuthenticated && user ? (
-                <TouchableOpacity 
-                  style={[styles.headerButton, dynamicStyles.headerButton]}
-                  onPress={() => router.push('/(tabs)/dashboard')}
-                >
-                  <Text style={[styles.headerButtonText, dynamicStyles.headerButtonText]}>Dashboard</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity 
-                  style={[styles.headerButton, dynamicStyles.headerButton]}
-                  onPress={() => router.push('/auth/login')}
-                >
-                  <Text style={[styles.headerButtonText, dynamicStyles.headerButtonText]}>Sign In</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+            {/* Theme Toggle */}
+            <TouchableOpacity 
+              style={[styles.themeToggle, dynamicStyles.headerButton]}
+              onPress={toggleTheme}
+            >
+              <Ionicons 
+                name={isDark ? 'sunny' : 'moon'} 
+                size={20} 
+                color={isDark ? colors.accent[500] : colors.navy[900]} 
+              />
+            </TouchableOpacity>
           </View>
 
           {/* Hero Section */}
