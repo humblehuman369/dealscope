@@ -1856,7 +1856,7 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
         {/* LEFT: Tune The Deal */}
         <div>
           <FineTuneHeader 
-            title="Tune The Deal" 
+            title="Tune the Deal → Instantly see outcome" 
           />
           <div className="space-y-3.5">
             <AdjustmentSlider label="Monthly Rent" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
@@ -1868,7 +1868,7 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics (results) */}
         <div>
-          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-3.5">Key Metrics</h4>
+          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-3.5">Deal Performance</h4>
           <div className="space-y-1.5">
             <MetricRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} />
             <MetricRow label="Annual Cash Flow" value={formatCurrency(calc.annualCashFlow)} />
@@ -1897,7 +1897,7 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
         {/* LEFT: Tune The Deal */}
         <div className="space-y-3">
           <FineTuneHeader 
-            title="Tune The Deal" 
+            title="Tune the Deal → Instantly see outcome" 
           />
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 space-y-0">
             <AdjustmentSlider label="Daily Rate" baseValue={assumptions.baseAverageDailyRate} adjustment={assumptions.averageDailyRateAdj} onChange={(v) => updateAdjustment('averageDailyRateAdj', v)} compact />
@@ -1910,7 +1910,7 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-3">
-          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-2">Key Metrics</h4>
+          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-2">Deal Performance</h4>
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 500} />
             <StatRow label="Annual Gross Revenue" value={formatCurrency(calc.annualGrossRent)} />
@@ -1938,7 +1938,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
         {/* LEFT: Tune The Deal */}
         <div className="space-y-3">
           <FineTuneHeader 
-            title="Tune The Deal" 
+            title="Tune the Deal → Instantly see outcome" 
           />
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 space-y-0">
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
@@ -1952,7 +1952,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-3">
-          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-2">Key Metrics</h4>
+          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-2">Deal Performance</h4>
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Initial Cash Needed" value={formatCurrency(calc.initialCash)} />
             <StatRow label="Cash Back at Refi" value={formatCurrency(calc.cashBack)} highlight={calc.cashBack > 0} />
@@ -1974,7 +1974,7 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
         {/* LEFT: Tune The Deal */}
         <div className="space-y-3">
           <FineTuneHeader 
-            title="Tune The Deal" 
+            title="Tune the Deal → Instantly see outcome" 
           />
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 space-y-0">
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
@@ -2055,7 +2055,7 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
         {/* LEFT: Tune The Deal */}
         <div className="space-y-3">
           <FineTuneHeader 
-            title="Tune The Deal" 
+            title="Tune the Deal → Instantly see outcome" 
           />
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 space-y-0">
             <RoomsRentedSlider roomsRented={assumptions.roomsRented} totalBedrooms={assumptions.totalBedrooms} onChange={(v) => update('roomsRented', v)} compact />
@@ -2066,7 +2066,7 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-3">
-          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-2">Key Metrics</h4>
+          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-2">Deal Performance</h4>
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Effective Housing Cost" value={formatCurrency(calc.effectiveHousingCost)} highlight={calc.effectiveHousingCost < 500} />
             <StatRow label="Monthly Savings" value={formatCurrency(calc.monthlySavings)} highlight={calc.monthlySavings > 500} />
@@ -2173,7 +2173,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
         {/* LEFT: Tune The Deal */}
         <div className="space-y-3">
           <FineTuneHeader 
-            title="Tune The Deal" 
+            title="Tune the Deal → Instantly see outcome" 
           />
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 space-y-0">
             <AdjustmentSlider label="Purchase Price" baseValue={assumptions.basePurchasePrice} adjustment={assumptions.purchasePriceAdj} onChange={(v) => updateAdjustment('purchasePriceAdj', v)} compact />
@@ -2196,7 +2196,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-3">
-          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-2">Key Metrics</h4>
+          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-2">Deal Performance</h4>
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Maximum Allowable Offer" value={formatCurrency(calc.mao)} highlight={calc.isPurchaseBelowMAO} />
             <StatRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
