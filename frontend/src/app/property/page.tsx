@@ -893,10 +893,10 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
+        <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <div className="flex items-center gap-1.5">
-          <span className="text-[14px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedValue)}</span>
-          <span className="text-[13px] font-semibold text-brand-500 dark:text-brand-400">
+          <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedValue)}</span>
+          <span className="text-[14px] font-bold text-brand-500 dark:text-brand-400">
             {adjSign}{adjPercent.toFixed(0)}%
           </span>
         </div>
@@ -940,8 +940,8 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
-        <span className="text-[14px] font-bold text-navy-900 dark:text-white font-mono">{displayPercent}%</span>
+        <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
+        <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{displayPercent}%</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
         {/* Gray background track */}
@@ -983,10 +983,10 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
+        <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <div className="flex items-center gap-1.5">
-          <span className="text-[14px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(dollarValue)}</span>
-          <span className="text-[13px] font-semibold text-brand-500 dark:text-brand-400">({displayPercent}%)</span>
+          <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(dollarValue)}</span>
+          <span className="text-[14px] font-bold text-brand-500 dark:text-brand-400">({displayPercent}%)</span>
         </div>
       </div>
       <div className="relative h-[3px] mt-1.5">
@@ -1030,8 +1030,8 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">Maintenance</span>
-        <span className="text-[14px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
+        <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">Maintenance</span>
+        <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
         <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
@@ -1070,8 +1070,8 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">Management</span>
-        <span className="text-[14px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
+        <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">Management</span>
+        <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
         <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
@@ -1267,18 +1267,18 @@ function StrategyCard({ strategy, metrics, isSelected, onClick }: {
         
         <div className="px-2.5 py-2 h-full flex flex-col">
           {/* Strategy Name - shortened for boxes */}
-          <h3 className="text-[13px] font-semibold text-gray-900 dark:text-white tracking-tight leading-tight mb-1.5 pr-5">{displayName}</h3>
+          <h3 className="text-[14px] font-bold text-gray-900 dark:text-white tracking-tight leading-tight mb-1.5 pr-5">{displayName}</h3>
           
           {/* Primary Value - Blue for positive, red for negative */}
           <div className={`text-xl font-semibold tracking-tight leading-none ${primaryColor}`}>
             {metrics.primary}
           </div>
-          <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 tracking-wide mt-0.5 mb-1.5">{metrics.primaryLabel}</div>
+          <div className="text-[12px] font-bold text-gray-500 dark:text-gray-400 tracking-wide mt-0.5 mb-1.5">{metrics.primaryLabel}</div>
           
           {/* Secondary Metric - Value on top, label below - Blue for positive, red for negative */}
           <div className="pt-1.5 border-t border-gray-100/80 dark:border-navy-600">
-            <div className={`text-[13px] font-semibold ${secondaryColor}`}>{metrics.secondary}</div>
-            <div className="text-[13px] font-medium mt-px text-gray-500 dark:text-gray-400">{metrics.secondaryLabel}</div>
+            <div className={`text-[14px] font-bold ${secondaryColor}`}>{metrics.secondary}</div>
+            <div className="text-[14px] font-bold mt-px text-gray-500 dark:text-gray-400">{metrics.secondaryLabel}</div>
           </div>
         </div>
       </button>
@@ -1422,7 +1422,7 @@ function MobileStrategyPreview({
               }`}
             >
               {/* Strategy Name */}
-              <div className={`text-[13px] font-bold mb-0.5 ${isSelected ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
+              <div className={`text-[14px] font-bold mb-0.5 ${isSelected ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
                 {displayName}
               </div>
               
@@ -1432,7 +1432,7 @@ function MobileStrategyPreview({
               </div>
               
               {/* Secondary Value (CoC / Margin) */}
-              <div className={`text-[13px] font-semibold ${isSelected ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'}`}>
+              <div className={`text-[14px] font-bold ${isSelected ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'}`}>
                 {metrics.secondary}
               </div>
             </button>
@@ -1454,10 +1454,10 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">After Repair Value</span>
+        <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">After Repair Value</span>
         <div className="flex items-center gap-1.5">
-          <span className="text-[14px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedArv)}</span>
-          <span className="text-[13px] font-semibold text-brand-500 dark:text-brand-400">+{displayPercent}%</span>
+          <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedArv)}</span>
+          <span className="text-[14px] font-bold text-brand-500 dark:text-brand-400">+{displayPercent}%</span>
         </div>
       </div>
       <div className="relative h-[3px] mt-1.5">
@@ -1530,7 +1530,7 @@ function FineTuneHeader({ title, prompt }: {
       <h4 className="text-[0.9375rem] font-bold text-navy-900 dark:text-white">
         {title}
       </h4>
-      <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-0.5">{prompt}</p>
+      <p className="text-[14px] font-bold text-gray-500 dark:text-gray-400 mt-0.5">{prompt}</p>
     </div>
   )
 }
