@@ -66,7 +66,7 @@ function RehabPageContent() {
       // Fetch property data if address is provided but no params
       const fetchPropertyData = async () => {
         try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
           const response = await fetch(
             `${apiUrl}/api/v1/property/search?address=${encodeURIComponent(address)}`
           )

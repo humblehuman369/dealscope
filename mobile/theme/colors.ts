@@ -5,7 +5,8 @@
  * Brand Colors:
  * - Navy/Black-Blue: #07172e
  * - Medium Blue (Primary): #0465f2
- * - Electric Cyan (Accent): #00e5ff
+ * - Electric Cyan (Accent Dark Mode): #00e5ff
+ * - Pacific Teal (Accent Light Mode): #007ea7
  * - Icy Silver: #e1e8ed
  * - Cool Gray: #aab2bd
  */
@@ -25,14 +26,16 @@ export const colors = {
     900: '#01216e',
   },
 
-  // Accent - Electric Cyan
+  // Accent - Teal (Theme-aware)
+  // Dark Mode: #00e5ff (Electric Cyan) | Light Mode: #007ea7 (Pacific Teal)
   accent: {
     50: '#e6fcff',
     100: '#ccf9ff',
     200: '#99f3ff',
     300: '#66edff',
     400: '#33e7ff',
-    500: '#00e5ff',  // Main accent cyan
+    500: '#00e5ff',  // Dark mode accent (Electric Cyan)
+    light: '#007ea7', // Light mode accent (Pacific Teal)
     600: '#00b8cc',
     700: '#008a99',
     800: '#005c66',
@@ -141,12 +144,15 @@ export const colors = {
   overlay: 'rgba(7, 23, 46, 0.5)',  // Navy-based overlay
   overlayLight: 'rgba(7, 23, 46, 0.3)',
 
-  // Scanner-specific (uses accent cyan for visibility)
+  // Scanner-specific (uses accent teal for visibility)
+  // Note: These are dark mode values; use accent.light (#007ea7) for light mode
   scanner: {
-    target: '#00e5ff',
+    target: '#00e5ff',        // Dark mode
+    targetLight: '#007ea7',   // Light mode
     targetActive: '#00b8cc',
     reticle: 'rgba(255, 255, 255, 0.8)',
-    compass: '#00e5ff',
+    compass: '#00e5ff',       // Dark mode
+    compassLight: '#007ea7',  // Light mode
   },
 
   // Background colors

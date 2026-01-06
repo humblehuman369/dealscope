@@ -167,7 +167,12 @@ The app uses WatermelonDB for:
 Create a `.env` file:
 
 ```env
-EXPO_PUBLIC_API_URL=https://api.investiq.com
+# Development (local backend)
+EXPO_PUBLIC_API_URL=http://localhost:8000
+
+# Production
+EXPO_PUBLIC_API_URL=https://dealscope-production.up.railway.app
+
 EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_key_here
 ```
 
