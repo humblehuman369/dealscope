@@ -2303,8 +2303,8 @@ function BreakdownRow({
   indent?: boolean
   valueColor?: string
 }) {
-  const baseClasses = `flex flex-wrap sm:flex-nowrap justify-between items-center gap-1 py-1.5 px-2 ${indent ? 'pl-4 sm:pl-6' : ''} ${!isTotal ? 'border-b border-slate-100' : ''}`
-  const totalClasses = isTotal ? 'bg-sky-50 rounded-lg mt-1 font-bold' : ''
+  const baseClasses = `flex flex-wrap sm:flex-nowrap justify-between items-center gap-1 py-1.5 px-2 ${indent ? 'pl-4 sm:pl-6' : ''} ${!isTotal ? 'border-b border-slate-100 dark:border-navy-600' : ''}`
+  const totalClasses = isTotal ? 'bg-sky-50 dark:bg-navy-700/50 rounded-lg mt-1 font-bold' : ''
   
   // Auto-detect negative values from the string if not explicitly specified
   const detectNegative = isNegative || value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
@@ -2313,17 +2313,17 @@ function BreakdownRow({
   const getValueColor = () => {
     if (valueColor) return valueColor
     if (detectNegative) return 'text-crimson-600'
-    if (isTotal) return 'text-navy-900'
-    return 'text-navy-900'
+    if (isTotal) return 'text-navy-900 dark:text-white'
+    return 'text-navy-900 dark:text-white'
   }
   
   return (
-    <div className={`${baseClasses} ${totalClasses}`}>
+    <div className={`${baseClasses} ${totalClasses} dark:bg-transparent dark:border-navy-600`}>
       <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-shrink">
-        <span className={`text-[0.75rem] sm:text-[0.8125rem] ${isTotal ? 'font-semibold text-navy-900' : 'text-gray-600'} truncate`}>{label}</span>
-        {formula && <span className="text-[0.625rem] sm:text-[0.6875rem] text-gray-400 whitespace-nowrap">({formula})</span>}
+        <span className={`text-[13px] sm:text-[14px] ${isTotal ? 'font-semibold text-navy-900 dark:text-white' : 'text-gray-700 dark:text-white'} truncate`}>{label}</span>
+        {formula && <span className="text-[13px] text-gray-600 dark:text-gray-300 whitespace-nowrap">({formula})</span>}
       </div>
-      <span className={`text-[0.8125rem] sm:text-[0.875rem] font-semibold font-mono whitespace-nowrap ${getValueColor()}`}>{value}</span>
+      <span className={`text-[14px] sm:text-[15px] font-semibold font-mono whitespace-nowrap ${getValueColor()}`}>{value}</span>
     </div>
   )
 }
@@ -2413,11 +2413,6 @@ function LTRAnalyticBreakdown({ calc, assumptions, strategyName = 'Long-Term Ren
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
       <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
-        {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
-          <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
-        </div>
 
         {/* Two Column Layout - Stack on mobile */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3">
@@ -2603,11 +2598,6 @@ function STRAnalyticBreakdown({ calc, assumptions, strategyName = 'Short-Term Re
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
       <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
-        {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
-          <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
-        </div>
 
         {/* STR Revenue Section */}
         <div className="bg-slate-50 dark:bg-navy-700/50 rounded-xl p-2.5 sm:p-3 mb-3">
@@ -2774,11 +2764,6 @@ function BRRRRAnalyticBreakdown({ calc, assumptions, strategyName = 'BRRRR' }: {
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
       <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
-        {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
-          <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
-        </div>
 
         {/* Two Column Layout for Phases - Stack on mobile */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3">
@@ -2929,11 +2914,6 @@ function FlipAnalyticBreakdown({ calc, assumptions, strategyName = 'Fix & Flip' 
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
       <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
-        {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
-          <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
-        </div>
 
         {/* Step 1: The Opportunity - Flip Margin Box */}
         <div className="mb-3">
@@ -3100,11 +3080,6 @@ function HouseHackAnalyticBreakdown({ calc, assumptions, strategyName = 'House H
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
       <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
-        {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
-          <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
-        </div>
 
         {/* Two Column Layout - Stack on mobile */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3">
@@ -3238,11 +3213,6 @@ function WholesaleAnalyticBreakdown({ calc, assumptions, strategyName = 'Wholesa
     <div className="mt-4">
       {/* Main Card - matches HTML design */}
       <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
-        {/* Header */}
-        <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
-          <Layers className="w-5 h-5 text-[#0465f2]" />
-          <h4 className="text-base font-semibold text-navy-900">{strategyName} - Breakdown</h4>
-        </div>
 
         {/* Title Section */}
         <div className="bg-gradient-to-br from-pink-100 to-rose-100 dark:from-rose-900/30 dark:to-pink-900/30 rounded-xl p-2 mb-3 text-center">
