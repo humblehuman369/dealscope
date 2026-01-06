@@ -893,7 +893,7 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
+        <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedValue)}</span>
           <span className="text-[0.6875rem] font-semibold text-brand-500 dark:text-brand-400">
@@ -940,7 +940,7 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
+        <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{displayPercent}%</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
@@ -983,7 +983,7 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
+        <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(dollarValue)}</span>
           <span className="text-[0.6875rem] font-semibold text-brand-500 dark:text-brand-400">({displayPercent}%)</span>
@@ -1030,7 +1030,7 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">Maintenance</span>
+        <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Maintenance</span>
         <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
@@ -1070,7 +1070,7 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">Management</span>
+        <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Management</span>
         <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
@@ -1454,7 +1454,7 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">After Repair Value</span>
+        <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300">After Repair Value</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedArv)}</span>
           <span className="text-[0.6875rem] font-semibold text-brand-500 dark:text-brand-400">+{displayPercent}%</span>
@@ -1800,7 +1800,7 @@ function MetricRow({ label, value }: { label: string; value: string }) {
   const isNegative = value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
   return (
     <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-navy-600 last:border-b-0">
-      <span className="text-xs text-gray-700 dark:text-gray-300 font-medium flex items-center">
+      <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300 flex items-center">
         {label}
         <MetricTooltip label={label} />
       </span>
