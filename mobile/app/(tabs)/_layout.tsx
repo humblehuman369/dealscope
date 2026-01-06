@@ -1,19 +1,22 @@
 import { Tabs } from 'expo-router';
-import { Platform } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 
 export default function TabLayout() {
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
+
   return (
     <Tabs
       initialRouteName="home"
       screenOptions={{
-        tabBarActiveTintColor: colors.primary[600],
-        tabBarInactiveTintColor: colors.gray[400],
+        tabBarActiveTintColor: isDarkMode ? colors.primary[400] : colors.primary[600],
+        tabBarInactiveTintColor: isDarkMode ? colors.gray[500] : colors.gray[400],
         tabBarStyle: {
-          backgroundColor: '#ffffff',
+          backgroundColor: isDarkMode ? '#07172e' : '#ffffff',
           borderTopWidth: 1,
-          borderTopColor: colors.gray[200],
+          borderTopColor: isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray[200],
           paddingTop: 8,
           paddingBottom: Platform.OS === 'ios' ? 24 : 8,
           height: Platform.OS === 'ios' ? 88 : 64,
