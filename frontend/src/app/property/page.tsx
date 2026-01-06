@@ -1428,17 +1428,17 @@ function MobileStrategyPreview({
               }`}
             >
               {/* Strategy Name */}
-              <div className={`text-[14px] font-bold mb-0.5 ${isSelected ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
+              <div className={`text-[13px] font-bold mb-0.5 ${isSelected ? 'text-white/80' : 'text-gray-500 dark:text-[#00e5ff]'}`}>
                 {displayName}
               </div>
               
               {/* Primary Value (Cash Flow / Profit) */}
-              <div className={`text-sm font-bold font-mono leading-tight ${isSelected ? 'text-white' : valueColor}`}>
+              <div className={`text-[13px] font-bold font-mono leading-tight ${isSelected ? 'text-white' : valueColor} dark:text-[#00e5ff]`}>
                 {metrics.primary}
               </div>
               
               {/* Secondary Value (CoC / Margin) */}
-              <div className={`text-[14px] font-bold ${isSelected ? 'text-white/70' : 'text-gray-400 dark:text-[#00e5ff]'}`}>
+              <div className={`text-[13px] font-bold ${isSelected ? 'text-white/70' : 'text-gray-400 dark:text-[#00e5ff]'}`}>
                 {metrics.secondary}
               </div>
             </button>
