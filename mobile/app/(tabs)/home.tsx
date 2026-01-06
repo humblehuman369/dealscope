@@ -450,11 +450,11 @@ const styles = StyleSheet.create({
     color: colors.accent[500],
   },
   heroSubtitle: {
-    fontSize: 13,
-    color: '#8892a0',
+    fontSize: 14,
+    color: '#fff',
     textAlign: 'center',
     marginTop: 8,
-    lineHeight: 18,
+    lineHeight: 20,
     paddingHorizontal: 10,
   },
 
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
   },
   statusTime: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
   },
   statusIcons: {
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
   },
   analyzingText: {
     color: '#fff',
-    fontSize: 10,
+    fontSize: 13,
   },
   loadingDots: {
     flexDirection: 'row',
@@ -648,16 +648,16 @@ const styles = StyleSheet.create({
   },
   locationLabel: {
     color: colors.accent[500],
-    fontSize: 8,
+    fontSize: 13,
     fontWeight: '700',
     letterSpacing: 1,
     marginBottom: 2,
   },
   locationAddress: {
     color: '#fff',
-    fontSize: 10,
+    fontSize: 13,
     textAlign: 'center',
-    lineHeight: 14,
+    lineHeight: 18,
   },
   phoneActions: {
     flexDirection: 'row',
@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
   },
   phoneScanBtnText: {
     color: colors.navy[900],
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
   },
   phoneDetailsBtn: {
@@ -686,7 +686,7 @@ const styles = StyleSheet.create({
   },
   phoneDetailsBtnText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
   },
 
@@ -740,7 +740,7 @@ const styles = StyleSheet.create({
   },
   mobileBestBadgeText: {
     color: colors.navy[900],
-    fontSize: 8,
+    fontSize: 13,
     fontWeight: '800',
   },
   mobileMultiplierBadge: {
@@ -754,7 +754,7 @@ const styles = StyleSheet.create({
   },
   mobileMultiplierText: {
     color: colors.profit.main,
-    fontSize: 9,
+    fontSize: 13,
     fontWeight: '700',
   },
   mobileCardIcon: {
@@ -772,7 +772,7 @@ const styles = StyleSheet.create({
   },
   mobileCardName: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 8,
@@ -787,8 +787,8 @@ const styles = StyleSheet.create({
     color: colors.accent[400],
   },
   mobileCardRoiLabel: {
-    color: '#8892a0',
-    fontSize: 9,
+    color: '#fff',
+    fontSize: 13,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -830,8 +830,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   statLabel: {
-    color: '#8892a0',
-    fontSize: 10,
+    color: '#fff',
+    fontSize: 13,
     marginTop: 2,
   },
   statDivider: {
@@ -856,8 +856,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   bottomCtaSubtext: {
-    color: '#8892a0',
-    fontSize: 11,
+    color: '#fff',
+    fontSize: 13,
     textAlign: 'center',
     marginTop: 10,
     marginBottom: 8,
@@ -886,8 +886,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   featureText: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 12,
+    color: '#fff',
+    fontSize: 13,
     fontWeight: '600',
   },
 });

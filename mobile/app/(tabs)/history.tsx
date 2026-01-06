@@ -553,8 +553,8 @@ const styles = StyleSheet.create({
   },
   metricLabel: {
     fontFamily: 'System',
-    fontWeight: '400',
-    fontSize: 11,
+    fontWeight: '500',
+    fontSize: 13,
     marginBottom: 2,
     textTransform: 'uppercase',
     letterSpacing: 0.3,
@@ -578,8 +578,8 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     fontFamily: 'System',
-    fontWeight: '400',
-    fontSize: 12,
+    fontWeight: '500',
+    fontSize: 13,
   },
   deleteAction: {
     backgroundColor: BRAND.loss,
@@ -592,7 +592,7 @@ const styles = StyleSheet.create({
   },
   deleteActionText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: 'System',
     fontWeight: '600',
     marginTop: 4,

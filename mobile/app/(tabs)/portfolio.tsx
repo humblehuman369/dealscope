@@ -585,9 +585,9 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   summaryLabel: {
-    fontWeight: '400',
-    fontSize: 11,
-    color: colors.gray[500],
+    fontWeight: '500',
+    fontSize: 13,
+    color: colors.gray[700],
     textAlign: 'center',
   },
   sectionTitle: {
@@ -643,8 +643,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardMetricLabel: {
-    fontSize: 11,
-    color: colors.gray[500],
+    fontSize: 13,
+    color: colors.gray[700],
     marginBottom: 2,
   },
   cardMetricValue: {
@@ -659,8 +659,8 @@ const styles = StyleSheet.create({
     color: colors.loss.main,
   },
   cardDate: {
-    fontSize: 12,
-    color: colors.gray[400],
+    fontSize: 13,
+    color: colors.gray[700],
     marginTop: 12,
   },
   emptyState: {

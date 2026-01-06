@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   pendingText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '600',
     color: colors.warning.main,
   },
@@ -607,8 +607,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuSubtitle: {
-    fontWeight: '400',
-    fontSize: 12,
+    fontWeight: '500',
+    fontSize: 13,
     marginTop: 2,
   },
   themeSelector: {
@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   dataStatLabel: {
-    fontSize: 12,
+    fontSize: 13,
     marginTop: 2,
   },
   dataStatDivider: {

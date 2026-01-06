@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     borderColor: '#FCD34D',
   },
   estimatedBannerText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
     color: '#92400E',
   },
@@ -376,9 +376,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   statLabel: {
-    fontWeight: '400',
-    fontSize: 12,
-    color: colors.gray[500],
+    fontWeight: '500',
+    fontSize: 13,
+    color: colors.gray[700],
     marginTop: 2,
   },
   statDivider: {
