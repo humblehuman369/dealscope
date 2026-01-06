@@ -68,7 +68,7 @@ function ComparisonRow({
   
   return (
     <tr className={`border-b border-gray-100 dark:border-navy-600 ${highlight ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''}`}>
-      <td className={`py-2 px-3 text-[13px] ${highlight ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>
+      <td className={`py-2 px-3 text-[13px] font-bold ${highlight ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-white'}`}>
         {label}
       </td>
       {values.map((value, i) => {
@@ -76,7 +76,7 @@ function ComparisonRow({
         return (
           <td 
             key={i} 
-            className={`py-2 px-3 text-[13px] text-right font-medium ${
+            className={`py-2 px-3 text-[13px] text-right font-bold ${
               isBest ? 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30' : 
               highlight ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-white'
             }`}
@@ -188,7 +188,7 @@ export default function ScenarioComparison({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-800 dark:text-emerald-400">Scenario Comparison</h2>
-          <p className="text-[14px] text-gray-500 dark:text-gray-400">Compare different assumptions side-by-side</p>
+          <p className="text-[13px] font-bold text-gray-600 dark:text-white">Compare different assumptions side-by-side</p>
         </div>
         
         <div className="flex items-center gap-2">
@@ -245,9 +245,9 @@ export default function ScenarioComparison({
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 dark:bg-navy-700 border-b border-gray-200 dark:border-navy-600">
-                <th className="text-left py-2.5 px-3 text-[13px] font-medium text-gray-600 dark:text-gray-300 w-40">Metric</th>
+                <th className="text-left py-2.5 px-3 text-[13px] font-bold text-gray-700 dark:text-white w-40">Metric</th>
                 {compareScenarios.map((s, i) => (
-                  <th key={s.id} className="text-right py-2.5 px-3 text-[13px] font-medium text-gray-600 dark:text-gray-300 min-w-[100px]">
+                  <th key={s.id} className="text-right py-2.5 px-3 text-[13px] font-bold text-gray-700 dark:text-white min-w-[100px]">
                     <div className="flex items-center justify-end gap-1">
                       {i === 0 && (
                         <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-[10px] rounded">
@@ -263,7 +263,7 @@ export default function ScenarioComparison({
             <tbody>
               {/* Key Assumptions */}
               <tr className="bg-gray-50 dark:bg-navy-700">
-                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[13px] font-bold text-gray-700 dark:text-white uppercase tracking-wide">
                   Key Assumptions
                 </td>
               </tr>
@@ -295,7 +295,7 @@ export default function ScenarioComparison({
               
               {/* Year 1 Performance */}
               <tr className="bg-gray-50 dark:bg-navy-700">
-                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[13px] font-bold text-gray-700 dark:text-white uppercase tracking-wide">
                   Year 1 Performance
                 </td>
               </tr>
@@ -319,7 +319,7 @@ export default function ScenarioComparison({
               
               {/* 10-Year Summary */}
               <tr className="bg-emerald-50 dark:bg-emerald-900/20">
-                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[11px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wide">
+                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[13px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wide">
                   10-Year Summary
                 </td>
               </tr>
@@ -361,7 +361,7 @@ export default function ScenarioComparison({
               {expandedView && (
                 <>
                   <tr className="bg-gray-50 dark:bg-navy-700">
-                    <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                    <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[13px] font-bold text-gray-600 dark:text-white uppercase tracking-wide">
                       Year 5 Snapshot
                     </td>
                   </tr>
