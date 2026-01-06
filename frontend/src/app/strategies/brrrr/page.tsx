@@ -85,7 +85,7 @@ export default function BRRRRPage() {
           <div className="space-y-4">
             {steps.map((step) => (
               <div key={step.num} className="bg-gradient-to-r from-[#f0f9ff] to-[#e0f2fe] rounded-xl p-6 flex items-start gap-6">
-                <div className="w-12 h-12 bg-gradient-to-r from-[#0465f2] to-[#00e5ff] text-white rounded-full flex items-center justify-center text-xl font-bold flex-shrink-0">
+                <div className="w-12 h-12 bg-gradient-brand-teal text-white rounded-full flex items-center justify-center text-xl font-bold flex-shrink-0">
                   {step.num}
                 </div>
                 <div>

@@ -26,18 +26,21 @@ module.exports = {
           900: '#01216e',
           950: '#011047',
         },
-        // Accent Cyan
+        // Accent Teal - Theme-aware (use CSS var --color-teal for dynamic switching)
+        // Dark Mode: #00e5ff (Electric Cyan) | Light Mode: #007ea7 (Pacific Teal)
         accent: {
           50: '#e6fcff',
           100: '#ccf9ff',
           200: '#99f3ff',
           300: '#66edff',
           400: '#33e7ff',
-          500: '#00e5ff',  // Primary accent cyan
+          500: '#00e5ff',  // Dark mode accent (Electric Cyan) - use text-teal class for theme-aware
           600: '#00b8cc',
-          700: '#008a99',
+          700: '#008a99',  // Close to light mode accent
           800: '#005c66',
           900: '#002e33',
+          // Light mode specific
+          light: '#007ea7', // Pacific Teal - light mode accent
         },
         // Navy (for text and dark backgrounds)
         navy: {
@@ -173,7 +176,9 @@ module.exports = {
         'brand-lg': '0 10px 40px 0 rgba(4, 101, 242, 0.3)',
         'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
         'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-        'glow-cyan': '0 0 20px rgba(0, 229, 255, 0.5)',
+        // Note: For theme-aware glow, use CSS var(--color-teal-rgb) in inline styles
+        'glow-cyan': '0 0 20px rgba(0, 229, 255, 0.5)',  // Dark mode glow
+        'glow-teal': '0 0 20px rgba(0, 126, 167, 0.5)',  // Light mode glow
         'glow-blue': '0 0 20px rgba(4, 101, 242, 0.5)',
       },
       // ==========================================
@@ -219,9 +224,11 @@ module.exports = {
       },
       // ==========================================
       // INVESTIQ DESIGN SYSTEM - Gradients (via backgroundImage)
+      // Note: For theme-aware gradients, use CSS class bg-gradient-brand-teal
       // ==========================================
       backgroundImage: {
-        'gradient-brand': 'linear-gradient(135deg, #0465f2 0%, #00e5ff 100%)',
+        'gradient-brand': 'linear-gradient(135deg, #0465f2 0%, #00e5ff 100%)',  // Dark mode
+        'gradient-brand-light': 'linear-gradient(135deg, #0465f2 0%, #007ea7 100%)',  // Light mode
         'gradient-brand-vertical': 'linear-gradient(180deg, #0465f2 0%, #00e5ff 100%)',
         'gradient-dark': 'linear-gradient(135deg, #07172e 0%, #1f2937 100%)',
         'gradient-light': 'linear-gradient(135deg, #e8eef3 0%, #f9fafb 100%)',
