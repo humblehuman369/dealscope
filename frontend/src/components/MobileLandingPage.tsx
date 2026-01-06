@@ -24,12 +24,12 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
   const { user, isAuthenticated, setShowAuthModal } = useAuth();
 
   const strategies = [
-    { name: 'Long Rental', roi: '18%', icon: Home, featured: false },
-    { name: 'Short Rental', roi: '28%', icon: Calendar, featured: false },
-    { name: 'Fix & Flip', roi: '22%', icon: Wrench, featured: false },
-    { name: 'BRRRR', roi: '35%', icon: RefreshCw, featured: true },
-    { name: 'House Hack', roi: '25%', icon: Home, featured: false },
-    { name: 'Wholesale', roi: '12%', icon: Users, featured: false },
+    { name: 'Long-Term Rental', roi: '18%', icon: Home, featured: false, multiplier: '3X', profit: '$42K' },
+    { name: 'Short-Term Rental', roi: '28%', icon: Calendar, featured: false, multiplier: '5X', profit: '$68K' },
+    { name: 'Fix & Flip', roi: '22%', icon: Wrench, featured: false, multiplier: '2X', profit: '$55K' },
+    { name: 'BRRRR', roi: '35%', icon: RefreshCw, featured: true, multiplier: '7X', profit: '$81K' },
+    { name: 'House Hack', roi: '25%', icon: Home, featured: false, multiplier: '4X', profit: '$48K' },
+    { name: 'Wholesale', roi: '12%', icon: Users, featured: false, multiplier: '1.5X', profit: '$22K' },
   ];
 
   return (
@@ -103,13 +103,29 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
         <PhoneScannerMockup />
       </section>
 
-      {/* Strategies Section */}
-      <section className="bg-[#f4f7fa] px-4 py-10 mt-5">
-        <p className="text-center text-sm text-[#8892a0] mb-4">
-          You&apos;ll see results like this:
-        </p>
+      {/* Results Section - Dark Background */}
+      <section 
+        className="relative px-5 py-12 mt-5"
+        style={{ background: 'linear-gradient(180deg, #0a1628 0%, #07172e 50%, #061324 100%)' }}
+      >
+        {/* Subtle glow effect */}
+        <div 
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[150px] pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse, rgba(0, 229, 255, 0.15) 0%, transparent 70%)' }}
+        />
         
-        <div className="flex flex-wrap gap-2 justify-center">
+        {/* Section Header */}
+        <div className="relative z-10 text-center mb-8">
+          <h2 className="text-2xl font-bold text-white mb-2">
+            See Your <span className="text-accent-500">Profit Potential</span>
+          </h2>
+          <p className="text-[#8892a0] text-sm">
+            Compare 6 strategies instantly
+          </p>
+        </div>
+
+        {/* Strategy Cards Grid */}
+        <div className="relative z-10 grid grid-cols-2 gap-3 mb-8">
           {strategies.map((strategy, idx) => (
             <StrategyCard
               key={idx}
@@ -117,23 +133,56 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
               roi={strategy.roi}
               icon={strategy.icon}
               featured={strategy.featured}
+              multiplier={strategy.multiplier}
+              profit={strategy.profit}
             />
           ))}
         </div>
+
+        {/* Social Proof */}
+        <div className="relative z-10 flex items-center justify-center gap-6 py-6 border-t border-white/10">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-accent-500">10K+</div>
+            <div className="text-[11px] text-[#8892a0]">Properties Analyzed</div>
+          </div>
+          <div className="w-px h-10 bg-white/10" />
+          <div className="text-center">
+            <div className="text-2xl font-bold text-emerald-400">$2.4M</div>
+            <div className="text-[11px] text-[#8892a0]">Profit Identified</div>
+          </div>
+          <div className="w-px h-10 bg-white/10" />
+          <div className="text-center">
+            <div className="text-2xl font-bold text-white">60s</div>
+            <div className="text-[11px] text-[#8892a0]">Avg Analysis</div>
+          </div>
+        </div>
+
+        {/* CTA Button */}
+        <div className="relative z-10 mt-6">
+          <button
+            onClick={onPointAndScan}
+            className="w-full py-4 rounded-2xl font-bold text-lg text-white"
+            style={{
+              background: 'linear-gradient(135deg, #0465f2 0%, #00e5ff 100%)',
+              boxShadow: '0 8px 32px rgba(4, 101, 242, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+            }}
+          >
+            Start Analyzing Now
+          </button>
+          <p className="text-center text-[12px] text-[#8892a0] mt-3">
+            Free • No credit card required
+          </p>
+        </div>
       </section>
 
-      {/* Features Bar */}
-      <div className="flex justify-around py-8 px-5 bg-white border-t border-black/5">
-        <FeatureItem icon={Camera} text="Scan on-site" />
-        <FeatureItem icon={Clock} text="60 seconds" />
-        <FeatureItem icon={BarChart3} text="6 strategies" />
-      </div>
-
-      {/* Footer CTA */}
-      <div className="text-center py-6 px-5 pb-10 bg-white">
-        <p className="text-sm text-[#8892a0]">
-          Get instant recommendations for <span className="text-accent-500 font-medium">maximum profit</span>
-        </p>
+      {/* Bottom Features Bar */}
+      <div 
+        className="flex justify-around py-6 px-5"
+        style={{ background: '#061324' }}
+      >
+        <FeatureItem icon={Camera} text="Point & Scan" />
+        <FeatureItem icon={Clock} text="60 Seconds" />
+        <FeatureItem icon={BarChart3} text="6 Strategies" />
       </div>
     </div>
   );
@@ -145,36 +194,96 @@ interface StrategyCardProps {
   roi: string;
   icon: React.ComponentType<{ className?: string }>;
   featured?: boolean;
+  multiplier?: string;
+  profit?: string;
 }
 
-function StrategyCard({ name, roi, icon: Icon, featured }: StrategyCardProps) {
+function StrategyCard({ name, roi, icon: Icon, featured, multiplier, profit }: StrategyCardProps) {
   return (
     <div 
-      className={`flex-[0_0_calc(33.333%-6px)] max-w-[calc(33.333%-6px)] rounded-xl p-3 text-center relative
+      className={`relative rounded-2xl p-4 overflow-hidden
         ${featured 
-          ? 'bg-gradient-to-br from-accent-500/10 to-brand-500/10 border border-accent-500/25' 
-          : 'bg-white border border-black/[0.04]'
+          ? 'bg-gradient-to-br from-accent-500/20 to-brand-500/20 border-2 border-accent-500/50' 
+          : 'bg-white/[0.08] border border-white/10'
         }`}
-      style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
+      style={{ 
+        boxShadow: featured 
+          ? '0 8px 32px rgba(0, 229, 255, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)' 
+          : '0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05)'
+      }}
     >
+      {/* Featured Badge */}
       {featured && (
-        <div className="absolute -top-2 -right-1 bg-accent-500 text-[#07172e] text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase">
-          Best
+        <div className="absolute top-2 right-2 bg-accent-500 text-[#07172e] text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wide">
+          Best ROI
+        </div>
+      )}
+
+      {/* Multiplier Badge */}
+      {multiplier && !featured && (
+        <div className="absolute top-2 right-2 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2 py-1 rounded-lg">
+          {multiplier}
         </div>
       )}
       
-      <div 
-        className={`w-8 h-8 mx-auto mb-2 rounded-[10px] flex items-center justify-center
-          ${featured ? 'bg-accent-500/[0.18]' : 'bg-brand-500/10'}`}
-      >
-        <Icon className={`w-4 h-4 ${featured ? 'text-accent-500' : 'text-brand-500'}`} />
+      {/* Icon & Name Row */}
+      <div className="flex items-center gap-2 mb-3">
+        <div 
+          className={`w-10 h-10 rounded-xl flex items-center justify-center
+            ${featured ? 'bg-accent-500/30' : 'bg-brand-500/20'}`}
+        >
+          <Icon className={`w-5 h-5 ${featured ? 'text-accent-400' : 'text-brand-400'}`} />
+        </div>
+        <div className={`text-sm font-semibold ${featured ? 'text-white' : 'text-white/90'}`}>
+          {name}
+        </div>
       </div>
       
-      <div className="text-[9px] font-medium text-[#8892a0] mb-0.5">{name}</div>
-      <div className={`text-xl font-bold ${featured ? 'text-accent-600' : 'text-[#07172e]'}`}>
-        {roi}
+      {/* Metrics Row */}
+      <div className="flex items-end justify-between">
+        {/* ROI */}
+        <div>
+          <div className="text-[11px] text-[#8892a0] mb-0.5 uppercase tracking-wide">ROI</div>
+          <div className={`text-3xl font-bold ${featured ? 'text-accent-400' : 'text-white'}`}>
+            {roi}
+          </div>
+        </div>
+        
+        {/* Mini Growth Chart */}
+        <div className="flex items-end gap-[3px] h-8">
+          {[3, 5, 4, 7, 6, 9, 8, 12].map((h, i) => (
+            <div 
+              key={i}
+              className={`w-[4px] rounded-sm ${featured ? 'bg-accent-500' : 'bg-brand-500'}`}
+              style={{ 
+                height: `${h * 2.5}px`,
+                opacity: 0.4 + (i * 0.08)
+              }}
+            />
+          ))}
+          {/* Upward arrow */}
+          <div className={`ml-1 ${featured ? 'text-accent-400' : 'text-emerald-400'}`}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M6 10V2M6 2L2 6M6 2L10 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </div>
       </div>
-      <div className="text-[9px] text-[#8892a0]">ROI</div>
+
+      {/* Profit Indicator */}
+      {profit && (
+        <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
+          <span className="text-[11px] text-[#8892a0]">Est. Profit</span>
+          <span className={`text-sm font-bold ${featured ? 'text-accent-400' : 'text-emerald-400'}`}>
+            {profit}
+            {featured && multiplier && (
+              <span className="ml-1.5 text-[10px] bg-accent-500/30 px-1.5 py-0.5 rounded text-accent-300">
+                {multiplier}
+              </span>
+            )}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -188,10 +297,10 @@ interface FeatureItemProps {
 function FeatureItem({ icon: Icon, text }: FeatureItemProps) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="w-11 h-11 bg-[#f4f7fa] rounded-xl flex items-center justify-center">
-        <Icon className="w-[22px] h-[22px] text-brand-500" />
+      <div className="w-12 h-12 bg-white/[0.08] border border-white/10 rounded-xl flex items-center justify-center">
+        <Icon className="w-5 h-5 text-accent-500" />
       </div>
-      <span className="text-[11px] font-medium text-[#07172e]">{text}</span>
+      <span className="text-[12px] font-medium text-white/80">{text}</span>
     </div>
   );
 }
