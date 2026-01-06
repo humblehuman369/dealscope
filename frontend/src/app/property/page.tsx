@@ -1030,11 +1030,11 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-700 font-medium">Maintenance</span>
-        <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
+        <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">Maintenance</span>
+        <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
         <div 
           className="absolute top-0 left-0 h-full rounded-sm slider-fill"
           style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
@@ -1070,11 +1070,11 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-700 font-medium">Management</span>
-        <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
+        <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">Management</span>
+        <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
         <div 
           className="absolute top-0 left-0 h-full rounded-sm slider-fill"
           style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
