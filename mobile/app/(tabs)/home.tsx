@@ -140,7 +140,7 @@ export default function HomeScreen() {
               Know the Real Return
             </Text>
             <Text style={[styles.heroTitleAccentLine, dynamicStyles.heroTitleAccent]}>
-              Before You Buy.
+              Before You Buy
             </Text>
             <Text style={[styles.heroSubtitle, dynamicStyles.heroSubtitle]}>
               Instantly reveal a property's real{'\n'}investment potential in 60 seconds.
@@ -278,45 +278,49 @@ export default function HomeScreen() {
   );
 }
 
-// Phone Mockup Component
+// Scanner Viewfinder Component (replaces phone mockup)
 function PhoneMockup() {
   return (
-    <View style={styles.phoneFrame}>
-      <View style={styles.phoneScreen}>
-        {/* Compact Status Bar */}
-        <View style={styles.statusBar}>
-          <Text style={styles.statusTime}>9:41</Text>
-          <View style={styles.statusIcons}>
-            <Ionicons name="cellular" size={14} color="#fff" />
-            <Ionicons name="wifi" size={14} color="#fff" />
-            <Ionicons name="battery-full" size={14} color="#fff" />
-          </View>
+    <View style={styles.scannerMockup}>
+      {/* Analyzing Header */}
+      <View style={styles.analyzingHeader}>
+        <Text style={styles.analyzingText}>Analyzing Data</Text>
+        <View style={styles.loadingDots}>
+          <View style={styles.dot} />
+          <View style={styles.dot} />
+          <View style={styles.dot} />
         </View>
+      </View>
 
-        {/* Analyzing Header */}
-        <View style={styles.analyzingHeader}>
-          <Text style={styles.analyzingText}>Analyzing Data</Text>
-          <View style={styles.loadingDots}>
-            <View style={styles.dot} />
-            <View style={styles.dot} />
-            <View style={styles.dot} />
-          </View>
-        </View>
-
+      {/* Viewfinder Container */}
+      <View style={styles.viewfinderContainer}>
         {/* House with Scanner Brackets */}
         <View style={styles.scannerView}>
-          <Svg width={140} height={95} viewBox="0 0 120 80">
-            {/* House */}
-            <Path
-              d="M60 10 L100 40 L100 75 L20 75 L20 40 Z"
-              fill="#1a3a4a"
-              stroke={colors.accent[500]}
-              strokeWidth={1.5}
-            />
-            <Rect x="45" y="50" width="30" height="25" fill="#0f2535" />
-            <Circle cx="60" cy="25" r="8" fill="#2a4a5a" />
+          <Svg width={180} height={140} viewBox="0 0 200 160">
+            {/* Main house body */}
+            <Rect x="30" y="70" width="140" height="80" fill="#4a6070" rx={2} />
             {/* Roof */}
-            <Path d="M15 42 L60 8 L105 42" stroke={colors.accent[500]} strokeWidth={2} fill="none" />
+            <Path d="M100 20 L20 70 L180 70 Z" fill="#3a4a55" />
+            <Path d="M100 20 L25 70 L175 70" stroke={colors.accent[500]} strokeWidth={1} fill="none" opacity={0.3} />
+            {/* Porch roof */}
+            <Rect x="55" y="100" width="90" height="8" fill="#2a3a45" />
+            {/* Door */}
+            <Rect x="85" y="105" width="30" height="45" fill="#2a3540" rx={2} />
+            <Circle cx="108" cy="130" r="2" fill={colors.accent[500]} opacity={0.6} />
+            {/* Windows - left */}
+            <Rect x="40" y="80" width="30" height="25" fill="#1a2530" rx={1} />
+            <Rect x="40" y="80" width="30" height="25" fill="none" stroke={colors.accent[500]} strokeWidth={0.5} opacity={0.4} rx={1} />
+            {/* Windows - right */}
+            <Rect x="130" y="80" width="30" height="25" fill="#1a2530" rx={1} />
+            <Rect x="130" y="80" width="30" height="25" fill="none" stroke={colors.accent[500]} strokeWidth={0.5} opacity={0.4} rx={1} />
+            {/* Attic window */}
+            <Circle cx="100" cy="50" r="12" fill="#1a2530" />
+            <Circle cx="100" cy="50" r="12" fill="none" stroke={colors.accent[500]} strokeWidth={0.5} opacity={0.4} />
+            {/* Porch pillars */}
+            <Rect x="60" y="100" width="6" height="50" fill="#4a5a65" />
+            <Rect x="134" y="100" width="6" height="50" fill="#4a5a65" />
+            {/* Ground */}
+            <Rect x="0" y="148" width="200" height="12" fill="#1a2a35" />
           </Svg>
           
           {/* Scanner Brackets */}
@@ -343,16 +347,16 @@ function PhoneMockup() {
           <Text style={styles.locationLabel}>PROPERTY LOCATED</Text>
           <Text style={styles.locationAddress}>123 Main Street, Anytown</Text>
         </View>
+      </View>
 
-        {/* Action Buttons */}
-        <View style={styles.phoneActions}>
-          <TouchableOpacity style={styles.phoneScanBtn}>
-            <Text style={styles.phoneScanBtnText}>Scan</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.phoneDetailsBtn}>
-            <Text style={styles.phoneDetailsBtnText}>Details</Text>
-          </TouchableOpacity>
-        </View>
+      {/* Action Buttons */}
+      <View style={styles.phoneActions}>
+        <TouchableOpacity style={styles.phoneScanBtn}>
+          <Text style={styles.phoneScanBtnText}>Scan</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.phoneDetailsBtn}>
+          <Text style={styles.phoneDetailsBtnText}>Details</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -585,148 +589,131 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.4)',
   },
 
-  // Phone Mockup
+  // Scanner Mockup (replaces phone mockup)
   phoneMockupContainer: {
     alignItems: 'center',
     paddingVertical: 24,
+    paddingHorizontal: 20,
   },
-  phoneFrame: {
-    width: 210,
-    backgroundColor: '#1a2a3a',
-    borderRadius: 40,
-    padding: 10,
+  scannerMockup: {
+    width: '100%',
+    maxWidth: 340,
+    alignItems: 'center',
+  },
+  viewfinderContainer: {
+    width: '100%',
+    backgroundColor: '#1a3a4a',
+    borderRadius: 20,
+    padding: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.5,
-    shadowRadius: 25,
-    elevation: 20,
-  },
-  phoneScreen: {
-    backgroundColor: '#0a1628',
-    borderRadius: 32,
-    paddingTop: 12,
-    paddingBottom: 16,
-    paddingHorizontal: 14,
-    minHeight: 320,
-  },
-  statusBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    marginBottom: 8,
-  },
-  statusTime: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  statusIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  signalBars: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 1,
-  },
-  signalBar: {
-    width: 3,
-    backgroundColor: '#fff',
-    borderRadius: 1,
+    shadowOpacity: 0.4,
+    shadowRadius: 30,
+    elevation: 15,
   },
   analyzingHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    marginBottom: 12,
+    gap: 8,
+    marginBottom: 16,
   },
   analyzingText: {
-    color: '#fff',
-    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 15,
+    fontWeight: '400',
+    letterSpacing: 0.3,
   },
   loadingDots: {
     flexDirection: 'row',
-    gap: 2,
+    gap: 3,
   },
   dot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: colors.accent[500],
   },
   scannerView: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: 100,
+    height: 160,
     position: 'relative',
+    backgroundColor: 'rgba(15, 35, 50, 0.8)',
+    borderRadius: 16,
   },
-  bracketTopLeft: { position: 'absolute', top: 0, left: 20, width: 20, height: 20 },
-  bracketTopRight: { position: 'absolute', top: 0, right: 20, width: 20, height: 20 },
-  bracketBottomLeft: { position: 'absolute', bottom: 0, left: 20, width: 20, height: 20 },
-  bracketBottomRight: { position: 'absolute', bottom: 0, right: 20, width: 20, height: 20 },
+  bracketTopLeft: { position: 'absolute', top: 16, left: 16, width: 28, height: 28 },
+  bracketTopRight: { position: 'absolute', top: 16, right: 16, width: 28, height: 28 },
+  bracketBottomLeft: { position: 'absolute', bottom: 16, left: 16, width: 28, height: 28 },
+  bracketBottomRight: { position: 'absolute', bottom: 16, right: 16, width: 28, height: 28 },
   bracketH: {
     position: 'absolute',
-    width: 20,
-    height: 2,
+    width: 28,
+    height: 3,
     backgroundColor: colors.accent[500],
+    borderRadius: 2,
   },
   bracketV: {
     position: 'absolute',
-    width: 2,
-    height: 20,
+    width: 3,
+    height: 28,
     backgroundColor: colors.accent[500],
+    borderRadius: 2,
   },
   locationCard: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 8,
-    padding: 10,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 229, 255, 0.2)',
+    padding: 12,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 12,
   },
   locationLabel: {
     color: colors.accent[500],
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 1,
+    fontSize: 9,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
     marginBottom: 2,
   },
   locationAddress: {
     color: '#fff',
     fontSize: 13,
+    fontWeight: '500',
     textAlign: 'center',
-    lineHeight: 18,
   },
   phoneActions: {
     flexDirection: 'row',
-    gap: 8,
-    marginTop: 12,
-    paddingHorizontal: 8,
+    gap: 12,
+    marginTop: 16,
+    width: '100%',
+    justifyContent: 'center',
   },
   phoneScanBtn: {
-    flex: 1,
     backgroundColor: colors.accent[500],
-    borderRadius: 8,
-    paddingVertical: 8,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
     alignItems: 'center',
   },
   phoneScanBtnText: {
     color: colors.navy[900],
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
   },
   phoneDetailsBtn: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
-    paddingVertical: 8,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
     alignItems: 'center',
   },
   phoneDetailsBtnText: {
-    color: '#fff',
-    fontSize: 13,
+    color: '#e1e8ed',
+    fontSize: 14,
     fontWeight: '600',
   },
 
