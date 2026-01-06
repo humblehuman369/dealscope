@@ -983,15 +983,15 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-700 font-medium">{label}</span>
+        <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">{label}</span>
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(dollarValue)}</span>
-          <span className="text-[0.6875rem] font-semibold text-brand-500">({displayPercent}%)</span>
+          <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(dollarValue)}</span>
+          <span className="text-[0.6875rem] font-semibold text-brand-500 dark:text-brand-400">({displayPercent}%)</span>
         </div>
       </div>
       <div className="relative h-[3px] mt-1.5">
         {/* Gray background track */}
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
         {/* Gradient fill from left to thumb position */}
         <div 
           className="absolute top-0 left-0 h-full rounded-sm slider-fill-tailwind bg-gradient-to-r from-accent-500 to-brand-500"
@@ -1454,14 +1454,14 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-700 font-medium">After Repair Value</span>
+        <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">After Repair Value</span>
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-bold text-navy-900 font-mono">{formatCurrency(computedArv)}</span>
-          <span className="text-[0.6875rem] font-semibold text-brand-500">+{displayPercent}%</span>
+          <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedArv)}</span>
+          <span className="text-[0.6875rem] font-semibold text-brand-500 dark:text-brand-400">+{displayPercent}%</span>
         </div>
       </div>
       <div className="relative h-[3px] mt-1.5">
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
         <div 
           className="absolute top-0 left-0 h-full rounded-sm slider-fill"
           style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
