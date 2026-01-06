@@ -70,6 +70,7 @@ export default function HomeScreen() {
     },
     headerButtonText: { color: isDark ? '#e1e8ed' : colors.navy[900] },
     heroTitle: { color: isDark ? '#fff' : colors.navy[900] },
+    heroTitleAccent: { color: isDark ? colors.accent[500] : colors.accent.light },
     heroSubtitle: { color: isDark ? '#fff' : colors.gray[600] },
     searchToggleText: { color: isDark ? '#fff' : colors.primary[600] },
     searchDropdown: {
@@ -114,7 +115,10 @@ export default function HomeScreen() {
           <View style={styles.header}>
             <View style={styles.logoContainer}>
               <Image
-                source={require('../../assets/icon.png')}
+                source={isDark 
+                  ? require('../../assets/InvestIQ Logo 3D (Dark View).png')
+                  : require('../../assets/InvestIQ Logo 3D (Light View).png')
+                }
                 style={styles.logo}
                 resizeMode="contain"
               />
@@ -143,11 +147,13 @@ export default function HomeScreen() {
           {/* Hero Section */}
           <View style={styles.heroSection}>
             <Text style={[styles.heroTitle, dynamicStyles.heroTitle]}>
-              Know the <Text style={styles.heroAccent}>Real Return</Text>
+              Know the Real Return
             </Text>
-            <Text style={styles.heroTitleAccentLine}>Before You Buy.</Text>
+            <Text style={[styles.heroTitleAccentLine, dynamicStyles.heroTitleAccent]}>
+              Before You Buy.
+            </Text>
             <Text style={[styles.heroSubtitle, dynamicStyles.heroSubtitle]}>
-              Instantly reveal a property's real investment potential — in under 60 seconds.
+              Instantly reveal a property's{'\n'}real investment potential{'\n'}— in under 60 seconds.
             </Text>
           </View>
 
@@ -495,7 +501,6 @@ const styles = StyleSheet.create({
   heroTitleAccentLine: {
     fontSize: 28,
     fontWeight: '800',
-    color: colors.accent[500],
     textAlign: 'center',
     marginTop: 2,
   },

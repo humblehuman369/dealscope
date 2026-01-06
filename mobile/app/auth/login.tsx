@@ -10,6 +10,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -147,7 +148,19 @@ export default function LoginScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={[styles.logo, dynamicStyles.logo]}>InvestIQ</Text>
+          <View style={styles.logoContainer}>
+            <Image
+              source={isDark 
+                ? require('../../assets/InvestIQ Logo 3D (Dark View).png')
+                : require('../../assets/InvestIQ Logo 3D (Light View).png')
+              }
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+            <Text style={[styles.logo, dynamicStyles.logo]}>
+              Invest<Text style={styles.logoAccent}>IQ</Text>
+            </Text>
+          </View>
           <Text style={[styles.title, dynamicStyles.title]}>Welcome back</Text>
           <Text style={[styles.subtitle, dynamicStyles.subtitle]}>
             Sign in to sync your scans and portfolio
@@ -293,10 +306,23 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 32,
   },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 24,
+  },
+  logoImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+  },
   logo: {
     fontSize: 24,
     fontWeight: '700',
-    marginBottom: 24,
+  },
+  logoAccent: {
+    color: colors.primary[500],
   },
   title: {
     fontSize: 28,
