@@ -1382,13 +1382,13 @@ function MobileStrategyPreview({
     <div className="mt-4 pt-4 border-t border-gray-200 dark:border-navy-600">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-brand-500 text-white text-[10px] font-bold">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold">
             2
           </div>
-          <span className="text-xs font-bold text-navy-900 dark:text-white">Live Results</span>
+          <span className="text-base font-bold text-navy-900 dark:text-white">Live Results</span>
         </div>
-        <span className="text-[10px] text-gray-400 dark:text-gray-500">Tap to select strategy</span>
+        <span className="text-xs text-gray-400 dark:text-gray-500">Tap to select strategy</span>
       </div>
       
       {/* Compact 2x3 Grid */}
