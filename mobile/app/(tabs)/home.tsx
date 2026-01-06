@@ -40,16 +40,11 @@ export default function HomeScreen() {
   const [searchAddress, setSearchAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
-  const handleAnalyze = async () => {
+  const handleAnalyze = () => {
     if (!searchAddress.trim()) return;
     setIsSearching(true);
-    try {
-      router.push(`/property/${encodeURIComponent(searchAddress.trim())}`);
-    } catch {
-      // Navigation failed
-    } finally {
-      setIsSearching(false);
-    }
+    router.push(`/property/${encodeURIComponent(searchAddress.trim())}`);
+    // Note: isSearching state resets automatically when component unmounts during navigation
   };
 
   const handleScanPress = () => {
