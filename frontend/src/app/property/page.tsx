@@ -870,14 +870,14 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
         <span className="text-xs text-gray-700 font-medium">{label}</span>
         <span className="text-xs font-bold text-navy-900 font-mono">{displayValue}</span>
       </div>
-      <div className="relative h-[3px]">
-        <div className="absolute inset-0 rounded-sm bg-gray-200" />
+      <div className="relative h-[6px]">
+        <div className="absolute inset-0 rounded-full bg-gray-200 dark:bg-navy-600" />
         <div 
-          className="absolute top-0 left-0 h-full rounded-sm slider-fill-tailwind bg-gradient-to-r from-accent-500 to-brand-500" 
+          className="absolute top-0 left-0 h-full rounded-full slider-fill-tailwind bg-gradient-to-r from-accent-500 to-brand-500" 
           style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
         <div 
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 shadow-sm cursor-grab transition-transform hover:scale-110 slider-thumb"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white border-[3px] border-brand-500 shadow-md cursor-grab transition-transform active:scale-110 slider-thumb"
           style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} aria-label={label} title={label} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
@@ -907,17 +907,17 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
           </span>
         </div>
       </div>
-      <div className="relative h-[3px] mt-1.5">
+      <div className="relative h-[6px] mt-2">
         {/* Gray background track */}
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
+        <div className="absolute inset-0 rounded-full bg-[#e1e8ed] dark:bg-navy-600" />
         {/* Gradient fill from left to thumb position */}
         <div 
-          className="absolute top-0 left-0 h-full rounded-sm slider-fill"
+          className="absolute top-0 left-0 h-full rounded-full slider-fill"
           style={{ '--slider-fill': `${sliderPosition}%` } as React.CSSProperties}
         />
-        {/* Thumb */}
+        {/* Thumb - 2x size for easier sliding */}
         <div 
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white border-[3px] border-brand-500 cursor-grab slider-thumb shadow-md active:scale-110 transition-transform"
           style={{ '--slider-position': `${sliderPosition}%` } as React.CSSProperties}
         />
         <input 
@@ -949,17 +949,17 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{displayPercent}%</span>
       </div>
-      <div className="relative h-[3px] mt-1.5">
+      <div className="relative h-[6px] mt-2">
         {/* Gray background track */}
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
+        <div className="absolute inset-0 rounded-full bg-[#e1e8ed] dark:bg-navy-600" />
         {/* Gradient fill from left to thumb position */}
         <div 
-          className="absolute top-0 left-0 h-full rounded-sm slider-fill"
+          className="absolute top-0 left-0 h-full rounded-full slider-fill"
           style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
-        {/* Thumb */}
+        {/* Thumb - 2x size for easier sliding */}
         <div 
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white border-[3px] border-brand-500 cursor-grab slider-thumb shadow-md active:scale-110 transition-transform"
           style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input 
@@ -995,17 +995,17 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
           <span className="text-[14px] font-bold text-brand-500 dark:text-[#00e5ff]">({displayPercent}%)</span>
         </div>
       </div>
-      <div className="relative h-[3px] mt-1.5">
+      <div className="relative h-[6px] mt-2">
         {/* Gray background track */}
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
+        <div className="absolute inset-0 rounded-full bg-[#e1e8ed] dark:bg-navy-600" />
         {/* Gradient fill from left to thumb position */}
         <div 
-          className="absolute top-0 left-0 h-full rounded-sm slider-fill-tailwind bg-gradient-to-r from-accent-500 to-brand-500"
+          className="absolute top-0 left-0 h-full rounded-full slider-fill-tailwind bg-gradient-to-r from-accent-500 to-brand-500"
           style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
-        {/* Thumb */}
+        {/* Thumb - 2x size for easier sliding */}
         <div 
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white border-[3px] border-brand-500 cursor-grab slider-thumb shadow-md active:scale-110 transition-transform"
           style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input 
@@ -1039,14 +1039,14 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">Maintenance</span>
         <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
-      <div className="relative h-[3px] mt-1.5">
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
+      <div className="relative h-[6px] mt-2">
+        <div className="absolute inset-0 rounded-full bg-[#e1e8ed] dark:bg-navy-600" />
         <div 
-          className="absolute top-0 left-0 h-full rounded-sm slider-fill"
+          className="absolute top-0 left-0 h-full rounded-full slider-fill"
           style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
         <div 
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white border-[3px] border-brand-500 cursor-grab slider-thumb shadow-md active:scale-110 transition-transform"
           style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input 
@@ -1079,14 +1079,14 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">Management</span>
         <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
       </div>
-      <div className="relative h-[3px] mt-1.5">
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
+      <div className="relative h-[6px] mt-2">
+        <div className="absolute inset-0 rounded-full bg-[#e1e8ed] dark:bg-navy-600" />
         <div 
-          className="absolute top-0 left-0 h-full rounded-sm slider-fill"
+          className="absolute top-0 left-0 h-full rounded-full slider-fill"
           style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
         <div 
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white border-[3px] border-brand-500 cursor-grab slider-thumb shadow-md active:scale-110 transition-transform"
           style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input 
@@ -1118,14 +1118,14 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
         <span className="text-xs text-gray-700 font-medium">Rooms Rented</span>
         <span className="text-xs font-bold text-navy-900 font-mono">{roomsRented} of {totalBedrooms} rooms</span>
       </div>
-      <div className="relative h-[3px] mt-1.5">
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed]" />
+      <div className="relative h-[6px] mt-2">
+        <div className="absolute inset-0 rounded-full bg-[#e1e8ed] dark:bg-navy-600" />
         <div 
-          className="absolute top-0 left-0 h-full rounded-sm slider-fill"
+          className="absolute top-0 left-0 h-full rounded-full slider-fill"
           style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
         <div 
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white border-[3px] border-brand-500 cursor-grab slider-thumb shadow-md active:scale-110 transition-transform"
           style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input 
@@ -1466,14 +1466,14 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
           <span className="text-[14px] font-bold text-brand-500 dark:text-[#00e5ff]">+{displayPercent}%</span>
         </div>
       </div>
-      <div className="relative h-[3px] mt-1.5">
-        <div className="absolute inset-0 rounded-sm bg-[#e1e8ed] dark:bg-navy-600" />
+      <div className="relative h-[6px] mt-2">
+        <div className="absolute inset-0 rounded-full bg-[#e1e8ed] dark:bg-navy-600" />
         <div 
-          className="absolute top-0 left-0 h-full rounded-sm slider-fill"
+          className="absolute top-0 left-0 h-full rounded-full slider-fill"
           style={{ '--slider-fill': `${percentage}%` } as React.CSSProperties}
         />
         <div 
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white border-[2.5px] border-brand-500 cursor-grab slider-thumb"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white border-[3px] border-brand-500 cursor-grab slider-thumb shadow-md active:scale-110 transition-transform"
           style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
         <input 
