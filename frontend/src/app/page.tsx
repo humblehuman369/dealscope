@@ -550,11 +550,11 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
           {/* Hero Title */}
           <div className="text-center mb-8">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-brand-500 dark:text-brand-500 leading-tight mb-6">
-              Analyze Investment Real Estate<br />
-              in <span className="text-accent-500 dark:text-accent-500">60</span> seconds!
+              Know the Real Return<br />
+              Before You Buy.
             </h1>
             <p className="text-xl md:text-2xl text-neutral-500 font-medium mb-8">
-              Point & Scan or simply input address
+              Instantly reveal a property&apos;s real investment potential — in under 60 seconds.
             </p>
 
             {/* Address Search Bar */}
