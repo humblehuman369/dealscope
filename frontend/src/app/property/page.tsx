@@ -3766,13 +3766,13 @@ function PropertyPageContent() {
           />
         </div>
 
-        {/* STEP 3: Strategy Overview - ref for auto-scroll when strategy selected */}
+        {/* STEP 3: [Strategy Name] Overview - ref for auto-scroll when strategy selected */}
         <div 
           ref={section3Ref}
           className="bg-white dark:bg-navy-800 rounded-[0.875rem] shadow-sm dark:shadow-lg border border-[#0465f2] transition-colors duration-300 scroll-mt-4"
         >
           <div className="p-4 pb-0">
-            <StepHeader step={3} title="Strategy Overview" />
+            <StepHeader step={3} title={`${strategies.find(s => s.id === selectedStrategy)?.name || 'Strategy'} Overview`} />
           </div>
 
           {/* Tabs */}
@@ -3784,27 +3784,11 @@ function PropertyPageContent() {
           <div className="p-4">
             {(() => {
               const strategyName = strategies.find(s => s.id === selectedStrategy)?.name || ''
-              const tabLabels: Record<DrillDownView, string> = {
-                details: 'Metrics',
-                breakdown: 'Breakdown',
-                charts: '10-Year',
-                projections: 'Growth',
-                score: 'Score',
-                sensitivity: 'What-If',
-                compare: 'Compare',
-                rehab: 'Rehab'
-              }
-              const currentTabLabel = tabLabels[drillDownView] || ''
-              const bannerTitle = `${strategyName} - ${currentTabLabel}`
               
               return (
                 <>
                   {drillDownView === 'details' && (
                     <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
-                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
-                        <Calculator className="w-5 h-5 text-[#0465f2]" />
-                        <h4 className="text-base font-semibold text-navy-900 dark:text-white">{bannerTitle}</h4>
-                      </div>
                       {selectedStrategy === 'ltr' && <LTRDetails calc={ltrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
                       {selectedStrategy === 'str' && <STRDetails calc={strCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
                       {selectedStrategy === 'brrrr' && <BRRRRDetails calc={brrrrCalc} assumptions={assumptions} update={update} updateAdjustment={updateAdjustment} />}
