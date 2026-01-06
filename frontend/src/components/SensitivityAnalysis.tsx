@@ -142,7 +142,7 @@ function SensitivityCard({
   
   return (
     <div className="bg-white dark:bg-navy-700/50 rounded-lg border border-gray-100 dark:border-navy-600 p-3 hover:shadow-sm transition-shadow">
-      <h4 className="text-[13px] font-medium text-gray-700 dark:text-white mb-2">{title}</h4>
+      <h4 className="text-[13px] font-bold text-gray-700 dark:text-white mb-2">{title}</h4>
       
       <MiniLineChart
         data={data}
@@ -152,20 +152,20 @@ function SensitivityCard({
         height={40}
       />
       
-      <div className="mt-2 grid grid-cols-3 gap-1 text-[11px]">
+      <div className="mt-2 grid grid-cols-3 gap-1 text-[13px]">
         <div className="text-left">
-          <div className="text-gray-400 dark:text-gray-500">{formatX(data[0].value)}</div>
-          <div className={deltaMin < 0 ? 'text-red-600 font-medium' : 'text-emerald-600 font-medium'}>
+          <div className="font-bold text-gray-600 dark:text-white">{formatX(data[0].value)}</div>
+          <div className={deltaMin < 0 ? 'text-red-600 font-bold' : 'text-emerald-600 font-bold'}>
             {deltaMin >= 0 ? '+' : ''}{currentMetric === 'cashFlow' ? formatCompact(deltaMin) : formatPercent(deltaMin)}
           </div>
         </div>
         <div className="text-center">
-          <div className="text-gray-400 dark:text-gray-500">Current</div>
-          <div className="font-semibold text-gray-900 dark:text-white">{formatMetric(baseValue)}</div>
+          <div className="font-bold text-gray-600 dark:text-white">Current</div>
+          <div className="font-bold text-gray-900 dark:text-white">{formatMetric(baseValue)}</div>
         </div>
         <div className="text-right">
-          <div className="text-gray-400 dark:text-gray-500">{formatX(data[data.length - 1].value)}</div>
-          <div className={deltaMax >= 0 ? 'text-emerald-600 font-medium' : 'text-red-600 font-medium'}>
+          <div className="font-bold text-gray-600 dark:text-white">{formatX(data[data.length - 1].value)}</div>
+          <div className={deltaMax >= 0 ? 'text-emerald-600 font-bold' : 'text-red-600 font-bold'}>
             {deltaMax >= 0 ? '+' : ''}{currentMetric === 'cashFlow' ? formatCompact(deltaMax) : formatPercent(deltaMax)}
           </div>
         </div>
@@ -204,8 +204,8 @@ function WhatIfSlider({
   return (
     <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-3">
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[13px] font-medium text-gray-600 dark:text-gray-300">{label}</span>
-        <span className="text-[14px] font-semibold text-gray-900 dark:text-white">{format(value)}</span>
+        <span className="text-[13px] font-bold text-gray-700 dark:text-white">{label}</span>
+        <span className="text-[14px] font-bold text-gray-900 dark:text-white">{format(value)}</span>
       </div>
       
       <div className="relative h-1.5 mb-2">
@@ -225,12 +225,12 @@ function WhatIfSlider({
         />
       </div>
       
-      <div className="flex items-center justify-between text-[11px]">
-        <span className="text-gray-400 dark:text-gray-500">{format(min)}</span>
-        <div className={`font-medium ${impact >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+      <div className="flex items-center justify-between text-[13px]">
+        <span className="font-bold text-gray-600 dark:text-white">{format(min)}</span>
+        <div className={`font-bold ${impact >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
           {impactLabel}: {impact >= 0 ? '+' : ''}{formatCurrency(impact)}
         </div>
-        <span className="text-gray-400 dark:text-gray-500">{format(max)}</span>
+        <span className="font-bold text-gray-600 dark:text-white">{format(max)}</span>
       </div>
     </div>
   )
@@ -303,8 +303,8 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
     <div className="space-y-4">
       {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-emerald-400">Sensitivity Analysis</h2>
-        <p className="text-[14px] text-gray-500 dark:text-gray-400">See how changes impact your returns</p>
+        <h2 className="text-lg font-bold text-gray-800 dark:text-emerald-400">Sensitivity Analysis</h2>
+        <p className="text-[13px] font-bold text-gray-600 dark:text-white">See how changes impact your returns</p>
       </div>
 
       {/* Metric Selector */}
@@ -317,10 +317,10 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
           <button
             key={m.id}
             onClick={() => setSelectedMetric(m.id as any)}
-            className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg text-[13px] font-bold transition-colors ${
               selectedMetric === m.id
                 ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 dark:bg-navy-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-navy-500'
+                : 'bg-gray-100 dark:bg-navy-600 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-navy-500'
             }`}
           >
             {m.label}
@@ -370,7 +370,7 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
 
       {/* What-If Scenario Builder */}
       <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-xl p-4 border border-indigo-100 dark:border-indigo-800">
-        <h3 className="text-[14px] font-medium text-gray-700 dark:text-white mb-3">What-If Scenario Builder</h3>
+        <h3 className="text-[14px] font-bold text-gray-700 dark:text-white mb-3">What-If Scenario Builder</h3>
         
         <div className="grid md:grid-cols-3 gap-3 mb-4">
           <WhatIfSlider
@@ -415,12 +415,12 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
             : 'bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-700'
         }`}>
           <div>
-            <div className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Scenario Monthly Cash Flow</div>
+            <div className="text-[13px] font-bold uppercase tracking-wide text-gray-600 dark:text-white">Scenario Monthly Cash Flow</div>
             <div className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(whatIfCashFlow)}</div>
           </div>
           <div className="text-right">
-            <div className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">vs. Base Scenario</div>
-            <div className={`text-base font-semibold ${cashFlowImpact >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            <div className="text-[13px] font-bold uppercase tracking-wide text-gray-600 dark:text-white">vs. Base Scenario</div>
+            <div className={`text-base font-bold ${cashFlowImpact >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
               {cashFlowImpact >= 0 ? '+' : ''}{formatCurrency(cashFlowImpact)}/mo
             </div>
           </div>
@@ -432,7 +432,7 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
             setWhatIfPrice(assumptions.purchasePrice)
             setWhatIfRent(assumptions.monthlyRent)
           }}
-          className="mt-3 text-[13px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+          className="mt-3 text-[13px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
         >
           Reset to base scenario
         </button>
@@ -440,8 +440,8 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
 
       {/* Key Insights */}
       <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-amber-100 dark:border-amber-800">
-        <h4 className="text-[13px] font-medium text-amber-800 dark:text-amber-400 mb-1.5">Key Insights</h4>
-        <ul className="text-[12px] text-amber-700 dark:text-amber-300 space-y-0.5">
+        <h4 className="text-[13px] font-bold text-amber-800 dark:text-amber-400 mb-1.5">Key Insights</h4>
+        <ul className="text-[13px] font-bold text-amber-700 dark:text-amber-300 space-y-0.5">
           <li>• A 1% rate increase reduces cash flow by ~${Math.abs(analysis.interestRate[4].cashFlow - analysis.interestRate[3].cashFlow).toFixed(0)}/mo</li>
           <li>• A 10% rent increase adds ~${Math.abs(analysis.rent[5].cashFlow - analysis.rent[3].cashFlow).toFixed(0)}/mo to cash flow</li>
           <li>• Break-even vacancy: ~{(analysis.vacancy.find(v => v.cashFlow <= 0)?.value ?? 0.15 * 100).toFixed(0)}%</li>
