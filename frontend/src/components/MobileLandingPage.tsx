@@ -110,21 +110,27 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
 
       {/* Hero Section */}
       <section className="relative z-10 px-5 pt-6 text-center">
-        <h1 className={`font-semibold text-[28px] leading-[1.2] mb-2.5 tracking-tight ${
+        <h1 className={`font-bold text-[28px] leading-[1.2] mb-1 tracking-tight ${
           isDark ? 'text-white' : 'text-gray-900'
         }`}>
-          Analyze Any Property&apos;s<br />Potential in <span className="text-accent-500">60 Seconds</span>
+          Know the Real Return
         </h1>
+        <p className="text-[28px] leading-[1.2] mb-3 tracking-tight font-bold italic text-accent-500">
+          Before You Buy
+        </p>
         <p className={`text-sm mb-6 leading-relaxed ${isDark ? 'text-[#8892a0]' : 'text-gray-500'}`}>
-          Compare 6 investment strategies and discover your best path to profit
+          Instantly reveal a property&apos;s real<br />investment potential in 60 seconds.
         </p>
         
         {/* CTA Buttons */}
         <div className="flex flex-col items-center gap-3 w-full max-w-[320px] mx-auto">
           <button
             onClick={onPointAndScan}
-            className="inline-flex items-center justify-center gap-2.5 px-9 py-4 bg-gradient-to-br from-brand-500 to-[#0876ff] rounded-full text-white font-semibold text-[15px] w-full"
-            style={{ boxShadow: '0 8px 30px rgba(4, 101, 242, 0.45)' }}
+            className="inline-flex items-center justify-center gap-2.5 px-9 py-4 rounded-full text-white font-semibold text-[15px] w-full"
+            style={{ 
+              background: 'linear-gradient(135deg, #0465f2 0%, var(--color-teal) 100%)',
+              boxShadow: '0 8px 32px rgba(4, 101, 242, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)' 
+            }}
           >
             <Camera className="w-5 h-5" />
             Point & Scan
