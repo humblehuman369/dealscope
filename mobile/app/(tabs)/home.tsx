@@ -100,9 +100,9 @@ export default function HomeScreen() {
           {/* Hero Section */}
           <View style={styles.heroSection}>
             <Text style={styles.heroTitle}>
-              Analyze Any Property's{'\n'}Potential in{' '}
-              <Text style={styles.heroAccent}>60 Seconds</Text>
+              Analyze Any Property's{'\n'}Potential in
             </Text>
+            <Text style={styles.heroTitleAccentLine}>60 Seconds</Text>
             <Text style={styles.heroSubtitle}>
               Compare 6 investment strategies and discover your best path to profit
             </Text>
@@ -182,38 +182,39 @@ export default function HomeScreen() {
             <PhoneMockup />
           </View>
 
-          {/* Results Section */}
+          {/* Results Section - Redesigned for Mobile */}
           <View style={styles.resultsSection}>
-            {/* Glow Effect */}
-            <View style={styles.glowEffect} />
-            
             <Text style={styles.resultsTitle}>
               See Your <Text style={styles.resultsTitleAccent}>Profit Potential</Text>
             </Text>
-            <Text style={styles.resultsSubtitle}>Compare 6 strategies instantly</Text>
-
-            {/* Strategy Cards */}
-            <View style={styles.strategyGrid}>
+            
+            {/* Horizontal Scrolling Strategy Cards */}
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.strategyScroll}
+              style={styles.strategyScrollContainer}
+            >
               {strategies.map((strategy, idx) => (
-                <StrategyCard key={idx} {...strategy} />
+                <MobileStrategyCard key={idx} {...strategy} />
               ))}
-            </View>
+            </ScrollView>
 
-            {/* Social Proof */}
-            <View style={styles.socialProof}>
-              <View style={styles.socialProofItem}>
-                <Text style={styles.socialProofValue}>10K+</Text>
-                <Text style={styles.socialProofLabel}>Properties Analyzed</Text>
+            {/* Compact Stats Row */}
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>10K+</Text>
+                <Text style={styles.statLabel}>Analyzed</Text>
               </View>
-              <View style={styles.socialProofDivider} />
-              <View style={styles.socialProofItem}>
-                <Text style={[styles.socialProofValue, { color: colors.profit.main }]}>$2.4M</Text>
-                <Text style={styles.socialProofLabel}>Profit Identified</Text>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: colors.profit.main }]}>$2.4M</Text>
+                <Text style={styles.statLabel}>Profit Found</Text>
               </View>
-              <View style={styles.socialProofDivider} />
-              <View style={styles.socialProofItem}>
-                <Text style={styles.socialProofValue}>60s</Text>
-                <Text style={styles.socialProofLabel}>Avg Analysis</Text>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>60s</Text>
+                <Text style={styles.statLabel}>Analysis</Text>
               </View>
             </View>
 
@@ -231,13 +232,6 @@ export default function HomeScreen() {
             <Text style={styles.bottomCtaSubtext}>Free • No credit card required</Text>
           </View>
 
-          {/* Features Bar */}
-          <View style={styles.featuresBar}>
-            <FeatureItem icon="camera" text="Point & Scan" />
-            <FeatureItem icon="time" text="60 Seconds" />
-            <FeatureItem icon="bar-chart" text="6 Strategies" />
-          </View>
-
           <View style={{ height: insets.bottom + 20 }} />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -250,20 +244,13 @@ function PhoneMockup() {
   return (
     <View style={styles.phoneFrame}>
       <View style={styles.phoneScreen}>
-        {/* Dynamic Island */}
-        <View style={styles.dynamicIsland} />
-        
-        {/* Status Bar */}
+        {/* Compact Status Bar */}
         <View style={styles.statusBar}>
           <Text style={styles.statusTime}>9:41</Text>
           <View style={styles.statusIcons}>
-            <View style={styles.signalBars}>
-              <View style={[styles.signalBar, { height: 4 }]} />
-              <View style={[styles.signalBar, { height: 6 }]} />
-              <View style={[styles.signalBar, { height: 8 }]} />
-              <View style={[styles.signalBar, { height: 10, opacity: 0.3 }]} />
-            </View>
-            <Ionicons name="battery-full" size={16} color="#fff" />
+            <Ionicons name="cellular" size={14} color="#fff" />
+            <Ionicons name="wifi" size={14} color="#fff" />
+            <Ionicons name="battery-full" size={14} color="#fff" />
           </View>
         </View>
 
@@ -279,7 +266,7 @@ function PhoneMockup() {
 
         {/* House with Scanner Brackets */}
         <View style={styles.scannerView}>
-          <Svg width={120} height={80} viewBox="0 0 120 80">
+          <Svg width={140} height={95} viewBox="0 0 120 80">
             {/* House */}
             <Path
               d="M60 10 L100 40 L100 75 L20 75 L20 40 Z"
@@ -315,7 +302,7 @@ function PhoneMockup() {
         {/* Location Card */}
         <View style={styles.locationCard}>
           <Text style={styles.locationLabel}>PROPERTY LOCATED</Text>
-          <Text style={styles.locationAddress}>123 Main Street,{'\n'}Anytown</Text>
+          <Text style={styles.locationAddress}>123 Main Street, Anytown</Text>
         </View>
 
         {/* Action Buttons */}
@@ -332,8 +319,8 @@ function PhoneMockup() {
   );
 }
 
-// Strategy Card Component
-function StrategyCard({ name, roi, icon, multiplier, profit, featured }: {
+// Mobile Strategy Card - Horizontal scroll optimized
+function MobileStrategyCard({ name, roi, icon, multiplier, profit, featured }: {
   name: string;
   roi: string;
   icon: string;
@@ -342,72 +329,40 @@ function StrategyCard({ name, roi, icon, multiplier, profit, featured }: {
   featured: boolean;
 }) {
   return (
-    <View style={[styles.strategyCard, featured && styles.strategyCardFeatured]}>
-      {featured && (
-        <View style={styles.bestBadge}>
-          <Text style={styles.bestBadgeText}>BEST ROI</Text>
+    <View style={[styles.mobileCard, featured && styles.mobileCardFeatured]}>
+      {/* Badge */}
+      {featured ? (
+        <View style={styles.mobileBestBadge}>
+          <Text style={styles.mobileBestBadgeText}>BEST</Text>
         </View>
-      )}
-      {!featured && multiplier && (
-        <View style={styles.multiplierBadge}>
-          <Text style={styles.multiplierBadgeText}>{multiplier}</Text>
+      ) : (
+        <View style={styles.mobileMultiplierBadge}>
+          <Text style={styles.mobileMultiplierText}>{multiplier}</Text>
         </View>
       )}
       
-      <View style={styles.strategyHeader}>
-        <View style={[styles.strategyIcon, featured && styles.strategyIconFeatured]}>
-          <Ionicons 
-            name={icon as any} 
-            size={20} 
-            color={featured ? colors.accent[400] : colors.primary[400]} 
-          />
-        </View>
-        <Text style={styles.strategyName} numberOfLines={1}>{name}</Text>
+      {/* Icon */}
+      <View style={[styles.mobileCardIcon, featured && styles.mobileCardIconFeatured]}>
+        <Ionicons 
+          name={icon as any} 
+          size={24} 
+          color={featured ? colors.accent[400] : colors.primary[400]} 
+        />
       </View>
-
-      <View style={styles.strategyMetrics}>
-        <View>
-          <Text style={styles.strategyRoiLabel}>ROI</Text>
-          <Text style={[styles.strategyRoi, featured && styles.strategyRoiFeatured]}>{roi}</Text>
-        </View>
-        
-        {/* Mini Chart */}
-        <View style={styles.miniChart}>
-          {[3, 5, 4, 7, 6, 9, 8, 12].map((h, i) => (
-            <View 
-              key={i}
-              style={[
-                styles.chartBar,
-                { 
-                  height: h * 2,
-                  backgroundColor: featured ? colors.accent[500] : colors.primary[500],
-                  opacity: 0.4 + (i * 0.08)
-                }
-              ]} 
-            />
-          ))}
-          <Ionicons 
-            name="arrow-up" 
-            size={12} 
-            color={featured ? colors.accent[400] : colors.profit.main} 
-            style={{ marginLeft: 4 }}
-          />
-        </View>
+      
+      {/* Name */}
+      <Text style={styles.mobileCardName} numberOfLines={2}>{name}</Text>
+      
+      {/* ROI */}
+      <Text style={[styles.mobileCardRoi, featured && styles.mobileCardRoiFeatured]}>{roi}</Text>
+      <Text style={styles.mobileCardRoiLabel}>ROI</Text>
+      
+      {/* Profit */}
+      <View style={styles.mobileCardProfit}>
+        <Text style={[styles.mobileCardProfitValue, featured && styles.mobileCardProfitFeatured]}>
+          {profit}
+        </Text>
       </View>
-
-      {profit && (
-        <View style={styles.profitRow}>
-          <Text style={styles.profitLabel}>Est. Profit</Text>
-          <View style={styles.profitValue}>
-            <Text style={[styles.profitAmount, featured && styles.profitAmountFeatured]}>{profit}</Text>
-            {featured && multiplier && (
-              <View style={styles.profitMultiplier}>
-                <Text style={styles.profitMultiplierText}>{multiplier}</Text>
-              </View>
-            )}
-          </View>
-        </View>
-      )}
     </View>
   );
 }
@@ -478,26 +433,34 @@ const styles = StyleSheet.create({
 
   // Hero Section
   heroSection: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingHorizontal: 24,
+    paddingTop: 20,
     alignItems: 'center',
   },
   heroTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: '#fff',
     textAlign: 'center',
-    lineHeight: 34,
+    lineHeight: 30,
+  },
+  heroTitleAccentLine: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.accent[500],
+    textAlign: 'center',
+    marginTop: 2,
   },
   heroAccent: {
     color: colors.accent[500],
   },
   heroSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#8892a0',
     textAlign: 'center',
-    marginTop: 10,
-    lineHeight: 20,
+    marginTop: 8,
+    lineHeight: 18,
+    paddingHorizontal: 10,
   },
 
   // CTA Section
@@ -590,34 +553,26 @@ const styles = StyleSheet.create({
   // Phone Mockup
   phoneMockupContainer: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 24,
   },
   phoneFrame: {
-    width: 180,
+    width: 210,
     backgroundColor: '#1a2a3a',
-    borderRadius: 36,
-    padding: 8,
+    borderRadius: 40,
+    padding: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 30 },
-    shadowOpacity: 0.4,
-    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.5,
+    shadowRadius: 25,
     elevation: 20,
   },
   phoneScreen: {
     backgroundColor: '#0a1628',
-    borderRadius: 30,
-    paddingTop: 8,
+    borderRadius: 32,
+    paddingTop: 12,
     paddingBottom: 16,
-    paddingHorizontal: 12,
-    minHeight: 340,
-  },
-  dynamicIsland: {
-    width: 80,
-    height: 24,
-    backgroundColor: '#000',
-    borderRadius: 12,
-    alignSelf: 'center',
-    marginBottom: 8,
+    paddingHorizontal: 14,
+    minHeight: 320,
   },
   statusBar: {
     flexDirection: 'row',
@@ -743,225 +698,174 @@ const styles = StyleSheet.create({
   // Results Section
   resultsSection: {
     backgroundColor: '#0a1628',
-    paddingHorizontal: 20,
-    paddingVertical: 48,
-    position: 'relative',
-  },
-  glowEffect: {
-    position: 'absolute',
-    top: 0,
-    left: '50%',
-    marginLeft: -150,
-    width: 300,
-    height: 150,
-    backgroundColor: colors.accent[500],
-    opacity: 0.1,
-    borderRadius: 150,
+    paddingVertical: 32,
   },
   resultsTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: '#fff',
     textAlign: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 20,
   },
   resultsTitleAccent: {
     color: colors.accent[500],
   },
-  resultsSubtitle: {
-    fontSize: 14,
-    color: '#8892a0',
-    textAlign: 'center',
-    marginTop: 8,
+
+  // Horizontal Scroll Strategy Cards
+  strategyScrollContainer: {
     marginBottom: 24,
   },
-  strategyGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  strategyScroll: {
+    paddingHorizontal: 16,
     gap: 12,
   },
-  strategyCard: {
-    width: (SCREEN_WIDTH - 52) / 2,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+  mobileCard: {
+    width: 130,
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 16,
-    padding: 16,
+    padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
   },
-  strategyCardFeatured: {
-    backgroundColor: 'rgba(0,229,255,0.1)',
-    borderColor: 'rgba(0,229,255,0.3)',
+  mobileCardFeatured: {
+    backgroundColor: 'rgba(0,229,255,0.08)',
+    borderColor: 'rgba(0,229,255,0.25)',
     borderWidth: 2,
   },
-  bestBadge: {
+  mobileBestBadge: {
     position: 'absolute',
     top: 8,
     right: 8,
     backgroundColor: colors.accent[500],
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  bestBadgeText: {
-    color: colors.navy[900],
-    fontSize: 9,
-    fontWeight: '800',
-  },
-  multiplierBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(34,197,94,0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  multiplierBadgeText: {
-    color: colors.profit.main,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  strategyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  strategyIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: 'rgba(4,101,242,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  strategyIconFeatured: {
-    backgroundColor: 'rgba(0,229,255,0.3)',
-  },
-  strategyName: {
-    flex: 1,
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  strategyMetrics: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  strategyRoiLabel: {
-    color: '#8892a0',
-    fontSize: 10,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  strategyRoi: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: '800',
-  },
-  strategyRoiFeatured: {
-    color: colors.accent[400],
-  },
-  miniChart: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 2,
-    height: 30,
-  },
-  chartBar: {
-    width: 3,
-    borderRadius: 1,
-  },
-  profitRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-  },
-  profitLabel: {
-    color: '#8892a0',
-    fontSize: 11,
-  },
-  profitValue: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  profitAmount: {
-    color: colors.profit.main,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  profitAmountFeatured: {
-    color: colors.accent[400],
-  },
-  profitMultiplier: {
-    backgroundColor: 'rgba(0,229,255,0.3)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
-  profitMultiplierText: {
-    color: colors.accent[300],
+  mobileBestBadgeText: {
+    color: colors.navy[900],
+    fontSize: 8,
+    fontWeight: '800',
+  },
+  mobileMultiplierBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(34,197,94,0.2)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  mobileMultiplierText: {
+    color: colors.profit.main,
     fontSize: 9,
     fontWeight: '700',
   },
+  mobileCardIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(4,101,242,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    marginTop: 4,
+  },
+  mobileCardIconFeatured: {
+    backgroundColor: 'rgba(0,229,255,0.2)',
+  },
+  mobileCardName: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 8,
+    minHeight: 32,
+  },
+  mobileCardRoi: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: '800',
+  },
+  mobileCardRoiFeatured: {
+    color: colors.accent[400],
+  },
+  mobileCardRoiLabel: {
+    color: '#8892a0',
+    fontSize: 9,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  mobileCardProfit: {
+    backgroundColor: 'rgba(34,197,94,0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  mobileCardProfitValue: {
+    color: colors.profit.main,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  mobileCardProfitFeatured: {
+    color: colors.accent[400],
+  },
 
-  // Social Proof
-  socialProof: {
+  // Compact Stats Row
+  statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 32,
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
+    marginHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 12,
+    marginBottom: 24,
   },
-  socialProofItem: {
+  statItem: {
     alignItems: 'center',
     flex: 1,
   },
-  socialProofValue: {
+  statValue: {
     color: colors.accent[500],
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '800',
   },
-  socialProofLabel: {
+  statLabel: {
     color: '#8892a0',
-    fontSize: 11,
-    marginTop: 4,
+    fontSize: 10,
+    marginTop: 2,
   },
-  socialProofDivider: {
+  statDivider: {
     width: 1,
-    height: 40,
+    height: 30,
     backgroundColor: 'rgba(255,255,255,0.1)',
   },
 
   // Bottom CTA
   bottomCta: {
-    marginTop: 32,
-    borderRadius: 16,
+    marginHorizontal: 20,
+    borderRadius: 14,
     overflow: 'hidden',
   },
   bottomCtaGradient: {
-    paddingVertical: 18,
+    paddingVertical: 16,
     alignItems: 'center',
   },
   bottomCtaText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   bottomCtaSubtext: {
     color: '#8892a0',
-    fontSize: 12,
+    fontSize: 11,
     textAlign: 'center',
-    marginTop: 12,
+    marginTop: 10,
+    marginBottom: 8,
   },
 
   // Features Bar
