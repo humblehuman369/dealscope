@@ -3807,46 +3807,26 @@ function PropertyPageContent() {
                   
                   {drillDownView === 'charts' && (
                     <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
-                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
-                        <LineChart className="w-5 h-5 text-[#0465f2]" />
-                        <h4 className="text-base font-semibold text-navy-900 dark:text-white">{bannerTitle}</h4>
-                      </div>
                       <ChartsView projections={projections} totalCashInvested={ltrCalc.totalCashRequired} />
                     </div>
                   )}
                   {drillDownView === 'projections' && (
                     <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
-                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
-                        <TrendingUp className="w-5 h-5 text-[#0465f2]" />
-                        <h4 className="text-base font-semibold text-navy-900 dark:text-white">{bannerTitle}</h4>
-                      </div>
                       <ProjectionsView assumptions={projectionAssumptions} />
                     </div>
                   )}
                   {drillDownView === 'score' && (
                     <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
-                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
-                        <Award className="w-5 h-5 text-[#0465f2]" />
-                        <h4 className="text-base font-semibold text-navy-900 dark:text-white">{bannerTitle}</h4>
-                      </div>
                       <DealScoreCard metrics={{ monthlyCashFlow: ltrCalc.monthlyCashFlow, cashOnCash: ltrCalc.cashOnCash, capRate: ltrCalc.capRate, onePercentRule: ltrCalc.onePercentRule, dscr: ltrCalc.dscr, purchasePrice: assumptions.purchasePrice, arv: assumptions.arv, totalCashRequired: ltrCalc.totalCashRequired, monthlyRent: assumptions.monthlyRent }} />
                     </div>
                   )}
                   {drillDownView === 'sensitivity' && (
                     <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
-                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
-                        <Activity className="w-5 h-5 text-[#0465f2]" />
-                        <h4 className="text-base font-semibold text-navy-900 dark:text-white">{bannerTitle}</h4>
-                      </div>
                       <SensitivityAnalysisView assumptions={{ purchasePrice: assumptions.purchasePrice, downPaymentPct: assumptions.downPaymentPct, interestRate: assumptions.interestRate, loanTermYears: assumptions.loanTermYears, monthlyRent: assumptions.monthlyRent, propertyTaxes: assumptions.propertyTaxes, insurance: assumptions.insurance, vacancyRate: assumptions.vacancyRate, managementPct: assumptions.managementPct, maintenancePct: assumptions.maintenancePct }} />
                     </div>
                   )}
                   {drillDownView === 'compare' && (
                     <div className="bg-white dark:bg-navy-800 border border-[#0465f2] rounded-xl p-3 shadow-[0_4px_12px_rgba(4,101,242,0.1)] transition-colors duration-300">
-                      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-navy-700 dark:to-navy-600 border border-[#0465f2] rounded-xl mb-3 shadow-[0_6px_20px_rgba(4,101,242,0.3)] transition-colors duration-300">
-                        <GitCompare className="w-5 h-5 text-[#0465f2]" />
-                        <h4 className="text-base font-semibold text-navy-900 dark:text-white">{bannerTitle}</h4>
-                      </div>
                       <ScenarioComparison currentAssumptions={projectionAssumptions} propertyAddress={property.address.full_address} />
                     </div>
                   )}
