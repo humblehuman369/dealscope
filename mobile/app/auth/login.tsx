@@ -18,12 +18,14 @@ import * as Haptics from 'expo-haptics';
 
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { validateEmail } from '../../services/authService';
 
 export default function LoginScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { login, isLoading, error, clearError } = useAuth();
+  const { theme, isDark } = useTheme();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -98,9 +100,32 @@ export default function LoginScreen() {
 
   const displayError = localError || error;
 
+  // Dynamic styles based on theme
+  const dynamicStyles = {
+    container: { backgroundColor: theme.background },
+    backIcon: isDark ? colors.gray[100] : colors.gray[900],
+    logo: { color: isDark ? colors.primary[400] : colors.primary[600] },
+    title: { color: theme.text },
+    subtitle: { color: theme.textMuted },
+    label: { color: isDark ? colors.gray[300] : colors.gray[700] },
+    inputContainer: { 
+      backgroundColor: isDark ? colors.navy[800] : colors.gray[50],
+      borderColor: isDark ? colors.navy[600] : colors.gray[200],
+    },
+    input: { color: theme.text },
+    inputIcon: isDark ? colors.gray[500] : colors.gray[400],
+    checkbox: { borderColor: isDark ? colors.gray[600] : colors.gray[300] },
+    rememberText: { color: isDark ? colors.gray[400] : colors.gray[600] },
+    dividerLine: { backgroundColor: isDark ? colors.navy[700] : colors.gray[200] },
+    dividerText: { color: theme.textMuted },
+    skipButton: { borderColor: isDark ? colors.navy[600] : colors.gray[300] },
+    skipButtonText: { color: isDark ? colors.gray[400] : colors.gray[600] },
+    signupText: { color: isDark ? colors.gray[400] : colors.gray[600] },
+  };
+
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, dynamicStyles.container]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
@@ -117,14 +142,14 @@ export default function LoginScreen() {
           onPress={() => router.back()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.gray[900]} />
+          <Ionicons name="arrow-back" size={24} color={dynamicStyles.backIcon} />
         </TouchableOpacity>
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.logo}>InvestIQ</Text>
-          <Text style={styles.title}>Welcome back</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.logo, dynamicStyles.logo]}>InvestIQ</Text>
+          <Text style={[styles.title, dynamicStyles.title]}>Welcome back</Text>
+          <Text style={[styles.subtitle, dynamicStyles.subtitle]}>
             Sign in to sync your scans and portfolio
           </Text>
         </View>
@@ -133,13 +158,13 @@ export default function LoginScreen() {
         <View style={styles.form}>
           {/* Email Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={20} color={colors.gray[400]} />
+            <Text style={[styles.label, dynamicStyles.label]}>Email</Text>
+            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
+              <Ionicons name="mail-outline" size={20} color={dynamicStyles.inputIcon} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, dynamicStyles.input]}
                 placeholder="you@example.com"
-                placeholderTextColor={colors.gray[400]}
+                placeholderTextColor={dynamicStyles.inputIcon}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -153,13 +178,13 @@ export default function LoginScreen() {
 
           {/* Password Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color={colors.gray[400]} />
+            <Text style={[styles.label, dynamicStyles.label]}>Password</Text>
+            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
+              <Ionicons name="lock-closed-outline" size={20} color={dynamicStyles.inputIcon} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, dynamicStyles.input]}
                 placeholder="Enter your password"
-                placeholderTextColor={colors.gray[400]}
+                placeholderTextColor={dynamicStyles.inputIcon}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -175,7 +200,7 @@ export default function LoginScreen() {
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color={colors.gray[400]}
+                  color={dynamicStyles.inputIcon}
                 />
               </TouchableOpacity>
             </View>
@@ -187,12 +212,12 @@ export default function LoginScreen() {
               style={styles.rememberRow}
               onPress={() => setRememberMe(!rememberMe)}
             >
-              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+              <View style={[styles.checkbox, dynamicStyles.checkbox, rememberMe && styles.checkboxChecked]}>
                 {rememberMe && (
                   <Ionicons name="checkmark" size={14} color="#fff" />
                 )}
               </View>
-              <Text style={styles.rememberText}>Remember me</Text>
+              <Text style={[styles.rememberText, dynamicStyles.rememberText]}>Remember me</Text>
             </TouchableOpacity>
             
             <TouchableOpacity onPress={handleForgotPassword}>
@@ -225,22 +250,22 @@ export default function LoginScreen() {
 
         {/* Divider */}
         <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
-          <View style={styles.dividerLine} />
+          <View style={[styles.dividerLine, dynamicStyles.dividerLine]} />
+          <Text style={[styles.dividerText, dynamicStyles.dividerText]}>or</Text>
+          <View style={[styles.dividerLine, dynamicStyles.dividerLine]} />
         </View>
 
         {/* Skip for Now */}
         <TouchableOpacity
-          style={styles.skipButton}
+          style={[styles.skipButton, dynamicStyles.skipButton]}
           onPress={() => router.replace('/(tabs)/scan')}
         >
-          <Text style={styles.skipButtonText}>Continue without account</Text>
+          <Text style={[styles.skipButtonText, dynamicStyles.skipButtonText]}>Continue without account</Text>
         </TouchableOpacity>
 
         {/* Sign Up Link */}
         <View style={styles.signupRow}>
-          <Text style={styles.signupText}>Don't have an account? </Text>
+          <Text style={[styles.signupText, dynamicStyles.signupText]}>Don't have an account? </Text>
           <Link href="/auth/register" asChild>
             <TouchableOpacity>
               <Text style={styles.signupLink}>Sign up</Text>
@@ -255,7 +280,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   scrollContent: {
     flexGrow: 1,
@@ -272,18 +296,15 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 24,
     fontWeight: '700',
-    color: colors.primary[600],
     marginBottom: 24,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.gray[900],
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: colors.gray[500],
     lineHeight: 24,
   },
   form: {
@@ -295,15 +316,12 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.gray[700],
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.gray[50],
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.gray[200],
     paddingHorizontal: 14,
     gap: 10,
   },
@@ -311,7 +329,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     fontSize: 16,
-    color: colors.gray[900],
   },
   optionsRow: {
     flexDirection: 'row',
@@ -328,7 +345,6 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: colors.gray[300],
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -338,7 +354,6 @@ const styles = StyleSheet.create({
   },
   rememberText: {
     fontSize: 14,
-    color: colors.gray[600],
   },
   forgotText: {
     fontSize: 14,
@@ -387,24 +402,20 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.gray[200],
   },
   dividerText: {
     fontSize: 14,
-    color: colors.gray[400],
     paddingHorizontal: 16,
   },
   skipButton: {
     paddingVertical: 14,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.gray[300],
     borderRadius: 12,
   },
   skipButtonText: {
     fontSize: 15,
     fontWeight: '500',
-    color: colors.gray[600],
   },
   signupRow: {
     flexDirection: 'row',
@@ -413,7 +424,6 @@ const styles = StyleSheet.create({
   },
   signupText: {
     fontSize: 15,
-    color: colors.gray[600],
   },
   signupLink: {
     fontSize: 15,
