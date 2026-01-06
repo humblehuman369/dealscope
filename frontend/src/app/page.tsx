@@ -26,6 +26,7 @@ import {
   Compass
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { usePropertyScan } from '@/hooks/usePropertyScan';
 import { DistanceSlider } from '@/components/scanner/DistanceSlider';
 import { ScanTarget } from '@/components/scanner/ScanTarget';
@@ -466,6 +467,8 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
 function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
   const router = useRouter();
   const { user, isAuthenticated, logout, setShowAuthModal } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [searchAddress, setSearchAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
@@ -478,14 +481,14 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className={`min-h-screen ${isDark ? 'bg-navy-900' : 'bg-white'}`}>
       {/* Header */}
-      <header className="bg-navy-50 border-b border-neutral-300">
+      <header className={`${isDark ? 'bg-navy-900 border-navy-700' : 'bg-navy-50 border-neutral-300'} border-b`}>
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-6">
             <a href="/" className="flex items-center">
               <img 
-                src="/images/InvestIQ Logo 3D (Light View).png" 
+                src={isDark ? "/images/InvestIQ Logo 3D (Dark View).png" : "/images/InvestIQ Logo 3D (Light View).png"}
                 alt="InvestIQ" 
                 className="h-12 object-contain"
               />
@@ -855,11 +858,11 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-navy-900 border-t border-neutral-300 dark:border-navy-700 py-12">
+      <footer className={`${isDark ? 'bg-navy-900 border-navy-700' : 'bg-white border-neutral-300'} border-t py-12`}>
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <img 
-              src="/images/InvestIQ Logo 3D (Light View).png" 
+              src={isDark ? "/images/InvestIQ Logo 3D (Dark View).png" : "/images/InvestIQ Logo 3D (Light View).png"}
               alt="InvestIQ" 
               className="h-10 object-contain"
             />
