@@ -56,15 +56,12 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Left side - Logo & Nav */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center">
               <img 
                 src={theme === 'dark' ? "/images/InvestIQ Logo 3D (Dark View).png" : "/images/InvestIQ Logo 3D (Light View).png"}
                 alt="InvestIQ" 
-                className="w-10 h-10 rounded-xl object-contain"
+                className="h-10 object-contain"
               />
-              <span className="text-xl font-bold text-navy-900 dark:text-white tracking-tight">
-                Invest<span className="text-brand-500">IQ</span>
-              </span>
             </Link>
             <nav className="hidden md:flex items-center space-x-5">
               <Link 
