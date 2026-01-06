@@ -690,21 +690,21 @@ function TotalWealthDonutChart({ data, totalCashInvested }: { data: YearlyProjec
               const percent = total > 0 ? (seg.value / total) * 100 : 0
               
               return (
-                <div key={i} className="bg-gray-50 rounded-lg p-2.5">
+                <div key={i} className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2 min-w-0">
                       <div 
                         className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: seg.color }}
                       />
-                      <span className="text-sm font-medium text-gray-800 truncate">{seg.label}</span>
-                      <span className="text-xs text-gray-400">{percent.toFixed(0)}%</span>
+                      <span className="text-[13px] font-medium text-gray-800 dark:text-white truncate">{seg.label}</span>
+                      <span className="text-[13px] text-gray-600 dark:text-white">{percent.toFixed(0)}%</span>
                     </div>
-                    <div className="text-sm font-semibold flex-shrink-0" style={{ color: seg.color }}>
+                    <div className="text-[13px] font-semibold flex-shrink-0" style={{ color: seg.color }}>
                       {formatCompact(seg.value)}
                     </div>
                   </div>
-                  <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-1 bg-gray-200 dark:bg-navy-600 rounded-full overflow-hidden">
                     <div 
                       className="h-full rounded-full transition-all duration-700"
                       style={{ width: `${percent}%`, backgroundColor: seg.color }}
@@ -799,7 +799,7 @@ export default function ChartsView({ projections, totalCashInvested }: ChartsVie
       {/* Header */}
       <div>
         <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white">Wealth Visualizer</h2>
-        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Interactive 10-year investment analysis</p>
+        <p className="text-[13px] sm:text-[14px] text-gray-600 dark:text-white">Interactive 10-year investment analysis</p>
       </div>
 
       {/* Tab Selector - Mobile optimized */}
@@ -811,15 +811,15 @@ export default function ChartsView({ projections, totalCashInvested }: ChartsVie
             <button
               key={tab.id}
               onClick={() => setActiveChart(tab.id as any)}
-              className={`flex-1 min-w-0 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 py-2 sm:py-2.5 px-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+              className={`flex-1 min-w-0 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 py-2 sm:py-2.5 px-2 sm:px-4 rounded-lg text-[13px] sm:text-[14px] font-medium transition-all duration-200 ${
                 isActive 
                   ? 'bg-white dark:bg-navy-600 shadow-sm text-gray-900 dark:text-white' 
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  : 'text-gray-600 dark:text-white hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
               <span className="truncate">{tab.label}</span>
-              <span className={`text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap ${
-                isActive ? 'bg-gray-100 dark:bg-navy-500 text-gray-700 dark:text-gray-300' : 'text-gray-400'
+              <span className={`text-[11px] sm:text-[13px] px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap ${
+                isActive ? 'bg-gray-100 dark:bg-navy-500 text-gray-700 dark:text-white' : 'text-gray-600 dark:text-white'
               }`}>
                 {formatCompact(tab.value)}
               </span>
