@@ -259,7 +259,7 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
   `;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top }, isDarkMode && styles.containerDark]}>
       {/* WebView or Error View */}
       <View style={styles.webViewContainer}>
         {hasError ? (
@@ -362,7 +362,11 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
       
       {/* Floating Back Button - Rendered AFTER WebView to ensure it's on top */}
       <TouchableOpacity
-        style={[styles.floatingBackButton, { top: 8 }]}
+        style={[
+          styles.floatingBackButton, 
+          { top: 8 },
+          isDarkMode && styles.floatingBackButtonDark
+        ]}
         onPress={handleGoBack}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         activeOpacity={0.7}
@@ -370,7 +374,7 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
         <Ionicons
           name="chevron-back"
           size={26}
-          color={colors.gray[700]}
+          color={isDarkMode ? colors.white : colors.gray[700]}
         />
       </TouchableOpacity>
 
@@ -391,6 +395,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
   },
+  containerDark: {
+    backgroundColor: '#07172e', // navy-900
+  },
   floatingBackButton: {
     position: 'absolute',
     left: 8,
@@ -406,6 +413,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
+  },
+  floatingBackButtonDark: {
+    backgroundColor: 'rgba(7, 23, 46, 0.9)', // navy-900 with transparency
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
   },
   webViewContainer: {
     flex: 1,
