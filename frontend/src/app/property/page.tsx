@@ -1800,11 +1800,11 @@ function MetricRow({ label, value }: { label: string; value: string }) {
   const isNegative = value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
   return (
     <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-navy-600 last:border-b-0">
-      <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300 flex items-center">
+      <span className="text-[13px] font-bold text-gray-700 dark:text-white flex items-center">
         {label}
         <MetricTooltip label={label} />
       </span>
-      <span className={`text-[0.9375rem] font-bold font-mono ${isNegative ? 'text-crimson-600 dark:text-crimson-400' : 'text-navy-900 dark:text-white'}`}>{value}</span>
+      <span className={`text-[15px] font-bold font-mono ${isNegative ? 'text-crimson-600 dark:text-crimson-400' : 'text-navy-900 dark:text-white'}`}>{value}</span>
     </div>
   )
 }
@@ -1814,11 +1814,11 @@ function StatRow({ label, value, highlight = false }: { label: string; value: st
   const isNegative = value.startsWith('-') || value.startsWith('−') || value.includes('-$') || value.includes('−$')
   return (
     <div className={`flex items-center justify-between py-1.5 ${highlight ? 'bg-teal-50/50 dark:bg-teal-900/20 -mx-3 px-3 rounded' : ''}`}>
-      <span className="text-[11px] text-gray-700 dark:text-gray-300 font-medium flex items-center">
+      <span className="text-[13px] text-gray-700 dark:text-white font-bold flex items-center">
         {label}
         <MetricTooltip label={label} />
       </span>
-      <span className={`text-xs font-medium ${isNegative ? 'text-crimson-600 dark:text-crimson-400' : highlight ? 'text-brand-500 dark:text-brand-400' : 'text-gray-700 dark:text-gray-300'}`}>{value}</span>
+      <span className={`text-[14px] font-bold ${isNegative ? 'text-crimson-600 dark:text-crimson-400' : highlight ? 'text-brand-500 dark:text-brand-400' : 'text-gray-700 dark:text-white'}`}>{value}</span>
     </div>
   )
 }
@@ -1912,7 +1912,7 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Key Metrics</h4>
+          <h4 className="text-[0.9375rem] font-bold text-navy-900 dark:text-white mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 500} />
             <StatRow label="Annual Gross Revenue" value={formatCurrency(calc.annualGrossRent)} />
@@ -1955,7 +1955,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
+          <h4 className="text-[0.9375rem] font-bold text-navy-900 dark:text-white mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Initial Cash Needed" value={formatCurrency(calc.initialCash)} />
             <StatRow label="Cash Back at Refi" value={formatCurrency(calc.cashBack)} highlight={calc.cashBack > 0} />
@@ -2071,7 +2071,7 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
+          <h4 className="text-[0.9375rem] font-bold text-navy-900 dark:text-white mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Effective Housing Cost" value={formatCurrency(calc.effectiveHousingCost)} highlight={calc.effectiveHousingCost < 500} />
             <StatRow label="Monthly Savings" value={formatCurrency(calc.monthlySavings)} highlight={calc.monthlySavings > 500} />
@@ -2202,7 +2202,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Key Metrics</h4>
+          <h4 className="text-[0.9375rem] font-bold text-navy-900 dark:text-white mb-2">Key Metrics</h4>
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Maximum Allowable Offer" value={formatCurrency(calc.mao)} highlight={calc.isPurchaseBelowMAO} />
             <StatRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
