@@ -31,11 +31,16 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
   const [searchAddress, setSearchAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!searchAddress.trim()) return;
     setIsSearching(true);
-    // Navigate to property page with the address
-    router.push(`/property/${encodeURIComponent(searchAddress.trim())}`);
+    try {
+      await router.push(`/property/${encodeURIComponent(searchAddress.trim())}`);
+    } catch {
+      // Navigation failed - user can retry
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const strategies = [
