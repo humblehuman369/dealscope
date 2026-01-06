@@ -143,11 +143,11 @@ export default function HomeScreen() {
           {/* Hero Section */}
           <View style={styles.heroSection}>
             <Text style={[styles.heroTitle, dynamicStyles.heroTitle]}>
-              Analyze Any Property's{'\n'}Potential in
+              Know the <Text style={styles.heroAccent}>Real Return</Text>
             </Text>
-            <Text style={styles.heroTitleAccentLine}>60 Seconds</Text>
+            <Text style={styles.heroTitleAccentLine}>Before You Buy.</Text>
             <Text style={[styles.heroSubtitle, dynamicStyles.heroSubtitle]}>
-              Compare 6 investment strategies and discover your best path to profit
+              Instantly reveal a property's real investment potential — in under 60 seconds.
             </Text>
           </View>
 
@@ -155,7 +155,7 @@ export default function HomeScreen() {
           <View style={styles.ctaSection}>
             <TouchableOpacity style={styles.scanButton} onPress={handleScanPress}>
               <LinearGradient
-                colors={[colors.primary[500], '#0876ff']}
+                colors={[colors.primary[500], colors.accent[500]]}
                 style={styles.scanButtonGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
