@@ -947,7 +947,7 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
-        <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{displayPercent}%</span>
+        <span className="text-[15px] font-bold text-teal font-mono">{displayPercent}%</span>
       </div>
       <div className="relative h-[6px] mt-2">
         {/* Gray background track */}
@@ -1037,7 +1037,10 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">Maintenance</span>
-        <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)}</span>
+          <span className="text-[14px] font-bold text-teal">({displayPercent}%)</span>
+        </div>
       </div>
       <div className="relative h-[6px] mt-2">
         <div className="absolute inset-0 rounded-full bg-[#e1e8ed] dark:bg-navy-600" />
@@ -1077,7 +1080,10 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">Management</span>
-        <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)} ({displayPercent}%)</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(monthlyValue)}</span>
+          <span className="text-[14px] font-bold text-teal">({displayPercent}%)</span>
+        </div>
       </div>
       <div className="relative h-[6px] mt-2">
         <div className="absolute inset-0 rounded-full bg-[#e1e8ed] dark:bg-navy-600" />
@@ -1501,14 +1507,11 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
 function StepHeader({ step, title }: { step: number; title: string }) {
   return (
     <div className="mb-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold flex-shrink-0">
-            {step}
-          </div>
-          <h2 className="text-base font-bold text-navy-900 dark:text-white">{title}</h2>
+      <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold flex-shrink-0">
+          {step}
         </div>
-        <span className="text-[13px] font-semibold text-white">Tap bar to change</span>
+        <h2 className="text-base font-bold text-navy-900 dark:text-white">{title}</h2>
       </div>
     </div>
   )
@@ -1537,16 +1540,10 @@ function ActionPrompt({ icon, text, variant = 'default' }: {
 // Section header with action prompt for Fine Tune sections
 function FineTuneHeader() {
   return (
-    <div className="mb-3 flex items-start justify-between">
-      <div>
-        <h4 className="text-[0.9375rem] font-bold text-teal">
-          Tune the Deal
-        </h4>
-        <p className="text-[13px] font-semibold italic text-teal opacity-80">
-          → Instantly see outcome
-        </p>
-      </div>
-      <span className="text-[13px] font-semibold text-white">Tap bar to change</span>
+    <div className="mb-3">
+      <h4 className="text-[0.9375rem] font-bold text-teal">
+        Tune the Deal
+      </h4>
     </div>
   )
 }
