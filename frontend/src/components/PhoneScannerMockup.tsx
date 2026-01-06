@@ -48,13 +48,13 @@ export function PhoneScannerMockup() {
           {/* Screen Content */}
           <div className="px-6 pb-6 min-h-[450px] flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-center gap-2 py-1 pb-4">
-              <span className="text-[17px] font-normal text-white tracking-wide flex items-center">
+            <div className="flex items-center justify-center py-1 pb-4">
+              <span className="text-[12px] font-normal text-white tracking-wide flex items-center whitespace-nowrap">
                 Analyzing Data
-                <span className="ml-1.5 inline-flex gap-1 animate-loading-dots">
-                  <span className="w-[3px] h-[3px] bg-accent-500 rounded-full" />
-                  <span className="w-[3px] h-[3px] bg-accent-500 rounded-full animation-delay-200" />
-                  <span className="w-[3px] h-[3px] bg-accent-500 rounded-full animation-delay-400" />
+                <span className="ml-1 inline-flex gap-0.5 animate-loading-dots">
+                  <span className="w-[2px] h-[2px] bg-accent-500 rounded-full" />
+                  <span className="w-[2px] h-[2px] bg-accent-500 rounded-full animation-delay-200" />
+                  <span className="w-[2px] h-[2px] bg-accent-500 rounded-full animation-delay-400" />
                 </span>
               </span>
             </div>

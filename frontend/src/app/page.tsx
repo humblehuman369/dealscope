@@ -483,21 +483,12 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       <header className="bg-navy-50 border-b border-neutral-300">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-6">
-            <a href="/" className="flex items-center gap-3">
-              <div className="relative w-12 h-12">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 via-brand-500 to-blue-700 shadow-lg shadow-brand-500/30" />
-                <img 
-                  src="/images/investiq-logo-icon.png" 
-                  alt="InvestIQ" 
-                  className="relative w-12 h-12 rounded-full object-cover"
-                  style={{ 
-                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.3), 0 4px 12px rgba(14, 99, 246, 0.25)'
-                  }}
-                />
-              </div>
-              <span className="text-2xl font-bold text-navy-900 tracking-tight">
-                Invest<span className="text-brand-500">IQ</span>
-              </span>
+            <a href="/" className="flex items-center">
+              <img 
+                src="/images/InvestIQ Logo 3D (Light View).png" 
+                alt="InvestIQ" 
+                className="h-12 object-contain"
+              />
             </a>
             
             <nav className="hidden md:flex items-center gap-6">
@@ -867,16 +858,11 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       <footer className="bg-white dark:bg-navy-900 border-t border-neutral-300 dark:border-navy-700 py-12">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <img 
-                src="/images/investiq-logo-icon.png" 
-                alt="InvestIQ" 
-                className="w-12 h-12 rounded-xl"
-              />
-              <span className="text-xl font-bold text-navy-900 dark:text-white">
-                Invest<span className="text-brand-500">IQ</span>
-              </span>
-            </div>
+            <img 
+              src="/images/InvestIQ Logo 3D (Light View).png" 
+              alt="InvestIQ" 
+              className="h-10 object-contain"
+            />
             
             <div className="text-center">
               <p className="text-sm text-neutral-500 dark:text-neutral-400">© 2026 InvestIQ. All rights reserved.</p>
