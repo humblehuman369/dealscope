@@ -24,15 +24,26 @@ The main brand color used for primary actions, links, and accents.
 </button>
 ```
 
-### Accent Cyan (`accent-*`)
+### Accent Teal (`accent-*`) - Theme-Aware
 Secondary accent color for highlights, gradients, and special elements.
+**Uses CSS variables for automatic dark/light mode switching.**
 
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `accent-500` | `#00e5ff` | **Primary accent** |
-| `accent-400` | `#33e7ff` | Lighter variant |
+| Token | Dark Mode | Light Mode | Usage |
+|-------|-----------|------------|-------|
+| `--color-teal` | `#00e5ff` (Electric Cyan) | `#007ea7` (Pacific Teal) | **Primary accent** |
+| `accent-500` | `#00e5ff` | Use `text-teal` class | Dark mode fallback |
+| `accent-light` | N/A | `#007ea7` | Light mode specific |
 
-**Example:**
+**Theme-Aware Usage (Recommended):**
+```jsx
+// Use text-teal, bg-teal, border-teal for automatic theme switching
+<div className="text-teal font-bold">Theme-aware teal text</div>
+<div className="bg-teal text-navy-900">Theme-aware teal background</div>
+<div className="border-teal border-2">Theme-aware teal border</div>
+<div className="bg-gradient-brand-teal">Theme-aware gradient</div>
+```
+
+**Legacy Example:**
 ```jsx
 <div className="bg-accent-500 text-navy-900">
   60 Seconds to Analysis
@@ -255,16 +266,23 @@ Dark mode is toggled via the `dark` class on the `<html>` element.
 
 ### Old → New Color Mapping
 
-| Old Class | New Class |
+| Old Class | New Class (Theme-Aware) |
 |-----------|-----------|
 | `bg-[#0465f2]` | `bg-brand-500` |
 | `text-[#07172e]` | `text-navy-900` |
 | `text-[#6b7280]` | `text-neutral-500` |
 | `bg-[#e8eef3]` | `bg-navy-50` |
 | `border-[#d1d5db]` | `border-neutral-300` |
-| `bg-[#00e5ff]` | `bg-accent-500` |
+| `bg-[#00e5ff]` | `bg-teal` (theme-aware) |
+| `text-[#00e5ff]` | `text-teal` (theme-aware) |
+| `border-[#00e5ff]` | `border-teal` (theme-aware) |
+| `dark:text-[#00e5ff]` | `text-teal` (auto switches) |
 | `bg-teal-600` | `bg-brand-500` |
-| `from-teal-500 to-cyan-600` | `bg-gradient-brand` |
+| `from-teal-500 to-cyan-600` | `bg-gradient-brand-teal` (theme-aware) |
+
+### Teal Color Reference
+- **Dark Mode**: `#00e5ff` (Electric Cyan)
+- **Light Mode**: `#007ea7` (Pacific Teal)
 
 ### Old → New Button Mapping
 

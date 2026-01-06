@@ -129,8 +129,8 @@ export function PhoneScannerMockup({ isDark = true }: PhoneScannerMockupProps) {
                 <button 
                   className="py-2.5 px-7 rounded-[10px] text-sm font-semibold text-[#07172e]"
                   style={{
-                    background: 'linear-gradient(135deg, #00e5ff 0%, #00c4d9 100%)',
-                    boxShadow: '0 4px 20px rgba(0, 229, 255, 0.4)'
+                    background: `linear-gradient(135deg, var(--gradient-teal-start) 0%, var(--gradient-teal-end) 100%)`,
+                    boxShadow: `0 4px 20px rgba(var(--color-teal-rgb), 0.4)`
                   }}
                 >
                   Scan
@@ -160,9 +160,9 @@ export function PhoneScannerMockup({ isDark = true }: PhoneScannerMockupProps) {
               <div 
                 className="w-[50px] h-[50px] rounded-full border-4 animate-capture-glow"
                 style={{
-                  background: 'linear-gradient(135deg, #00e5ff 0%, #00d4e8 50%, #00c4d9 100%)',
-                  borderColor: 'rgba(0, 229, 255, 0.3)',
-                  boxShadow: '0 0 25px rgba(0, 229, 255, 0.5)'
+                  background: `linear-gradient(135deg, var(--gradient-teal-start) 0%, var(--color-teal) 50%, var(--gradient-teal-end) 100%)`,
+                  borderColor: `rgba(var(--color-teal-rgb), 0.3)`,
+                  boxShadow: `0 0 25px rgba(var(--color-teal-rgb), 0.5)`
                 }}
               />
               
@@ -188,7 +188,7 @@ export function PhoneScannerMockup({ isDark = true }: PhoneScannerMockupProps) {
           bottom: -10px;
           left: 50%;
           transform: translateX(-50%);
-          border: 3px solid #00e5ff;
+          border: 3px solid var(--color-teal);
           border-bottom: none;
           border-radius: 100px 100px 0 0;
           opacity: 0;
@@ -205,27 +205,27 @@ export function PhoneScannerMockup({ isDark = true }: PhoneScannerMockupProps) {
             height: 40px;
             bottom: -10px;
             opacity: 0;
-            border-color: rgba(0, 229, 255, 0.15);
-            filter: drop-shadow(0 0 2px rgba(0, 229, 255, 0.2));
+            border-color: rgba(var(--color-teal-rgb), 0.15);
+            filter: drop-shadow(0 0 2px rgba(var(--color-teal-rgb), 0.2));
           }
           15% {
             opacity: 0.6;
           }
           50% {
             opacity: 0.8;
-            border-color: rgba(0, 229, 255, 0.7);
+            border-color: rgba(var(--color-teal-rgb), 0.7);
           }
           85% {
             opacity: 0.9;
-            border-color: #00e5ff;
+            border-color: var(--color-teal);
           }
           100% {
             width: 20px;
             height: 10px;
             bottom: 70px;
             opacity: 0;
-            border-color: #00e5ff;
-            filter: drop-shadow(0 0 15px rgba(0, 229, 255, 1));
+            border-color: var(--color-teal);
+            filter: drop-shadow(0 0 15px rgba(var(--color-teal-rgb), 1));
           }
         }
 
@@ -236,20 +236,20 @@ export function PhoneScannerMockup({ isDark = true }: PhoneScannerMockupProps) {
           transform: translateX(-50%);
           width: 12px;
           height: 12px;
-          background: #00e5ff;
+          background: var(--color-teal);
           border-radius: 50%;
-          box-shadow: 0 0 15px rgba(0, 229, 255, 0.9), 0 0 30px rgba(0, 229, 255, 0.4);
+          box-shadow: 0 0 15px rgba(var(--color-teal-rgb), 0.9), 0 0 30px rgba(var(--color-teal-rgb), 0.4);
           animation: originPulse 2s ease-in-out infinite;
           z-index: 10;
         }
 
         @keyframes originPulse {
           0%, 100% { 
-            box-shadow: 0 0 12px rgba(0, 229, 255, 0.7), 0 0 24px rgba(0, 229, 255, 0.3);
+            box-shadow: 0 0 12px rgba(var(--color-teal-rgb), 0.7), 0 0 24px rgba(var(--color-teal-rgb), 0.3);
             transform: translateX(-50%) scale(1);
           }
           50% { 
-            box-shadow: 0 0 20px rgba(0, 229, 255, 1), 0 0 40px rgba(0, 229, 255, 0.5);
+            box-shadow: 0 0 20px rgba(var(--color-teal-rgb), 1), 0 0 40px rgba(var(--color-teal-rgb), 0.5);
             transform: translateX(-50%) scale(1.2);
           }
         }
@@ -260,12 +260,12 @@ export function PhoneScannerMockup({ isDark = true }: PhoneScannerMockupProps) {
 
         @keyframes captureGlow {
           0%, 100% { 
-            box-shadow: 0 0 18px rgba(0, 229, 255, 0.4);
-            border-color: rgba(0, 229, 255, 0.3);
+            box-shadow: 0 0 18px rgba(var(--color-teal-rgb), 0.4);
+            border-color: rgba(var(--color-teal-rgb), 0.3);
           }
           50% { 
-            box-shadow: 0 0 30px rgba(0, 229, 255, 0.6);
-            border-color: rgba(0, 229, 255, 0.5);
+            box-shadow: 0 0 30px rgba(var(--color-teal-rgb), 0.6);
+            border-color: rgba(var(--color-teal-rgb), 0.5);
           }
         }
 
@@ -307,8 +307,8 @@ function Bracket({ position, corner }: BracketProps) {
 
   return (
     <div 
-      className={`absolute ${position} w-7 h-7 border-accent-500 ${borderStyles[corner]} animate-bracket-pulse`}
-      style={{ filter: 'drop-shadow(0 0 4px rgba(0, 229, 255, 0.6))' }}
+      className={`absolute ${position} w-7 h-7 border-accent-500 dark:border-accent-500 ${borderStyles[corner]} animate-bracket-pulse`}
+      style={{ filter: `drop-shadow(0 0 4px rgba(var(--color-teal-rgb), 0.6))`, borderColor: 'var(--color-teal)' }}
     />
   );
 }
@@ -348,30 +348,30 @@ function HouseSVG({ isDark = true }: { isDark?: boolean }) {
       
       {/* Roof */}
       <polygon points="100,20 20,70 180,70" fill="url(#roofGrad)"/>
-      <polygon points="100,20 25,70 175,70" fill="none" stroke="#00e5ff" strokeWidth="1" opacity="0.3"/>
+      <polygon points="100,20 25,70 175,70" fill="none" stroke={isDark ? '#00e5ff' : '#007ea7'} strokeWidth="1" opacity="0.3"/>
       
       {/* Porch roof */}
       <rect x="55" y="100" width="90" height="8" fill={isDark ? '#2a3a45' : '#475569'}/>
       
       {/* Door */}
       <rect x="85" y="105" width="30" height="45" fill={isDark ? '#2a3540' : '#334155'} rx="2"/>
-      <circle cx="108" cy="130" r="2" fill="#00e5ff" opacity="0.6"/>
+      <circle cx="108" cy="130" r="2" fill={isDark ? '#00e5ff' : '#007ea7'} opacity="0.6"/>
       
       {/* Windows - left */}
       <rect x="40" y="80" width="30" height="25" fill={isDark ? '#1a2530' : '#e2e8f0'} rx="1"/>
-      <rect x="40" y="80" width="30" height="25" fill="none" stroke="#00e5ff" strokeWidth="0.5" opacity="0.4" rx="1"/>
+      <rect x="40" y="80" width="30" height="25" fill="none" stroke={isDark ? '#00e5ff' : '#007ea7'} strokeWidth="0.5" opacity="0.4" rx="1"/>
       <line x1="55" y1="80" x2="55" y2="105" stroke={isDark ? '#3a4a55' : '#94a3b8'} strokeWidth="2"/>
       <line x1="40" y1="92" x2="70" y2="92" stroke={isDark ? '#3a4a55' : '#94a3b8'} strokeWidth="2"/>
       
       {/* Windows - right */}
       <rect x="130" y="80" width="30" height="25" fill={isDark ? '#1a2530' : '#e2e8f0'} rx="1"/>
-      <rect x="130" y="80" width="30" height="25" fill="none" stroke="#00e5ff" strokeWidth="0.5" opacity="0.4" rx="1"/>
+      <rect x="130" y="80" width="30" height="25" fill="none" stroke={isDark ? '#00e5ff' : '#007ea7'} strokeWidth="0.5" opacity="0.4" rx="1"/>
       <line x1="145" y1="80" x2="145" y2="105" stroke={isDark ? '#3a4a55' : '#94a3b8'} strokeWidth="2"/>
       <line x1="130" y1="92" x2="160" y2="92" stroke={isDark ? '#3a4a55' : '#94a3b8'} strokeWidth="2"/>
       
       {/* Attic window */}
       <circle cx="100" cy="50" r="12" fill={isDark ? '#1a2530' : '#e2e8f0'}/>
-      <circle cx="100" cy="50" r="12" fill="none" stroke="#00e5ff" strokeWidth="0.5" opacity="0.4"/>
+      <circle cx="100" cy="50" r="12" fill="none" stroke={isDark ? '#00e5ff' : '#007ea7'} strokeWidth="0.5" opacity="0.4"/>
       
       {/* Porch pillars */}
       <rect x="60" y="100" width="6" height="50" fill={isDark ? '#4a5a65' : '#94a3b8'}/>

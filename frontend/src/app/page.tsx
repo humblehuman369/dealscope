@@ -766,19 +766,19 @@ function DesktopLandingPage({ onSwitchMode }: { onSwitchMode: () => void }) {
       <section className="bg-navy-50 py-12">
         <div className="max-w-5xl mx-auto px-8 md:px-16 flex flex-col gap-6">
           <div className="flex items-center gap-4">
-            <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
-            <div className="bg-accent-500 text-black py-4 px-10 font-bold text-base md:text-lg clip-angled">
+            <div className="flex-1 h-1 bg-gradient-teal-line"></div>
+            <div className="bg-teal text-black py-4 px-10 font-bold text-base md:text-lg clip-angled">
               &quot;The fastest path from address to investable decision.&quot;
             </div>
-            <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
+            <div className="flex-1 h-1 bg-gradient-teal-line"></div>
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
-            <div className="bg-accent-500 text-black py-4 px-10 font-bold text-base md:text-lg clip-angled">
+            <div className="flex-1 h-1 bg-gradient-teal-line"></div>
+            <div className="bg-teal text-black py-4 px-10 font-bold text-base md:text-lg clip-angled">
               &quot;The only tool that delivers institutional-grade analytics on-the-go.&quot;
             </div>
-            <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-[#00e5ff] to-transparent"></div>
+            <div className="flex-1 h-1 bg-gradient-teal-line"></div>
           </div>
         </div>
       </section>

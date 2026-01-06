@@ -12,6 +12,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 
 /* ==========================================
+   Theme Color Variables
+   ========================================== */
+:root {
+  /* Teal accent color - Light Mode: Pacific Teal */
+  --color-teal: #007ea7;
+  --color-teal-rgb: 0, 126, 167;
+  
+  /* Gradient endpoints for light mode */
+  --gradient-teal-start: #007ea7;
+  --gradient-teal-end: #006080;
+}
+
+html.dark {
+  /* Teal accent color - Dark Mode: Electric Cyan */
+  --color-teal: #00e5ff;
+  --color-teal-rgb: 0, 229, 255;
+  
+  /* Gradient endpoints for dark mode */
+  --gradient-teal-start: #00e5ff;
+  --gradient-teal-end: #00c4d9;
+}
+
+/* ==========================================
    Base Styles
    ========================================== */
 @layer base {
@@ -258,7 +281,32 @@
   /* Slider dynamic positioning using CSS custom properties */
   .slider-fill {
     width: var(--slider-fill, 0%);
-    background: linear-gradient(90deg, #00e5ff 0%, #0465f2 100%);
+    background: linear-gradient(90deg, var(--color-teal) 0%, #0465f2 100%);
+  }
+
+  /* Theme-aware teal text color */
+  .text-teal {
+    color: var(--color-teal);
+  }
+
+  /* Theme-aware teal background */
+  .bg-teal {
+    background-color: var(--color-teal);
+  }
+
+  /* Theme-aware teal border */
+  .border-teal {
+    border-color: var(--color-teal);
+  }
+
+  /* Theme-aware teal gradient line */
+  .bg-gradient-teal-line {
+    background: linear-gradient(to right, transparent, var(--color-teal), transparent);
+  }
+
+  /* Theme-aware brand gradient */
+  .bg-gradient-brand-teal {
+    background: linear-gradient(135deg, #0465f2 0%, var(--color-teal) 100%);
   }
 
   .slider-fill-tailwind {
@@ -377,11 +425,11 @@ html.dark .text-brand-solid {
 /* Phone scanner animations */
 @keyframes bracket-pulse {
   0%, 100% { 
-    filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.5));
+    filter: drop-shadow(0 0 4px rgba(var(--color-teal-rgb), 0.5));
     opacity: 0.8;
   }
   50% { 
-    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.8));
+    filter: drop-shadow(0 0 8px rgba(var(--color-teal-rgb), 0.8));
     opacity: 1;
   }
 }

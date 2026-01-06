@@ -121,7 +121,7 @@ export default function LongTermRentalPage() {
             </ol>
           </div>
 
-          <div className="bg-gradient-to-r from-[#cffafe] to-[#e0f2fe] border-l-4 border-[#00e5ff] rounded-lg p-6 my-8">
+          <div className="bg-gradient-to-r from-[#cffafe] to-[#e0f2fe] dark:from-[#0d3d4d] dark:to-[#0a2f3f] border-l-4 border-teal rounded-lg p-6 my-8">
             <p className="text-lg text-navy-900 italic">
               It&apos;s the perfect <strong>&quot;set it and forget it&quot;</strong> strategy—ideal for investors who want to build lasting wealth.
             </p>

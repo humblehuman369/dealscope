@@ -803,11 +803,11 @@ function PropertyHeader({ property }: { property: PropertyData }) {
               </span>
             )}
             <div className="flex items-center gap-1.5 text-xs whitespace-nowrap">
-              <span className="text-gray-500 dark:text-[#00e5ff] font-medium">{property.details.bedrooms || '—'} bd</span>
+              <span className="text-teal font-medium">{property.details.bedrooms || '—'} bd</span>
               <span className="text-gray-400 dark:text-gray-500">•</span>
-              <span className="text-gray-500 dark:text-[#00e5ff] font-medium">{property.details.bathrooms || '—'} ba</span>
+              <span className="text-teal font-medium">{property.details.bathrooms || '—'} ba</span>
               <span className="text-gray-400 dark:text-gray-500">•</span>
-              <span className="text-gray-500 dark:text-[#00e5ff] font-medium">{property.details.square_footage?.toLocaleString() || '—'} sqft</span>
+              <span className="text-teal font-medium">{property.details.square_footage?.toLocaleString() || '—'} sqft</span>
             </div>
           </div>
         </div>
@@ -902,7 +902,7 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <div className="flex items-center gap-1.5">
           <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedValue)}</span>
-          <span className="text-[14px] font-bold text-brand-500 dark:text-[#00e5ff]">
+          <span className="text-[14px] font-bold text-teal">
             {adjSign}{adjPercent.toFixed(0)}%
           </span>
         </div>
@@ -992,7 +992,7 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <div className="flex items-center gap-1.5">
           <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(dollarValue)}</span>
-          <span className="text-[14px] font-bold text-brand-500 dark:text-[#00e5ff]">({displayPercent}%)</span>
+          <span className="text-[14px] font-bold text-teal">({displayPercent}%)</span>
         </div>
       </div>
       <div className="relative h-[6px] mt-2">
@@ -1428,17 +1428,17 @@ function MobileStrategyPreview({
               }`}
             >
               {/* Strategy Name */}
-              <div className={`text-[13px] font-bold mb-0.5 ${isSelected ? 'text-white/80' : 'text-gray-500 dark:text-[#00e5ff]'}`}>
+              <div className={`text-[13px] font-bold mb-0.5 ${isSelected ? 'text-white/80' : 'text-teal'}`}>
                 {displayName}
               </div>
               
               {/* Primary Value (Cash Flow / Profit) */}
-              <div className={`text-[13px] font-bold font-mono leading-tight ${isSelected ? 'text-white' : valueColor} dark:text-[#00e5ff]`}>
+              <div className={`text-[13px] font-bold font-mono leading-tight ${isSelected ? 'text-white' : 'text-teal'}`}>
                 {metrics.primary}
               </div>
               
               {/* Secondary Value (CoC / Margin) */}
-              <div className={`text-[13px] font-bold ${isSelected ? 'text-white/70' : 'text-gray-400 dark:text-[#00e5ff]'}`}>
+              <div className={`text-[13px] font-bold ${isSelected ? 'text-white/70' : 'text-teal'}`}>
                 {metrics.secondary}
               </div>
             </button>
@@ -1463,7 +1463,7 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">After Repair Value</span>
         <div className="flex items-center gap-1.5">
           <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedArv)}</span>
-          <span className="text-[14px] font-bold text-brand-500 dark:text-[#00e5ff]">+{displayPercent}%</span>
+          <span className="text-[14px] font-bold text-teal">+{displayPercent}%</span>
         </div>
       </div>
       <div className="relative h-[6px] mt-2">
@@ -1534,10 +1534,10 @@ function FineTuneHeader() {
   return (
     <div className="mb-3 flex items-start justify-between">
       <div>
-        <h4 className="text-[0.9375rem] font-bold text-[#00e5ff]">
+        <h4 className="text-[0.9375rem] font-bold text-teal">
           Tune the Deal
         </h4>
-        <p className="text-[13px] font-semibold italic text-[#00e5ff] opacity-80">
+        <p className="text-[13px] font-semibold italic text-teal opacity-80">
           → Instantly see outcome
         </p>
       </div>
@@ -1877,7 +1877,7 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics (results) */}
         <div>
-          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-3.5">Deal Performance</h4>
+          <h4 className="text-[0.9375rem] font-bold text-teal mb-3.5">Deal Performance</h4>
           <div className="space-y-1.5">
             <MetricRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} />
             <MetricRow label="Annual Cash Flow" value={formatCurrency(calc.annualCashFlow)} />
@@ -1917,7 +1917,7 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-3">
-          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-2">Deal Performance</h4>
+          <h4 className="text-[0.9375rem] font-bold text-teal mb-2">Deal Performance</h4>
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Monthly Cash Flow" value={formatCurrency(calc.monthlyCashFlow)} highlight={calc.monthlyCashFlow > 500} />
             <StatRow label="Annual Gross Revenue" value={formatCurrency(calc.annualGrossRent)} />
@@ -1957,7 +1957,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-3">
-          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-2">Deal Performance</h4>
+          <h4 className="text-[0.9375rem] font-bold text-teal mb-2">Deal Performance</h4>
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Initial Cash Needed" value={formatCurrency(calc.initialCash)} />
             <StatRow label="Cash Back at Refi" value={formatCurrency(calc.cashBack)} highlight={calc.cashBack > 0} />
@@ -2067,7 +2067,7 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-3">
-          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-2">Deal Performance</h4>
+          <h4 className="text-[0.9375rem] font-bold text-teal mb-2">Deal Performance</h4>
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Effective Housing Cost" value={formatCurrency(calc.effectiveHousingCost)} highlight={calc.effectiveHousingCost < 500} />
             <StatRow label="Monthly Savings" value={formatCurrency(calc.monthlySavings)} highlight={calc.monthlySavings > 500} />
@@ -2195,7 +2195,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
         
         {/* RIGHT: Key Metrics */}
         <div className="space-y-3">
-          <h4 className="text-[0.9375rem] font-bold text-[#00e5ff] mb-2">Deal Performance</h4>
+          <h4 className="text-[0.9375rem] font-bold text-teal mb-2">Deal Performance</h4>
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 divide-y divide-gray-100 dark:divide-navy-600">
             <StatRow label="Maximum Allowable Offer" value={formatCurrency(calc.mao)} highlight={calc.isPurchaseBelowMAO} />
             <StatRow label="Purchase Price" value={formatCurrency(assumptions.purchasePrice)} />
