@@ -79,7 +79,8 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
     webViewRef.current?.reload();
   };
 
-  const handleGoBack = () => {
+  const handleGoBack = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (canGoBack) {
       webViewRef.current?.goBack();
     } else if (onClose) {
@@ -259,19 +260,6 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Floating Back Button - LEFT side only */}
-      <TouchableOpacity
-        style={[styles.floatingBackButton, { top: 8 }]}
-        onPress={handleGoBack}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <Ionicons
-          name="chevron-back"
-          size={26}
-          color={colors.gray[700]}
-        />
-      </TouchableOpacity>
-
       {/* WebView or Error View */}
       <View style={styles.webViewContainer}>
         {hasError ? (
@@ -372,6 +360,20 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
         )}
       </View>
       
+      {/* Floating Back Button - Rendered AFTER WebView to ensure it's on top */}
+      <TouchableOpacity
+        style={[styles.floatingBackButton, { top: 8 }]}
+        onPress={handleGoBack}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="chevron-back"
+          size={26}
+          color={colors.gray[700]}
+        />
+      </TouchableOpacity>
+
       {/* Bottom Navigation Sheet */}
       <BottomNavigationSheet
         visible={showMenu}
