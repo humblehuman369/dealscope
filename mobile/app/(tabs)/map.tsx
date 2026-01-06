@@ -512,8 +512,8 @@ const styles = StyleSheet.create({
   },
   markerText: {
     fontWeight: '700',
-    fontSize: 11,
-    color: colors.gray[800],
+    fontSize: 13,
+    color: colors.gray[900],
   },
   propertyCard: {
     position: 'absolute',
@@ -555,9 +555,9 @@ const styles = StyleSheet.create({
     color: colors.loss.main,
   },
   propertyStrategy: {
-    fontWeight: '400',
-    fontSize: 12,
-    color: colors.gray[500],
+    fontWeight: '500',
+    fontSize: 13,
+    color: colors.gray[700],
   },
   viewButton: {
     flexDirection: 'row',

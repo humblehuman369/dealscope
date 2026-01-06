@@ -243,9 +243,9 @@ const styles = StyleSheet.create({
     borderColor: colors.primary[100],
   },
   navLabel: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
-    color: colors.gray[700],
+    color: colors.gray[900],
   },
   divider: {
     height: 1,

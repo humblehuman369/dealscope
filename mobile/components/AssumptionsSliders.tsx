@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   editBadgeText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: colors.primary[600],
   },

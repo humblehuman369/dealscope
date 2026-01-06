@@ -516,8 +516,8 @@ const styles = StyleSheet.create({
   },
   setupHintText: {
     flex: 1,
-    fontSize: 12,
-    color: colors.gray[600],
+    fontSize: 13,
+    color: colors.gray[700],
     lineHeight: 18,
   },
 });
