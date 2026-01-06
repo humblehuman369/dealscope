@@ -213,34 +213,37 @@ export default function ScenarioComparison({
       
       {/* Saved Scenarios Pills */}
       {scenarios.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {scenarios.map(s => (
-            <div 
-              key={s.id} 
-              className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-navy-600 rounded text-[13px]"
-            >
-              <span className="font-medium dark:text-white">{s.name}</span>
-              <button 
-                onClick={() => handleDuplicateScenario(s)}
-                className="p-0.5 hover:bg-gray-200 rounded"
-                title="Duplicate"
+        <div className="bg-white dark:bg-navy-800 rounded-lg p-3 border border-[#0465f2]">
+          <p className="text-[13px] font-semibold text-gray-600 dark:text-gray-300 mb-2">Saved Scenarios</p>
+          <div className="flex flex-wrap gap-1.5">
+            {scenarios.map(s => (
+              <div 
+                key={s.id} 
+                className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-navy-600 rounded text-[13px]"
               >
-                <Copy className="w-2.5 h-2.5 text-gray-500" />
-              </button>
-              <button 
-                onClick={() => handleDeleteScenario(s.id)}
-                className="p-0.5 hover:bg-red-100 rounded"
-                title="Delete"
-              >
-                <Trash2 className="w-2.5 h-2.5 text-red-500" />
-              </button>
-            </div>
-          ))}
+                <span className="font-medium dark:text-white">{s.name}</span>
+                <button 
+                  onClick={() => handleDuplicateScenario(s)}
+                  className="p-0.5 hover:bg-gray-200 rounded"
+                  title="Duplicate"
+                >
+                  <Copy className="w-2.5 h-2.5 text-gray-500" />
+                </button>
+                <button 
+                  onClick={() => handleDeleteScenario(s.id)}
+                  className="p-0.5 hover:bg-red-100 rounded"
+                  title="Delete"
+                >
+                  <Trash2 className="w-2.5 h-2.5 text-red-500" />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
       
       {/* Comparison Table */}
-      <div className="bg-white dark:bg-navy-700/50 rounded-xl border border-gray-200 dark:border-navy-600 overflow-hidden">
+      <div className="bg-white dark:bg-navy-800 rounded-xl border border-[#0465f2] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -412,7 +415,7 @@ export default function ScenarioComparison({
       
       {/* Best Scenario Highlight */}
       {scenarios.length > 0 && (
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-lg p-4 border border-amber-300 dark:border-amber-700">
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-lg p-4 border border-[#0465f2]">
           <h3 className="text-[14px] font-bold text-gray-900 dark:text-white mb-1.5">Best Performing Scenario</h3>
           <p className="text-[14px] text-gray-700 dark:text-gray-300">
             Based on 10-year total wealth, 
@@ -430,9 +433,9 @@ export default function ScenarioComparison({
       
       {/* Empty State */}
       {scenarios.length === 0 && (
-        <div className="text-center py-6 text-gray-500 dark:text-gray-400">
-          <p className="text-[14px] font-medium">No saved scenarios yet</p>
-          <p className="text-[13px]">Adjust assumptions and click "Save Current" to compare different scenarios</p>
+        <div className="bg-white dark:bg-navy-800 rounded-lg p-6 border border-[#0465f2] text-center">
+          <p className="text-[14px] font-medium text-gray-600 dark:text-gray-300">No saved scenarios yet</p>
+          <p className="text-[13px] text-gray-500 dark:text-gray-400">Adjust assumptions and click "Save Current" to compare different scenarios</p>
         </div>
       )}
     </div>
