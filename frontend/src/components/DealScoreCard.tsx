@@ -46,7 +46,7 @@ function ScoreRing({ score, grade, size = 180 }: { score: number; grade: string;
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#e5e7eb"
+          className="stroke-gray-200 dark:stroke-navy-600"
           strokeWidth="12"
         />
         {/* Progress circle */}
@@ -94,14 +94,14 @@ function ScoreBar({
   
   return (
     <div className="space-y-0.5">
-      <div className="flex items-center justify-between text-xs">
+      <div className="flex items-center justify-between text-[13px]">
         <div className="flex items-center gap-1.5">
-          <Icon className="w-3 h-3 text-gray-400" />
-          <span className="text-gray-600">{label}</span>
+          <Icon className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+          <span className="text-gray-600 dark:text-gray-300">{label}</span>
         </div>
-        <span className="font-medium text-gray-700">{score}/{maxScore}</span>
+        <span className="font-medium text-gray-700 dark:text-white">{score}/{maxScore}</span>
       </div>
-      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-gray-100 dark:bg-navy-600 rounded-full overflow-hidden">
         <div 
           className={`h-full rounded-full transition-all duration-500 ${
             percentage >= 80 ? 'bg-emerald-500' :
@@ -152,8 +152,8 @@ export default function DealScoreCard({ metrics, compact = false }: DealScoreCar
     <div className="space-y-4">
       {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-800">Deal Score</h2>
-        <p className="text-sm text-gray-500">Comprehensive deal analysis</p>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-emerald-400">Deal Score</h2>
+        <p className="text-[14px] text-gray-500 dark:text-gray-400">Comprehensive deal analysis</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -162,18 +162,18 @@ export default function DealScoreCard({ metrics, compact = false }: DealScoreCar
           <ScoreRing score={score.overall} grade={score.grade} size={140} />
           
           <div className={`mt-3 px-4 py-2 rounded-lg text-center ${
-            score.overall >= 70 ? 'bg-emerald-50 border border-emerald-200' :
-            score.overall >= 50 ? 'bg-blue-50 border border-blue-200' :
-            score.overall >= 30 ? 'bg-amber-50 border border-amber-200' :
-            'bg-red-50 border border-red-200'
+            score.overall >= 70 ? 'bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700' :
+            score.overall >= 50 ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700' :
+            score.overall >= 30 ? 'bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700' :
+            'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700'
           }`}>
-            <div className="text-sm font-medium text-gray-900">{score.verdict}</div>
+            <div className="text-[14px] font-medium text-gray-900 dark:text-white">{score.verdict}</div>
           </div>
         </div>
 
         {/* Score Breakdown */}
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Score Breakdown</h3>
+          <h3 className="text-[14px] font-medium text-gray-700 dark:text-gray-300 mb-2">Score Breakdown</h3>
           
           <ScoreBar label="Cash Flow" score={score.cashFlow} maxScore={20} icon={DollarSign} />
           <ScoreBar label="Cash-on-Cash" score={score.cashOnCash} maxScore={20} icon={Percent} />
@@ -230,21 +230,21 @@ export default function DealScoreCard({ metrics, compact = false }: DealScoreCar
 
       {/* Quick Stats */}
       <div className="grid grid-cols-4 gap-2">
-        <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-          <div className="text-base font-semibold text-gray-900">{formatCurrency(metrics.monthlyCashFlow)}</div>
-          <div className="text-[10px] text-gray-400 uppercase tracking-wide">Monthly CF</div>
+        <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5 text-center">
+          <div className="text-base font-semibold text-gray-900 dark:text-white">{formatCurrency(metrics.monthlyCashFlow)}</div>
+          <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Monthly CF</div>
         </div>
-        <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-          <div className="text-base font-semibold text-gray-900">{(metrics.cashOnCash * 100).toFixed(1)}%</div>
-          <div className="text-[10px] text-gray-400 uppercase tracking-wide">CoC Return</div>
+        <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5 text-center">
+          <div className="text-base font-semibold text-gray-900 dark:text-white">{(metrics.cashOnCash * 100).toFixed(1)}%</div>
+          <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">CoC Return</div>
         </div>
-        <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-          <div className="text-base font-semibold text-gray-900">{(metrics.capRate * 100).toFixed(1)}%</div>
-          <div className="text-[10px] text-gray-400 uppercase tracking-wide">Cap Rate</div>
+        <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5 text-center">
+          <div className="text-base font-semibold text-gray-900 dark:text-white">{(metrics.capRate * 100).toFixed(1)}%</div>
+          <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Cap Rate</div>
         </div>
-        <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-          <div className="text-base font-semibold text-gray-900">{metrics.dscr.toFixed(2)}</div>
-          <div className="text-[10px] text-gray-400 uppercase tracking-wide">Debt Service Coverage Ratio</div>
+        <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5 text-center">
+          <div className="text-base font-semibold text-gray-900 dark:text-white">{metrics.dscr.toFixed(2)}</div>
+          <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Debt Service Coverage Ratio</div>
         </div>
       </div>
     </div>

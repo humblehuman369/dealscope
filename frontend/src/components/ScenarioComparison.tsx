@@ -67,8 +67,8 @@ function ComparisonRow({
   const bestValue = highlightBest && validValues.length > 1 ? Math.max(...validValues) : null
   
   return (
-    <tr className={`border-b border-gray-100 ${highlight ? 'bg-emerald-50' : ''}`}>
-      <td className={`py-2 px-3 text-xs ${highlight ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
+    <tr className={`border-b border-gray-100 dark:border-navy-600 ${highlight ? 'bg-emerald-50 dark:bg-emerald-900/20' : ''}`}>
+      <td className={`py-2 px-3 text-[13px] ${highlight ? 'font-medium text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>
         {label}
       </td>
       {values.map((value, i) => {
@@ -76,9 +76,9 @@ function ComparisonRow({
         return (
           <td 
             key={i} 
-            className={`py-2 px-3 text-xs text-right font-medium ${
-              isBest ? 'text-emerald-600 bg-emerald-100' : 
-              highlight ? 'text-gray-900' : 'text-gray-700'
+            className={`py-2 px-3 text-[13px] text-right font-medium ${
+              isBest ? 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30' : 
+              highlight ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-white'
             }`}
           >
             {formatValue(value)}
@@ -187,8 +187,8 @@ export default function ScenarioComparison({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-800">Scenario Comparison</h2>
-          <p className="text-sm text-gray-500">Compare different assumptions side-by-side</p>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-emerald-400">Scenario Comparison</h2>
+          <p className="text-[14px] text-gray-500 dark:text-gray-400">Compare different assumptions side-by-side</p>
         </div>
         
         <div className="flex items-center gap-2">
@@ -217,9 +217,9 @@ export default function ScenarioComparison({
           {scenarios.map(s => (
             <div 
               key={s.id} 
-              className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 rounded text-xs"
+              className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-navy-600 rounded text-[13px]"
             >
-              <span className="font-medium">{s.name}</span>
+              <span className="font-medium dark:text-white">{s.name}</span>
               <button 
                 onClick={() => handleDuplicateScenario(s)}
                 className="p-0.5 hover:bg-gray-200 rounded"
@@ -240,17 +240,17 @@ export default function ScenarioComparison({
       )}
       
       {/* Comparison Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-navy-700/50 rounded-xl border border-gray-200 dark:border-navy-600 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left py-2.5 px-3 text-xs font-medium text-gray-600 w-40">Metric</th>
+              <tr className="bg-gray-50 dark:bg-navy-700 border-b border-gray-200 dark:border-navy-600">
+                <th className="text-left py-2.5 px-3 text-[13px] font-medium text-gray-600 dark:text-gray-300 w-40">Metric</th>
                 {compareScenarios.map((s, i) => (
-                  <th key={s.id} className="text-right py-2.5 px-3 text-xs font-medium text-gray-600 min-w-[100px]">
+                  <th key={s.id} className="text-right py-2.5 px-3 text-[13px] font-medium text-gray-600 dark:text-gray-300 min-w-[100px]">
                     <div className="flex items-center justify-end gap-1">
                       {i === 0 && (
-                        <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] rounded">
+                        <span className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-[10px] rounded">
                           Current
                         </span>
                       )}
@@ -262,8 +262,8 @@ export default function ScenarioComparison({
             </thead>
             <tbody>
               {/* Key Assumptions */}
-              <tr className="bg-gray-50">
-                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-bold text-gray-700 uppercase tracking-wide">
+              <tr className="bg-gray-50 dark:bg-navy-700">
+                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                   Key Assumptions
                 </td>
               </tr>
@@ -294,8 +294,8 @@ export default function ScenarioComparison({
               />
               
               {/* Year 1 Performance */}
-              <tr className="bg-gray-50">
-                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-bold text-gray-700 uppercase tracking-wide">
+              <tr className="bg-gray-50 dark:bg-navy-700">
+                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                   Year 1 Performance
                 </td>
               </tr>
@@ -318,8 +318,8 @@ export default function ScenarioComparison({
               />
               
               {/* 10-Year Summary */}
-              <tr className="bg-emerald-50">
-                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-bold text-emerald-800 uppercase tracking-wide">
+              <tr className="bg-emerald-50 dark:bg-emerald-900/20">
+                <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[11px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wide">
                   10-Year Summary
                 </td>
               </tr>
@@ -360,8 +360,8 @@ export default function ScenarioComparison({
               {/* Extended View */}
               {expandedView && (
                 <>
-                  <tr className="bg-gray-50">
-                    <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                  <tr className="bg-gray-50 dark:bg-navy-700">
+                    <td colSpan={compareScenarios.length + 1} className="py-1.5 px-3 text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                       Year 5 Snapshot
                     </td>
                   </tr>
@@ -394,7 +394,7 @@ export default function ScenarioComparison({
         {/* Expand/Collapse Button */}
         <button
           onClick={() => setExpandedView(!expandedView)}
-          className="w-full py-2 flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:bg-gray-50 border-t border-gray-100"
+          className="w-full py-2 flex items-center justify-center gap-1.5 text-[13px] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-navy-600 border-t border-gray-100 dark:border-navy-600"
         >
           {expandedView ? (
             <>
@@ -412,15 +412,15 @@ export default function ScenarioComparison({
       
       {/* Best Scenario Highlight */}
       {scenarios.length > 0 && (
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-4 border border-amber-300">
-          <h3 className="text-sm font-bold text-gray-900 mb-1.5">Best Performing Scenario</h3>
-          <p className="text-sm text-gray-700">
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-lg p-4 border border-amber-300 dark:border-amber-700">
+          <h3 className="text-[14px] font-bold text-gray-900 dark:text-white mb-1.5">Best Performing Scenario</h3>
+          <p className="text-[14px] text-gray-700 dark:text-gray-300">
             Based on 10-year total wealth, 
-            <span className="font-bold text-amber-700">
+            <span className="font-bold text-amber-700 dark:text-amber-400">
               {' '}{[...compareScenarios].sort((a, b) => b.summary.totalWealth - a.summary.totalWealth)[0].name}
             </span>
             {' '}generates the highest returns with{' '}
-            <span className="font-bold text-gray-900">
+            <span className="font-bold text-gray-900 dark:text-white">
               {formatCompact([...compareScenarios].sort((a, b) => b.summary.totalWealth - a.summary.totalWealth)[0].summary.totalWealth)}
             </span>
             {' '}in total wealth.
@@ -430,9 +430,9 @@ export default function ScenarioComparison({
       
       {/* Empty State */}
       {scenarios.length === 0 && (
-        <div className="text-center py-6 text-gray-500">
-          <p className="text-sm font-medium">No saved scenarios yet</p>
-          <p className="text-xs">Adjust assumptions and click "Save Current" to compare different scenarios</p>
+        <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+          <p className="text-[14px] font-medium">No saved scenarios yet</p>
+          <p className="text-[13px]">Adjust assumptions and click "Save Current" to compare different scenarios</p>
         </div>
       )}
     </div>
