@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -39,6 +39,7 @@ export default function HomeScreen() {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchAddress, setSearchAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const handleAnalyze = () => {
     if (!searchAddress.trim()) return;
@@ -51,6 +52,12 @@ export default function HomeScreen() {
     router.push('/(tabs)/scan');
   };
 
+  const handleStartAnalyzing = () => {
+    // Show search bar and scroll to top
+    setShowSearchBar(true);
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <KeyboardAvoidingView
@@ -58,6 +65,7 @@ export default function HomeScreen() {
         style={styles.keyboardView}
       >
         <ScrollView
+          ref={scrollViewRef}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -214,7 +222,7 @@ export default function HomeScreen() {
             </View>
 
             {/* Bottom CTA */}
-            <TouchableOpacity style={styles.bottomCta} onPress={handleScanPress}>
+            <TouchableOpacity style={styles.bottomCta} onPress={handleStartAnalyzing}>
               <LinearGradient
                 colors={[colors.primary[500], colors.accent[500]]}
                 style={styles.bottomCtaGradient}
