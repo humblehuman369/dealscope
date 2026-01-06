@@ -1405,6 +1405,10 @@ function MobileStrategyPreview({
           const isLoss = metrics.primaryValue < 0
           const isBreakeven = metrics.primaryValue === 0
           
+          // Secondary value coloring (consistent with StrategyGrid)
+          const isSecondaryLoss = metrics.secondaryValue < 0
+          const isSecondaryBreakeven = metrics.secondaryValue === 0
+          
           // Shortened names for compact view
           const displayName = strategy.id === 'ltr' ? 'Long' 
             : strategy.id === 'str' ? 'Short' 
@@ -1414,8 +1418,9 @@ function MobileStrategyPreview({
             : strategy.id === 'wholesale' ? 'Whole'
             : strategy.name // Fallback to full name for any unknown strategy
           
-          // Color based on profit/loss
-          const valueColor = isLoss ? 'text-crimson-500' : isBreakeven ? 'text-gray-400' : 'text-brand-500'
+          // Color: red for loss, gray for breakeven, blue for profit
+          const primaryColor = isLoss ? 'text-crimson-500' : isBreakeven ? 'text-gray-400' : 'text-brand-500'
+          const secondaryColor = isSecondaryLoss ? 'text-crimson-500' : isSecondaryBreakeven ? 'text-gray-400' : 'text-brand-500'
           
           return (
             <button
@@ -1433,12 +1438,12 @@ function MobileStrategyPreview({
               </div>
               
               {/* Primary Value (Cash Flow / Profit) - Color coded by profit/loss */}
-              <div className={`text-[13px] font-bold font-mono leading-tight ${isSelected ? 'text-white' : valueColor}`}>
+              <div className={`text-[13px] font-bold font-mono leading-tight ${isSelected ? 'text-white' : primaryColor}`}>
                 {metrics.primary}
               </div>
               
-              {/* Secondary Value (CoC / Margin) */}
-              <div className={`text-[13px] font-bold ${isSelected ? 'text-white/70' : 'text-gray-400 dark:text-teal'}`}>
+              {/* Secondary Value (CoC / Margin) - Color coded by profit/loss */}
+              <div className={`text-[13px] font-bold ${isSelected ? 'text-white/70' : secondaryColor}`}>
                 {metrics.secondary}
               </div>
             </button>
