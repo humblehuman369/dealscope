@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Camera,
@@ -10,7 +10,12 @@ import {
   RefreshCw,
   Users,
   Clock,
-  BarChart3
+  BarChart3,
+  Search,
+  MapPin,
+  ChevronDown,
+  ChevronUp,
+  Loader2
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { PhoneScannerMockup } from './PhoneScannerMockup';
@@ -22,6 +27,16 @@ interface MobileLandingPageProps {
 export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
   const router = useRouter();
   const { user, isAuthenticated, setShowAuthModal } = useAuth();
+  const [showSearchBar, setShowSearchBar] = useState(false);
+  const [searchAddress, setSearchAddress] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+
+  const handleAnalyze = () => {
+    if (!searchAddress.trim()) return;
+    setIsSearching(true);
+    // Navigate to property page with the address
+    router.push(`/property/${encodeURIComponent(searchAddress.trim())}`);
+  };
 
   const strategies = [
     { name: 'Long-Term Rental', roi: '18%', icon: Home, featured: false, multiplier: '3X', profit: '$42K' },
