@@ -36,15 +36,18 @@ import { MobileLandingPage } from '@/components/MobileLandingPage';
 
 // Detect if user is on mobile device or narrow viewport
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   useEffect(() => {
     const checkMobile = () => {
+      // Check for ?mobile=true query param to force mobile view
+      const urlParams = new URLSearchParams(window.location.search);
+      const forceMobile = urlParams.get('mobile') === 'true';
+      
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const isNarrowViewport = window.innerWidth <= 768;
-      const hasTouch = 'ontouchstart' in window;
-      // Show mobile landing on mobile devices, or on narrow viewports (with or without touch)
-      setIsMobile(isMobileDevice || isNarrowViewport);
+      // Show mobile landing on mobile devices, narrow viewports, or when forced
+      setIsMobile(forceMobile || isMobileDevice || isNarrowViewport);
     };
     
     checkMobile();
@@ -57,20 +60,20 @@ function useIsMobile() {
 
 export default function HomePage() {
   const isMobile = useIsMobile();
-  const [mode, setMode] = useState<'landing' | 'camera' | 'desktop'>('landing');
-  
-  // Determine initial mode based on device
-  useEffect(() => {
-    if (mode === 'landing') {
-      // Stay on landing page initially for both mobile and desktop
-    }
-  }, [isMobile, mode]);
+  const [mode, setMode] = useState<'landing' | 'camera'>('landing');
 
+  // Show camera scanner view
   if (mode === 'camera') {
     return <MobileScannerView onSwitchMode={() => setMode('landing')} />;
   }
 
-  // Show mobile landing page on mobile devices, desktop landing on larger screens
+  // Before hydration completes, show mobile by default (mobile-first)
+  // After hydration, JS detection takes over for more accurate results
+  if (isMobile === null) {
+    return <MobileLandingPage onPointAndScan={() => setMode('camera')} />;
+  }
+
+  // After hydration, use JS detection for more accurate results
   if (isMobile) {
     return <MobileLandingPage onPointAndScan={() => setMode('camera')} />;
   }
