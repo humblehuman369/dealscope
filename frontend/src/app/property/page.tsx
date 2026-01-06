@@ -795,18 +795,18 @@ function PropertyHeader({ property }: { property: PropertyData }) {
           <h2 className="text-lg font-bold text-navy-900 dark:text-white leading-tight">
             {property.address.city}, {property.address.state} {property.address.zip_code}
           </h2>
-          {/* Estimated Value + Property Details */}
-          <div className="flex items-center justify-between mt-1.5">
+          {/* Estimated Value + Property Details - always on one line */}
+          <div className="flex items-center justify-between mt-1.5 gap-2 flex-nowrap overflow-hidden">
             {estimatedValue > 0 && (
-              <span className="text-base font-bold text-brand-500 dark:text-brand-400">
+              <span className="text-[13px] font-bold text-brand-500 dark:text-brand-400 whitespace-nowrap flex-shrink-0">
                 Est. {formatCurrency(estimatedValue)}
               </span>
             )}
-            <div className="flex items-center gap-1.5 text-xs whitespace-nowrap">
+            <div className="flex items-center gap-1 text-[11px] whitespace-nowrap flex-shrink-0">
               <span className="text-teal font-medium">{property.details.bedrooms || '—'} bd</span>
-              <span className="text-gray-400 dark:text-gray-500">•</span>
+              <span className="text-gray-400 dark:text-gray-500">·</span>
               <span className="text-teal font-medium">{property.details.bathrooms || '—'} ba</span>
-              <span className="text-gray-400 dark:text-gray-500">•</span>
+              <span className="text-gray-400 dark:text-gray-500">·</span>
               <span className="text-teal font-medium">{property.details.square_footage?.toLocaleString() || '—'} sqft</span>
             </div>
           </div>
@@ -1410,8 +1410,8 @@ function MobileStrategyPreview({
           const isSecondaryBreakeven = metrics.secondaryValue === 0
           
           // Shortened names for compact view
-          const displayName = strategy.id === 'ltr' ? 'Long' 
-            : strategy.id === 'str' ? 'Short' 
+          const displayName = strategy.id === 'ltr' ? 'Long Rent' 
+            : strategy.id === 'str' ? 'Short Rent' 
             : strategy.id === 'brrrr' ? 'BRRRR'
             : strategy.id === 'flip' ? 'Flip'
             : strategy.id === 'house_hack' ? 'Hack'
