@@ -95,21 +95,73 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
         </p>
         
         {/* CTA Buttons */}
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-3 w-full max-w-[320px] mx-auto">
           <button
             onClick={onPointAndScan}
-            className="inline-flex items-center justify-center gap-2.5 px-9 py-4 bg-gradient-to-br from-brand-500 to-[#0876ff] rounded-full text-white font-semibold text-[15px] w-full max-w-[280px]"
+            className="inline-flex items-center justify-center gap-2.5 px-9 py-4 bg-gradient-to-br from-brand-500 to-[#0876ff] rounded-full text-white font-semibold text-[15px] w-full"
             style={{ boxShadow: '0 8px 30px rgba(4, 101, 242, 0.45)' }}
           >
             <Camera className="w-5 h-5" />
             Point & Scan
           </button>
+          
+          {/* Search by Address Toggle */}
           <button
-            onClick={() => router.push('/search')}
-            className="text-white text-sm underline"
+            onClick={() => setShowSearchBar(!showSearchBar)}
+            className="text-white text-sm underline flex items-center gap-1"
           >
             Or search by address
+            {showSearchBar ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
           </button>
+
+          {/* Search Dropdown */}
+          {showSearchBar && (
+            <div 
+              className="w-full mt-2 p-4 rounded-2xl border border-white/10 animate-in slide-in-from-top-2 duration-200"
+              style={{ 
+                background: 'rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(12px)'
+              }}
+            >
+              <div className="flex items-center gap-2 bg-white/10 rounded-xl px-4 py-3 border border-white/10">
+                <MapPin className="w-5 h-5 text-accent-500 flex-shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Enter property address..."
+                  value={searchAddress}
+                  onChange={(e) => setSearchAddress(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+                  className="flex-1 bg-transparent text-white placeholder-white/50 text-sm outline-none"
+                  autoFocus
+                />
+              </div>
+              <button
+                onClick={handleAnalyze}
+                disabled={!searchAddress.trim() || isSearching}
+                className={`w-full mt-3 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all
+                  ${searchAddress.trim() 
+                    ? 'bg-gradient-to-r from-brand-500 to-accent-500 text-white shadow-lg shadow-brand-500/30' 
+                    : 'bg-white/10 text-white/40 cursor-not-allowed'
+                  }`}
+              >
+                {isSearching ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4" />
+                    Analyze Property
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
