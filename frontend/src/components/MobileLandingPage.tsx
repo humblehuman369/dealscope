@@ -371,4 +371,3 @@ function FeatureItem({ icon: Icon, text }: FeatureItemProps) {
     </div>
   );
 }
-
