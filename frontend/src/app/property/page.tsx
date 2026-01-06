@@ -893,7 +893,7 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">{label}</span>
+        <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedValue)}</span>
           <span className="text-[0.6875rem] font-semibold text-brand-500 dark:text-brand-400">
@@ -940,7 +940,7 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">{label}</span>
+        <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{displayPercent}%</span>
       </div>
       <div className="relative h-[3px] mt-1.5">
@@ -983,7 +983,7 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">{label}</span>
+        <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(dollarValue)}</span>
           <span className="text-[0.6875rem] font-semibold text-brand-500 dark:text-brand-400">({displayPercent}%)</span>
@@ -1386,7 +1386,7 @@ function MobileStrategyPreview({
           <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold">
             2
           </div>
-          <span className="text-base font-bold text-navy-900 dark:text-white">Live Results</span>
+          <span className="text-base font-bold text-navy-900 dark:text-white">Select Strategy</span>
         </div>
         <span className="text-xs text-gray-400 dark:text-gray-500">Tap to select strategy</span>
       </div>
@@ -1422,7 +1422,7 @@ function MobileStrategyPreview({
               }`}
             >
               {/* Strategy Name */}
-              <div className={`text-[10px] font-semibold mb-0.5 ${isSelected ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
+              <div className={`text-[11px] font-bold mb-0.5 ${isSelected ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
                 {displayName}
               </div>
               
@@ -1454,7 +1454,7 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
   return (
     <div className={compact ? 'py-1.5' : 'py-2'}>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">After Repair Value</span>
+        <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">After Repair Value</span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedArv)}</span>
           <span className="text-[0.6875rem] font-semibold text-brand-500 dark:text-brand-400">+{displayPercent}%</span>
