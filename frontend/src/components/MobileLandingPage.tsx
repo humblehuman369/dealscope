@@ -47,16 +47,11 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
 
       {/* Header */}
       <header className="relative z-10 flex justify-between items-center px-5 py-4">
-        <div className="flex items-center gap-2">
-          <img 
-            src="/images/investiq-logo-icon.png" 
-            alt="InvestIQ" 
-            className="h-9 w-9 rounded-full object-cover"
-          />
-          <span className="text-white font-bold text-lg">
-            <span className="text-brand-500">IQ</span>
-          </span>
-        </div>
+        <img 
+          src="/images/InvestIQ Logo 3D (Dark View).png" 
+          alt="InvestIQ" 
+          className="h-10 object-contain"
+        />
         
         {isAuthenticated && user ? (
           <button
@@ -96,7 +91,7 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
           </button>
           <button
             onClick={() => router.push('/search')}
-            className="text-[#8892a0] text-sm underline"
+            className="text-white text-sm underline"
           >
             Or search by address
           </button>
@@ -104,41 +99,8 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
       </section>
 
       {/* Phone Showcase */}
-      <section className="relative z-10 px-8 pt-10 pb-5 flex justify-center">
-        <div className="relative py-[50px] px-[50px]">
-          {/* Floating Stats */}
-          <FloatingStat 
-            position="top-0 left-0"
-            label="ROI:"
-            value="27%"
-            trend="up"
-          />
-          
-          <FloatingStat 
-            position="top-0 right-0"
-            label="Cash Flow:"
-            value="5X"
-            chart="growth"
-          />
-          
-          <FloatingStat 
-            position="bottom-10 left-0"
-            label="Profit:"
-            value="$81K"
-            trend="up"
-            chart="bars"
-          />
-          
-          <FloatingStat 
-            position="bottom-10 right-0"
-            label="Cap Rate:"
-            value="12%"
-            trend="up"
-          />
-
-          {/* Phone Image */}
-          <PhoneScannerMockup />
-        </div>
+      <section className="relative z-10 px-4 pt-8 pb-5 flex justify-center">
+        <PhoneScannerMockup />
       </section>
 
       {/* Strategies Section */}
@@ -173,72 +135,6 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
           Get instant recommendations for <span className="text-accent-500 font-medium">maximum profit</span>
         </p>
       </div>
-    </div>
-  );
-}
-
-// Floating Stat Component
-interface FloatingStatProps {
-  position: string;
-  label: string;
-  value: string;
-  trend?: 'up' | 'down';
-  chart?: 'bars' | 'growth';
-}
-
-function FloatingStat({ position, label, value, trend, chart }: FloatingStatProps) {
-  return (
-    <div className={`absolute ${position} bg-white rounded-xl p-3 shadow-lg z-20`}
-      style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.2)' }}
-    >
-      <div className="text-[9px] font-medium text-[#8892a0] mb-0.5">{label}</div>
-      <div className="text-lg font-bold text-[#07172e] flex items-baseline gap-1">
-        {value}
-        {trend === 'up' && <span className="text-emerald-500 text-xs">↑</span>}
-      </div>
-      
-      {chart === 'bars' && (
-        <div className="flex items-end gap-[3px] mt-1.5">
-          {[8, 12, 10, 16, 20].map((h, i) => (
-            <div 
-              key={i}
-              className="w-2 rounded-sm"
-              style={{ 
-                height: `${h}px`,
-                background: 'linear-gradient(180deg, #00e5ff 0%, #0465f2 100%)'
-              }}
-            />
-          ))}
-        </div>
-      )}
-      
-      {chart === 'growth' && (
-        <svg viewBox="0 0 50 24" className="w-[50px] h-6 mt-1">
-          <defs>
-            <linearGradient id="growthGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" style={{ stopColor: '#0465f2' }} />
-              <stop offset="100%" style={{ stopColor: '#00e5ff' }} />
-            </linearGradient>
-            <linearGradient id="growthFill" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" style={{ stopColor: '#00e5ff' }} />
-              <stop offset="100%" style={{ stopColor: '#0465f2', stopOpacity: 0 }} />
-            </linearGradient>
-          </defs>
-          <path 
-            d="M2 20 L10 16 L18 18 L26 12 L34 14 L42 8 L48 4" 
-            stroke="url(#growthGrad)" 
-            strokeWidth="2.5" 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            fill="none"
-          />
-          <path 
-            d="M2 20 L10 16 L18 18 L26 12 L34 14 L42 8 L48 4 L48 24 L2 24 Z" 
-            fill="url(#growthFill)" 
-            opacity="0.2"
-          />
-        </svg>
-      )}
     </div>
   );
 }
