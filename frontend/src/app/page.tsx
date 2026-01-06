@@ -34,15 +34,17 @@ import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
 import { getCardinalDirection } from '@/lib/geoCalculations';
 import { MobileLandingPage } from '@/components/MobileLandingPage';
 
-// Detect if user is on mobile device
+// Detect if user is on mobile device or narrow viewport
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
-      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        (window.innerWidth <= 768 && 'ontouchstart' in window);
-      setIsMobile(mobile);
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isNarrowViewport = window.innerWidth <= 768;
+      const hasTouch = 'ontouchstart' in window;
+      // Show mobile landing on mobile devices, or on narrow viewports (with or without touch)
+      setIsMobile(isMobileDevice || isNarrowViewport);
     };
     
     checkMobile();
