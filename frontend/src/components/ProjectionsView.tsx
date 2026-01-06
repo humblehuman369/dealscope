@@ -147,15 +147,15 @@ function StackedAreaChart({
       <div className="flex flex-wrap justify-center gap-3 sm:gap-6 mt-3">
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-purple-500 flex-shrink-0" />
-          <span className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Cash Flow</span>
+          <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">Cash Flow</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-blue-500 flex-shrink-0" />
-          <span className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Loan Paydown</span>
+          <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">Loan Paydown</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 flex-shrink-0" />
-          <span className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">Appreciation</span>
+          <span className="text-[13px] font-bold text-gray-700 dark:text-white whitespace-nowrap">Appreciation</span>
         </div>
       </div>
     </div>
@@ -328,21 +328,21 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
 
       {/* Wealth Growth Chart */}
       <div className="bg-white dark:bg-navy-800 rounded-xl border border-gray-100 dark:border-navy-700 p-3 sm:p-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 sm:mb-3">Wealth Accumulation</h3>
+        <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">Wealth Accumulation</h3>
         <StackedAreaChart data={projections} height={140} />
         
         <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-gray-100 dark:border-navy-700">
           <div className="text-center min-w-0">
-            <div className="text-sm sm:text-lg font-bold text-purple-600">{formatCompact(year10.cumulativeCashFlow)}</div>
-            <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">Cash Flow</div>
+            <div className="text-[14px] sm:text-lg font-bold text-purple-600">{formatCompact(year10.cumulativeCashFlow)}</div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">Cash Flow</div>
           </div>
           <div className="text-center min-w-0">
-            <div className="text-sm sm:text-lg font-bold text-blue-600">{formatCompact(year10.equityFromPaydown)}</div>
-            <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">Principal Paydown</div>
+            <div className="text-[14px] sm:text-lg font-bold text-blue-600">{formatCompact(year10.equityFromPaydown)}</div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">Principal Paydown</div>
           </div>
           <div className="text-center min-w-0">
-            <div className="text-sm sm:text-lg font-bold text-emerald-600">{formatCompact(year10.equityFromAppreciation)}</div>
-            <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">Appreciation</div>
+            <div className="text-[14px] sm:text-lg font-bold text-emerald-600">{formatCompact(year10.equityFromAppreciation)}</div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white truncate">Appreciation</div>
           </div>
         </div>
       </div>
@@ -350,30 +350,30 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
       {/* Annual Cash Flow Chart */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
         <div className="bg-white dark:bg-navy-800 rounded-xl border border-gray-100 dark:border-navy-700 p-3 sm:p-4">
-          <h3 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 sm:mb-3">Annual Cash Flow</h3>
+          <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">Annual Cash Flow</h3>
           <MiniBarChart 
             data={projections.map(p => p.cashFlow)} 
             color="green"
             height={80}
           />
           <div className="mt-2 sm:mt-3 text-center">
-            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Avg: </span>
-            <span className="text-xs sm:text-sm font-semibold text-emerald-600">
+            <span className="text-[13px] font-bold text-gray-600 dark:text-white">Avg: </span>
+            <span className="text-[13px] sm:text-[14px] font-bold text-emerald-600">
               {formatCurrency(summary.totalCashFlow / 10)}/year
             </span>
           </div>
         </div>
         
         <div className="bg-white dark:bg-navy-800 rounded-xl border border-gray-100 dark:border-navy-700 p-3 sm:p-4">
-          <h3 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 sm:mb-3">Equity Growth</h3>
+          <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">Equity Growth</h3>
           <MiniBarChart 
             data={projections.map(p => p.totalEquity)} 
             color="blue"
             height={80}
           />
           <div className="mt-2 sm:mt-3 text-center">
-            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Year 10: </span>
-            <span className="text-xs sm:text-sm font-semibold text-blue-600">
+            <span className="text-[13px] font-bold text-gray-600 dark:text-white">Year 10: </span>
+            <span className="text-[13px] sm:text-[14px] font-bold text-blue-600">
               {formatCompact(year10.totalEquity)}
             </span>
           </div>
@@ -382,30 +382,30 @@ export default function ProjectionsView({ assumptions, onAssumptionChange }: Pro
 
       {/* Growth Assumptions */}
       <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-xl p-3 sm:p-4 border border-indigo-100 dark:border-indigo-800">
-        <h3 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 sm:mb-3">Growth Assumptions</h3>
+        <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">Growth Assumptions</h3>
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <div>
-            <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Annual Appreciation</div>
-            <div className="text-xs sm:text-sm font-semibold text-indigo-600 dark:text-indigo-400">{formatPercent(assumptions.annualAppreciation)}</div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white">Annual Appreciation</div>
+            <div className="text-[13px] sm:text-[14px] font-bold text-indigo-600 dark:text-indigo-400">{formatPercent(assumptions.annualAppreciation)}</div>
           </div>
           <div>
-            <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Rent Growth</div>
-            <div className="text-xs sm:text-sm font-semibold text-indigo-600 dark:text-indigo-400">{formatPercent(assumptions.annualRentGrowth)}</div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white">Rent Growth</div>
+            <div className="text-[13px] sm:text-[14px] font-bold text-indigo-600 dark:text-indigo-400">{formatPercent(assumptions.annualRentGrowth)}</div>
           </div>
           <div>
-            <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Property Tax Growth</div>
-            <div className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">{formatPercent(assumptions.propertyTaxGrowth)}</div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white">Property Tax Growth</div>
+            <div className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white">{formatPercent(assumptions.propertyTaxGrowth)}</div>
           </div>
           <div>
-            <div className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Insurance Growth</div>
-            <div className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">{formatPercent(assumptions.insuranceGrowth)}</div>
+            <div className="text-[13px] font-bold text-gray-600 dark:text-white">Insurance Growth</div>
+            <div className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white">{formatPercent(assumptions.insuranceGrowth)}</div>
           </div>
         </div>
       </div>
 
       {/* Year-by-Year Table */}
       <div className="bg-white dark:bg-navy-800 rounded-xl border border-gray-100 dark:border-navy-700 p-3 sm:p-4">
-        <h3 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-2 sm:mb-3">Year-by-Year Breakdown</h3>
+        <h3 className="text-[13px] sm:text-[14px] font-bold text-gray-700 dark:text-white mb-2 sm:mb-3">Year-by-Year Breakdown</h3>
         <ProjectionTable data={projections} />
       </div>
     </div>
