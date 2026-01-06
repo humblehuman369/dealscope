@@ -137,17 +137,17 @@ const METRIC_TOOLTIPS: Record<string, { short: string; expanded: string }> = {
   'Estimated Repairs': { short: 'Expected cost to fix and renovate the property.', expanded: 'A rough estimate used to size rehab scope and determine whether the deal meets investor margins.' },
 }
 
-// Tooltip component with hover
+// Tooltip component with hover - doubled icon and text sizes
 function MetricTooltip({ label }: { label: string }) {
   const tooltip = METRIC_TOOLTIPS[label]
   if (!tooltip) return null
   
   return (
-    <span className="relative group inline-flex ml-1">
-      <HelpCircle className="w-3 h-3 text-gray-400 cursor-help" />
-      <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-navy-900 text-white text-[11px] rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-56 z-50 shadow-lg pointer-events-none">
-        <span className="font-medium block mb-1">{tooltip.short}</span>
-        <span className="text-gray-300 block leading-relaxed">{tooltip.expanded}</span>
+    <span className="relative group inline-flex ml-1.5">
+      <HelpCircle className="w-5 h-5 text-gray-400 dark:text-gray-500 cursor-help" />
+      <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-4 py-3 bg-navy-900 text-white text-[14px] rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-72 z-50 shadow-lg pointer-events-none">
+        <span className="font-bold block mb-1.5 text-[15px]">{tooltip.short}</span>
+        <span className="text-gray-300 block leading-relaxed text-[13px]">{tooltip.expanded}</span>
         <span className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-navy-900" />
       </span>
     </span>
@@ -787,22 +787,28 @@ function PropertyHeader({ property }: { property: PropertyData }) {
       {/* Top row: Property Info + Save Button */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1 min-w-0">
-          {/* Full Address */}
+          {/* Address Line 1: Street */}
           <h1 className="text-lg font-bold text-navy-900 dark:text-white leading-tight">
-            {property.address.street}, {property.address.city}, {property.address.state} {property.address.zip_code}
+            {property.address.street},
           </h1>
+          {/* Address Line 2: City, State, Zip */}
+          <h2 className="text-lg font-bold text-navy-900 dark:text-white leading-tight">
+            {property.address.city}, {property.address.state} {property.address.zip_code}
+          </h2>
           {/* Estimated Value + Property Details */}
-          <div className="flex items-center gap-2.5 text-xs mt-1">
+          <div className="flex items-center justify-between mt-1.5">
             {estimatedValue > 0 && (
               <span className="text-base font-bold text-brand-500 dark:text-brand-400">
                 Est. {formatCurrency(estimatedValue)}
               </span>
             )}
-            <span className="text-gray-500 dark:text-gray-400">{property.details.bedrooms || '—'} bd</span>
-            <span className="text-gray-500 dark:text-gray-400">•</span>
-            <span className="text-gray-500 dark:text-gray-400">{property.details.bathrooms || '—'} ba</span>
-            <span className="text-gray-500 dark:text-gray-400">•</span>
-            <span className="text-gray-500 dark:text-gray-400">{property.details.square_footage?.toLocaleString() || '—'} sqft</span>
+            <div className="flex items-center gap-1.5 text-xs whitespace-nowrap">
+              <span className="text-gray-500 dark:text-[#00e5ff] font-medium">{property.details.bedrooms || '—'} bd</span>
+              <span className="text-gray-400 dark:text-gray-500">•</span>
+              <span className="text-gray-500 dark:text-[#00e5ff] font-medium">{property.details.bathrooms || '—'} ba</span>
+              <span className="text-gray-400 dark:text-gray-500">•</span>
+              <span className="text-gray-500 dark:text-[#00e5ff] font-medium">{property.details.square_footage?.toLocaleString() || '—'} sqft</span>
+            </div>
           </div>
         </div>
         
@@ -896,7 +902,7 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <div className="flex items-center gap-1.5">
           <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedValue)}</span>
-          <span className="text-[14px] font-bold text-brand-500 dark:text-brand-400">
+          <span className="text-[14px] font-bold text-brand-500 dark:text-[#00e5ff]">
             {adjSign}{adjPercent.toFixed(0)}%
           </span>
         </div>
@@ -986,7 +992,7 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">{label}</span>
         <div className="flex items-center gap-1.5">
           <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(dollarValue)}</span>
-          <span className="text-[14px] font-bold text-brand-500 dark:text-brand-400">({displayPercent}%)</span>
+          <span className="text-[14px] font-bold text-brand-500 dark:text-[#00e5ff]">({displayPercent}%)</span>
         </div>
       </div>
       <div className="relative h-[3px] mt-1.5">
@@ -1432,7 +1438,7 @@ function MobileStrategyPreview({
               </div>
               
               {/* Secondary Value (CoC / Margin) */}
-              <div className={`text-[14px] font-bold ${isSelected ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'}`}>
+              <div className={`text-[14px] font-bold ${isSelected ? 'text-white/70' : 'text-gray-400 dark:text-[#00e5ff]'}`}>
                 {metrics.secondary}
               </div>
             </button>
@@ -1457,7 +1463,7 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
         <span className="text-[14px] font-bold text-gray-700 dark:text-gray-300">After Repair Value</span>
         <div className="flex items-center gap-1.5">
           <span className="text-[15px] font-bold text-navy-900 dark:text-white font-mono">{formatCurrency(computedArv)}</span>
-          <span className="text-[14px] font-bold text-brand-500 dark:text-brand-400">+{displayPercent}%</span>
+          <span className="text-[14px] font-bold text-brand-500 dark:text-[#00e5ff]">+{displayPercent}%</span>
         </div>
       </div>
       <div className="relative h-[3px] mt-1.5">
@@ -1490,13 +1496,15 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
 function StepHeader({ step, title }: { step: number; title: string }) {
   return (
     <div className="mb-2">
-      <div className="flex items-center gap-2.5">
-        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold flex-shrink-0">
-          {step}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-brand-500 text-white text-sm font-bold flex-shrink-0">
+            {step}
+          </div>
+          <h2 className="text-base font-bold text-navy-900 dark:text-white">{title}</h2>
         </div>
-        <h2 className="text-base font-bold text-navy-900 dark:text-white">{title}</h2>
+        <span className="text-[13px] font-semibold text-white">Tap bar to change</span>
       </div>
-      <p className="text-[13px] font-semibold text-white mt-1 ml-9">Tap slide bar to change terms</p>
     </div>
   )
 }
@@ -1522,15 +1530,18 @@ function ActionPrompt({ icon, text, variant = 'default' }: {
 }
 
 // Section header with action prompt for Fine Tune sections
-function FineTuneHeader({ title }: { 
-  title: string
-}) {
+function FineTuneHeader() {
   return (
-    <div className="mb-3">
-      <h4 className="text-[0.9375rem] font-bold text-[#00e5ff]">
-        {title}
-      </h4>
-      <p className="text-[13px] font-semibold text-white mt-0.5">Tap slide bar to change terms</p>
+    <div className="mb-3 flex items-start justify-between">
+      <div>
+        <h4 className="text-[0.9375rem] font-bold text-[#00e5ff]">
+          Tune the Deal
+        </h4>
+        <p className="text-[13px] font-semibold italic text-[#00e5ff] opacity-80">
+          → Instantly see outcome
+        </p>
+      </div>
+      <span className="text-[13px] font-semibold text-white">Tap bar to change</span>
     </div>
   )
 }
@@ -1855,9 +1866,7 @@ function LTRDetails({ calc, assumptions, update, updateAdjustment }: {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 px-1 sm:px-2">
         {/* LEFT: Tune The Deal */}
         <div>
-          <FineTuneHeader 
-            title="Tune the Deal → Instantly see outcome" 
-          />
+          <FineTuneHeader />
           <div className="space-y-3.5">
             <AdjustmentSlider label="Monthly Rent" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
             <PercentSlider label="Vacancy Rate" value={assumptions.vacancyRate} onChange={(v) => update('vacancyRate', v)} compact maxPercent={30} />
@@ -1896,9 +1905,7 @@ function STRDetails({ calc, assumptions, update, updateAdjustment }: {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 px-1 sm:px-2">
         {/* LEFT: Tune The Deal */}
         <div className="space-y-3">
-          <FineTuneHeader 
-            title="Tune the Deal → Instantly see outcome" 
-          />
+          <FineTuneHeader />
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-3 space-y-0">
             <AdjustmentSlider label="Daily Rate" baseValue={assumptions.baseAverageDailyRate} adjustment={assumptions.averageDailyRateAdj} onChange={(v) => updateAdjustment('averageDailyRateAdj', v)} compact />
             <PercentSlider label="Occupancy Rate" value={assumptions.occupancyRate} onChange={(v) => update('occupancyRate', v)} compact maxPercent={95} />
@@ -1937,9 +1944,7 @@ function BRRRRDetails({ calc, assumptions, update, updateAdjustment }: {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 px-1 sm:px-2">
         {/* LEFT: Tune The Deal */}
         <div className="space-y-3">
-          <FineTuneHeader 
-            title="Tune the Deal → Instantly see outcome" 
-          />
+          <FineTuneHeader />
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 space-y-0">
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
@@ -1973,9 +1978,7 @@ function FlipDetails({ calc, assumptions, update }: { calc: ReturnType<typeof ca
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 px-1 sm:px-2">
         {/* LEFT: Tune The Deal */}
         <div className="space-y-3">
-          <FineTuneHeader 
-            title="Tune the Deal → Instantly see outcome" 
-          />
+          <FineTuneHeader />
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 space-y-0">
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
             <PercentSlider label="Rehab Cost" value={assumptions.rehabCostPct} onChange={(v) => update('rehabCostPct', v)} compact maxPercent={50} />
@@ -2054,9 +2057,7 @@ function HouseHackDetails({ calc, assumptions, update, updateAdjustment }: {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 px-1 sm:px-2">
         {/* LEFT: Tune The Deal */}
         <div className="space-y-3">
-          <FineTuneHeader 
-            title="Tune the Deal → Instantly see outcome" 
-          />
+          <FineTuneHeader />
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 space-y-0">
             <RoomsRentedSlider roomsRented={assumptions.roomsRented} totalBedrooms={assumptions.totalBedrooms} onChange={(v) => update('roomsRented', v)} compact />
             <AdjustmentSlider label="Total Rent (all rooms)" baseValue={assumptions.baseMonthlyRent} adjustment={assumptions.monthlyRentAdj} onChange={(v) => updateAdjustment('monthlyRentAdj', v)} compact />
@@ -2172,9 +2173,7 @@ function WholesaleDetails({ calc, assumptions, update, updateAdjustment, propert
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 px-1 sm:px-2">
         {/* LEFT: Tune The Deal */}
         <div className="space-y-3">
-          <FineTuneHeader 
-            title="Tune the Deal → Instantly see outcome" 
-          />
+          <FineTuneHeader />
           <div className="bg-gray-50/50 dark:bg-navy-700/50 rounded-lg p-2 sm:p-3 space-y-0">
             <AdjustmentSlider label="Purchase Price" baseValue={assumptions.basePurchasePrice} adjustment={assumptions.purchasePriceAdj} onChange={(v) => updateAdjustment('purchasePriceAdj', v)} compact />
             <ArvSlider purchasePrice={assumptions.purchasePrice} arvPct={assumptions.arvPct} onChange={(v) => update('arvPct', v)} compact />
