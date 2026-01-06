@@ -231,20 +231,20 @@ export default function DealScoreCard({ metrics, compact = false }: DealScoreCar
       {/* Quick Stats */}
       <div className="grid grid-cols-4 gap-2">
         <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5 text-center">
-          <div className="text-base font-semibold text-gray-900 dark:text-white">{formatCurrency(metrics.monthlyCashFlow)}</div>
-          <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Monthly CF</div>
+          <div className="text-[14px] font-bold text-gray-900 dark:text-white">{formatCurrency(metrics.monthlyCashFlow)}</div>
+          <div className="text-[13px] font-bold text-gray-600 dark:text-white uppercase tracking-wide">Monthly CF</div>
         </div>
         <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5 text-center">
-          <div className="text-base font-semibold text-gray-900 dark:text-white">{(metrics.cashOnCash * 100).toFixed(1)}%</div>
-          <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">CoC Return</div>
+          <div className="text-[14px] font-bold text-gray-900 dark:text-white">{(metrics.cashOnCash * 100).toFixed(1)}%</div>
+          <div className="text-[13px] font-bold text-gray-600 dark:text-white uppercase tracking-wide">CoC Return</div>
         </div>
         <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5 text-center">
-          <div className="text-base font-semibold text-gray-900 dark:text-white">{(metrics.capRate * 100).toFixed(1)}%</div>
-          <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Cap Rate</div>
+          <div className="text-[14px] font-bold text-gray-900 dark:text-white">{(metrics.capRate * 100).toFixed(1)}%</div>
+          <div className="text-[13px] font-bold text-gray-600 dark:text-white uppercase tracking-wide">Cap Rate</div>
         </div>
         <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5 text-center">
-          <div className="text-base font-semibold text-gray-900 dark:text-white">{metrics.dscr.toFixed(2)}</div>
-          <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Debt Service Coverage Ratio</div>
+          <div className="text-[14px] font-bold text-gray-900 dark:text-white">{metrics.dscr.toFixed(2)}</div>
+          <div className="text-[13px] font-bold text-gray-600 dark:text-white uppercase tracking-wide">Debt Service Coverage Ratio</div>
         </div>
       </div>
     </div>
