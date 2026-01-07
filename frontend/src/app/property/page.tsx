@@ -880,7 +880,7 @@ function GradientSlider({ label, value, min, max, step, onChange, formatType = '
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-white border-[3px] border-brand-500 shadow-md cursor-grab transition-transform active:scale-110 slider-thumb"
           style={{ '--slider-position': `${percentage}%` } as React.CSSProperties}
         />
-        <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} aria-label={label} title={label} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+        <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} aria-label={label} title={label} className="absolute inset-x-0 w-full h-12 top-1/2 -translate-y-1/2 opacity-0 cursor-pointer" />
       </div>
     </div>
   )
@@ -929,7 +929,7 @@ function AdjustmentSlider({ label, baseValue, adjustment, onChange, compact = fa
           onChange={(e) => onChange((parseFloat(e.target.value) - 50) / 100)} 
           aria-label={label}
           title={`Adjust ${label}`}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+          className="absolute inset-x-0 w-full h-12 top-1/2 -translate-y-1/2 opacity-0 cursor-pointer" 
         />
       </div>
     </div>
@@ -971,7 +971,7 @@ function PercentSlider({ label, value, onChange, compact = false, maxPercent = 1
           onChange={(e) => onChange(parseFloat(e.target.value))} 
           aria-label={label}
           title={`Adjust ${label}`}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+          className="absolute inset-x-0 w-full h-12 top-1/2 -translate-y-1/2 opacity-0 cursor-pointer" 
         />
       </div>
     </div>
@@ -1017,7 +1017,7 @@ function PercentDollarSlider({ label, value, baseAmount, onChange, compact = fal
           onChange={(e) => onChange(parseFloat(e.target.value))} 
           aria-label={label}
           title={`Adjust ${label}`}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+          className="absolute inset-x-0 w-full h-12 top-1/2 -translate-y-1/2 opacity-0 cursor-pointer" 
         />
       </div>
     </div>
@@ -1061,7 +1061,7 @@ function MaintenanceSlider({ value, onChange, annualRent, compact = false }: {
           onChange={(e) => onChange(parseFloat(e.target.value))} 
           aria-label="Maintenance percentage"
           title={`Adjust Maintenance - ${displayPercent}% = ${formatCurrency(monthlyValue)}/mo`}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+          className="absolute inset-x-0 w-full h-12 top-1/2 -translate-y-1/2 opacity-0 cursor-pointer" 
         />
       </div>
     </div>
@@ -1104,7 +1104,7 @@ function ManagementSlider({ value, onChange, annualRent, compact = false }: {
           onChange={(e) => onChange(parseFloat(e.target.value))}
           aria-label="Management percentage"
           title="Adjust Management percentage"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          className="absolute inset-x-0 w-full h-12 top-1/2 -translate-y-1/2 opacity-0 cursor-pointer"
         />
       </div>
     </div>
@@ -1143,7 +1143,7 @@ function RoomsRentedSlider({ roomsRented, totalBedrooms, onChange, compact = fal
           onChange={(e) => onChange(parseInt(e.target.value))} 
           aria-label="Rooms Rented"
           title="Adjust number of rooms rented"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+          className="absolute inset-x-0 w-full h-12 top-1/2 -translate-y-1/2 opacity-0 cursor-pointer" 
         />
       </div>
       {/* Room indicators */}
@@ -1496,7 +1496,7 @@ function ArvSlider({ purchasePrice, arvPct, onChange, compact = false }: {
           onChange={(e) => onChange(parseFloat(e.target.value))} 
           aria-label="After Repair Value percentage"
           title="Adjust After Repair Value percentage"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+          className="absolute inset-x-0 w-full h-12 top-1/2 -translate-y-1/2 opacity-0 cursor-pointer" 
         />
       </div>
     </div>

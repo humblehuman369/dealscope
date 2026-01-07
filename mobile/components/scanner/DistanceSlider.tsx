@@ -19,6 +19,7 @@ interface DistanceSliderProps {
 
 const SLIDER_WIDTH = 280;
 const THUMB_SIZE = 28;
+const TOUCH_TARGET_SIZE = 48; // Larger hit area for easier touch
 
 /**
  * Distance slider for adjusting estimated property distance.
@@ -95,8 +96,10 @@ export function DistanceSlider({
           </View>
 
           <GestureDetector gesture={panGesture}>
-            <Animated.View style={[styles.thumb, thumbStyle]}>
-              <View style={styles.thumbInner} />
+            <Animated.View style={[styles.thumbHitArea, thumbStyle]}>
+              <View style={styles.thumb}>
+                <View style={styles.thumbInner} />
+              </View>
             </Animated.View>
           </GestureDetector>
 
@@ -159,7 +162,7 @@ const styles = StyleSheet.create({
   },
   trackContainer: {
     flex: 1,
-    height: 44,
+    height: 56,
     justifyContent: 'center',
   },
   track: {
@@ -173,8 +176,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[500],
     borderRadius: 3,
   },
-  thumb: {
+  thumbHitArea: {
     position: 'absolute',
+    width: TOUCH_TARGET_SIZE,
+    height: TOUCH_TARGET_SIZE,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: (THUMB_SIZE - TOUCH_TARGET_SIZE) / 2, // Center the larger hit area over the visual thumb
+  },
+  thumb: {
     width: THUMB_SIZE,
     height: THUMB_SIZE,
     borderRadius: THUMB_SIZE / 2,
