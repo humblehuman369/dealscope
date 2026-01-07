@@ -75,11 +75,9 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
 
       {/* Header */}
       <header className="relative z-10 flex justify-between items-center px-5 py-3">
-        <img 
-          src={isDark ? "/images/InvestIQ Logo 3D (Dark View).png" : "/images/InvestIQ Logo 3D (Light View).png"}
-          alt="InvestIQ" 
-          className="h-7 object-contain"
-        />
+        <div className={`text-xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          Invest<span className="text-accent-500">IQ</span>
+        </div>
         
         {isAuthenticated && user ? (
           <button
