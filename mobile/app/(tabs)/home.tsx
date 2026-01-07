@@ -112,14 +112,9 @@ export default function HomeScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Image
-              source={isDark 
-                ? require('../../assets/InvestIQ Logo 3D (Dark View).png')
-                : require('../../assets/InvestIQ Logo 3D (Light View).png')
-              }
-              style={styles.logoLarge}
-              resizeMode="contain"
-            />
+            <Text style={[styles.logoText, { color: isDark ? '#fff' : colors.navy[900] }]}>
+              Invest<Text style={{ color: colors.accent[500] }}>IQ</Text>
+            </Text>
             
             {/* Theme Toggle */}
             <TouchableOpacity 
@@ -441,9 +436,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
   },
-  logoLarge: {
-    width: 110,
-    height: 32,
+  logoText: {
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: -0.5,
   },
   headerRight: {
     flexDirection: 'row',
