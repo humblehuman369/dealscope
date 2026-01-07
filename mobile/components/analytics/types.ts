@@ -181,3 +181,271 @@ export const SLIDER_GROUPS: SliderGroup[] = [
   },
 ];
 
+// =============================================================================
+// STRATEGY TYPES
+// =============================================================================
+
+export type StrategyType = 
+  | 'longTermRental'
+  | 'shortTermRental'
+  | 'brrrr'
+  | 'fixAndFlip'
+  | 'houseHack'
+  | 'wholesale';
+
+export interface StrategyBase {
+  type: StrategyType;
+  label: string;
+  icon: string;
+  color: string;
+  description: string;
+}
+
+// Short-Term Rental (STR)
+export interface STRInputs {
+  purchasePrice: number;
+  downPaymentPercent: number;
+  closingCostsPercent: number;
+  interestRate: number;
+  loanTermYears: number;
+  
+  // STR specific
+  averageDailyRate: number;
+  occupancyRate: number;
+  cleaningFee: number;
+  cleaningCostPerTurn: number;
+  averageStayLength: number;
+  
+  // Expenses
+  annualPropertyTax: number;
+  annualInsurance: number;
+  monthlyHoa: number;
+  utilities: number;
+  maintenanceRate: number;
+  managementRate: number;
+  platformFeeRate: number;
+  
+  // Furnishing
+  furnishingBudget: number;
+}
+
+export interface STRMetrics {
+  grossNightlyRevenue: number;
+  monthlyGrossRevenue: number;
+  annualGrossRevenue: number;
+  revPAR: number; // Revenue Per Available Room
+  
+  // Net
+  monthlyNetRevenue: number;
+  monthlyCashFlow: number;
+  annualCashFlow: number;
+  
+  // Returns
+  cashOnCash: number;
+  capRate: number;
+  
+  // Investment
+  totalCashRequired: number;
+  loanAmount: number;
+  mortgagePayment: number;
+  
+  // Expenses breakdown
+  monthlyExpenses: {
+    mortgage: number;
+    taxes: number;
+    insurance: number;
+    hoa: number;
+    utilities: number;
+    maintenance: number;
+    management: number;
+    platformFees: number;
+    cleaning: number;
+  };
+}
+
+// BRRRR Strategy
+export interface BRRRRInputs {
+  // Purchase
+  purchasePrice: number;
+  closingCostsPercent: number;
+  
+  // Rehab
+  rehabBudget: number;
+  rehabTimeMonths: number;
+  holdingCostsMonthly: number;
+  
+  // After Repair Value
+  arv: number;
+  
+  // Refinance
+  refinanceLTV: number;
+  refinanceRate: number;
+  refinanceTermYears: number;
+  refinanceCosts: number;
+  
+  // Rental
+  monthlyRent: number;
+  vacancyRate: number;
+  maintenanceRate: number;
+  managementRate: number;
+  annualPropertyTax: number;
+  annualInsurance: number;
+  monthlyHoa: number;
+}
+
+export interface BRRRRMetrics {
+  // Initial investment
+  totalInitialInvestment: number;
+  purchaseCosts: number;
+  rehabCosts: number;
+  holdingCosts: number;
+  
+  // Refinance
+  refinanceLoanAmount: number;
+  cashOutAmount: number;
+  cashLeftInDeal: number;
+  cashRecoupPercent: number;
+  
+  // Post-Refinance
+  newMortgagePayment: number;
+  monthlyCashFlow: number;
+  annualCashFlow: number;
+  
+  // Returns
+  cashOnCash: number; // Based on cash left in deal
+  infiniteReturn: boolean; // If 100%+ cash recouped
+  equityCreated: number;
+  equityPercent: number;
+  
+  // Timeline
+  totalTimeMonths: number;
+}
+
+// Fix & Flip
+export interface FlipInputs {
+  // Purchase
+  purchasePrice: number;
+  closingCostsPercent: number;
+  
+  // Rehab
+  rehabBudget: number;
+  rehabTimeMonths: number;
+  holdingCostsMonthly: number;
+  
+  // Financing
+  financingType: 'cash' | 'hardMoney' | 'conventional';
+  loanAmount: number;
+  interestRate: number;
+  points: number;
+  
+  // Sale
+  arv: number;
+  sellingCostsPercent: number;
+  daysOnMarket: number;
+}
+
+export interface FlipMetrics {
+  // Costs
+  totalCost: number;
+  purchaseCosts: number;
+  rehabCosts: number;
+  holdingCosts: number;
+  financingCosts: number;
+  sellingCosts: number;
+  
+  // Returns
+  netProfit: number;
+  roi: number;
+  annualizedROI: number;
+  profitMargin: number;
+  
+  // Cash requirements
+  cashRequired: number;
+  
+  // Timeline
+  totalProjectTime: number;
+  
+  // 70% Rule check
+  maxAllowableOffer: number;
+  meetsSeventyPercentRule: boolean;
+}
+
+// House Hack
+export interface HouseHackInputs extends AnalyticsInputs {
+  // Additional units
+  totalUnits: number;
+  ownerOccupiedUnits: number;
+  rentedUnits: number;
+  rentPerUnit: number[];
+  
+  // Owner costs
+  currentHousingPayment: number;
+  
+  // House hack specific
+  sharedUtilities: number;
+  additionalMaintenance: number;
+}
+
+export interface HouseHackMetrics extends CalculatedMetrics {
+  // Housing cost analysis
+  effectiveHousingCost: number;
+  housingCostSavings: number;
+  housingCostReductionPercent: number;
+  
+  // Per unit breakdown
+  revenuePerRentedUnit: number;
+  cashFlowPerRentedUnit: number;
+  
+  // Comparison to renting
+  rentVsBuyBenefit: number;
+}
+
+// Wholesale
+export interface WholesaleInputs {
+  // Contract
+  contractPrice: number;
+  earnestMoney: number;
+  inspectionPeriodDays: number;
+  
+  // Property
+  arv: number;
+  estimatedRepairs: number;
+  
+  // Assignment
+  assignmentFee: number;
+  
+  // Marketing/costs
+  marketingCosts: number;
+  closingCosts: number;
+}
+
+export interface WholesaleMetrics {
+  // Profit
+  netProfit: number;
+  roi: number;
+  
+  // Buyer analysis
+  endBuyerAllInPrice: number;
+  endBuyerMaxProfit: number;
+  endBuyerSpread: number;
+  
+  // Deal quality
+  meetsSeventyPercentRule: boolean;
+  maxAllowableOffer: number;
+  
+  // Investment
+  totalCashRequired: number;
+}
+
+// Unified Strategy Result
+export interface StrategyAnalysis<T = unknown> {
+  strategy: StrategyType;
+  score: number;
+  grade: string;
+  color: string;
+  metrics: T;
+  insights: Insight[];
+  isViable: boolean;
+  rank?: number;
+}
+
