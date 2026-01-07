@@ -587,14 +587,14 @@ const styles = StyleSheet.create({
     color: colors.primary[700],
   },
   sliderTrackWrapper: {
-    paddingVertical: 16,
-    marginVertical: -8,
+    paddingVertical: 24,
+    marginVertical: -12,
     marginHorizontal: -8,
     paddingHorizontal: 8,
   },
   slider: {
     width: '100%',
-    height: 44,
+    height: 56,
   },
   sliderMinMax: {
     flexDirection: 'row',
