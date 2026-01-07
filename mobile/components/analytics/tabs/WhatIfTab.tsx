@@ -1,5 +1,6 @@
 /**
  * WhatIfTab - Interactive scenario builder for what-if analysis
+ * Features: Preset pills (Base/Negotiate/Best Case), slider deltas, impact calculations
  */
 
 import React, { useState, useMemo } from 'react';
@@ -19,13 +20,13 @@ interface ScenarioPreset {
   id: string;
   name: string;
   desc: string;
-  changes: Partial<AnalyticsInputs>;
+  icon: string;
 }
 
 const PRESETS: ScenarioPreset[] = [
-  { id: 'base', name: 'Base', desc: 'As listed', changes: {} },
-  { id: 'negotiate', name: 'Negotiate', desc: '-10% price', changes: {} },
-  { id: 'best', name: 'Best Case', desc: 'Max profit', changes: {} },
+  { id: 'base', name: 'Base', desc: 'As listed', icon: '📋' },
+  { id: 'negotiate', name: 'Negotiate', desc: '-10% price', icon: '🤝' },
+  { id: 'best', name: 'Best Case', desc: 'Max profit', icon: '🚀' },
 ];
 
 export function WhatIfTab({ baseInputs, baseMetrics, isDark = true }: WhatIfTabProps) {
@@ -61,6 +62,7 @@ export function WhatIfTab({ baseInputs, baseMetrics, isDark = true }: WhatIfTabP
   // Calculate impact (difference from base)
   const cashFlowDiff = scenarioMetrics.monthlyCashFlow - baseMetrics.monthlyCashFlow;
   const unlockedPotential = cashFlowDiff > 0 ? cashFlowDiff : 0;
+  const scoreDiff = scenarioScore.score - baseScore.score;
 
   // Impact for each slider
   const getImpact = (key: keyof typeof scenarioInputs, value: number) => {
@@ -70,7 +72,7 @@ export function WhatIfTab({ baseInputs, baseMetrics, isDark = true }: WhatIfTabP
   };
 
   const handlePresetPress = (presetId: string) => {
-    Haptics.selectionAsync();
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setActivePreset(presetId);
     
     switch (presetId) {
@@ -108,6 +110,53 @@ export function WhatIfTab({ baseInputs, baseMetrics, isDark = true }: WhatIfTabP
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Preset Pills - Enhanced Design */}
+      <View style={styles.presetSection}>
+        <Text style={[styles.sectionLabel, { color: isDark ? '#6b7280' : '#9ca3af' }]}>
+          Quick Scenarios
+        </Text>
+        <View style={styles.presetRow}>
+          {PRESETS.map(preset => {
+            const isActive = activePreset === preset.id;
+            return (
+              <TouchableOpacity
+                key={preset.id}
+                style={[
+                  styles.presetPill,
+                  { 
+                    backgroundColor: isActive 
+                      ? isDark ? 'rgba(77,208,225,0.18)' : 'rgba(0,126,167,0.12)'
+                      : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(7,23,46,0.03)',
+                    borderColor: isActive 
+                      ? isDark ? '#4dd0e1' : '#007ea7'
+                      : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.08)',
+                    borderWidth: isActive ? 1.5 : 1,
+                  }
+                ]}
+                onPress={() => handlePresetPress(preset.id)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.presetIcon}>{preset.icon}</Text>
+                <Text style={[
+                  styles.presetName, 
+                  { 
+                    color: isActive 
+                      ? isDark ? '#4dd0e1' : '#007ea7'
+                      : isDark ? '#fff' : '#07172e',
+                    fontWeight: isActive ? '700' : '600',
+                  }
+                ]}>
+                  {preset.name}
+                </Text>
+                <Text style={[styles.presetDesc, { color: '#6b7280' }]}>
+                  {preset.desc}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
       {/* Unlocked Potential Hero */}
       <View style={[styles.heroCard, { 
         backgroundColor: isDark 
@@ -120,43 +169,27 @@ export function WhatIfTab({ baseInputs, baseMetrics, isDark = true }: WhatIfTabP
         <Text style={[styles.heroLabel, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
           🔓 Unlocked Potential
         </Text>
-        <Text style={[styles.heroValue, { color: '#22c55e' }]}>
-          +{formatCurrency(unlockedPotential)}/mo
+        <Text style={[styles.heroValue, { color: unlockedPotential >= 0 ? '#22c55e' : '#ef4444' }]}>
+          {unlockedPotential >= 0 ? '+' : ''}{formatCurrency(cashFlowDiff)}/mo
         </Text>
         <Text style={[styles.heroSub, { color: isDark ? '#aab2bd' : '#6b7280' }]}>
           Additional Cash Flow
         </Text>
-        <Text style={[styles.heroCompare, { color: isDark ? '#aab2bd' : '#6b7280' }]}>
-          Base: {formatCurrency(baseMetrics.monthlyCashFlow)}/mo → Optimized: {formatCurrency(scenarioMetrics.monthlyCashFlow)}/mo
-        </Text>
-      </View>
-
-      {/* Preset Pills */}
-      <View style={styles.presetRow}>
-        {PRESETS.map(preset => (
-          <TouchableOpacity
-            key={preset.id}
-            style={[
-              styles.presetPill,
-              { 
-                backgroundColor: activePreset === preset.id 
-                  ? isDark ? 'rgba(77,208,225,0.15)' : 'rgba(0,126,167,0.1)'
-                  : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(7,23,46,0.03)',
-                borderColor: activePreset === preset.id 
-                  ? isDark ? '#4dd0e1' : '#007ea7'
-                  : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.08)',
-              }
-            ]}
-            onPress={() => handlePresetPress(preset.id)}
-          >
-            <Text style={[styles.presetName, { color: isDark ? '#fff' : '#07172e' }]}>
-              {preset.name}
+        <View style={styles.heroCompareRow}>
+          <View style={styles.heroCompareItem}>
+            <Text style={[styles.heroCompareLabel, { color: '#6b7280' }]}>Base</Text>
+            <Text style={[styles.heroCompareValue, { color: isDark ? '#aab2bd' : '#6b7280' }]}>
+              {formatCurrency(baseMetrics.monthlyCashFlow)}
             </Text>
-            <Text style={[styles.presetDesc, { color: '#6b7280' }]}>
-              {preset.desc}
+          </View>
+          <Text style={[styles.heroArrow, { color: '#4dd0e1' }]}>→</Text>
+          <View style={styles.heroCompareItem}>
+            <Text style={[styles.heroCompareLabel, { color: '#22c55e' }]}>Optimized</Text>
+            <Text style={[styles.heroCompareValue, { color: '#22c55e' }]}>
+              {formatCurrency(scenarioMetrics.monthlyCashFlow)}
             </Text>
-          </TouchableOpacity>
-        ))}
+          </View>
+        </View>
       </View>
 
       {/* Scenario Builder */}
@@ -168,8 +201,11 @@ export function WhatIfTab({ baseInputs, baseMetrics, isDark = true }: WhatIfTabP
           <Text style={[styles.cardTitle, { color: isDark ? '#fff' : '#07172e' }]}>
             🎛️ Scenario Builder
           </Text>
-          <TouchableOpacity onPress={() => handlePresetPress('base')}>
-            <Text style={[styles.resetBtn, { color: '#6b7280' }]}>Reset</Text>
+          <TouchableOpacity 
+            onPress={() => handlePresetPress('base')}
+            style={[styles.resetBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,23,46,0.05)' }]}
+          >
+            <Text style={[styles.resetBtnText, { color: isDark ? '#aab2bd' : '#6b7280' }]}>↺ Reset</Text>
           </TouchableOpacity>
         </View>
         
@@ -243,21 +279,26 @@ export function WhatIfTab({ baseInputs, baseMetrics, isDark = true }: WhatIfTabP
           <ImpactBox 
             label="Monthly CF" 
             value={formatCurrency(scenarioMetrics.monthlyCashFlow)} 
+            delta={cashFlowDiff}
             isDark={isDark} 
           />
           <ImpactBox 
             label="CoC Return" 
             value={formatPercent(scenarioMetrics.cashOnCash)} 
+            delta={scenarioMetrics.cashOnCash - baseMetrics.cashOnCash}
+            isPercent
             isDark={isDark} 
           />
           <ImpactBox 
             label="DSCR" 
             value={scenarioMetrics.dscr.toFixed(2)} 
+            delta={scenarioMetrics.dscr - baseMetrics.dscr}
             isDark={isDark} 
           />
           <ImpactBox 
             label="Deal Score" 
             value={String(scenarioScore.score)} 
+            delta={scoreDiff}
             isDark={isDark} 
           />
         </View>
@@ -271,15 +312,20 @@ export function WhatIfTab({ baseInputs, baseMetrics, isDark = true }: WhatIfTabP
         <Text style={[styles.cardTitle, { color: isDark ? '#fff' : '#07172e' }]}>
           💡 Key Insights
         </Text>
-        <Text style={[styles.insightText, { color: isDark ? '#aab2bd' : '#6b7280' }]}>
-          • 10% price reduction = +{formatCurrency(Math.abs(getImpact('purchasePrice', baseInputs.purchasePrice * 0.9)))}/mo
-        </Text>
-        <Text style={[styles.insightText, { color: isDark ? '#aab2bd' : '#6b7280' }]}>
-          • Each $100 rent increase ≈ ~$92/mo net
-        </Text>
-        <Text style={[styles.insightText, { color: isDark ? '#aab2bd' : '#6b7280' }]}>
-          • 1% rate increase = ~{formatCurrency(Math.abs(getImpact('interestRate', baseInputs.interestRate + 0.01)))}/mo
-        </Text>
+        <View style={styles.insightsList}>
+          <InsightItem 
+            text={`10% price reduction = +${formatCurrency(Math.abs(getImpact('purchasePrice', baseInputs.purchasePrice * 0.9)))}/mo`}
+            isDark={isDark}
+          />
+          <InsightItem 
+            text="Each $100 rent increase ≈ ~$92/mo net"
+            isDark={isDark}
+          />
+          <InsightItem 
+            text={`1% rate increase = ~${formatCurrency(Math.abs(getImpact('interestRate', baseInputs.interestRate + 0.01)))}/mo`}
+            isDark={isDark}
+          />
+        </View>
       </View>
     </ScrollView>
   );
@@ -313,6 +359,10 @@ function WhatIfSlider({
     return formatPercent(v * 100);
   };
 
+  // Calculate delta from base
+  const deltaPercent = baseValue !== 0 ? ((value - baseValue) / baseValue) * 100 : 0;
+  const hasDelta = Math.abs(deltaPercent) >= 0.5;
+
   return (
     <View style={styles.sliderRow}>
       <View style={styles.sliderHeader}>
@@ -324,13 +374,25 @@ function WhatIfSlider({
             Base: {formatValue(baseValue)}
           </Text>
         </View>
-        <View style={styles.sliderValueRow}>
-          <Text style={[styles.sliderValue, { color: isDark ? '#fff' : '#07172e' }]}>
-            {formatValue(value)}
-          </Text>
+        <View style={styles.sliderValueColumn}>
+          <View style={styles.sliderValueRow}>
+            <Text style={[styles.sliderValue, { color: isDark ? '#fff' : '#07172e' }]}>
+              {formatValue(value)}
+            </Text>
+            {hasDelta && (
+              <View style={[
+                styles.deltaBadge,
+                { backgroundColor: deltaPercent > 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)' }
+              ]}>
+                <Text style={[styles.deltaText, { color: deltaPercent > 0 ? '#22c55e' : '#ef4444' }]}>
+                  {deltaPercent > 0 ? '+' : ''}{deltaPercent.toFixed(0)}%
+                </Text>
+              </View>
+            )}
+          </View>
           {impact !== 0 && (
             <Text style={[styles.sliderImpact, { color: impact > 0 ? '#22c55e' : '#ef4444' }]}>
-              {impact > 0 ? '+' : ''}{formatCurrency(impact)}
+              {impact > 0 ? '+' : ''}{formatCurrency(impact)}/mo
             </Text>
           )}
         </View>
@@ -351,13 +413,49 @@ function WhatIfSlider({
   );
 }
 
-function ImpactBox({ label, value, isDark }: { label: string; value: string; isDark: boolean }) {
+function ImpactBox({ 
+  label, 
+  value, 
+  delta,
+  isPercent = false,
+  isDark 
+}: { 
+  label: string; 
+  value: string; 
+  delta?: number;
+  isPercent?: boolean;
+  isDark: boolean;
+}) {
+  const hasPositiveDelta = delta && delta > 0;
+  const hasNegativeDelta = delta && delta < 0;
+  
   return (
     <View style={[styles.impactBox, { 
       backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(7,23,46,0.03)',
     }]}>
       <Text style={[styles.impactValue, { color: '#22c55e' }]}>{value}</Text>
       <Text style={[styles.impactLabel, { color: '#6b7280' }]}>{label}</Text>
+      {delta !== undefined && delta !== 0 && (
+        <Text style={[styles.impactDelta, { 
+          color: hasPositiveDelta ? '#22c55e' : '#ef4444' 
+        }]}>
+          {hasPositiveDelta ? '↑' : '↓'} {isPercent 
+            ? `${Math.abs(delta).toFixed(1)}%` 
+            : typeof delta === 'number' && Math.abs(delta) < 10 
+              ? delta.toFixed(2) 
+              : formatCurrency(Math.abs(delta))
+          }
+        </Text>
+      )}
+    </View>
+  );
+}
+
+function InsightItem({ text, isDark }: { text: string; isDark: boolean }) {
+  return (
+    <View style={styles.insightRow}>
+      <Text style={[styles.insightBullet, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>•</Text>
+      <Text style={[styles.insightText, { color: isDark ? '#aab2bd' : '#6b7280' }]}>{text}</Text>
     </View>
   );
 }
@@ -365,6 +463,37 @@ function ImpactBox({ label, value, isDark }: { label: string; value: string; isD
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  presetSection: {
+    marginBottom: 12,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  presetRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  presetPill: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  presetIcon: {
+    fontSize: 18,
+    marginBottom: 4,
+  },
+  presetName: {
+    fontSize: 13,
+    marginBottom: 2,
+  },
+  presetDesc: {
+    fontSize: 10,
   },
   heroCard: {
     borderRadius: 16,
@@ -388,29 +517,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
   },
-  heroCompare: {
-    fontSize: 11,
-    marginTop: 8,
-  },
-  presetRow: {
+  heroCompareRow: {
     flexDirection: 'row',
-    gap: 6,
-    marginBottom: 12,
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.08)',
   },
-  presetPill: {
-    flex: 1,
-    padding: 10,
-    borderRadius: 10,
-    borderWidth: 1,
+  heroCompareItem: {
     alignItems: 'center',
   },
-  presetName: {
-    fontSize: 12,
-    fontWeight: '600',
+  heroCompareLabel: {
+    fontSize: 10,
     marginBottom: 2,
   },
-  presetDesc: {
-    fontSize: 9,
+  heroCompareValue: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  heroArrow: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   card: {
     borderRadius: 14,
@@ -429,7 +558,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   resetBtn: {
-    fontSize: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+  },
+  resetBtnText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   sliderRow: {
     marginBottom: 16,
@@ -448,12 +583,26 @@ const styles = StyleSheet.create({
     fontSize: 10,
     marginTop: 2,
   },
-  sliderValueRow: {
+  sliderValueColumn: {
     alignItems: 'flex-end',
+  },
+  sliderValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   sliderValue: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  deltaBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  deltaText: {
+    fontSize: 10,
+    fontWeight: '700',
   },
   sliderImpact: {
     fontSize: 11,
@@ -494,10 +643,27 @@ const styles = StyleSheet.create({
     fontSize: 10,
     marginTop: 2,
   },
+  impactDelta: {
+    fontSize: 10,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  insightsList: {
+    gap: 8,
+  },
+  insightRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+  },
+  insightBullet: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: -1,
+  },
   insightText: {
     fontSize: 12,
-    lineHeight: 20,
-    marginBottom: 4,
+    lineHeight: 18,
+    flex: 1,
   },
 });
-
