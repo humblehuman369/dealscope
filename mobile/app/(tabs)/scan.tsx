@@ -165,7 +165,8 @@ export default function ScanScreen() {
 
   const handleViewDetails = useCallback(() => {
     if (result?.property?.address) {
-      router.push(`/property/${encodeURIComponent(result.property.address)}`);
+      // Route to new Property Analytics page (not old /property page)
+      router.push(`/analytics/${encodeURIComponent(result.property.address)}`);
     }
   }, [result, router]);
 

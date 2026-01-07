@@ -141,7 +141,7 @@ export default function HistoryScreen() {
   
   const handlePropertyPress = useCallback((property: DisplayProperty) => {
     const fullAddress = `${property.address}, ${property.city}, ${property.state}`;
-    router.push(`/property/${encodeURIComponent(fullAddress)}`);
+    router.push(`/analytics/${encodeURIComponent(fullAddress)}`);
   }, [router]);
   
   const handleToggleFavorite = useCallback(async (id: string) => {

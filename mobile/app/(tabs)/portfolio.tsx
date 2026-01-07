@@ -80,7 +80,7 @@ export default function PortfolioScreen() {
     const fullAddress = [property.address, property.city, property.state]
       .filter(Boolean)
       .join(', ');
-    router.push(`/property/${encodeURIComponent(fullAddress)}`);
+    router.push(`/analytics/${encodeURIComponent(fullAddress)}`);
   }, [router]);
 
   const portfolioSummary = summary || {
