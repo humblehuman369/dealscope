@@ -128,7 +128,7 @@ export default function HomeScreen() {
             >
               <Ionicons 
                 name={isDark ? 'sunny' : 'moon'} 
-                size={20} 
+                size={16} 
                 color={isDark ? colors.accent[500] : colors.navy[900]} 
               />
             </TouchableOpacity>
@@ -439,11 +439,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 12,
   },
   logoLarge: {
-    width: 140,
-    height: 44,
+    width: 110,
+    height: 32,
   },
   headerRight: {
     flexDirection: 'row',
@@ -451,9 +451,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   themeToggle: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },

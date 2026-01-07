@@ -74,20 +74,20 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
       />
 
       {/* Header */}
-      <header className="relative z-10 flex justify-between items-center px-5 py-4">
+      <header className="relative z-10 flex justify-between items-center px-5 py-3">
         <img 
           src={isDark ? "/images/InvestIQ Logo 3D (Dark View).png" : "/images/InvestIQ Logo 3D (Light View).png"}
           alt="InvestIQ" 
-          className="h-10 object-contain"
+          className="h-7 object-contain"
         />
         
         {isAuthenticated && user ? (
           <button
             onClick={() => router.push('/dashboard')}
-            className={`px-5 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+            className={`text-sm font-medium transition-colors ${
               isDark 
-                ? 'bg-white/[0.08] border border-white/[0.15] text-[#e1e8ed]' 
-                : 'bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200'
+                ? 'text-white/70 hover:text-white' 
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             Dashboard
@@ -95,10 +95,10 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
         ) : (
           <button
             onClick={() => setShowAuthModal('login')}
-            className={`px-5 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+            className={`text-sm font-medium transition-colors ${
               isDark 
-                ? 'bg-white/[0.08] border border-white/[0.15] text-[#e1e8ed]' 
-                : 'bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200'
+                ? 'text-white/70 hover:text-white' 
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             Sign In
