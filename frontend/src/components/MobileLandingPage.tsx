@@ -76,7 +76,7 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
       {/* Header */}
       <header className="relative z-10 flex justify-between items-center px-5 py-3">
         <div className={`text-xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          Invest<span className="text-accent-500">IQ</span>
+          Invest<span className="text-brand-500">IQ</span>
         </div>
         
         {isAuthenticated && user ? (
