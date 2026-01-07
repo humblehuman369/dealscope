@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,28 +9,87 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Image,
   Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path, Rect, Circle, G } from 'react-native-svg';
+import Svg, { 
+  Path, 
+  Rect, 
+  Defs, 
+  LinearGradient as SvgLinearGradient, 
+  Stop, 
+  Text as SvgText 
+} from 'react-native-svg';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  withSequence,
+  withDelay,
+  Easing,
+  interpolate,
+} from 'react-native-reanimated';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Strategy data
+// Strategy data with colors and emojis
 const strategies = [
-  { name: 'Long-Term Rental', roi: '18%', icon: 'home-outline', multiplier: '3X', profit: '$42K', featured: false },
-  { name: 'Short-Term Rental', roi: '28%', icon: 'calendar-outline', multiplier: '5X', profit: '$68K', featured: false },
-  { name: 'Fix & Flip', roi: '22%', icon: 'hammer-outline', multiplier: '2X', profit: '$55K', featured: false },
-  { name: 'BRRRR', roi: '35%', icon: 'refresh-outline', multiplier: '7X', profit: '$81K', featured: true },
-  { name: 'House Hack', roi: '25%', icon: 'people-outline', multiplier: '4X', profit: '$48K', featured: false },
-  { name: 'Wholesale', roi: '12%', icon: 'swap-horizontal-outline', multiplier: '1.5X', profit: '$22K', featured: false },
+  { 
+    name: 'Long-Term Rental', 
+    roi: '18%', 
+    icon: '🏠', 
+    label: 'Est. ROI',
+    color: colors.strategies.longTermRental.primary,
+  },
+  { 
+    name: 'Short-Term Rental', 
+    roi: '28%', 
+    icon: '🏨', 
+    label: 'Est. ROI',
+    color: colors.strategies.shortTermRental.primary,
+  },
+  { 
+    name: 'Fix & Flip', 
+    roi: '22%', 
+    icon: '🔨', 
+    label: 'Est. ROI',
+    color: colors.strategies.fixAndFlip.primary,
+  },
+  { 
+    name: 'BRRRR', 
+    roi: '25%', 
+    icon: '🔄', 
+    label: 'Est. ROI',
+    color: colors.strategies.brrrr.primary,
+  },
+  { 
+    name: 'House Hack', 
+    roi: '31%', 
+    icon: '🏡', 
+    label: 'Est. ROI',
+    color: colors.strategies.houseHack.primary,
+  },
+  { 
+    name: 'Wholesale', 
+    roi: '$12K', 
+    icon: '📋', 
+    label: 'Est. Profit',
+    color: colors.strategies.wholesale.primary,
+  },
+];
+
+// Stats data
+const stats = [
+  { value: '10K+', label: 'Analyzed' },
+  { value: '$2.4M', label: 'Profit Found' },
+  { value: '60s', label: 'Avg. Analysis' },
 ];
 
 export default function HomeScreen() {
@@ -47,7 +106,6 @@ export default function HomeScreen() {
     if (!searchAddress.trim()) return;
     setIsSearching(true);
     router.push(`/property/${encodeURIComponent(searchAddress.trim())}`);
-    // Note: isSearching state resets automatically when component unmounts during navigation
   };
 
   const handleScanPress = () => {
@@ -55,51 +113,20 @@ export default function HomeScreen() {
   };
 
   const handleStartAnalyzing = () => {
-    // Show search bar and scroll to top
     setShowSearchBar(true);
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
 
-  // Dynamic styles based on theme
-  const dynamicStyles = {
-    container: { backgroundColor: isDark ? colors.navy[900] : colors.gray[50] },
-    headerButton: { 
-      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-      borderColor: isDark ? 'rgba(255,255,255,0.15)' : colors.gray[200],
-    },
-    headerButtonText: { color: isDark ? '#e1e8ed' : colors.navy[900] },
-    heroTitle: { color: isDark ? '#fff' : colors.navy[900] },
-    heroTitleAccent: { color: isDark ? colors.accent[500] : colors.accent.light },
-    heroSubtitle: { color: isDark ? '#fff' : colors.gray[600] },
-    searchToggleText: { color: isDark ? '#fff' : colors.primary[600] },
-    searchDropdown: {
-      backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-      borderColor: isDark ? 'rgba(255,255,255,0.1)' : colors.gray[200],
-    },
-    searchInputContainer: {
-      backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#fff',
-      borderColor: isDark ? 'rgba(255,255,255,0.1)' : colors.gray[200],
-    },
-    searchInput: { color: isDark ? '#fff' : colors.navy[900] },
-    searchPlaceholder: isDark ? 'rgba(255,255,255,0.5)' : colors.gray[400],
-    phoneFrame: { backgroundColor: isDark ? '#1a2a3a' : '#e0e8f0' },
-    phoneScreen: { backgroundColor: isDark ? '#0a1628' : '#1a2a3a' },
-    resultsSection: { backgroundColor: isDark ? '#0a1628' : colors.gray[100] },
-    resultsTitle: { color: isDark ? '#fff' : colors.navy[900] },
-    mobileCard: {
-      backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#fff',
-      borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.gray[200],
-    },
-    mobileCardName: { color: isDark ? '#fff' : colors.navy[900] },
-    mobileCardRoi: { color: isDark ? '#fff' : colors.navy[900] },
-    mobileCardRoiLabel: { color: isDark ? '#fff' : colors.gray[600] },
-    statsRow: { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#fff' },
-    statLabel: { color: isDark ? '#fff' : colors.gray[600] },
-    bottomCtaSubtext: { color: isDark ? '#fff' : colors.gray[600] },
-  };
+  // Theme-aware colors
+  const accentColor = isDark ? '#4dd0e1' : '#007ea7';
+  const buttonGradientStart = isDark ? '#0097a7' : '#007ea7';
+  const buttonGradientEnd = isDark ? '#4dd0e1' : '#0097a7';
 
   return (
-    <View style={[styles.container, dynamicStyles.container, { paddingTop: insets.top }]}>
+    <View style={[
+      styles.container, 
+      { backgroundColor: isDark ? '#07172e' : '#ffffff', paddingTop: insets.top }
+    ]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -112,53 +139,66 @@ export default function HomeScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={[styles.logoText, { color: isDark ? '#fff' : colors.navy[900] }]}>
-              Invest<Text style={{ color: colors.primary[500] }}>IQ</Text>
+            <Text style={[styles.logoText, { color: isDark ? '#fff' : '#07172e' }]}>
+              Invest<Text style={{ color: accentColor }}>IQ</Text>
             </Text>
             
-            {/* Theme Toggle */}
             <TouchableOpacity 
-              style={[styles.themeToggle, dynamicStyles.headerButton]}
+              style={[
+                styles.themeToggle,
+                { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.05)' }
+              ]}
               onPress={toggleTheme}
             >
-              <Ionicons 
-                name={isDark ? 'sunny' : 'moon'} 
-                size={16} 
-                color={isDark ? colors.accent[500] : colors.navy[900]} 
-              />
+              <Text style={{ fontSize: 16 }}>{isDark ? '☀️' : '🌙'}</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Hero Section */}
+          {/* Hero Section - 3 Lines with Intentional Breaks */}
           <View style={styles.heroSection}>
-            <Text style={[styles.heroTitle, dynamicStyles.heroTitle]}>
+            <Text style={[styles.heroLine1, { color: isDark ? '#fff' : '#07172e' }]}>
               Know the Real Return
             </Text>
-            <Text style={[styles.heroTitleAccentLine, dynamicStyles.heroTitleAccent]}>
+            <Text style={[styles.heroLine2, { color: accentColor }]}>
               Before You Buy
             </Text>
-            <Text style={[styles.heroSubtitle, dynamicStyles.heroSubtitle]}>
-              Instantly reveal a property's real{'\n'}investment potential in 60 seconds.
+            <Text style={[styles.heroLine3, { color: accentColor }]}>
+              POINT. SCAN. KNOW.
             </Text>
           </View>
 
-          {/* Scanner Viewfinder with integrated CTAs */}
-          <View style={styles.phoneMockupContainer}>
-            <PhoneMockup 
-              onScanPress={handleScanPress} 
-              onAddressPress={() => setShowSearchBar(!showSearchBar)}
+          {/* Scanner Card */}
+          <View style={styles.scannerCardContainer}>
+            <ScannerCard 
               isDark={isDark}
+              accentColor={accentColor}
+              buttonGradientStart={buttonGradientStart}
+              buttonGradientEnd={buttonGradientEnd}
+              onScanPress={handleScanPress}
+              onAddressPress={() => setShowSearchBar(!showSearchBar)}
             />
             
             {/* Address Search Dropdown */}
             {showSearchBar && (
-              <View style={[styles.searchDropdown, dynamicStyles.searchDropdown]}>
-                <View style={[styles.searchInputContainer, dynamicStyles.searchInputContainer]}>
-                  <Ionicons name="location" size={20} color={colors.accent[500]} />
+              <View style={[
+                styles.searchDropdown,
+                { 
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.05)',
+                  borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(7,23,46,0.12)',
+                }
+              ]}>
+                <View style={[
+                  styles.searchInputContainer,
+                  { 
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#fff',
+                    borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(7,23,46,0.12)',
+                  }
+                ]}>
+                  <Ionicons name="location" size={20} color={accentColor} />
                   <TextInput
-                    style={[styles.searchInput, dynamicStyles.searchInput]}
+                    style={[styles.searchInput, { color: isDark ? '#fff' : '#07172e' }]}
                     placeholder="Enter property address..."
-                    placeholderTextColor={dynamicStyles.searchPlaceholder}
+                    placeholderTextColor={isDark ? 'rgba(255,255,255,0.5)' : colors.gray[400]}
                     value={searchAddress}
                     onChangeText={setSearchAddress}
                     onSubmitEditing={handleAnalyze}
@@ -192,13 +232,17 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {/* Results Section - Redesigned for Mobile */}
-          <View style={[styles.resultsSection, dynamicStyles.resultsSection]}>
-            <Text style={[styles.resultsTitle, dynamicStyles.resultsTitle]}>
-              See Your <Text style={styles.resultsTitleAccent}>Profit Potential</Text>
-            </Text>
+          {/* Strategy Section */}
+          <View style={styles.strategySection}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#07172e' }]}>
+                See Your <Text style={{ color: accentColor }}>Profit Potential</Text>
+              </Text>
+              <TouchableOpacity>
+                <Text style={[styles.seeAll, { color: accentColor }]}>All 6 →</Text>
+              </TouchableOpacity>
+            </View>
             
-            {/* Horizontal Scrolling Strategy Cards */}
             <ScrollView 
               horizontal 
               showsHorizontalScrollIndicator={false}
@@ -206,40 +250,54 @@ export default function HomeScreen() {
               style={styles.strategyScrollContainer}
             >
               {strategies.map((strategy, idx) => (
-                <MobileStrategyCard key={idx} {...strategy} isDark={isDark} />
+                <StrategyCard key={idx} {...strategy} isDark={isDark} />
               ))}
             </ScrollView>
+          </View>
 
-            {/* Compact Stats Row */}
-            <View style={[styles.statsRow, dynamicStyles.statsRow]}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>10K+</Text>
-                <Text style={[styles.statLabel, dynamicStyles.statLabel]}>Analyzed</Text>
+          {/* Stats Row */}
+          <View style={[
+            styles.statsRow,
+            { 
+              borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,23,46,0.08)',
+              borderBottomColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,23,46,0.08)',
+            }
+          ]}>
+            {stats.map((stat, idx) => (
+              <View key={idx} style={styles.statItem}>
+                <Text style={[styles.statValue, { color: accentColor }]}>{stat.value}</Text>
+                <Text style={[styles.statLabel, { color: colors.gray[500] }]}>{stat.label}</Text>
               </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.profit.main }]}>$2.4M</Text>
-                <Text style={[styles.statLabel, dynamicStyles.statLabel]}>Profit Found</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>60s</Text>
-                <Text style={[styles.statLabel, dynamicStyles.statLabel]}>Analysis</Text>
-              </View>
-            </View>
+            ))}
+          </View>
 
-            {/* Bottom CTA */}
-            <TouchableOpacity style={styles.bottomCta} onPress={handleStartAnalyzing}>
-              <LinearGradient
-                colors={[colors.primary[500], colors.accent[500]]}
-                style={styles.bottomCtaGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Text style={styles.bottomCtaText}>Start Analyzing Now</Text>
-              </LinearGradient>
+          {/* CTA Section */}
+          <View style={styles.ctaSection}>
+            <TouchableOpacity style={styles.ctaButton} onPress={handleStartAnalyzing}>
+              <Svg viewBox="0 0 335 56" style={styles.ctaButtonSvg}>
+                <Defs>
+                  <SvgLinearGradient id="ctaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <Stop offset="0%" stopColor={buttonGradientStart} />
+                    <Stop offset="100%" stopColor={buttonGradientEnd} />
+                  </SvgLinearGradient>
+                </Defs>
+                <Rect width="335" height="56" rx="14" fill="url(#ctaGradient)" />
+                <SvgText 
+                  x="167.5" 
+                  y="34" 
+                  textAnchor="middle" 
+                  fill="white" 
+                  fontFamily="Inter, system-ui, sans-serif" 
+                  fontSize="16" 
+                  fontWeight="600"
+                >
+                  Start Analyzing Now
+                </SvgText>
+              </Svg>
             </TouchableOpacity>
-            <Text style={[styles.bottomCtaSubtext, dynamicStyles.bottomCtaSubtext]}>Free • No credit card required</Text>
+            <Text style={[styles.trustText, { color: colors.gray[500] }]}>
+              Free • No credit card required
+            </Text>
           </View>
 
           <View style={{ height: insets.bottom + 20 }} />
@@ -249,170 +307,259 @@ export default function HomeScreen() {
   );
 }
 
-// Scanner Viewfinder Component with integrated CTAs
-function PhoneMockup({ 
+// Scanner Card with Animations
+function ScannerCard({ 
+  isDark, 
+  accentColor, 
+  buttonGradientStart,
+  buttonGradientEnd,
   onScanPress, 
-  onAddressPress,
-  isDark 
+  onAddressPress 
 }: { 
-  onScanPress: () => void; 
-  onAddressPress: () => void;
   isDark: boolean;
+  accentColor: string;
+  buttonGradientStart: string;
+  buttonGradientEnd: string;
+  onScanPress: () => void;
+  onAddressPress: () => void;
 }) {
+  // Animation values
+  const glowOpacity = useSharedValue(0.3);
+  const glowScale = useSharedValue(0.95);
+  const scanLinePosition = useSharedValue(15);
+  const scanLineOpacity = useSharedValue(0);
+  
+  // Corner animations with stagger
+  const corner1Opacity = useSharedValue(0.6);
+  const corner2Opacity = useSharedValue(0.6);
+  const corner3Opacity = useSharedValue(0.6);
+  const corner4Opacity = useSharedValue(0.6);
+
+  useEffect(() => {
+    // Glow pulse animation
+    glowOpacity.value = withRepeat(
+      withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    );
+    glowScale.value = withRepeat(
+      withTiming(1.05, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    );
+
+    // Corner pulse animations with stagger
+    corner1Opacity.value = withRepeat(
+      withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    );
+    corner2Opacity.value = withDelay(100, withRepeat(
+      withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    ));
+    corner3Opacity.value = withDelay(200, withRepeat(
+      withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    ));
+    corner4Opacity.value = withDelay(300, withRepeat(
+      withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    ));
+
+    // Scan line animation
+    scanLinePosition.value = withRepeat(
+      withSequence(
+        withTiming(125, { duration: 2250, easing: Easing.inOut(Easing.ease) }),
+        withTiming(15, { duration: 0 })
+      ),
+      -1
+    );
+    
+    // Scan line opacity animation
+    scanLineOpacity.value = withRepeat(
+      withSequence(
+        withTiming(0, { duration: 0 }),
+        withTiming(1, { duration: 250 }),
+        withTiming(1, { duration: 1750 }),
+        withTiming(0, { duration: 250 })
+      ),
+      -1
+    );
+  }, []);
+
+  // Animated styles
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: glowOpacity.value,
+    transform: [{ scale: glowScale.value }],
+  }));
+
+  const scanLineStyle = useAnimatedStyle(() => ({
+    top: scanLinePosition.value,
+    opacity: scanLineOpacity.value,
+  }));
+
+  const corner1Style = useAnimatedStyle(() => ({
+    opacity: corner1Opacity.value,
+  }));
+  const corner2Style = useAnimatedStyle(() => ({
+    opacity: corner2Opacity.value,
+  }));
+  const corner3Style = useAnimatedStyle(() => ({
+    opacity: corner3Opacity.value,
+  }));
+  const corner4Style = useAnimatedStyle(() => ({
+    opacity: corner4Opacity.value,
+  }));
+
+  const gradientStart = isDark ? 'rgba(77,208,225,0.08)' : 'rgba(0,126,167,0.06)';
+  const gradientEnd = isDark ? 'rgba(4,101,242,0.08)' : 'rgba(4,101,242,0.06)';
+  const borderColor = isDark ? 'rgba(77,208,225,0.2)' : 'rgba(0,126,167,0.15)';
+
   return (
-    <View style={styles.scannerMockup}>
-      {/* Analyzing Header */}
-      <View style={styles.analyzingHeader}>
-        <Text style={styles.analyzingText}>Analyzing Data</Text>
-        <View style={styles.loadingDots}>
-          <View style={styles.dot} />
-          <View style={styles.dot} />
-          <View style={styles.dot} />
-        </View>
-      </View>
-
-      {/* Viewfinder Container */}
-      <View style={styles.viewfinderContainer}>
-        {/* House with Scanner Brackets */}
-        <View style={styles.scannerView}>
-          <Svg width={180} height={140} viewBox="0 0 200 160">
-            {/* Main house body */}
-            <Rect x="30" y="70" width="140" height="80" fill="#4a6070" rx={2} />
-            {/* Roof */}
-            <Path d="M100 20 L20 70 L180 70 Z" fill="#3a4a55" />
-            <Path d="M100 20 L25 70 L175 70" stroke={colors.accent[500]} strokeWidth={1} fill="none" opacity={0.3} />
-            {/* Porch roof */}
-            <Rect x="55" y="100" width="90" height="8" fill="#2a3a45" />
-            {/* Door */}
-            <Rect x="85" y="105" width="30" height="45" fill="#2a3540" rx={2} />
-            <Circle cx="108" cy="130" r="2" fill={colors.accent[500]} opacity={0.6} />
-            {/* Windows - left */}
-            <Rect x="40" y="80" width="30" height="25" fill="#1a2530" rx={1} />
-            <Rect x="40" y="80" width="30" height="25" fill="none" stroke={colors.accent[500]} strokeWidth={0.5} opacity={0.4} rx={1} />
-            {/* Windows - right */}
-            <Rect x="130" y="80" width="30" height="25" fill="#1a2530" rx={1} />
-            <Rect x="130" y="80" width="30" height="25" fill="none" stroke={colors.accent[500]} strokeWidth={0.5} opacity={0.4} rx={1} />
-            {/* Attic window */}
-            <Circle cx="100" cy="50" r="12" fill="#1a2530" />
-            <Circle cx="100" cy="50" r="12" fill="none" stroke={colors.accent[500]} strokeWidth={0.5} opacity={0.4} />
-            {/* Porch pillars */}
-            <Rect x="60" y="100" width="6" height="50" fill="#4a5a65" />
-            <Rect x="134" y="100" width="6" height="50" fill="#4a5a65" />
-            {/* Ground */}
-            <Rect x="0" y="148" width="200" height="12" fill="#1a2a35" />
-          </Svg>
+    <LinearGradient
+      colors={[gradientStart, gradientEnd]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[styles.scannerCard, { borderColor }]}
+    >
+      {/* Scanner Viewport */}
+      <View style={styles.scannerViewport}>
+        <View style={styles.scannerFrame}>
+          {/* Animated Glow Behind Frame */}
+          <Animated.View style={[styles.scannerGlow, glowStyle, { 
+            backgroundColor: isDark ? 'rgba(77,208,225,0.15)' : 'rgba(0,126,167,0.12)' 
+          }]} />
           
-          {/* Scanner Brackets */}
-          <View style={styles.bracketTopLeft}>
-            <View style={[styles.bracketH, { top: 0 }]} />
-            <View style={[styles.bracketV, { left: 0 }]} />
+          {/* Corner Brackets with Pulse */}
+          <Animated.View style={[styles.corner, styles.cornerTL, corner1Style, { borderColor: accentColor }]} />
+          <Animated.View style={[styles.corner, styles.cornerTR, corner2Style, { borderColor: accentColor }]} />
+          <Animated.View style={[styles.corner, styles.cornerBL, corner3Style, { borderColor: accentColor }]} />
+          <Animated.View style={[styles.corner, styles.cornerBR, corner4Style, { borderColor: accentColor }]} />
+          
+          {/* Scanning Line */}
+          <Animated.View style={[styles.scanLine, scanLineStyle]}>
+            <LinearGradient
+              colors={['transparent', accentColor, 'transparent']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.scanLineGradient}
+            />
+          </Animated.View>
+          
+          {/* House Icon */}
+          <View style={styles.houseIcon}>
+            <Svg viewBox="0 0 100 80" style={{ width: 80, height: 65 }}>
+              <Path 
+                d="M50 5L5 40h10v35h70V40h10L50 5zm-20 65V45h15v25H30zm25 0V45h15v25H55z" 
+                fill={isDark ? '#aab2bd' : '#07172e'}
+                opacity={isDark ? 0.35 : 0.15}
+              />
+            </Svg>
           </View>
-          <View style={styles.bracketTopRight}>
-            <View style={[styles.bracketH, { top: 0 }]} />
-            <View style={[styles.bracketV, { right: 0 }]} />
-          </View>
-          <View style={styles.bracketBottomLeft}>
-            <View style={[styles.bracketH, { bottom: 0 }]} />
-            <View style={[styles.bracketV, { left: 0 }]} />
-          </View>
-          <View style={styles.bracketBottomRight}>
-            <View style={[styles.bracketH, { bottom: 0 }]} />
-            <View style={[styles.bracketV, { right: 0 }]} />
-          </View>
-        </View>
-
-        {/* Location Card */}
-        <View style={styles.locationCard}>
-          <Text style={styles.locationLabel}>PROPERTY LOCATED</Text>
-          <Text style={styles.locationAddress}>123 Main Street, Anytown</Text>
-        </View>
-
-        {/* Search by either label */}
-        <Text style={styles.searchByEither}>Search by either</Text>
-
-        {/* Action Buttons - Now the main CTAs */}
-        <View style={styles.phoneActions}>
-          <TouchableOpacity style={styles.phoneScanBtn} onPress={onScanPress}>
-            <Ionicons name="camera" size={16} color={colors.navy[900]} style={{ marginRight: 6 }} />
-            <Text style={styles.phoneScanBtnText}>Scan</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.phoneDetailsBtn} onPress={onAddressPress}>
-            <Ionicons name="location" size={16} color="#e1e8ed" style={{ marginRight: 6 }} />
-            <Text style={styles.phoneDetailsBtnText}>Address</Text>
-          </TouchableOpacity>
         </View>
       </View>
-    </View>
+
+      {/* Property Badge */}
+      <View style={[
+        styles.propertyBadge,
+        { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(7,23,46,0.03)' }
+      ]}>
+        <Text style={[styles.propertyLabel, { color: accentColor }]}>PROPERTY LOCATED</Text>
+        <Text style={[styles.propertyAddress, { color: isDark ? '#fff' : '#07172e' }]}>
+          123 Main Street, Anytown
+        </Text>
+      </View>
+
+      {/* Action Buttons - SVG */}
+      <View style={styles.actionButtons}>
+        <TouchableOpacity style={styles.svgButton} onPress={onScanPress}>
+          <Svg viewBox="0 0 150 50" style={styles.buttonSvg}>
+            <Defs>
+              <SvgLinearGradient id="btnGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <Stop offset="0%" stopColor={buttonGradientStart} />
+                <Stop offset="100%" stopColor={buttonGradientEnd} />
+              </SvgLinearGradient>
+            </Defs>
+            <Rect width="150" height="50" rx="12" fill="url(#btnGradient)" />
+            <SvgText 
+              x="75" 
+              y="30" 
+              textAnchor="middle" 
+              fill="white" 
+              fontFamily="Inter, system-ui, sans-serif" 
+              fontSize="14" 
+              fontWeight="600"
+            >
+              Point &amp; Scan
+            </SvgText>
+          </Svg>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.svgButton} onPress={onAddressPress}>
+          <Svg viewBox="0 0 150 50" style={styles.buttonSvg}>
+            <Rect 
+              width="150" 
+              height="50" 
+              rx="12" 
+              fill={isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.04)'} 
+              stroke={isDark ? 'rgba(255,255,255,0.12)' : 'rgba(7,23,46,0.12)'}
+              strokeWidth="1"
+            />
+            <SvgText 
+              x="75" 
+              y="30" 
+              textAnchor="middle" 
+              fill={isDark ? 'white' : '#07172e'}
+              fontFamily="Inter, system-ui, sans-serif" 
+              fontSize="14" 
+              fontWeight="600"
+            >
+              Enter Address
+            </SvgText>
+          </Svg>
+        </TouchableOpacity>
+      </View>
+    </LinearGradient>
   );
 }
 
-// Mobile Strategy Card - Horizontal scroll optimized
-function MobileStrategyCard({ name, roi, icon, multiplier, profit, featured, isDark }: {
+// Strategy Card Component
+function StrategyCard({ 
+  name, 
+  roi, 
+  icon, 
+  label, 
+  color, 
+  isDark 
+}: {
   name: string;
   roi: string;
   icon: string;
-  multiplier: string;
-  profit: string;
-  featured: boolean;
+  label: string;
+  color: string;
   isDark: boolean;
 }) {
-  const cardStyles = {
-    card: {
-      backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#fff',
-      borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.gray[200],
-    },
-    name: { color: isDark ? '#fff' : colors.navy[900] },
-    roi: { color: isDark ? '#fff' : colors.navy[900] },
-    roiLabel: { color: isDark ? '#fff' : colors.gray[600] },
-  };
-
   return (
-    <View style={[styles.mobileCard, cardStyles.card, featured && styles.mobileCardFeatured]}>
-      {/* Badge */}
-      {featured ? (
-        <View style={styles.mobileBestBadge}>
-          <Text style={styles.mobileBestBadgeText}>BEST</Text>
-        </View>
-      ) : (
-        <View style={styles.mobileMultiplierBadge}>
-          <Text style={styles.mobileMultiplierText}>{multiplier}</Text>
-        </View>
-      )}
-      
-      {/* Icon */}
-      <View style={[styles.mobileCardIcon, featured && styles.mobileCardIconFeatured]}>
-        <Ionicons 
-          name={icon as any} 
-          size={24} 
-          color={featured ? colors.accent[400] : colors.primary[400]} 
-        />
+    <View style={[
+      styles.strategyCard,
+      { 
+        backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff',
+        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,23,46,0.08)',
+      },
+      !isDark && styles.strategyCardShadow
+    ]}>
+      <View style={[styles.strategyIconWrap, { backgroundColor: `${color}15` }]}>
+        <Text style={styles.strategyIcon}>{icon}</Text>
       </View>
-      
-      {/* Name */}
-      <Text style={[styles.mobileCardName, cardStyles.name]} numberOfLines={2}>{name}</Text>
-      
-      {/* ROI */}
-      <Text style={[styles.mobileCardRoi, cardStyles.roi, featured && styles.mobileCardRoiFeatured]}>{roi}</Text>
-      <Text style={[styles.mobileCardRoiLabel, cardStyles.roiLabel]}>ROI</Text>
-      
-      {/* Profit */}
-      <View style={styles.mobileCardProfit}>
-        <Text style={[styles.mobileCardProfitValue, featured && styles.mobileCardProfitFeatured]}>
-          {profit}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-// Feature Item Component
-function FeatureItem({ icon, text }: { icon: string; text: string }) {
-  return (
-    <View style={styles.featureItem}>
-      <View style={styles.featureIcon}>
-        <Ionicons name={icon as any} size={20} color={colors.accent[500]} />
-      </View>
-      <Text style={styles.featureText}>{text}</Text>
+      <Text style={[styles.strategyName, { color: isDark ? '#aab2bd' : '#6b7280' }]} numberOfLines={2}>
+        {name}
+      </Text>
+      <Text style={[styles.strategyRoi, { color }]}>{roi}</Text>
+      <Text style={[styles.strategyRoiLabel, { color: '#6b7280' }]}>{label}</Text>
     </View>
   );
 }
@@ -435,67 +582,170 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 12,
+    marginBottom: 28,
   },
   logoText: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     letterSpacing: -0.5,
   },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
   themeToggle: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1,
+
+  // Hero Section - 3 Lines
+  heroSection: {
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    marginBottom: 24,
   },
-  headerButtonText: {
+  heroLine1: {
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 32,
+  },
+  heroLine2: {
+    fontSize: 28,
+    fontWeight: '600',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: 32,
+    marginBottom: 10,
+  },
+  heroLine3: {
     fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: 3.2,
+  },
+
+  // Scanner Card Container
+  scannerCardContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+
+  // Scanner Card
+  scannerCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 20,
+  },
+
+  // Scanner Viewport
+  scannerViewport: {
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  scannerFrame: {
+    width: 160,
+    height: 140,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scannerGlow: {
+    position: 'absolute',
+    top: -20,
+    left: -20,
+    right: -20,
+    bottom: -20,
+    borderRadius: 20,
+  },
+  corner: {
+    position: 'absolute',
+    width: 28,
+    height: 28,
+    borderWidth: 3,
+    zIndex: 2,
+  },
+  cornerTL: {
+    top: 0,
+    left: 0,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+    borderTopLeftRadius: 6,
+  },
+  cornerTR: {
+    top: 0,
+    right: 0,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+    borderTopRightRadius: 6,
+  },
+  cornerBL: {
+    bottom: 0,
+    left: 0,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 6,
+  },
+  cornerBR: {
+    bottom: 0,
+    right: 0,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    borderBottomRightRadius: 6,
+  },
+  scanLine: {
+    position: 'absolute',
+    left: 10,
+    right: 10,
+    height: 2,
+    zIndex: 3,
+  },
+  scanLineGradient: {
+    flex: 1,
+    height: 2,
+  },
+  houseIcon: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Property Badge
+  propertyBadge: {
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  propertyLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1.9,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  propertyAddress: {
+    fontSize: 15,
     fontWeight: '600',
   },
 
-  // Hero Section
-  heroSection: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    alignItems: 'center',
+  // Action Buttons
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 12,
   },
-  heroTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    textAlign: 'center',
-    lineHeight: 30,
+  svgButton: {
+    flex: 1,
+    height: 50,
   },
-  heroTitleAccentLine: {
-    fontSize: 28,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginTop: 2,
-  },
-  heroAccent: {
-    color: colors.accent[500],
-  },
-  heroSubtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 8,
-    lineHeight: 20,
-    paddingHorizontal: 10,
+  buttonSvg: {
+    width: '100%',
+    height: 50,
   },
 
-  // Search Dropdown (shown below scanner when Address is tapped)
+  // Search Dropdown
   searchDropdown: {
-    width: '100%',
     marginTop: 16,
     padding: 16,
     borderRadius: 16,
@@ -536,339 +786,116 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.4)',
   },
 
-  // Scanner Mockup with integrated CTAs
-  phoneMockupContainer: {
-    alignItems: 'center',
-    paddingTop: 24,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-  },
-  scannerMockup: {
-    width: '100%',
-    maxWidth: 340,
-    alignItems: 'center',
-  },
-  viewfinderContainer: {
-    width: '100%',
-    backgroundColor: '#1a3a4a',
-    borderRadius: 20,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.4,
-    shadowRadius: 30,
-    elevation: 15,
-  },
-  analyzingHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginBottom: 16,
-  },
-  analyzingText: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 15,
-    fontWeight: '400',
-    letterSpacing: 0.3,
-  },
-  loadingDots: {
-    flexDirection: 'row',
-    gap: 3,
-  },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.accent[500],
-  },
-  scannerView: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 160,
-    position: 'relative',
-    backgroundColor: 'rgba(15, 35, 50, 0.8)',
-    borderRadius: 16,
-  },
-  bracketTopLeft: { position: 'absolute', top: 16, left: 16, width: 28, height: 28 },
-  bracketTopRight: { position: 'absolute', top: 16, right: 16, width: 28, height: 28 },
-  bracketBottomLeft: { position: 'absolute', bottom: 16, left: 16, width: 28, height: 28 },
-  bracketBottomRight: { position: 'absolute', bottom: 16, right: 16, width: 28, height: 28 },
-  bracketH: {
-    position: 'absolute',
-    width: 28,
-    height: 3,
-    backgroundColor: colors.accent[500],
-    borderRadius: 2,
-  },
-  bracketV: {
-    position: 'absolute',
-    width: 3,
-    height: 28,
-    backgroundColor: colors.accent[500],
-    borderRadius: 2,
-  },
-  locationCard: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 229, 255, 0.2)',
-    padding: 12,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  locationLabel: {
-    color: colors.accent[500],
-    fontSize: 9,
-    fontWeight: '600',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    marginBottom: 2,
-  },
-  locationAddress: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  searchByEither: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 12,
-    fontWeight: '500',
-    textAlign: 'center',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  phoneActions: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-    justifyContent: 'center',
-  },
-  phoneScanBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: colors.accent[500],
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.accent[500],
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  phoneScanBtnText: {
-    color: colors.navy[900],
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  phoneDetailsBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  phoneDetailsBtnText: {
-    color: '#e1e8ed',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-
-  // Results Section
-  resultsSection: {
-    paddingVertical: 32,
-  },
-  resultsTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 20,
-    paddingHorizontal: 20,
-  },
-  resultsTitleAccent: {
-    color: colors.accent[500],
-  },
-
-  // Horizontal Scroll Strategy Cards
-  strategyScrollContainer: {
+  // Strategy Section
+  strategySection: {
     marginBottom: 24,
   },
-  strategyScroll: {
-    paddingHorizontal: 16,
-    gap: 12,
-  },
-  mobileCard: {
-    width: 130,
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 14,
   },
-  mobileCardFeatured: {
-    backgroundColor: 'rgba(0,229,255,0.08)',
-    borderColor: 'rgba(0,229,255,0.25)',
-    borderWidth: 2,
-  },
-  mobileBestBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: colors.accent[500],
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  mobileBestBadgeText: {
-    color: colors.navy[900],
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  mobileMultiplierBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(34,197,94,0.2)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  mobileMultiplierText: {
-    color: colors.profit.main,
-    fontSize: 13,
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: '700',
   },
-  mobileCardIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: 'rgba(4,101,242,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-    marginTop: 4,
-  },
-  mobileCardIconFeatured: {
-    backgroundColor: 'rgba(0,229,255,0.2)',
-  },
-  mobileCardName: {
+  seeAll: {
     fontSize: 13,
     fontWeight: '600',
-    textAlign: 'center',
+  },
+  strategyScrollContainer: {
+    // Allow cards to overflow
+  },
+  strategyScroll: {
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  strategyCard: {
+    width: 130,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'flex-start',
+  },
+  strategyCardShadow: {
+    shadowColor: '#07172e',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  strategyIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  strategyIcon: {
+    fontSize: 20,
+  },
+  strategyName: {
+    fontSize: 12,
+    fontWeight: '500',
+    lineHeight: 16,
     marginBottom: 8,
     minHeight: 32,
   },
-  mobileCardRoi: {
-    fontSize: 28,
-    fontWeight: '800',
+  strategyRoi: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 2,
   },
-  mobileCardRoiFeatured: {
-    color: colors.accent[400],
-  },
-  mobileCardRoiLabel: {
-    fontSize: 13,
+  strategyRoiLabel: {
+    fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 8,
-  },
-  mobileCardProfit: {
-    backgroundColor: 'rgba(34,197,94,0.15)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  mobileCardProfitValue: {
-    color: colors.profit.main,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  mobileCardProfitFeatured: {
-    color: colors.accent[400],
   },
 
-  // Compact Stats Row
+  // Stats Row
   statsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 18,
     marginHorizontal: 20,
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 24,
+    marginBottom: 20,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
   },
   statItem: {
-    alignItems: 'center',
     flex: 1,
+    alignItems: 'center',
   },
   statValue: {
-    color: colors.accent[500],
-    fontSize: 20,
-    fontWeight: '800',
+    fontSize: 21,
+    fontWeight: '700',
+    marginBottom: 2,
   },
   statLabel: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    fontSize: 10,
+    fontWeight: '500',
   },
 
-  // Bottom CTA
-  bottomCta: {
-    marginHorizontal: 20,
-    borderRadius: 14,
-    overflow: 'hidden',
-  },
-  bottomCtaGradient: {
-    paddingVertical: 16,
+  // CTA Section
+  ctaSection: {
+    paddingHorizontal: 20,
     alignItems: 'center',
   },
-  bottomCtaText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
+  ctaButton: {
+    width: '100%',
+    height: 56,
+    marginBottom: 12,
   },
-  bottomCtaSubtext: {
+  ctaButtonSvg: {
+    width: '100%',
+    height: 56,
+  },
+  trustText: {
     fontSize: 13,
     textAlign: 'center',
-    marginTop: 10,
-    marginBottom: 8,
-  },
-
-  // Features Bar
-  featuresBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-    backgroundColor: '#061324',
-  },
-  featureItem: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  featureIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  featureText: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '600',
   },
 });
