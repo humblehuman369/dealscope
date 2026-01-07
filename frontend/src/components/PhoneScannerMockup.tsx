@@ -11,22 +11,22 @@ interface PhoneScannerMockupProps {
 
 export function PhoneScannerMockup({ isDark = true, onScanPress, onAddressPress }: PhoneScannerMockupProps) {
   return (
-    <div className="scanner-mockup w-full max-w-[360px] mx-auto">
+    <div className="scanner-mockup w-full max-w-[360px] lg:max-w-[500px] mx-auto">
       {/* Scanner Header */}
-      <div className="text-center mb-4">
-        <span className={`text-[15px] font-normal tracking-wide inline-flex items-center ${isDark ? 'text-white/90' : 'text-gray-700'}`}>
+      <div className="text-center mb-4 lg:mb-6">
+        <span className={`text-[15px] lg:text-lg font-normal tracking-wide inline-flex items-center ${isDark ? 'text-white/90' : 'text-gray-700'}`}>
           Analyzing Data
-          <span className="ml-2 inline-flex gap-[3px] loading-dots">
-            <span className="w-[4px] h-[4px] bg-accent-500 rounded-full" />
-            <span className="w-[4px] h-[4px] bg-accent-500 rounded-full" />
-            <span className="w-[4px] h-[4px] bg-accent-500 rounded-full" />
+          <span className="ml-2 inline-flex gap-[3px] lg:gap-1 loading-dots">
+            <span className="w-[4px] h-[4px] lg:w-[6px] lg:h-[6px] bg-accent-500 rounded-full" />
+            <span className="w-[4px] h-[4px] lg:w-[6px] lg:h-[6px] bg-accent-500 rounded-full" />
+            <span className="w-[4px] h-[4px] lg:w-[6px] lg:h-[6px] bg-accent-500 rounded-full" />
           </span>
         </span>
       </div>
 
       {/* Viewfinder Container */}
       <div 
-        className="relative w-full rounded-[20px] overflow-visible"
+        className="relative w-full rounded-[20px] lg:rounded-[28px] overflow-visible"
         style={{ 
           aspectRatio: '400 / 240',
           background: isDark 
@@ -82,32 +82,32 @@ export function PhoneScannerMockup({ isDark = true, onScanPress, onAddressPress 
       </div>
 
       {/* Search by either label */}
-      <p className={`text-center text-[12px] mt-4 mb-2 ${isDark ? 'text-white/60' : 'text-gray-500'}`}>
+      <p className={`text-center text-[12px] lg:text-sm mt-4 lg:mt-6 mb-2 lg:mb-3 ${isDark ? 'text-white/60' : 'text-gray-500'}`}>
         Search by either
       </p>
 
       {/* Action Buttons - Main CTAs */}
-      <div className="flex gap-3 justify-center">
+      <div className="flex gap-3 lg:gap-4 justify-center">
         <button 
           onClick={onScanPress}
-          className="flex-1 max-w-[140px] py-3.5 px-6 rounded-xl text-[15px] font-semibold text-[#07172e] flex items-center justify-center gap-2"
+          className="flex-1 max-w-[140px] lg:max-w-[180px] py-3.5 lg:py-4 px-6 lg:px-8 rounded-xl lg:rounded-2xl text-[15px] lg:text-base font-semibold text-[#07172e] flex items-center justify-center gap-2 transition-transform hover:scale-105"
           style={{
             background: `linear-gradient(135deg, var(--gradient-teal-start) 0%, var(--gradient-teal-end) 100%)`,
             boxShadow: `0 4px 20px rgba(var(--color-teal-rgb), 0.4)`
           }}
         >
-          <Camera className="w-4 h-4" />
+          <Camera className="w-4 h-4 lg:w-5 lg:h-5" />
           Scan
         </button>
         <button 
           onClick={onAddressPress}
-          className={`flex-1 max-w-[140px] py-3.5 px-6 rounded-xl text-[15px] font-semibold flex items-center justify-center gap-2 ${isDark ? 'text-[#e1e8ed]' : 'text-gray-700'}`}
+          className={`flex-1 max-w-[140px] lg:max-w-[180px] py-3.5 lg:py-4 px-6 lg:px-8 rounded-xl lg:rounded-2xl text-[15px] lg:text-base font-semibold flex items-center justify-center gap-2 transition-all hover:scale-105 ${isDark ? 'text-[#e1e8ed] hover:bg-white/10' : 'text-gray-700 hover:bg-black/10'}`}
           style={{
             background: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)',
             border: isDark ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(0, 0, 0, 0.1)'
           }}
         >
-          <MapPin className="w-4 h-4" />
+          <MapPin className="w-4 h-4 lg:w-5 lg:h-5" />
           Address
         </button>
       </div>
