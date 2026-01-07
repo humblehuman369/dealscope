@@ -71,7 +71,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             `
             : `
               radial-gradient(ellipse 120% 60% at 50% -20%, rgba(4, 101, 242, 0.15) 0%, transparent 60%),
-              radial-gradient(ellipse 80% 50% at 100% 10%, rgba(0, 229, 255, 0.08) 0%, transparent 50%)
+              radial-gradient(ellipse 80% 50% at 100% 10%, rgba(0, 126, 167, 0.12) 0%, transparent 50%)
             `
         }}
       />
@@ -94,7 +94,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             aria-label="Toggle theme"
           >
             {isDark ? (
-              <Sun className="w-5 h-5 text-accent-500" />
+              <Sun className="w-5 h-5 text-accent-light" />
             ) : (
               <Moon className="w-5 h-5 text-gray-600" />
             )}
@@ -153,7 +153,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
         }`}>
           Know the Real Return
         </h1>
-        <p className="text-[28px] lg:text-[52px] leading-[1.2] mb-3 lg:mb-6 tracking-tight font-bold italic text-accent-500">
+        <p className={`text-[28px] lg:text-[52px] leading-[1.2] mb-3 lg:mb-6 tracking-tight font-bold italic ${isDark ? 'text-accent-500' : 'text-accent-light'}`}>
           Before You Buy
         </p>
         <p className={`text-sm lg:text-xl mb-6 lg:mb-10 leading-relaxed ${isDark ? 'text-[#8892a0]' : 'text-gray-500'}`}>
@@ -185,7 +185,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
                 ? 'bg-white/10 border-white/10' 
                 : 'bg-gray-50 border-gray-200'
             }`}>
-              <MapPin className="w-5 h-5 lg:w-6 lg:h-6 text-accent-500 flex-shrink-0" />
+              <MapPin className={`w-5 h-5 lg:w-6 lg:h-6 flex-shrink-0 ${isDark ? 'text-accent-500' : 'text-accent-light'}`} />
               <input
                 type="text"
                 placeholder="Enter property address..."
@@ -205,7 +205,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
               disabled={!searchAddress.trim() || isSearching}
               className={`w-full mt-3 py-3.5 lg:py-4 rounded-xl font-bold text-sm lg:text-base flex items-center justify-center gap-2 transition-all
                 ${searchAddress.trim() 
-                  ? 'bg-gradient-to-r from-brand-500 to-accent-500 text-white shadow-lg shadow-brand-500/30' 
+                  ? `bg-gradient-to-r from-brand-500 ${isDark ? 'to-accent-500' : 'to-accent-light'} text-white shadow-lg shadow-brand-500/30` 
                   : isDark 
                     ? 'bg-white/10 text-white/40 cursor-not-allowed'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -242,14 +242,14 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
           style={{ 
             background: isDark 
               ? 'radial-gradient(ellipse, rgba(0, 229, 255, 0.15) 0%, transparent 70%)' 
-              : 'radial-gradient(ellipse, rgba(4, 101, 242, 0.1) 0%, transparent 70%)'
+              : 'radial-gradient(ellipse, rgba(0, 126, 167, 0.15) 0%, transparent 70%)'
           }}
         />
         
         {/* Section Header */}
         <div className="relative z-10 text-center mb-8 lg:mb-12 max-w-4xl mx-auto">
           <h2 className={`text-2xl lg:text-4xl font-bold mb-2 lg:mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            See Your <span className="text-accent-500">Profit Potential</span>
+            See Your <span className={isDark ? 'text-accent-500' : 'text-accent-light'}>Profit Potential</span>
           </h2>
           <p className={`text-sm lg:text-lg ${isDark ? 'text-[#8892a0]' : 'text-gray-500'}`}>
             Compare 6 strategies instantly
@@ -277,7 +277,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
           isDark ? 'border-white/10' : 'border-gray-200'
         }`}>
           <div className="text-center">
-            <div className="text-2xl lg:text-4xl font-bold text-accent-500">10K+</div>
+            <div className={`text-2xl lg:text-4xl font-bold ${isDark ? 'text-accent-500' : 'text-accent-light'}`}>10K+</div>
             <div className={`text-[11px] lg:text-sm ${isDark ? 'text-[#8892a0]' : 'text-gray-500'}`}>Properties Analyzed</div>
           </div>
           <div className={`w-px h-10 lg:h-14 ${isDark ? 'bg-white/10' : 'bg-gray-200'}`} />
@@ -298,7 +298,9 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             onClick={onPointAndScan}
             className="w-full py-4 lg:py-5 rounded-2xl font-bold text-lg lg:text-xl text-white"
             style={{
-              background: 'linear-gradient(135deg, #0465f2 0%, #00e5ff 100%)',
+              background: isDark 
+                ? 'linear-gradient(135deg, #0465f2 0%, #00e5ff 100%)'
+                : 'linear-gradient(135deg, #0465f2 0%, #007ea7 100%)',
               boxShadow: '0 8px 32px rgba(4, 101, 242, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
             }}
           >
@@ -353,14 +355,16 @@ function StrategyCard({ name, roi, icon: Icon, featured, multiplier, profit, isD
     <div 
       className={`relative rounded-2xl p-4 lg:p-5 overflow-hidden transition-all hover:scale-[1.02] cursor-pointer
         ${featured 
-          ? 'bg-gradient-to-br from-accent-500/20 to-brand-500/20 border-2 border-accent-500/50' 
+          ? `bg-gradient-to-br ${isDark ? 'from-accent-500/20' : 'from-accent-light/20'} to-brand-500/20 border-2 ${isDark ? 'border-accent-500/50' : 'border-accent-light/50'}` 
           : isDark 
             ? 'bg-white/[0.08] border border-white/10 hover:bg-white/[0.12]' 
             : 'bg-white border border-gray-200 shadow-sm hover:shadow-lg'
         }`}
       style={{ 
         boxShadow: featured 
-          ? '0 8px 32px rgba(0, 229, 255, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)' 
+          ? isDark 
+            ? '0 8px 32px rgba(0, 229, 255, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)'
+            : '0 8px 32px rgba(0, 126, 167, 0.25), inset 0 1px 0 rgba(255,255,255,0.1)'
           : isDark 
             ? '0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05)'
             : undefined
@@ -368,7 +372,7 @@ function StrategyCard({ name, roi, icon: Icon, featured, multiplier, profit, isD
     >
       {/* Featured Badge */}
       {featured && (
-        <div className="absolute top-2 right-2 lg:top-3 lg:right-3 bg-accent-500 text-[#07172e] text-[10px] lg:text-xs font-bold px-2 py-1 rounded-lg uppercase tracking-wide">
+        <div className={`absolute top-2 right-2 lg:top-3 lg:right-3 text-[#07172e] text-[10px] lg:text-xs font-bold px-2 py-1 rounded-lg uppercase tracking-wide ${isDark ? 'bg-accent-500' : 'bg-accent-light'}`}>
           Best ROI
         </div>
       )}
@@ -389,13 +393,13 @@ function StrategyCard({ name, roi, icon: Icon, featured, multiplier, profit, isD
         <div 
           className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center
             ${featured 
-              ? 'bg-accent-500/30' 
+              ? isDark ? 'bg-accent-500/30' : 'bg-accent-light/30'
               : isDark 
                 ? 'bg-brand-500/20' 
                 : 'bg-brand-50'
             }`}
         >
-          <Icon className={`w-5 h-5 lg:w-6 lg:h-6 ${featured ? 'text-accent-400' : 'text-brand-500'}`} />
+          <Icon className={`w-5 h-5 lg:w-6 lg:h-6 ${featured ? (isDark ? 'text-accent-400' : 'text-accent-light') : 'text-brand-500'}`} />
         </div>
         <div className={`text-sm lg:text-base font-semibold ${
           featured 
@@ -417,7 +421,7 @@ function StrategyCard({ name, roi, icon: Icon, featured, multiplier, profit, isD
           }`}>ROI</div>
           <div className={`text-3xl lg:text-4xl font-bold ${
             featured 
-              ? 'text-accent-400' 
+              ? isDark ? 'text-accent-400' : 'text-accent-light'
               : isDark 
                 ? 'text-white' 
                 : 'text-gray-900'
@@ -431,7 +435,7 @@ function StrategyCard({ name, roi, icon: Icon, featured, multiplier, profit, isD
           {[3, 5, 4, 7, 6, 9, 8, 12].map((h, i) => (
             <div 
               key={i}
-              className={`w-[4px] lg:w-[5px] rounded-sm ${featured ? 'bg-accent-500' : 'bg-brand-500'}`}
+              className={`w-[4px] lg:w-[5px] rounded-sm ${featured ? (isDark ? 'bg-accent-500' : 'bg-accent-light') : 'bg-brand-500'}`}
               style={{ 
                 height: `${h * 2.5}px`,
                 opacity: 0.4 + (i * 0.08)
@@ -439,7 +443,7 @@ function StrategyCard({ name, roi, icon: Icon, featured, multiplier, profit, isD
             />
           ))}
           {/* Upward arrow */}
-          <div className={`ml-1 ${featured ? 'text-accent-400' : 'text-emerald-500'}`}>
+          <div className={`ml-1 ${featured ? (isDark ? 'text-accent-400' : 'text-accent-light') : 'text-emerald-500'}`}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="lg:w-4 lg:h-4">
               <path d="M6 10V2M6 2L2 6M6 2L10 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -453,10 +457,10 @@ function StrategyCard({ name, roi, icon: Icon, featured, multiplier, profit, isD
           isDark ? 'border-white/10' : 'border-gray-100'
         }`}>
           <span className={`text-[11px] lg:text-sm ${isDark ? 'text-[#8892a0]' : 'text-gray-500'}`}>Est. Profit</span>
-          <span className={`text-sm lg:text-base font-bold ${featured ? 'text-accent-400' : 'text-emerald-500'}`}>
+          <span className={`text-sm lg:text-base font-bold ${featured ? (isDark ? 'text-accent-400' : 'text-accent-light') : 'text-emerald-500'}`}>
             {profit}
             {featured && multiplier && (
-              <span className="ml-1.5 text-[10px] lg:text-xs bg-accent-500/30 px-1.5 py-0.5 rounded text-accent-300">
+              <span className={`ml-1.5 text-[10px] lg:text-xs px-1.5 py-0.5 rounded ${isDark ? 'bg-accent-500/30 text-accent-300' : 'bg-accent-light/30 text-accent-light'}`}>
                 {multiplier}
               </span>
             )}
@@ -482,7 +486,7 @@ function FeatureItem({ icon: Icon, text, isDark }: FeatureItemProps) {
           ? 'bg-white/[0.08] border border-white/10' 
           : 'bg-white border border-gray-200 shadow-sm'
       }`}>
-        <Icon className="w-5 h-5 lg:w-7 lg:h-7 text-accent-500" />
+        <Icon className={`w-5 h-5 lg:w-7 lg:h-7 ${isDark ? 'text-accent-500' : 'text-accent-light'}`} />
       </div>
       <span className={`text-[12px] lg:text-sm font-medium ${isDark ? 'text-white/80' : 'text-gray-600'}`}>{text}</span>
     </div>
