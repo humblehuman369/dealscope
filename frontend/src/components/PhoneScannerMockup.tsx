@@ -17,9 +17,9 @@ export function PhoneScannerMockup({ isDark = true, onScanPress, onAddressPress 
         <span className={`text-[15px] lg:text-lg font-normal tracking-wide inline-flex items-center ${isDark ? 'text-white/90' : 'text-gray-700'}`}>
           Analyzing Data
           <span className="ml-2 inline-flex gap-[3px] lg:gap-1 loading-dots">
-            <span className="w-[4px] h-[4px] lg:w-[6px] lg:h-[6px] bg-accent-500 rounded-full" />
-            <span className="w-[4px] h-[4px] lg:w-[6px] lg:h-[6px] bg-accent-500 rounded-full" />
-            <span className="w-[4px] h-[4px] lg:w-[6px] lg:h-[6px] bg-accent-500 rounded-full" />
+            <span className={`w-[4px] h-[4px] lg:w-[6px] lg:h-[6px] rounded-full ${isDark ? 'bg-accent-500' : 'bg-accent-light'}`} />
+            <span className={`w-[4px] h-[4px] lg:w-[6px] lg:h-[6px] rounded-full ${isDark ? 'bg-accent-500' : 'bg-accent-light'}`} />
+            <span className={`w-[4px] h-[4px] lg:w-[6px] lg:h-[6px] rounded-full ${isDark ? 'bg-accent-500' : 'bg-accent-light'}`} />
           </span>
         </span>
       </div>
@@ -64,7 +64,7 @@ export function PhoneScannerMockup({ isDark = true, onScanPress, onAddressPress 
             backdropFilter: 'blur(10px)'
           }}
         >
-          <div className="text-[9px] font-semibold text-accent-500 uppercase tracking-[1.5px] mb-0.5">
+          <div className={`text-[9px] font-semibold uppercase tracking-[1.5px] mb-0.5 ${isDark ? 'text-accent-500' : 'text-accent-light'}`}>
             Property Located
           </div>
           <div className={`text-[13px] font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
