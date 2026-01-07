@@ -30,16 +30,16 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { AuthRequiredModal } from '../../components/AuthRequiredModal';
 
-// Brand Colors
+// Brand Colors - Use colors from theme for consistency
 const BRAND = {
-  navy: '#07172e',      // Black/Blue - primary dark
-  blue: '#0465f2',      // Medium Blue - primary accent
-  cyan: '#00e5ff',      // Electric Cyan - highlight
-  silver: '#e1e8ed',    // Icy Silver - light bg
-  gray: '#aab2bd',      // Cool Gray - secondary text
-  white: '#ffffff',
-  profit: '#22c55e',
-  loss: '#ef4444',
+  navy: colors.navy[900],         // #07172e - primary dark
+  blue: colors.primary[500],      // #0465f2 - primary accent
+  cyan: colors.accent[500],       // #4dd0e1 - soft cyan (was #00e5ff)
+  silver: colors.gray[100],       // #e1e8ed - Icy Silver
+  gray: colors.gray[300],         // #aab2bd - Cool Gray
+  white: colors.white,
+  profit: colors.profit.main,     // #22c55e
+  loss: colors.loss.main,         // #ef4444
 };
 
 // Display interface for the list

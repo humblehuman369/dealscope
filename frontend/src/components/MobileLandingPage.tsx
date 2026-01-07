@@ -299,7 +299,7 @@ export function MobileLandingPage({ onPointAndScan }: LandingPageProps) {
             className="w-full py-4 lg:py-5 rounded-2xl font-bold text-lg lg:text-xl text-white"
             style={{
               background: isDark 
-                ? 'linear-gradient(135deg, #0465f2 0%, #00e5ff 100%)'
+                ? 'linear-gradient(135deg, #0465f2 0%, #4dd0e1 100%)'
                 : 'linear-gradient(135deg, #0465f2 0%, #007ea7 100%)',
               boxShadow: '0 8px 32px rgba(4, 101, 242, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
             }}
