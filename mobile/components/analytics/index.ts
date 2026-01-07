@@ -25,6 +25,7 @@ export { SmartInsights } from './SmartInsights';
 export { TuneSliders } from './TuneSliders';
 export { BestStrategyCard, STRATEGIES } from './BestStrategyCard';
 export { PropertyMiniCard } from './PropertyMiniCard';
+export { StrategySelector, STRATEGY_LIST } from './StrategySelector';
 
 // Tabs
 export { CashFlowTab } from './tabs/CashFlowTab';

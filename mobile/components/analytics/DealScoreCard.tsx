@@ -24,10 +24,11 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 interface DealScoreCardProps {
   score: DealScore;
   onInfoPress?: () => void;
+  strategyName?: string;
   isDark?: boolean;
 }
 
-export function DealScoreCard({ score, onInfoPress, isDark = true }: DealScoreCardProps) {
+export function DealScoreCard({ score, onInfoPress, strategyName, isDark = true }: DealScoreCardProps) {
   // Animated value for score
   const animatedScore = useSharedValue(0);
   const displayScore = useSharedValue(0);
@@ -104,7 +105,7 @@ export function DealScoreCard({ score, onInfoPress, isDark = true }: DealScoreCa
 
       {/* Score Label */}
       <Text style={[styles.label, { color: isDark ? '#6b7280' : '#9ca3af' }]}>
-        Deal Score
+        {strategyName ? `${strategyName} Score` : 'Deal Score'}
       </Text>
 
       {/* Gauge */}
