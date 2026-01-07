@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  Camera,
   Home,
   Calendar,
   Wrench,
@@ -13,8 +12,7 @@ import {
   BarChart3,
   Search,
   MapPin,
-  ChevronDown,
-  ChevronUp,
+  Camera,
   Loader2
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -122,96 +120,71 @@ export function MobileLandingPage({ onPointAndScan }: MobileLandingPageProps) {
           Instantly reveal a property&apos;s real<br />investment potential in 60 seconds.
         </p>
         
-        {/* CTA Buttons */}
-        <div className="flex flex-col items-center gap-3 w-full max-w-[320px] mx-auto">
-          <button
-            onClick={onPointAndScan}
-            className="inline-flex items-center justify-center gap-2.5 px-9 py-4 rounded-full text-white font-semibold text-[15px] w-full"
-            style={{ 
-              background: 'linear-gradient(135deg, #0465f2 0%, var(--color-teal) 100%)',
-              boxShadow: '0 8px 32px rgba(4, 101, 242, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)' 
-            }}
-          >
-            <Camera className="w-5 h-5" />
-            Point & Scan
-          </button>
-          
-          {/* Search by Address Toggle */}
-          <button
-            onClick={() => setShowSearchBar(!showSearchBar)}
-            className={`text-sm underline flex items-center gap-1 ${
-              isDark ? 'text-white' : 'text-brand-600'
-            }`}
-          >
-            Or search by address
-            {showSearchBar ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
-          </button>
-
-          {/* Search Dropdown */}
-          {showSearchBar && (
-            <div 
-              className={`w-full mt-2 p-4 rounded-2xl border animate-in slide-in-from-top-2 duration-200 ${
-                isDark 
-                  ? 'bg-white/[0.08] border-white/10' 
-                  : 'bg-white border-gray-200 shadow-lg'
-              }`}
-              style={{ backdropFilter: isDark ? 'blur(12px)' : undefined }}
-            >
-              <div className={`flex items-center gap-2 rounded-xl px-4 py-3 border ${
-                isDark 
-                  ? 'bg-white/10 border-white/10' 
-                  : 'bg-gray-50 border-gray-200'
-              }`}>
-                <MapPin className="w-5 h-5 text-accent-500 flex-shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Enter property address..."
-                  value={searchAddress}
-                  onChange={(e) => setSearchAddress(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
-                  className={`flex-1 bg-transparent text-sm outline-none ${
-                    isDark 
-                      ? 'text-white placeholder-white/50' 
-                      : 'text-gray-900 placeholder-gray-400'
-                  }`}
-                  autoFocus
-                />
-              </div>
-              <button
-                onClick={handleAnalyze}
-                disabled={!searchAddress.trim() || isSearching}
-                className={`w-full mt-3 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all
-                  ${searchAddress.trim() 
-                    ? 'bg-gradient-to-r from-brand-500 to-accent-500 text-white shadow-lg shadow-brand-500/30' 
-                    : isDark 
-                      ? 'bg-white/10 text-white/40 cursor-not-allowed'
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}
-              >
-                {isSearching ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-4 h-4" />
-                    Analyze Property
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-        </div>
       </section>
 
-      {/* Phone Showcase */}
-      <section className="relative z-10 px-4 pt-8 pb-5 flex justify-center">
-        <PhoneScannerMockup isDark={isDark} />
+      {/* Scanner Viewfinder with integrated CTAs */}
+      <section className="relative z-10 px-4 pt-6 pb-5 flex flex-col items-center">
+        <PhoneScannerMockup 
+          isDark={isDark} 
+          onScanPress={onPointAndScan}
+          onAddressPress={() => setShowSearchBar(!showSearchBar)}
+        />
+        
+        {/* Address Search Dropdown */}
+        {showSearchBar && (
+          <div 
+            className={`w-full max-w-[360px] mt-4 p-4 rounded-2xl border animate-in slide-in-from-top-2 duration-200 ${
+              isDark 
+                ? 'bg-white/[0.08] border-white/10' 
+                : 'bg-white border-gray-200 shadow-lg'
+            }`}
+            style={{ backdropFilter: isDark ? 'blur(12px)' : undefined }}
+          >
+            <div className={`flex items-center gap-2 rounded-xl px-4 py-3 border ${
+              isDark 
+                ? 'bg-white/10 border-white/10' 
+                : 'bg-gray-50 border-gray-200'
+            }`}>
+              <MapPin className="w-5 h-5 text-accent-500 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Enter property address..."
+                value={searchAddress}
+                onChange={(e) => setSearchAddress(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+                className={`flex-1 bg-transparent text-sm outline-none ${
+                  isDark 
+                    ? 'text-white placeholder-white/50' 
+                    : 'text-gray-900 placeholder-gray-400'
+                }`}
+                autoFocus
+              />
+            </div>
+            <button
+              onClick={handleAnalyze}
+              disabled={!searchAddress.trim() || isSearching}
+              className={`w-full mt-3 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all
+                ${searchAddress.trim() 
+                  ? 'bg-gradient-to-r from-brand-500 to-accent-500 text-white shadow-lg shadow-brand-500/30' 
+                  : isDark 
+                    ? 'bg-white/10 text-white/40 cursor-not-allowed'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+            >
+              {isSearching ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Search className="w-4 h-4" />
+                  Analyze Property
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Results Section */}

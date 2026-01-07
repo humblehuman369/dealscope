@@ -1,12 +1,15 @@
 'use client';
 
 import React from 'react';
+import { Camera, MapPin } from 'lucide-react';
 
 interface PhoneScannerMockupProps {
   isDark?: boolean;
+  onScanPress?: () => void;
+  onAddressPress?: () => void;
 }
 
-export function PhoneScannerMockup({ isDark = true }: PhoneScannerMockupProps) {
+export function PhoneScannerMockup({ isDark = true, onScanPress, onAddressPress }: PhoneScannerMockupProps) {
   return (
     <div className="scanner-mockup w-full max-w-[360px] mx-auto">
       {/* Scanner Header */}
@@ -78,25 +81,34 @@ export function PhoneScannerMockup({ isDark = true }: PhoneScannerMockupProps) {
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-3 mt-5 justify-center">
+      {/* Search by either label */}
+      <p className={`text-center text-[12px] mt-4 mb-2 ${isDark ? 'text-white/60' : 'text-gray-500'}`}>
+        Search by either
+      </p>
+
+      {/* Action Buttons - Main CTAs */}
+      <div className="flex gap-3 justify-center">
         <button 
-          className="py-3 px-8 rounded-xl text-sm font-semibold text-[#07172e]"
+          onClick={onScanPress}
+          className="flex-1 max-w-[140px] py-3.5 px-6 rounded-xl text-[15px] font-semibold text-[#07172e] flex items-center justify-center gap-2"
           style={{
             background: `linear-gradient(135deg, var(--gradient-teal-start) 0%, var(--gradient-teal-end) 100%)`,
             boxShadow: `0 4px 20px rgba(var(--color-teal-rgb), 0.4)`
           }}
         >
+          <Camera className="w-4 h-4" />
           Scan
         </button>
         <button 
-          className={`py-3 px-8 rounded-xl text-sm font-semibold ${isDark ? 'text-[#e1e8ed]' : 'text-gray-700'}`}
+          onClick={onAddressPress}
+          className={`flex-1 max-w-[140px] py-3.5 px-6 rounded-xl text-[15px] font-semibold flex items-center justify-center gap-2 ${isDark ? 'text-[#e1e8ed]' : 'text-gray-700'}`}
           style={{
             background: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)',
-            border: isDark ? '1px solid rgba(255, 255, 255, 0.12)' : '1px solid rgba(0, 0, 0, 0.1)'
+            border: isDark ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(0, 0, 0, 0.1)'
           }}
         >
-          Details
+          <MapPin className="w-4 h-4" />
+          Address
         </button>
       </div>
 

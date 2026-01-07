@@ -147,34 +147,15 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          {/* CTA Buttons */}
-          <View style={styles.ctaSection}>
-            <TouchableOpacity style={styles.scanButton} onPress={handleScanPress}>
-              <LinearGradient
-                colors={[colors.primary[500], colors.accent[500]]}
-                style={styles.scanButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Ionicons name="camera" size={22} color="#fff" />
-                <Text style={styles.scanButtonText}>Point & Scan</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            {/* Search Toggle */}
-            <TouchableOpacity 
-              style={styles.searchToggle}
-              onPress={() => setShowSearchBar(!showSearchBar)}
-            >
-              <Text style={[styles.searchToggleText, dynamicStyles.searchToggleText]}>Or search by address</Text>
-              <Ionicons 
-                name={showSearchBar ? 'chevron-up' : 'chevron-down'} 
-                size={16} 
-                color={isDark ? '#fff' : colors.primary[600]} 
-              />
-            </TouchableOpacity>
-
-            {/* Search Dropdown */}
+          {/* Scanner Viewfinder with integrated CTAs */}
+          <View style={styles.phoneMockupContainer}>
+            <PhoneMockup 
+              onScanPress={handleScanPress} 
+              onAddressPress={() => setShowSearchBar(!showSearchBar)}
+              isDark={isDark}
+            />
+            
+            {/* Address Search Dropdown */}
             {showSearchBar && (
               <View style={[styles.searchDropdown, dynamicStyles.searchDropdown]}>
                 <View style={[styles.searchInputContainer, dynamicStyles.searchInputContainer]}>
@@ -214,11 +195,6 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               </View>
             )}
-          </View>
-
-          {/* Phone Mockup */}
-          <View style={styles.phoneMockupContainer}>
-            <PhoneMockup />
           </View>
 
           {/* Results Section - Redesigned for Mobile */}
@@ -278,8 +254,16 @@ export default function HomeScreen() {
   );
 }
 
-// Scanner Viewfinder Component (replaces phone mockup)
-function PhoneMockup() {
+// Scanner Viewfinder Component with integrated CTAs
+function PhoneMockup({ 
+  onScanPress, 
+  onAddressPress,
+  isDark 
+}: { 
+  onScanPress: () => void; 
+  onAddressPress: () => void;
+  isDark: boolean;
+}) {
   return (
     <View style={styles.scannerMockup}>
       {/* Analyzing Header */}
@@ -347,16 +331,21 @@ function PhoneMockup() {
           <Text style={styles.locationLabel}>PROPERTY LOCATED</Text>
           <Text style={styles.locationAddress}>123 Main Street, Anytown</Text>
         </View>
-      </View>
 
-      {/* Action Buttons */}
-      <View style={styles.phoneActions}>
-        <TouchableOpacity style={styles.phoneScanBtn}>
-          <Text style={styles.phoneScanBtnText}>Scan</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.phoneDetailsBtn}>
-          <Text style={styles.phoneDetailsBtnText}>Details</Text>
-        </TouchableOpacity>
+        {/* Search by either label */}
+        <Text style={styles.searchByEither}>Search by either</Text>
+
+        {/* Action Buttons - Now the main CTAs */}
+        <View style={styles.phoneActions}>
+          <TouchableOpacity style={styles.phoneScanBtn} onPress={onScanPress}>
+            <Ionicons name="camera" size={16} color={colors.navy[900]} style={{ marginRight: 6 }} />
+            <Text style={styles.phoneScanBtnText}>Scan</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.phoneDetailsBtn} onPress={onAddressPress}>
+            <Ionicons name="location" size={16} color="#e1e8ed" style={{ marginRight: 6 }} />
+            <Text style={styles.phoneDetailsBtnText}>Address</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -508,45 +497,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
 
-  // CTA Section
-  ctaSection: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    alignItems: 'center',
-  },
-  scanButton: {
-    width: '100%',
-    maxWidth: 280,
-    borderRadius: 30,
-    overflow: 'hidden',
-    shadowColor: colors.primary[500],
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.45,
-    shadowRadius: 15,
-    elevation: 8,
-  },
-  scanButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    gap: 10,
-  },
-  scanButtonText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  searchToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 12,
-  },
-  searchToggleText: {
-    fontSize: 14,
-    textDecorationLine: 'underline',
-  },
+  // Search Dropdown (shown below scanner when Address is tapped)
   searchDropdown: {
     width: '100%',
     marginTop: 16,
@@ -589,10 +540,11 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.4)',
   },
 
-  // Scanner Mockup (replaces phone mockup)
+  // Scanner Mockup with integrated CTAs
   phoneMockupContainer: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingTop: 24,
+    paddingBottom: 16,
     paddingHorizontal: 20,
   },
   scannerMockup: {
@@ -683,37 +635,53 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
   },
+  searchByEither: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 12,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 8,
+  },
   phoneActions: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 16,
     width: '100%',
     justifyContent: 'center',
   },
   phoneScanBtn: {
+    flex: 1,
+    flexDirection: 'row',
     backgroundColor: colors.accent[500],
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
+    borderRadius: 12,
+    paddingVertical: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.accent[500],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   phoneScanBtnText: {
     color: colors.navy[900],
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
   },
   phoneDetailsBtn: {
+    flex: 1,
+    flexDirection: 'row',
     backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
+    borderColor: 'rgba(255,255,255,0.15)',
+    paddingVertical: 14,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   phoneDetailsBtnText: {
     color: '#e1e8ed',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
   },
 
