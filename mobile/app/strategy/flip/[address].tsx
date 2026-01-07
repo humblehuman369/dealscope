@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '@/theme/ThemeContext';
+import { useTheme } from '@/context/ThemeContext';
 import { colors } from '@/theme/colors';
 import { formatCurrency, formatPercent } from '@/components/analytics/formatters';
 import {

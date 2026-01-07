@@ -11,7 +11,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import { useTheme } from '@/theme/ThemeContext';
+import { useTheme } from '@/context/ThemeContext';
 import { colors } from '@/theme/colors';
 import { Scenario, CalculatedMetrics } from '../types';
 import { formatCurrency, formatPercent } from '../calculations';
