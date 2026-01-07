@@ -1,6 +1,6 @@
 /**
- * InvestIQ Mobile Color System
- * Consistent with web app branding
+ * InvestIQ Frontend Color System
+ * Consistent with mobile app branding
  * 
  * Brand Colors:
  * - Navy/Black-Blue: #07172e
@@ -15,12 +15,11 @@
  * - Strategy colors shifted to avoid conflicts with profit/loss/warning status colors
  */
 
-import { Platform } from 'react-native';
-
-const isMobile = Platform.OS === 'ios' || Platform.OS === 'android';
+// Platform detection for responsive text colors
+const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
 export const colors = {
-  // Primary - Brand Blue (matches web app)
+  // Primary - Brand Blue
   primary: {
     50: '#e6f0fe',
     100: '#cce1fd',
@@ -71,7 +70,7 @@ export const colors = {
     main: '#22c55e',
     dark: '#16a34a',
     text: '#15803d',
-    textStrong: '#166534', // Higher contrast for mobile
+    textStrong: '#166534',
   },
 
   // Loss/Negative - Red (STATUS ONLY - not for strategies)
@@ -80,7 +79,7 @@ export const colors = {
     main: '#ef4444',
     dark: '#dc2626',
     text: '#b91c1c',
-    textStrong: '#991b1b', // Higher contrast for mobile
+    textStrong: '#991b1b',
   },
 
   // Warning - Amber (STATUS ONLY - not for strategies)
@@ -89,7 +88,7 @@ export const colors = {
     main: '#f59e0b',
     dark: '#d97706',
     text: '#b45309',
-    textStrong: '#92400e', // Higher contrast for mobile
+    textStrong: '#92400e',
   },
 
   // Info - Blue (uses primary)
@@ -108,7 +107,7 @@ export const colors = {
     200: '#d1d9e0',
     300: '#aab2bd',  // Cool Gray
     400: '#9ca3af',
-    500: '#6b7280',  // Mobile secondary text
+    500: '#6b7280',
     600: '#4b5563',
     700: '#374151',
     800: '#1f2937',
@@ -118,42 +117,42 @@ export const colors = {
   // Strategy-specific colors (DISTINCT from status colors to avoid confusion)
   strategies: {
     longTermRental: {
-      primary: '#0465f2',  // Brand blue
+      primary: '#0465f2',
       light: '#e6f0fe',
       dark: '#0354d1',
       icon: '🏠',
       label: 'Long-Term Rental',
     },
     shortTermRental: {
-      primary: '#8b5cf6',  // Purple - unique
+      primary: '#8b5cf6',
       light: '#ede9fe',
       dark: '#7c3aed',
       icon: '🏨',
       label: 'Short-Term Rental',
     },
     brrrr: {
-      primary: '#f97316',  // Orange (shifted from #f59e0b to avoid warning conflict)
+      primary: '#f97316',  // Orange (shifted from #f59e0b)
       light: '#ffedd5',
       dark: '#ea580c',
       icon: '🔄',
       label: 'BRRRR',
     },
     fixAndFlip: {
-      primary: '#ec4899',  // Pink (shifted from #ef4444 to avoid loss/danger conflict)
+      primary: '#ec4899',  // Pink (shifted from #ef4444)
       light: '#fce7f3',
       dark: '#db2777',
       icon: '🔨',
       label: 'Fix & Flip',
     },
     houseHack: {
-      primary: '#14b8a6',  // Teal (shifted from #00e5ff to avoid accent conflict)
+      primary: '#14b8a6',  // Teal (shifted from #00e5ff)
       light: '#ccfbf1',
       dark: '#0d9488',
       icon: '🏡',
       label: 'House Hack',
     },
     wholesale: {
-      primary: '#84cc16',  // Lime (shifted from #22c55e to avoid profit/success conflict)
+      primary: '#84cc16',  // Lime (shifted from #22c55e)
       light: '#ecfccb',
       dark: '#65a30d',
       icon: '📋',
@@ -165,108 +164,89 @@ export const colors = {
   white: '#ffffff',
   black: '#000000',
   transparent: 'transparent',
-  overlay: 'rgba(7, 23, 46, 0.5)',  // Navy-based overlay
+  overlay: 'rgba(7, 23, 46, 0.5)',
   overlayLight: 'rgba(7, 23, 46, 0.3)',
-
-  // Scanner-specific (updated to soft cyan for premium feel)
-  scanner: {
-    target: '#4dd0e1',        // Dark mode (was #00e5ff)
-    targetLight: '#007ea7',   // Light mode
-    targetActive: '#26c6da',
-    reticle: 'rgba(255, 255, 255, 0.8)',
-    compass: '#4dd0e1',       // Dark mode (was #00e5ff)
-    compassLight: '#007ea7',  // Light mode
-  },
 
   // Background colors
   background: {
     primary: '#ffffff',
     secondary: '#f8fafc',
-    tertiary: '#e1e8ed',  // Icy Silver
-    dark: '#07172e',      // Navy
-    darkAlt: '#0f2744',   // Elevated dark surface
-    darkElevated: '#1a3a5c', // Cards on dark
+    tertiary: '#e1e8ed',
+    dark: '#07172e',
+    darkAlt: '#0f2744',
+    darkElevated: '#1a3a5c',
   },
 
-  // Text colors (with mobile-adaptive secondary)
+  // Text colors
   text: {
-    primary: '#07172e',   // Navy
-    secondary: isMobile ? '#6b7280' : '#4b5563', // Darker on mobile for outdoor readability
+    primary: '#07172e',
+    secondary: isMobile ? '#6b7280' : '#4b5563',
     tertiary: '#6b7280',
-    muted: isMobile ? '#9ca3af' : '#aab2bd',     // Cool Gray (adaptive)
+    muted: isMobile ? '#9ca3af' : '#aab2bd',
     inverse: '#ffffff',
     inverseMuted: isMobile ? '#d1d5db' : '#aab2bd',
   },
 
   // Border colors
   border: {
-    light: '#e1e8ed',     // Icy Silver
+    light: '#e1e8ed',
     default: '#d1d9e0',
-    dark: '#aab2bd',      // Cool Gray
-    focus: '#0465f2',     // Brand blue for focus states
+    dark: '#aab2bd',
+    focus: '#0465f2',
   },
 } as const;
 
 // =============================================================================
-// GRADIENTS
+// GRADIENTS (CSS format for web)
 // =============================================================================
 
 export const gradients = {
   /** CTA buttons, hero elements - dark mode */
-  brandDark: ['#0465f2', '#4dd0e1'] as const,
+  brandDark: 'linear-gradient(135deg, #0465f2 0%, #4dd0e1 100%)',
   /** CTA buttons, hero elements - light mode */
-  brandLight: ['#0465f2', '#007ea7'] as const,
+  brandLight: 'linear-gradient(135deg, #0465f2 0%, #007ea7 100%)',
   /** Dark mode backgrounds */
-  backgroundDark: ['#07172e', '#1f2937'] as const,
+  backgroundDark: 'linear-gradient(135deg, #07172e 0%, #1f2937 100%)',
   /** Light mode backgrounds */
-  backgroundLight: ['#e8eef3', '#f9fafb'] as const,
+  backgroundLight: 'linear-gradient(135deg, #e8eef3 0%, #f9fafb 100%)',
+  /** Premium card shine overlay */
+  cardShine: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
 };
 
 // =============================================================================
-// REACT NATIVE SPECIFIC
+// CSS VARIABLES (for :root or CSS-in-JS)
 // =============================================================================
 
-export const rnColors = {
-  /** Status bar styles */
-  statusBar: {
-    light: { backgroundColor: colors.background.primary, barStyle: 'dark-content' as const },
-    dark: { backgroundColor: colors.background.dark, barStyle: 'light-content' as const },
-  },
-  
-  /** Tab bar colors */
-  tabBar: {
-    light: {
-      active: colors.primary[500],
-      inactive: colors.gray[400],
-      background: colors.background.primary,
-      border: colors.border.light,
-    },
-    dark: {
-      active: colors.accent[500],
-      inactive: colors.gray[500],
-      background: colors.background.dark,
-      border: colors.navy[700],
-    },
-  },
-  
-  /** Safe area backgrounds */
-  safeArea: {
-    light: colors.background.primary,
-    dark: colors.background.dark,
-  },
+export const cssVariables = {
+  '--color-brand-blue': colors.primary[500],
+  '--color-brand-navy': colors.navy[900],
+  '--color-accent-dark': colors.accent[500],
+  '--color-accent-light': colors.accent.light,
+  '--color-icy-silver': colors.gray[100],
+  '--color-cool-gray': colors.gray[300],
+  '--color-profit': colors.profit.main,
+  '--color-loss': colors.loss.main,
+  '--color-warning': colors.warning.main,
 };
 
 // =============================================================================
-// ACCESSIBILITY HELPERS
+// TAILWIND EXTEND (for tailwind.config.js)
 // =============================================================================
 
-export const a11y = {
-  /** Minimum touch target size (44x44 per Apple HIG) */
-  minTouchTarget: 44,
-  
-  /** Focus visible outline */
-  focusRing: colors.accent[500],
-  focusRingWidth: 2,
+export const tailwindColors = {
+  'brand-blue': colors.primary[500],
+  'brand-navy': colors.navy[900],
+  'accent-dark': colors.accent[500],
+  'accent-light': colors.accent.light,
+  'icy-silver': colors.gray[100],
+  'cool-gray': colors.gray[300],
+  // Strategy colors
+  'strategy-long-rental': colors.strategies.longTermRental.primary,
+  'strategy-short-rental': colors.strategies.shortTermRental.primary,
+  'strategy-brrrr': colors.strategies.brrrr.primary,
+  'strategy-flip': colors.strategies.fixAndFlip.primary,
+  'strategy-househack': colors.strategies.houseHack.primary,
+  'strategy-wholesale': colors.strategies.wholesale.primary,
 };
 
 // =============================================================================
