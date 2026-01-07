@@ -263,30 +263,30 @@ function HouseSVG({ isDark = true }: { isDark?: boolean }) {
       
       {/* Roof */}
       <polygon points="100,20 20,70 180,70" fill="url(#roofGrad)"/>
-      <polygon points="100,20 25,70 175,70" fill="none" stroke={isDark ? '#00e5ff' : '#007ea7'} strokeWidth="1" opacity="0.3"/>
+      <polygon points="100,20 25,70 175,70" fill="none" stroke={isDark ? '#4dd0e1' : '#007ea7'} strokeWidth="1" opacity="0.3"/>
       
       {/* Porch roof */}
       <rect x="55" y="100" width="90" height="8" fill={isDark ? '#2a3a45' : '#475569'}/>
       
       {/* Door */}
       <rect x="85" y="105" width="30" height="45" fill={isDark ? '#2a3540' : '#334155'} rx="2"/>
-      <circle cx="108" cy="130" r="2" fill={isDark ? '#00e5ff' : '#007ea7'} opacity="0.6"/>
+      <circle cx="108" cy="130" r="2" fill={isDark ? '#4dd0e1' : '#007ea7'} opacity="0.6"/>
       
       {/* Windows - left */}
       <rect x="40" y="80" width="30" height="25" fill={isDark ? '#1a2530' : '#e2e8f0'} rx="1"/>
-      <rect x="40" y="80" width="30" height="25" fill="none" stroke={isDark ? '#00e5ff' : '#007ea7'} strokeWidth="0.5" opacity="0.4" rx="1"/>
+      <rect x="40" y="80" width="30" height="25" fill="none" stroke={isDark ? '#4dd0e1' : '#007ea7'} strokeWidth="0.5" opacity="0.4" rx="1"/>
       <line x1="55" y1="80" x2="55" y2="105" stroke={isDark ? '#3a4a55' : '#94a3b8'} strokeWidth="2"/>
       <line x1="40" y1="92" x2="70" y2="92" stroke={isDark ? '#3a4a55' : '#94a3b8'} strokeWidth="2"/>
       
       {/* Windows - right */}
       <rect x="130" y="80" width="30" height="25" fill={isDark ? '#1a2530' : '#e2e8f0'} rx="1"/>
-      <rect x="130" y="80" width="30" height="25" fill="none" stroke={isDark ? '#00e5ff' : '#007ea7'} strokeWidth="0.5" opacity="0.4" rx="1"/>
+      <rect x="130" y="80" width="30" height="25" fill="none" stroke={isDark ? '#4dd0e1' : '#007ea7'} strokeWidth="0.5" opacity="0.4" rx="1"/>
       <line x1="145" y1="80" x2="145" y2="105" stroke={isDark ? '#3a4a55' : '#94a3b8'} strokeWidth="2"/>
       <line x1="130" y1="92" x2="160" y2="92" stroke={isDark ? '#3a4a55' : '#94a3b8'} strokeWidth="2"/>
       
       {/* Attic window */}
       <circle cx="100" cy="50" r="12" fill={isDark ? '#1a2530' : '#e2e8f0'}/>
-      <circle cx="100" cy="50" r="12" fill="none" stroke={isDark ? '#00e5ff' : '#007ea7'} strokeWidth="0.5" opacity="0.4"/>
+      <circle cx="100" cy="50" r="12" fill="none" stroke={isDark ? '#4dd0e1' : '#007ea7'} strokeWidth="0.5" opacity="0.4"/>
       
       {/* Porch pillars */}
       <rect x="60" y="100" width="6" height="50" fill={isDark ? '#4a5a65' : '#94a3b8'}/>

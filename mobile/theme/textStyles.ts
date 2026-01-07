@@ -34,7 +34,7 @@ export const semanticColors = {
   loss: colors.loss.main,           // #ef4444 - red
   warning: colors.warning.main,     // #f59e0b - orange
   info: colors.primary[500],        // #0465f2 - blue
-  accent: colors.accent[500],       // #00e5ff - cyan
+  accent: colors.accent[500],       // #4dd0e1 - soft cyan (was #00e5ff)
 };
 
 // Helper to get text color based on dark mode
