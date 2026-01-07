@@ -3,7 +3,7 @@
  */
 
 import { Stack } from 'expo-router';
-import { useTheme } from '@/theme/ThemeContext';
+import { useTheme } from '@/context/ThemeContext';
 import { colors } from '@/theme/colors';
 
 export default function StrategyLayout() {

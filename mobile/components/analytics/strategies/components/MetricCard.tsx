@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '@/theme/ThemeContext';
+import { useTheme } from '@/context/ThemeContext';
 import { colors } from '@/theme/colors';
 
 interface MetricCardProps {
