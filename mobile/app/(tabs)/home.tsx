@@ -113,7 +113,7 @@ export default function HomeScreen() {
           {/* Header */}
           <View style={styles.header}>
             <Text style={[styles.logoText, { color: isDark ? '#fff' : colors.navy[900] }]}>
-              Invest<Text style={{ color: colors.accent[500] }}>IQ</Text>
+              Invest<Text style={{ color: colors.primary[500] }}>IQ</Text>
             </Text>
             
             {/* Theme Toggle */}
