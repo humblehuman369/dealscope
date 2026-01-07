@@ -36,7 +36,7 @@ export default function SearchScreen() {
 
     try {
       // Navigate to the property page with the address
-      router.push(`/property/${encodeURIComponent(address.trim())}`);
+      router.push(`/analytics/${encodeURIComponent(address.trim())}`);
     } catch (err) {
       setError('Unable to search. Please try again.');
     } finally {

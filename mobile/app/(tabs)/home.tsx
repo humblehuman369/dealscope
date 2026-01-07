@@ -105,7 +105,8 @@ export default function HomeScreen() {
   const handleAnalyze = () => {
     if (!searchAddress.trim()) return;
     setIsSearching(true);
-    router.push(`/property/${encodeURIComponent(searchAddress.trim())}`);
+    // Route to new Property Analytics page (not old /property page)
+    router.push(`/analytics/${encodeURIComponent(searchAddress.trim())}`);
   };
 
   const handleScanPress = () => {

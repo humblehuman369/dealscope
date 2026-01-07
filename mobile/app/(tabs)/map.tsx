@@ -211,7 +211,7 @@ export default function MapScreen() {
         selectedProperty.city,
         selectedProperty.state,
       ].filter(Boolean).join(', ');
-      router.push(`/property/${encodeURIComponent(fullAddress)}`);
+      router.push(`/analytics/${encodeURIComponent(fullAddress)}`);
     }
   }, [selectedProperty, router]);
 
@@ -227,7 +227,7 @@ export default function MapScreen() {
 
   const handleSearch = useCallback(() => {
     if (searchQuery.trim()) {
-      router.push(`/property/${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/analytics/${encodeURIComponent(searchQuery.trim())}`);
     }
   }, [searchQuery, router]);
   
