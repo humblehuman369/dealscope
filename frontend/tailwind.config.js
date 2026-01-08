@@ -133,6 +133,9 @@ module.exports = {
           800: '#991b1b',
           900: '#7f1d1d',
         },
+        // Theme-aware teal (use text-teal, bg-teal, border-teal)
+        // This uses CSS variable for automatic dark/light mode switching
+        teal: 'var(--color-teal)',
         // Legacy aliases for backward compatibility
         primary: {
           50: '#e6f0fe',
@@ -192,6 +195,12 @@ module.exports = {
         'fade-in': 'fade-in 0.5s ease-out',
         'slide-up': 'slide-up 0.5s ease-out',
         'slide-in-right': 'slide-in-right 0.3s ease-out',
+        // Analytics component animations
+        'target-glow': 'target-glow 3s ease-in-out infinite',
+        'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
+        'score-fill': 'score-fill 1s ease-out forwards',
+        'marker-slide': 'marker-slide 0.5s ease-out',
+        'expand-collapse': 'expand-collapse 0.3s ease-in-out',
       },
       keyframes: {
         'float-slow': {
@@ -220,6 +229,27 @@ module.exports = {
         'slide-in-right': {
           '0%': { opacity: '0', transform: 'translateX(20px)' },
           '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        // Analytics-specific keyframes
+        'target-glow': {
+          '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+          '50%': { transform: 'scale(1.02)', opacity: '0.8' },
+        },
+        'pulse-soft': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.7' },
+        },
+        'score-fill': {
+          '0%': { strokeDashoffset: '100%' },
+          '100%': { strokeDashoffset: '0%' },
+        },
+        'marker-slide': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
+        'expand-collapse': {
+          '0%': { maxHeight: '0', opacity: '0' },
+          '100%': { maxHeight: '2000px', opacity: '1' },
         },
       },
       // ==========================================
