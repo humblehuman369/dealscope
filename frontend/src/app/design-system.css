@@ -309,3 +309,268 @@ body {
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
 }
+
+/* ==========================================
+   INVESTIQ ANALYTICS COMPONENTS - Dark Mode Theme
+   ========================================== */
+
+/* Theme-aware Teal Color */
+:root {
+  --color-teal: #007ea7;  /* Pacific Teal for light mode */
+  --color-teal-rgb: 0, 126, 167;
+}
+
+html.dark {
+  --color-teal: #00afa8;  /* Electric Teal for dark mode */
+  --color-teal-rgb: 0, 175, 168;
+}
+
+/* Analytics Container - Dark Mode Background */
+.analytics-container {
+  background: linear-gradient(180deg, #0b1426 0%, #091020 100%);
+  min-height: 100vh;
+}
+
+/* Scrollbar Hide Utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Target Glow Animation */
+@keyframes target-glow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+}
+
+.animate-target-glow {
+  animation: target-glow 3s ease-in-out infinite;
+}
+
+/* Spectrum Bar Marker Animation */
+@keyframes marker-appear {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-50%) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-50%) scale(1);
+  }
+}
+
+.spectrum-marker {
+  animation: marker-appear 0.5s ease-out forwards;
+}
+
+/* Collapsible Section Animation */
+.collapsible-enter {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.collapsible-enter-active {
+  max-height: 2000px;
+  opacity: 1;
+  transition: max-height 0.3s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.collapsible-exit {
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.collapsible-exit-active {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+/* Score Ring Animation */
+@keyframes score-draw {
+  0% {
+    stroke-dashoffset: 502.655;
+  }
+}
+
+.score-ring-progress {
+  animation: score-draw 1s ease-out forwards;
+}
+
+/* Strategy Pill Active Glow */
+.strategy-pill-active {
+  box-shadow: 0 3px 12px rgba(var(--color-teal-rgb), 0.4);
+}
+
+/* Tune Slider Custom Styles */
+.tune-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tune-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border: 2px solid var(--color-teal);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.tune-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.tune-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: white;
+  border: 2px solid var(--color-teal);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+/* IQ Target Hero Gradient */
+.iq-target-bg {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(0, 175, 168, 0.1) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+/* Price Ladder Target Row Highlight */
+.price-rung-target {
+  background: rgba(34, 197, 94, 0.08);
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-radius: 0.5rem;
+}
+
+/* Benchmark Spectrum Gradient */
+.spectrum-gradient {
+  background: linear-gradient(90deg, 
+    rgba(239, 68, 68, 0.3) 0%, 
+    rgba(239, 68, 68, 0.2) 25%, 
+    rgba(234, 179, 8, 0.2) 35%, 
+    rgba(234, 179, 8, 0.3) 50%, 
+    rgba(234, 179, 8, 0.2) 65%, 
+    rgba(34, 197, 94, 0.2) 75%, 
+    rgba(34, 197, 94, 0.3) 100%
+  );
+}
+
+.spectrum-gradient-inverted {
+  background: linear-gradient(90deg, 
+    rgba(34, 197, 94, 0.3) 0%, 
+    rgba(34, 197, 94, 0.2) 25%, 
+    rgba(234, 179, 8, 0.2) 35%, 
+    rgba(234, 179, 8, 0.3) 50%, 
+    rgba(234, 179, 8, 0.2) 65%, 
+    rgba(239, 68, 68, 0.2) 75%, 
+    rgba(239, 68, 68, 0.3) 100%
+  );
+}
+
+/* Offer Card Highlight */
+.offer-card-recommended {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+/* Formula Card Row Divider */
+.formula-row-total {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 0.375rem;
+  padding-top: 0.5rem;
+}
+
+/* Insight Card Type Variants */
+.insight-success {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.insight-warning {
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.15);
+}
+
+.insight-danger {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.insight-tip {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.insight-info {
+  background: rgba(var(--color-teal-rgb), 0.08);
+  border: 1px solid rgba(var(--color-teal-rgb), 0.15);
+}
+
+/* Pie Chart Colors */
+.pie-principal {
+  fill: var(--color-teal);
+}
+
+.pie-interest {
+  fill: rgba(239, 68, 68, 0.7);
+}
+
+/* Amortization Table Stripes */
+.amort-row-even {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* CTA Banner Gradient */
+.cta-banner-gradient {
+  background: linear-gradient(90deg, var(--color-teal) 0%, #0465f2 100%);
+}
+
+/* Bottom Nav Glass Effect */
+.bottom-nav-glass {
+  background: rgba(11, 20, 38, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Sub Tab Active State */
+.sub-tab-active {
+  background: var(--color-teal);
+  color: white;
+  box-shadow: 0 2px 8px rgba(var(--color-teal-rgb), 0.35);
+}
+
+/* Performance Section Highlight Row */
+.perf-row-highlight {
+  background: rgba(255, 255, 255, 0.02);
+  margin-left: -0.75rem;
+  margin-right: -0.75rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  margin-top: 0.25rem;
+}
