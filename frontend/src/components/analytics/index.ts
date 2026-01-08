@@ -190,6 +190,25 @@ export {
 } from './PropertyMiniCard'
 
 // ============================================
+// MAIN CONTAINER
+// ============================================
+
+// Strategy Analytics Container - Main page component
+export { 
+  StrategyAnalyticsContainer,
+  type PropertyData as AnalyticsPropertyData
+} from './StrategyAnalyticsContainer'
+
+// Strategy-specific metrics content
+export {
+  STRMetricsContent,
+  BRRRRMetricsContent,
+  FlipMetricsContent,
+  HouseHackMetricsContent,
+  WholesaleMetricsContent
+} from './StrategyMetricsContent'
+
+// ============================================
 // DEFAULT EXPORT - All components
 // ============================================
 

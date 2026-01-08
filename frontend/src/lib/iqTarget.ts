@@ -1,0 +1,609 @@
+/**
+ * InvestIQ - IQ Target Price Calculation Engine
+ * 
+ * The IQ Target Price is the recommended purchase price that achieves
+ * profitable returns for each investment strategy. It's the "crown jewel"
+ * of the InvestIQ analytics - telling investors exactly what to offer.
+ */
+
+// ============================================
+// TYPES
+// ============================================
+
+export interface IQTargetResult {
+  targetPrice: number
+  discountFromList: number
+  discountPercent: number
+  breakeven: number
+  breakevenPercent: number
+  rationale: string
+  highlightedMetric: string
+  secondaryMetric: string
+  // Key metrics at target price
+  monthlyCashFlow: number
+  cashOnCash: number
+  capRate: number
+  dscr: number
+  // For BRRRR
+  cashLeftInDeal?: number
+  cashRecoveryPercent?: number
+  equityCreated?: number
+  // For Flip
+  netProfit?: number
+  roi?: number
+  // For House Hack
+  effectiveHousingCost?: number
+  monthlySavings?: number
+  // For Wholesale
+  assignmentFee?: number
+  mao?: number
+}
+
+export interface TargetAssumptions {
+  listPrice: number
+  // Financing
+  downPaymentPct: number
+  interestRate: number
+  loanTermYears: number
+  closingCostsPct: number
+  // Income
+  monthlyRent: number
+  averageDailyRate: number
+  occupancyRate: number
+  vacancyRate: number
+  // Expenses
+  propertyTaxes: number
+  insurance: number
+  managementPct: number
+  maintenancePct: number
+  // Rehab/ARV (for BRRRR, Flip, Wholesale)
+  rehabCost: number
+  arv: number
+  holdingPeriodMonths: number
+  sellingCostsPct: number
+  // House Hack
+  roomsRented: number
+  totalBedrooms: number
+  // Wholesale
+  wholesaleFeePct: number
+}
+
+// ============================================
+// STRATEGY-SPECIFIC CALCULATIONS
+// ============================================
+
+function calculateMonthlyMortgage(principal: number, annualRate: number, years: number): number {
+  if (annualRate === 0) return principal / (years * 12)
+  const monthlyRate = annualRate / 12
+  const numPayments = years * 12
+  return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+    (Math.pow(1 + monthlyRate, numPayments) - 1)
+}
+
+function calculateLTRMetrics(purchasePrice: number, a: TargetAssumptions) {
+  const downPayment = purchasePrice * a.downPaymentPct
+  const closingCosts = purchasePrice * a.closingCostsPct
+  const loanAmount = purchasePrice - downPayment
+  const totalCashRequired = downPayment + closingCosts
+  const monthlyPI = calculateMonthlyMortgage(loanAmount, a.interestRate, a.loanTermYears)
+  const annualDebtService = monthlyPI * 12
+  const annualGrossRent = a.monthlyRent * 12
+  const effectiveGrossIncome = annualGrossRent * (1 - a.vacancyRate)
+  const totalOpEx = a.propertyTaxes + a.insurance + (annualGrossRent * a.managementPct) + (annualGrossRent * a.maintenancePct)
+  const noi = effectiveGrossIncome - totalOpEx
+  const annualCashFlow = noi - annualDebtService
+  const monthlyCashFlow = annualCashFlow / 12
+  const capRate = purchasePrice > 0 ? noi / purchasePrice : 0
+  const cashOnCash = totalCashRequired > 0 ? annualCashFlow / totalCashRequired : 0
+  const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
+  
+  return { monthlyCashFlow, annualCashFlow, capRate, cashOnCash, dscr, noi, totalCashRequired }
+}
+
+function calculateSTRMetrics(purchasePrice: number, a: TargetAssumptions) {
+  const downPayment = purchasePrice * a.downPaymentPct
+  const closingCosts = purchasePrice * a.closingCostsPct
+  const loanAmount = purchasePrice - downPayment
+  const totalCashRequired = downPayment + closingCosts
+  const monthlyPI = calculateMonthlyMortgage(loanAmount, a.interestRate, a.loanTermYears)
+  const annualDebtService = monthlyPI * 12
+  const annualGrossRent = a.averageDailyRate * 365 * a.occupancyRate
+  const managementFee = annualGrossRent * 0.20
+  const platformFees = annualGrossRent * 0.03
+  const utilities = 3600
+  const supplies = 2400
+  const totalOpEx = a.propertyTaxes + a.insurance + managementFee + platformFees + utilities + supplies + (annualGrossRent * a.maintenancePct)
+  const noi = annualGrossRent - totalOpEx
+  const annualCashFlow = noi - annualDebtService
+  const monthlyCashFlow = annualCashFlow / 12
+  const capRate = purchasePrice > 0 ? noi / purchasePrice : 0
+  const cashOnCash = totalCashRequired > 0 ? annualCashFlow / totalCashRequired : 0
+  const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
+  
+  return { monthlyCashFlow, annualCashFlow, capRate, cashOnCash, dscr, noi, annualGrossRent, totalCashRequired }
+}
+
+function calculateBRRRRMetrics(purchasePrice: number, a: TargetAssumptions) {
+  const initialCash = (purchasePrice * 0.30) + a.rehabCost + (purchasePrice * a.closingCostsPct)
+  const allInCost = purchasePrice + a.rehabCost + (purchasePrice * a.closingCostsPct)
+  const refinanceLoanAmount = a.arv * 0.75
+  const cashBack = refinanceLoanAmount - (purchasePrice * 0.70)
+  const cashLeftInDeal = Math.max(0, initialCash - Math.max(0, cashBack))
+  const cashRecoveryPercent = initialCash > 0 ? ((initialCash - cashLeftInDeal) / initialCash) * 100 : 0
+  const monthlyPI = calculateMonthlyMortgage(refinanceLoanAmount, a.interestRate, a.loanTermYears)
+  const annualDebtService = monthlyPI * 12
+  const annualGrossRent = a.monthlyRent * 12
+  const effectiveGrossIncome = annualGrossRent * (1 - a.vacancyRate)
+  const totalOpEx = a.propertyTaxes + a.insurance + (annualGrossRent * a.managementPct) + (annualGrossRent * a.maintenancePct)
+  const noi = effectiveGrossIncome - totalOpEx
+  const annualCashFlow = noi - annualDebtService
+  const monthlyCashFlow = annualCashFlow / 12
+  const cashOnCash = cashLeftInDeal > 0 ? annualCashFlow / cashLeftInDeal : Infinity
+  const equityCreated = a.arv - refinanceLoanAmount
+  
+  return { 
+    monthlyCashFlow, annualCashFlow, cashOnCash, 
+    initialCash, allInCost, cashBack, cashLeftInDeal, cashRecoveryPercent, equityCreated,
+    noi, refinanceLoanAmount
+  }
+}
+
+function calculateFlipMetrics(purchasePrice: number, a: TargetAssumptions) {
+  const purchaseCosts = purchasePrice * a.closingCostsPct
+  const holdingCosts = (purchasePrice * (a.interestRate / 12) * a.holdingPeriodMonths) + 
+    ((a.propertyTaxes / 12) * a.holdingPeriodMonths) + 
+    ((a.insurance / 12) * a.holdingPeriodMonths)
+  const sellingCosts = a.arv * a.sellingCostsPct
+  const totalInvestment = purchasePrice + purchaseCosts + a.rehabCost + holdingCosts
+  const netProfit = a.arv - totalInvestment - sellingCosts
+  const roi = totalInvestment > 0 ? netProfit / totalInvestment : 0
+  const annualizedROI = roi * (12 / a.holdingPeriodMonths)
+  const flipMargin = a.arv - purchasePrice - a.rehabCost
+  
+  // 70% Rule check
+  const maxPurchase70Rule = (a.arv * 0.70) - a.rehabCost
+  const passes70Rule = purchasePrice <= maxPurchase70Rule
+  
+  return { 
+    netProfit, roi, annualizedROI, totalInvestment, flipMargin,
+    holdingCosts, sellingCosts, purchaseCosts, passes70Rule, maxPurchase70Rule
+  }
+}
+
+function calculateHouseHackMetrics(purchasePrice: number, a: TargetAssumptions) {
+  const totalBedrooms = a.totalBedrooms || 4
+  const roomsRented = a.roomsRented || Math.max(1, totalBedrooms - 1)
+  const rentPerRoom = a.monthlyRent / totalBedrooms
+  const monthlyRentalIncome = rentPerRoom * roomsRented
+  const downPayment = purchasePrice * 0.035 // FHA
+  const closingCosts = purchasePrice * a.closingCostsPct
+  const totalCashRequired = downPayment + closingCosts
+  const loanAmount = purchasePrice - downPayment
+  const monthlyPI = calculateMonthlyMortgage(loanAmount, a.interestRate, a.loanTermYears)
+  const monthlyTaxes = a.propertyTaxes / 12
+  const monthlyInsurance = a.insurance / 12
+  const pmi = loanAmount * 0.0085 / 12 // PMI estimate for FHA
+  const monthlyExpenses = monthlyPI + monthlyTaxes + monthlyInsurance + pmi + (monthlyRentalIncome * a.vacancyRate) + (monthlyRentalIncome * a.maintenancePct)
+  const effectiveHousingCost = monthlyExpenses - monthlyRentalIncome
+  const marketRent = rentPerRoom * 1.2
+  const monthlySavings = marketRent - effectiveHousingCost
+  const housingCostOffset = monthlyRentalIncome / monthlyExpenses
+  
+  return { 
+    totalCashRequired, monthlyRentalIncome, effectiveHousingCost, monthlySavings, 
+    monthlyPI, roomsRented, totalBedrooms, rentPerRoom, housingCostOffset, monthlyExpenses, pmi
+  }
+}
+
+function calculateWholesaleMetrics(purchasePrice: number, a: TargetAssumptions) {
+  const wholesaleFee = a.listPrice * a.wholesaleFeePct
+  const mao = (a.arv * 0.70) - a.rehabCost - wholesaleFee
+  const assignmentFee = mao - purchasePrice
+  const purchasePctOfArv = a.arv > 0 ? purchasePrice / a.arv : 1
+  const endBuyerProfit = a.arv - mao - a.rehabCost
+  const roiOnEMD = (assignmentFee / 5000) * 100 // Assuming $5K EMD
+  
+  return { 
+    mao, assignmentFee, wholesaleFee, purchasePctOfArv, 
+    endBuyerProfit, roiOnEMD
+  }
+}
+
+// ============================================
+// IQ TARGET CALCULATION - Main Functions
+// ============================================
+
+/**
+ * Calculate IQ Target Price for Long-Term Rental
+ * Target: $200+/month cash flow with 8%+ Cash-on-Cash
+ */
+export function calculateLTRTarget(a: TargetAssumptions): IQTargetResult {
+  const listPrice = a.listPrice
+  
+  // Binary search to find price that yields ~$200/month cash flow
+  let low = listPrice * 0.60
+  let high = listPrice
+  let targetPrice = listPrice * 0.85 // Initial guess
+  
+  for (let i = 0; i < 20; i++) {
+    const mid = (low + high) / 2
+    const metrics = calculateLTRMetrics(mid, a)
+    
+    if (metrics.monthlyCashFlow >= 200 && metrics.monthlyCashFlow <= 600) {
+      targetPrice = mid
+      break
+    } else if (metrics.monthlyCashFlow < 200) {
+      high = mid
+    } else {
+      low = mid
+    }
+    targetPrice = mid
+  }
+  
+  // Calculate final metrics at target price
+  const finalMetrics = calculateLTRMetrics(targetPrice, a)
+  
+  // Find breakeven price (where cash flow = 0)
+  let breakeven = listPrice
+  for (let pct = 0.95; pct >= 0.60; pct -= 0.01) {
+    const testMetrics = calculateLTRMetrics(listPrice * pct, a)
+    if (testMetrics.monthlyCashFlow >= 0) {
+      breakeven = listPrice * pct
+    } else {
+      break
+    }
+  }
+  
+  const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
+  const formatPercent = (v: number) => `${(v * 100).toFixed(1)}%`
+  
+  return {
+    targetPrice: Math.round(targetPrice / 1000) * 1000,
+    discountFromList: listPrice - targetPrice,
+    discountPercent: ((listPrice - targetPrice) / listPrice) * 100,
+    breakeven: Math.round(breakeven / 1000) * 1000,
+    breakevenPercent: (breakeven / listPrice) * 100,
+    rationale: 'At this price you achieve positive',
+    highlightedMetric: `${formatCurrency(finalMetrics.monthlyCashFlow)}/mo cash flow`,
+    secondaryMetric: formatPercent(finalMetrics.cashOnCash),
+    monthlyCashFlow: finalMetrics.monthlyCashFlow,
+    cashOnCash: finalMetrics.cashOnCash,
+    capRate: finalMetrics.capRate,
+    dscr: finalMetrics.dscr
+  }
+}
+
+/**
+ * Calculate IQ Target Price for Short-Term Rental
+ * Target: $500+/month cash flow with higher CoC than LTR
+ */
+export function calculateSTRTarget(a: TargetAssumptions): IQTargetResult {
+  const listPrice = a.listPrice
+  
+  let low = listPrice * 0.60
+  let high = listPrice
+  let targetPrice = listPrice * 0.85
+  
+  for (let i = 0; i < 20; i++) {
+    const mid = (low + high) / 2
+    const metrics = calculateSTRMetrics(mid, a)
+    
+    if (metrics.monthlyCashFlow >= 500 && metrics.monthlyCashFlow <= 1500) {
+      targetPrice = mid
+      break
+    } else if (metrics.monthlyCashFlow < 500) {
+      high = mid
+    } else {
+      low = mid
+    }
+    targetPrice = mid
+  }
+  
+  const finalMetrics = calculateSTRMetrics(targetPrice, a)
+  
+  let breakeven = listPrice
+  for (let pct = 0.95; pct >= 0.60; pct -= 0.01) {
+    const testMetrics = calculateSTRMetrics(listPrice * pct, a)
+    if (testMetrics.monthlyCashFlow >= 0) {
+      breakeven = listPrice * pct
+    } else {
+      break
+    }
+  }
+  
+  const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
+  const formatPercent = (v: number) => `${(v * 100).toFixed(1)}%`
+  
+  return {
+    targetPrice: Math.round(targetPrice / 1000) * 1000,
+    discountFromList: listPrice - targetPrice,
+    discountPercent: ((listPrice - targetPrice) / listPrice) * 100,
+    breakeven: Math.round(breakeven / 1000) * 1000,
+    breakevenPercent: (breakeven / listPrice) * 100,
+    rationale: 'At this price you achieve strong STR',
+    highlightedMetric: `${formatCurrency(finalMetrics.monthlyCashFlow)}/mo cash flow`,
+    secondaryMetric: formatPercent(finalMetrics.cashOnCash),
+    monthlyCashFlow: finalMetrics.monthlyCashFlow,
+    cashOnCash: finalMetrics.cashOnCash,
+    capRate: finalMetrics.capRate,
+    dscr: finalMetrics.dscr
+  }
+}
+
+/**
+ * Calculate IQ Target Price for BRRRR
+ * Target: 100% cash recovery (infinite returns)
+ */
+export function calculateBRRRRTarget(a: TargetAssumptions): IQTargetResult {
+  const listPrice = a.listPrice
+  
+  // For BRRRR, target is where cash recovery >= 100%
+  let low = listPrice * 0.50
+  let high = listPrice * 0.80
+  let targetPrice = listPrice * 0.65
+  
+  for (let i = 0; i < 20; i++) {
+    const mid = (low + high) / 2
+    const metrics = calculateBRRRRMetrics(mid, a)
+    
+    // Aim for 95-105% cash recovery
+    if (metrics.cashRecoveryPercent >= 95 && metrics.cashRecoveryPercent <= 105) {
+      targetPrice = mid
+      break
+    } else if (metrics.cashRecoveryPercent < 95) {
+      high = mid
+    } else {
+      low = mid
+    }
+    targetPrice = mid
+  }
+  
+  const finalMetrics = calculateBRRRRMetrics(targetPrice, a)
+  
+  // Breakeven is where we at least get 80% back
+  let breakeven = listPrice * 0.75
+  for (let pct = 0.80; pct >= 0.50; pct -= 0.01) {
+    const testMetrics = calculateBRRRRMetrics(listPrice * pct, a)
+    if (testMetrics.cashRecoveryPercent >= 80) {
+      breakeven = listPrice * pct
+    } else {
+      break
+    }
+  }
+  
+  const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
+  
+  return {
+    targetPrice: Math.round(targetPrice / 1000) * 1000,
+    discountFromList: listPrice - targetPrice,
+    discountPercent: ((listPrice - targetPrice) / listPrice) * 100,
+    breakeven: Math.round(breakeven / 1000) * 1000,
+    breakevenPercent: (breakeven / listPrice) * 100,
+    rationale: 'At this price you recover',
+    highlightedMetric: `${Math.round(finalMetrics.cashRecoveryPercent)}% of your cash`,
+    secondaryMetric: `${formatCurrency(finalMetrics.equityCreated)} equity`,
+    monthlyCashFlow: finalMetrics.monthlyCashFlow,
+    cashOnCash: finalMetrics.cashOnCash,
+    capRate: 0,
+    dscr: 0,
+    cashLeftInDeal: finalMetrics.cashLeftInDeal,
+    cashRecoveryPercent: finalMetrics.cashRecoveryPercent,
+    equityCreated: finalMetrics.equityCreated
+  }
+}
+
+/**
+ * Calculate IQ Target Price for Fix & Flip
+ * Target: $30K+ profit with 25%+ ROI
+ */
+export function calculateFlipTarget(a: TargetAssumptions): IQTargetResult {
+  const listPrice = a.listPrice
+  
+  // For flip, use 70% rule as baseline, then refine
+  const maxPer70Rule = (a.arv * 0.70) - a.rehabCost
+  let targetPrice = Math.min(maxPer70Rule, listPrice * 0.75)
+  
+  // Find price that yields $30K+ profit
+  let low = listPrice * 0.50
+  let high = Math.min(maxPer70Rule, listPrice)
+  
+  for (let i = 0; i < 20; i++) {
+    const mid = (low + high) / 2
+    const metrics = calculateFlipMetrics(mid, a)
+    
+    if (metrics.netProfit >= 30000 && metrics.netProfit <= 80000) {
+      targetPrice = mid
+      break
+    } else if (metrics.netProfit < 30000) {
+      high = mid
+    } else {
+      low = mid
+    }
+    targetPrice = mid
+  }
+  
+  const finalMetrics = calculateFlipMetrics(targetPrice, a)
+  
+  // Breakeven is where profit = 0
+  let breakeven = listPrice
+  for (let pct = 0.90; pct >= 0.50; pct -= 0.01) {
+    const testMetrics = calculateFlipMetrics(listPrice * pct, a)
+    if (testMetrics.netProfit >= 0) {
+      breakeven = listPrice * pct
+    } else {
+      break
+    }
+  }
+  
+  const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
+  const formatPercent = (v: number) => `${(v * 100).toFixed(0)}%`
+  
+  return {
+    targetPrice: Math.round(targetPrice / 1000) * 1000,
+    discountFromList: listPrice - targetPrice,
+    discountPercent: ((listPrice - targetPrice) / listPrice) * 100,
+    breakeven: Math.round(breakeven / 1000) * 1000,
+    breakevenPercent: (breakeven / listPrice) * 100,
+    rationale: 'At this price you achieve',
+    highlightedMetric: formatCurrency(finalMetrics.netProfit) + ' profit',
+    secondaryMetric: formatPercent(finalMetrics.roi) + ' ROI',
+    monthlyCashFlow: 0,
+    cashOnCash: 0,
+    capRate: 0,
+    dscr: 0,
+    netProfit: finalMetrics.netProfit,
+    roi: finalMetrics.roi
+  }
+}
+
+/**
+ * Calculate IQ Target Price for House Hack
+ * Target: $0 or negative housing cost (free living)
+ */
+export function calculateHouseHackTarget(a: TargetAssumptions): IQTargetResult {
+  const listPrice = a.listPrice
+  
+  // Target is where effective housing cost <= $0
+  let low = listPrice * 0.60
+  let high = listPrice
+  let targetPrice = listPrice * 0.85
+  
+  for (let i = 0; i < 20; i++) {
+    const mid = (low + high) / 2
+    const metrics = calculateHouseHackMetrics(mid, a)
+    
+    // Aim for $0-$200 effective cost
+    if (metrics.effectiveHousingCost <= 200 && metrics.effectiveHousingCost >= -200) {
+      targetPrice = mid
+      break
+    } else if (metrics.effectiveHousingCost > 200) {
+      high = mid
+    } else {
+      low = mid
+    }
+    targetPrice = mid
+  }
+  
+  const finalMetrics = calculateHouseHackMetrics(targetPrice, a)
+  
+  // Breakeven is where housing cost equals typical rent
+  const typicalRent = a.monthlyRent / a.totalBedrooms * 1.2
+  let breakeven = listPrice
+  for (let pct = 0.95; pct >= 0.60; pct -= 0.01) {
+    const testMetrics = calculateHouseHackMetrics(listPrice * pct, a)
+    if (testMetrics.effectiveHousingCost <= typicalRent) {
+      breakeven = listPrice * pct
+    } else {
+      break
+    }
+  }
+  
+  const formatCurrency = (v: number) => `$${Math.abs(Math.round(v)).toLocaleString()}`
+  
+  const isFreeHousing = finalMetrics.effectiveHousingCost <= 0
+  
+  return {
+    targetPrice: Math.round(targetPrice / 1000) * 1000,
+    discountFromList: listPrice - targetPrice,
+    discountPercent: ((listPrice - targetPrice) / listPrice) * 100,
+    breakeven: Math.round(breakeven / 1000) * 1000,
+    breakevenPercent: (breakeven / listPrice) * 100,
+    rationale: isFreeHousing ? 'At this price you live for' : 'At this price your housing cost is only',
+    highlightedMetric: isFreeHousing ? 'FREE' : `${formatCurrency(finalMetrics.effectiveHousingCost)}/mo`,
+    secondaryMetric: `Save ${formatCurrency(finalMetrics.monthlySavings)}/mo`,
+    monthlyCashFlow: 0,
+    cashOnCash: 0,
+    capRate: 0,
+    dscr: 0,
+    effectiveHousingCost: finalMetrics.effectiveHousingCost,
+    monthlySavings: finalMetrics.monthlySavings
+  }
+}
+
+/**
+ * Calculate IQ Target Price for Wholesale
+ * Target: $10K+ assignment fee
+ */
+export function calculateWholesaleTarget(a: TargetAssumptions): IQTargetResult {
+  const listPrice = a.listPrice
+  
+  // MAO is the ceiling - find price that leaves $10K+ fee
+  const maoCalc = calculateWholesaleMetrics(listPrice, a)
+  const mao = maoCalc.mao
+  
+  // Target = MAO - desired assignment fee
+  let targetPrice = mao - 12000 // Leave $12K assignment fee room
+  targetPrice = Math.max(targetPrice, listPrice * 0.50) // Don't go below 50% of list
+  
+  const finalMetrics = calculateWholesaleMetrics(targetPrice, a)
+  
+  const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
+  
+  return {
+    targetPrice: Math.round(targetPrice / 1000) * 1000,
+    discountFromList: listPrice - targetPrice,
+    discountPercent: ((listPrice - targetPrice) / listPrice) * 100,
+    breakeven: Math.round(mao / 1000) * 1000, // MAO is breakeven for wholesale
+    breakevenPercent: (mao / listPrice) * 100,
+    rationale: 'At this price you earn',
+    highlightedMetric: formatCurrency(finalMetrics.assignmentFee) + ' assignment fee',
+    secondaryMetric: `${Math.round(finalMetrics.roiOnEMD)}% ROI on EMD`,
+    monthlyCashFlow: 0,
+    cashOnCash: 0,
+    capRate: 0,
+    dscr: 0,
+    assignmentFee: finalMetrics.assignmentFee,
+    mao: mao
+  }
+}
+
+// ============================================
+// MAIN EXPORT
+// ============================================
+
+export type StrategyId = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
+
+export function calculateIQTarget(strategyId: StrategyId, assumptions: TargetAssumptions): IQTargetResult {
+  switch (strategyId) {
+    case 'ltr':
+      return calculateLTRTarget(assumptions)
+    case 'str':
+      return calculateSTRTarget(assumptions)
+    case 'brrrr':
+      return calculateBRRRRTarget(assumptions)
+    case 'flip':
+      return calculateFlipTarget(assumptions)
+    case 'house_hack':
+      return calculateHouseHackTarget(assumptions)
+    case 'wholesale':
+      return calculateWholesaleTarget(assumptions)
+    default:
+      return calculateLTRTarget(assumptions)
+  }
+}
+
+/**
+ * Get metrics at a specific price point (for comparison views)
+ */
+export function getMetricsAtPrice(
+  strategyId: StrategyId, 
+  purchasePrice: number, 
+  assumptions: TargetAssumptions
+) {
+  switch (strategyId) {
+    case 'ltr':
+      return calculateLTRMetrics(purchasePrice, assumptions)
+    case 'str':
+      return calculateSTRMetrics(purchasePrice, assumptions)
+    case 'brrrr':
+      return calculateBRRRRMetrics(purchasePrice, assumptions)
+    case 'flip':
+      return calculateFlipMetrics(purchasePrice, assumptions)
+    case 'house_hack':
+      return calculateHouseHackMetrics(purchasePrice, assumptions)
+    case 'wholesale':
+      return calculateWholesaleMetrics(purchasePrice, assumptions)
+    default:
+      return calculateLTRMetrics(purchasePrice, assumptions)
+  }
+}
