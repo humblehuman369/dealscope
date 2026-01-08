@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
-import { ChevronDown, Camera, ChevronRight } from 'lucide-react'
+import React, { useState } from 'react'
+import { ChevronDown, Camera, ChevronRight, ChevronLeft } from 'lucide-react'
 import { PropertyMiniData } from './types'
 
 /**
@@ -11,7 +11,7 @@ import { PropertyMiniData } from './types'
  * Used in the analytics header to remind users which property they're analyzing.
  * 
  * Features:
- * - Property thumbnail (optional)
+ * - Photo carousel with navigation arrows
  * - Photo count badge
  * - Address and location
  * - Price with label
@@ -21,15 +21,22 @@ import { PropertyMiniData } from './types'
 
 interface PropertyMiniCardProps {
   data: PropertyMiniData
+  photos?: string[]
   onExpand?: () => void
   showExpandButton?: boolean
 }
 
 export function PropertyMiniCard({ 
   data, 
+  photos = [],
   onExpand,
   showExpandButton = true 
 }: PropertyMiniCardProps) {
+  // Use provided photos array or create one from thumbnail
+  const photoList = photos.length > 0 ? photos : (data.thumbnailUrl ? [data.thumbnailUrl] : [])
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const totalPhotos = data.photoCount || photoList.length
+
   const formatCurrency = (value: number) => 
     new Intl.NumberFormat('en-US', { 
       style: 'currency', 
@@ -38,22 +45,79 @@ export function PropertyMiniCard({
       maximumFractionDigits: 0 
     }).format(value)
 
+  const handlePrevPhoto = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setCurrentPhotoIndex((prev) => (prev === 0 ? photoList.length - 1 : prev - 1))
+  }
+
+  const handleNextPhoto = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setCurrentPhotoIndex((prev) => (prev === photoList.length - 1 ? 0 : prev + 1))
+  }
+
   return (
     <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-3 flex gap-3 mb-4">
-      {/* Thumbnail */}
-      {data.thumbnailUrl && (
-        <div className="w-20 h-20 rounded-xl bg-navy-700 relative overflow-hidden flex-shrink-0">
-          <img 
-            src={data.thumbnailUrl} 
-            alt="Property" 
-            className="w-full h-full object-cover"
-          />
-          {data.photoCount && (
+      {/* Photo Carousel */}
+      {photoList.length > 0 && (
+        <div className="relative flex-shrink-0 group">
+          {/* Photo Container */}
+          <div className="w-20 h-20 rounded-xl bg-navy-700 relative overflow-hidden">
+            <img 
+              src={photoList[currentPhotoIndex]} 
+              alt={`Property photo ${currentPhotoIndex + 1}`}
+              className="w-full h-full object-cover transition-opacity duration-200"
+            />
+            
+            {/* Photo Counter Badge */}
             <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[0.55rem] px-1.5 py-0.5 rounded flex items-center gap-1">
               <Camera className="w-2.5 h-2.5" />
-              {data.photoCount}
+              {currentPhotoIndex + 1}/{totalPhotos}
+            </div>
+          </div>
+
+          {/* Navigation Arrows - Show on hover or always on touch devices */}
+          {photoList.length > 1 && (
+            <>
+              {/* Left Arrow */}
+              <button
+                onClick={handlePrevPhoto}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 bg-black/70 hover:bg-black/90 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 md:opacity-100 touch-target"
+                aria-label="Previous photo"
+              >
+                <ChevronLeft className="w-3 h-3 text-white" />
+              </button>
+
+              {/* Right Arrow */}
+              <button
+                onClick={handleNextPhoto}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-5 h-5 bg-black/70 hover:bg-black/90 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 md:opacity-100 touch-target"
+                aria-label="Next photo"
+              >
+                <ChevronRight className="w-3 h-3 text-white" />
+              </button>
+            </>
+          )}
+
+          {/* Dot Indicators */}
+          {photoList.length > 1 && photoList.length <= 5 && (
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5">
+              {photoList.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`w-1 h-1 rounded-full transition-colors ${
+                    idx === currentPhotoIndex ? 'bg-teal' : 'bg-white/30'
+                  }`}
+                />
+              ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Placeholder when no photos */}
+      {photoList.length === 0 && (
+        <div className="w-20 h-20 rounded-xl bg-white/[0.05] flex-shrink-0 flex items-center justify-center">
+          <Camera className="w-6 h-6 text-white/20" />
         </div>
       )}
 
