@@ -34,7 +34,7 @@ export function BottomNav({ activeTab = 'analytics', onNavigate }: BottomNavProp
             <button
               key={id}
               onClick={() => onNavigate?.(id)}
-              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+              className={`relative flex flex-col items-center justify-center flex-1 h-full transition-colors ${
                 isActive 
                   ? 'text-teal' 
                   : 'text-white/40 hover:text-white/60'
@@ -47,7 +47,7 @@ export function BottomNav({ activeTab = 'analytics', onNavigate }: BottomNavProp
                 {label}
               </span>
               {isActive && (
-                <div className="absolute bottom-0 w-12 h-0.5 bg-teal rounded-full" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-0.5 bg-teal rounded-full" />
               )}
             </button>
           )
