@@ -17,6 +17,15 @@ import {
  * Uses sample property data to showcase all 6 investment strategies.
  */
 
+// Sample property photos for carousel testing
+const SAMPLE_PHOTOS = [
+  'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400&h=400&fit=crop'
+]
+
 // Sample property data for testing
 const SAMPLE_PROPERTY = {
   address: '953 Banyan Dr',
@@ -33,7 +42,8 @@ const SAMPLE_PROPERTY = {
   bathrooms: 2,
   sqft: 1850,
   arv: 425000,
-  thumbnailUrl: '/images/sample-property.jpg',
+  thumbnailUrl: SAMPLE_PHOTOS[0],
+  photos: SAMPLE_PHOTOS,
   photoCount: 24
 }
 

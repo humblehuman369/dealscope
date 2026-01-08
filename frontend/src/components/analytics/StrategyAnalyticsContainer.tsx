@@ -70,6 +70,7 @@ export interface PropertyData {
   sqft: number
   arv?: number
   thumbnailUrl?: string
+  photos?: string[]
   photoCount?: number
 }
 
@@ -204,6 +205,7 @@ export function StrategyAnalyticsContainer({ property, onBack }: StrategyAnalyti
             thumbnailUrl: property.thumbnailUrl,
             photoCount: property.photoCount
           }}
+          photos={property.photos}
           onExpand={onBack}
           showExpandButton={!!onBack}
         />
