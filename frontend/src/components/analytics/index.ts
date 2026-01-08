@@ -190,6 +190,40 @@ export {
 } from './PropertyMiniCard'
 
 // ============================================
+// NAVIGATION - BOTTOM BAR
+// ============================================
+
+// Bottom Navigation - Mobile bottom bar
+export {
+  BottomNav,
+  BottomNavSpacer,
+  AnalyticsBottomBar
+} from './BottomNav'
+
+// ============================================
+// LOADING STATES
+// ============================================
+
+// Loading & Skeleton Components
+export {
+  SkeletonBox,
+  SkeletonText,
+  SkeletonCard,
+  IQTargetHeroSkeleton,
+  PriceLadderSkeleton,
+  ReturnsGridSkeleton,
+  BenchmarksSkeleton,
+  StrategySelectorSkeleton,
+  PropertyMiniCardSkeleton,
+  AnalyticsPageSkeleton,
+  LoadingSpinner,
+  LoadingOverlay,
+  CalculatingIndicator,
+  ErrorCard,
+  EmptyState
+} from './LoadingStates'
+
+// ============================================
 // MAIN CONTAINER
 // ============================================
 
@@ -229,6 +263,16 @@ import { DealScoreDisplay, DealScoreCompact } from './DealScoreDisplay'
 import { LoanSummary, PieChartBreakdown, AmortizationTable, FundingOverview } from './LoanSummary'
 import { PerformanceSection, PerformanceSectionGrid } from './PerformanceSection'
 import { PropertyMiniCard, PropertyMiniCardCompact, PropertyStickyHeader } from './PropertyMiniCard'
+import { BottomNav, BottomNavSpacer, AnalyticsBottomBar } from './BottomNav'
+import { 
+  SkeletonBox, 
+  SkeletonCard, 
+  AnalyticsPageSkeleton, 
+  LoadingSpinner, 
+  LoadingOverlay,
+  ErrorCard,
+  EmptyState 
+} from './LoadingStates'
 
 const AnalyticsComponents = {
   // Core Metrics
@@ -281,7 +325,21 @@ const AnalyticsComponents = {
   // Property
   PropertyMiniCard,
   PropertyMiniCardCompact,
-  PropertyStickyHeader
+  PropertyStickyHeader,
+  
+  // Bottom Nav
+  BottomNav,
+  BottomNavSpacer,
+  AnalyticsBottomBar,
+  
+  // Loading States
+  SkeletonBox,
+  SkeletonCard,
+  AnalyticsPageSkeleton,
+  LoadingSpinner,
+  LoadingOverlay,
+  ErrorCard,
+  EmptyState
 }
 
 export default AnalyticsComponents
