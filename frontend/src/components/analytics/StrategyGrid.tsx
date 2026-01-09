@@ -36,7 +36,7 @@ const STRATEGIES: Strategy[] = [
     color: '#ec4899'
   },
   { 
-    id: 'house-hack', 
+    id: 'house_hack', 
     name: 'House Hack', 
     tagline: 'Live free, rent rooms',
     color: '#14b8a6'
