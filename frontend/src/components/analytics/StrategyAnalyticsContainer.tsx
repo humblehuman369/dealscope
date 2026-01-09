@@ -28,7 +28,10 @@ import {
   FundingOverview,
   PerformanceSection,
   createMonthlyBreakdown,
-  create10YearProjection
+  create10YearProjection,
+  WelcomeSection,
+  StrategyGrid,
+  StrategyPrompt
 } from './index'
 import {
   STRMetricsContent,
@@ -139,6 +142,7 @@ export function StrategyAnalyticsContainer({ property, onBack }: StrategyAnalyti
   const [activeSubTab, setActiveSubTab] = useState<SubTabId>('metrics')
   const [compareView, setCompareView] = useState<'target' | 'list'>('target')
   const [assumptions, setAssumptions] = useState(() => createDefaultAssumptions(property))
+  const [isWelcomeCollapsed, setIsWelcomeCollapsed] = useState(false)
   
   // Compute IQ Target
   const iqTarget = useMemo(() => {
@@ -211,19 +215,49 @@ export function StrategyAnalyticsContainer({ property, onBack }: StrategyAnalyti
         />
       </div>
 
-      {/* Strategy Selector */}
-      <div className="px-4">
-        <StrategySelector
-          activeStrategy={activeStrategy}
-          strategies={DEFAULT_STRATEGIES}
-          onChange={(id) => {
-            setActiveStrategy(id)
-            setActiveSubTab('metrics')
-            setCompareView('target')
-          }}
-          showCTA={!activeStrategy}
-        />
-      </div>
+      {/* Landing State - No Strategy Selected */}
+      {!activeStrategy && (
+        <div className="px-4 pb-24 space-y-5">
+          {/* Welcome Section */}
+          <WelcomeSection
+            isCollapsed={isWelcomeCollapsed}
+            onToggle={() => setIsWelcomeCollapsed(!isWelcomeCollapsed)}
+          />
+
+          {/* Strategy Prompt */}
+          <StrategyPrompt />
+
+          {/* Strategy Grid */}
+          <StrategyGrid
+            activeStrategy={activeStrategy}
+            onSelectStrategy={(id) => {
+              setActiveStrategy(id)
+              setActiveSubTab('metrics')
+              setCompareView('target')
+              setIsWelcomeCollapsed(true)
+            }}
+          />
+        </div>
+      )}
+
+      {/* Strategy Selected - Show Horizontal Selector + Content */}
+      {activeStrategy && (
+        <>
+          {/* Strategy Selector Pills */}
+          <div className="px-4">
+            <StrategySelector
+              activeStrategy={activeStrategy}
+              strategies={DEFAULT_STRATEGIES}
+              onChange={(id) => {
+                setActiveStrategy(id)
+                setActiveSubTab('metrics')
+                setCompareView('target')
+              }}
+              showCTA={false}
+            />
+          </div>
+        </>
+      )}
 
       {/* Strategy Content */}
       {activeStrategy && (

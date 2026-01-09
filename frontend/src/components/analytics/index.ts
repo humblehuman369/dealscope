@@ -116,6 +116,15 @@ export {
   DEFAULT_STRATEGIES
 } from './StrategySelector'
 
+// Strategy Grid - 2x3 grid layout for strategy selection
+export {
+  StrategyGrid,
+  StrategyPrompt
+} from './StrategyGrid'
+
+// Welcome Section - Expandable intro message
+export { WelcomeSection } from './WelcomeSection'
+
 // Sub Tab Navigation - Tab navigation within strategies
 export {
   SubTabNav,
