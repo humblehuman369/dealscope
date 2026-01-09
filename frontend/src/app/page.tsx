@@ -204,7 +204,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
               )}
             </button>
             <button
-              onClick={onSwitchMode}
+              onClick={() => router.push('/search')}
               className="w-full py-3 px-6 bg-gray-800 text-white rounded-xl font-medium hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
             >
               <Search className="w-4 h-4" />
