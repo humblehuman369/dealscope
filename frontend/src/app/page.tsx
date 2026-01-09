@@ -22,7 +22,6 @@ import { CompassDisplay } from '@/components/scanner/CompassDisplay';
 import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
 import { getCardinalDirection } from '@/lib/geoCalculations';
 import { ResponsiveLandingPage } from '@/components/landing';
-import '@/components/landing/landing.css';
 
 export default function HomePage() {
   const [mode, setMode] = useState<'landing' | 'camera'>('landing');
