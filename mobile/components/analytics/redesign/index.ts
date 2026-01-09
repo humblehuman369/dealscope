@@ -25,6 +25,12 @@ export {
 // Strategy Selector
 export { StrategySelectorNew, SubTabNav } from './StrategySelectorNew';
 
+// Strategy Grid (2x3 layout)
+export { StrategyGrid, StrategyPrompt } from './StrategyGrid';
+
+// Welcome Section
+export { WelcomeSection } from './WelcomeSection';
+
 // Tune Section
 export { 
   TuneSectionNew, 

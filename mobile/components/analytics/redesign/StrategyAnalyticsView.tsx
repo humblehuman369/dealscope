@@ -34,6 +34,8 @@ import { PropertyMiniCardNew } from './PropertyMiniCardNew';
 import { FundingTabContent } from './FundingTabContent';
 import { TenYearTabContent } from './TenYearTabContent';
 import { GrowthTabContent } from './GrowthTabContent';
+import { WelcomeSection } from './WelcomeSection';
+import { StrategyGrid, StrategyPrompt } from './StrategyGrid';
 
 interface StrategyAnalyticsViewProps {
   property: PropertyData;
@@ -56,6 +58,7 @@ export function StrategyAnalyticsView({
   const [activeStrategy, setActiveStrategy] = useState<StrategyId | null>(null);
   const [activeSubTab, setActiveSubTab] = useState<SubTabId>('metrics');
   const [compareView, setCompareView] = useState<CompareView>('target');
+  const [isWelcomeCollapsed, setIsWelcomeCollapsed] = useState(false);
   
   // Assumptions state
   const [assumptions, setAssumptions] = useState<TargetAssumptions>({
@@ -304,16 +307,49 @@ export function StrategyAnalyticsView({
         {/* Property Mini Card */}
         <PropertyMiniCardNew property={property} isDark={isDark} onExpand={onBack} />
 
-        {/* Strategy Selector */}
-        <View style={styles.section}>
-          <StrategySelectorNew
-            activeStrategy={activeStrategy}
-            onStrategyChange={setActiveStrategy}
-            strategyGrades={strategyGrades}
-            isDark={isDark}
-            showCTABanner={!activeStrategy}
-          />
-        </View>
+        {/* Landing State - No Strategy Selected */}
+        {!activeStrategy && (
+          <View style={styles.section}>
+            {/* Welcome Section */}
+            <WelcomeSection
+              isCollapsed={isWelcomeCollapsed}
+              onToggle={() => setIsWelcomeCollapsed(!isWelcomeCollapsed)}
+              isDark={isDark}
+            />
+
+            {/* Strategy Prompt */}
+            <StrategyPrompt isDark={isDark} />
+
+            {/* Strategy Grid */}
+            <StrategyGrid
+              activeStrategy={activeStrategy}
+              onSelectStrategy={(id) => {
+                setActiveStrategy(id);
+                setActiveSubTab('metrics');
+                setCompareView('target');
+                setIsWelcomeCollapsed(true);
+              }}
+              isDark={isDark}
+            />
+          </View>
+        )}
+
+        {/* Strategy Selected - Show Horizontal Selector + Content */}
+        {activeStrategy && (
+          <View style={styles.section}>
+            <StrategySelectorNew
+              activeStrategy={activeStrategy}
+              onStrategyChange={(id) => {
+                setActiveStrategy(id);
+                setActiveSubTab('metrics');
+                setCompareView('target');
+              }}
+              strategyGrades={strategyGrades}
+              isDark={isDark}
+              showCTABanner={false}
+            />
+          </View>
+        )}
 
         {/* Content when strategy is selected */}
         {activeStrategy && (
