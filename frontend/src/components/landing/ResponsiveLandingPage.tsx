@@ -9,6 +9,7 @@ import { StrategyCard } from './StrategyCard';
 import { FeatureCard } from './FeatureCard';
 import { Footer } from './Footer';
 import { strategies, features, stats } from './types';
+import { IQBrainIcon } from '@/components/icons';
 
 interface ResponsiveLandingPageProps {
   onPointAndScan?: () => void;
@@ -73,17 +74,15 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
           <div className="hero-grid">
             <div className="hero-content">
               <div className="hero-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
-                Analyze in 60 Seconds
+                <IQBrainIcon size={20} />
+                Powered by IQ — Your Genius Advisor
               </div>
               <h1>
                 Know the <span className="highlight">Real Return</span><br/>
                 Before You Invest
               </h1>
               <p className="hero-subtitle">
-                Point & Scan any property to instantly analyze it across 6 investment strategies. The fastest path from address to investable decision.
+                Meet IQ — your genius real estate advisor. Point & Scan any property and IQ instantly analyzes it across 6 investment strategies in 60 seconds.
               </p>
               <div className="hero-cta">
                 <button onClick={handleGetStarted} className="btn btn-primary">
@@ -158,12 +157,16 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
       {/* CTA Section */}
       <section className="cta-section">
         <div className="container cta-content">
+          {/* IQ Avatar */}
+          <div className="cta-iq-avatar">
+            <img src="/images/IQ.png" alt="IQ" />
+          </div>
           <div className="section-label">Get Started Today</div>
           <h2 className="cta-title">
-            Analyze Your First Property <span className="highlight">Free</span>
+            Let IQ Analyze Your First Property <span className="highlight">Free</span>
           </h2>
           <p className="cta-subtitle">
-            Point your camera at any property and get instant analysis across 6 investment strategies. No credit card required.
+            Point your camera at any property and IQ will deliver genius-level analysis across 6 investment strategies. No credit card required.
           </p>
           <div className="cta-buttons">
             <button onClick={handleGetStarted} className="btn btn-primary btn-large">

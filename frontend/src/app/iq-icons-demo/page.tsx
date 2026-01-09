@@ -1,114 +1,72 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 
 /**
  * IQ Icon Options Demo Page
  * Visit /iq-icons-demo to preview all icon options for the hero badge
  */
 
-// Option A: Brain with sparkle (Intelligence)
-function IQIconBrain() {
+// The NEW IQ Brain Icon - Human head with house inside (Real Estate on the Brain)
+function IQBrainIcon({ color = 'currentColor', size = 20 }: { color?: string; size?: number }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04Z"/>
-      <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04Z"/>
-      <path d="M12 2v1" stroke="#4dd0e1" strokeWidth="2"/>
-      <path d="M17 4l-.7.7" stroke="#4dd0e1" strokeWidth="2"/>
-      <path d="M7 4l.7.7" stroke="#4dd0e1" strokeWidth="2"/>
+    <svg 
+      width={size} 
+      height={size} 
+      viewBox="0 0 100 100" 
+      fill="none"
+    >
+      {/* Head profile outline */}
+      <path 
+        d="M75 40
+           C75 22 60 8 42 8
+           C24 8 10 22 10 40
+           C10 50 14 58 20 64
+           L20 72
+           C20 76 23 80 28 82
+           L32 84
+           C34 85 36 88 36 90
+           L36 92
+           C36 94 38 95 40 95
+           L52 95
+           C54 95 56 94 56 92
+           L56 88
+           C56 84 60 80 64 78
+           L68 76
+           C72 74 75 70 76 66
+           L78 58
+           C80 52 78 46 75 40
+           Z"
+        stroke={color}
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      
+      {/* House inside the brain */}
+      <path 
+        d="M42 28
+           L24 44
+           L24 60
+           L36 60
+           L36 50
+           L48 50
+           L48 60
+           L60 60
+           L60 44
+           L42 28
+           Z"
+        stroke={color}
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
-// Option B: Lightbulb with glow (Genius idea)
-function IQIconLightbulb() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
-      <path d="M9 18h6"/>
-      <path d="M10 22h4"/>
-      <circle cx="12" cy="8" r="2" fill="#4dd0e1" stroke="none"/>
-    </svg>
-  );
-}
-
-// Option C: Friendly Robot face (AI advisor)
-function IQIconRobot() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="8" width="18" height="12" rx="3"/>
-      <path d="M12 2v4"/>
-      <circle cx="12" cy="2" r="1" fill="#4dd0e1"/>
-      <circle cx="9" cy="13" r="1.5" fill="#4dd0e1"/>
-      <circle cx="15" cy="13" r="1.5" fill="#4dd0e1"/>
-      <path d="M9 17h6" stroke="#4dd0e1"/>
-    </svg>
-  );
-}
-
-// Option D: Target/Bullseye (Precision)
-function IQIconTarget() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-      <circle cx="12" cy="12" r="6"/>
-      <circle cx="12" cy="12" r="2" fill="#4dd0e1"/>
-      <path d="M12 2v4" stroke="#4dd0e1"/>
-      <path d="M12 18v4" stroke="#4dd0e1"/>
-      <path d="M2 12h4" stroke="#4dd0e1"/>
-      <path d="M18 12h4" stroke="#4dd0e1"/>
-    </svg>
-  );
-}
-
-// Option E: Sparkles/Magic (Instant)
-function IQIconSparkles() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4dd0e1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" fill="#4dd0e1" fillOpacity="0.2"/>
-      <path d="M19 14l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z"/>
-      <path d="M5 17l.5 1.5L7 19l-1.5.5L5 21l-.5-1.5L3 19l1.5-.5L5 17z"/>
-    </svg>
-  );
-}
-
-// Option F: Chart with checkmark
-function IQIconChart() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 3v18h18"/>
-      <path d="M7 16l4-4 4 4 5-5"/>
-      <circle cx="19" cy="7" r="4" fill="#4dd0e1" stroke="none"/>
-      <path d="M17 7l1 1 2-2" stroke="white" strokeWidth="1.5"/>
-    </svg>
-  );
-}
-
-// Option G: IQ Image (actual avatar)
-function IQIconAvatar() {
-  return (
-    <Image 
-      src="/images/IQ.png" 
-      alt="IQ" 
-      width={20} 
-      height={20}
-      style={{ borderRadius: '50%' }}
-    />
-  );
-}
 
 export default function IQIconsDemoPage() {
-  const options = [
-    { id: 'A', name: 'Brain', icon: <IQIconBrain />, desc: 'Intelligence & analytical thinking' },
-    { id: 'B', name: 'Lightbulb', icon: <IQIconLightbulb />, desc: 'Genius ideas & insights' },
-    { id: 'C', name: 'Robot', icon: <IQIconRobot />, desc: 'Friendly AI advisor' },
-    { id: 'D', name: 'Target', icon: <IQIconTarget />, desc: 'Precision analysis' },
-    { id: 'E', name: 'Sparkles', icon: <IQIconSparkles />, desc: 'Magic / instant insights' },
-    { id: 'F', name: 'Chart', icon: <IQIconChart />, desc: 'Analysis verified' },
-    { id: 'G', name: 'IQ Avatar', icon: <IQIconAvatar />, desc: 'Actual IQ character (small)' },
-  ];
-
   return (
     <div style={{ 
       minHeight: '100vh',
@@ -126,82 +84,126 @@ export default function IQIconsDemoPage() {
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent'
         }}>
-          IQ Icon Options
+          🧠🏠 IQ Brain Icon - Selected
         </h1>
         <p style={{ color: '#9ca3af', marginBottom: '48px', fontSize: '1.1rem' }}>
-          Choose an icon style for the hero badge. Each shows how it would appear in context.
+          &quot;Real Estate on the Brain&quot; - The genius investment advisor who thinks properties 24/7
         </p>
 
+        {/* Theme Comparison */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-          gap: '24px' 
+          gridTemplateColumns: 'repeat(2, 1fr)', 
+          gap: '24px',
+          marginBottom: '60px'
         }}>
-          {options.map((opt) => (
-            <div key={opt.id} style={{
-              padding: '32px',
-              background: 'rgba(255,255,255,0.03)',
-              borderRadius: '20px',
-              border: '1px solid rgba(77,208,225,0.15)',
-              transition: 'all 0.3s ease'
+          {/* Dark Mode */}
+          <div style={{
+            padding: '40px',
+            background: '#0a0a12',
+            borderRadius: '24px',
+            border: '1px solid rgba(77,208,225,0.2)',
+            textAlign: 'center'
+          }}>
+            <div style={{ 
+              fontSize: '0.75rem', 
+              color: '#4dd0e1', 
+              fontWeight: 600,
+              letterSpacing: '2px',
+              marginBottom: '24px'
             }}>
-              {/* Option Label */}
-              <div style={{ 
-                fontSize: '0.75rem', 
-                color: '#4dd0e1', 
-                fontWeight: 600,
-                letterSpacing: '2px',
-                marginBottom: '16px'
-              }}>
-                OPTION {opt.id}
-              </div>
-
-              {/* Badge Preview */}
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 18px',
-                background: 'rgba(77, 208, 225, 0.1)',
-                border: '1px solid rgba(77, 208, 225, 0.25)',
-                borderRadius: '100px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                color: '#4dd0e1',
-                marginBottom: '20px'
-              }}>
-                {opt.icon}
-                Powered by IQ
-              </div>
-
-              {/* Name & Description */}
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '8px' }}>
-                {opt.name}
-              </h3>
-              <p style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-                {opt.desc}
-              </p>
+              DARK MODE
             </div>
-          ))}
+
+            {/* Large Icon Preview */}
+            <div style={{ marginBottom: '24px' }}>
+              <IQBrainIcon color="#4dd0e1" size={80} />
+            </div>
+
+            {/* Badge Preview */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '12px 20px',
+              background: 'rgba(77, 208, 225, 0.1)',
+              border: '1px solid rgba(77, 208, 225, 0.25)',
+              borderRadius: '100px',
+              fontSize: '0.9rem',
+              fontWeight: 600,
+              color: '#4dd0e1'
+            }}>
+              <IQBrainIcon color="#4dd0e1" size={22} />
+              Powered by IQ
+            </div>
+
+            <div style={{ marginTop: '16px', fontSize: '0.85rem', color: '#6b7280' }}>
+              Color: #4dd0e1 (Electric Cyan)
+            </div>
+          </div>
+
+          {/* Light Mode */}
+          <div style={{
+            padding: '40px',
+            background: '#f7f8fa',
+            borderRadius: '24px',
+            border: '1px solid rgba(25,118,210,0.2)',
+            textAlign: 'center'
+          }}>
+            <div style={{ 
+              fontSize: '0.75rem', 
+              color: '#1976d2', 
+              fontWeight: 600,
+              letterSpacing: '2px',
+              marginBottom: '24px'
+            }}>
+              LIGHT MODE
+            </div>
+
+            {/* Large Icon Preview */}
+            <div style={{ marginBottom: '24px' }}>
+              <IQBrainIcon color="#1976d2" size={80} />
+            </div>
+
+            {/* Badge Preview */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '12px 20px',
+              background: 'rgba(25, 118, 210, 0.1)',
+              border: '1px solid rgba(25, 118, 210, 0.25)',
+              borderRadius: '100px',
+              fontSize: '0.9rem',
+              fontWeight: 600,
+              color: '#1976d2'
+            }}>
+              <IQBrainIcon color="#1976d2" size={22} />
+              Powered by IQ
+            </div>
+
+            <div style={{ marginTop: '16px', fontSize: '0.85rem', color: '#6b7280' }}>
+              Color: #1976d2 (Blue)
+            </div>
+          </div>
         </div>
 
-        {/* Comparison in Hero Context */}
-        <div style={{ marginTop: '80px' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '32px' }}>
-            Preview in Hero Context
+        {/* Hero Context Preview - Dark Mode */}
+        <div style={{ marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '24px' }}>
+            Hero Preview — Dark Mode
           </h2>
           
           <div style={{
-            background: 'linear-gradient(180deg, rgba(77, 208, 225, 0.05) 0%, transparent 50%)',
+            background: 'linear-gradient(180deg, rgba(77, 208, 225, 0.08) 0%, #0a0a12 50%)',
             borderRadius: '24px',
             padding: '48px',
             border: '1px solid rgba(255,255,255,0.06)'
           }}>
-            {/* Using Sparkles as example */}
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '10px',
               padding: '10px 18px',
               background: 'rgba(77, 208, 225, 0.1)',
               border: '1px solid rgba(77, 208, 225, 0.25)',
@@ -211,7 +213,7 @@ export default function IQIconsDemoPage() {
               color: '#4dd0e1',
               marginBottom: '24px'
             }}>
-              <IQIconSparkles />
+              <IQBrainIcon color="#4dd0e1" size={20} />
               Powered by IQ — Your Genius Advisor
             </div>
 
@@ -220,7 +222,8 @@ export default function IQIconsDemoPage() {
               fontWeight: 800, 
               lineHeight: 1.1,
               marginBottom: '16px',
-              letterSpacing: '-1px'
+              letterSpacing: '-1px',
+              color: 'white'
             }}>
               Know the{' '}
               <span style={{
@@ -239,23 +242,98 @@ export default function IQIconsDemoPage() {
           </div>
         </div>
 
-        {/* My Recommendation */}
+        {/* Hero Context Preview - Light Mode */}
+        <div style={{ marginBottom: '60px' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '24px' }}>
+            Hero Preview — Light Mode
+          </h2>
+          
+          <div style={{
+            background: 'linear-gradient(180deg, rgba(25, 118, 210, 0.05) 0%, #f7f8fa 50%)',
+            borderRadius: '24px',
+            padding: '48px',
+            border: '1px solid rgba(0,0,0,0.08)'
+          }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '10px 18px',
+              background: 'rgba(25, 118, 210, 0.08)',
+              border: '1px solid rgba(25, 118, 210, 0.2)',
+              borderRadius: '100px',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              color: '#1976d2',
+              marginBottom: '24px'
+            }}>
+              <IQBrainIcon color="#1976d2" size={20} />
+              Powered by IQ — Your Genius Advisor
+            </div>
+
+            <h1 style={{ 
+              fontSize: 'clamp(2rem, 4vw, 3rem)', 
+              fontWeight: 800, 
+              lineHeight: 1.1,
+              marginBottom: '16px',
+              letterSpacing: '-1px',
+              color: '#07172e'
+            }}>
+              Know the{' '}
+              <span style={{
+                background: 'linear-gradient(135deg, #007ea7 0%, #1976d2 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                Real Return
+              </span>
+              <br />Before You Invest
+            </h1>
+
+            <p style={{ fontSize: '1.1rem', color: '#6b7280', maxWidth: '500px' }}>
+              Meet IQ — your genius real estate advisor. Point & Scan any property and IQ instantly analyzes it across 6 investment strategies in 60 seconds.
+            </p>
+          </div>
+        </div>
+
+        {/* Icon Sizes */}
         <div style={{ 
-          marginTop: '60px', 
+          padding: '32px',
+          background: 'rgba(255,255,255,0.03)',
+          borderRadius: '20px',
+          border: '1px solid rgba(255,255,255,0.06)',
+          marginBottom: '40px'
+        }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '24px' }}>
+            Icon Size Variations
+          </h3>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '32px', flexWrap: 'wrap' }}>
+            {[16, 20, 24, 32, 48, 64, 80].map((s) => (
+              <div key={s} style={{ textAlign: 'center' }}>
+                <IQBrainIcon color="#4dd0e1" size={s} />
+                <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '8px' }}>{s}px</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Meaning */}
+        <div style={{ 
           padding: '32px',
           background: 'rgba(77, 208, 225, 0.08)',
           borderRadius: '20px',
           border: '1px solid rgba(77, 208, 225, 0.2)'
         }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#4dd0e1', marginBottom: '12px' }}>
-            💡 My Recommendation
+            🧠 Icon Meaning
           </h3>
-          <p style={{ color: '#9ca3af', lineHeight: 1.7 }}>
-            <strong style={{ color: 'white' }}>Option E (Sparkles)</strong> or <strong style={{ color: 'white' }}>Option G (IQ Avatar)</strong> work best:
+          <p style={{ color: '#9ca3af', lineHeight: 1.8 }}>
+            <strong style={{ color: 'white' }}>&quot;Real Estate on the Brain&quot;</strong> — IQ is a brainy-act who thinks about properties 24/7. The icon depicts:
           </p>
-          <ul style={{ color: '#9ca3af', marginTop: '12px', paddingLeft: '20px' }}>
-            <li><strong>Sparkles:</strong> Clean icon style, conveys "magic" and instant insights</li>
-            <li><strong>IQ Avatar:</strong> Directly introduces the IQ character, consistent with the rest of the site</li>
+          <ul style={{ color: '#9ca3af', marginTop: '12px', paddingLeft: '20px', lineHeight: 2 }}>
+            <li><strong style={{ color: 'white' }}>Human Head Profile:</strong> Represents IQ as an intelligent advisor</li>
+            <li><strong style={{ color: 'white' }}>House Inside Brain:</strong> Real estate is always on IQ&apos;s mind</li>
+            <li><strong style={{ color: 'white' }}>Clean Line Style:</strong> Professional, modern, instantly recognizable</li>
           </ul>
         </div>
       </div>

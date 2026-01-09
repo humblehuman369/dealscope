@@ -5,12 +5,16 @@
   --deep-navy: #07172e;
   --dark-bg: #0a0a12;
   --electric-cyan: #4dd0e1;
+  --iq-blue: #1976d2;
   --teal: #007ea7;
   --white: #ffffff;
   --gray-100: #f7f8fa;
   --gray-200: #e5e7eb;
   --gray-400: #9ca3af;
   --gray-600: #6b7280;
+  
+  /* IQ Icon Color (theme-aware) */
+  --iq-icon-color: #4dd0e1;
   
   /* Strategy Colors */
   --long-rental: #0465f2;
@@ -179,8 +183,13 @@
 }
 
 .landing-page .hero-badge svg {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.landing-page .hero-badge .iq-brain-icon {
+  color: var(--iq-icon-color);
 }
 
 .landing-page .hero h1 {
@@ -634,6 +643,22 @@
 .landing-page .cta-content {
   position: relative;
   z-index: 1;
+}
+
+.landing-page .cta-iq-avatar {
+  margin-bottom: 24px;
+}
+
+.landing-page .cta-iq-avatar img {
+  width: 80px;
+  height: 80px;
+  filter: drop-shadow(0 0 20px rgba(77, 208, 225, 0.4));
+  animation: iqFloat 4s ease-in-out infinite;
+}
+
+@keyframes iqFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 .landing-page .cta-title {
