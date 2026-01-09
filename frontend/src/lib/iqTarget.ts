@@ -66,6 +66,10 @@ export interface TargetAssumptions {
   totalBedrooms: number
   // Wholesale
   wholesaleFeePct: number
+  // Growth assumptions (optional)
+  rentGrowth?: number
+  appreciationRate?: number
+  expenseGrowth?: number
 }
 
 // ============================================

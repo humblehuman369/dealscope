@@ -17,6 +17,7 @@ import { PropertyMiniData } from './types'
  * - Price with label
  * - Specs (beds, baths, sqft)
  * - Expandable for more details
+ * - Light/Dark theme support
  */
 
 interface PropertyMiniCardProps {
@@ -56,12 +57,12 @@ export function PropertyMiniCard({
   }
 
   return (
-    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-3 flex gap-3 mb-4">
+    <div className="bg-neutral-100 dark:bg-white/[0.03] border border-neutral-200 dark:border-white/[0.06] rounded-2xl p-3 flex gap-3 mb-4 transition-colors">
       {/* Photo Carousel */}
       {photoList.length > 0 && (
         <div className="relative flex-shrink-0 group">
           {/* Photo Container */}
-          <div className="w-20 h-20 rounded-xl bg-navy-700 relative overflow-hidden">
+          <div className="w-20 h-20 rounded-xl bg-neutral-300 dark:bg-navy-700 relative overflow-hidden">
             <img 
               src={photoList[currentPhotoIndex]} 
               alt={`Property photo ${currentPhotoIndex + 1}`}
@@ -105,7 +106,7 @@ export function PropertyMiniCard({
                 <div
                   key={idx}
                   className={`w-1 h-1 rounded-full transition-colors ${
-                    idx === currentPhotoIndex ? 'bg-teal' : 'bg-white/30'
+                    idx === currentPhotoIndex ? 'bg-brand-500 dark:bg-teal' : 'bg-neutral-400 dark:bg-white/30'
                   }`}
                 />
               ))}
@@ -116,28 +117,28 @@ export function PropertyMiniCard({
 
       {/* Placeholder when no photos */}
       {photoList.length === 0 && (
-        <div className="w-20 h-20 rounded-xl bg-white/[0.05] flex-shrink-0 flex items-center justify-center">
-          <Camera className="w-6 h-6 text-white/20" />
+        <div className="w-20 h-20 rounded-xl bg-neutral-200 dark:bg-white/[0.05] flex-shrink-0 flex items-center justify-center">
+          <Camera className="w-6 h-6 text-neutral-400 dark:text-white/20" />
         </div>
       )}
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="text-[0.85rem] font-bold text-white leading-tight truncate">
+        <div className="text-[0.85rem] font-bold text-navy-900 dark:text-white leading-tight truncate">
           {data.address}
         </div>
-        <div className="text-[0.72rem] text-white/50 mb-2 truncate">
+        <div className="text-[0.72rem] text-neutral-500 dark:text-white/50 mb-2 truncate">
           {data.location}
         </div>
         <div className="flex items-baseline gap-1.5">
-          <span className="text-[1rem] font-bold text-teal">
+          <span className="text-[1rem] font-bold text-brand-500 dark:text-teal">
             {formatCurrency(data.price)}
           </span>
-          <span className="text-[0.6rem] text-white/40 uppercase">
+          <span className="text-[0.6rem] text-neutral-400 dark:text-white/40 uppercase">
             {data.priceLabel}
           </span>
         </div>
-        <div className="text-[0.68rem] text-white/50 mt-1">
+        <div className="text-[0.68rem] text-neutral-500 dark:text-white/50 mt-1">
           {data.specs}
         </div>
       </div>
@@ -146,9 +147,9 @@ export function PropertyMiniCard({
       {showExpandButton && onExpand && (
         <button
           onClick={onExpand}
-          className="flex-shrink-0 self-center w-7 h-7 bg-white/[0.05] border border-white/10 rounded-lg flex items-center justify-center hover:bg-white/[0.1] transition-colors"
+          className="flex-shrink-0 self-center w-7 h-7 bg-neutral-200 dark:bg-white/[0.05] border border-neutral-300 dark:border-white/10 rounded-lg flex items-center justify-center hover:bg-neutral-300 dark:hover:bg-white/[0.1] transition-colors"
         >
-          <ChevronRight className="w-3.5 h-3.5 text-white/60" />
+          <ChevronRight className="w-3.5 h-3.5 text-neutral-500 dark:text-white/60" />
         </button>
       )}
     </div>
@@ -177,14 +178,14 @@ export function PropertyMiniCardCompact({ address, price, specs }: PropertyMiniC
     }).format(value)
 
   return (
-    <div className="flex items-center justify-between bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 mb-3">
+    <div className="flex items-center justify-between bg-neutral-100 dark:bg-white/[0.02] border border-neutral-200 dark:border-white/[0.06] rounded-xl px-3 py-2 mb-3 transition-colors">
       <div>
-        <div className="text-[0.75rem] font-semibold text-white truncate max-w-[180px]">
+        <div className="text-[0.75rem] font-semibold text-navy-900 dark:text-white truncate max-w-[180px]">
           {address}
         </div>
-        <div className="text-[0.6rem] text-white/50">{specs}</div>
+        <div className="text-[0.6rem] text-neutral-500 dark:text-white/50">{specs}</div>
       </div>
-      <div className="text-[0.85rem] font-bold text-teal">
+      <div className="text-[0.85rem] font-bold text-brand-500 dark:text-teal">
         {formatCurrency(price)}
       </div>
     </div>
@@ -214,25 +215,25 @@ export function PropertyStickyHeader({ address, price, strategy, onBack }: Prope
     }).format(value)
 
   return (
-    <div className="sticky top-0 z-50 bg-navy-800/95 backdrop-blur border-b border-white/[0.06] px-4 py-2">
+    <div className="sticky top-0 z-50 bg-white/95 dark:bg-navy-800/95 backdrop-blur border-b border-neutral-200 dark:border-white/[0.06] px-4 py-2 transition-colors">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <button
             onClick={onBack}
-            className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white"
+            className="w-8 h-8 flex items-center justify-center text-neutral-500 dark:text-white/60 hover:text-navy-900 dark:hover:text-white"
           >
             ←
           </button>
           <div>
-            <div className="text-[0.72rem] font-semibold text-white truncate max-w-[160px]">
+            <div className="text-[0.72rem] font-semibold text-navy-900 dark:text-white truncate max-w-[160px]">
               {address}
             </div>
             {strategy && (
-              <div className="text-[0.6rem] text-teal">{strategy}</div>
+              <div className="text-[0.6rem] text-brand-500 dark:text-teal">{strategy}</div>
             )}
           </div>
         </div>
-        <div className="text-[0.85rem] font-bold text-teal">
+        <div className="text-[0.85rem] font-bold text-brand-500 dark:text-teal">
           {formatCurrency(price)}
         </div>
       </div>

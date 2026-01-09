@@ -93,8 +93,8 @@ function StrategyPill({ strategy, isActive, grade, onClick }: StrategyPillProps)
   const baseClasses = "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[0.72rem] font-semibold transition-all duration-200 whitespace-nowrap flex-shrink-0"
   
   const activeClasses = isActive
-    ? "bg-gradient-to-r from-teal to-blue-500 text-white shadow-[0_3px_12px_rgba(0,175,168,0.4)]"
-    : "bg-white/[0.03] text-white/60 border border-white/[0.08] hover:bg-white/[0.06]"
+    ? "bg-gradient-to-r from-brand-500 dark:from-teal to-blue-500 text-white shadow-[0_3px_12px_rgba(0,175,168,0.4)]"
+    : "bg-neutral-100 dark:bg-white/[0.03] text-neutral-600 dark:text-white/60 border border-neutral-200 dark:border-white/[0.08] hover:bg-neutral-200 dark:hover:bg-white/[0.06] transition-colors"
 
   return (
     <button
