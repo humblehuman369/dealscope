@@ -111,10 +111,15 @@ export function STRMetricsContent({
   const returnsData = useMemo(() => {
     const m = currentMetrics
     if (!m) return null
+    
+    // Type guard for STR metrics
+    if (!('monthlyCashFlow' in m)) return null
+    const strMetrics = m as { monthlyCashFlow: number; cashOnCash: number; annualGrossRent?: number }
+    
     return createSTRReturns(
-      m.monthlyCashFlow || 0,
-      m.cashOnCash || 0,
-      (m as { annualGrossRent?: number }).annualGrossRent || 0,
+      strMetrics.monthlyCashFlow || 0,
+      strMetrics.cashOnCash || 0,
+      strMetrics.annualGrossRent || 0,
       assumptions.occupancyRate
     )
   }, [currentMetrics, assumptions.occupancyRate])
@@ -123,7 +128,9 @@ export function STRMetricsContent({
     const m = currentMetrics
     if (!m) return []
     
-    const coc = m.cashOnCash || 0
+    // Type guard for rental metrics
+    if (!('cashOnCash' in m)) return []
+    const coc = (m as { cashOnCash: number }).cashOnCash || 0
     const occ = assumptions.occupancyRate
     
     return [
