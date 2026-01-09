@@ -31,6 +31,9 @@ import { InsightCard, createIQInsight } from './InsightCard';
 import { CompareToggle } from './CompareToggle';
 import { ReturnsGrid, createLTRReturns, createSTRReturns, createBRRRRReturns } from './ReturnsGrid';
 import { PropertyMiniCardNew } from './PropertyMiniCardNew';
+import { FundingTabContent } from './FundingTabContent';
+import { TenYearTabContent } from './TenYearTabContent';
+import { GrowthTabContent } from './GrowthTabContent';
 
 interface StrategyAnalyticsViewProps {
   property: PropertyData;
@@ -388,25 +391,31 @@ export function StrategyAnalyticsView({
 
             {activeSubTab === 'funding' && (
               <View style={styles.section}>
-                <Text style={[styles.placeholder, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)' }]}>
-                  Funding tab content coming soon...
-                </Text>
+                <FundingTabContent
+                  assumptions={assumptions}
+                  onAssumptionChange={updateAssumption}
+                  isDark={isDark}
+                />
               </View>
             )}
 
             {activeSubTab === 'ten_year' && (
               <View style={styles.section}>
-                <Text style={[styles.placeholder, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)' }]}>
-                  10-Year projections coming soon...
-                </Text>
+                <TenYearTabContent
+                  assumptions={assumptions}
+                  iqTarget={iqTarget}
+                  strategy={activeStrategy}
+                  isDark={isDark}
+                />
               </View>
             )}
 
             {activeSubTab === 'growth' && (
               <View style={styles.section}>
-                <Text style={[styles.placeholder, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)' }]}>
-                  Growth analysis coming soon...
-                </Text>
+                <GrowthTabContent
+                  assumptions={assumptions}
+                  isDark={isDark}
+                />
               </View>
             )}
 

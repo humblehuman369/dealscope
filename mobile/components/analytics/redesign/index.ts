@@ -56,5 +56,10 @@ export {
 // Property Mini Card
 export { PropertyMiniCardNew } from './PropertyMiniCardNew';
 
+// Tab Content Components
+export { FundingTabContent } from './FundingTabContent';
+export { TenYearTabContent } from './TenYearTabContent';
+export { GrowthTabContent } from './GrowthTabContent';
+
 // Main Container View
 export { StrategyAnalyticsView } from './StrategyAnalyticsView';
