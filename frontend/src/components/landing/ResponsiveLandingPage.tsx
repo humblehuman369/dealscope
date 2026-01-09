@@ -82,7 +82,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
                 Before You Invest
               </h1>
               <p className="hero-subtitle">
-                Meet IQ — your genius real estate advisor. Point & Scan any property and IQ instantly analyzes it across 6 investment strategies in 60 seconds.
+                Find the profit. Point & Scan any property and IQ instantly analyzes it across 6 investment strategies in 60 seconds.
               </p>
               <div className="hero-cta">
                 <button onClick={handleGetStarted} className="btn btn-primary">
