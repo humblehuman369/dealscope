@@ -372,22 +372,30 @@ function LTRMetricsContent({
     const m = compareView === 'target' ? metricsAtTarget : metricsAtList
     if (!m) return null
     
+    // Type guard for rental metrics (LTR, STR, BRRRR, House Hack have monthlyCashFlow)
+    const hasRentalMetrics = 'monthlyCashFlow' in m
+    
     switch (strategy) {
       case 'ltr':
       case 'str':
-        return createLTRReturns(
-          m.monthlyCashFlow || 0,
-          m.cashOnCash || 0,
-          m.capRate || 0,
-          m.dscr || 0
-        )
+      case 'brrrr':
+      case 'house_hack':
+        if (hasRentalMetrics) {
+          const rentalMetrics = m as { monthlyCashFlow: number; cashOnCash: number; capRate: number; dscr: number }
+          return createLTRReturns(
+            rentalMetrics.monthlyCashFlow || 0,
+            rentalMetrics.cashOnCash || 0,
+            rentalMetrics.capRate || 0,
+            rentalMetrics.dscr || 0
+          )
+        }
+        return null
+      case 'flip':
+      case 'wholesale':
+        // Flip and Wholesale don't have traditional rental returns
+        return null
       default:
-        return createLTRReturns(
-          m.monthlyCashFlow || 0,
-          m.cashOnCash || 0,
-          m.capRate || 0,
-          m.dscr || 0
-        )
+        return null
     }
   }, [strategy, compareView, metricsAtTarget, metricsAtList])
   
@@ -396,9 +404,14 @@ function LTRMetricsContent({
     const m = compareView === 'target' ? metricsAtTarget : metricsAtList
     if (!m) return []
     
-    const coc = m.cashOnCash || 0
-    const cap = m.capRate || 0
-    const dscr = m.dscr || 0
+    // Type guard - only rental strategies have these metrics
+    const hasRentalMetrics = 'cashOnCash' in m && 'capRate' in m && 'dscr' in m
+    if (!hasRentalMetrics) return []
+    
+    const rentalMetrics = m as { cashOnCash: number; capRate: number; dscr: number }
+    const coc = rentalMetrics.cashOnCash || 0
+    const cap = rentalMetrics.capRate || 0
+    const dscr = rentalMetrics.dscr || 0
     
     return [
       {
@@ -650,28 +663,54 @@ interface ScoreTabContentProps {
 }
 
 function ScoreTabContent({ strategy, metrics, iqTarget }: ScoreTabContentProps) {
+  // Type guard for rental metrics
+  const hasRentalMetrics = 'monthlyCashFlow' in metrics && 'cashOnCash' in metrics && 'capRate' in metrics && 'dscr' in metrics
+  
   const scoreData = useMemo(() => {
+    // Get values with type guards
+    const cashFlow = hasRentalMetrics ? (metrics as { monthlyCashFlow: number }).monthlyCashFlow : 0
+    const cashOnCash = hasRentalMetrics ? (metrics as { cashOnCash: number }).cashOnCash : 0
+    const capRate = hasRentalMetrics ? (metrics as { capRate: number }).capRate : 0
+    const dscr = hasRentalMetrics ? (metrics as { dscr: number }).dscr : 0
+    
     return calculateDealScoreData({
-      cashFlow: metrics.monthlyCashFlow || 0,
-      cashOnCash: metrics.cashOnCash || 0,
-      capRate: metrics.capRate || 0,
+      cashFlow: cashFlow || 0,
+      cashOnCash: cashOnCash || 0,
+      capRate: capRate || 0,
       onePercentRule: (iqTarget.monthlyCashFlow || 0) > 0 ? 0.01 : 0.008,
-      dscr: metrics.dscr || 0,
+      dscr: dscr || 0,
       equityPotential: 0.15,
       riskBuffer: 0.8
     })
-  }, [metrics, iqTarget])
+  }, [metrics, iqTarget, hasRentalMetrics])
   
   // Generate strengths and weaknesses
   const strengths: string[] = []
   const weaknesses: string[] = []
   
-  if ((metrics.monthlyCashFlow || 0) >= 300) strengths.push('Strong monthly cash flow')
-  if ((metrics.cashOnCash || 0) >= 0.10) strengths.push('Excellent cash-on-cash return')
-  if ((metrics.dscr || 0) >= 1.25) strengths.push('Good debt coverage')
+  if (hasRentalMetrics) {
+    const rentalMetrics = metrics as { monthlyCashFlow: number; cashOnCash: number; dscr: number }
+    if ((rentalMetrics.monthlyCashFlow || 0) >= 300) strengths.push('Strong monthly cash flow')
+    if ((rentalMetrics.cashOnCash || 0) >= 0.10) strengths.push('Excellent cash-on-cash return')
+    if ((rentalMetrics.dscr || 0) >= 1.25) strengths.push('Good debt coverage')
+    
+    if ((rentalMetrics.monthlyCashFlow || 0) < 100) weaknesses.push('Low cash flow margin')
+    if ((rentalMetrics.cashOnCash || 0) < 0.06) weaknesses.push('Below-average returns')
+  }
   
-  if ((metrics.monthlyCashFlow || 0) < 100) weaknesses.push('Low cash flow margin')
-  if ((metrics.cashOnCash || 0) < 0.06) weaknesses.push('Below-average returns')
+  // Handle flip/wholesale-specific strengths
+  if ('netProfit' in metrics) {
+    const flipMetrics = metrics as { netProfit: number; roi: number }
+    if ((flipMetrics.netProfit || 0) >= 50000) strengths.push('Strong profit potential')
+    if ((flipMetrics.roi || 0) >= 0.25) strengths.push('Excellent ROI')
+    if ((flipMetrics.netProfit || 0) < 20000) weaknesses.push('Thin profit margin')
+  }
+  
+  if ('assignmentFee' in metrics) {
+    const wholesaleMetrics = metrics as { assignmentFee: number }
+    if ((wholesaleMetrics.assignmentFee || 0) >= 15000) strengths.push('Strong assignment fee')
+    if ((wholesaleMetrics.assignmentFee || 0) < 5000) weaknesses.push('Low assignment fee')
+  }
   
   return (
     <div className="space-y-4">
