@@ -1,1 +1,1 @@
-export { IQBrainIcon, IQBrainIconSVG } from './IQBrainIcon';
+export { IQBrainIcon } from './IQBrainIcon';

@@ -1,14 +1,15 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 interface IQBrainIconProps {
   size?: number;
   className?: string;
-  /** If true, uses cyan for dark mode, blue for light mode */
-  themeAware?: boolean;
-  /** Override color directly */
-  color?: string;
+  /** Use dark mode (cyan) or light mode (blue) version */
+  mode?: 'dark' | 'light';
+  /** Use PNG image instead of inline SVG */
+  usePng?: boolean;
 }
 
 /**
@@ -22,12 +23,24 @@ interface IQBrainIconProps {
 export function IQBrainIcon({ 
   size = 20, 
   className = '',
-  themeAware = true,
-  color
+  mode = 'dark',
+  usePng = true
 }: IQBrainIconProps) {
-  // If color is provided, use it; otherwise use CSS variable for theme-awareness
-  const strokeColor = color || (themeAware ? 'currentColor' : '#4dd0e1');
+  const strokeColor = mode === 'dark' ? '#4dd0e1' : '#1976d2';
 
+  if (usePng) {
+    return (
+      <Image 
+        src={mode === 'dark' ? '/images/iq-brain-dark.png' : '/images/iq-brain-light.png'}
+        alt="IQ - Real Estate on the Brain"
+        width={size}
+        height={size}
+        className={`iq-brain-icon ${className}`}
+      />
+    );
+  }
+
+  // SVG fallback version
   return (
     <svg 
       width={size} 
@@ -35,30 +48,32 @@ export function IQBrainIcon({
       viewBox="0 0 100 100" 
       fill="none" 
       className={`iq-brain-icon ${className}`}
-      style={{ 
-        color: themeAware ? 'var(--iq-icon-color, #4dd0e1)' : undefined 
-      }}
     >
       {/* Head profile outline */}
       <path 
-        d="M75 40
-           C75 22 60 8 42 8
-           C24 8 10 22 10 40
-           C10 50 14 58 20 64
-           L20 72
-           C20 76 23 80 28 82
-           L32 84
-           C34 85 36 88 36 90
-           L36 92
-           C36 94 38 95 40 95
-           L52 95
-           C54 95 56 94 56 92
-           L56 88
-           C56 84 60 80 64 78
-           L68 76
-           C72 74 75 70 76 66
-           L78 58
-           C80 52 78 46 75 40
+        d="M50 8
+           C28 8 12 24 12 44
+           C12 54 16 62 22 68
+           L22 74
+           C22 76 24 78 26 80
+           L30 82
+           C32 83 34 86 34 88
+           L34 90
+           C34 92 36 94 38 94
+           L46 94
+           C48 94 50 92 50 90
+           L50 86
+           C50 82 54 78 58 76
+           L62 74
+           C66 72 70 68 72 64
+           L74 58
+           C76 52 78 46 78 40
+           C78 34 76 28 72 24
+           L76 20
+           C78 18 80 14 78 12
+           C76 10 72 12 70 14
+           L66 18
+           C62 14 56 10 50 8
            Z"
         stroke={strokeColor}
         strokeWidth="6"
@@ -68,16 +83,16 @@ export function IQBrainIcon({
       
       {/* House inside the brain */}
       <path 
-        d="M42 28
-           L24 44
-           L24 60
-           L36 60
-           L36 50
-           L48 50
-           L48 60
-           L60 60
-           L60 44
-           L42 28
+        d="M50 24
+           L28 42
+           L28 62
+           L38 62
+           L38 50
+           L62 50
+           L62 62
+           L72 62
+           L72 42
+           L50 24
            Z"
         stroke={strokeColor}
         strokeWidth="5"
@@ -87,15 +102,5 @@ export function IQBrainIcon({
     </svg>
   );
 }
-
-/**
- * Inline SVG version for use in CSS or static contexts
- */
-export const IQBrainIconSVG = `
-<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M75 40 C75 22 60 8 42 8 C24 8 10 22 10 40 C10 50 14 58 20 64 L20 72 C20 76 23 80 28 82 L32 84 C34 85 36 88 36 90 L36 92 C36 94 38 95 40 95 L52 95 C54 95 56 94 56 92 L56 88 C56 84 60 80 64 78 L68 76 C72 74 75 70 76 66 L78 58 C80 52 78 46 75 40 Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M42 28 L24 44 L24 60 L36 60 L36 50 L48 50 L48 60 L60 60 L60 44 L42 28 Z" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-`;
 
 export default IQBrainIcon;

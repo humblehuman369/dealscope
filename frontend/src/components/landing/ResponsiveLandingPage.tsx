@@ -74,7 +74,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
           <div className="hero-grid">
             <div className="hero-content">
               <div className="hero-badge">
-                <IQBrainIcon size={20} />
+                <IQBrainIcon size={22} mode="dark" />
                 Powered by IQ — Your Genius Advisor
               </div>
               <h1>
