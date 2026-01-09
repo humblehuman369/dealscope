@@ -21,7 +21,8 @@ import { ScanTarget } from '@/components/scanner/ScanTarget';
 import { CompassDisplay } from '@/components/scanner/CompassDisplay';
 import { ScanResultSheet } from '@/components/scanner/ScanResultSheet';
 import { getCardinalDirection } from '@/lib/geoCalculations';
-import { MobileLandingPage } from '@/components/MobileLandingPage';
+import { ResponsiveLandingPage } from '@/components/landing';
+import '@/components/landing/landing.css';
 
 export default function HomePage() {
   const [mode, setMode] = useState<'landing' | 'camera'>('landing');
@@ -31,8 +32,8 @@ export default function HomePage() {
     return <MobileScannerView onSwitchMode={() => setMode('landing')} />;
   }
 
-  // Use unified responsive landing page for all viewports
-  return <MobileLandingPage onPointAndScan={() => setMode('camera')} />;
+  // Use the new responsive landing page
+  return <ResponsiveLandingPage onPointAndScan={() => setMode('camera')} />;
 }
 
 /**
