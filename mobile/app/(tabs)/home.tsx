@@ -179,7 +179,7 @@ export default function HomeScreen() {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchAddress, setSearchAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [expandedStrategy, setExpandedStrategy] = useState<string | null>('ltr'); // Default first one open
+  const [expandedStrategy, setExpandedStrategy] = useState<string | null>(null); // All collapsed on load
   const scrollViewRef = useRef<ScrollView>(null);
 
   const handleAnalyze = () => {
