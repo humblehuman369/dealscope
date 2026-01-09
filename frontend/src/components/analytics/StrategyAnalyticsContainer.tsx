@@ -793,7 +793,7 @@ function GrowthTabContent({ projections, iqTarget, assumptions, updateAssumption
   const year5ProjectionRows = [
     { label: 'Monthly Rent', value: formatCurrency(year5Rent) },
     { label: 'Property Value', value: formatCurrency(year5Value) },
-    { label: 'Monthly Cash Flow', value: formatCurrency(year5.monthlyCashFlow), isPositive: year5.monthlyCashFlow > 0 },
+    { label: 'Monthly Cash Flow', value: formatCurrency(year5.cashFlow / 12), isPositive: year5.cashFlow > 0 },
     { label: 'Total Equity', value: formatCurrency(year5.totalEquity), isPositive: true }
   ]
   
