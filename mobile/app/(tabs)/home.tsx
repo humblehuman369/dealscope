@@ -10,6 +10,8 @@ import {
   Platform,
   ActivityIndicator,
   Dimensions,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -31,57 +33,134 @@ import Animated, {
   withSequence,
   withDelay,
   Easing,
-  interpolate,
 } from 'react-native-reanimated';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Strategy data with colors and emojis
+// Enhanced strategy data with full content for expandable cards
 const strategies = [
-  { 
-    name: 'Long-Term Rental', 
-    roi: '18%', 
-    icon: '🏠', 
-    label: 'Est. ROI',
+  {
+    id: 'ltr',
+    name: 'Long-Term Rental',
+    tagline: 'Steady income & build equity',
+    statValue: '8-12%',
+    statLabel: 'Avg CoC',
     color: colors.strategies.longTermRental.primary,
+    gradientStart: '#0353c9',
+    gradientEnd: '#0465f2',
+    description: 'You buy a property and rent it to a tenant who signs a lease (usually 12 months). They pay you rent every month, and after expenses, you keep the profit. It\'s the most beginner-friendly way to invest in real estate.',
+    pros: ['Predictable monthly income', 'Tax advantages', 'Low management time'],
+    cons: ['Slower wealth building', 'Tenant management', 'Vacancy risk'],
+    iqMetrics: [
+      { value: '$486', label: 'Cash Flow' },
+      { value: '12.4%', label: 'CoC Return' },
+      { value: '8.1%', label: 'Cap Rate' },
+    ],
+    chartData: [40, 55, 50, 65, 70, 75, 80, 85, 90, 100],
   },
-  { 
-    name: 'Short-Term Rental', 
-    roi: '28%', 
-    icon: '🏨', 
-    label: 'Est. ROI',
+  {
+    id: 'str',
+    name: 'Short-Term Rental',
+    tagline: 'Vacation & business rental income',
+    statValue: '15-25%',
+    statLabel: 'Avg CoC',
     color: colors.strategies.shortTermRental.primary,
+    gradientStart: '#7c3aed',
+    gradientEnd: '#8b5cf6',
+    description: 'Instead of one tenant for a year, you rent to travelers night-by-night on platforms like Airbnb or VRBO. Think of it like running a mini-hotel — more work, but potentially 2-3x the income of a traditional rental.',
+    pros: ['2-3x higher income', 'Flexible personal use', 'Dynamic pricing power'],
+    cons: ['Higher management', 'Seasonal fluctuations', 'Regulation risks'],
+    iqMetrics: [
+      { value: '$1,580', label: 'Cash Flow' },
+      { value: '23.4%', label: 'CoC Return' },
+      { value: '$200', label: 'Nightly Rate' },
+    ],
+    chartData: [60, 85, 70, 90, 50, 75, 95, 100, 80, 65],
   },
-  { 
-    name: 'Fix & Flip', 
-    roi: '22%', 
-    icon: '🔨', 
-    label: 'Est. ROI',
-    color: colors.strategies.fixAndFlip.primary,
-  },
-  { 
-    name: 'BRRRR', 
-    roi: '25%', 
-    icon: '🔄', 
-    label: 'Est. ROI',
+  {
+    id: 'brrrr',
+    name: 'BRRRR',
+    tagline: 'Buy-Rehab-Rent-Refi-Repeat wealth builder',
+    statValue: 'SCALE',
+    statLabel: 'SCALE',
+    isGrowthIcon: true,
     color: colors.strategies.brrrr.primary,
+    gradientStart: '#ea580c',
+    gradientEnd: '#f97316',
+    description: 'A 5-step wealth-building strategy: Buy a fixer-upper cheap, Rehab it, Rent it out, Refinance based on the new higher value, then Repeat with the cash you pulled out. You end up owning a rental AND getting your original investment back.',
+    pros: ['Recycle capital infinitely', 'Force equity creation', 'Scale portfolio fast'],
+    cons: ['Requires rehab skills', 'More complex process', 'Market timing matters'],
+    iqMetrics: [
+      { value: '100%', label: 'Cash Back' },
+      { value: '$146K', label: 'Equity Made' },
+      { value: '$412', label: 'Cash Flow' },
+    ],
+    chartData: [100, 30, 50, 70, 100, 30, 55, 75, 100, 35],
   },
-  { 
-    name: 'House Hack', 
-    roi: '31%', 
-    icon: '🏡', 
-    label: 'Est. ROI',
+  {
+    id: 'flip',
+    name: 'Fix & Flip',
+    tagline: 'Buy low, fix up, sell high',
+    statValue: '$50K+',
+    statLabel: 'Profit Goal',
+    color: colors.strategies.fixAndFlip.primary,
+    gradientStart: '#db2777',
+    gradientEnd: '#ec4899',
+    description: 'Buy an ugly or outdated house below market value, fix it up to make it beautiful, then sell it for a profit. Like the TV shows — buy low, renovate, sell high. Most flips take 3-6 months from purchase to sale.',
+    pros: ['Big lump sum profits', 'Quick turnaround', 'No landlord duties'],
+    cons: ['Active work required', 'Market risk', 'Capital intensive'],
+    iqMetrics: [
+      { value: '$62.8K', label: 'Net Profit' },
+      { value: '35%', label: 'ROI' },
+      { value: '70%', label: 'Rule Check' },
+    ],
+    chartData: [20, 25, 35, 50, 60, 100, 0, 0, 0, 0],
+  },
+  {
+    id: 'hack',
+    name: 'House Hack',
+    tagline: 'Cut your housing costs up to 100%',
+    statValue: '75%',
+    statLabel: 'Cost Savings',
     color: colors.strategies.houseHack.primary,
+    gradientStart: '#0d9488',
+    gradientEnd: '#14b8a6',
+    description: 'Buy a home and rent out part of it — spare bedrooms, a basement apartment, or units in a duplex. Your tenants\' rent covers your mortgage, so you live for free (or nearly free) while building equity. The ultimate first-time investor strategy.',
+    pros: ['Eliminate housing cost', 'Low down payment (FHA)', 'Build wealth fast'],
+    cons: ['Live with tenants', 'Less privacy', 'Landlord duties'],
+    iqMetrics: [
+      { value: '$0', label: 'Your Cost' },
+      { value: '$24K', label: 'Yr Savings' },
+      { value: '3.5%', label: 'FHA Down' },
+    ],
+    chartData: [100, 80, 60, 40, 20, 10, 5, 0, 0, 0],
   },
-  { 
-    name: 'Wholesale', 
-    roi: '$12K', 
-    icon: '📋', 
-    label: 'Est. Profit',
+  {
+    id: 'wholesale',
+    name: 'Wholesale',
+    tagline: 'Find deals, assign contracts, profit',
+    statValue: '$10K+',
+    statLabel: 'Per Deal',
     color: colors.strategies.wholesale.primary,
+    gradientStart: '#65a30d',
+    gradientEnd: '#84cc16',
+    description: 'You find a property selling below market value, get it under contract, then sell that contract to another investor for a fee ($5K-$20K typically). You never actually buy the property — you\'re the middleman connecting motivated sellers with buyers. Zero money needed.',
+    pros: ['No capital needed', 'Quick profits', 'Low risk'],
+    cons: ['Need deal flow', 'Negotiation skills', 'No equity built'],
+    iqMetrics: [
+      { value: '$10K', label: 'Your Fee' },
+      { value: '$265K', label: 'MAO' },
+      { value: '667%', label: 'ROI' },
+    ],
+    chartData: [10, 100, 0, 10, 100, 0, 10, 100, 0, 10],
   },
 ];
 
@@ -100,12 +179,12 @@ export default function HomeScreen() {
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [searchAddress, setSearchAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [expandedStrategy, setExpandedStrategy] = useState<string | null>('ltr'); // Default first one open
   const scrollViewRef = useRef<ScrollView>(null);
 
   const handleAnalyze = () => {
     if (!searchAddress.trim()) return;
     setIsSearching(true);
-    // Route to new Property Analytics page (not old /property page)
     router.push(`/analytics/${encodeURIComponent(searchAddress.trim())}`);
   };
 
@@ -116,6 +195,16 @@ export default function HomeScreen() {
   const handleStartAnalyzing = () => {
     setShowSearchBar(true);
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
+  const handleStrategyPress = (strategyId: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedStrategy(expandedStrategy === strategyId ? null : strategyId);
+  };
+
+  const handleAnalyzeAsStrategy = (strategyId: string) => {
+    // Navigate to scan or address input with pre-selected strategy
+    router.push('/(tabs)/scan');
   };
 
   // Theme-aware colors
@@ -155,7 +244,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Hero Section - 3 Lines with Intentional Breaks */}
+          {/* Hero Section - Compact */}
           <View style={styles.heroSection}>
             <Text style={[styles.heroLine1, { color: isDark ? '#fff' : '#07172e' }]}>
               Know the Real Return
@@ -168,7 +257,7 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          {/* Scanner Card */}
+          {/* Scanner Card - Compact */}
           <View style={styles.scannerCardContainer}>
             <ScannerCard 
               isDark={isDark}
@@ -233,27 +322,29 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {/* Strategy Section */}
+          {/* Strategy Section - Redesigned Accordion */}
           <View style={styles.strategySection}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#07172e' }]}>
-                See Your <Text style={{ color: accentColor }}>Profit Potential</Text>
+            <View style={styles.strategySectionHeader}>
+              <Text style={[styles.strategySectionTitle, { color: isDark ? '#fff' : '#07172e' }]}>
+                6 Ways to <Text style={{ color: accentColor }}>Profit</Text>
               </Text>
-              <TouchableOpacity>
-                <Text style={[styles.seeAll, { color: accentColor }]}>All 6 →</Text>
-              </TouchableOpacity>
+              <Text style={[styles.strategySectionSubtitle, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)' }]}>
+                Tap any strategy to see how IQ analyzes it
+              </Text>
             </View>
-            
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.strategyScroll}
-              style={styles.strategyScrollContainer}
-            >
-              {strategies.map((strategy, idx) => (
-                <StrategyCard key={idx} {...strategy} isDark={isDark} />
+
+            <View style={styles.strategyGrid}>
+              {strategies.map((strategy) => (
+                <ExpandableStrategyCard
+                  key={strategy.id}
+                  strategy={strategy}
+                  isExpanded={expandedStrategy === strategy.id}
+                  onPress={() => handleStrategyPress(strategy.id)}
+                  onAnalyze={() => handleAnalyzeAsStrategy(strategy.id)}
+                  isDark={isDark}
+                />
               ))}
-            </ScrollView>
+            </View>
           </View>
 
           {/* Stats Row */}
@@ -275,26 +366,14 @@ export default function HomeScreen() {
           {/* CTA Section */}
           <View style={styles.ctaSection}>
             <TouchableOpacity style={styles.ctaButton} onPress={handleStartAnalyzing}>
-              <Svg viewBox="0 0 335 56" style={styles.ctaButtonSvg}>
-                <Defs>
-                  <SvgLinearGradient id="ctaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <Stop offset="0%" stopColor={buttonGradientStart} />
-                    <Stop offset="100%" stopColor={buttonGradientEnd} />
-                  </SvgLinearGradient>
-                </Defs>
-                <Rect width="335" height="56" rx="14" fill="url(#ctaGradient)" />
-                <SvgText 
-                  x="167.5" 
-                  y="34" 
-                  textAnchor="middle" 
-                  fill="white" 
-                  fontFamily="Inter, system-ui, sans-serif" 
-                  fontSize="16" 
-                  fontWeight="600"
-                >
-                  Start Analyzing Now
-                </SvgText>
-              </Svg>
+              <LinearGradient
+                colors={[buttonGradientStart, buttonGradientEnd]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.ctaButtonGradient}
+              >
+                <Text style={styles.ctaButtonText}>Start Analyzing Now</Text>
+              </LinearGradient>
             </TouchableOpacity>
             <Text style={[styles.trustText, { color: colors.gray[500] }]}>
               Free • No credit card required
@@ -308,7 +387,10 @@ export default function HomeScreen() {
   );
 }
 
-// Scanner Card with Animations
+// =============================================================================
+// SCANNER CARD COMPONENT (Simplified - no property badge)
+// =============================================================================
+
 function ScannerCard({ 
   isDark, 
   accentColor, 
@@ -324,20 +406,17 @@ function ScannerCard({
   onScanPress: () => void;
   onAddressPress: () => void;
 }) {
-  // Animation values
   const glowOpacity = useSharedValue(0.3);
   const glowScale = useSharedValue(0.95);
-  const scanLinePosition = useSharedValue(15);
+  const scanLinePosition = useSharedValue(10);
   const scanLineOpacity = useSharedValue(0);
   
-  // Corner animations with stagger
   const corner1Opacity = useSharedValue(0.6);
   const corner2Opacity = useSharedValue(0.6);
   const corner3Opacity = useSharedValue(0.6);
   const corner4Opacity = useSharedValue(0.6);
 
   useEffect(() => {
-    // Glow pulse animation
     glowOpacity.value = withRepeat(
       withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
       -1,
@@ -349,7 +428,6 @@ function ScannerCard({
       true
     );
 
-    // Corner pulse animations with stagger
     corner1Opacity.value = withRepeat(
       withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
       -1,
@@ -371,16 +449,14 @@ function ScannerCard({
       true
     ));
 
-    // Scan line animation
     scanLinePosition.value = withRepeat(
       withSequence(
-        withTiming(125, { duration: 2250, easing: Easing.inOut(Easing.ease) }),
-        withTiming(15, { duration: 0 })
+        withTiming(80, { duration: 2250, easing: Easing.inOut(Easing.ease) }),
+        withTiming(10, { duration: 0 })
       ),
       -1
     );
     
-    // Scan line opacity animation
     scanLineOpacity.value = withRepeat(
       withSequence(
         withTiming(0, { duration: 0 }),
@@ -392,7 +468,6 @@ function ScannerCard({
     );
   }, []);
 
-  // Animated styles
   const glowStyle = useAnimatedStyle(() => ({
     opacity: glowOpacity.value,
     transform: [{ scale: glowScale.value }],
@@ -403,18 +478,10 @@ function ScannerCard({
     opacity: scanLineOpacity.value,
   }));
 
-  const corner1Style = useAnimatedStyle(() => ({
-    opacity: corner1Opacity.value,
-  }));
-  const corner2Style = useAnimatedStyle(() => ({
-    opacity: corner2Opacity.value,
-  }));
-  const corner3Style = useAnimatedStyle(() => ({
-    opacity: corner3Opacity.value,
-  }));
-  const corner4Style = useAnimatedStyle(() => ({
-    opacity: corner4Opacity.value,
-  }));
+  const corner1Style = useAnimatedStyle(() => ({ opacity: corner1Opacity.value }));
+  const corner2Style = useAnimatedStyle(() => ({ opacity: corner2Opacity.value }));
+  const corner3Style = useAnimatedStyle(() => ({ opacity: corner3Opacity.value }));
+  const corner4Style = useAnimatedStyle(() => ({ opacity: corner4Opacity.value }));
 
   const gradientStart = isDark ? 'rgba(77,208,225,0.08)' : 'rgba(0,126,167,0.06)';
   const gradientEnd = isDark ? 'rgba(4,101,242,0.08)' : 'rgba(4,101,242,0.06)';
@@ -427,21 +494,18 @@ function ScannerCard({
       end={{ x: 1, y: 1 }}
       style={[styles.scannerCard, { borderColor }]}
     >
-      {/* Scanner Viewport */}
+      {/* Scanner Viewport - Compact */}
       <View style={styles.scannerViewport}>
         <View style={styles.scannerFrame}>
-          {/* Animated Glow Behind Frame */}
           <Animated.View style={[styles.scannerGlow, glowStyle, { 
             backgroundColor: isDark ? 'rgba(77,208,225,0.15)' : 'rgba(0,126,167,0.12)' 
           }]} />
           
-          {/* Corner Brackets with Pulse */}
           <Animated.View style={[styles.corner, styles.cornerTL, corner1Style, { borderColor: accentColor }]} />
           <Animated.View style={[styles.corner, styles.cornerTR, corner2Style, { borderColor: accentColor }]} />
           <Animated.View style={[styles.corner, styles.cornerBL, corner3Style, { borderColor: accentColor }]} />
           <Animated.View style={[styles.corner, styles.cornerBR, corner4Style, { borderColor: accentColor }]} />
           
-          {/* Scanning Line */}
           <Animated.View style={[styles.scanLine, scanLineStyle]}>
             <LinearGradient
               colors={['transparent', accentColor, 'transparent']}
@@ -451,9 +515,8 @@ function ScannerCard({
             />
           </Animated.View>
           
-          {/* House Icon */}
           <View style={styles.houseIcon}>
-            <Svg viewBox="0 0 100 80" style={{ width: 80, height: 65 }}>
+            <Svg viewBox="0 0 100 80" style={{ width: 50, height: 40 }}>
               <Path 
                 d="M50 5L5 40h10v35h70V40h10L50 5zm-20 65V45h15v25H30zm25 0V45h15v25H55z" 
                 fill={isDark ? '#aab2bd' : '#07172e'}
@@ -464,106 +527,215 @@ function ScannerCard({
         </View>
       </View>
 
-      {/* Property Badge */}
-      <View style={[
-        styles.propertyBadge,
-        { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(7,23,46,0.03)' }
-      ]}>
-        <Text style={[styles.propertyLabel, { color: accentColor }]}>PROPERTY LOCATED</Text>
-        <Text style={[styles.propertyAddress, { color: isDark ? '#fff' : '#07172e' }]}>
-          123 Main Street, Anytown
-        </Text>
-      </View>
-
-      {/* Action Buttons - SVG */}
+      {/* Action Buttons */}
       <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.svgButton} onPress={onScanPress}>
-          <Svg viewBox="0 0 150 50" style={styles.buttonSvg}>
-            <Defs>
-              <SvgLinearGradient id="btnGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <Stop offset="0%" stopColor={buttonGradientStart} />
-                <Stop offset="100%" stopColor={buttonGradientEnd} />
-              </SvgLinearGradient>
-            </Defs>
-            <Rect width="150" height="50" rx="12" fill="url(#btnGradient)" />
-            <SvgText 
-              x="75" 
-              y="30" 
-              textAnchor="middle" 
-              fill="white" 
-              fontFamily="Inter, system-ui, sans-serif" 
-              fontSize="14" 
-              fontWeight="600"
-            >
-              Point &amp; Scan
-            </SvgText>
-          </Svg>
+        <TouchableOpacity 
+          style={styles.actionBtn}
+          onPress={onScanPress}
+        >
+          <LinearGradient
+            colors={[buttonGradientStart, buttonGradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.actionBtnPrimary}
+          >
+            <Text style={styles.actionBtnText}>Point & Scan</Text>
+          </LinearGradient>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.svgButton} onPress={onAddressPress}>
-          <Svg viewBox="0 0 150 50" style={styles.buttonSvg}>
-            <Rect 
-              width="150" 
-              height="50" 
-              rx="12" 
-              fill={isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.04)'} 
-              stroke={isDark ? 'rgba(255,255,255,0.12)' : 'rgba(7,23,46,0.12)'}
-              strokeWidth="1"
-            />
-            <SvgText 
-              x="75" 
-              y="30" 
-              textAnchor="middle" 
-              fill={isDark ? 'white' : '#07172e'}
-              fontFamily="Inter, system-ui, sans-serif" 
-              fontSize="14" 
-              fontWeight="600"
-            >
-              Enter Address
-            </SvgText>
-          </Svg>
+        <TouchableOpacity 
+          style={[
+            styles.actionBtn,
+            styles.actionBtnSecondary,
+            { 
+              backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(7,23,46,0.03)',
+              borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(7,23,46,0.1)',
+            }
+          ]}
+          onPress={onAddressPress}
+        >
+          <Text style={[styles.actionBtnSecondaryText, { color: isDark ? 'rgba(255,255,255,0.8)' : '#07172e' }]}>
+            Enter Address
+          </Text>
         </TouchableOpacity>
       </View>
     </LinearGradient>
   );
 }
 
-// Strategy Card Component
-function StrategyCard({ 
-  name, 
-  roi, 
-  icon, 
-  label, 
-  color, 
-  isDark 
+// =============================================================================
+// EXPANDABLE STRATEGY CARD COMPONENT
+// =============================================================================
+
+function ExpandableStrategyCard({
+  strategy,
+  isExpanded,
+  onPress,
+  onAnalyze,
+  isDark,
 }: {
-  name: string;
-  roi: string;
-  icon: string;
-  label: string;
-  color: string;
+  strategy: typeof strategies[0];
+  isExpanded: boolean;
+  onPress: () => void;
+  onAnalyze: () => void;
   isDark: boolean;
 }) {
   return (
-    <View style={[
-      styles.strategyCard,
-      { 
-        backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff',
-        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,23,46,0.08)',
-      },
-      !isDark && styles.strategyCardShadow
-    ]}>
-      <View style={[styles.strategyIconWrap, { backgroundColor: `${color}15` }]}>
-        <Text style={styles.strategyIcon}>{icon}</Text>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPress}
+      style={[
+        styles.strategyCard,
+        {
+          backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#ffffff',
+          borderColor: isDark 
+            ? (isExpanded ? `${strategy.color}80` : 'rgba(255,255,255,0.06)')
+            : (isExpanded ? `${strategy.color}60` : 'rgba(7,23,46,0.12)'),
+        },
+        isExpanded && { backgroundColor: isDark ? `${strategy.color}08` : `${strategy.color}04` },
+        !isDark && styles.strategyCardShadow,
+      ]}
+    >
+      {/* Card Header - Always Visible */}
+      <View style={styles.strategyCardHeader}>
+        <View style={[styles.strategyIndicator, { backgroundColor: strategy.color }]} />
+        
+        <View style={styles.strategyCardInfo}>
+          <Text style={[styles.strategyName, { color: isDark ? '#fff' : '#07172e' }]}>
+            {strategy.name}
+          </Text>
+          <Text style={[styles.strategyTagline, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)' }]}>
+            {strategy.tagline}
+          </Text>
+        </View>
+
+        <View style={styles.strategyStat}>
+          {strategy.isGrowthIcon ? (
+            <Text style={styles.growthIcon}>📈</Text>
+          ) : (
+            <Text style={[styles.strategyStatValue, { color: strategy.color }]}>
+              {strategy.statValue}
+            </Text>
+          )}
+          <Text style={[styles.strategyStatLabel, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(7,23,46,0.4)' }]}>
+            {strategy.statLabel}
+          </Text>
+        </View>
+
+        <Text style={[styles.strategyExpand, { color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(7,23,46,0.3)' }]}>
+          {isExpanded ? '▲' : '▼'}
+        </Text>
       </View>
-      <Text style={[styles.strategyName, { color: isDark ? '#aab2bd' : '#6b7280' }]} numberOfLines={2}>
-        {name}
-      </Text>
-      <Text style={[styles.strategyRoi, { color }]}>{roi}</Text>
-      <Text style={[styles.strategyRoiLabel, { color: '#6b7280' }]}>{label}</Text>
-    </View>
+
+      {/* Expanded Content */}
+      {isExpanded && (
+        <View style={styles.strategyCardBody}>
+          {/* Description */}
+          <View style={[
+            styles.strategyDescription,
+            { backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(7,23,46,0.02)' }
+          ]}>
+            <Text style={[styles.strategyDescriptionText, { color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(7,23,46,0.7)' }]}>
+              {strategy.description}
+            </Text>
+          </View>
+
+          {/* Pros/Cons */}
+          <View style={styles.prosConsRow}>
+            <View style={styles.prosCol}>
+              <Text style={styles.prosColTitle}>✓ Pros</Text>
+              {strategy.pros.map((pro, idx) => (
+                <Text key={idx} style={styles.prosItem}>• {pro}</Text>
+              ))}
+            </View>
+            <View style={styles.consCol}>
+              <Text style={styles.consColTitle}>✕ Cons</Text>
+              {strategy.cons.map((con, idx) => (
+                <Text key={idx} style={styles.consItem}>• {con}</Text>
+              ))}
+            </View>
+          </View>
+
+          {/* IQ Metrics Preview */}
+          <View style={[
+            styles.iqMetricsPreview,
+            { 
+              borderColor: isDark ? 'rgba(77,208,225,0.2)' : 'rgba(0,126,167,0.15)',
+            }
+          ]}>
+            <LinearGradient
+              colors={isDark 
+                ? ['rgba(77,208,225,0.1)', 'rgba(4,101,242,0.1)']
+                : ['rgba(0,126,167,0.06)', 'rgba(4,101,242,0.06)']
+              }
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.iqMetricsInner}
+            >
+              <Text style={[styles.iqMetricsTitle, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
+                🎯 IQ Reveals Instantly
+              </Text>
+              <View style={styles.iqMetricsGrid}>
+                {strategy.iqMetrics.map((metric, idx) => (
+                  <View 
+                    key={idx} 
+                    style={[
+                      styles.iqMetricItem,
+                      { backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.5)' }
+                    ]}
+                  >
+                    <Text style={[styles.iqMetricValue, { color: isDark ? '#fff' : '#07172e' }]}>
+                      {metric.value}
+                    </Text>
+                    <Text style={[styles.iqMetricLabel, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)' }]}>
+                      {metric.label}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </LinearGradient>
+          </View>
+
+          {/* Mini Bar Chart */}
+          <View style={[
+            styles.miniChart,
+            { backgroundColor: isDark ? 'rgba(0,0,0,0.15)' : 'rgba(7,23,46,0.04)' }
+          ]}>
+            {strategy.chartData.map((height, idx) => (
+              <View
+                key={idx}
+                style={[
+                  styles.chartBar,
+                  { 
+                    height: `${height}%`,
+                    backgroundColor: height > 0 ? strategy.color : 'transparent',
+                    opacity: height > 0 ? (0.3 + (height / 100) * 0.7) : 0,
+                  }
+                ]}
+              />
+            ))}
+          </View>
+
+          {/* CTA Button */}
+          <TouchableOpacity onPress={onAnalyze} activeOpacity={0.8}>
+            <LinearGradient
+              colors={[strategy.gradientStart, strategy.gradientEnd]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.strategyCta}
+            >
+              <Text style={styles.strategyCtaText}>Analyze as {strategy.name} →</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      )}
+    </TouchableOpacity>
   );
 }
+
+// =============================================================================
+// STYLES
+// =============================================================================
 
 const styles = StyleSheet.create({
   container: {
@@ -583,7 +755,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    marginBottom: 28,
+    marginBottom: 24,
   },
   logoText: {
     fontSize: 22,
@@ -598,28 +770,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Hero Section - 3 Lines
+  // Hero Section - Compact
   heroSection: {
     paddingHorizontal: 24,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   heroLine1: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
     textAlign: 'center',
-    lineHeight: 32,
+    lineHeight: 30,
   },
   heroLine2: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '600',
     fontStyle: 'italic',
     textAlign: 'center',
-    lineHeight: 32,
-    marginBottom: 10,
+    lineHeight: 30,
+    marginBottom: 8,
   },
   heroLine3: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 3.2,
@@ -631,40 +803,38 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
 
-  // Scanner Card
+  // Scanner Card - Compact
   scannerCard: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: 20,
+    padding: 16,
   },
-
-  // Scanner Viewport
   scannerViewport: {
-    height: 160,
+    height: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   scannerFrame: {
-    width: 160,
-    height: 140,
+    width: 120,
+    height: 90,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
   },
   scannerGlow: {
     position: 'absolute',
-    top: -20,
-    left: -20,
-    right: -20,
-    bottom: -20,
-    borderRadius: 20,
+    top: -15,
+    left: -15,
+    right: -15,
+    bottom: -15,
+    borderRadius: 16,
   },
   corner: {
     position: 'absolute',
-    width: 28,
-    height: 28,
-    borderWidth: 3,
+    width: 20,
+    height: 20,
+    borderWidth: 2,
     zIndex: 2,
   },
   cornerTL: {
@@ -672,33 +842,33 @@ const styles = StyleSheet.create({
     left: 0,
     borderRightWidth: 0,
     borderBottomWidth: 0,
-    borderTopLeftRadius: 6,
+    borderTopLeftRadius: 4,
   },
   cornerTR: {
     top: 0,
     right: 0,
     borderLeftWidth: 0,
     borderBottomWidth: 0,
-    borderTopRightRadius: 6,
+    borderTopRightRadius: 4,
   },
   cornerBL: {
     bottom: 0,
     left: 0,
     borderRightWidth: 0,
     borderTopWidth: 0,
-    borderBottomLeftRadius: 6,
+    borderBottomLeftRadius: 4,
   },
   cornerBR: {
     bottom: 0,
     right: 0,
     borderLeftWidth: 0,
     borderTopWidth: 0,
-    borderBottomRightRadius: 6,
+    borderBottomRightRadius: 4,
   },
   scanLine: {
     position: 'absolute',
-    left: 10,
-    right: 10,
+    left: 8,
+    right: 8,
     height: 2,
     zIndex: 3,
   },
@@ -712,37 +882,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Property Badge
-  propertyBadge: {
-    borderRadius: 12,
-    padding: 14,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  propertyLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1.9,
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  propertyAddress: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-
   // Action Buttons
   actionButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
-  svgButton: {
+  actionBtn: {
     flex: 1,
-    height: 50,
+    height: 48,
   },
-  buttonSvg: {
-    width: '100%',
-    height: 50,
+  actionBtnPrimary: {
+    flex: 1,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionBtnSecondary: {
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionBtnText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  actionBtnSecondaryText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
 
   // Search Dropdown
@@ -787,83 +955,223 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.4)',
   },
 
-  // Strategy Section
+  // Strategy Section - Redesigned
   strategySection: {
-    marginBottom: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    marginBottom: 20,
     paddingHorizontal: 20,
-    marginBottom: 14,
   },
-  sectionTitle: {
+  strategySectionHeader: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  strategySectionTitle: {
     fontSize: 18,
     fontWeight: '700',
+    marginBottom: 4,
   },
-  seeAll: {
-    fontSize: 13,
-    fontWeight: '600',
+  strategySectionSubtitle: {
+    fontSize: 11,
   },
-  strategyScrollContainer: {
-    // Allow cards to overflow
+  strategyGrid: {
+    gap: 10,
   },
-  strategyScroll: {
-    paddingHorizontal: 20,
-    gap: 12,
-  },
+
+  // Strategy Card - Expandable
   strategyCard: {
-    width: 130,
-    padding: 16,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    alignItems: 'flex-start',
+    overflow: 'hidden',
   },
   strategyCardShadow: {
     shadowColor: '#07172e',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 3,
   },
-  strategyIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+  strategyCardHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
+    padding: 14,
+    gap: 12,
   },
-  strategyIcon: {
-    fontSize: 20,
+  strategyIndicator: {
+    width: 4,
+    height: 40,
+    borderRadius: 2,
+  },
+  strategyCardInfo: {
+    flex: 1,
+    minWidth: 0,
   },
   strategyName: {
-    fontSize: 12,
-    fontWeight: '500',
-    lineHeight: 16,
-    marginBottom: 8,
-    minHeight: 32,
-  },
-  strategyRoi: {
-    fontSize: 24,
+    fontSize: 14,
     fontWeight: '700',
     marginBottom: 2,
   },
-  strategyRoiLabel: {
-    fontSize: 10,
+  strategyTagline: {
+    fontSize: 11,
+    lineHeight: 14,
+  },
+  strategyStat: {
+    alignItems: 'flex-end',
+  },
+  strategyStatValue: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  growthIcon: {
+    fontSize: 24,
+  },
+  strategyStatLabel: {
+    fontSize: 9,
     fontWeight: '600',
     textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  strategyExpand: {
+    fontSize: 12,
+    marginLeft: 8,
+  },
+
+  // Strategy Card Body (Expanded)
+  strategyCardBody: {
+    paddingHorizontal: 14,
+    paddingBottom: 14,
+  },
+  strategyDescription: {
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  strategyDescriptionText: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+
+  // Pros/Cons
+  prosConsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  prosCol: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: 'rgba(34,197,94,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(34,197,94,0.15)',
+  },
+  consCol: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: 'rgba(239,68,68,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.15)',
+  },
+  prosColTitle: {
+    fontSize: 9,
+    fontWeight: '700',
+    textTransform: 'uppercase',
     letterSpacing: 0.5,
+    color: '#22c55e',
+    marginBottom: 6,
+  },
+  consColTitle: {
+    fontSize: 9,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    color: '#ef4444',
+    marginBottom: 6,
+  },
+  prosItem: {
+    fontSize: 10,
+    lineHeight: 15,
+    color: 'rgba(34,197,94,0.9)',
+  },
+  consItem: {
+    fontSize: 10,
+    lineHeight: 15,
+    color: 'rgba(239,68,68,0.9)',
+  },
+
+  // IQ Metrics Preview
+  iqMetricsPreview: {
+    borderRadius: 10,
+    borderWidth: 1,
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  iqMetricsInner: {
+    padding: 12,
+  },
+  iqMetricsTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 10,
+  },
+  iqMetricsGrid: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iqMetricItem: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 8,
+    borderRadius: 6,
+  },
+  iqMetricValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  iqMetricLabel: {
+    fontSize: 8,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.2,
+  },
+
+  // Mini Chart
+  miniChart: {
+    height: 50,
+    borderRadius: 8,
+    padding: 8,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 3,
+    marginBottom: 12,
+  },
+  chartBar: {
+    flex: 1,
+    borderRadius: 2,
+    minHeight: 0,
+  },
+
+  // Strategy CTA
+  strategyCta: {
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  strategyCtaText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 
   // Stats Row
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 18,
+    paddingVertical: 14,
     marginHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 16,
     borderTopWidth: 1,
     borderBottomWidth: 1,
   },
@@ -872,7 +1180,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 21,
+    fontSize: 18,
     fontWeight: '700',
     marginBottom: 2,
   },
@@ -889,14 +1197,22 @@ const styles = StyleSheet.create({
   ctaButton: {
     width: '100%',
     height: 56,
-    marginBottom: 12,
+    marginBottom: 10,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
-  ctaButtonSvg: {
-    width: '100%',
-    height: 56,
+  ctaButtonGradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ctaButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
   },
   trustText: {
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'center',
   },
 });
