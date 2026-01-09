@@ -157,29 +157,15 @@
   pointer-events: none;
 }
 
-.landing-page .hero-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 60px;
-  align-items: center;
-}
+/* Hero grid no longer used - simplified hero layout */
 
 .landing-page .hero-content {
   text-align: center;
 }
 
 .landing-page .hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: rgba(77, 208, 225, 0.1);
-  border: 1px solid rgba(77, 208, 225, 0.2);
-  border-radius: 100px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--electric-cyan);
-  margin-bottom: 24px;
+  display: inline-block;
+  margin-top: 48px;
 }
 
 .landing-page .hero-badge svg {
@@ -807,6 +793,516 @@
   color: var(--electric-cyan);
 }
 
+/* =====================================================
+   DEMO SECTION - Point & Scan Animation
+   ===================================================== */
+
+.landing-page .demo-section {
+  padding: 100px 0;
+  background: linear-gradient(180deg, #0a1628 0%, var(--deep-navy) 100%);
+  overflow: hidden;
+}
+
+.landing-page .brand-line {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 48px;
+  letter-spacing: 0.02em;
+}
+
+.landing-page .demo-brand-line {
+  text-align: center;
+  font-size: 1.4rem;
+  margin-bottom: 30px;
+}
+
+.landing-page .brand-line .highlight {
+  color: var(--electric-cyan);
+}
+
+/* Scan Scene Container */
+.landing-page .scan-scene {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  margin-top: 60px;
+  position: relative;
+  min-height: 550px;
+  flex-wrap: wrap;
+}
+
+/* Phone in scanning position - pointing RIGHT */
+.landing-page .scan-phone {
+  width: 220px;
+  height: 440px;
+  background: linear-gradient(145deg, #1a2d45 0%, #0d1a2d 100%);
+  border-radius: 32px;
+  padding: 8px;
+  box-shadow: 
+    0 30px 60px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(77, 208, 225, 0.2),
+    inset 0 0 0 1px rgba(255,255,255,0.05);
+  position: relative;
+  transform: perspective(800px) rotateY(-15deg) rotateX(5deg);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.landing-page .scan-phone-screen {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #07172e 0%, #0a1e38 100%);
+  border-radius: 26px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Phone notch */
+.landing-page .scan-phone-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 22px;
+  background: #0d1a2d;
+  border-radius: 0 0 14px 14px;
+  z-index: 20;
+}
+
+/* App Screen Content */
+.landing-page .app-screen {
+  padding: 35px 12px 12px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-page .app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.landing-page .app-back {
+  width: 28px;
+  height: 28px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: white;
+}
+
+.landing-page .app-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: white;
+}
+
+.landing-page .app-theme {
+  font-size: 0.8rem;
+}
+
+/* IQ Target Card */
+.landing-page .app-target-card {
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.landing-page .app-target-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(16, 185, 129, 0.3);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: #10b981;
+  margin-bottom: 6px;
+}
+
+.landing-page .app-target-label {
+  font-size: 0.5rem;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 2px;
+}
+
+.landing-page .app-target-price {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #10b981;
+  margin-bottom: 2px;
+}
+
+.landing-page .app-target-savings {
+  font-size: 0.5rem;
+  color: #10b981;
+}
+
+/* Price Ladder in Phone */
+.landing-page .app-ladder {
+  background: rgba(255,255,255,0.03);
+  border-radius: 10px;
+  padding: 10px;
+  flex: 1;
+}
+
+.landing-page .app-ladder-title {
+  font-size: 0.5rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.landing-page .app-ladder-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.landing-page .app-ladder-row:last-child {
+  border-bottom: none;
+}
+
+.landing-page .app-ladder-row.highlight {
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 6px;
+  margin: 2px -6px;
+  padding: 5px 6px;
+  border-bottom: none;
+}
+
+.landing-page .app-ladder-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.landing-page .app-ladder-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.landing-page .app-ladder-dot.red { background: #ef4444; }
+.landing-page .app-ladder-dot.orange { background: #f97316; }
+.landing-page .app-ladder-dot.yellow { background: #eab308; }
+.landing-page .app-ladder-dot.green { background: #10b981; }
+.landing-page .app-ladder-dot.cyan { background: #4dd0e1; }
+
+.landing-page .app-ladder-name {
+  font-size: 0.55rem;
+  color: rgba(255,255,255,0.7);
+}
+
+.landing-page .app-ladder-name.green {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.landing-page .app-ladder-value {
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.8);
+}
+
+.landing-page .app-ladder-value.green {
+  color: #10b981;
+}
+
+/* Scan Rays */
+.landing-page .scan-rays {
+  position: absolute;
+  left: calc(50% - 200px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  z-index: 5;
+}
+
+.landing-page .scan-ray {
+  height: 2px;
+  background: linear-gradient(90deg, var(--electric-cyan), transparent);
+  opacity: 0;
+  animation: rayPulse 2s infinite;
+}
+
+.landing-page .scan-ray:nth-child(1) { animation-delay: 0s; }
+.landing-page .scan-ray:nth-child(2) { animation-delay: 0.2s; }
+.landing-page .scan-ray:nth-child(3) { animation-delay: 0.4s; }
+.landing-page .scan-ray:nth-child(4) { animation-delay: 0.6s; }
+.landing-page .scan-ray:nth-child(5) { animation-delay: 0.8s; }
+
+@keyframes rayPulse {
+  0%, 100% { 
+    opacity: 0;
+    width: 0;
+  }
+  20% {
+    opacity: 0.8;
+    width: 100%;
+  }
+  80% {
+    opacity: 0.8;
+    width: 100%;
+  }
+}
+
+/* House Being Scanned */
+.landing-page .scan-house {
+  position: relative;
+  z-index: 3;
+  flex-shrink: 0;
+}
+
+.landing-page .house-container {
+  position: relative;
+  width: 300px;
+  height: 350px;
+}
+
+.landing-page .house-container svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Scan Line Effect */
+.landing-page .scan-line-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.landing-page .scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--electric-cyan), transparent);
+  box-shadow: 0 0 20px var(--electric-cyan);
+  animation: scanDown 3s linear infinite;
+}
+
+@keyframes scanDown {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+/* Corner Brackets */
+.landing-page .scan-brackets {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 40px;
+  pointer-events: none;
+}
+
+.landing-page .scan-bracket {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-color: var(--electric-cyan);
+  border-style: solid;
+  border-width: 0;
+  animation: bracketGlow 2s infinite;
+}
+
+.landing-page .scan-bracket.tl {
+  top: 0;
+  left: 0;
+  border-top-width: 3px;
+  border-left-width: 3px;
+  border-radius: 8px 0 0 0;
+}
+
+.landing-page .scan-bracket.tr {
+  top: 0;
+  right: 0;
+  border-top-width: 3px;
+  border-right-width: 3px;
+  border-radius: 0 8px 0 0;
+}
+
+.landing-page .scan-bracket.bl {
+  bottom: 0;
+  left: 0;
+  border-bottom-width: 3px;
+  border-left-width: 3px;
+  border-radius: 0 0 0 8px;
+}
+
+.landing-page .scan-bracket.br {
+  bottom: 0;
+  right: 0;
+  border-bottom-width: 3px;
+  border-right-width: 3px;
+  border-radius: 0 0 8px 0;
+}
+
+@keyframes bracketGlow {
+  0%, 100% { 
+    opacity: 0.6;
+    box-shadow: none;
+  }
+  50% { 
+    opacity: 1;
+    box-shadow: 0 0 10px var(--electric-cyan);
+  }
+}
+
+/* Floating Data Cards */
+.landing-page .scan-data-cards {
+  position: absolute;
+  right: 10%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 15;
+}
+
+.landing-page .scan-data-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(10, 10, 18, 0.95);
+  border: 1px solid rgba(77, 208, 225, 0.3);
+  border-radius: 14px;
+  padding: 14px 18px;
+  backdrop-filter: blur(10px);
+  animation: cardReveal 0.6s ease-out both;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.landing-page .scan-data-card:nth-child(1) { animation-delay: 0.5s; }
+.landing-page .scan-data-card:nth-child(2) { animation-delay: 0.7s; }
+.landing-page .scan-data-card:nth-child(3) { animation-delay: 0.9s; }
+.landing-page .scan-data-card:nth-child(4) { animation-delay: 1.1s; }
+
+@keyframes cardReveal {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.landing-page .scan-data-icon {
+  font-size: 1.5rem;
+}
+
+.landing-page .scan-data-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-page .scan-data-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--electric-cyan);
+}
+
+.landing-page .scan-data-label {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.6);
+}
+
+/* Demo CTA */
+.landing-page .demo-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 60px;
+  flex-wrap: wrap;
+}
+
+.landing-page .demo-cta-divider {
+  color: rgba(255,255,255,0.4);
+  font-size: 0.9rem;
+}
+
+.landing-page .btn-secondary {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--white);
+}
+
+.landing-page .btn-secondary:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.3);
+}
+
+/* =====================================================
+   RESPONSIVE ADJUSTMENTS FOR DEMO SECTION
+   ===================================================== */
+
+@media (max-width: 1024px) {
+  .landing-page .scan-data-cards {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 40px;
+  }
+  
+  .landing-page .scan-rays {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .landing-page .scan-scene {
+    flex-direction: column;
+    gap: 30px;
+    min-height: auto;
+  }
+  
+  .landing-page .scan-phone {
+    transform: none;
+    width: 200px;
+    height: 400px;
+  }
+  
+  .landing-page .scan-house {
+    display: none;
+  }
+  
+  .landing-page .demo-brand-line {
+    font-size: 1.1rem;
+  }
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 767px) {
   .landing-page .floating-cards {
@@ -841,26 +1337,7 @@
     display: flex;
   }
 
-  .landing-page .hero-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-  }
-
-  .landing-page .hero-content {
-    text-align: left;
-  }
-
-  .landing-page .hero-subtitle {
-    margin: 0 0 32px 0;
-  }
-
-  .landing-page .hero-cta {
-    justify-content: flex-start;
-  }
-
-  .landing-page .trust-signals {
-    justify-content: flex-start;
-  }
+  /* Hero stays centered on all screen sizes in new design */
 
   .landing-page .footer-grid {
     grid-template-columns: 2fr 1fr 1fr 1fr;
