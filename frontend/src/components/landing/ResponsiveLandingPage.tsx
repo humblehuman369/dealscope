@@ -3,11 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { AnimatedPhoneMockup } from './AnimatedPhoneMockup';
-import { FloatingDataCards } from './FloatingDataCards';
 import { StrategyCard } from './StrategyCard';
 import { FeatureCard } from './FeatureCard';
 import { Footer } from './Footer';
+import { ScanDemoSection } from './ScanDemoSection';
 import { strategies, features, stats } from './types';
 import { IQBrainIcon } from '@/components/icons';
 
@@ -36,9 +35,9 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
           </Link>
           
           <nav className="nav-links">
+            <a href="#demo">Demo</a>
             <a href="#strategies">Strategies</a>
             <a href="#features">Features</a>
-            <a href="#pricing">Pricing</a>
           </nav>
           
           <div className="header-cta">
@@ -71,38 +70,33 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
       {/* Hero Section */}
       <section className="hero">
         <div className="container">
-          <div className="hero-grid">
-            <div className="hero-content">
-              <div className="hero-badge">
-                <IQBrainIcon size={22} mode="dark" />
-                Powered by IQ — Your Genius Advisor
-              </div>
-              <h1>
-                Know the <span className="highlight">Real Return</span><br/>
-                Before You Invest
-              </h1>
-              <p className="hero-subtitle">
-                Find the profit. Point & Scan any property and IQ instantly analyzes it across 6 investment strategies in 60 seconds.
-              </p>
-              <div className="hero-cta">
-                <button onClick={handleGetStarted} className="btn btn-primary">
-                  Start Analyzing Free
-                </button>
-                <button className="btn btn-ghost">Watch Demo</button>
-              </div>
-              <div className="trust-signals">
-                <span>✓ No credit card required</span>
-                <span>✓ 10K+ properties analyzed</span>
-              </div>
+          <div className="hero-content">
+            <h1>
+              Know the <span className="highlight">Real Return</span><br/>
+              Before You Invest
+            </h1>
+            <p className="hero-subtitle">
+              Point &amp; Scan any property. IQ analyzes the deal and local market across 6 strategies in 60 seconds.
+            </p>
+            <div className="hero-cta">
+              <button onClick={handleGetStarted} className="btn btn-primary">
+                Find the Profit
+              </button>
+              <a href="#demo" className="btn btn-ghost">Watch Demo</a>
             </div>
-            
-            <div className="hero-visual">
-              <FloatingDataCards />
-              <AnimatedPhoneMockup />
+            <div className="trust-signals">
+              <span>✓ No credit card required</span>
+              <span>✓ 10K+ properties analyzed</span>
+            </div>
+            <div className="hero-badge">
+              <IQBrainIcon size={24} mode="dark" />
             </div>
           </div>
         </div>
       </section>
+
+      {/* See It In Action - Point & Scan Demo Section */}
+      <ScanDemoSection onScanProperty={handleGetStarted} />
 
       {/* Strategies Section */}
       <section className="strategies-section" id="strategies">
