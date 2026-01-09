@@ -7,61 +7,17 @@ import React from 'react';
  * Visit /iq-icons-demo to preview all icon options for the hero badge
  */
 
+import Image from 'next/image';
+
 // The NEW IQ Brain Icon - Human head with house inside (Real Estate on the Brain)
-function IQBrainIcon({ color = 'currentColor', size = 20 }: { color?: string; size?: number }) {
+function IQBrainIcon({ mode = 'dark', size = 20 }: { mode?: 'dark' | 'light'; size?: number }) {
   return (
-    <svg 
-      width={size} 
-      height={size} 
-      viewBox="0 0 100 100" 
-      fill="none"
-    >
-      {/* Head profile outline */}
-      <path 
-        d="M75 40
-           C75 22 60 8 42 8
-           C24 8 10 22 10 40
-           C10 50 14 58 20 64
-           L20 72
-           C20 76 23 80 28 82
-           L32 84
-           C34 85 36 88 36 90
-           L36 92
-           C36 94 38 95 40 95
-           L52 95
-           C54 95 56 94 56 92
-           L56 88
-           C56 84 60 80 64 78
-           L68 76
-           C72 74 75 70 76 66
-           L78 58
-           C80 52 78 46 75 40
-           Z"
-        stroke={color}
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      
-      {/* House inside the brain */}
-      <path 
-        d="M42 28
-           L24 44
-           L24 60
-           L36 60
-           L36 50
-           L48 50
-           L48 60
-           L60 60
-           L60 44
-           L42 28
-           Z"
-        stroke={color}
-        strokeWidth="5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Image 
+      src={mode === 'dark' ? '/images/iq-brain-dark.png' : '/images/iq-brain-light.png'}
+      alt="IQ - Real Estate on the Brain"
+      width={size}
+      height={size}
+    />
   );
 }
 
@@ -117,7 +73,7 @@ export default function IQIconsDemoPage() {
 
             {/* Large Icon Preview */}
             <div style={{ marginBottom: '24px' }}>
-              <IQBrainIcon color="#4dd0e1" size={80} />
+              <IQBrainIcon mode="dark" size={80} />
             </div>
 
             {/* Badge Preview */}
@@ -133,7 +89,7 @@ export default function IQIconsDemoPage() {
               fontWeight: 600,
               color: '#4dd0e1'
             }}>
-              <IQBrainIcon color="#4dd0e1" size={22} />
+              <IQBrainIcon mode="dark" size={22} />
               Powered by IQ
             </div>
 
@@ -162,7 +118,7 @@ export default function IQIconsDemoPage() {
 
             {/* Large Icon Preview */}
             <div style={{ marginBottom: '24px' }}>
-              <IQBrainIcon color="#1976d2" size={80} />
+              <IQBrainIcon mode="light" size={80} />
             </div>
 
             {/* Badge Preview */}
@@ -178,7 +134,7 @@ export default function IQIconsDemoPage() {
               fontWeight: 600,
               color: '#1976d2'
             }}>
-              <IQBrainIcon color="#1976d2" size={22} />
+              <IQBrainIcon mode="light" size={22} />
               Powered by IQ
             </div>
 
@@ -213,7 +169,7 @@ export default function IQIconsDemoPage() {
               color: '#4dd0e1',
               marginBottom: '24px'
             }}>
-              <IQBrainIcon color="#4dd0e1" size={20} />
+              <IQBrainIcon mode="dark" size={20} />
               Powered by IQ — Your Genius Advisor
             </div>
 
@@ -267,7 +223,7 @@ export default function IQIconsDemoPage() {
               color: '#1976d2',
               marginBottom: '24px'
             }}>
-              <IQBrainIcon color="#1976d2" size={20} />
+              <IQBrainIcon mode="light" size={20} />
               Powered by IQ — Your Genius Advisor
             </div>
 
@@ -310,7 +266,7 @@ export default function IQIconsDemoPage() {
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '32px', flexWrap: 'wrap' }}>
             {[16, 20, 24, 32, 48, 64, 80].map((s) => (
               <div key={s} style={{ textAlign: 'center' }}>
-                <IQBrainIcon color="#4dd0e1" size={s} />
+                <IQBrainIcon mode="dark" size={s} />
                 <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '8px' }}>{s}px</div>
               </div>
             ))}
