@@ -89,9 +89,8 @@ const strategies = [
     id: 'brrrr',
     name: 'BRRRR',
     tagline: 'Buy-Rehab-Rent-Refi-Repeat wealth builder',
-    statValue: 'SCALE',
-    statLabel: 'SCALE',
-    isGrowthIcon: true,
+    statValue: '100%',
+    statLabel: 'Cash Back',
     color: colors.strategies.brrrr.primary,
     gradientStart: '#ea580c',
     gradientEnd: '#f97316',
@@ -610,13 +609,9 @@ function ExpandableStrategyCard({
         </View>
 
         <View style={styles.strategyStat}>
-          {strategy.isGrowthIcon ? (
-            <Text style={styles.growthIcon}>📈</Text>
-          ) : (
-            <Text style={[styles.strategyStatValue, { color: strategy.color }]}>
-              {strategy.statValue}
-            </Text>
-          )}
+          <Text style={[styles.strategyStatValue, { color: strategy.color }]}>
+            {strategy.statValue}
+          </Text>
           <Text style={[styles.strategyStatLabel, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(7,23,46,0.4)' }]}>
             {strategy.statLabel}
           </Text>
@@ -1019,9 +1014,6 @@ const styles = StyleSheet.create({
   strategyStatValue: {
     fontSize: 18,
     fontWeight: '700',
-  },
-  growthIcon: {
-    fontSize: 24,
   },
   strategyStatLabel: {
     fontSize: 9,
