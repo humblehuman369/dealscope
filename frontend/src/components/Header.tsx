@@ -44,9 +44,9 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
   
-  // Hide header on home page (scanner), landing pages, and strategy pages since they have their own headers
+  // Hide header on home page (scanner), landing pages, search page, and strategy pages since they have their own headers
   // NOTE: This must be AFTER all hooks to follow React Rules of Hooks
-  if (pathname === '/' || pathname === '/landing' || pathname === '/landing2' || pathname?.startsWith('/strategies')) {
+  if (pathname === '/' || pathname === '/landing' || pathname === '/landing2' || pathname === '/search' || pathname?.startsWith('/strategies')) {
     return null
   }
 
