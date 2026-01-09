@@ -1,10 +1,11 @@
 /**
  * IQTargetHero - The crown jewel hero component
  * Shows the IQ Target Price with animated glow and discount badge
+ * Design matches: investiq-property-analytics-complete-redesign (final).html
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { IQTargetResult, StrategyId } from './types';
 
@@ -13,16 +14,6 @@ interface IQTargetHeroProps {
   strategy: StrategyId;
   isDark?: boolean;
 }
-
-// Strategy-specific labels
-const STRATEGY_LABELS: Record<StrategyId, string> = {
-  ltr: 'IQ TARGET PRICE',
-  str: 'STR TARGET PRICE',
-  brrrr: 'BRRRR TARGET',
-  flip: 'MAX PURCHASE PRICE',
-  house_hack: 'HOUSE HACK TARGET',
-  wholesale: 'MAX ALLOWABLE OFFER',
-};
 
 export function IQTargetHero({ iqTarget, strategy, isDark = true }: IQTargetHeroProps) {
   const formatCurrency = (value: number): string =>
@@ -37,48 +28,45 @@ export function IQTargetHero({ iqTarget, strategy, isDark = true }: IQTargetHero
     Math.abs(value) >= 1000000
       ? `$${(value / 1000000).toFixed(1)}M`
       : Math.abs(value) >= 1000
-      ? `$${Math.round(value / 1000)}K`
+      ? `$${Math.round(value / 1000).toLocaleString()}K`
       : formatCurrency(value);
 
   const formatPercent = (value: number): string => `${Math.round(value * 100)}%`;
 
-  const label = STRATEGY_LABELS[strategy] || 'IQ TARGET PRICE';
-
   return (
     <View style={styles.container}>
       {/* Glow effect background */}
-      <View style={styles.glowContainer}>
-        <LinearGradient
-          colors={['rgba(77, 208, 225, 0.15)', 'rgba(77, 208, 225, 0.05)', 'transparent']}
-          style={styles.glow}
-        />
-      </View>
+      <LinearGradient
+        colors={['rgba(34, 197, 94, 0.15)', 'rgba(77, 208, 225, 0.1)', 'transparent']}
+        style={styles.glowBackground}
+      />
 
-      {/* Badge */}
+      {/* IQ Target Badge */}
       <View style={styles.badgeContainer}>
-        <LinearGradient
-          colors={isDark ? ['#0097a7', '#4dd0e1'] : ['#007ea7', '#0097a7']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.badge}
-        >
-          <Text style={styles.badgeText}>{label}</Text>
-        </LinearGradient>
+        <View style={styles.badge}>
+          <Text style={styles.badgeEmoji}>🎯</Text>
+          <Text style={styles.badgeText}>IQ TARGET PRICE</Text>
+        </View>
       </View>
 
-      {/* Target Price */}
+      {/* Subtitle */}
+      <Text style={styles.subtitle}>Your Profitable Entry Point</Text>
+
+      {/* Target Price - Large Green */}
       <Text style={styles.targetPrice}>{formatCurrency(iqTarget.targetPrice)}</Text>
 
-      {/* Discount Badge */}
-      <View style={styles.discountContainer}>
-        <Text style={styles.discountText}>
-          {formatCompact(iqTarget.discountFromList)} below list ({formatPercent(iqTarget.discountPercent)})
-        </Text>
-      </View>
+      {/* Discount Info */}
+      <Text style={styles.discountText}>
+        {formatCompact(iqTarget.discountFromList)} below list ({formatPercent(iqTarget.discountPercent)})
+      </Text>
 
-      {/* Rationale */}
-      <Text style={[styles.rationale, { color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(7,23,46,0.6)' }]}>
-        {iqTarget.rationale}
+      {/* Rationale with highlighted metrics */}
+      <Text style={[styles.rationale, { color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(7,23,46,0.7)' }]}>
+        At this price, you achieve{' '}
+        <Text style={styles.highlightGreen}>{iqTarget.highlightedMetric}</Text>
+        {' '}with{' '}
+        <Text style={styles.highlightCyan}>{iqTarget.secondaryMetric}</Text>
+        {' '}return
       </Text>
 
       {/* Strategy-specific hero metric for BRRRR */}
@@ -138,61 +126,84 @@ export function IQTargetHero({ iqTarget, strategy, isDark = true }: IQTargetHero
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingVertical: 24,
-    paddingHorizontal: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.4)',
+    backgroundColor: 'rgba(34, 197, 94, 0.08)',
+    marginBottom: 16,
     position: 'relative',
+    overflow: 'hidden',
   },
-  glowContainer: {
+  glowBackground: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  glow: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
+    top: -100,
+    left: -100,
+    right: -100,
+    bottom: -100,
+    opacity: 0.5,
   },
   badgeContainer: {
-    marginBottom: 12,
+    marginBottom: 10,
+    zIndex: 1,
   },
   badge: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.4)',
     borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  badgeEmoji: {
+    fontSize: 12,
   },
   badgeText: {
-    color: '#fff',
-    fontSize: 11,
+    color: '#22c55e',
+    fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  subtitle: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.6)',
+    marginBottom: 4,
+    zIndex: 1,
   },
   targetPrice: {
-    fontSize: 42,
+    fontSize: 40,
     fontWeight: '800',
     color: '#22c55e',
-    marginBottom: 8,
-  },
-  discountContainer: {
-    backgroundColor: 'rgba(34, 197, 94, 0.15)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginBottom: 12,
+    marginBottom: 6,
+    zIndex: 1,
+    letterSpacing: -1,
   },
   discountText: {
-    color: '#22c55e',
-    fontSize: 13,
+    color: '#4dd0e1',
+    fontSize: 14,
     fontWeight: '600',
+    marginBottom: 12,
+    zIndex: 1,
   },
   rationale: {
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'center',
     lineHeight: 18,
-    maxWidth: 300,
+    maxWidth: 280,
+    zIndex: 1,
+  },
+  highlightGreen: {
+    color: '#22c55e',
+    fontWeight: '600',
+  },
+  highlightCyan: {
+    color: '#4dd0e1',
+    fontWeight: '600',
   },
   heroMetric: {
     alignItems: 'center',
@@ -201,6 +212,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.08)',
     width: '100%',
+    zIndex: 1,
   },
   heroMetricLabel: {
     fontSize: 10,

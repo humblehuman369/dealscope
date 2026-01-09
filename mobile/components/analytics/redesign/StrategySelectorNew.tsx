@@ -1,13 +1,14 @@
 /**
  * StrategySelectorNew - Enhanced strategy pills with grades
  * Features: Horizontal scroll, grade badges, CTA banner
+ * Design matches: investiq-property-analytics-complete-redesign (final).html
  */
 
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { StrategyId, StrategyInfo, STRATEGY_CONFIG } from './types';
+import { StrategyId, STRATEGY_CONFIG } from './types';
 
 interface StrategySelectorNewProps {
   activeStrategy: StrategyId | null;
@@ -18,6 +19,23 @@ interface StrategySelectorNewProps {
 }
 
 const STRATEGY_ORDER: StrategyId[] = ['ltr', 'str', 'brrrr', 'flip', 'house_hack', 'wholesale'];
+
+// Grade color mapping
+function getGradeStyle(grade: string): { bg: string; text: string } {
+  const letter = grade.charAt(0);
+  switch (letter) {
+    case 'A':
+      return { bg: 'rgba(77, 208, 225, 0.2)', text: '#4dd0e1' };
+    case 'B':
+      return { bg: 'rgba(77, 208, 225, 0.15)', text: '#4dd0e1' };
+    case 'C':
+      return { bg: 'rgba(234, 179, 8, 0.2)', text: '#eab308' };
+    case 'D':
+      return { bg: 'rgba(249, 115, 22, 0.2)', text: '#f97316' };
+    default:
+      return { bg: 'rgba(239, 68, 68, 0.2)', text: '#ef4444' };
+  }
+}
 
 export function StrategySelectorNew({
   activeStrategy,
@@ -35,15 +53,16 @@ export function StrategySelectorNew({
     <View style={styles.container}>
       {/* CTA Banner when no strategy selected */}
       {showCTABanner && !activeStrategy && (
-        <View style={[
-          styles.ctaBanner,
-          { backgroundColor: isDark ? 'rgba(77, 208, 225, 0.1)' : 'rgba(0, 126, 167, 0.1)' }
-        ]}>
-          <Text style={[styles.ctaIcon]}>👆</Text>
-          <Text style={[styles.ctaText, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
-            Pick a Strategy to Unlock Insights
-          </Text>
-        </View>
+        <LinearGradient
+          colors={['rgba(77, 208, 225, 0.12)', 'rgba(4, 101, 242, 0.12)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.ctaBanner}
+        >
+          <Text style={styles.ctaText}>👆 Pick a Strategy to Unlock Insights</Text>
+          <Text style={styles.ctaSubtext}>Select a strategy below to see your personalized analysis</Text>
+          <Text style={styles.ctaArrow}>↓</Text>
+        </LinearGradient>
       )}
 
       {/* Strategy Pills */}
@@ -56,54 +75,45 @@ export function StrategySelectorNew({
           const config = STRATEGY_CONFIG[strategyId];
           const isActive = activeStrategy === strategyId;
           const gradeData = strategyGrades?.[strategyId];
+          const gradeStyle = gradeData ? getGradeStyle(gradeData.grade) : null;
 
           return (
             <TouchableOpacity
               key={strategyId}
-              style={styles.pill}
+              style={[
+                styles.pill,
+                isActive && styles.pillActiveContainer,
+                isActive && { borderColor: '#4dd0e1', backgroundColor: 'rgba(77, 208, 225, 0.12)' },
+                !isActive && { 
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(7,23,46,0.03)',
+                  borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.08)',
+                },
+              ]}
               onPress={() => handlePress(strategyId)}
               activeOpacity={0.7}
             >
-              {isActive ? (
-                <LinearGradient
-                  colors={[config.color, adjustColorBrightness(config.color, 30)]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.pillActive}
-                >
-                  <Text style={styles.pillIcon}>{config.icon}</Text>
-                  <Text style={styles.pillLabelActive}>{config.shortName}</Text>
-                  {gradeData && (
-                    <View style={styles.gradeBadgeActive}>
-                      <Text style={styles.gradeBadgeTextActive}>{gradeData.grade}</Text>
-                    </View>
-                  )}
-                </LinearGradient>
-              ) : (
-                <View
-                  style={[
-                    styles.pillInactive,
-                    {
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(7,23,46,0.03)',
-                      borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.08)',
-                    },
-                  ]}
-                >
-                  <Text style={styles.pillIcon}>{config.icon}</Text>
-                  <Text style={[styles.pillLabel, { color: isDark ? '#aab2bd' : '#6b7280' }]}>
-                    {config.shortName}
+              <Text style={[
+                styles.pillLabel, 
+                { color: isActive ? '#4dd0e1' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(7,23,46,0.6)') }
+              ]}>
+                {config.shortName}
+              </Text>
+              {gradeData && gradeStyle && (
+                <View style={[styles.gradeBadge, { backgroundColor: gradeStyle.bg }]}>
+                  <Text style={[styles.gradeBadgeText, { color: gradeStyle.text }]}>
+                    {gradeData.grade}
                   </Text>
-                  {gradeData && (
-                    <View style={[styles.gradeBadge, { backgroundColor: getGradeColor(gradeData.grade) }]}>
-                      <Text style={styles.gradeBadgeText}>{gradeData.grade}</Text>
-                    </View>
-                  )}
                 </View>
               )}
             </TouchableOpacity>
           );
         })}
       </ScrollView>
+      
+      {/* Interactive Strategy Selector label */}
+      <Text style={[styles.interactiveLabel, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
+        Interactive Strategy Selector
+      </Text>
     </View>
   );
 }
@@ -158,128 +168,68 @@ export function SubTabNav({ activeTab, onTabChange, tabs, isDark = true }: SubTa
   );
 }
 
-// Helper functions
-function adjustColorBrightness(hex: string, percent: number): string {
-  const num = parseInt(hex.replace('#', ''), 16);
-  const amt = Math.round(2.55 * percent);
-  const R = (num >> 16) + amt;
-  const G = ((num >> 8) & 0x00ff) + amt;
-  const B = (num & 0x0000ff) + amt;
-  return (
-    '#' +
-    (
-      0x1000000 +
-      (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
-      (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
-      (B < 255 ? (B < 1 ? 0 : B) : 255)
-    )
-      .toString(16)
-      .slice(1)
-  );
-}
-
-function getGradeColor(grade: string): string {
-  switch (grade) {
-    case 'A+':
-    case 'A':
-      return '#22c55e';
-    case 'A-':
-    case 'B+':
-    case 'B':
-      return '#84cc16';
-    case 'B-':
-    case 'C+':
-    case 'C':
-      return '#f59e0b';
-    case 'C-':
-    case 'D+':
-    case 'D':
-      return '#f97316';
-    default:
-      return '#ef4444';
-  }
-}
-
 const styles = StyleSheet.create({
   container: {
     marginBottom: 14,
   },
   ctaBanner: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 10,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 10,
-    marginBottom: 12,
-  },
-  ctaIcon: {
-    fontSize: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(77, 208, 225, 0.3)',
+    marginBottom: 10,
   },
   ctaText: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#4dd0e1',
+    marginBottom: 2,
+  },
+  ctaSubtext: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.5)',
+    marginBottom: 8,
+  },
+  ctaArrow: {
+    fontSize: 22,
+    color: '#4dd0e1',
   },
   scrollContent: {
     gap: 8,
     paddingRight: 16,
   },
   pill: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  pillActive: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 12,
-  },
-  pillInactive: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
   },
-  pillIcon: {
-    fontSize: 14,
+  pillActiveContainer: {
+    borderWidth: 1,
   },
   pillLabel: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
-  },
-  pillLabelActive: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#fff',
   },
   gradeBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 6,
-    marginLeft: 2,
+    borderRadius: 4,
   },
   gradeBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
   },
-  gradeBadgeActive: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    marginLeft: 2,
-  },
-  gradeBadgeTextActive: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#fff',
+  interactiveLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 12,
   },
   // Sub-tab styles
   subTabContainer: {

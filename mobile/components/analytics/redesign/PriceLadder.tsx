@@ -1,11 +1,22 @@
 /**
  * PriceLadder - Visual price position rungs
- * Shows List → 90% → Breakeven → Target → Offer
+ * Shows List → 90% → Breakeven → Target → Aggressive
+ * Design matches: investiq-property-analytics-complete-redesign (final).html
  */
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { PriceRung } from './types';
+
+// Color mapping for rung types
+const RUNG_COLORS: Record<string, string> = {
+  list: '#ef4444',      // Red
+  ninety: '#f97316',    // Orange
+  breakeven: '#eab308', // Yellow
+  target: '#22c55e',    // Green
+  aggressive: '#4dd0e1', // Cyan
+  opening: '#4dd0e1',   // Cyan
+};
 
 interface PriceLadderProps {
   rungs: PriceRung[];
@@ -21,80 +32,75 @@ export function PriceLadder({ rungs, isDark = true }: PriceLadderProps) {
       maximumFractionDigits: 0,
     }).format(value);
 
+  const getMarkerColor = (rungId: string): string => {
+    return RUNG_COLORS[rungId] || '#6b7280';
+  };
+
   return (
     <View style={[
       styles.container,
       { 
-        backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(7,23,46,0.02)',
+        backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(7,23,46,0.02)',
         borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,23,46,0.08)',
       }
     ]}>
       <Text style={[styles.title, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)' }]}>
-        PRICE POSITION
+        PRICE POSITION LADDER
       </Text>
       
       <View style={styles.ladder}>
-        {rungs.map((rung, index) => (
-          <View key={rung.id} style={styles.rungContainer}>
-            {/* Connecting line */}
-            {index > 0 && (
-              <View style={[
-                styles.connector,
-                { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(7,23,46,0.1)' }
-              ]} />
-            )}
-            
-            {/* Rung */}
-            <View style={[
-              styles.rung,
-              rung.isHighlighted && styles.rungHighlighted,
-              { 
-                backgroundColor: rung.isHighlighted 
-                  ? 'rgba(77, 208, 225, 0.15)' 
-                  : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(7,23,46,0.03)',
-                borderColor: rung.isHighlighted 
-                  ? '#4dd0e1' 
-                  : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.08)',
-              }
-            ]}>
-              <View style={styles.rungLeft}>
-                <View style={styles.rungLabelRow}>
-                  <Text style={[
-                    styles.rungLabel,
-                    { color: rung.isHighlighted ? '#4dd0e1' : (isDark ? '#fff' : '#07172e') }
-                  ]}>
-                    {rung.label}
-                  </Text>
-                  {rung.badge && (
-                    <View style={[
-                      styles.badge,
-                      { backgroundColor: rung.isHighlighted ? '#4dd0e1' : '#6b7280' }
-                    ]}>
-                      <Text style={styles.badgeText}>{rung.badge}</Text>
-                    </View>
-                  )}
-                </View>
+        {rungs.map((rung) => {
+          const markerColor = getMarkerColor(rung.id);
+          const isTarget = rung.id === 'target';
+          
+          return (
+            <View 
+              key={rung.id} 
+              style={[
+                styles.rung,
+                isTarget && styles.rungHighlighted,
+              ]}
+            >
+              {/* Colored Dot Marker */}
+              <View 
+                style={[
+                  styles.marker,
+                  { backgroundColor: markerColor },
+                  isTarget && styles.markerGlow,
+                ]} 
+              />
+              
+              {/* Rung Info */}
+              <View style={styles.rungInfo}>
+                <Text style={[
+                  styles.rungLabel,
+                  isTarget && styles.rungLabelTarget,
+                  { color: isTarget ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.9)' : 'rgba(7,23,46,0.9)') }
+                ]}>
+                  {rung.label}
+                </Text>
                 {rung.description && (
-                  <Text style={[styles.rungDescription, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)' }]}>
+                  <Text style={[styles.rungDescription, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(7,23,46,0.4)' }]}>
                     {rung.description}
                   </Text>
                 )}
               </View>
               
+              {/* Price and Percent */}
               <View style={styles.rungRight}>
                 <Text style={[
                   styles.rungPrice,
-                  { color: rung.isHighlighted ? '#22c55e' : (isDark ? '#fff' : '#07172e') }
+                  { color: isTarget ? '#22c55e' : (isDark ? '#fff' : '#07172e') }
                 ]}>
                   {formatCurrency(rung.price)}
                 </Text>
                 <Text style={[styles.rungPercent, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(7,23,46,0.4)' }]}>
-                  {Math.round(rung.percentOfList * 100)}% of list
+                  {Math.round(rung.percentOfList * 100)}%
                 </Text>
               </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
       </View>
     </View>
   );
@@ -171,72 +177,66 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   title: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
     letterSpacing: 0.5,
-    marginBottom: 12,
+    marginBottom: 14,
+    textTransform: 'uppercase',
   },
   ladder: {
     gap: 0,
   },
-  rungContainer: {
-    position: 'relative',
-  },
-  connector: {
-    position: 'absolute',
-    left: 20,
-    top: -8,
-    width: 2,
-    height: 8,
-  },
   rung: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginBottom: 8,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.04)',
   },
   rungHighlighted: {
-    borderWidth: 1.5,
+    backgroundColor: 'rgba(34, 197, 94, 0.08)',
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderBottomWidth: 0,
   },
-  rungLeft: {
+  marker: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 12,
+  },
+  markerGlow: {
+    shadowColor: '#22c55e',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  rungInfo: {
     flex: 1,
-  },
-  rungLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
   rungLabel: {
     fontSize: 13,
     fontWeight: '600',
   },
-  badge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 8,
+  rungLabelTarget: {
     fontWeight: '700',
-    letterSpacing: 0.5,
   },
   rungDescription: {
     fontSize: 11,
-    marginTop: 2,
+    marginTop: 1,
   },
   rungRight: {
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
   },
   rungPrice: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
   rungPercent: {
-    fontSize: 10,
-    marginTop: 2,
+    fontSize: 11,
   },
 });
