@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Sun, Moon } from 'lucide-react'
 import { 
   StrategyAnalyticsContainer, 
   AnalyticsBottomBar,
@@ -11,12 +11,14 @@ import {
   AnalyticsPageSkeleton,
   LoadingOverlay
 } from '@/components/analytics'
+import { useTheme } from '@/context/ThemeContext'
 
 /**
  * Property Analytics Page
  * 
  * Fetches property data and displays the new analytics interface.
  * Supports both demo mode and real API data.
+ * Supports both light and dark themes.
  */
 
 interface PropertyData {
@@ -52,6 +54,7 @@ function PropertyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const addressParam = searchParams.get('address')
+  const { theme, toggleTheme } = useTheme()
   
   const [property, setProperty] = useState<PropertyData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -162,13 +165,13 @@ function PropertyContent() {
 
   if (error && !property) {
     return (
-      <div className="min-h-screen bg-[#0b1426] flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen bg-neutral-50 dark:bg-[#0b1426] flex flex-col items-center justify-center p-6 transition-colors">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Property Not Found</h1>
-          <p className="text-gray-400 mb-8">{error}</p>
+          <h1 className="text-2xl font-bold text-navy-900 dark:text-white mb-4">Property Not Found</h1>
+          <p className="text-neutral-500 dark:text-gray-400 mb-8">{error}</p>
           <Link 
             href="/search"
-            className="px-6 py-3 bg-[#4dd0e1] text-[#07172e] font-semibold rounded-xl hover:bg-[#3bc4d5] transition-colors"
+            className="px-6 py-3 bg-brand-500 dark:bg-[#4dd0e1] text-white dark:text-[#07172e] font-semibold rounded-xl hover:bg-brand-600 dark:hover:bg-[#3bc4d5] transition-colors"
           >
             Search for a Property
           </Link>
@@ -182,22 +185,33 @@ function PropertyContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b1426] overflow-safe">
+    <div className="min-h-screen bg-neutral-50 dark:bg-[#0b1426] overflow-safe transition-colors">
       {/* Header */}
       <div className="header-blur sticky top-0 z-50">
-        <div className="bg-[#07172e]/95 backdrop-blur-md border-b border-white/5 px-4 py-3 safe-area-pt">
+        <div className="bg-white/95 dark:bg-[#07172e]/95 backdrop-blur-md border-b border-neutral-200 dark:border-white/5 px-4 py-3 safe-area-pt transition-colors">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-neutral-600 dark:text-gray-400 hover:text-navy-900 dark:hover:text-white transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span className="text-sm font-medium">Back</span>
             </button>
-            <Link href="/" className="text-lg font-bold text-white">
-              Invest<span className="text-[#4dd0e1]">IQ</span>
+            <Link href="/" className="text-lg font-bold text-navy-900 dark:text-white">
+              Invest<span className="text-brand-500 dark:text-[#4dd0e1]">IQ</span>
             </Link>
-            <div className="w-16" /> {/* Spacer for alignment */}
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg bg-neutral-100 dark:bg-white/5 hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
+              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            >
+              {theme === 'light' ? (
+                <Moon className="w-5 h-5 text-neutral-600" />
+              ) : (
+                <Sun className="w-5 h-5 text-yellow-400" />
+              )}
+            </button>
           </div>
         </div>
       </div>

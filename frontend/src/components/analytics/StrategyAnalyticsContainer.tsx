@@ -272,6 +272,15 @@ export function StrategyAnalyticsContainer({ property, onBack }: StrategyAnalyti
             />
           )}
 
+          {activeSubTab === 'growth' && projections && iqTarget && (
+            <GrowthTabContent
+              projections={projections}
+              iqTarget={iqTarget}
+              assumptions={assumptions}
+              updateAssumption={updateAssumption}
+            />
+          )}
+
           {activeSubTab === 'whatif' && (
             <WhatIfTabContent
               assumptions={assumptions}
@@ -718,6 +727,108 @@ function ScoreTabContent({ strategy, metrics, iqTarget }: ScoreTabContentProps) 
         data={scoreData}
         strengths={strengths}
         weaknesses={weaknesses}
+      />
+    </div>
+  )
+}
+
+interface GrowthTabContentProps {
+  projections: YearlyProjection[]
+  iqTarget: IQTargetResult
+  assumptions: TargetAssumptions
+  updateAssumption: (key: keyof TargetAssumptions, value: number) => void
+}
+
+function GrowthTabContent({ projections, iqTarget, assumptions, updateAssumption }: GrowthTabContentProps) {
+  // Year 5 projections
+  const year5 = projections[4]
+  const downPayment = iqTarget.targetPrice * assumptions.downPaymentPct
+  const closingCosts = iqTarget.targetPrice * assumptions.closingCostsPct
+  const totalCashInvested = downPayment + closingCosts
+  
+  // Growth sliders
+  const growthSliders: TuneGroup[] = [
+    {
+      id: 'growth',
+      title: 'Growth Assumptions',
+      isOpen: true,
+      sliders: [
+        createSliderConfig(
+          'rentGrowth',
+          'Annual Rent Increase',
+          assumptions.rentGrowth || 0.03,
+          0,
+          0.08,
+          0.005,
+          (v) => formatPercent(v)
+        ),
+        createSliderConfig(
+          'appreciationRate',
+          'Property Appreciation',
+          assumptions.appreciationRate || 0.03,
+          0,
+          0.08,
+          0.005,
+          (v) => formatPercent(v)
+        ),
+        createSliderConfig(
+          'expenseGrowth',
+          'Expense Growth',
+          assumptions.expenseGrowth || 0.02,
+          0,
+          0.06,
+          0.005,
+          (v) => formatPercent(v)
+        )
+      ]
+    }
+  ]
+  
+  // Calculate Year 5 values based on growth assumptions
+  const rentGrowth = assumptions.rentGrowth || 0.03
+  const appreciationRate = assumptions.appreciationRate || 0.03
+  const year5Rent = assumptions.monthlyRent * Math.pow(1 + rentGrowth, 5)
+  const year5Value = iqTarget.targetPrice * Math.pow(1 + appreciationRate, 5)
+  
+  const year5ProjectionRows = [
+    { label: 'Monthly Rent', value: formatCurrency(year5Rent) },
+    { label: 'Property Value', value: formatCurrency(year5Value) },
+    { label: 'Monthly Cash Flow', value: formatCurrency(year5.monthlyCashFlow), isPositive: year5.monthlyCashFlow > 0 },
+    { label: 'Total Equity', value: formatCurrency(year5.totalEquity), isPositive: true }
+  ]
+  
+  return (
+    <div className="space-y-4">
+      {/* Growth Sliders */}
+      <TuneSection
+        title="Growth Assumptions"
+        groups={growthSliders}
+        onSliderChange={(id, value) => updateAssumption(id as keyof TargetAssumptions, value)}
+        defaultOpen={true}
+      />
+      
+      {/* Year 5 Projections */}
+      <PerformanceSection
+        title="Year 5 Projections"
+        rows={year5ProjectionRows}
+      />
+      
+      {/* Year 10 Summary */}
+      <HeroMetric
+        data={{
+          label: '10-Year Equity Growth',
+          value: formatCurrency(projections[9].totalEquity),
+          subtitle: `Starting equity: ${formatCurrency(downPayment)}`,
+          badge: `${Math.round((projections[9].totalEquity / downPayment) * 100 - 100)}% Growth`,
+          variant: 'success'
+        }}
+      />
+      
+      <InsightCard
+        data={createIQInsight(
+          `With ${formatPercent(rentGrowth)} annual rent increases and ${formatPercent(appreciationRate)} appreciation, your equity could grow to ${formatCurrency(projections[9].totalEquity)} in 10 years.`,
+          'success'
+        )}
       />
     </div>
   )

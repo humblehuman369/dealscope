@@ -74,22 +74,22 @@ export function IQTargetHero({
       </div>
 
       {/* Label */}
-      <div className="relative text-[0.7rem] text-white/60 mb-1">
+      <div className="relative text-[0.7rem] text-neutral-500 dark:text-white/60 mb-1">
         {labelText}
       </div>
 
       {/* Target Price */}
-      <div className="relative text-[2.4rem] font-extrabold text-green-500 leading-none mb-1.5 tracking-tight">
+      <div className="relative text-[2.4rem] font-extrabold text-green-600 dark:text-green-500 leading-none mb-1.5 tracking-tight">
         {formatCurrency(targetPrice)}
       </div>
 
       {/* Discount Info */}
-      <div className="relative text-[0.85rem] text-teal font-semibold mb-3">
+      <div className="relative text-[0.85rem] text-brand-500 dark:text-teal font-semibold mb-3">
         {formatCompact(discountAmount)} below list ({Math.round(discountPercent)}%)
       </div>
 
       {/* Rationale */}
-      <div className="relative text-[0.72rem] text-white/70 leading-relaxed max-w-[280px] mx-auto">
+      <div className="relative text-[0.72rem] text-neutral-600 dark:text-white/70 leading-relaxed max-w-[280px] mx-auto">
         {rationale}
         {highlightedMetric && (
           <>
@@ -149,14 +149,14 @@ export function IQTargetHeroCompact({
         {formatCurrency(targetPrice)}
       </div>
       
-      <div className="text-[0.65rem] text-white/50 mb-2">
+      <div className="text-[0.65rem] text-neutral-500 dark:text-white/50 mb-2">
         {Math.round(discountPercent)}% below list
       </div>
       
-      <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
+      <div className="flex items-center justify-center gap-3 pt-2 border-t border-neutral-200 dark:border-white/10">
         <div>
-          <div className="text-sm font-bold text-green-500">{primaryMetric}</div>
-          <div className="text-[0.6rem] text-white/50 uppercase">{primaryLabel}</div>
+          <div className="text-sm font-bold text-green-600 dark:text-green-500">{primaryMetric}</div>
+          <div className="text-[0.6rem] text-neutral-500 dark:text-white/50 uppercase">{primaryLabel}</div>
         </div>
       </div>
     </div>
