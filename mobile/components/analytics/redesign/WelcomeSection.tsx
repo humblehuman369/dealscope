@@ -58,11 +58,18 @@ export function WelcomeSection({ isCollapsed, onToggle, isDark = true }: Welcome
         <Text style={[styles.title, { color: accentColor }]}>
           Welcome to InvestIQ
         </Text>
+        <Text style={[styles.greeting, { color: mutedColor }]}>
+          Hey, I'm IQ - your real estate analyst.
+        </Text>
         <Text style={[styles.message, { color: mutedColor }]}>
-          IQ analyzed the deal, local market, then generated 6 investment strategies for you that reveal 6 methods to profit.
+          I've already crunched the numbers on your property, factored in local market conditions, and built out{' '}
+          <Text style={{ fontWeight: '700' }}>6 investment strategies</Text> tailored just for you.
+        </Text>
+        <Text style={[styles.message, { color: mutedColor }]}>
+          Each one shows a different path to profit. Explore them all, compare the returns, and when you're ready to dig deeper — just ask. I'm here to help.
         </Text>
         <Text style={[styles.cta, { color: isDark ? '#9ca3af' : '#6b7280' }]}>
-          Explore all 6 models and if you have questions, ask IQ.
+          Let's find your best move.
         </Text>
       </LinearGradient>
     </TouchableOpacity>
@@ -86,15 +93,24 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     marginBottom: 14,
+    textAlign: 'center',
+  },
+  greeting: {
+    fontSize: 15,
+    lineHeight: 24,
+    marginBottom: 14,
+    textAlign: 'center',
   },
   message: {
     fontSize: 15,
     lineHeight: 24,
     marginBottom: 14,
+    textAlign: 'center',
   },
   cta: {
     fontSize: 14,
     fontStyle: 'italic',
+    textAlign: 'center',
   },
   collapsedText: {
     fontSize: 13,
