@@ -444,9 +444,45 @@ html:not(.dark) .desktop-auth-ghost:hover {
 /* Light mode property card */
 html:not(.dark) .desktop-property-card {
   background: var(--bg-secondary);
+  border-color: rgba(0, 126, 167, 0.3);
+}
+
+html:not(.dark) .desktop-photo-carousel {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+html:not(.dark) .desktop-photo-placeholder {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+html:not(.dark) .desktop-photo-placeholder svg {
+  color: rgba(0, 0, 0, 0.15);
+}
+
+html:not(.dark) .desktop-photo-placeholder span {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+html:not(.dark) .desktop-photo-thumbnails {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+html:not(.dark) .desktop-thumb-item {
+  border-color: #e2e8f0;
+}
+
+html:not(.dark) .desktop-thumb-item.active {
+  border-color: var(--electric-cyan);
+}
+
+html:not(.dark) .desktop-thumb-more {
+  background: #e2e8f0;
+  color: #64748b;
 }
 
 html:not(.dark) .desktop-property-info-bar {
+  background: #ffffff;
   border-color: var(--border-color);
 }
 
