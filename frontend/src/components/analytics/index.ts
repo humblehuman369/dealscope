@@ -242,6 +242,16 @@ export {
   type PropertyData as AnalyticsPropertyData
 } from './StrategyAnalyticsContainer'
 
+// Responsive Analytics Container - Auto-switches between mobile/desktop
+export {
+  ResponsiveAnalyticsContainer,
+  useAnalyticsViewMode,
+  type PropertyData as ResponsivePropertyData
+} from './ResponsiveAnalyticsContainer'
+
+// Desktop Components
+export * from './desktop'
+
 // Strategy-specific metrics content
 export {
   STRMetricsContent,
