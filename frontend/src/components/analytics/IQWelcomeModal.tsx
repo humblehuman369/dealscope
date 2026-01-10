@@ -37,11 +37,11 @@ export function IQWelcomeModal({ isOpen, onClose }: IQWelcomeModalProps) {
             Hey, I'm IQ — your real estate analyst.
           </h3>
           
-          <p className="text-[15px] text-white/80 leading-relaxed">
+          <p className="text-[15px] font-medium text-white/90 leading-relaxed">
             I've analyzed your property against local market data and built 6 investment strategies, each showing a different way to profit.
           </p>
           
-          <p className="text-[15px] text-white/60 italic">
+          <p className="text-[15px] font-medium text-white/70 italic">
             Explore them all, and ask me anything along the way.
           </p>
         </div>
