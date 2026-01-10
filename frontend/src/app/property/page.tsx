@@ -5,11 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Sun, Moon } from 'lucide-react'
 import { 
-  StrategyAnalyticsContainer, 
-  AnalyticsBottomBar,
-  BottomNavSpacer,
+  ResponsiveAnalyticsContainer,
   AnalyticsPageSkeleton,
-  LoadingOverlay
+  useAnalyticsViewMode
 } from '@/components/analytics'
 import { useTheme } from '@/context/ThemeContext'
 
@@ -19,6 +17,10 @@ import { useTheme } from '@/context/ThemeContext'
  * Fetches property data and displays the new analytics interface.
  * Supports both demo mode and real API data.
  * Supports both light and dark themes.
+ * 
+ * Now supports responsive desktop/mobile views:
+ * - Desktop (>=1024px): Full 900px wide layout with enhanced components
+ * - Mobile (<1024px): Compact mobile-optimized layout
  */
 
 interface PropertyData {
@@ -55,12 +57,11 @@ function PropertyContent() {
   const searchParams = useSearchParams()
   const addressParam = searchParams.get('address')
   const { theme, toggleTheme } = useTheme()
+  const viewMode = useAnalyticsViewMode()
   
   const [property, setProperty] = useState<PropertyData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isSaved, setIsSaved] = useState(false)
-  const [showLOI, setShowLOI] = useState(false)
 
   useEffect(() => {
     async function fetchProperty() {
@@ -138,27 +139,6 @@ function PropertyContent() {
     fetchProperty()
   }, [addressParam])
 
-  const handleSave = () => {
-    setIsSaved(!isSaved)
-    // TODO: Implement actual save to backend
-  }
-
-  const handleGenerateLOI = () => {
-    setShowLOI(true)
-    setTimeout(() => setShowLOI(false), 2000)
-    // TODO: Implement LOI generation
-  }
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'InvestIQ Analysis',
-        text: `Check out this property analysis for ${property?.address}`,
-        url: window.location.href
-      })
-    }
-  }
-
   if (isLoading) {
     return <AnalyticsPageSkeleton />
   }
@@ -184,9 +164,23 @@ function PropertyContent() {
     return <AnalyticsPageSkeleton />
   }
 
+  // Desktop view uses the integrated header from DesktopStrategyAnalyticsContainer
+  // Mobile view uses the separate header below
+  if (viewMode === 'desktop') {
+    return (
+      <div className="min-h-screen overflow-safe transition-colors">
+        <ResponsiveAnalyticsContainer
+          property={property}
+          onBack={() => router.back()}
+        />
+      </div>
+    )
+  }
+
+  // Mobile view with separate header
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-[#0b1426] overflow-safe transition-colors">
-      {/* Header */}
+      {/* Mobile Header */}
       <div className="header-blur sticky top-0 z-50">
         <div className="bg-white/95 dark:bg-[#07172e]/95 backdrop-blur-md border-b border-neutral-200 dark:border-white/5 px-4 py-3 safe-area-pt transition-colors">
           <div className="max-w-lg mx-auto flex items-center justify-between">
@@ -216,27 +210,11 @@ function PropertyContent() {
         </div>
       </div>
 
-      {/* Main Analytics Container */}
-      <div className="max-w-lg mx-auto safe-area-px">
-        <StrategyAnalyticsContainer
-          property={property}
-          onBack={() => router.back()}
-        />
-      </div>
-
-      {/* Bottom Navigation Spacer */}
-      <BottomNavSpacer />
-
-      {/* Bottom Action Bar */}
-      <AnalyticsBottomBar 
-        onSave={handleSave}
-        onShare={handleShare}
-        onGenerateLOI={handleGenerateLOI}
-        isSaved={isSaved}
+      {/* Responsive Analytics Container */}
+      <ResponsiveAnalyticsContainer
+        property={property}
+        onBack={() => router.back()}
       />
-
-      {/* LOI Loading Overlay */}
-      {showLOI && <LoadingOverlay message="Generating LOI..." />}
     </div>
   )
 }

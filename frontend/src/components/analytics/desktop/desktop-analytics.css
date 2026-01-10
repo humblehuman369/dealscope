@@ -1,0 +1,1921 @@
+/* ========================================
+   DESKTOP ANALYTICS - CSS VARIABLES & THEMING
+   Based on InvestIQ Property Analytics Redesign
+======================================== */
+
+:root {
+  --deep-navy: #07172e;
+  --card-bg: #0d1e38;
+  --electric-cyan: #4dd0e1;
+  --teal: #007ea7;
+  --white: #ffffff;
+  --green: #10b981;
+  --red: #ef4444;
+  --orange: #f97316;
+  --yellow: #eab308;
+  --purple: #8b5cf6;
+  --pink: #ec4899;
+  --lime: #84cc16;
+}
+
+/* ========================================
+   DESKTOP CONTAINER
+======================================== */
+
+.desktop-analytics-container {
+  max-width: 900px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary, #07172e);
+  color: var(--text-primary, #ffffff);
+}
+
+.desktop-app-content {
+  flex: 1;
+  padding: 24px 32px;
+  padding-bottom: 120px;
+}
+
+/* ========================================
+   DESKTOP HEADER
+======================================== */
+
+.desktop-app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-primary, #07172e);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.desktop-back-btn {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-primary, #ffffff);
+}
+
+.desktop-back-btn:hover {
+  border-color: var(--electric-cyan);
+  background: rgba(77, 208, 225, 0.1);
+}
+
+.desktop-back-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.desktop-header-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.desktop-header-logo {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.desktop-header-logo span {
+  color: var(--electric-cyan);
+}
+
+.desktop-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.desktop-theme-toggle {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+}
+
+.desktop-theme-toggle:hover {
+  border-color: var(--electric-cyan);
+  background: rgba(77, 208, 225, 0.1);
+}
+
+/* ========================================
+   WELCOME SECTION
+======================================== */
+
+.desktop-welcome-section {
+  background: linear-gradient(145deg, rgba(77, 208, 225, 0.08) 0%, rgba(4, 101, 242, 0.04) 100%);
+  border: 1px solid rgba(77, 208, 225, 0.3);
+  border-radius: 20px;
+  padding: 28px 24px;
+  margin-bottom: 24px;
+  cursor: pointer;
+  transition: all 0.4s ease;
+}
+
+.desktop-welcome-section.collapsed {
+  padding: 16px 24px;
+  background: transparent;
+  border-color: rgba(0, 126, 167, 0.4);
+}
+
+.desktop-welcome-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--electric-cyan);
+  margin-bottom: 16px;
+}
+
+.desktop-welcome-message {
+  font-size: 1.05rem;
+  color: var(--text-primary, #ffffff);
+  line-height: 1.7;
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+
+.desktop-welcome-cta {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+}
+
+.desktop-welcome-cta .iq-highlight {
+  color: var(--electric-cyan);
+  font-weight: 600;
+  font-style: normal;
+}
+
+/* ========================================
+   PROPERTY MINI CARD - DESKTOP
+======================================== */
+
+.desktop-property-mini {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: var(--card-bg, #0d1e38);
+  border: 1px solid rgba(77, 208, 225, 0.3);
+  border-radius: 20px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.desktop-property-mini-info {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.desktop-property-mini-address {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary, #ffffff);
+  line-height: 1.3;
+  margin: 0 0 4px 0;
+}
+
+.desktop-property-mini-location {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 10px 0;
+}
+
+.desktop-property-mini-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 4px 0;
+}
+
+.desktop-property-mini-price {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--electric-cyan);
+  line-height: 1.3;
+}
+
+.desktop-property-mini-price-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.desktop-property-mini-specs {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+.desktop-property-thumb {
+  width: 100px;
+  height: 100px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0d2847 0%, #071a30 100%);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* ========================================
+   STRATEGY SELECTOR - DESKTOP
+======================================== */
+
+.desktop-strategy-selector {
+  margin-bottom: 24px;
+}
+
+.desktop-strategy-prompt {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.desktop-prompt-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--electric-cyan);
+  margin-bottom: 8px;
+}
+
+.desktop-prompt-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-primary, #ffffff);
+  margin-bottom: 6px;
+  opacity: 0.9;
+}
+
+.desktop-prompt-action {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.desktop-strategy-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin: 0 -32px;
+  padding-left: 32px;
+  padding-right: 32px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.desktop-strategy-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.desktop-strategy-pill {
+  flex-shrink: 0;
+  padding: 14px 24px;
+  background: var(--card-bg, #0d1e38);
+  border: 2px solid rgba(0, 126, 167, 0.4);
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.desktop-strategy-pill:hover {
+  border-color: var(--electric-cyan);
+  color: var(--electric-cyan);
+  transform: translateY(-2px);
+}
+
+.desktop-strategy-pill.active {
+  background: rgba(77, 208, 225, 0.12);
+  border-color: var(--electric-cyan);
+  color: var(--electric-cyan);
+  box-shadow: 0 0 0 4px rgba(77, 208, 225, 0.2);
+}
+
+/* ========================================
+   SUB-TAB NAVIGATION - DESKTOP
+======================================== */
+
+.desktop-sub-tab-nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.desktop-sub-tab-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.desktop-sub-tab {
+  padding: 14px 20px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  position: relative;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.desktop-sub-tab:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.desktop-sub-tab.active {
+  color: var(--electric-cyan);
+  font-weight: 600;
+}
+
+.desktop-sub-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--electric-cyan);
+}
+
+/* ========================================
+   IQ TARGET HERO - DESKTOP
+======================================== */
+
+.desktop-iq-target-hero {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(77, 208, 225, 0.1) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.desktop-iq-target-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
+  animation: desktop-target-glow 3s ease-in-out infinite;
+}
+
+@keyframes desktop-target-glow {
+  0%, 100% {
+    transform: translate(0, 0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(10%, 10%);
+    opacity: 1;
+  }
+}
+
+.desktop-iq-target-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 24px;
+  padding: 6px 16px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #22c55e;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.desktop-iq-target-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+  position: relative;
+}
+
+.desktop-iq-target-price {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #22c55e;
+  line-height: 1;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.desktop-iq-target-discount {
+  font-size: 1rem;
+  color: var(--electric-cyan);
+  font-weight: 600;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.desktop-iq-target-rationale {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  max-width: 400px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.desktop-iq-target-rationale strong {
+  color: #22c55e;
+}
+
+/* ========================================
+   PRICE LADDER - DESKTOP
+======================================== */
+
+.desktop-price-ladder {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.desktop-price-ladder-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+.desktop-price-rung {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+}
+
+.desktop-price-rung:last-child {
+  border-bottom: none;
+}
+
+.desktop-price-rung-marker {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 14px;
+  flex-shrink: 0;
+}
+
+.desktop-price-rung-marker.list {
+  background: #ef4444;
+}
+
+.desktop-price-rung-marker.ninety {
+  background: #f97316;
+}
+
+.desktop-price-rung-marker.breakeven {
+  background: #eab308;
+}
+
+.desktop-price-rung-marker.target {
+  background: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}
+
+.desktop-price-rung-marker.aggressive {
+  background: var(--electric-cyan);
+}
+
+.desktop-price-rung-info {
+  flex: 1;
+}
+
+.desktop-price-rung-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.desktop-price-rung-name.target {
+  color: #22c55e;
+}
+
+.desktop-price-rung-desc {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.desktop-price-rung-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.desktop-price-rung-value.negative {
+  color: #ef4444;
+}
+
+.desktop-price-rung-value.warning {
+  color: #f97316;
+}
+
+.desktop-price-rung-value.target {
+  color: #22c55e;
+}
+
+.desktop-price-rung-percent {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-left: 10px;
+  min-width: 40px;
+  text-align: right;
+}
+
+.desktop-price-rung.highlight {
+  background: rgba(34, 197, 94, 0.08);
+  margin: 0 -20px;
+  padding: 12px 20px;
+  border-radius: 10px;
+}
+
+/* ========================================
+   RETURNS GRID - DESKTOP
+======================================== */
+
+.desktop-returns-at-target {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(77, 208, 225, 0.05) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.desktop-returns-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.desktop-returns-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #22c55e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.desktop-returns-badge {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 14px;
+  padding: 4px 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #22c55e;
+}
+
+.desktop-returns-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.desktop-return-item {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+
+.desktop-return-item-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #22c55e;
+  margin-bottom: 4px;
+}
+
+.desktop-return-item-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* ========================================
+   METRICS GRID - DESKTOP
+======================================== */
+
+.desktop-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.desktop-metric-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 18px;
+  text-align: center;
+}
+
+.desktop-metric-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--electric-cyan);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.desktop-metric-value.positive {
+  color: #22c55e;
+}
+
+.desktop-metric-value.negative {
+  color: #ef4444;
+}
+
+.desktop-metric-value.warning {
+  color: #f59e0b;
+}
+
+.desktop-metric-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 8px;
+}
+
+.desktop-metric-benchmark {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--electric-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.desktop-metric-benchmark.positive {
+  color: #22c55e;
+}
+
+.desktop-metric-benchmark.warning {
+  color: #f97316;
+}
+
+.desktop-metric-benchmark.negative {
+  color: #ef4444;
+}
+
+/* ========================================
+   HERO METRIC - DESKTOP
+======================================== */
+
+.desktop-hero-metric {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.desktop-hero-metric.warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(234, 179, 8, 0.1) 100%);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.desktop-hero-metric.danger {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.desktop-hero-metric-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.desktop-hero-metric-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #22c55e;
+  line-height: 1.1;
+}
+
+.desktop-hero-metric.warning .desktop-hero-metric-value {
+  color: #f59e0b;
+}
+
+.desktop-hero-metric.danger .desktop-hero-metric-value {
+  color: #ef4444;
+}
+
+.desktop-hero-metric-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}
+
+.desktop-hero-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+/* ========================================
+   PERFORMANCE BENCHMARKS - DESKTOP
+======================================== */
+
+.desktop-benchmarks-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 16px 12px;
+  margin-bottom: 20px;
+}
+
+.desktop-benchmarks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.desktop-benchmarks-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.desktop-benchmarks-subtitle {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Benchmark Row */
+.desktop-benchmark-row {
+  margin-bottom: 20px;
+}
+
+.desktop-benchmark-row:last-child {
+  margin-bottom: 0;
+}
+
+.desktop-benchmark-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.desktop-benchmark-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.desktop-benchmark-value-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.desktop-benchmark-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.desktop-benchmark-status {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.desktop-benchmark-status.high {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.desktop-benchmark-status.average {
+  background: rgba(234, 179, 8, 0.2);
+  color: #eab308;
+}
+
+.desktop-benchmark-status.low {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+/* Spectrum Bar */
+.desktop-spectrum-bar {
+  position: relative;
+  height: 28px;
+  border-radius: 14px;
+  overflow: visible;
+}
+
+.desktop-spectrum-zones {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.desktop-spectrum-zone {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.desktop-spectrum-zone:last-child {
+  border-right: none;
+}
+
+.desktop-spectrum-zone.low {
+  background: rgba(239, 68, 68, 0.15);
+  color: rgba(239, 68, 68, 0.7);
+}
+
+.desktop-spectrum-zone.average {
+  background: rgba(234, 179, 8, 0.1);
+  color: rgba(234, 179, 8, 0.7);
+  flex: 1.2;
+}
+
+.desktop-spectrum-zone.high {
+  background: rgba(34, 197, 94, 0.15);
+  color: rgba(34, 197, 94, 0.7);
+}
+
+.desktop-zone-range {
+  font-size: 0.55rem;
+  opacity: 0.8;
+  display: block;
+  margin-top: 2px;
+}
+
+/* Spectrum Marker */
+.desktop-spectrum-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 36px;
+  border-radius: 2px;
+  background: white;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+  z-index: 10;
+  transition: left 0.4s ease-out;
+}
+
+.desktop-spectrum-marker.high {
+  background: #22c55e;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.7);
+}
+
+.desktop-spectrum-marker.average {
+  background: #eab308;
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.7);
+}
+
+.desktop-spectrum-marker.low {
+  background: #ef4444;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
+}
+
+/* Inverted spectrum */
+.desktop-spectrum-bar.inverted .desktop-spectrum-zone.low {
+  background: rgba(34, 197, 94, 0.15);
+  color: rgba(34, 197, 94, 0.7);
+}
+
+.desktop-spectrum-bar.inverted .desktop-spectrum-zone.high {
+  background: rgba(239, 68, 68, 0.15);
+  color: rgba(239, 68, 68, 0.7);
+}
+
+/* ========================================
+   INSIGHT CARDS - DESKTOP
+======================================== */
+
+.desktop-insight-card {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(77, 208, 225, 0.08);
+  border: 1px solid rgba(77, 208, 225, 0.15);
+  border-radius: 14px;
+  margin-bottom: 12px;
+}
+
+.desktop-insight-card.success {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.15);
+}
+
+.desktop-insight-card.warning {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.15);
+}
+
+.desktop-insight-card.danger {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.15);
+}
+
+.desktop-insight-card.tip {
+  background: rgba(4, 101, 242, 0.08);
+  border-color: rgba(4, 101, 242, 0.15);
+}
+
+.desktop-insight-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(77, 208, 225, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+}
+
+.desktop-insight-card.success .desktop-insight-icon {
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.desktop-insight-card.warning .desktop-insight-icon {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.desktop-insight-card.danger .desktop-insight-icon {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.desktop-insight-card.tip .desktop-insight-icon {
+  background: rgba(4, 101, 242, 0.2);
+}
+
+.desktop-insight-text {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+.desktop-insight-text strong {
+  color: var(--electric-cyan);
+  font-weight: 600;
+}
+
+.desktop-insight-card.success .desktop-insight-text strong {
+  color: #22c55e;
+}
+
+.desktop-insight-card.warning .desktop-insight-text strong {
+  color: #f59e0b;
+}
+
+/* ========================================
+   TUNE SECTION - DESKTOP (COLLAPSIBLE)
+======================================== */
+
+.desktop-tune-section-collapsible {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.desktop-tune-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  background: rgba(77, 208, 225, 0.05);
+  border-radius: 14px;
+  transition: background 0.2s ease;
+}
+
+.desktop-tune-section-header:hover {
+  background: rgba(77, 208, 225, 0.1);
+}
+
+.desktop-tune-section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.desktop-tune-expand-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.desktop-expand-text {
+  font-size: 0.75rem;
+  color: var(--electric-cyan);
+  font-weight: 500;
+}
+
+.desktop-tune-section-toggle {
+  width: 28px;
+  height: 28px;
+  background: rgba(77, 208, 225, 0.15);
+  border: 1px solid rgba(77, 208, 225, 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: var(--electric-cyan);
+  transition: transform 0.2s ease;
+}
+
+.desktop-tune-section-toggle.open {
+  transform: rotate(180deg);
+}
+
+.desktop-tune-section-body {
+  padding: 0 20px 20px;
+  display: none;
+}
+
+.desktop-tune-section-body.open {
+  display: block;
+  padding-top: 16px;
+}
+
+/* Tune Groups (Nested Dropdowns) */
+.desktop-tune-group {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  margin-top: 14px;
+  overflow: hidden;
+}
+
+.desktop-tune-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.desktop-tune-group-header:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.desktop-tune-group-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.desktop-tune-group-toggle {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.desktop-tune-group-toggle.open {
+  transform: rotate(180deg);
+}
+
+.desktop-tune-group-body {
+  padding: 0 16px 16px;
+  display: none;
+}
+
+.desktop-tune-group-body.open {
+  display: block;
+}
+
+/* Slider Rows */
+.desktop-slider-row {
+  margin-bottom: 16px;
+}
+
+.desktop-slider-row:last-child {
+  margin-bottom: 0;
+}
+
+.desktop-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.desktop-slider-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.desktop-slider-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--electric-cyan);
+}
+
+.desktop-slider-change {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.desktop-slider-change.positive {
+  color: #22c55e;
+}
+
+.desktop-slider-change.negative {
+  color: #ef4444;
+}
+
+.desktop-slider-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  position: relative;
+}
+
+.desktop-slider-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--electric-cyan), #0465f2);
+  border-radius: 4px;
+}
+
+.desktop-slider-thumb {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 2px solid var(--electric-cyan);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  cursor: grab;
+}
+
+/* ========================================
+   NEGOTIATION PLAN - DESKTOP
+======================================== */
+
+.desktop-negotiation-plan {
+  background: rgba(4, 101, 242, 0.08);
+  border: 1px solid rgba(4, 101, 242, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.desktop-negotiation-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--electric-cyan);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.desktop-negotiation-offers {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.desktop-offer-card {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+.desktop-offer-card.recommended {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.desktop-offer-card-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.desktop-offer-card.recommended .desktop-offer-card-label {
+  color: #22c55e;
+}
+
+.desktop-offer-card-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.desktop-offer-card.recommended .desktop-offer-card-value {
+  color: #22c55e;
+}
+
+.desktop-offer-card-percent {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.desktop-leverage-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 14px;
+}
+
+.desktop-leverage-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 10px;
+}
+
+.desktop-leverage-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.desktop-leverage-icon {
+  width: 22px;
+  height: 22px;
+  background: rgba(77, 208, 225, 0.15);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+
+/* ========================================
+   COMPARE TOGGLE - DESKTOP
+======================================== */
+
+.desktop-compare-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.desktop-compare-option {
+  flex: 1;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.desktop-compare-option:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.desktop-compare-option.active {
+  background: rgba(77, 208, 225, 0.15);
+  color: var(--electric-cyan);
+}
+
+.desktop-compare-option.negative.active {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* ========================================
+   PERFORMANCE SECTION - DESKTOP
+======================================== */
+
+.desktop-performance-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.desktop-performance-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--electric-cyan);
+  margin-bottom: 14px;
+}
+
+.desktop-performance-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.desktop-performance-row:last-child {
+  border-bottom: none;
+}
+
+.desktop-performance-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.desktop-performance-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.desktop-performance-value.positive {
+  color: #22c55e;
+}
+
+.desktop-performance-value.negative {
+  color: #ef4444;
+}
+
+.desktop-performance-value.highlight {
+  color: var(--electric-cyan);
+}
+
+/* ========================================
+   FORMULA CARD - DESKTOP
+======================================== */
+
+.desktop-formula-card {
+  background: rgba(4, 101, 242, 0.08);
+  border: 1px solid rgba(4, 101, 242, 0.15);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.desktop-formula-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--electric-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.desktop-formula-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.9rem;
+}
+
+.desktop-formula-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.desktop-formula-value {
+  font-weight: 600;
+  color: white;
+}
+
+.desktop-formula-value.positive {
+  color: #22c55e;
+}
+
+.desktop-formula-value.negative {
+  color: #ef4444;
+}
+
+.desktop-formula-total {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 8px;
+  padding-top: 10px;
+}
+
+.desktop-formula-total .desktop-formula-label {
+  font-weight: 700;
+  color: white;
+}
+
+.desktop-formula-total .desktop-formula-value {
+  color: var(--electric-cyan);
+  font-weight: 700;
+}
+
+/* ========================================
+   LOAN SUMMARY - DESKTOP
+======================================== */
+
+.desktop-loan-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.desktop-loan-stat {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.desktop-loan-stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.desktop-loan-stat-label {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+/* ========================================
+   DEAL SCORE CARD - DESKTOP
+======================================== */
+
+.desktop-deal-score-card {
+  background: linear-gradient(145deg, rgba(77, 208, 225, 0.12) 0%, rgba(4, 101, 242, 0.08) 100%);
+  border: 1px solid rgba(77, 208, 225, 0.3);
+  border-radius: 20px;
+  padding: 28px 24px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.desktop-deal-score-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 10px;
+}
+
+.desktop-deal-score-value {
+  font-size: 4rem;
+  font-weight: 800;
+  color: var(--electric-cyan);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.desktop-deal-score-value.warning {
+  color: #f59e0b;
+}
+
+.desktop-deal-score-value.danger {
+  color: #ef4444;
+}
+
+.desktop-deal-score-verdict {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--electric-cyan);
+  margin-top: 8px;
+}
+
+.desktop-deal-score-verdict.warning {
+  color: #f59e0b;
+}
+
+.desktop-deal-score-verdict.danger {
+  color: #ef4444;
+}
+
+/* Score Breakdown */
+.desktop-score-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.desktop-score-item-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.desktop-score-item-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.desktop-score-item-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--electric-cyan), #0465f2);
+  border-radius: 4px;
+}
+
+.desktop-score-item-value {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--electric-cyan);
+  width: 50px;
+  text-align: right;
+}
+
+/* ========================================
+   CTA BUTTON - DESKTOP
+======================================== */
+
+.desktop-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--electric-cyan), #0465f2);
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 14px rgba(77, 208, 225, 0.3);
+  transition: all 0.2s ease;
+}
+
+.desktop-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(77, 208, 225, 0.4);
+}
+
+.desktop-cta-btn.secondary {
+  background: transparent;
+  border: 2px solid var(--electric-cyan);
+  color: var(--electric-cyan);
+  box-shadow: none;
+}
+
+.desktop-cta-btn.secondary:hover {
+  background: rgba(77, 208, 225, 0.1);
+}
+
+/* ========================================
+   BOTTOM NAVIGATION - DESKTOP
+======================================== */
+
+.desktop-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 900px;
+  width: 100%;
+  background: var(--bg-primary, #07172e);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px 32px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.desktop-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 8px 16px;
+}
+
+.desktop-nav-item:hover {
+  color: var(--electric-cyan);
+}
+
+.desktop-nav-item .icon {
+  font-size: 1.4rem;
+}
+
+.desktop-nav-item svg {
+  width: 24px;
+  height: 24px;
+}
+
+.desktop-nav-item.active {
+  color: var(--electric-cyan);
+}
+
+.desktop-nav-btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 36px;
+  background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
+  color: var(--deep-navy);
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 14px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(77, 208, 225, 0.3);
+}
+
+.desktop-nav-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(77, 208, 225, 0.4);
+}
+
+/* ========================================
+   PIE CHART - DESKTOP
+======================================== */
+
+.desktop-pie-chart-container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 0;
+}
+
+.desktop-pie-chart {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(#0465f2 0deg 158deg, var(--electric-cyan) 158deg 360deg);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.desktop-pie-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 72px;
+  height: 72px;
+  background: #0d2847;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.desktop-pie-total {
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.desktop-pie-total-label {
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+}
+
+.desktop-pie-legend {
+  flex: 1;
+  text-align: right;
+}
+
+.desktop-pie-legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.desktop-pie-legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.desktop-pie-legend-content {
+  text-align: right;
+}
+
+.desktop-pie-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  order: 2;
+}
+
+.desktop-pie-dot.principal {
+  background: #0465f2;
+}
+
+.desktop-pie-dot.interest {
+  background: var(--electric-cyan);
+}
+
+.desktop-pie-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 3px;
+}
+
+.desktop-pie-amount {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: white;
+}
+
+.desktop-pie-percent {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ========================================
+   LIGHT THEME OVERRIDES
+======================================== */
+
+[data-theme="light"] .desktop-analytics-container {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border-color: rgba(0, 0, 0, 0.08);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .desktop-back-btn,
+[data-theme="light"] .desktop-theme-toggle {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .desktop-strategy-pill {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .desktop-property-mini {
+  background: var(--bg-secondary);
+}
+
+[data-theme="light"] .desktop-performance-section,
+[data-theme="light"] .desktop-tune-section-collapsible,
+[data-theme="light"] .desktop-benchmarks-section,
+[data-theme="light"] .desktop-price-ladder {
+  background: var(--bg-secondary);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .desktop-metric-card,
+[data-theme="light"] .desktop-loan-stat,
+[data-theme="light"] .desktop-tune-group,
+[data-theme="light"] .desktop-return-item,
+[data-theme="light"] .desktop-offer-card {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .desktop-metric-label,
+[data-theme="light"] .desktop-slider-label,
+[data-theme="light"] .desktop-performance-label {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .desktop-bottom-nav,
+[data-theme="light"] .desktop-app-header {
+  background: var(--bg-primary);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+======================================== */
+
+@media (max-width: 1024px) {
+  .desktop-analytics-container {
+    max-width: 100%;
+  }
+
+  .desktop-app-content {
+    padding: 20px;
+    padding-bottom: 100px;
+  }
+
+  .desktop-app-header {
+    padding: 12px 20px;
+  }
+
+  .desktop-bottom-nav {
+    max-width: 100%;
+    padding: 12px 20px;
+  }
+
+  .desktop-returns-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .desktop-loan-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
