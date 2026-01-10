@@ -28,7 +28,7 @@ export function NegotiationPlan({
   return (
     <div className="bg-blue-500/[0.08] border border-blue-500/20 rounded-2xl p-4 mb-4">
       {/* Header */}
-      <h4 className="text-[0.75rem] font-bold text-teal flex items-center gap-1.5 mb-3.5">
+      <h4 className="text-[1.1rem] font-bold text-teal flex items-center gap-1.5 mb-3.5">
         {title}
       </h4>
 

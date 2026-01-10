@@ -19,7 +19,7 @@ export function LoanSummary({ stats, title }: LoanSummaryProps) {
   return (
     <div className="mb-4">
       {title && (
-        <h4 className="text-[0.72rem] font-bold text-white/60 uppercase tracking-wide mb-2.5">
+        <h4 className="text-[1.1rem] font-bold text-gray-700 dark:text-white/70 uppercase tracking-wide mb-3">
           {title}
         </h4>
       )}

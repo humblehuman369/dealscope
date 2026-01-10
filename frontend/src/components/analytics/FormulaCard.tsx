@@ -23,7 +23,7 @@ export function FormulaCard({ data }: FormulaCardProps) {
   return (
     <div className="bg-blue-500/[0.08] border border-blue-500/15 rounded-xl p-3.5 mb-3.5">
       {/* Title */}
-      <h4 className="text-[0.65rem] font-bold text-teal uppercase tracking-wide mb-2.5">
+      <h4 className="text-[1rem] font-bold text-teal uppercase tracking-wide mb-2.5">
         {data.title}
       </h4>
 

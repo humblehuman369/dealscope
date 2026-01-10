@@ -761,7 +761,7 @@ html:not(.dark) .desktop-expand-btn {
 }
 
 .desktop-price-ladder-title {
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--electric-cyan);
   text-transform: uppercase;
@@ -882,7 +882,7 @@ html:not(.dark) .desktop-expand-btn {
 }
 
 .desktop-returns-title {
-  font-size: 1.05rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #22c55e;
   display: flex;
@@ -1078,7 +1078,7 @@ html:not(.dark) .desktop-expand-btn {
 }
 
 .desktop-benchmarks-title {
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--electric-cyan);
   display: flex;
@@ -1357,7 +1357,7 @@ html:not(.dark) .desktop-expand-btn {
 }
 
 .desktop-tune-section-title {
-  font-size: 1.05rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--electric-cyan);
   display: flex;
@@ -1535,7 +1535,7 @@ html:not(.dark) .desktop-expand-btn {
 }
 
 .desktop-negotiation-title {
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--electric-cyan);
   display: flex;
@@ -1677,7 +1677,7 @@ html:not(.dark) .desktop-expand-btn {
 }
 
 .desktop-performance-title {
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--electric-cyan);
   margin-bottom: 16px;
@@ -1735,7 +1735,7 @@ html:not(.dark) .desktop-expand-btn {
 }
 
 .desktop-formula-title {
-  font-size: 0.75rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--electric-cyan);
   text-transform: uppercase;
