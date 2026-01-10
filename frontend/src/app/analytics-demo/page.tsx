@@ -64,19 +64,16 @@ function DemoContent() {
     return <AnalyticsPageSkeleton />
   }
 
-  // FORCED TO DESKTOP VIEW FOR TESTING
-  const forcedViewMode = 'desktop' as const
-  
   return (
     <div className="min-h-screen overflow-safe">
-      {/* Demo Mode Banner - Hidden when forcing desktop */}
-      {forcedViewMode === 'mobile' && viewMode === 'mobile' && (
+      {/* Demo Mode Banner - Only shown on mobile */}
+      {viewMode === 'mobile' && (
         <div className="header-blur sticky top-0 z-50">
           <div className="bg-gradient-to-r from-teal to-blue-500 text-white px-4 py-3 safe-area-pt">
             <div className="max-w-lg mx-auto flex items-center justify-between">
               <div>
                 <h1 className="text-lg font-bold">InvestIQ Analytics</h1>
-                <p className="text-xs text-white/80">Component Demo - Mobile View</p>
+                <p className="text-xs text-white/80">Component Demo</p>
               </div>
               <button
                 onClick={() => router.push('/')}
@@ -89,11 +86,10 @@ function DemoContent() {
         </div>
       )}
 
-      {/* Responsive Analytics Container - FORCED TO DESKTOP FOR TESTING */}
+      {/* Responsive Analytics Container */}
       <ResponsiveAnalyticsContainer
         property={SAMPLE_PROPERTY}
         onBack={() => router.push('/')}
-        forceViewMode={forcedViewMode}
       />
     </div>
   )

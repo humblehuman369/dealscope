@@ -45,10 +45,6 @@ interface AuthContextType {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
-// #region agent log
-console.log('[AuthContext] API_BASE_URL:', API_BASE_URL, 'ENV:', process.env.NEXT_PUBLIC_API_URL);
-// #endregion
-
 // ===========================================
 // Context
 // ===========================================
@@ -137,9 +133,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register
   const register = async (email: string, password: string, fullName: string) => {
     setIsLoading(true)
-    // #region agent log
-    console.log('[AuthContext] register called - URL:', `${API_BASE_URL}/api/v1/auth/register`, 'email:', email);
-    // #endregion
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
         method: 'POST',
