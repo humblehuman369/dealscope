@@ -8,7 +8,6 @@ import { FeatureCard } from './FeatureCard';
 import { Footer } from './Footer';
 import { ScanDemoSection } from './ScanDemoSection';
 import { strategies, features, stats } from './types';
-import { IQBrainIcon } from '@/components/icons';
 
 interface ResponsiveLandingPageProps {
   onPointAndScan?: () => void;
@@ -90,9 +89,6 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
               <span>✓ No credit card required</span>
               <span>✓ 10K+ properties analyzed</span>
             </div>
-            <div className="hero-badge">
-              <IQBrainIcon size={24} mode="dark" />
-            </div>
           </div>
         </div>
       </section>
@@ -153,10 +149,6 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
       {/* CTA Section */}
       <section className="cta-section">
         <div className="container cta-content">
-          {/* IQ Avatar */}
-          <div className="cta-iq-avatar">
-            <img src="/images/IQ.png" alt="IQ" />
-          </div>
           <div className="section-label">Get Started Today</div>
           <h2 className="cta-title">
             Let IQ Analyze Your First Property <span className="highlight">Free</span>
