@@ -40,13 +40,13 @@ export function TuneSection({
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl mb-3 overflow-hidden">
+    <div className="bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-2xl mb-3 overflow-hidden">
       {/* Collapsible Header */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-3.5 bg-teal/[0.05] hover:bg-teal/[0.1] transition-colors duration-200 rounded-xl"
       >
-        <div className="flex items-center gap-2 text-[0.78rem] font-semibold text-white">
+        <div className="flex items-center gap-2 text-[0.78rem] font-semibold text-gray-800 dark:text-white">
           <Settings className="w-4 h-4 text-teal" />
           {title}
         </div>
@@ -96,17 +96,17 @@ function TuneGroupComponent({ group, onSliderChange }: TuneGroupComponentProps) 
   const [isOpen, setIsOpen] = useState(group.isOpen ?? false)
 
   return (
-    <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl mt-3 overflow-hidden">
+    <div className="bg-gray-100 dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-xl mt-3 overflow-hidden">
       {/* Group Header */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 hover:bg-white/[0.03] transition-colors duration-200"
+        className="w-full flex items-center justify-between p-3 hover:bg-gray-200 dark:hover:bg-white/[0.03] transition-colors duration-200"
       >
-        <span className="text-[0.72rem] font-semibold text-white/70 uppercase tracking-wide">
+        <span className="text-[0.72rem] font-semibold text-gray-700 dark:text-white/70 uppercase tracking-wide">
           {group.title}
         </span>
         <ChevronDown 
-          className={`w-3.5 h-3.5 text-white/40 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-3.5 h-3.5 text-gray-500 dark:text-white/40 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
@@ -141,7 +141,7 @@ function SliderRow({ slider, onChange }: SliderRowProps) {
     <div className="mb-3.5 last:mb-0">
       {/* Header with label and value */}
       <div className="flex justify-between items-baseline mb-1.5">
-        <span className="text-[0.78rem] font-semibold text-white/80">
+        <span className="text-[0.78rem] font-semibold text-gray-700 dark:text-white/80">
           {slider.label}
         </span>
         <span className="flex items-center gap-1.5">
@@ -149,7 +149,7 @@ function SliderRow({ slider, onChange }: SliderRowProps) {
             {slider.formattedValue}
           </span>
           {slider.suffix && (
-            <span className="text-[0.72rem] text-white/40">
+            <span className="text-[0.72rem] text-gray-500 dark:text-white/40">
               {slider.suffix}
             </span>
           )}
@@ -162,7 +162,7 @@ function SliderRow({ slider, onChange }: SliderRowProps) {
       </div>
 
       {/* Slider Track */}
-      <div className="relative h-1.5 bg-white/10 rounded-full">
+      <div className="relative h-1.5 bg-gray-200 dark:bg-white/10 rounded-full">
         {/* Fill */}
         <div 
           className="absolute top-0 left-0 h-full rounded-full"

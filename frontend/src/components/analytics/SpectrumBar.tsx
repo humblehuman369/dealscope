@@ -87,7 +87,7 @@ export function SpectrumBar({
       <div className="absolute inset-0 flex rounded-xl overflow-hidden">
         {/* Low Zone (or High if inverted) */}
         <div 
-          className={`flex-1 flex flex-col items-center justify-center border-r border-white/10 ${leftZoneColor}`}
+          className={`flex-1 flex flex-col items-center justify-center border-r border-gray-300 dark:border-white/10 ${leftZoneColor}`}
         >
           <span className="text-[0.55rem] font-semibold uppercase tracking-wide leading-none">
             {isInverted ? zones.high.label : zones.low.label}
@@ -99,7 +99,7 @@ export function SpectrumBar({
 
         {/* Average Zone */}
         <div 
-          className="flex-[1.2] flex flex-col items-center justify-center border-r border-white/10 bg-yellow-500/[0.1] text-yellow-500/70"
+          className="flex-[1.2] flex flex-col items-center justify-center border-r border-gray-300 dark:border-white/10 bg-yellow-500/[0.1] text-yellow-500/70"
         >
           <span className="text-[0.55rem] font-semibold uppercase tracking-wide leading-none">
             {zones.average.label}

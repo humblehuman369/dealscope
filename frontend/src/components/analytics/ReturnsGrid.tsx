@@ -81,11 +81,11 @@ interface MetricCardProps {
 
 function MetricCard({ metric }: MetricCardProps) {
   return (
-    <div className="bg-white/[0.03] rounded-xl p-3 text-center">
+    <div className="bg-gray-100 dark:bg-white/[0.03] rounded-xl p-3 text-center">
       <div className="text-[1.2rem] font-bold text-green-500 mb-0.5">
         {metric.value}
       </div>
-      <div className="text-[0.6rem] text-white/50 uppercase tracking-wide">
+      <div className="text-[0.6rem] text-gray-500 dark:text-white/50 uppercase tracking-wide">
         {metric.label}
       </div>
     </div>
@@ -261,10 +261,10 @@ export function ReturnsGridCompact({ metrics }: ReturnsGridCompactProps) {
         <React.Fragment key={index}>
           <div className="text-center px-2">
             <div className="text-sm font-bold text-green-500">{metric.value}</div>
-            <div className="text-[0.55rem] text-white/50 uppercase">{metric.label}</div>
+            <div className="text-[0.55rem] text-gray-500 dark:text-white/50 uppercase">{metric.label}</div>
           </div>
           {index < Math.min(metrics.length, 4) - 1 && (
-            <div className="w-px h-8 bg-white/10" />
+            <div className="w-px h-8 bg-gray-300 dark:bg-white/10" />
           )}
         </React.Fragment>
       ))}

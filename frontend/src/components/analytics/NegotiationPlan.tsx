@@ -64,15 +64,15 @@ function OfferCardComponent({ offer, isRecommended = false }: OfferCardComponent
   const baseClasses = "flex-1 rounded-xl p-2.5 text-center"
   const cardClasses = isRecommended
     ? `${baseClasses} bg-green-500/10 border border-green-500/30`
-    : `${baseClasses} bg-white/[0.03] border border-white/[0.06]`
+    : `${baseClasses} bg-gray-100 dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06]`
 
   const labelClasses = isRecommended
     ? "text-green-500"
-    : "text-white/50"
+    : "text-gray-500 dark:text-white/50"
 
   const valueClasses = isRecommended
     ? "text-green-500"
-    : "text-white"
+    : "text-gray-800 dark:text-white"
 
   return (
     <div className={cardClasses}>
@@ -82,7 +82,7 @@ function OfferCardComponent({ offer, isRecommended = false }: OfferCardComponent
       <div className={`text-[0.95rem] font-bold ${valueClasses}`}>
         {formatCurrency(offer.price)}
       </div>
-      <div className="text-[0.6rem] text-white/40">
+      <div className="text-[0.6rem] text-gray-500 dark:text-white/40">
         {Math.round(offer.percentOfList)}% of list
       </div>
     </div>
@@ -95,13 +95,13 @@ interface LeverageSectionProps {
 
 function LeverageSection({ points }: LeverageSectionProps) {
   return (
-    <div className="border-t border-white/[0.06] pt-3">
-      <h5 className="text-[0.65rem] font-semibold text-white/50 uppercase tracking-wide mb-2">
+    <div className="border-t border-gray-200 dark:border-white/[0.06] pt-3">
+      <h5 className="text-[0.65rem] font-semibold text-gray-500 dark:text-white/50 uppercase tracking-wide mb-2">
         Leverage Points
       </h5>
       <div className="space-y-1.5">
         {points.map((point, index) => (
-          <div key={index} className="flex items-center gap-2 text-[0.72rem] text-white/70">
+          <div key={index} className="flex items-center gap-2 text-[0.72rem] text-gray-700 dark:text-white/70">
             <div className="w-[18px] h-[18px] bg-teal/15 rounded flex items-center justify-center text-[0.65rem] flex-shrink-0">
               {point.icon}
             </div>
@@ -218,21 +218,21 @@ export function NegotiationPlanCompact({
   return (
     <div className="flex items-center justify-between bg-blue-500/[0.06] border border-blue-500/15 rounded-xl p-3">
       <div className="text-center">
-        <div className="text-[0.6rem] text-white/50 uppercase">Open</div>
-        <div className="text-sm font-semibold text-white">{formatCompact(openingOffer)}</div>
-        <div className="text-[0.55rem] text-white/40">{Math.round((openingOffer / listPrice) * 100)}%</div>
+        <div className="text-[0.6rem] text-gray-500 dark:text-white/50 uppercase">Open</div>
+        <div className="text-sm font-semibold text-gray-800 dark:text-white">{formatCompact(openingOffer)}</div>
+        <div className="text-[0.55rem] text-gray-500 dark:text-white/40">{Math.round((openingOffer / listPrice) * 100)}%</div>
       </div>
-      <div className="text-white/30">→</div>
+      <div className="text-gray-400 dark:text-white/30">→</div>
       <div className="text-center">
         <div className="text-[0.6rem] text-green-500 uppercase font-semibold">Target</div>
         <div className="text-sm font-bold text-green-500">{formatCompact(targetPrice)}</div>
         <div className="text-[0.55rem] text-green-500/70">{Math.round((targetPrice / listPrice) * 100)}%</div>
       </div>
-      <div className="text-white/30">→</div>
+      <div className="text-gray-400 dark:text-white/30">→</div>
       <div className="text-center">
-        <div className="text-[0.6rem] text-white/50 uppercase">Walk</div>
-        <div className="text-sm font-semibold text-white">{formatCompact(walkAway)}</div>
-        <div className="text-[0.55rem] text-white/40">{Math.round((walkAway / listPrice) * 100)}%</div>
+        <div className="text-[0.6rem] text-gray-500 dark:text-white/50 uppercase">Walk</div>
+        <div className="text-sm font-semibold text-gray-800 dark:text-white">{formatCompact(walkAway)}</div>
+        <div className="text-[0.55rem] text-gray-500 dark:text-white/40">{Math.round((walkAway / listPrice) * 100)}%</div>
       </div>
     </div>
   )

@@ -40,14 +40,14 @@ export function PerformanceBenchmarks({
   }
 
   return (
-    <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl px-2 py-3 mb-4">
+    <div className="bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-2xl px-2 py-3 mb-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 px-2">
         <div>
-          <h4 className="text-[0.75rem] font-bold text-white flex items-center gap-2">
+          <h4 className="text-[0.75rem] font-bold text-gray-800 dark:text-white flex items-center gap-2">
             {title}
           </h4>
-          <p className="text-[0.6rem] text-white/40">{subtitle}</p>
+          <p className="text-[0.6rem] text-gray-500 dark:text-white/40">{subtitle}</p>
         </div>
       </div>
 
@@ -70,11 +70,11 @@ function BenchmarkRow({ benchmark }: BenchmarkRowProps) {
     <div className="mb-4 last:mb-0">
       {/* Header with label, value, and status */}
       <div className="flex justify-between items-center mb-2 px-2">
-        <span className="text-[0.72rem] font-medium text-white/80">
+        <span className="text-[0.72rem] font-medium text-gray-700 dark:text-white/80">
           {benchmark.label}
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-[0.85rem] font-bold text-white">
+          <span className="text-[0.85rem] font-bold text-gray-800 dark:text-white">
             {benchmark.formattedValue}
           </span>
           <StatusBadge status={benchmark.status} />
@@ -139,15 +139,15 @@ function BenchmarksCompact({ benchmarks }: BenchmarksCompactProps) {
       {benchmarks.slice(0, 4).map((benchmark) => (
         <div 
           key={benchmark.id}
-          className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3"
+          className="bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-xl p-3"
         >
           <div className="flex justify-between items-center mb-2">
-            <span className="text-[0.6rem] text-white/50 uppercase tracking-wide">
+            <span className="text-[0.6rem] text-gray-500 dark:text-white/50 uppercase tracking-wide">
               {benchmark.label}
             </span>
             <StatusBadge status={benchmark.status} />
           </div>
-          <div className="text-base font-bold text-white mb-1.5">
+          <div className="text-base font-bold text-gray-800 dark:text-white mb-1.5">
             {benchmark.formattedValue}
           </div>
           <MiniSpectrum
