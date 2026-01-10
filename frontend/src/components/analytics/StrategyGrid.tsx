@@ -1,6 +1,14 @@
 'use client'
 
 import React from 'react'
+import { 
+  Home, 
+  Palmtree, 
+  RefreshCw, 
+  Hammer, 
+  Users, 
+  FileSignature 
+} from 'lucide-react'
 import { StrategyId } from './types'
 
 interface Strategy {
@@ -8,44 +16,79 @@ interface Strategy {
   name: string
   tagline: string
   color: string
+  gradientFrom: string
+  gradientTo: string
+  icon: React.ElementType
+  metric: string
+  metricLabel: string
 }
 
 const STRATEGIES: Strategy[] = [
   { 
     id: 'ltr', 
     name: 'Long-Term Rental', 
-    tagline: 'Steady income & equity',
-    color: '#3b82f6'
+    tagline: 'Build wealth with steady monthly cash flow',
+    color: '#3b82f6',
+    gradientFrom: '#3b82f6',
+    gradientTo: '#1d4ed8',
+    icon: Home,
+    metric: '8-12%',
+    metricLabel: 'Cash-on-Cash'
   },
   { 
     id: 'str', 
     name: 'Short-Term Rental', 
-    tagline: 'Vacation & Airbnb income',
-    color: '#8b5cf6'
+    tagline: 'Maximize income with vacation rentals',
+    color: '#8b5cf6',
+    gradientFrom: '#8b5cf6',
+    gradientTo: '#6d28d9',
+    icon: Palmtree,
+    metric: '15-25%',
+    metricLabel: 'Cash-on-Cash'
   },
   { 
     id: 'brrrr', 
     name: 'BRRRR', 
-    tagline: 'Buy-Rehab-Rent-Refi-Repeat',
-    color: '#f97316'
+    tagline: 'Buy, Rehab, Rent, Refinance, Repeat',
+    color: '#f97316',
+    gradientFrom: '#f97316',
+    gradientTo: '#ea580c',
+    icon: RefreshCw,
+    metric: '∞',
+    metricLabel: 'Scalable'
   },
   { 
     id: 'flip', 
     name: 'Fix & Flip', 
-    tagline: 'Buy low, sell high',
-    color: '#ec4899'
+    tagline: 'Quick profits from undervalued properties',
+    color: '#ec4899',
+    gradientFrom: '#ec4899',
+    gradientTo: '#db2777',
+    icon: Hammer,
+    metric: '$50K+',
+    metricLabel: 'Profit'
   },
   { 
     id: 'house_hack', 
     name: 'House Hack', 
-    tagline: 'Live free, rent rooms',
-    color: '#14b8a6'
+    tagline: 'Live free while building equity',
+    color: '#14b8a6',
+    gradientFrom: '#14b8a6',
+    gradientTo: '#0d9488',
+    icon: Users,
+    metric: '100%',
+    metricLabel: 'Savings'
   },
   { 
     id: 'wholesale', 
     name: 'Wholesale', 
-    tagline: 'Assign contracts for profit',
-    color: '#84cc16'
+    tagline: 'Earn fees with zero capital required',
+    color: '#84cc16',
+    gradientFrom: '#84cc16',
+    gradientTo: '#65a30d',
+    icon: FileSignature,
+    metric: '$10K+',
+    metricLabel: 'Per Deal'
   },
 ]
 
@@ -57,41 +100,78 @@ interface StrategyGridProps {
 /**
  * StrategyGrid - 2x3 grid of strategy selection boxes
  * 
- * Each box has a colored top indicator bar and displays
- * strategy name + tagline. Active selection is highlighted.
+ * Each box has a colored gradient background with icon,
+ * strategy name, tagline, and key metric.
  */
 export function StrategyGrid({ activeStrategy, onSelectStrategy }: StrategyGridProps) {
   return (
     <div className="grid grid-cols-2 gap-3">
       {STRATEGIES.map((strategy) => {
         const isActive = activeStrategy === strategy.id
+        const Icon = strategy.icon
         
         return (
           <button
             key={strategy.id}
             onClick={() => onSelectStrategy(strategy.id)}
             className={`
-              relative bg-white dark:bg-[#0d1e38]
-              border-2 rounded-[14px] p-4 pt-5 text-center
-              transition-all duration-200 hover:-translate-y-0.5
+              relative overflow-hidden rounded-2xl p-4 text-left
+              transition-all duration-300 hover:scale-[1.02] hover:shadow-lg
               ${isActive 
-                ? 'border-brand-500 dark:border-[#4dd0e1] bg-brand-500/5 dark:bg-[#4dd0e1]/10' 
-                : 'border-gray-200 dark:border-[#007ea7]/40 hover:border-brand-500/60 dark:hover:border-[#4dd0e1]/60'
+                ? 'ring-2 ring-[#4dd0e1] ring-offset-2 ring-offset-[#0b1426]' 
+                : ''
               }
             `}
+            style={{
+              background: `linear-gradient(135deg, ${strategy.gradientFrom}15 0%, ${strategy.gradientTo}08 100%)`,
+              border: `1px solid ${strategy.color}40`
+            }}
           >
-            {/* Color indicator bar */}
+            {/* Glow effect */}
             <div 
-              className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 rounded-b"
-              style={{ backgroundColor: strategy.color }}
+              className="absolute top-0 right-0 w-24 h-24 opacity-20 blur-2xl"
+              style={{ background: strategy.color }}
             />
             
-            <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-1 mt-1">
+            {/* Icon and metric row */}
+            <div className="flex items-start justify-between mb-3 relative">
+              <div 
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: `${strategy.color}25` }}
+              >
+                <Icon 
+                  className="w-5 h-5" 
+                  style={{ color: strategy.color }}
+                />
+              </div>
+              <div className="text-right">
+                <div 
+                  className="text-lg font-extrabold"
+                  style={{ color: strategy.color }}
+                >
+                  {strategy.metric}
+                </div>
+                <div className="text-[10px] text-white/50 uppercase tracking-wide">
+                  {strategy.metricLabel}
+                </div>
+              </div>
+            </div>
+            
+            {/* Name and tagline */}
+            <h3 className="text-base font-bold text-white mb-1.5">
               {strategy.name}
             </h3>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
+            <p className="text-[13px] text-white/70 leading-snug">
               {strategy.tagline}
             </p>
+            
+            {/* Active indicator */}
+            {isActive && (
+              <div 
+                className="absolute bottom-0 left-0 right-0 h-1"
+                style={{ background: `linear-gradient(90deg, ${strategy.gradientFrom}, ${strategy.gradientTo})` }}
+              />
+            )}
           </button>
         )
       })}
@@ -102,27 +182,28 @@ export function StrategyGrid({ activeStrategy, onSelectStrategy }: StrategyGridP
 interface StrategyPromptProps {
   title?: string
   subtitle?: string
-  action?: string
 }
 
 /**
  * StrategyPrompt - Header section above the strategy grid
  */
 export function StrategyPrompt({ 
-  title = 'Compare 6 Profit Models',
-  subtitle = 'Which model is best for you?',
-  action = 'Select & review'
+  title = '6 Ways to Profit',
+  subtitle = 'Select a strategy to see your returns'
 }: StrategyPromptProps) {
   return (
-    <div className="text-center mb-4">
-      <h2 className="text-xl font-extrabold text-brand-500 dark:text-[#4dd0e1] mb-1">
+    <div className="text-center mb-6 mt-2">
+      <div className="inline-flex items-center gap-2 bg-[#4dd0e1]/10 px-4 py-1.5 rounded-full mb-3">
+        <span className="w-2 h-2 rounded-full bg-[#4dd0e1] animate-pulse" />
+        <span className="text-xs font-semibold text-[#4dd0e1] uppercase tracking-wider">
+          Analysis Complete
+        </span>
+      </div>
+      <h2 className="text-2xl font-extrabold text-white mb-2">
         {title}
       </h2>
-      <p className="text-sm text-gray-600 dark:text-gray-300 mb-0.5">
+      <p className="text-base text-white/60">
         {subtitle}
-      </p>
-      <p className="text-xs text-gray-400 dark:text-gray-500">
-        {action}
       </p>
     </div>
   )
