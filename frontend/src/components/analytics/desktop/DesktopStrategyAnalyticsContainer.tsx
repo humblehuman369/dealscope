@@ -277,8 +277,8 @@ export function DesktopStrategyAnalyticsContainer({
         {/* Strategy Selected - Show Horizontal Selector + Content */}
         {activeStrategy && (
           <>
-            {/* Strategy Selector Pills */}
-            <div className="desktop-strategy-selector">
+            {/* Strategy Selector Pills - With Clear Section Border */}
+            <div className="desktop-strategy-selector-section">
               <StrategySelector
                 activeStrategy={activeStrategy}
                 strategies={DEFAULT_STRATEGIES}
@@ -291,12 +291,15 @@ export function DesktopStrategyAnalyticsContainer({
               />
             </div>
 
-            {/* Sub Tab Navigation */}
-            <SubTabNav
-              tabs={tabs}
-              activeTab={activeSubTab}
-              onChange={setActiveSubTab}
-            />
+            {/* Sub Tab Navigation - Clearly Separated */}
+            <div className="desktop-subtab-section">
+              <div className="desktop-subtab-label">View Details:</div>
+              <SubTabNav
+                tabs={tabs}
+                activeTab={activeSubTab}
+                onChange={setActiveSubTab}
+              />
+            </div>
 
             {/* Tab Content */}
             <div className="space-y-4">

@@ -58,72 +58,96 @@ export function DesktopPropertyMiniCard({
   }
 
   return (
-    <div className="desktop-property-mini">
-      {/* Property Info */}
-      <div className="desktop-property-mini-info">
-        <h2 className="desktop-property-mini-address">{address}</h2>
-        <p className="desktop-property-mini-location">{location}</p>
-        
-        <div className="desktop-property-mini-price-row">
-          <span className="desktop-property-mini-price">{formatCurrency(price)}</span>
-          <span className="desktop-property-mini-price-label">{priceLabel}</span>
-        </div>
-        
-        <p className="desktop-property-mini-specs">{specs}</p>
-      </div>
-
-      {/* Photo Thumbnail */}
-      <div className="desktop-property-thumb group">
+    <div className="desktop-property-card">
+      {/* Full-Width Photo Carousel */}
+      <div className="desktop-photo-carousel group">
         {photoList.length > 0 ? (
           <>
-            <img 
-              src={photoList[currentPhotoIndex]} 
-              alt={`Property photo ${currentPhotoIndex + 1}`}
-              className="w-full h-full object-cover"
-            />
-            
-            {/* Photo Counter */}
-            <div className="thumb-count">
-              <Camera className="w-2.5 h-2.5 inline mr-1" />
-              {currentPhotoIndex + 1}/{totalPhotos}
+            {/* Main Photo */}
+            <div className="desktop-photo-main">
+              <img 
+                src={photoList[currentPhotoIndex]} 
+                alt={`Property photo ${currentPhotoIndex + 1}`}
+                className="w-full h-full object-cover"
+              />
+              
+              {/* Photo Counter Badge */}
+              <div className="desktop-photo-counter">
+                <Camera className="w-3 h-3" />
+                <span>{currentPhotoIndex + 1}/{totalPhotos}</span>
+              </div>
+
+              {/* Navigation Arrows */}
+              {photoList.length > 1 && (
+                <>
+                  <button
+                    onClick={handlePrevPhoto}
+                    className="desktop-photo-nav desktop-photo-nav-left"
+                    aria-label="Previous photo"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-white" />
+                  </button>
+                  <button
+                    onClick={handleNextPhoto}
+                    className="desktop-photo-nav desktop-photo-nav-right"
+                    aria-label="Next photo"
+                  >
+                    <ChevronRight className="w-5 h-5 text-white" />
+                  </button>
+                </>
+              )}
             </div>
 
-            {/* Navigation Arrows */}
+            {/* Thumbnail Strip */}
             {photoList.length > 1 && (
-              <>
-                <button
-                  onClick={handlePrevPhoto}
-                  className="absolute left-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Previous photo"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5 text-white" />
-                </button>
-                <button
-                  onClick={handleNextPhoto}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Next photo"
-                >
-                  <ChevronRight className="w-3.5 h-3.5 text-white" />
-                </button>
-              </>
+              <div className="desktop-photo-thumbnails">
+                {photoList.slice(0, 6).map((photo, idx) => (
+                  <button
+                    key={idx}
+                    onClick={(e) => { e.stopPropagation(); setCurrentPhotoIndex(idx); }}
+                    className={`desktop-thumb-item ${idx === currentPhotoIndex ? 'active' : ''}`}
+                  >
+                    <img src={photo} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+                {photoList.length > 6 && (
+                  <div className="desktop-thumb-more">+{photoList.length - 6}</div>
+                )}
+              </div>
             )}
           </>
         ) : (
-          <div className="property-thumb-placeholder">
-            <Home className="w-8 h-8 text-white/20" />
+          <div className="desktop-photo-placeholder">
+            <Home className="w-12 h-12 text-white/20" />
+            <span className="text-white/30 text-sm mt-2">No photos available</span>
           </div>
         )}
       </div>
 
-      {/* Expand Button */}
-      {showExpandButton && onExpand && (
-        <button
-          onClick={onExpand}
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/5 border border-white/10 rounded-lg flex items-center justify-center hover:bg-white/10 hover:border-teal/30 transition-all"
-        >
-          <ChevronRight className="w-4 h-4 text-white/60" />
-        </button>
-      )}
+      {/* Property Info Bar */}
+      <div className="desktop-property-info-bar">
+        <div className="desktop-property-details">
+          <h2 className="desktop-property-mini-address">{address}</h2>
+          <p className="desktop-property-mini-location">{location}</p>
+          <p className="desktop-property-mini-specs">{specs}</p>
+        </div>
+        
+        <div className="desktop-property-price-block">
+          <span className="desktop-property-mini-price">{formatCurrency(price)}</span>
+          <span className="desktop-property-mini-price-label">{priceLabel}</span>
+        </div>
+
+        {/* Expand Button */}
+        {showExpandButton && onExpand && (
+          <button
+            onClick={onExpand}
+            className="desktop-expand-btn"
+            aria-label="View more"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        )}
+      </div>
     </div>
   )
 }

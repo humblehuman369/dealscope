@@ -42,11 +42,12 @@
    DESKTOP HEADER
 ======================================== */
 
+/* Compact Desktop Header */
 .desktop-app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 32px;
+  padding: 10px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: var(--bg-primary, #07172e);
   position: sticky;
@@ -56,8 +57,8 @@
 }
 
 .desktop-back-btn {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
@@ -75,20 +76,22 @@
 }
 
 .desktop-back-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
 }
 
 .desktop-header-center {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  text-decoration: none;
 }
 
 .desktop-header-logo {
-  font-size: 1.4rem;
+  font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+  color: inherit;
 }
 
 .desktop-header-logo span {
@@ -98,12 +101,12 @@
 .desktop-header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .desktop-theme-toggle {
-  width: 44px;
-  height: 44px;
+  width: 34px;
+  height: 34px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
@@ -111,13 +114,59 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
   transition: all 0.2s ease;
 }
 
 .desktop-theme-toggle:hover {
   border-color: var(--electric-cyan);
   background: rgba(77, 208, 225, 0.1);
+}
+
+/* Auth Buttons - Compact */
+.desktop-auth-btn {
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.desktop-auth-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.desktop-auth-ghost:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: white;
+}
+
+.desktop-auth-primary {
+  background: linear-gradient(135deg, var(--electric-cyan), #0465f2);
+  border: none;
+  color: white;
+  box-shadow: 0 2px 8px rgba(77, 208, 225, 0.3);
+}
+
+.desktop-auth-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(77, 208, 225, 0.4);
+}
+
+/* Light mode auth buttons */
+html:not(.dark) .desktop-auth-ghost {
+  border-color: rgba(0, 0, 0, 0.15);
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-auth-ghost:hover {
+  border-color: rgba(0, 0, 0, 0.3);
+  color: var(--text-primary);
 }
 
 /* ========================================
@@ -168,84 +217,269 @@
 }
 
 /* ========================================
-   PROPERTY MINI CARD - DESKTOP
+   PROPERTY CARD - DESKTOP (FULL-WIDTH PHOTO CAROUSEL)
 ======================================== */
 
-.desktop-property-mini {
-  display: flex;
-  gap: 20px;
-  padding: 20px;
+.desktop-property-card {
   background: var(--card-bg, #0d1e38);
-  border: 1px solid rgba(77, 208, 225, 0.3);
-  border-radius: 20px;
-  margin-bottom: 24px;
-  align-items: center;
+  border: 2px solid var(--electric-cyan);
+  border-radius: 16px;
+  margin-bottom: 20px;
+  overflow: hidden;
 }
 
-.desktop-property-mini-info {
+/* Full-Width Photo Carousel */
+.desktop-photo-carousel {
+  position: relative;
+  background: linear-gradient(135deg, #0d2847 0%, #071a30 100%);
+}
+
+.desktop-photo-main {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.desktop-photo-main img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.desktop-photo-counter {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.desktop-photo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.desktop-photo-carousel:hover .desktop-photo-nav {
+  opacity: 1;
+}
+
+.desktop-photo-nav:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.desktop-photo-nav-left {
+  left: 12px;
+}
+
+.desktop-photo-nav-right {
+  right: 12px;
+}
+
+/* Thumbnail Strip */
+.desktop-photo-thumbnails {
+  display: flex;
+  gap: 6px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.desktop-photo-thumbnails::-webkit-scrollbar {
+  display: none;
+}
+
+.desktop-thumb-item {
+  width: 60px;
+  height: 45px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+
+.desktop-thumb-item:hover {
+  opacity: 0.9;
+}
+
+.desktop-thumb-item.active {
+  border-color: var(--electric-cyan);
+  opacity: 1;
+}
+
+.desktop-thumb-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.desktop-thumb-more {
+  width: 60px;
+  height: 45px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.desktop-photo-placeholder {
+  width: 100%;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Property Info Bar */
+.desktop-property-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.desktop-property-details {
   flex: 1;
   min-width: 0;
-  text-align: left;
 }
 
+.desktop-property-price-block {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.desktop-expand-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.6);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.desktop-expand-btn:hover {
+  background: rgba(77, 208, 225, 0.1);
+  border-color: var(--electric-cyan);
+  color: var(--electric-cyan);
+}
+
+/* Property Text Styles (shared) */
 .desktop-property-mini-address {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--text-primary, #ffffff);
   line-height: 1.3;
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0;
 }
 
 .desktop-property-mini-location {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.5);
-  margin: 0 0 10px 0;
-}
-
-.desktop-property-mini-price-row {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
   margin: 0 0 4px 0;
 }
 
 .desktop-property-mini-price {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--electric-cyan);
-  line-height: 1.3;
+  line-height: 1.2;
+  display: block;
 }
 
 .desktop-property-mini-price-label {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.4);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  display: block;
+  margin-top: 2px;
 }
 
 .desktop-property-mini-specs {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.5);
   margin: 0;
 }
 
-.desktop-property-thumb {
-  width: 100px;
-  height: 100px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #0d2847 0%, #071a30 100%);
-  position: relative;
-  overflow: hidden;
-  flex-shrink: 0;
+/* Light mode property card */
+html:not(.dark) .desktop-property-card {
+  background: var(--bg-secondary);
+}
+
+html:not(.dark) .desktop-property-info-bar {
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-property-mini-address {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-property-mini-location,
+html:not(.dark) .desktop-property-mini-specs {
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-expand-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
 }
 
 /* ========================================
-   STRATEGY SELECTOR - DESKTOP
+   STRATEGY SELECTOR SECTION - DESKTOP
+   Clear visual separation from Sub-tabs
 ======================================== */
 
+.desktop-strategy-selector-section {
+  background: var(--card-bg, #0d1e38);
+  border: 2px solid var(--electric-cyan);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
 .desktop-strategy-selector {
-  margin-bottom: 24px;
+  margin-bottom: 0;
 }
 
 .desktop-strategy-prompt {
@@ -316,14 +550,32 @@
 }
 
 /* ========================================
-   SUB-TAB NAVIGATION - DESKTOP
+   SUB-TAB SECTION - DESKTOP
+   Clear separation with label
 ======================================== */
+
+.desktop-subtab-section {
+  background: var(--card-bg, #0d1e38);
+  border: 2px solid var(--electric-cyan);
+  border-radius: 16px;
+  padding: 12px 20px 16px;
+  margin-bottom: 24px;
+}
+
+.desktop-subtab-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--electric-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
 
 .desktop-sub-tab-nav {
   display: flex;
   gap: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  margin-bottom: 24px;
+  border-bottom: none;
+  margin-bottom: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -366,12 +618,13 @@
    IQ TARGET HERO - DESKTOP
 ======================================== */
 
+/* COMPACT Desktop IQ Target - reduced for desktop viewport */
 .desktop-iq-target-hero {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(77, 208, 225, 0.1) 100%);
-  border: 1px solid rgba(34, 197, 94, 0.4);
-  border-radius: 20px;
-  padding: 28px;
-  margin-bottom: 20px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(77, 208, 225, 0.08) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -384,67 +637,67 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
-  animation: desktop-target-glow 3s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
+  animation: desktop-target-glow 4s ease-in-out infinite;
 }
 
 @keyframes desktop-target-glow {
   0%, 100% {
     transform: translate(0, 0);
-    opacity: 0.5;
+    opacity: 0.4;
   }
   50% {
-    transform: translate(10%, 10%);
-    opacity: 1;
+    transform: translate(5%, 5%);
+    opacity: 0.8;
   }
 }
 
 .desktop-iq-target-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(34, 197, 94, 0.2);
-  border: 1px solid rgba(34, 197, 94, 0.4);
-  border-radius: 24px;
-  padding: 6px 16px;
-  font-size: 0.7rem;
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.6rem;
   font-weight: 700;
   color: #22c55e;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 12px;
-  position: relative;
-}
-
-.desktop-iq-target-label {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 6px;
-  position: relative;
-}
-
-.desktop-iq-target-price {
-  font-size: 3rem;
-  font-weight: 800;
-  color: #22c55e;
-  line-height: 1;
+  letter-spacing: 0.08em;
   margin-bottom: 8px;
   position: relative;
 }
 
+.desktop-iq-target-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 4px;
+  position: relative;
+}
+
+.desktop-iq-target-price {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #22c55e;
+  line-height: 1;
+  margin-bottom: 4px;
+  position: relative;
+}
+
 .desktop-iq-target-discount {
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: var(--electric-cyan);
   font-weight: 600;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   position: relative;
 }
 
 .desktop-iq-target-rationale {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.5;
-  max-width: 400px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.4;
+  max-width: 380px;
   margin: 0 auto;
   position: relative;
 }
@@ -459,19 +712,19 @@
 
 .desktop-price-ladder {
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 2px solid var(--electric-cyan);
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 20px;
 }
 
 .desktop-price-ladder-title {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--electric-cyan);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 16px;
+  letter-spacing: 0.06em;
+  margin-bottom: 18px;
 }
 
 .desktop-price-rung {
@@ -573,7 +826,7 @@
 
 .desktop-returns-at-target {
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(77, 208, 225, 0.05) 100%);
-  border: 1px solid rgba(34, 197, 94, 0.2);
+  border: 2px solid var(--electric-cyan);
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 20px;
@@ -587,12 +840,12 @@
 }
 
 .desktop-returns-title {
-  font-size: 0.85rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #22c55e;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .desktop-returns-badge {
@@ -769,9 +1022,9 @@
 
 .desktop-benchmarks-section {
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 2px solid var(--electric-cyan);
   border-radius: 16px;
-  padding: 16px 12px;
+  padding: 20px;
   margin-bottom: 20px;
 }
 
@@ -783,17 +1036,17 @@
 }
 
 .desktop-benchmarks-title {
-  font-size: 0.85rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: white;
+  color: var(--electric-cyan);
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .desktop-benchmarks-subtitle {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* Benchmark Row */
@@ -1040,9 +1293,9 @@
 
 .desktop-tune-section-collapsible {
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
-  margin-bottom: 14px;
+  border: 2px solid var(--electric-cyan);
+  border-radius: 16px;
+  margin-bottom: 16px;
   overflow: hidden;
 }
 
@@ -1052,19 +1305,19 @@
   justify-content: space-between;
   padding: 16px 20px;
   cursor: pointer;
-  background: rgba(77, 208, 225, 0.05);
+  background: rgba(77, 208, 225, 0.08);
   border-radius: 14px;
   transition: background 0.2s ease;
 }
 
 .desktop-tune-section-header:hover {
-  background: rgba(77, 208, 225, 0.1);
+  background: rgba(77, 208, 225, 0.15);
 }
 
 .desktop-tune-section-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: white;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--electric-cyan);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1232,21 +1485,21 @@
 ======================================== */
 
 .desktop-negotiation-plan {
-  background: rgba(4, 101, 242, 0.08);
-  border: 1px solid rgba(4, 101, 242, 0.2);
+  background: rgba(4, 101, 242, 0.06);
+  border: 2px solid var(--electric-cyan);
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 20px;
 }
 
 .desktop-negotiation-title {
-  font-size: 0.85rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--electric-cyan);
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
 .desktop-negotiation-offers {
@@ -1375,17 +1628,17 @@
 
 .desktop-performance-section {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 2px solid var(--electric-cyan);
   border-radius: 16px;
-  padding: 18px;
-  margin-bottom: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
 }
 
 .desktop-performance-title {
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--electric-cyan);
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .desktop-performance-row {
@@ -1830,62 +2083,486 @@
 
 /* ========================================
    LIGHT THEME OVERRIDES
+   Uses :not(.dark) to target light mode since app uses .dark class on html
 ======================================== */
 
-[data-theme="light"] .desktop-analytics-container {
+/* Main container - Light mode */
+html:not(.dark) .desktop-analytics-container {
   --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --text-primary: #1e293b;
   --text-secondary: #64748b;
   --text-muted: #94a3b8;
-  --border-color: rgba(0, 0, 0, 0.08);
+  --border-color: rgba(0, 0, 0, 0.1);
+  --electric-cyan: #0891b2;
   background: var(--bg-primary);
   color: var(--text-primary);
 }
 
-[data-theme="light"] .desktop-back-btn,
-[data-theme="light"] .desktop-theme-toggle {
+/* Header - Light mode */
+html:not(.dark) .desktop-app-header {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-back-btn,
+html:not(.dark) .desktop-theme-toggle {
   background: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.1);
   color: var(--text-primary);
 }
 
-[data-theme="light"] .desktop-strategy-pill {
+html:not(.dark) .desktop-back-btn svg {
+  stroke: var(--text-primary);
+}
+
+html:not(.dark) .desktop-header-logo {
+  color: var(--text-primary);
+}
+
+/* Property Mini Card - Light mode */
+html:not(.dark) .desktop-property-mini {
   background: var(--bg-secondary);
+  border-color: rgba(0, 126, 167, 0.2);
+}
+
+html:not(.dark) .desktop-property-mini-address {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-property-mini-location,
+html:not(.dark) .desktop-property-mini-specs {
   color: var(--text-secondary);
 }
 
-[data-theme="light"] .desktop-property-mini {
-  background: var(--bg-secondary);
+html:not(.dark) .desktop-property-mini-price-label {
+  color: var(--text-muted);
 }
 
-[data-theme="light"] .desktop-performance-section,
-[data-theme="light"] .desktop-tune-section-collapsible,
-[data-theme="light"] .desktop-benchmarks-section,
-[data-theme="light"] .desktop-price-ladder {
-  background: var(--bg-secondary);
-  border-color: rgba(0, 0, 0, 0.08);
+/* Welcome Section - Light mode */
+html:not(.dark) .desktop-welcome-section {
+  background: linear-gradient(145deg, rgba(8, 145, 178, 0.08) 0%, rgba(4, 101, 242, 0.04) 100%);
+  border-color: rgba(8, 145, 178, 0.3);
 }
 
-[data-theme="light"] .desktop-metric-card,
-[data-theme="light"] .desktop-loan-stat,
-[data-theme="light"] .desktop-tune-group,
-[data-theme="light"] .desktop-return-item,
-[data-theme="light"] .desktop-offer-card {
+html:not(.dark) .desktop-welcome-message {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-welcome-cta {
+  color: var(--text-secondary);
+}
+
+/* Strategy Selector - Light mode */
+html:not(.dark) .desktop-strategy-pill {
+  background: var(--bg-secondary);
+  border-color: rgba(0, 126, 167, 0.3);
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-strategy-pill:hover {
+  border-color: var(--electric-cyan);
+  color: var(--electric-cyan);
+}
+
+html:not(.dark) .desktop-strategy-pill.active {
+  background: rgba(8, 145, 178, 0.1);
+  border-color: var(--electric-cyan);
+  color: var(--electric-cyan);
+}
+
+html:not(.dark) .desktop-prompt-title {
+  color: var(--electric-cyan);
+}
+
+html:not(.dark) .desktop-prompt-subtitle {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-prompt-action {
+  color: var(--text-muted);
+}
+
+/* Sub Tab Navigation - Light mode */
+html:not(.dark) .desktop-sub-tab-nav {
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-sub-tab {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-sub-tab:hover {
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-sub-tab.active {
+  color: var(--electric-cyan);
+}
+
+/* IQ Target Hero - Light mode */
+html:not(.dark) .desktop-iq-target-hero {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(8, 145, 178, 0.08) 100%);
+}
+
+html:not(.dark) .desktop-iq-target-label {
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-iq-target-rationale {
+  color: var(--text-secondary);
+}
+
+/* Price Ladder - Light mode */
+html:not(.dark) .desktop-price-ladder {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-price-ladder-title {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-price-rung {
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-price-rung-name {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-price-rung-desc {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-price-rung-value {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-price-rung-percent {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-price-rung.highlight {
+  background: rgba(34, 197, 94, 0.08);
+}
+
+/* Returns Grid - Light mode */
+html:not(.dark) .desktop-returns-at-target {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.06) 0%, rgba(8, 145, 178, 0.04) 100%);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+html:not(.dark) .desktop-return-item {
   background: rgba(0, 0, 0, 0.02);
-  border-color: rgba(0, 0, 0, 0.06);
 }
 
-[data-theme="light"] .desktop-metric-label,
-[data-theme="light"] .desktop-slider-label,
-[data-theme="light"] .desktop-performance-label {
+html:not(.dark) .desktop-return-item-label {
+  color: var(--text-muted);
+}
+
+/* Metrics Grid - Light mode */
+html:not(.dark) .desktop-metric-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-metric-label {
   color: var(--text-secondary);
 }
 
-[data-theme="light"] .desktop-bottom-nav,
-[data-theme="light"] .desktop-app-header {
+/* Hero Metric - Light mode */
+html:not(.dark) .desktop-hero-metric {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.08) 100%);
+}
+
+html:not(.dark) .desktop-hero-metric-label {
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-hero-metric-subtitle {
+  color: var(--text-muted);
+}
+
+/* Benchmarks - Light mode */
+html:not(.dark) .desktop-benchmarks-section {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-benchmarks-title {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-benchmarks-subtitle {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-benchmark-label {
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-benchmark-value {
+  color: var(--text-primary);
+}
+
+/* Spectrum zones - Light mode */
+html:not(.dark) .desktop-spectrum-zone {
+  border-color: var(--border-color);
+}
+
+/* Insight Cards - Light mode */
+html:not(.dark) .desktop-insight-card {
+  background: rgba(8, 145, 178, 0.06);
+  border-color: rgba(8, 145, 178, 0.15);
+}
+
+html:not(.dark) .desktop-insight-card.success {
+  background: rgba(34, 197, 94, 0.06);
+  border-color: rgba(34, 197, 94, 0.15);
+}
+
+html:not(.dark) .desktop-insight-card.warning {
+  background: rgba(245, 158, 11, 0.06);
+  border-color: rgba(245, 158, 11, 0.15);
+}
+
+html:not(.dark) .desktop-insight-card.danger {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.15);
+}
+
+html:not(.dark) .desktop-insight-card.tip {
+  background: rgba(4, 101, 242, 0.06);
+  border-color: rgba(4, 101, 242, 0.15);
+}
+
+html:not(.dark) .desktop-insight-text {
+  color: var(--text-secondary);
+}
+
+/* Tune Section - Light mode */
+html:not(.dark) .desktop-tune-section-collapsible {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-tune-section-header {
+  background: rgba(8, 145, 178, 0.05);
+}
+
+html:not(.dark) .desktop-tune-section-header:hover {
+  background: rgba(8, 145, 178, 0.1);
+}
+
+html:not(.dark) .desktop-tune-section-title {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-tune-group {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-tune-group-header:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+html:not(.dark) .desktop-tune-group-title {
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-tune-group-toggle {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-slider-label {
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-slider-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Negotiation Plan - Light mode */
+html:not(.dark) .desktop-negotiation-plan {
+  background: rgba(4, 101, 242, 0.06);
+  border-color: rgba(4, 101, 242, 0.15);
+}
+
+html:not(.dark) .desktop-offer-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-offer-card-label {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-offer-card-value {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-offer-card-percent {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-leverage-section {
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-leverage-title {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-leverage-item {
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-leverage-icon {
+  background: rgba(8, 145, 178, 0.1);
+}
+
+/* Compare Toggle - Light mode */
+html:not(.dark) .desktop-compare-toggle {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-compare-option {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-compare-option.active {
+  background: rgba(8, 145, 178, 0.1);
+  color: var(--electric-cyan);
+}
+
+html:not(.dark) .desktop-compare-option.negative.active {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Performance Section - Light mode */
+html:not(.dark) .desktop-performance-section {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-performance-row {
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-performance-label {
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-performance-value {
+  color: var(--text-primary);
+}
+
+/* Formula Card - Light mode */
+html:not(.dark) .desktop-formula-card {
+  background: rgba(4, 101, 242, 0.06);
+  border-color: rgba(4, 101, 242, 0.12);
+}
+
+html:not(.dark) .desktop-formula-label {
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-formula-value {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-formula-total {
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-formula-total .desktop-formula-label {
+  color: var(--text-primary);
+}
+
+/* Loan Summary - Light mode */
+html:not(.dark) .desktop-loan-summary {
+  gap: 8px;
+}
+
+html:not(.dark) .desktop-loan-stat {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-loan-stat-value {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-loan-stat-label {
+  color: var(--text-muted);
+}
+
+/* Deal Score Card - Light mode */
+html:not(.dark) .desktop-deal-score-card {
+  background: linear-gradient(145deg, rgba(8, 145, 178, 0.08) 0%, rgba(4, 101, 242, 0.06) 100%);
+  border-color: rgba(8, 145, 178, 0.2);
+}
+
+html:not(.dark) .desktop-deal-score-label {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-score-item-label {
+  color: var(--text-secondary);
+}
+
+html:not(.dark) .desktop-score-item-bar {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* Pie Chart - Light mode */
+html:not(.dark) .desktop-pie-center {
+  background: var(--bg-secondary);
+}
+
+html:not(.dark) .desktop-pie-total {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-pie-total-label {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-pie-label {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-pie-amount {
+  color: var(--text-primary);
+}
+
+html:not(.dark) .desktop-pie-percent {
+  color: var(--text-muted);
+}
+
+/* Bottom Navigation - Light mode */
+html:not(.dark) .desktop-bottom-nav {
   background: var(--bg-primary);
-  border-color: rgba(0, 0, 0, 0.08);
+  border-color: var(--border-color);
+}
+
+html:not(.dark) .desktop-nav-item {
+  color: var(--text-muted);
+}
+
+html:not(.dark) .desktop-nav-item:hover {
+  color: var(--electric-cyan);
+}
+
+html:not(.dark) .desktop-nav-item.active {
+  color: var(--electric-cyan);
+}
+
+html:not(.dark) .desktop-nav-btn-primary {
+  color: white;
 }
 
 /* ========================================
