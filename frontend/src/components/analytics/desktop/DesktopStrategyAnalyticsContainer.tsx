@@ -30,7 +30,7 @@ import {
   FundingOverview,
   PerformanceSection,
   create10YearProjection,
-  WelcomeSection,
+  IQWelcomeModal,
   StrategyGrid,
   StrategyPrompt,
   createSliderConfig,
@@ -146,7 +146,7 @@ export function DesktopStrategyAnalyticsContainer({
   const [activeSubTab, setActiveSubTab] = useState<SubTabId>('metrics')
   const [compareView, setCompareView] = useState<'target' | 'list'>('target')
   const [assumptions, setAssumptions] = useState(() => createDefaultAssumptions(property))
-  const [isWelcomeCollapsed, setIsWelcomeCollapsed] = useState(false)
+  const [showWelcomeModal, setShowWelcomeModal] = useState(true)
   const [isSaved, setIsSaved] = useState(false)
   const [showLOI, setShowLOI] = useState(false)
   
@@ -250,15 +250,15 @@ export function DesktopStrategyAnalyticsContainer({
           showExpandButton={!!onBack}
         />
 
-        {/* Landing State - No Strategy Selected */}
-        {!activeStrategy && (
-          <div className="space-y-6">
-            {/* Welcome Section */}
-            <WelcomeSection
-              isCollapsed={isWelcomeCollapsed}
-              onToggle={() => setIsWelcomeCollapsed(!isWelcomeCollapsed)}
-            />
+        {/* IQ Welcome Modal */}
+        <IQWelcomeModal
+          isOpen={showWelcomeModal && !activeStrategy}
+          onClose={() => setShowWelcomeModal(false)}
+        />
 
+        {/* Landing State - No Strategy Selected */}
+        {!activeStrategy && !showWelcomeModal && (
+          <div className="space-y-6">
             {/* Strategy Prompt */}
             <StrategyPrompt />
 
@@ -269,7 +269,6 @@ export function DesktopStrategyAnalyticsContainer({
                 setActiveStrategy(id)
                 setActiveSubTab('metrics')
                 setCompareView('target')
-                setIsWelcomeCollapsed(true)
               }}
             />
           </div>

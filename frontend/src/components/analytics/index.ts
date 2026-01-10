@@ -125,6 +125,9 @@ export {
 // Welcome Section - Expandable intro message
 export { WelcomeSection } from './WelcomeSection'
 
+// IQ Welcome Modal - Pop-up intro on page load
+export { IQWelcomeModal } from './IQWelcomeModal'
+
 // Sub Tab Navigation - Tab navigation within strategies
 export {
   SubTabNav,
