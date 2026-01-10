@@ -62,12 +62,6 @@
   align-items: center;
 }
 
-/* Ensure logo stays on far left */
-.landing-page .header-inner .logo {
-  flex-shrink: 0;
-  margin-right: auto;
-}
-
 .landing-page .logo {
   font-size: 1.5rem;
   font-weight: 800;
@@ -104,10 +98,16 @@
   align-items: center;
 }
 
+/* Ensure logo stays on far left */
+.landing-page .header-inner .logo {
+  flex-shrink: 0;
+  margin-right: auto;
+}
+
 /* Header Get Started button - smaller with gradient */
 .landing-page .header-cta .btn-primary {
-  padding: 8px 16px;
-  font-size: 0.8rem;
+  padding: 6px 14px;
+  font-size: 0.75rem;
   background: linear-gradient(90deg, #4dd0e1 0%, #07172e 100%);
   color: #ffffff;
   box-shadow: 0 2px 12px rgba(77, 208, 225, 0.25);
@@ -115,6 +115,16 @@
 
 .landing-page .header-cta .btn-primary:hover {
   box-shadow: 0 4px 16px rgba(77, 208, 225, 0.35);
+}
+
+/* Light mode header button gradient */
+html:not(.dark) .landing-page .header-cta .btn-primary {
+  background: linear-gradient(90deg, #007ea7 0%, #07172e 100%);
+  box-shadow: 0 2px 12px rgba(0, 126, 167, 0.25);
+}
+
+html:not(.dark) .landing-page .header-cta .btn-primary:hover {
+  box-shadow: 0 4px 16px rgba(0, 126, 167, 0.35);
 }
 
 /* Buttons */
