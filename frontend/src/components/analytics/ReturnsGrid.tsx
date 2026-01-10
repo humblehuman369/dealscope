@@ -32,8 +32,8 @@ export function ReturnsGrid({
     <div className="bg-gradient-to-br from-green-500/[0.08] to-teal-500/[0.05] border border-green-500/20 rounded-2xl p-4 mb-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-3.5">
-        <div className="text-[0.75rem] font-bold text-green-500 flex items-center gap-1.5">
-          <CheckCircle className="w-4 h-4" />
+        <div className="text-[1.1rem] font-bold text-green-500 flex items-center gap-1.5">
+          <CheckCircle className="w-5 h-5" />
           {title}
         </div>
         <ReturnsBadge type={data.badgeType} text={data.badge} />

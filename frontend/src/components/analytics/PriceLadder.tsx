@@ -54,7 +54,7 @@ export function PriceLadder({ title = 'Price Position Ladder', rungs }: PriceLad
   return (
     <div className="bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-4 mb-4">
       {/* Header */}
-      <h4 className="text-[0.7rem] font-semibold text-gray-500 dark:text-white/50 uppercase tracking-wide mb-3.5">
+      <h4 className="text-[1.1rem] font-bold text-gray-700 dark:text-white/70 uppercase tracking-wide mb-3.5">
         {title}
       </h4>
 

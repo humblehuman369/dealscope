@@ -46,8 +46,8 @@ export function TuneSection({
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-3.5 bg-teal/[0.05] hover:bg-teal/[0.1] transition-colors duration-200 rounded-xl"
       >
-        <div className="flex items-center gap-2 text-[0.78rem] font-semibold text-gray-800 dark:text-white">
-          <Settings className="w-4 h-4 text-teal" />
+        <div className="flex items-center gap-2 text-[1.1rem] font-bold text-gray-800 dark:text-white">
+          <Settings className="w-5 h-5 text-teal" />
           {title}
         </div>
         <div className="flex items-center gap-2">

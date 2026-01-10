@@ -44,10 +44,10 @@ export function PerformanceBenchmarks({
       {/* Header */}
       <div className="flex items-center justify-between mb-4 px-2">
         <div>
-          <h4 className="text-[0.75rem] font-bold text-gray-800 dark:text-white flex items-center gap-2">
+          <h4 className="text-[1.1rem] font-bold text-gray-800 dark:text-white flex items-center gap-2">
             {title}
           </h4>
-          <p className="text-[0.6rem] text-gray-500 dark:text-white/40">{subtitle}</p>
+          <p className="text-[0.7rem] text-gray-500 dark:text-white/40">{subtitle}</p>
         </div>
       </div>
 
