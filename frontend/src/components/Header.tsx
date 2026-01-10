@@ -54,9 +54,10 @@ export default function Header() {
   }
   
   // Hide main header on desktop for property analytics pages (they have their own DesktopHeader)
+  // TEMPORARILY: Always hide on these pages for desktop testing
   const isPropertyPage = pathname?.startsWith('/property') || pathname === '/analytics-demo'
-  if (isPropertyPage && viewMode === 'desktop') {
-    return null
+  if (isPropertyPage) {
+    return null  // Force hide for desktop testing
   }
 
   return (

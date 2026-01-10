@@ -64,10 +64,13 @@ function DemoContent() {
     return <AnalyticsPageSkeleton />
   }
 
+  // FORCED TO DESKTOP VIEW FOR TESTING
+  const forcedViewMode = 'desktop' as const
+  
   return (
     <div className="min-h-screen overflow-safe">
-      {/* Demo Mode Banner - Only show on mobile */}
-      {viewMode === 'mobile' && (
+      {/* Demo Mode Banner - Hidden when forcing desktop */}
+      {forcedViewMode === 'mobile' && viewMode === 'mobile' && (
         <div className="header-blur sticky top-0 z-50">
           <div className="bg-gradient-to-r from-teal to-blue-500 text-white px-4 py-3 safe-area-pt">
             <div className="max-w-lg mx-auto flex items-center justify-between">
@@ -90,7 +93,7 @@ function DemoContent() {
       <ResponsiveAnalyticsContainer
         property={SAMPLE_PROPERTY}
         onBack={() => router.push('/')}
-        forceViewMode="desktop"
+        forceViewMode={forcedViewMode}
       />
     </div>
   )
