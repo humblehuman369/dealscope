@@ -1,7 +1,8 @@
 'use client'
 
-import React from 'react'
-import { SubTab, SubTabId } from './types'
+import React, { useState, useRef, useEffect } from 'react'
+import { ChevronDown } from 'lucide-react'
+import { SubTab, SubTabId, Strategy } from './types'
 
 /**
  * SubTabNav Component
@@ -166,6 +167,97 @@ export function SubTabNavCompact({ tabs, activeTab, onChange }: SubTabNavCompact
           {tab.label}
         </button>
       ))}
+    </div>
+  )
+}
+
+/**
+ * SubTabDropdown Component
+ * 
+ * A dropdown version that clearly ties to the selected strategy.
+ * Shows strategy name + current view selection.
+ */
+
+interface SubTabDropdownProps {
+  /** Available tabs */
+  tabs: SubTab[]
+  /** Currently active tab ID */
+  activeTab: SubTabId
+  /** Callback when tab changes */
+  onChange: (tabId: SubTabId) => void
+  /** Currently selected strategy */
+  strategy?: Strategy
+}
+
+export function SubTabDropdown({ tabs, activeTab, onChange, strategy }: SubTabDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  
+  const activeTabData = tabs.find(t => t.id === activeTab)
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleSelect = (tabId: SubTabId) => {
+    onChange(tabId)
+    setIsOpen(false)
+  }
+
+  return (
+    <div ref={dropdownRef} className="relative mb-4">
+      {/* Dropdown Trigger */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-gray-100 dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.08] rounded-xl hover:bg-gray-200 dark:hover:bg-white/[0.06] transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          {/* Strategy indicator */}
+          {strategy && (
+            <span className="text-lg">{strategy.icon}</span>
+          )}
+          <div className="text-left">
+            <div className="text-[0.65rem] text-gray-500 dark:text-white/50 uppercase tracking-wide">
+              {strategy ? `${strategy.shortName} Details` : 'View Details'}
+            </div>
+            <div className="text-[0.85rem] font-semibold text-gray-800 dark:text-white">
+              {activeTabData?.label || 'Select View'}
+            </div>
+          </div>
+        </div>
+        <ChevronDown 
+          className={`w-4 h-4 text-gray-500 dark:text-white/60 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      {/* Dropdown Menu */}
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-navy-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-lg z-50 overflow-hidden">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleSelect(tab.id)}
+              className={`w-full flex items-center justify-between px-4 py-3 text-left text-[0.8rem] transition-colors ${
+                tab.id === activeTab
+                  ? 'bg-brand-500/10 dark:bg-teal/10 text-brand-600 dark:text-teal font-semibold'
+                  : 'text-gray-700 dark:text-white/80 hover:bg-gray-100 dark:hover:bg-white/[0.05]'
+              }`}
+            >
+              <span>{tab.label}</span>
+              {tab.id === activeTab && (
+                <span className="text-brand-500 dark:text-teal">✓</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

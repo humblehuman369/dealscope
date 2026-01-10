@@ -9,9 +9,10 @@ import { DesktopIQTargetHero } from './DesktopIQTargetHero'
 import { DesktopTuneSection } from './DesktopTuneSection'
 import { DesktopSpectrumBar } from './DesktopSpectrumBar'
 import { 
-  StrategySelector, 
+  StrategySelector,
   DEFAULT_STRATEGIES,
   SubTabNav,
+  SubTabDropdown,
   getStrategyTabs,
   PriceLadder,
   generatePriceLadder,
@@ -291,15 +292,13 @@ export function DesktopStrategyAnalyticsContainer({
               />
             </div>
 
-            {/* Sub Tab Navigation - Clearly Separated */}
-            <div className="desktop-subtab-section">
-              <div className="desktop-subtab-label">View Details:</div>
-              <SubTabNav
-                tabs={tabs}
-                activeTab={activeSubTab}
-                onChange={setActiveSubTab}
-              />
-            </div>
+            {/* Sub Tab Navigation - Dropdown tied to strategy */}
+            <SubTabDropdown
+              tabs={tabs}
+              activeTab={activeSubTab}
+              onChange={setActiveSubTab}
+              strategy={DEFAULT_STRATEGIES.find(s => s.id === activeStrategy)}
+            />
 
             {/* Tab Content */}
             <div className="space-y-4">
