@@ -46,8 +46,25 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   const [distance, setDistance] = useState(50);
   const [manualHeading, setManualHeading] = useState<number | null>(null);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [showAddressSearch, setShowAddressSearch] = useState(false);
+  const [addressInput, setAddressInput] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   
   const scanner = usePropertyScan();
+
+  // Handle address search
+  const handleAddressSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addressInput.trim()) return;
+    
+    setIsSearching(true);
+    try {
+      router.push(`/property?address=${encodeURIComponent(addressInput.trim())}`);
+    } catch (error) {
+      console.error('Search error:', error);
+      setIsSearching(false);
+    }
+  };
   const { user, isAuthenticated, logout, setShowAuthModal } = useAuth();
 
   // Handle "Use your current location" for desktop users without camera
@@ -203,13 +220,49 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
                 </>
               )}
             </button>
-            <button
-              onClick={() => router.push('/search')}
-              className="w-full py-3 px-6 bg-gray-800 text-white rounded-xl font-medium hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <Search className="w-4 h-4" />
-              Search by Address Instead
-            </button>
+            {!showAddressSearch ? (
+              <button
+                onClick={() => setShowAddressSearch(true)}
+                className="w-full py-3 px-6 bg-gray-800 text-white rounded-xl font-medium hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Search className="w-4 h-4" />
+                Search by Address Instead
+              </button>
+            ) : (
+              <form onSubmit={handleAddressSearch} className="w-full">
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      value={addressInput}
+                      onChange={(e) => setAddressInput(e.target.value)}
+                      placeholder="Enter property address..."
+                      className="w-full py-3 pl-10 pr-4 bg-gray-800 text-white rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      autoFocus
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={!addressInput.trim() || isSearching}
+                    className="px-6 py-3 bg-brand-500 text-white rounded-xl font-bold hover:bg-[#0354d1] transition-colors disabled:opacity-50"
+                  >
+                    {isSearching ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      'Go'
+                    )}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddressSearch(false)}
+                  className="w-full mt-2 py-2 text-gray-400 text-sm hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+              </form>
+            )}
           </div>
           
           <p className="text-gray-500 text-xs mt-6">
@@ -229,6 +282,52 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         muted
         className="absolute inset-0 w-full h-full object-cover"
       />
+
+      {/* Address Search Overlay */}
+      {showAddressSearch && (
+        <div className="absolute inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
+          <div className="w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4 text-center">Search by Address</h2>
+            <form onSubmit={handleAddressSearch}>
+              <div className="relative mb-4">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={addressInput}
+                  onChange={(e) => setAddressInput(e.target.value)}
+                  placeholder="Enter property address..."
+                  className="w-full py-4 pl-12 pr-4 bg-gray-800 text-white rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  autoFocus
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={!addressInput.trim() || isSearching}
+                className="w-full py-4 bg-brand-500 text-white rounded-xl font-bold text-lg hover:bg-[#0354d1] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSearching ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Searching...
+                  </>
+                ) : (
+                  'Analyze Property'
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddressSearch(false);
+                  setAddressInput('');
+                }}
+                className="w-full mt-3 py-3 text-gray-400 font-medium hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div className="absolute inset-0 flex flex-col">
         {/* Header */}
@@ -333,7 +432,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
 
           <div className="flex items-center justify-center gap-4">
             <button
-              onClick={() => router.push('/search')}
+              onClick={() => setShowAddressSearch(true)}
               className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"
               aria-label="Search by address"
             >
