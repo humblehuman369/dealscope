@@ -76,11 +76,13 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
               Before You Invest
             </h1>
             <p className="hero-subtitle">
-              Point &amp; Scan any property. IQ analyzes the deal and local market across 6 strategies in 60 seconds.
+              Scan any property with phone or enter an address.<br/>
+              IQ analyzes the deal and local market across<br/>
+              6 strategies in 60 seconds.
             </p>
             <div className="hero-cta">
               <button onClick={handleGetStarted} className="btn btn-primary">
-                Find the Profit
+                Try it Now
               </button>
               <a href="#demo" className="btn btn-ghost">Watch Demo</a>
             </div>
@@ -164,7 +166,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
           </p>
           <div className="cta-buttons">
             <button onClick={handleGetStarted} className="btn btn-primary btn-large">
-              Start Your Free Analysis
+              Try it Now
             </button>
           </div>
           <div className="app-badges">
