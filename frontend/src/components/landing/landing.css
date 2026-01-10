@@ -507,6 +507,9 @@
 }
 
 .landing-page .strategy-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 20px;

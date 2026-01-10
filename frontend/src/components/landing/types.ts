@@ -8,6 +8,7 @@ export interface Strategy {
   statValue: string;
   statLabel: string;
   color: string;
+  href: string;
 }
 
 export interface Feature {
@@ -31,6 +32,7 @@ export const strategies: Strategy[] = [
     statValue: '8-12%',
     statLabel: 'Cash-on-Cash',
     color: '#0465f2',
+    href: '/strategies/long-term-rental',
   },
   {
     id: 'short',
@@ -40,6 +42,7 @@ export const strategies: Strategy[] = [
     statValue: '15-25%',
     statLabel: 'Cash-on-Cash',
     color: '#8b5cf6',
+    href: '/strategies/short-term-rental',
   },
   {
     id: 'brrrr',
@@ -49,6 +52,7 @@ export const strategies: Strategy[] = [
     statValue: '∞',
     statLabel: 'Scale',
     color: '#f97316',
+    href: '/strategies/brrrr',
   },
   {
     id: 'flip',
@@ -58,6 +62,7 @@ export const strategies: Strategy[] = [
     statValue: '$50K+',
     statLabel: 'Profit',
     color: '#ec4899',
+    href: '/strategies/fix-flip',
   },
   {
     id: 'hack',
@@ -67,6 +72,7 @@ export const strategies: Strategy[] = [
     statValue: '75%',
     statLabel: 'Cost Savings',
     color: '#14b8a6',
+    href: '/strategies/house-hack',
   },
   {
     id: 'wholesale',
@@ -76,6 +82,7 @@ export const strategies: Strategy[] = [
     statValue: '$10K+',
     statLabel: 'Per Deal',
     color: '#84cc16',
+    href: '/strategies/wholesale',
   },
 ];
 

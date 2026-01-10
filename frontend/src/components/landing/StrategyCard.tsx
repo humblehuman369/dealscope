@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Strategy } from './types';
 
 interface StrategyCardProps {
@@ -11,7 +12,7 @@ export function StrategyCard({ strategy }: StrategyCardProps) {
   const isScale = strategy.statValue === '∞';
   
   return (
-    <div className={`strategy-card ${strategy.id}`}>
+    <Link href={strategy.href} className={`strategy-card ${strategy.id}`}>
       <div className="strategy-card-header">
         <div className="strategy-name">{strategy.name}</div>
         <div className="strategy-stat">
@@ -43,6 +44,6 @@ export function StrategyCard({ strategy }: StrategyCardProps) {
       </div>
       <div className="strategy-tagline">{strategy.tagline}</div>
       <div className="strategy-description">{strategy.description}</div>
-    </div>
+    </Link>
   );
 }
