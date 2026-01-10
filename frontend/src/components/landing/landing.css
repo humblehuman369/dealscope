@@ -33,6 +33,20 @@
   --shadow-color: rgba(0, 0, 0, 0.3);
   --header-bg: rgba(10, 10, 18, 0.85);
   --scan-glow: rgba(77, 208, 225, 0.3);
+  
+  /* Strategy Colors */
+  --long-rental: #0465f2;
+  --short-rental: #8b5cf6;
+  --brrrr: #f97316;
+  --flip: #ec4899;
+  --hack: #14b8a6;
+  --wholesale: #84cc16;
+
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
 }
 
 /* Light Mode - System Preference */
@@ -54,21 +68,6 @@
     --teal: #0e7490;
     --iq-icon-color: #0891b2;
   }
-}
-  
-  /* Strategy Colors */
-  --long-rental: #0465f2;
-  --short-rental: #8b5cf6;
-  --brrrr: #f97316;
-  --flip: #ec4899;
-  --hack: #14b8a6;
-  --wholesale: #84cc16;
-
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.6;
-  overflow-x: hidden;
 }
 
 .landing-page * {
