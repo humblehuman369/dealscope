@@ -166,12 +166,14 @@ function PropertyContent() {
 
   // Desktop view uses the integrated header from DesktopStrategyAnalyticsContainer
   // Mobile view uses the separate header below
-  if (viewMode === 'desktop') {
+  // TEMPORARILY FORCED TO DESKTOP FOR TESTING
+  if (viewMode === 'desktop' || true) {
     return (
       <div className="min-h-screen overflow-safe transition-colors">
         <ResponsiveAnalyticsContainer
           property={property}
           onBack={() => router.back()}
+          forceViewMode="desktop"
         />
       </div>
     )

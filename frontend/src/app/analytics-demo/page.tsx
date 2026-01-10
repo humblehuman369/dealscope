@@ -86,10 +86,11 @@ function DemoContent() {
         </div>
       )}
 
-      {/* Responsive Analytics Container - Auto-switches between desktop/mobile */}
+      {/* Responsive Analytics Container - FORCED TO DESKTOP FOR TESTING */}
       <ResponsiveAnalyticsContainer
         property={SAMPLE_PROPERTY}
         onBack={() => router.push('/')}
+        forceViewMode="desktop"
       />
     </div>
   )
