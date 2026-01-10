@@ -13,6 +13,10 @@
   --gray-400: #9ca3af;
   --gray-600: #6b7280;
   
+  /* Primary accent color - Red/Coral */
+  --accent-red: #ff5a5f;
+  --accent-red-dark: #e04a4f;
+  
   /* IQ Icon Color (theme-aware) */
   --iq-icon-color: #4dd0e1;
   
@@ -104,27 +108,19 @@
   margin-right: auto;
 }
 
-/* Header Get Started button - smaller with gradient */
+/* Header Get Started button - smaller with red accent */
 .landing-page .header-cta .btn-primary {
-  padding: 6px 14px;
-  font-size: 0.75rem;
-  background: linear-gradient(90deg, #4dd0e1 0%, #07172e 100%);
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  background: var(--accent-red);
   color: #ffffff;
-  box-shadow: 0 2px 12px rgba(77, 208, 225, 0.25);
+  box-shadow: 0 2px 12px rgba(255, 90, 95, 0.25);
+  border-radius: 8px;
 }
 
 .landing-page .header-cta .btn-primary:hover {
-  box-shadow: 0 4px 16px rgba(77, 208, 225, 0.35);
-}
-
-/* Light mode header button gradient */
-html:not(.dark) .landing-page .header-cta .btn-primary {
-  background: linear-gradient(90deg, #007ea7 0%, #07172e 100%);
-  box-shadow: 0 2px 12px rgba(0, 126, 167, 0.25);
-}
-
-html:not(.dark) .landing-page .header-cta .btn-primary:hover {
-  box-shadow: 0 4px 16px rgba(0, 126, 167, 0.35);
+  background: var(--accent-red-dark);
+  box-shadow: 0 4px 16px rgba(255, 90, 95, 0.35);
 }
 
 /* Buttons */
@@ -152,14 +148,15 @@ html:not(.dark) .landing-page .header-cta .btn-primary:hover {
 }
 
 .landing-page .btn-primary {
-  background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
-  color: var(--deep-navy);
-  box-shadow: 0 4px 20px rgba(77, 208, 225, 0.3);
+  background: var(--accent-red);
+  color: var(--white);
+  box-shadow: 0 4px 20px rgba(255, 90, 95, 0.3);
 }
 
 .landing-page .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 30px rgba(77, 208, 225, 0.4);
+  background: var(--accent-red-dark);
+  box-shadow: 0 6px 30px rgba(255, 90, 95, 0.4);
 }
 
 .landing-page .btn-large {
@@ -220,10 +217,9 @@ html:not(.dark) .landing-page .header-cta .btn-primary:hover {
 
 .landing-page .hero h1 .highlight,
 .landing-page .cta-title .highlight {
-  background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-red);
+  font-style: italic;
+  -webkit-text-fill-color: var(--accent-red);
 }
 
 .landing-page .hero-subtitle {
@@ -556,9 +552,8 @@ html:not(.dark) .landing-page .header-cta .btn-primary:hover {
 
 /* Stats Section */
 .landing-page .stats-section {
-  padding: 60px 0;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 80px 0;
+  background: rgba(255,255,255,0.02);
 }
 
 .landing-page .stats-grid {
@@ -569,7 +564,17 @@ html:not(.dark) .landing-page .header-cta .btn-primary:hover {
 }
 
 .landing-page .stat-item {
-  padding: 24px;
+  padding: 32px 24px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.landing-page .stat-item:hover {
+  border-color: rgba(77, 208, 225, 0.3);
+  background: rgba(77, 208, 225, 0.03);
+  transform: translateY(-2px);
 }
 
 .landing-page .stat-value {
@@ -583,8 +588,8 @@ html:not(.dark) .landing-page .header-cta .btn-primary:hover {
 }
 
 .landing-page .stat-label {
-  font-size: 0.85rem;
-  color: var(--gray-600);
+  font-size: 0.9rem;
+  color: var(--gray-400);
 }
 
 /* Features Section */
@@ -1335,8 +1340,18 @@ html:not(.dark) .landing-page .header-cta .btn-primary:hover {
     min-width: 150px;
   }
   .landing-page .scan-house {
-    width: 240px;
-    height: 280px;
+    width: 280px;
+    height: 320px;
+  }
+}
+
+/* Between 768px and 900px - show both phone and house */
+@media (min-width: 768px) and (max-width: 900px) {
+  .landing-page .scan-phone {
+    display: block;
+  }
+  .landing-page .scan-house {
+    display: block;
   }
 }
 
@@ -1357,14 +1372,30 @@ html:not(.dark) .landing-page .header-cta .btn-primary:hover {
     min-height: auto;
   }
   
+  /* Hide phone on mobile, show house scanning instead */
   .landing-page .scan-phone {
-    transform: none;
-    width: 200px;
-    height: 400px;
+    display: none;
   }
   
   .landing-page .scan-house {
-    display: none;
+    display: block;
+    width: 280px;
+    height: 320px;
+    order: 1;
+  }
+  
+  .landing-page .scan-data-cards {
+    order: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+  
+  .landing-page .scan-data-card {
+    min-width: 140px;
+    flex: 1 1 calc(50% - 12px);
+    max-width: calc(50% - 6px);
   }
   
   .landing-page .demo-brand-line {
