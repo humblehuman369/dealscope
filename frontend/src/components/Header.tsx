@@ -7,6 +7,7 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
 import { usePropertyStore } from '@/stores'
+import { useViewMode } from '@/hooks/useDeviceType'
 
 export default function Header() {
   const pathname = usePathname()
@@ -14,6 +15,7 @@ export default function Header() {
   const { user, isAuthenticated, logout, setShowAuthModal } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const viewMode = useViewMode(1024)
   
   // Get the last viewed property from the store
   const { currentProperty, recentSearches } = usePropertyStore()
@@ -45,8 +47,15 @@ export default function Header() {
   }, [])
   
   // Hide header on home page (scanner), landing pages, search page, and strategy pages since they have their own headers
+  // Also hide on property/analytics pages when on DESKTOP (they use DesktopHeader instead)
   // NOTE: This must be AFTER all hooks to follow React Rules of Hooks
   if (pathname === '/' || pathname === '/landing' || pathname === '/landing2' || pathname === '/search' || pathname?.startsWith('/strategies')) {
+    return null
+  }
+  
+  // Hide main header on desktop for property analytics pages (they have their own DesktopHeader)
+  const isPropertyPage = pathname?.startsWith('/property') || pathname === '/analytics-demo'
+  if (isPropertyPage && viewMode === 'desktop') {
     return null
   }
 

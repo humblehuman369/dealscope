@@ -53,8 +53,9 @@ interface SubTabButtonProps {
 function SubTabButton({ tab, isActive, onClick }: SubTabButtonProps) {
   const baseClasses = "px-3 py-2 text-[0.7rem] font-medium rounded-xl transition-all duration-200 whitespace-nowrap"
   
+  // Use gradient for active state (matching strategy pills)
   const activeClasses = isActive
-    ? "bg-brand-500 dark:bg-teal text-white shadow-[0_2px_8px_rgba(0,175,168,0.35)]"
+    ? "bg-gradient-to-r from-brand-500 dark:from-teal to-blue-500 text-white shadow-[0_2px_10px_rgba(0,175,168,0.4)]"
     : "bg-neutral-100 dark:bg-white/[0.03] text-neutral-600 dark:text-white/60 hover:bg-neutral-200 dark:hover:bg-white/[0.06] hover:text-neutral-800 dark:hover:text-white/80 transition-colors"
 
   return (
@@ -158,7 +159,7 @@ export function SubTabNavCompact({ tabs, activeTab, onChange }: SubTabNavCompact
           onClick={() => onChange(tab.id)}
           className={`px-2 py-1 text-[0.6rem] font-medium rounded-md transition-all whitespace-nowrap ${
             tab.id === activeTab
-              ? 'bg-brand-500 dark:bg-teal text-white'
+              ? 'bg-gradient-to-r from-brand-500 dark:from-teal to-blue-500 text-white'
               : 'text-neutral-500 dark:text-white/50 hover:text-neutral-700 dark:hover:text-white/70'
           }`}
         >

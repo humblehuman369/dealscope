@@ -71,12 +71,12 @@ export function StrategyGrid({ activeStrategy, onSelectStrategy }: StrategyGridP
             key={strategy.id}
             onClick={() => onSelectStrategy(strategy.id)}
             className={`
-              relative bg-[#0d1e38] dark:bg-[#0d1e38] bg-white
+              relative bg-white dark:bg-[#0d1e38]
               border-2 rounded-[14px] p-4 pt-5 text-center
               transition-all duration-200 hover:-translate-y-0.5
               ${isActive 
-                ? 'border-[#4dd0e1] dark:border-[#4dd0e1] border-brand-500 bg-[#4dd0e1]/10 dark:bg-[#4dd0e1]/10 bg-brand-500/5' 
-                : 'border-[#007ea7]/40 dark:border-[#007ea7]/40 border-gray-200 hover:border-[#4dd0e1]/60 dark:hover:border-[#4dd0e1]/60 hover:border-brand-500/60'
+                ? 'border-brand-500 dark:border-[#4dd0e1] bg-brand-500/5 dark:bg-[#4dd0e1]/10' 
+                : 'border-gray-200 dark:border-[#007ea7]/40 hover:border-brand-500/60 dark:hover:border-[#4dd0e1]/60'
               }
             `}
           >
@@ -86,10 +86,10 @@ export function StrategyGrid({ activeStrategy, onSelectStrategy }: StrategyGridP
               style={{ backgroundColor: strategy.color }}
             />
             
-            <h3 className="text-[15px] font-bold text-white dark:text-white text-gray-900 mb-1 mt-1">
+            <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-1 mt-1">
               {strategy.name}
             </h3>
-            <p className="text-[11px] text-gray-400 dark:text-gray-400 text-gray-500 leading-tight">
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
               {strategy.tagline}
             </p>
           </button>
@@ -115,13 +115,13 @@ export function StrategyPrompt({
 }: StrategyPromptProps) {
   return (
     <div className="text-center mb-4">
-      <h2 className="text-xl font-extrabold text-[#4dd0e1] dark:text-[#4dd0e1] text-brand-500 mb-1">
+      <h2 className="text-xl font-extrabold text-brand-500 dark:text-[#4dd0e1] mb-1">
         {title}
       </h2>
-      <p className="text-sm text-gray-300 dark:text-gray-300 text-gray-600 mb-0.5">
+      <p className="text-sm text-gray-600 dark:text-gray-300 mb-0.5">
         {subtitle}
       </p>
-      <p className="text-xs text-gray-500 dark:text-gray-500 text-gray-400">
+      <p className="text-xs text-gray-400 dark:text-gray-500">
         {action}
       </p>
     </div>

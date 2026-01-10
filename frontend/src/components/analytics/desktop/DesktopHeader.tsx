@@ -2,6 +2,8 @@
 
 import React from 'react'
 import { useTheme } from '@/context/ThemeContext'
+import { useAuth } from '@/context/AuthContext'
+import Link from 'next/link'
 
 interface DesktopHeaderProps {
   onBack?: () => void
@@ -10,18 +12,20 @@ interface DesktopHeaderProps {
 
 /**
  * Desktop-specific header for the analytics page.
- * Features:
+ * Consolidated header features:
  * - Back button navigation
- * - InvestIQ branding
- * - Theme toggle (dark/light mode)
+ * - InvestIQ branding (compact)
+ * - Theme toggle (sun icon preferred)
+ * - Sign In / Get Started buttons (compact)
  */
 export function DesktopHeader({ onBack, showBackButton = true }: DesktopHeaderProps) {
   const { theme, toggleTheme } = useTheme()
+  const { user, isAuthenticated, setShowAuthModal } = useAuth()
   const isDark = theme === 'dark'
 
   return (
     <header className="desktop-app-header">
-      {/* Back Button */}
+      {/* Left: Back Button */}
       {showBackButton ? (
         <button 
           className="desktop-back-btn" 
@@ -40,31 +44,51 @@ export function DesktopHeader({ onBack, showBackButton = true }: DesktopHeaderPr
           </svg>
         </button>
       ) : (
-        <div style={{ width: 44 }} />
+        <div style={{ width: 40 }} />
       )}
 
-      {/* Center Logo */}
-      <div className="desktop-header-center">
+      {/* Center Logo - Compact */}
+      <Link href="/" className="desktop-header-center">
         <h1 className="desktop-header-logo">
           Invest<span>IQ</span>
         </h1>
-      </div>
+      </Link>
 
-      {/* Right Side Actions */}
+      {/* Right Side Actions - Compact */}
       <div className="desktop-header-right">
+        {/* Theme Toggle - Sun icon only */}
         <button 
           className="desktop-theme-toggle"
           onClick={toggleTheme}
           aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
         >
-          {isDark ? (
-            // Sun icon for dark mode (click to go light)
-            <span className="icon-sun">☀️</span>
-          ) : (
-            // Moon icon for light mode (click to go dark)
-            <span className="icon-moon">🌙</span>
-          )}
+          {isDark ? '☀️' : '🌙'}
         </button>
+
+        {/* Auth Buttons - Compact */}
+        {isAuthenticated && user ? (
+          <Link 
+            href="/dashboard"
+            className="desktop-auth-btn desktop-auth-primary"
+          >
+            {user.full_name?.split(' ')[0] || 'Dashboard'}
+          </Link>
+        ) : (
+          <>
+            <button 
+              onClick={() => setShowAuthModal('login')}
+              className="desktop-auth-btn desktop-auth-ghost"
+            >
+              Sign In
+            </button>
+            <button 
+              onClick={() => setShowAuthModal('register')}
+              className="desktop-auth-btn desktop-auth-primary"
+            >
+              Get Started
+            </button>
+          </>
+        )}
       </div>
     </header>
   )
