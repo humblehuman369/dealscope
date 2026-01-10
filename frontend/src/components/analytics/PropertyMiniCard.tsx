@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { ChevronDown, Camera, ChevronRight, ChevronLeft } from 'lucide-react'
+import React from 'react'
+import { Camera, ChevronRight } from 'lucide-react'
 import { PropertyMiniData } from './types'
 
 /**
@@ -35,7 +35,6 @@ export function PropertyMiniCard({
 }: PropertyMiniCardProps) {
   // Use provided photos array or create one from thumbnail
   const photoList = photos.length > 0 ? photos : (data.thumbnailUrl ? [data.thumbnailUrl] : [])
-  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const totalPhotos = data.photoCount || photoList.length
 
   const formatCurrency = (value: number) => 
@@ -46,112 +45,54 @@ export function PropertyMiniCard({
       maximumFractionDigits: 0 
     }).format(value)
 
-  const handlePrevPhoto = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setCurrentPhotoIndex((prev) => (prev === 0 ? photoList.length - 1 : prev - 1))
-  }
-
-  const handleNextPhoto = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setCurrentPhotoIndex((prev) => (prev === photoList.length - 1 ? 0 : prev + 1))
-  }
-
   return (
     <div className="mb-4">
-      {/* Full-Width Photo Carousel - First Section */}
+      {/* Full-Width Horizontal Scrolling Photo Carousel */}
       {photoList.length > 0 && (
-        <div className="relative group -mx-4">
-          {/* Large Photo Container */}
-          <div className="w-full aspect-[16/10] bg-neutral-300 dark:bg-navy-700 relative overflow-hidden">
-            <img 
-              src={photoList[currentPhotoIndex]} 
-              alt={`Property photo ${currentPhotoIndex + 1}`}
-              className="w-full h-full object-cover transition-opacity duration-200"
-            />
-            
-            {/* Photo Counter Badge */}
-            <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-2.5 py-1 rounded-lg flex items-center gap-1.5 backdrop-blur-sm">
-              <Camera className="w-3.5 h-3.5" />
-              {currentPhotoIndex + 1}/{totalPhotos}
-            </div>
-
-            {/* Navigation Arrows */}
-            {photoList.length > 1 && (
-              <>
-                {/* Left Arrow */}
-                <button
-                  onClick={handlePrevPhoto}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"
-                  aria-label="Previous photo"
-                >
-                  <ChevronLeft className="w-6 h-6 text-white" />
-                </button>
-
-                {/* Right Arrow */}
-                <button
-                  onClick={handleNextPhoto}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"
-                  aria-label="Next photo"
-                >
-                  <ChevronRight className="w-6 h-6 text-white" />
-                </button>
-              </>
-            )}
-
-            {/* Dot Indicators */}
-            {photoList.length > 1 && (
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                {photoList.slice(0, 8).map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setCurrentPhotoIndex(idx)
-                    }}
-                    aria-label={`Go to photo ${idx + 1}`}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      idx === currentPhotoIndex 
-                        ? 'bg-white w-4' 
-                        : 'bg-white/50 hover:bg-white/70'
-                    }`}
-                  />
-                ))}
-                {photoList.length > 8 && (
-                  <span className="text-white/70 text-xs ml-1">+{photoList.length - 8}</span>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Thumbnail Strip */}
-          {photoList.length > 1 && (
-            <div className="flex gap-1 mt-1 px-0 overflow-x-auto scrollbar-hide">
-              {photoList.slice(0, 6).map((photo, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentPhotoIndex(idx)}
-                  aria-label={`View photo ${idx + 1}`}
-                  className={`flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden transition-all ${
-                    idx === currentPhotoIndex 
-                      ? 'ring-2 ring-[#4dd0e1] opacity-100' 
-                      : 'opacity-60 hover:opacity-100'
-                  }`}
-                >
+        <div className="-mx-4">
+          {/* Scrolling Container */}
+          <div 
+            className="flex gap-2 overflow-x-auto snap-x snap-mandatory px-4 pb-3"
+            style={{ 
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch'
+            }}
+          >
+            {photoList.map((photo, idx) => (
+              <div
+                key={idx}
+                className="flex-shrink-0 snap-start"
+                style={{ 
+                  width: 'clamp(200px, 65vw, 320px)',
+                  minWidth: '200px'
+                }}
+              >
+                <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-neutral-300 dark:bg-navy-700">
                   <img 
                     src={photo} 
-                    alt={`Thumbnail ${idx + 1}`}
+                    alt={`Property photo ${idx + 1}`}
                     className="w-full h-full object-cover"
                   />
-                </button>
-              ))}
-            </div>
-          )}
+                  {/* Photo Counter Badge - only on first photo */}
+                  {idx === 0 && (
+                    <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1.5 backdrop-blur-sm">
+                      <Camera className="w-3.5 h-3.5" />
+                      1/{totalPhotos}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {/* End spacer for proper scroll padding */}
+            <div className="flex-shrink-0 w-2" />
+          </div>
         </div>
       )}
 
       {/* Placeholder when no photos */}
       {photoList.length === 0 && (
-        <div className="w-full aspect-[16/10] bg-neutral-200 dark:bg-white/[0.05] flex items-center justify-center -mx-4">
+        <div className="w-full aspect-[4/3] bg-neutral-200 dark:bg-white/[0.05] flex items-center justify-center rounded-xl mx-0">
           <Camera className="w-12 h-12 text-neutral-400 dark:text-white/20" />
         </div>
       )}
