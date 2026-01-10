@@ -164,8 +164,11 @@
 }
 
 .landing-page .hero-badge {
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-top: 48px;
+  width: 100%;
 }
 
 .landing-page .hero-badge svg {
@@ -206,6 +209,8 @@
   flex-direction: column;
   gap: 16px;
   align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 .landing-page .hero-cta .btn-primary {
@@ -632,7 +637,11 @@
 }
 
 .landing-page .cta-iq-avatar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 24px;
+  width: 100%;
 }
 
 .landing-page .cta-iq-avatar img {
@@ -668,6 +677,8 @@
   flex-direction: column;
   gap: 16px;
   align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 .landing-page .app-badges {
@@ -1342,10 +1353,12 @@
 @media (min-width: 640px) {
   .landing-page .hero-cta {
     flex-direction: row;
+    justify-content: center;
   }
 
   .landing-page .cta-buttons {
     flex-direction: row;
+    justify-content: center;
   }
 
   .landing-page .strategy-grid {
