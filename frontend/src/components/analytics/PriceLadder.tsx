@@ -37,9 +37,9 @@ const rungMarkerColors: Record<PriceRungType, string> = {
 const rungValueColors: Record<PriceRungType, string> = {
   list: 'text-red-500',
   ninety: 'text-orange-500',
-  breakeven: 'text-white',
+  breakeven: 'text-gray-800 dark:text-white',
   target: 'text-green-500',
-  offer: 'text-white'
+  offer: 'text-gray-800 dark:text-white'
 }
 
 export function PriceLadder({ title = 'Price Position Ladder', rungs }: PriceLadderProps) {
@@ -52,9 +52,9 @@ export function PriceLadder({ title = 'Price Position Ladder', rungs }: PriceLad
     }).format(value)
 
   return (
-    <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 mb-4">
+    <div className="bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-4 mb-4">
       {/* Header */}
-      <h4 className="text-[0.7rem] font-semibold text-white/50 uppercase tracking-wide mb-3.5">
+      <h4 className="text-[0.7rem] font-semibold text-gray-500 dark:text-white/50 uppercase tracking-wide mb-3.5">
         {title}
       </h4>
 
@@ -95,7 +95,7 @@ function PriceRungRow({ rung, isLast }: PriceRungRowProps) {
 
   return (
     <div 
-      className={`flex items-center py-2.5 ${!isLast ? 'border-b border-white/[0.04]' : ''} ${wrapperClasses}`}
+      className={`flex items-center py-2.5 ${!isLast ? 'border-b border-gray-200 dark:border-white/[0.04]' : ''} ${wrapperClasses}`}
     >
       {/* Marker Dot */}
       <div 
@@ -104,11 +104,11 @@ function PriceRungRow({ rung, isLast }: PriceRungRowProps) {
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className={`text-[0.75rem] font-semibold flex items-center gap-1.5 ${isTarget ? 'text-green-500' : 'text-white/90'}`}>
+        <div className={`text-[0.75rem] font-semibold flex items-center gap-1.5 ${isTarget ? 'text-green-500' : 'text-gray-800 dark:text-white/90'}`}>
           {isTarget && <Target className="w-3 h-3" />}
           {rung.name}
         </div>
-        <div className="text-[0.65rem] text-white/40">
+        <div className="text-[0.65rem] text-gray-500 dark:text-white/40">
           {rung.description}
         </div>
       </div>
@@ -119,7 +119,7 @@ function PriceRungRow({ rung, isLast }: PriceRungRowProps) {
       </div>
 
       {/* Percentage */}
-      <div className="text-[0.65rem] text-white/40 ml-2 w-10 text-right">
+      <div className="text-[0.65rem] text-gray-500 dark:text-white/40 ml-2 w-10 text-right">
         {Math.round(rung.percentOfList)}%
       </div>
     </div>
@@ -208,18 +208,18 @@ export function PriceLadderCompact({ listPrice, targetPrice, openingOffer }: Pri
     <div className="flex items-center gap-2 text-xs">
       <div className="flex items-center gap-1">
         <div className="w-2 h-2 rounded-full bg-red-500" />
-        <span className="text-white/60">{formatCompact(listPrice)}</span>
+        <span className="text-gray-600 dark:text-white/60">{formatCompact(listPrice)}</span>
       </div>
-      <span className="text-white/30">→</span>
+      <span className="text-gray-400 dark:text-white/30">→</span>
       <div className="flex items-center gap-1">
         <Target className="w-3 h-3 text-green-500" />
         <span className="text-green-500 font-semibold">{formatCompact(targetPrice)}</span>
-        <span className="text-white/40">({targetPercent}%)</span>
+        <span className="text-gray-500 dark:text-white/40">({targetPercent}%)</span>
       </div>
-      <span className="text-white/30">→</span>
+      <span className="text-gray-400 dark:text-white/30">→</span>
       <div className="flex items-center gap-1">
         <div className="w-2 h-2 rounded-full bg-teal" />
-        <span className="text-white/60">{formatCompact(openingOffer)}</span>
+        <span className="text-gray-600 dark:text-white/60">{formatCompact(openingOffer)}</span>
       </div>
     </div>
   )
