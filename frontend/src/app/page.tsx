@@ -196,10 +196,12 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
           
           <h2 className="text-2xl font-bold text-white mb-3">Experience Instant Analytics</h2>
           <p className="text-gray-300 mb-2">
-            Camera not available on this device, but you can still see the magic!
+            Camera not available on this device,<br />
+            but you can still see the magic!
           </p>
           <p className="text-gray-400 text-sm mb-8">
-            We&apos;ll use your GPS to find properties near you and show you our instant property analysis.
+            We&apos;ll use your GPS to find properties near you<br />
+            and show you our instant property analysis.
           </p>
           
           <div className="flex flex-col gap-3">
