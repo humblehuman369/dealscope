@@ -2171,6 +2171,22 @@ html:not(.dark) .desktop-strategy-pill.active {
   color: var(--electric-cyan);
 }
 
+/* Strategy Selector Section - Light mode */
+html:not(.dark) .desktop-strategy-selector-section {
+  background: var(--bg-secondary, #ffffff);
+  border-color: rgba(0, 126, 167, 0.3);
+}
+
+/* Sub-Tab Section - Light mode */
+html:not(.dark) .desktop-subtab-section {
+  background: var(--bg-secondary, #ffffff);
+  border-color: rgba(0, 126, 167, 0.3);
+}
+
+html:not(.dark) .desktop-subtab-label {
+  color: var(--text-secondary);
+}
+
 html:not(.dark) .desktop-prompt-title {
   color: var(--electric-cyan);
 }
