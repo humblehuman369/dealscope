@@ -57,12 +57,12 @@ export function PropertyMiniCard({
   }
 
   return (
-    <div className="bg-neutral-100 dark:bg-white/[0.03] border border-neutral-200 dark:border-white/[0.06] rounded-2xl p-3 flex gap-3 mb-4 transition-colors">
-      {/* Photo Carousel */}
+    <div className="mb-4">
+      {/* Full-Width Photo Carousel - First Section */}
       {photoList.length > 0 && (
-        <div className="relative flex-shrink-0 group">
-          {/* Photo Container */}
-          <div className="w-20 h-20 rounded-xl bg-neutral-300 dark:bg-navy-700 relative overflow-hidden">
+        <div className="relative group -mx-4">
+          {/* Large Photo Container */}
+          <div className="w-full aspect-[16/10] bg-neutral-300 dark:bg-navy-700 relative overflow-hidden">
             <img 
               src={photoList[currentPhotoIndex]} 
               alt={`Property photo ${currentPhotoIndex + 1}`}
@@ -70,45 +70,79 @@ export function PropertyMiniCard({
             />
             
             {/* Photo Counter Badge */}
-            <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[0.55rem] px-1.5 py-0.5 rounded flex items-center gap-1">
-              <Camera className="w-2.5 h-2.5" />
+            <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-2.5 py-1 rounded-lg flex items-center gap-1.5 backdrop-blur-sm">
+              <Camera className="w-3.5 h-3.5" />
               {currentPhotoIndex + 1}/{totalPhotos}
             </div>
+
+            {/* Navigation Arrows */}
+            {photoList.length > 1 && (
+              <>
+                {/* Left Arrow */}
+                <button
+                  onClick={handlePrevPhoto}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"
+                  aria-label="Previous photo"
+                >
+                  <ChevronLeft className="w-6 h-6 text-white" />
+                </button>
+
+                {/* Right Arrow */}
+                <button
+                  onClick={handleNextPhoto}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"
+                  aria-label="Next photo"
+                >
+                  <ChevronRight className="w-6 h-6 text-white" />
+                </button>
+              </>
+            )}
+
+            {/* Dot Indicators */}
+            {photoList.length > 1 && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {photoList.slice(0, 8).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setCurrentPhotoIndex(idx)
+                    }}
+                    aria-label={`Go to photo ${idx + 1}`}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      idx === currentPhotoIndex 
+                        ? 'bg-white w-4' 
+                        : 'bg-white/50 hover:bg-white/70'
+                    }`}
+                  />
+                ))}
+                {photoList.length > 8 && (
+                  <span className="text-white/70 text-xs ml-1">+{photoList.length - 8}</span>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Navigation Arrows - Show on hover or always on touch devices */}
+          {/* Thumbnail Strip */}
           {photoList.length > 1 && (
-            <>
-              {/* Left Arrow */}
-              <button
-                onClick={handlePrevPhoto}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 bg-black/70 hover:bg-black/90 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 md:opacity-100 touch-target"
-                aria-label="Previous photo"
-              >
-                <ChevronLeft className="w-3 h-3 text-white" />
-              </button>
-
-              {/* Right Arrow */}
-              <button
-                onClick={handleNextPhoto}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-5 h-5 bg-black/70 hover:bg-black/90 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 md:opacity-100 touch-target"
-                aria-label="Next photo"
-              >
-                <ChevronRight className="w-3 h-3 text-white" />
-              </button>
-            </>
-          )}
-
-          {/* Dot Indicators */}
-          {photoList.length > 1 && photoList.length <= 5 && (
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5">
-              {photoList.map((_, idx) => (
-                <div
+            <div className="flex gap-1 mt-1 px-0 overflow-x-auto scrollbar-hide">
+              {photoList.slice(0, 6).map((photo, idx) => (
+                <button
                   key={idx}
-                  className={`w-1 h-1 rounded-full transition-colors ${
-                    idx === currentPhotoIndex ? 'bg-brand-500 dark:bg-teal' : 'bg-neutral-400 dark:bg-white/30'
+                  onClick={() => setCurrentPhotoIndex(idx)}
+                  aria-label={`View photo ${idx + 1}`}
+                  className={`flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden transition-all ${
+                    idx === currentPhotoIndex 
+                      ? 'ring-2 ring-[#4dd0e1] opacity-100' 
+                      : 'opacity-60 hover:opacity-100'
                   }`}
-                />
+                >
+                  <img 
+                    src={photo} 
+                    alt={`Thumbnail ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
               ))}
             </div>
           )}
@@ -117,41 +151,48 @@ export function PropertyMiniCard({
 
       {/* Placeholder when no photos */}
       {photoList.length === 0 && (
-        <div className="w-20 h-20 rounded-xl bg-neutral-200 dark:bg-white/[0.05] flex-shrink-0 flex items-center justify-center">
-          <Camera className="w-6 h-6 text-neutral-400 dark:text-white/20" />
+        <div className="w-full aspect-[16/10] bg-neutral-200 dark:bg-white/[0.05] flex items-center justify-center -mx-4">
+          <Camera className="w-12 h-12 text-neutral-400 dark:text-white/20" />
         </div>
       )}
 
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="text-[0.85rem] font-bold text-navy-900 dark:text-white leading-tight truncate">
-          {data.address}
-        </div>
-        <div className="text-[0.72rem] text-neutral-500 dark:text-white/50 mb-2 truncate">
-          {data.location}
-        </div>
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-[1rem] font-bold text-brand-500 dark:text-teal">
-            {formatCurrency(data.price)}
-          </span>
-          <span className="text-[0.6rem] text-neutral-400 dark:text-white/40 uppercase">
-            {data.priceLabel}
-          </span>
-        </div>
-        <div className="text-[0.68rem] text-neutral-500 dark:text-white/50 mt-1">
-          {data.specs}
+      {/* Property Info - Below Photos */}
+      <div className="bg-neutral-100 dark:bg-white/[0.03] border border-neutral-200 dark:border-white/[0.06] rounded-2xl p-4 mt-3 transition-colors">
+        <div className="flex justify-between items-start">
+          <div className="flex-1 min-w-0">
+            <div className="text-lg font-bold text-navy-900 dark:text-white leading-tight">
+              {data.address}
+            </div>
+            <div className="text-sm text-neutral-500 dark:text-white/50 mb-2">
+              {data.location}
+            </div>
+            <div className="text-sm text-neutral-500 dark:text-white/50">
+              {data.specs}
+            </div>
+          </div>
+          
+          <div className="flex flex-col items-end">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xl font-bold text-brand-500 dark:text-teal">
+                {formatCurrency(data.price)}
+              </span>
+            </div>
+            <span className="text-xs text-neutral-400 dark:text-white/40 uppercase">
+              {data.priceLabel}
+            </span>
+            
+            {/* Save Button */}
+            {showExpandButton && onExpand && (
+              <button
+                onClick={onExpand}
+                className="mt-2 px-3 py-1.5 bg-neutral-200 dark:bg-white/[0.05] border border-neutral-300 dark:border-white/10 rounded-lg flex items-center gap-1.5 hover:bg-neutral-300 dark:hover:bg-white/[0.1] transition-colors text-sm text-neutral-600 dark:text-white/70"
+              >
+                <span>⊡</span> Save
+              </button>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Expand Button */}
-      {showExpandButton && onExpand && (
-        <button
-          onClick={onExpand}
-          className="flex-shrink-0 self-center w-7 h-7 bg-neutral-200 dark:bg-white/[0.05] border border-neutral-300 dark:border-white/10 rounded-lg flex items-center justify-center hover:bg-neutral-300 dark:hover:bg-white/[0.1] transition-colors"
-        >
-          <ChevronRight className="w-3.5 h-3.5 text-neutral-500 dark:text-white/60" />
-        </button>
-      )}
     </div>
   )
 }

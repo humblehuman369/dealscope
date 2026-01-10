@@ -197,8 +197,8 @@ export function StrategyAnalyticsContainer({ property, onBack }: StrategyAnalyti
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0b1426] to-[#091020] text-white">
-      {/* Property Mini Card */}
-      <div className="px-4 pt-4">
+      {/* Property Photos & Card */}
+      <div className="px-4">
         <PropertyMiniCard
           data={{
             address: property.address,
