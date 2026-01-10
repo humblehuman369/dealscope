@@ -129,6 +129,7 @@ export { WelcomeSection } from './WelcomeSection'
 export {
   SubTabNav,
   SubTabNavCompact,
+  SubTabDropdown,
   LTR_TABS,
   STR_TABS,
   BRRRR_TABS,
