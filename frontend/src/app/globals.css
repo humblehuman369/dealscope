@@ -439,6 +439,231 @@ html.dark .text-brand-solid {
 }
 
 /* ==========================================
+   Strategy Grid Analytics - Property Page
+   ========================================== */
+.strategy-grid-analytics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .strategy-grid-analytics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.strategy-card-analytics {
+  position: relative;
+  display: block;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--strategy-border, rgba(255, 255, 255, 0.1));
+  border-radius: 16px;
+  padding: 20px;
+  padding-left: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.strategy-card-analytics:hover {
+  transform: translateY(-2px);
+  border-color: var(--strategy-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.strategy-card-analytics.active {
+  border-color: #4dd0e1;
+  box-shadow: 0 0 0 2px rgba(77, 208, 225, 0.3);
+}
+
+.strategy-accent-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  border-radius: 4px 0 0 4px;
+}
+
+.strategy-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.strategy-number-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.strategy-stat {
+  text-align: right;
+}
+
+.strategy-stat-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.strategy-stat-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+}
+
+.strategy-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.strategy-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.strategy-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.strategy-tagline {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.strategy-active-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+/* Strategy Prompt Header */
+.strategy-prompt {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-top: 8px;
+}
+
+.strategy-prompt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(77, 208, 225, 0.1);
+  padding: 6px 16px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.strategy-prompt-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4dd0e1;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.strategy-prompt-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #4dd0e1;
+}
+
+.strategy-prompt-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 8px 0;
+}
+
+.strategy-prompt-subtitle {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Light mode adjustments */
+@media (prefers-color-scheme: light) {
+  .strategy-card-analytics {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: var(--strategy-border, rgba(0, 0, 0, 0.1));
+  }
+  
+  .strategy-card-analytics:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .strategy-stat-label {
+    color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .strategy-tagline {
+    color: rgba(0, 0, 0, 0.6);
+  }
+  
+  .strategy-prompt-title {
+    color: #0f172a;
+  }
+  
+  .strategy-prompt-subtitle {
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Dark mode class support */
+.dark .strategy-card-analytics {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dark .strategy-stat-label {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.dark .strategy-tagline {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dark .strategy-prompt-title {
+  color: #fff;
+}
+
+.dark .strategy-prompt-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Pulse animation for badge dot */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+/* ==========================================
    Landing Page Imports
    ========================================== */
 @import '../components/landing/landing.css';
