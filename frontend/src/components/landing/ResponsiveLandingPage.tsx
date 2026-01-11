@@ -74,6 +74,11 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
       <section className="hero">
         <div className="container">
           <div className="hero-content">
+            {/* Eyebrow tagline */}
+            <div className="hero-eyebrow">
+              <span className="hero-eyebrow-text">Intel for Real Estate Investors</span>
+            </div>
+            
             <h1>
               Know the <span className="highlight">Real Return</span><br/>
               Before You Invest
