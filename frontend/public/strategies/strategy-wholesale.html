@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wholesale Strategy | InvestIQ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --deep-navy: #07172e; --dark-bg: #0a0a12; --electric-cyan: #4dd0e1; --teal: #007ea7; --white: #ffffff; --gray-200: #e5e7eb; --gray-300: #d1d5db; --gray-400: #9ca3af; --gray-600: #6b7280; --strategy-color: #84cc16; --strategy-glow: rgba(132, 204, 22, 0.3); --strategy-light: #bef264; }
+        * { box-sizing: border-box; margin: 0; padding: 0; } html { scroll-behavior: smooth; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--dark-bg); color: var(--white); line-height: 1.6; overflow-x: hidden; }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+        .iq-logo { height: 48px; width: auto; } .iq-logo-small { height: 24px; width: auto; } .iq-logo-large { height: 80px; width: auto; }
+        header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 16px 0; background: rgba(10, 10, 18, 0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(132, 204, 22, 0.1); }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--white); text-decoration: none; display: flex; align-items: center; gap: 10px; } .logo span { color: var(--electric-cyan); }
+        .back-link { display: flex; align-items: center; gap: 8px; color: var(--gray-400); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; } .back-link:hover { color: var(--white); }
+        .hero { padding: 140px 0 80px; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at 30% 20%, var(--strategy-glow) 0%, transparent 40%), radial-gradient(ellipse at 70% 80%, rgba(77, 208, 225, 0.08) 0%, transparent 40%); pointer-events: none; }
+        .hero-content { position: relative; z-index: 1; }
+        .strategy-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(132, 204, 22, 0.15); border: 1px solid rgba(132, 204, 22, 0.3); padding: 8px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 600; color: var(--strategy-color); margin-bottom: 24px; }
+        .no-capital-tag { background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; margin-left: 8px; }
+        .hero h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; line-height: 1.1; margin-bottom: 24px; letter-spacing: -1px; }
+        .hero h1 .highlight { background: linear-gradient(135deg, var(--strategy-color) 0%, var(--strategy-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .definition-box { background: linear-gradient(135deg, rgba(132, 204, 22, 0.1) 0%, rgba(7, 23, 46, 0.8) 100%); border: 1px solid rgba(132, 204, 22, 0.2); border-radius: 20px; padding: 32px; max-width: 800px; }
+        .definition-text { font-size: 1.15rem; color: var(--gray-200); line-height: 1.8; }
+        .iq-intro { display: flex; align-items: flex-start; gap: 20px; background: linear-gradient(135deg, rgba(77, 208, 225, 0.08) 0%, rgba(7, 23, 46, 0.5) 100%); border: 1px solid rgba(77, 208, 225, 0.2); border-radius: 16px; padding: 24px; margin-top: 32px; max-width: 800px; }
+        .iq-intro-icon { flex-shrink: 0; } .iq-intro-content h3 { font-size: 1rem; color: var(--electric-cyan); margin-bottom: 8px; font-weight: 700; }
+        .iq-intro-content p { font-size: 0.95rem; color: var(--gray-300); line-height: 1.7; font-style: italic; }
+        .flow-section { padding: 80px 0; background: linear-gradient(180deg, transparent 0%, rgba(132, 204, 22, 0.03) 50%, transparent 100%); }
+        .transaction-flow { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 900px; margin: 0 auto 40px; }
+        .flow-node { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; padding: 28px; text-align: center; min-width: 180px; transition: all 0.3s ease; }
+        .flow-node:hover { border-color: var(--strategy-color); transform: translateY(-4px); }
+        .flow-node.you { background: linear-gradient(135deg, rgba(132, 204, 22, 0.15) 0%, rgba(132, 204, 22, 0.05) 100%); border: 2px solid var(--strategy-color); }
+        .flow-label { font-size: 0.75rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .flow-title { font-size: 1.1rem; font-weight: 700; } .flow-node.you .flow-title { color: var(--strategy-color); }
+        .flow-arrow { font-size: 2rem; color: var(--strategy-color); animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        @media (max-width: 768px) { .transaction-flow { flex-direction: column; } .flow-arrow { transform: rotate(90deg); } }
+        .fee-callout { text-align: center; padding: 24px; background: linear-gradient(135deg, rgba(132, 204, 22, 0.1) 0%, rgba(132, 204, 22, 0.02) 100%); border: 1px solid rgba(132, 204, 22, 0.2); border-radius: 16px; max-width: 400px; margin: 0 auto 60px; }
+        .fee-label { font-size: 0.9rem; color: var(--gray-400); margin-bottom: 8px; }
+        .fee-amount { font-size: 2.5rem; font-weight: 800; color: var(--strategy-color); }
+        .fee-note { font-size: 0.85rem; color: var(--gray-500); margin-top: 8px; }
+        .motivation-text { max-width: 800px; margin: 0 auto; text-align: center; }
+        .motivation-text h2 { font-size: 2rem; font-weight: 700; margin-bottom: 24px; } .motivation-text h2 span { color: var(--strategy-color); }
+        .motivation-text p { font-size: 1.1rem; color: var(--gray-400); line-height: 1.9; }
+        .zero-capital-section { padding: 60px 0; }
+        .capital-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; max-width: 700px; margin: 0 auto; }
+        .capital-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 16px; padding: 24px; text-align: center; position: relative; overflow: hidden; }
+        .capital-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--strategy-color), var(--strategy-light)); }
+        .capital-value { font-size: 2rem; font-weight: 800; color: var(--strategy-color); margin-bottom: 8px; }
+        .capital-label { font-size: 0.9rem; color: var(--gray-400); }
+        .section-header { text-align: center; margin-bottom: 60px; }
+        .section-label { font-size: 0.8rem; font-weight: 600; color: var(--strategy-color); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .section-title { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; }
+        .process-section { padding: 100px 0; }
+        .process-timeline { max-width: 800px; margin: 0 auto; position: relative; }
+        .process-timeline::before { content: ''; position: absolute; left: 50%; transform: translateX(-50%); top: 0; bottom: 0; width: 4px; background: linear-gradient(180deg, var(--strategy-color), var(--strategy-light), var(--strategy-color)); border-radius: 2px; }
+        @media (max-width: 768px) { .process-timeline::before { left: 24px; } }
+        .process-step { display: flex; align-items: flex-start; margin-bottom: 48px; position: relative; }
+        .process-step:nth-child(even) { flex-direction: row-reverse; }
+        @media (max-width: 768px) { .process-step, .process-step:nth-child(even) { flex-direction: row; padding-left: 70px; } }
+        .process-content { flex: 1; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 16px; padding: 24px; margin: 0 40px; transition: all 0.3s ease; }
+        @media (max-width: 768px) { .process-content { margin: 0; } }
+        .process-content:hover { border-color: var(--strategy-color); }
+        .process-dot { position: absolute; left: 50%; transform: translateX(-50%); width: 48px; height: 48px; background: var(--dark-bg); border: 3px solid var(--strategy-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: var(--strategy-color); z-index: 1; }
+        @media (max-width: 768px) { .process-dot { left: 24px; width: 40px; height: 40px; font-size: 0.85rem; } }
+        .process-number { font-size: 0.75rem; color: var(--strategy-color); font-weight: 700; margin-bottom: 4px; }
+        .process-title { font-size: 1.1rem; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+        .process-desc { font-size: 0.9rem; color: var(--gray-400); line-height: 1.6; }
+        .process-spacer { flex: 1; }
+        .guide-section { padding: 100px 0; background: linear-gradient(180deg, rgba(7, 23, 46, 0.3) 0%, transparent 100%); }
+        .guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; }
+        @media (max-width: 400px) { .guide-grid { grid-template-columns: 1fr; } }
+        .guide-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; padding: 28px; transition: all 0.3s ease; }
+        .guide-card:hover { border-color: rgba(132, 204, 22, 0.3); }
+        .guide-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+        .guide-number { width: 44px; height: 44px; background: linear-gradient(135deg, var(--strategy-color), var(--strategy-light)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; color: var(--dark-bg); }
+        .guide-title { font-size: 1.05rem; font-weight: 700; }
+        .guide-text { font-size: 0.9rem; color: var(--gray-400); line-height: 1.7; margin-bottom: 16px; }
+        .iq-tip { background: linear-gradient(135deg, rgba(77, 208, 225, 0.1) 0%, rgba(77, 208, 225, 0.02) 100%); border-left: 3px solid var(--electric-cyan); border-radius: 0 10px 10px 0; padding: 14px; display: flex; gap: 12px; align-items: flex-start; }
+        .iq-tip-icon { flex-shrink: 0; }
+        .iq-tip-label { font-size: 0.75rem; font-weight: 700; color: var(--electric-cyan); margin-bottom: 6px; }
+        .iq-tip-text { font-size: 0.85rem; color: var(--gray-300); line-height: 1.6; }
+        .investiq-callout { background: linear-gradient(135deg, rgba(77, 208, 225, 0.1) 0%, rgba(132, 204, 22, 0.1) 100%); border: 1px solid rgba(77, 208, 225, 0.3); border-radius: 20px; padding: 32px; margin: 60px auto; max-width: 800px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+        .investiq-callout-icon { flex-shrink: 0; }
+        .investiq-callout-content { flex: 1; min-width: 280px; }
+        .investiq-callout-content h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; color: var(--electric-cyan); }
+        .investiq-callout-content p { font-size: 0.95rem; color: var(--gray-400); line-height: 1.6; }
+        .cta-section { padding: 100px 0; text-align: center; position: relative; }
+        .cta-section::before { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 150%; height: 100%; background: radial-gradient(ellipse at center bottom, var(--strategy-glow) 0%, transparent 60%); pointer-events: none; }
+        .cta-content { position: relative; z-index: 1; }
+        .cta-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; margin-bottom: 16px; }
+        .cta-subtitle { font-size: 1.1rem; color: var(--gray-400); margin-bottom: 32px; max-width: 550px; margin-left: auto; margin-right: auto; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 32px; border-radius: 12px; font-size: 1rem; font-weight: 600; text-decoration: none; transition: all 0.3s ease; border: none; }
+        .btn-primary { background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%); color: var(--deep-navy); box-shadow: 0 4px 20px rgba(77, 208, 225, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(77, 208, 225, 0.4); }
+        footer { padding: 40px 0; border-top: 1px solid rgba(255, 255, 255, 0.06); text-align: center; }
+        .footer-text { color: var(--gray-600); font-size: 0.9rem; }
+        @media (max-width: 768px) { .iq-intro { flex-direction: column; align-items: center; text-align: center; } }
+    </style>
+</head>
+<body>
+    <header><div class="container"><div class="header-inner">
+        <a href="index.html" class="logo"><img src="iq-logo.png" alt="IQ" class="iq-logo-small">Invest<span>IQ</span></a>
+        <a href="index.html" class="back-link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back to Home</a>
+    </div></div></header>
+
+    <section class="hero"><div class="container"><div class="hero-content">
+        <div class="strategy-badge"><img src="iq-logo.png" alt="IQ" class="iq-logo-small">Investment Strategy<span class="no-capital-tag">Zero Capital Required</span></div>
+        <h1><span class="highlight">Wholesale</span></h1>
+        <div class="definition-box"><p class="definition-text">Wholesaling is the art of finding deeply discounted properties, getting them under contract, and assigning that contract to an end buyer (usually a flipper or landlord) for a fee. You never actually purchase the property—you're selling your contractual right to buy. It's deal-finding as a business.</p></div>
+        <div class="iq-intro">
+            <div class="iq-intro-icon"><img src="iq-logo.png" alt="IQ" class="iq-logo"></div>
+            <div class="iq-intro-content"><h3>IQ's Take</h3><p>"Wholesaling is the fastest path to cash in real estate—no money, no credit, just hustle and deal-finding skills. But here's what most gurus won't tell you: it's a marketing business that happens to be in real estate. InvestIQ helps you analyze deals instantly so you bring real value to your buyers."</p></div>
+        </div>
+    </div></div></section>
+
+    <section class="flow-section"><div class="container">
+        <div class="transaction-flow">
+            <div class="flow-node"><div class="flow-label">Step 1</div><div class="flow-title">Motivated Seller</div></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node you"><div class="flow-label">Step 2</div><div class="flow-title">You (Contract)</div></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node"><div class="flow-label">Step 3</div><div class="flow-title">Cash Buyer</div></div>
+        </div>
+        <div class="fee-callout"><div class="fee-label">Your Assignment Fee</div><div class="fee-amount">$5K - $20K+</div><div class="fee-note">Per deal, with zero capital invested</div></div>
+        <div class="motivation-text">
+            <h2>Why <span>Wholesaling</span> Matters</h2>
+            <p>Wholesaling requires no money and no credit—just knowledge, effort, and the courage to talk to motivated sellers. For those starting with limited capital, wholesaling provides a path to generate cash quickly while learning the fundamentals of deal analysis, negotiation, and real estate transactions. Many successful investors started as wholesalers, using their earnings to fund their first rental or flip. Others build wholesaling into six-figure businesses. Either way, you're developing the most valuable skill in real estate: finding deals.</p>
+        </div>
+    </div></section>
+
+    <section class="zero-capital-section"><div class="container">
+        <div class="capital-cards">
+            <div class="capital-card"><div class="capital-value">$0</div><div class="capital-label">Down Payment</div></div>
+            <div class="capital-card"><div class="capital-value">None</div><div class="capital-label">Credit Check</div></div>
+            <div class="capital-card"><div class="capital-value">Never</div><div class="capital-label">Own the Property</div></div>
+        </div>
+    </div></section>
+
+    <section class="process-section"><div class="container">
+        <div class="section-header"><div class="section-label"><img src="iq-logo.png" alt="IQ" class="iq-logo-small">How It Works</div><h2 class="section-title">The Wholesale Transaction</h2></div>
+        <div class="process-timeline">
+            <div class="process-step"><div class="process-content"><div class="process-number">STEP 1</div><h3 class="process-title">FIND</h3><p class="process-desc">Locate motivated seller with distressed property through marketing, networking, or direct outreach</p></div><div class="process-dot">1</div><div class="process-spacer"></div></div>
+            <div class="process-step"><div class="process-spacer"></div><div class="process-dot">2</div><div class="process-content"><div class="process-number">STEP 2</div><h3 class="process-title">NEGOTIATE</h3><p class="process-desc">Get property under contract below market value with assignment clause included</p></div></div>
+            <div class="process-step"><div class="process-content"><div class="process-number">STEP 3</div><h3 class="process-title">ANALYZE</h3><p class="process-desc">Verify ARV, estimate repairs, confirm the deal works for your buyers</p></div><div class="process-dot">3</div><div class="process-spacer"></div></div>
+            <div class="process-step"><div class="process-spacer"></div><div class="process-dot">4</div><div class="process-content"><div class="process-number">STEP 4</div><h3 class="process-title">MARKET</h3><p class="process-desc">Send deal to your buyers list with all relevant numbers and photos</p></div></div>
+            <div class="process-step"><div class="process-content"><div class="process-number">STEP 5</div><h3 class="process-title">ASSIGN</h3><p class="process-desc">Sign assignment agreement transferring your contract rights to buyer for a fee</p></div><div class="process-dot">5</div><div class="process-spacer"></div></div>
+            <div class="process-step"><div class="process-spacer"></div><div class="process-dot">6</div><div class="process-content"><div class="process-number">STEP 6</div><h3 class="process-title">COLLECT</h3><p class="process-desc">Buyer closes with seller, you receive your assignment fee at closing</p></div></div>
+        </div>
+        <div class="investiq-callout">
+            <div class="investiq-callout-icon"><img src="iq-logo.png" alt="IQ" class="iq-logo-large"></div>
+            <div class="investiq-callout-content"><h3>InvestIQ Makes You a Pro Wholesaler</h3><p>Analyze any property in seconds. I calculate ARV, estimate repairs, and show you exactly what your buyers need to make money. Bring real deals, not guesses—that's how you build a reputation.</p></div>
+        </div>
+    </div></section>
+
+    <section class="guide-section"><div class="container">
+        <div class="section-header"><div class="section-label"><img src="iq-logo.png" alt="IQ" class="iq-logo-small">IQ's Playbook</div><h2 class="section-title">Your Guide to Success</h2></div>
+        <div class="guide-grid">
+            <div class="guide-card"><div class="guide-header"><div class="guide-number">1</div><h3 class="guide-title">Build Your Buyers List First</h3></div><p class="guide-text">Before finding deals, know who will buy them. Network with local flippers and landlords, attend REI meetups, connect with cash buyers on Facebook groups, and analyze recent cash purchases in your target areas.</p><div class="iq-tip"><div class="iq-tip-icon"><img src="iq-logo.png" alt="IQ" class="iq-logo-small"></div><div><div class="iq-tip-label">IQ's Pro Tip</div><p class="iq-tip-text">Ask buyers exactly what they want: locations, property types, price ranges, required margins. A deal is only a deal if someone will buy it.</p></div></div></div>
+            <div class="guide-card"><div class="guide-header"><div class="guide-number">2</div><h3 class="guide-title">Generate Motivated Seller Leads</h3></div><p class="guide-text">Wholesaling is a marketing business. Use multiple channels: direct mail to distressed property lists, cold calling, driving for dollars, bandit signs, PPC advertising, and networking with probate attorneys.</p><div class="iq-tip"><div class="iq-tip-icon"><img src="iq-logo.png" alt="IQ" class="iq-logo-small"></div><div><div class="iq-tip-label">IQ's Pro Tip</div><p class="iq-tip-text">Consistency beats volume. A focused campaign of 500 letters monthly outperforms sporadic 5,000-piece drops. Track cost per lead and cost per contract.</p></div></div></div>
+            <div class="guide-card"><div class="guide-header"><div class="guide-number">3</div><h3 class="guide-title">Master Seller Conversations</h3></div><p class="guide-text">Motivated sellers have problems—divorce, inheritance, job loss, health issues. Your job is to listen, understand their situation, and present your offer as a solution. Never be pushy; build rapport and trust.</p><div class="iq-tip"><div class="iq-tip-icon"><img src="iq-logo.png" alt="IQ" class="iq-logo-small"></div><div><div class="iq-tip-label">IQ's Pro Tip</div><p class="iq-tip-text">The magic question: "If I could close in two weeks, pay cash, and buy as-is, what's the least you'd accept?" Then be silent and listen.</p></div></div></div>
+            <div class="guide-card"><div class="guide-header"><div class="guide-number">4</div><h3 class="guide-title">Analyze Deals Accurately</h3></div><p class="guide-text">Your reputation depends on bringing real deals to buyers. Master comparable sales analysis, repair estimation, and understanding buyer profit requirements. Use the 70% rule as a starting point.</p><div class="iq-tip"><div class="iq-tip-icon"><img src="iq-logo.png" alt="IQ" class="iq-logo-small"></div><div><div class="iq-tip-label">IQ's Pro Tip</div><p class="iq-tip-text">Factor in your fee when calculating MAO. If buyers need to be at $100K and you want a $10K fee, you need the property under contract at $90K.</p></div></div></div>
+            <div class="guide-card"><div class="guide-header"><div class="guide-number">5</div><h3 class="guide-title">Use Proper Contracts</h3></div><p class="guide-text">Work with a real estate attorney to create contracts with proper assignment clauses. Understand your state's laws regarding wholesaling, licensing requirements, and disclosure obligations.</p><div class="iq-tip"><div class="iq-tip-icon"><img src="iq-logo.png" alt="IQ" class="iq-logo-small"></div><div><div class="iq-tip-label">IQ's Pro Tip</div><p class="iq-tip-text">Include a clear assignment clause: "Buyer may assign this contract to another party without seller approval." Always be transparent with sellers about your intentions.</p></div></div></div>
+            <div class="guide-card"><div class="guide-header"><div class="guide-number">6</div><h3 class="guide-title">Close the Deal and Get Paid</h3></div><p class="guide-text">Once you have a buyer, prepare an assignment agreement stating your fee. Coordinate with the title company—your fee is typically paid from proceeds at closing. Stay involved through the finish line.</p><div class="iq-tip"><div class="iq-tip-icon"><img src="iq-logo.png" alt="IQ" class="iq-logo-small"></div><div><div class="iq-tip-label">IQ's Pro Tip</div><p class="iq-tip-text">Build relationships with investor-friendly title companies who understand assignments. Deals fall apart when wholesalers disappear—stay involved through closing.</p></div></div></div>
+        </div>
+    </div></section>
+
+    <section class="cta-section"><div class="container"><div class="cta-content">
+        <img src="iq-logo.png" alt="IQ" class="iq-logo-large" style="margin-bottom: 24px;">
+        <h2 class="cta-title">Ready to Find Wholesale Deals?</h2>
+        <p class="cta-subtitle">Point your camera at any property and get instant Wholesale analysis. I'll help you bring real deals to your buyers.</p>
+        <a href="#" class="btn btn-primary"><img src="iq-logo.png" alt="IQ" class="iq-logo-small">Analyze a Property Now</a>
+    </div></div></section>
+    <footer><div class="container"><p class="footer-text">© 2026 InvestIQ. All rights reserved.</p></div></footer>
+</body>
+</html>
