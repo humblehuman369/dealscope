@@ -40,13 +40,13 @@ export function TuneSection({
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className="bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-2xl mb-3 overflow-hidden">
+    <div className="border-2 border-teal dark:border-accent-500 rounded-2xl mb-3 overflow-hidden">
       {/* Collapsible Header */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3.5 bg-teal/[0.05] hover:bg-teal/[0.1] transition-colors duration-200 rounded-xl"
+        className="w-full flex items-center justify-between p-3.5 hover:bg-teal/[0.05] transition-colors duration-200 rounded-xl"
       >
-        <div className="flex items-center gap-2 text-[1.1rem] font-bold text-gray-800 dark:text-white">
+        <div className="flex items-center gap-2 text-[1.1rem] font-bold text-navy-900 dark:text-white">
           <Settings className="w-5 h-5 text-teal" />
           {title}
         </div>
