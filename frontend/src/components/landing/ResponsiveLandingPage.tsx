@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { StrategyCard } from './StrategyCard';
 import { FeatureCard } from './FeatureCard';
 import { Footer } from './Footer';
 import { ScanDemoSection } from './ScanDemoSection';
+import { TryItNowModal } from './TryItNowModal';
 import { strategies, features, stats } from './types';
 
 interface ResponsiveLandingPageProps {
@@ -15,12 +16,15 @@ interface ResponsiveLandingPageProps {
 
 export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageProps) {
   const { user, isAuthenticated, setShowAuthModal } = useAuth();
+  const [showTryItNowModal, setShowTryItNowModal] = useState(false);
 
-  const handleGetStarted = () => {
+  const handleTryItNow = () => {
+    setShowTryItNowModal(true);
+  };
+
+  const handleScanProperty = () => {
     if (onPointAndScan) {
       onPointAndScan();
-    } else {
-      setShowAuthModal('register');
     }
   };
 
@@ -80,8 +84,8 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
               6 strategies in 60 seconds.
             </p>
             <div className="hero-cta">
-              <button onClick={handleGetStarted} className="btn btn-primary">
-                Try it Now
+              <button onClick={handleTryItNow} className="btn btn-primary">
+                Try It Now
               </button>
               <a href="#demo" className="btn btn-ghost">Watch Demo</a>
             </div>
@@ -94,7 +98,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
       </section>
 
       {/* See It In Action - Point & Scan Demo Section */}
-      <ScanDemoSection onScanProperty={handleGetStarted} />
+      <ScanDemoSection onTryItNow={handleTryItNow} />
 
       {/* Strategies Section */}
       <section className="strategies-section" id="strategies">
@@ -157,8 +161,8 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
             Point your camera at any property and IQ will deliver genius-level analysis across 6 investment strategies. No credit card required.
           </p>
           <div className="cta-buttons">
-            <button onClick={handleGetStarted} className="btn btn-primary btn-large">
-              Try it Now
+            <button onClick={handleTryItNow} className="btn btn-primary btn-large">
+              Try It Now
             </button>
           </div>
           <div className="app-badges">
@@ -186,6 +190,13 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
 
       {/* Footer */}
       <Footer />
+
+      {/* Try It Now Modal */}
+      <TryItNowModal
+        isOpen={showTryItNowModal}
+        onClose={() => setShowTryItNowModal(false)}
+        onScanProperty={handleScanProperty}
+      />
     </div>
   );
 }
