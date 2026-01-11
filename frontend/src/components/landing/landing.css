@@ -256,9 +256,9 @@ html:not(.dark) .landing-page .scan-data-label {
   font-size: 1.05rem;
 }
 
-/* Hero Section */
+/* Hero Section - Apple-style generous spacing (8px base unit) */
 .landing-page .hero {
-  padding: 80px 0 80px;
+  padding: 120px 0 100px;
   position: relative;
   overflow: hidden;
 }
@@ -270,9 +270,9 @@ html:not(.dark) .landing-page .scan-data-label {
   gap: 8px;
   background: rgba(77, 208, 225, 0.1);
   border: 1px solid rgba(77, 208, 225, 0.25);
-  padding: 8px 20px;
+  padding: 10px 24px;
   border-radius: 100px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   animation: fadeInDown 0.6s ease-out;
 }
 
@@ -344,7 +344,7 @@ html:not(.dark) .landing-page .hero-eyebrow-text {
   font-size: clamp(2.2rem, 5vw, 3.5rem);
   font-weight: 800;
   line-height: 1.1;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
   letter-spacing: -1px;
 }
 
@@ -359,8 +359,9 @@ html:not(.dark) .landing-page .hero-eyebrow-text {
 .landing-page .hero-subtitle {
   font-size: 1.1rem;
   color: var(--text-secondary);
-  max-width: 500px;
-  margin: 0 auto 32px;
+  max-width: 520px;
+  margin: 0 auto 48px;
+  line-height: 1.6;
 }
 
 .landing-page .hero-cta {
@@ -370,6 +371,7 @@ html:not(.dark) .landing-page .hero-eyebrow-text {
   align-items: center;
   justify-content: center;
   width: 100%;
+  margin-bottom: 0;
 }
 
 .landing-page .hero-cta .btn-primary {
@@ -379,10 +381,10 @@ html:not(.dark) .landing-page .hero-eyebrow-text {
 
 .landing-page .trust-signals {
   display: flex;
-  gap: 24px;
+  gap: 32px;
   justify-content: center;
-  margin-top: 16px;
-  font-size: 0.85rem;
+  margin-top: 24px;
+  font-size: 0.875rem;
   color: var(--text-muted);
 }
 
