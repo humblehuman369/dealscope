@@ -1364,60 +1364,107 @@
 
 /* =====================================================
    RESPONSIVE ADJUSTMENTS FOR DEMO SECTION
+   Three breakpoints:
+   1. Wide (>1024px): Phone, house, cards side by side
+   2. Medium (768-1024px): Phone+house on top, cards below in 2x2 grid  
+   3. Small (<768px): No phone, house on top, cards in 1 column (4 rows)
    ===================================================== */
 
-@media (max-width: 1100px) {
+/* MEDIUM SCREENS (768px - 1024px) */
+/* Phone and house stay on top, metrics drop below in 2x2 grid */
+@media (max-width: 1024px) and (min-width: 768px) {
   .landing-page .scan-scene {
-    gap: 30px;
-  }
-  .landing-page .scan-house {
-    width: 220px;
-    height: 280px;
-  }
-  .landing-page .scan-data-cards {
-    min-width: 160px;
-  }
-}
-
-@media (max-width: 900px) {
-  .landing-page .scan-scene {
-    flex-direction: column;
-    min-height: auto;
-    padding: 20px;
-    gap: 30px;
-  }
-  .landing-page .scan-phone {
-    transform: none;
-    width: 240px;
-    height: 480px;
-  }
-  .landing-page .scan-rays {
-    display: none;
-  }
-  .landing-page .scan-data-cards {
-    flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
+    gap: 30px;
+    min-height: auto;
   }
-  .landing-page .scan-data-card {
-    min-width: 150px;
+  
+  /* Phone and house container */
+  .landing-page .scan-phone {
+    transform: perspective(800px) rotateY(-10deg) rotateX(3deg);
+    width: 220px;
+    height: 440px;
   }
+  
   .landing-page .scan-house {
     width: 280px;
     height: 320px;
   }
+  
+  .landing-page .scan-rays {
+    display: none;
+  }
+  
+  /* Metrics cards drop below in 2x2 grid */
+  .landing-page .scan-data-cards {
+    flex-basis: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    max-width: 500px;
+    margin-top: 20px;
+  }
+  
+  .landing-page .scan-data-card {
+    flex: 0 0 calc(50% - 8px);
+    max-width: calc(50% - 8px);
+    min-width: 180px;
+  }
 }
 
-/* Between 768px and 900px - show both phone and house */
-@media (min-width: 768px) and (max-width: 900px) {
-  .landing-page .scan-phone {
-    display: block;
+/* SMALL SCREENS (<768px) */
+/* Hide phone, show house on top, metrics in single column */
+@media (max-width: 767px) {
+  .landing-page .scan-scene {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    min-height: auto;
+    padding: 20px;
   }
+  
+  /* Hide phone on mobile */
+  .landing-page .scan-phone {
+    display: none;
+  }
+  
+  .landing-page .scan-rays {
+    display: none;
+  }
+  
+  /* House scanning on top */
   .landing-page .scan-house {
     display: block;
+    width: 280px;
+    height: 320px;
+    order: 1;
+  }
+  
+  /* Metrics cards in single column (4 rows) */
+  .landing-page .scan-data-cards {
+    order: 2;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .landing-page .scan-data-card {
+    width: 100%;
+    max-width: 280px;
+    min-width: unset;
+    flex: none;
+  }
+  
+  .landing-page .demo-brand-line {
+    font-size: 1.1rem;
   }
 }
 
+/* Very small screens - CTA adjustments */
 @media (max-width: 500px) {
   .landing-page .demo-cta {
     flex-direction: column;
@@ -1426,43 +1473,14 @@
   .landing-page .demo-cta-divider {
     display: none;
   }
-}
-
-@media (max-width: 767px) {
-  .landing-page .scan-scene {
-    flex-direction: column;
-    gap: 30px;
-    min-height: auto;
-  }
-  
-  /* Hide phone on mobile, show house scanning instead */
-  .landing-page .scan-phone {
-    display: none;
-  }
   
   .landing-page .scan-house {
-    display: block;
-    width: 280px;
-    height: 320px;
-    order: 1;
-  }
-  
-  .landing-page .scan-data-cards {
-    order: 2;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
+    width: 240px;
+    height: 280px;
   }
   
   .landing-page .scan-data-card {
-    min-width: 140px;
-    flex: 1 1 calc(50% - 12px);
-    max-width: calc(50% - 6px);
-  }
-  
-  .landing-page .demo-brand-line {
-    font-size: 1.1rem;
+    max-width: 240px;
   }
 }
 
