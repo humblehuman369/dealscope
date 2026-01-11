@@ -886,6 +886,19 @@
   overflow: hidden;
 }
 
+/* Compact demo section - reduced spacing when section header is removed */
+.landing-page .demo-section.demo-section-compact {
+  padding: 30px 0 80px;
+}
+
+.landing-page .section-header-tight {
+  margin-bottom: 0;
+}
+
+.landing-page .section-header-tight .section-label {
+  margin-bottom: 10px;
+}
+
 .landing-page .brand-line {
   font-size: 1.1rem;
   font-weight: 600;
@@ -898,6 +911,7 @@
   text-align: center;
   font-size: 1.4rem;
   margin-bottom: 30px;
+  margin-top: 40px;
 }
 
 .landing-page .brand-line .highlight {
