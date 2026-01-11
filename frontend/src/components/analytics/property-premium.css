@@ -166,6 +166,10 @@ html:not(.dark) .premium-theme-btn {
   color: #0f172a;
 }
 
+html:not(.dark) .premium-theme-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+
 /* ============================================
    HERO SECTION
    ============================================ */
@@ -193,6 +197,10 @@ html:not(.dark) .premium-theme-btn {
   overflow: hidden;
 }
 
+html:not(.dark) .premium-hero-image {
+  background: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 100%);
+}
+
 .premium-hero-image img {
   width: 100%;
   height: 100%;
@@ -206,6 +214,10 @@ html:not(.dark) .premium-theme-btn {
   align-items: center;
   justify-content: center;
   color: rgba(255, 255, 255, 0.3);
+}
+
+html:not(.dark) .premium-hero-placeholder {
+  color: rgba(0, 0, 0, 0.2);
 }
 
 .premium-hero-overlay {
@@ -277,6 +289,11 @@ html:not(.dark) .premium-image-counter {
   overflow: hidden;
 }
 
+html:not(.dark) .premium-thumbnail {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 .premium-thumbnail img {
   width: 100%;
   height: 100%;
@@ -290,6 +307,10 @@ html:not(.dark) .premium-image-counter {
 
 html:not(.dark) .premium-thumbnail.active {
   border-color: #0891b2;
+}
+
+html:not(.dark) .premium-thumbnail:hover {
+  border-color: rgba(8, 145, 178, 0.5);
 }
 
 .premium-thumbnail:hover {
