@@ -32,7 +32,7 @@
         .hero { padding: 140px 0 80px; position: relative; overflow: hidden; }
         .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 100%; background: radial-gradient(ellipse at 20% 20%, var(--strategy-glow) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(77, 208, 225, 0.05) 0%, transparent 40%); pointer-events: none; }
         .hero-content { position: relative; z-index: 1; }
-        .strategy-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(4, 101, 242, 0.15); border: 1px solid rgba(4, 101, 242, 0.3); padding: 8px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 600; color: var(--strategy-color); margin-bottom: 24px; }
+        .strategy-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(77, 208, 225, 0.15); border: 1px solid rgba(77, 208, 225, 0.3); padding: 8px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 600; color: var(--electric-cyan); margin-bottom: 24px; }
         .hero h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; line-height: 1.1; margin-bottom: 24px; letter-spacing: -1px; }
         .hero h1 .highlight { background: linear-gradient(135deg, var(--strategy-color) 0%, var(--electric-cyan) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .definition-box { background: linear-gradient(135deg, rgba(4, 101, 242, 0.1) 0%, rgba(7, 23, 46, 0.8) 100%); border: 1px solid rgba(4, 101, 242, 0.2); border-radius: 20px; padding: 32px; max-width: 800px; }
@@ -82,11 +82,11 @@
 
         .guide-section { padding: 100px 0; background: linear-gradient(180deg, rgba(7, 23, 46, 0.3) 0%, transparent 100%); }
         .guide-steps { max-width: 900px; margin: 0 auto; }
-        .guide-step { display: grid; grid-template-columns: 80px 1fr; gap: 32px; margin-bottom: 48px; position: relative; }
+        .guide-step { display: grid; grid-template-columns: 80px 1fr; gap: 24px; margin-bottom: 48px; position: relative; }
         .guide-step::before { content: ''; position: absolute; left: 39px; top: 80px; bottom: -48px; width: 2px; background: linear-gradient(180deg, var(--strategy-color) 0%, transparent 100%); }
         .guide-step:last-child::before { display: none; }
         .guide-number { width: 80px; height: 80px; background: var(--deep-navy); border: 2px solid var(--strategy-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; color: var(--strategy-color); flex-shrink: 0; position: relative; z-index: 1; }
-        .guide-content { padding-top: 16px; }
+        .guide-content { padding-top: 16px; padding-left: 0; }
         .guide-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; }
         .guide-text { font-size: 1rem; color: var(--gray-400); line-height: 1.8; margin-bottom: 20px; }
 
@@ -120,7 +120,6 @@
         <div class="container">
             <div class="header-inner">
                 <a href="/" class="logo">
-                    <img src="iq-logo.png" alt="IQ" class="iq-logo-small">
                     Invest<span>IQ</span>
                 </a>
                 <a href="/" class="back-link">
