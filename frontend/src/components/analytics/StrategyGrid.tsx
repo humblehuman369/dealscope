@@ -1,6 +1,15 @@
 'use client'
 
 import React from 'react'
+import { 
+  Home, 
+  Palmtree, 
+  RefreshCw, 
+  Hammer, 
+  Users, 
+  FileSignature,
+  TrendingUp
+} from 'lucide-react'
 import { StrategyId } from './types'
 
 interface Strategy {
@@ -8,8 +17,10 @@ interface Strategy {
   number: number
   name: string
   tagline: string
+  statValue: string
+  statLabel: string
   color: string
-  lightColor: string
+  icon: React.ElementType
 }
 
 const STRATEGIES: Strategy[] = [
@@ -17,49 +28,61 @@ const STRATEGIES: Strategy[] = [
     id: 'ltr',
     number: 1,
     name: 'Long-Term Rental', 
-    tagline: 'Steady monthly cash flow',
+    tagline: 'Steady income & build equity',
+    statValue: '8-12%',
+    statLabel: 'Cash-on-Cash',
     color: '#0465f2',
-    lightColor: 'rgba(4, 101, 242, 0.15)'
+    icon: Home
   },
   { 
     id: 'str',
     number: 2,
     name: 'Short-Term Rental', 
-    tagline: 'Vacation rental income',
+    tagline: 'Vacation & business rental income',
+    statValue: '15-25%',
+    statLabel: 'Cash-on-Cash',
     color: '#8b5cf6',
-    lightColor: 'rgba(139, 92, 246, 0.15)'
+    icon: Palmtree
   },
   { 
     id: 'brrrr',
     number: 3,
     name: 'BRRRR', 
-    tagline: 'Infinite scaling potential',
+    tagline: 'Buy-Rehab-Rent-Refi-Repeat',
+    statValue: '∞',
+    statLabel: 'Scale',
     color: '#f97316',
-    lightColor: 'rgba(249, 115, 22, 0.15)'
+    icon: RefreshCw
   },
   { 
     id: 'flip',
     number: 4,
     name: 'Fix & Flip', 
-    tagline: 'Quick profit opportunity',
+    tagline: 'Buy low, fix up, sell high',
+    statValue: '$50K+',
+    statLabel: 'Profit',
     color: '#ec4899',
-    lightColor: 'rgba(236, 72, 153, 0.15)'
+    icon: Hammer
   },
   { 
     id: 'house_hack',
     number: 5,
     name: 'House Hack', 
-    tagline: 'Live free, build wealth',
+    tagline: 'Cut your housing costs up to 100%',
+    statValue: '75%',
+    statLabel: 'Cost Savings',
     color: '#14b8a6',
-    lightColor: 'rgba(20, 184, 166, 0.15)'
+    icon: Users
   },
   { 
     id: 'wholesale',
     number: 6,
     name: 'Wholesale', 
-    tagline: 'Zero capital required',
+    tagline: 'Find deals, assign contracts, profit',
+    statValue: '$10K+',
+    statLabel: 'Per Deal',
     color: '#84cc16',
-    lightColor: 'rgba(132, 204, 22, 0.15)'
+    icon: FileSignature
   },
 ]
 
@@ -69,37 +92,64 @@ interface StrategyGridProps {
 }
 
 /**
- * StrategyGrid - Fresh design with large numbers as focal points
+ * StrategyGrid - Premium 2x3 grid of strategy cards
+ * 
+ * World-class design with:
+ * - Numbered cards for clear identification
+ * - Strategy-specific colors and icons
+ * - Key metrics prominently displayed
+ * - Smooth hover effects
  */
 export function StrategyGrid({ activeStrategy, onSelectStrategy }: StrategyGridProps) {
   return (
-    <div className="iq-strategy-grid">
+    <div className="strategy-grid-premium">
       {STRATEGIES.map((strategy) => {
         const isActive = activeStrategy === strategy.id
+        const Icon = strategy.icon
+        const isScale = strategy.statValue === '∞'
         
         return (
           <button
             key={strategy.id}
             onClick={() => onSelectStrategy(strategy.id)}
-            className={`iq-strategy-box ${isActive ? 'active' : ''}`}
+            className={`strategy-card-premium ${isActive ? 'active' : ''}`}
             style={{
               '--strategy-color': strategy.color,
-              '--strategy-light': strategy.lightColor,
+              '--strategy-glow': `${strategy.color}30`,
             } as React.CSSProperties}
           >
-            {/* Large number */}
-            <div className="iq-strategy-number">
+            {/* Number Badge */}
+            <div className="strategy-number-premium">
               {strategy.number}
             </div>
             
-            {/* Strategy info */}
-            <div className="iq-strategy-info">
-              <h3 className="iq-strategy-name">{strategy.name}</h3>
-              <p className="iq-strategy-tagline">{strategy.tagline}</p>
+            {/* Stat Value */}
+            <div className="strategy-stat-premium">
+              {isScale ? (
+                <TrendingUp className="w-6 h-6" style={{ color: strategy.color }} />
+              ) : (
+                <span className="strategy-stat-value-premium" style={{ color: strategy.color }}>
+                  {strategy.statValue}
+                </span>
+              )}
+              <span className="strategy-stat-label-premium">{strategy.statLabel}</span>
             </div>
             
-            {/* Hover glow effect */}
-            <div className="iq-strategy-glow" />
+            {/* Strategy Name with Icon */}
+            <div className="strategy-title-premium">
+              <span className="strategy-name-premium" style={{ color: strategy.color }}>
+                {strategy.name}
+              </span>
+              <div className="strategy-icon-premium" style={{ backgroundColor: `${strategy.color}20` }}>
+                <Icon className="w-4 h-4" style={{ color: strategy.color }} />
+              </div>
+            </div>
+            
+            {/* Tagline */}
+            <p className="strategy-tagline-premium">{strategy.tagline}</p>
+            
+            {/* Accent line */}
+            <div className="strategy-accent-premium" style={{ backgroundColor: strategy.color }} />
           </button>
         )
       })}
@@ -108,30 +158,27 @@ export function StrategyGrid({ activeStrategy, onSelectStrategy }: StrategyGridP
 }
 
 /**
- * StrategyPrompt - Personal message from IQ
+ * StrategyPrompt - Clean header with IQ branding
  */
 export function StrategyPrompt() {
   return (
-    <div className="iq-strategy-prompt">
-      {/* IQ Avatar */}
-      <div className="iq-prompt-avatar">
-        <img 
-          src="/images/iq-brain-dark.png" 
-          alt="IQ" 
-          className="iq-prompt-icon"
-        />
+    <div className="strategy-prompt-premium">
+      {/* Badge */}
+      <div className="strategy-badge-premium">
+        <span className="strategy-badge-dot" />
+        <span>6 Strategies Analyzed</span>
       </div>
       
-      {/* Personal message */}
-      <div className="iq-prompt-message">
-        <p className="iq-prompt-greeting">
-          Hey, I'm <span className="iq-highlight">IQ</span> — your real estate analyst.
-        </p>
-        <p className="iq-prompt-text">
-          I've analyzed your property and created <span className="iq-highlight">6 investment strategies</span>, 
-          each showing a different path to profit. Tap any strategy to see the full breakdown.
-        </p>
-      </div>
+      {/* Title */}
+      <h2 className="strategy-title-main">
+        One Property, Multiple Opportunities
+      </h2>
+      
+      {/* Subtitle */}
+      <p className="strategy-subtitle-main">
+        IQ analyzed your property and built 6 investment strategies, 
+        each showing a different way to profit.
+      </p>
     </div>
   )
 }

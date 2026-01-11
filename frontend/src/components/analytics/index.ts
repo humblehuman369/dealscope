@@ -195,6 +195,9 @@ export {
 // PROPERTY DISPLAY
 // ============================================
 
+// Property Hero - Immersive property showcase
+export { PropertyHero } from './PropertyHero'
+
 // Property Mini Card - Compact property header
 export {
   PropertyMiniCard,
