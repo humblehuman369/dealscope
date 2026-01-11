@@ -32,7 +32,7 @@ export const strategies: Strategy[] = [
     statValue: '8-12%',
     statLabel: 'Cash-on-Cash',
     color: '#0465f2',
-    href: '/strategies/long-term-rental',
+    href: '/strategies/strategy-long-term-rental.html',
   },
   {
     id: 'short',
@@ -42,7 +42,7 @@ export const strategies: Strategy[] = [
     statValue: '15-25%',
     statLabel: 'Cash-on-Cash',
     color: '#8b5cf6',
-    href: '/strategies/short-term-rental',
+    href: '/strategies/strategy-short-term-rental.html',
   },
   {
     id: 'brrrr',
@@ -52,7 +52,7 @@ export const strategies: Strategy[] = [
     statValue: '∞',
     statLabel: 'Scale',
     color: '#f97316',
-    href: '/strategies/brrrr',
+    href: '/strategies/strategy-brrrr.html',
   },
   {
     id: 'flip',
@@ -62,7 +62,7 @@ export const strategies: Strategy[] = [
     statValue: '$50K+',
     statLabel: 'Profit',
     color: '#ec4899',
-    href: '/strategies/fix-flip',
+    href: '/strategies/strategy-fix-flip.html',
   },
   {
     id: 'hack',
@@ -72,7 +72,7 @@ export const strategies: Strategy[] = [
     statValue: '75%',
     statLabel: 'Cost Savings',
     color: '#14b8a6',
-    href: '/strategies/house-hack',
+    href: '/strategies/strategy-house-hack.html',
   },
   {
     id: 'wholesale',
@@ -82,7 +82,7 @@ export const strategies: Strategy[] = [
     statValue: '$10K+',
     statLabel: 'Per Deal',
     color: '#84cc16',
-    href: '/strategies/wholesale',
+    href: '/strategies/strategy-wholesale.html',
   },
 ];
 
