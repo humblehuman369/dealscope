@@ -86,6 +86,7 @@ export interface PropertyData {
 interface DesktopStrategyAnalyticsContainerProps {
   property: PropertyData
   onBack?: () => void
+  initialStrategy?: StrategyId
 }
 
 // ============================================
@@ -137,12 +138,13 @@ const formatPercent = (value: number, decimals: number = 1): string =>
 
 export function DesktopStrategyAnalyticsContainer({ 
   property, 
-  onBack 
+  onBack,
+  initialStrategy 
 }: DesktopStrategyAnalyticsContainerProps) {
   const router = useRouter()
   
   // State
-  const [activeStrategy, setActiveStrategy] = useState<StrategyId | null>(null)
+  const [activeStrategy, setActiveStrategy] = useState<StrategyId | null>(initialStrategy || null)
   const [activeSubTab, setActiveSubTab] = useState<SubTabId>('metrics')
   const [compareView, setCompareView] = useState<'target' | 'list'>('target')
   const [assumptions, setAssumptions] = useState(() => createDefaultAssumptions(property))

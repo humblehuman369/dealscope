@@ -80,6 +80,7 @@ export interface PropertyData {
 interface StrategyAnalyticsContainerProps {
   property: PropertyData
   onBack?: () => void
+  initialStrategy?: StrategyId
 }
 
 // ============================================
@@ -136,9 +137,9 @@ const formatPercent = (value: number, decimals: number = 1): string =>
 // MAIN COMPONENT
 // ============================================
 
-export function StrategyAnalyticsContainer({ property, onBack }: StrategyAnalyticsContainerProps) {
+export function StrategyAnalyticsContainer({ property, onBack, initialStrategy }: StrategyAnalyticsContainerProps) {
   // State
-  const [activeStrategy, setActiveStrategy] = useState<StrategyId | null>(null)
+  const [activeStrategy, setActiveStrategy] = useState<StrategyId | null>(initialStrategy || null)
   const [activeSubTab, setActiveSubTab] = useState<SubTabId>('metrics')
   const [compareView, setCompareView] = useState<'target' | 'list'>('target')
   const [assumptions, setAssumptions] = useState(() => createDefaultAssumptions(property))

@@ -4,6 +4,7 @@ import React, { Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { useViewMode } from '@/hooks/useDeviceType'
 import { AnalyticsPageSkeleton } from './LoadingStates'
+import type { StrategyId } from './types'
 
 // Dynamically import containers to reduce initial bundle size
 const StrategyAnalyticsContainer = dynamic(
@@ -44,6 +45,8 @@ interface ResponsiveAnalyticsContainerProps {
   onBack?: () => void
   /** Force a specific view mode (for testing) */
   forceViewMode?: 'mobile' | 'desktop'
+  /** Initial strategy to display */
+  initialStrategy?: StrategyId
 }
 
 /**
@@ -61,7 +64,8 @@ interface ResponsiveAnalyticsContainerProps {
 export function ResponsiveAnalyticsContainer({
   property,
   onBack,
-  forceViewMode
+  forceViewMode,
+  initialStrategy
 }: ResponsiveAnalyticsContainerProps) {
   const detectedViewMode = useViewMode(1024)
   const viewMode = forceViewMode || detectedViewMode
@@ -72,11 +76,13 @@ export function ResponsiveAnalyticsContainer({
         <DesktopStrategyAnalyticsContainer
           property={property}
           onBack={onBack}
+          initialStrategy={initialStrategy}
         />
       ) : (
         <StrategyAnalyticsContainer
           property={property}
           onBack={onBack}
+          initialStrategy={initialStrategy}
         />
       )}
     </Suspense>

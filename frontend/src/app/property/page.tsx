@@ -7,9 +7,12 @@ import { ArrowLeft, Sun, Moon } from 'lucide-react'
 import { 
   ResponsiveAnalyticsContainer,
   AnalyticsPageSkeleton,
-  useAnalyticsViewMode
+  useAnalyticsViewMode,
+  PropertyPremiumPage,
+  StrategyId
 } from '@/components/analytics'
 import { useTheme } from '@/context/ThemeContext'
+import { GenerateLOIModal } from '@/components/GenerateLOIModal'
 
 /**
  * Property Analytics Page
@@ -21,6 +24,8 @@ import { useTheme } from '@/context/ThemeContext'
  * Now supports responsive desktop/mobile views:
  * - Desktop (>=1024px): Full 900px wide layout with enhanced components
  * - Mobile (<1024px): Compact mobile-optimized layout
+ * 
+ * NEW: Premium property landing page with strategy selection
  */
 
 interface PropertyData {
@@ -56,12 +61,15 @@ function PropertyContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const addressParam = searchParams.get('address')
+  const strategyParam = searchParams.get('strategy') as StrategyId | null
   const { theme, toggleTheme } = useTheme()
   const viewMode = useAnalyticsViewMode()
   
   const [property, setProperty] = useState<PropertyData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedStrategy, setSelectedStrategy] = useState<StrategyId | null>(strategyParam)
+  const [showLOIModal, setShowLOIModal] = useState(false)
 
   useEffect(() => {
     async function fetchProperty() {
@@ -139,6 +147,47 @@ function PropertyContent() {
     fetchProperty()
   }, [addressParam])
 
+  // Handle strategy selection
+  const handleSelectStrategy = (strategyId: StrategyId) => {
+    setSelectedStrategy(strategyId)
+    // Update URL with strategy param
+    if (addressParam) {
+      router.push(`/property?address=${encodeURIComponent(addressParam)}&strategy=${strategyId}`)
+    }
+  }
+
+  // Handle back from strategy view
+  const handleBackFromStrategy = () => {
+    setSelectedStrategy(null)
+    if (addressParam) {
+      router.push(`/property?address=${encodeURIComponent(addressParam)}`)
+    }
+  }
+
+  // Handle save
+  const handleSave = () => {
+    // TODO: Implement save functionality
+    console.log('Save property')
+  }
+
+  // Handle share
+  const handleShare = () => {
+    if (navigator.share && property) {
+      navigator.share({
+        title: `InvestIQ - ${property.address}`,
+        text: `Check out this property analysis: ${property.address}`,
+        url: window.location.href
+      }).catch(() => {
+        // User cancelled or share failed
+      })
+    }
+  }
+
+  // Handle Generate LOI
+  const handleGenerateLOI = () => {
+    setShowLOIModal(true)
+  }
+
   if (isLoading) {
     return <AnalyticsPageSkeleton />
   }
@@ -164,6 +213,29 @@ function PropertyContent() {
     return <AnalyticsPageSkeleton />
   }
 
+  // If no strategy is selected, show the premium property landing page
+  if (!selectedStrategy) {
+    return (
+      <>
+        <PropertyPremiumPage
+          property={property}
+          onBack={() => router.back()}
+          onSelectStrategy={handleSelectStrategy}
+          onSave={handleSave}
+          onShare={handleShare}
+          onGenerateLOI={handleGenerateLOI}
+        />
+        {showLOIModal && (
+          <GenerateLOIModal
+            property={property}
+            onClose={() => setShowLOIModal(false)}
+          />
+        )}
+      </>
+    )
+  }
+
+  // Strategy is selected - show the detailed analytics view
   // Desktop view uses the integrated header from DesktopStrategyAnalyticsContainer
   // Mobile view uses the separate header below
   if (viewMode === 'desktop') {
@@ -171,7 +243,8 @@ function PropertyContent() {
       <div className="min-h-screen overflow-safe transition-colors">
         <ResponsiveAnalyticsContainer
           property={property}
-          onBack={() => router.back()}
+          onBack={handleBackFromStrategy}
+          initialStrategy={selectedStrategy}
         />
       </div>
     )
@@ -185,7 +258,7 @@ function PropertyContent() {
         <div className="bg-white/95 dark:bg-[#07172e]/95 backdrop-blur-md border-b border-neutral-200 dark:border-white/5 px-4 py-3 safe-area-pt transition-colors">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button
-              onClick={() => router.back()}
+              onClick={handleBackFromStrategy}
               className="flex items-center gap-2 text-neutral-600 dark:text-gray-400 hover:text-navy-900 dark:hover:text-white transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -213,7 +286,8 @@ function PropertyContent() {
       {/* Responsive Analytics Container */}
       <ResponsiveAnalyticsContainer
         property={property}
-        onBack={() => router.back()}
+        onBack={handleBackFromStrategy}
+        initialStrategy={selectedStrategy}
       />
     </div>
   )
