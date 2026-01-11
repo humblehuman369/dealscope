@@ -140,12 +140,22 @@ html:not(.dark) .premium-theme-btn {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .premium-hero-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  position: absolute;
+  inset: 0;
+}
+
+.premium-hero-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .premium-hero-overlay {

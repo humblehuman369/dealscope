@@ -11,7 +11,8 @@ import {
   Bookmark, 
   Share2, 
   FileText,
-  ChevronRight 
+  ChevronRight,
+  Home
 } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
 import { StrategyId } from './types'
@@ -193,10 +194,21 @@ export function PropertyPremiumPage({
       {/* Hero Section */}
       <div className="premium-hero">
         <div className="premium-hero-image">
-          <img 
-            src={photos[activePhotoIndex]} 
-            alt={`Property photo ${activePhotoIndex + 1}`}
-          />
+          {photos[activePhotoIndex] ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img 
+              src={photos[activePhotoIndex]} 
+              alt={`Property photo ${activePhotoIndex + 1}`}
+              onError={(e) => {
+                // Hide broken image
+                (e.target as HTMLImageElement).style.display = 'none'
+              }}
+            />
+          ) : (
+            <div className="premium-hero-placeholder">
+              <Home className="w-16 h-16 opacity-30" />
+            </div>
+          )}
         </div>
         <div className="premium-hero-overlay" />
 
@@ -218,7 +230,14 @@ export function PropertyPremiumPage({
                   onClick={() => setActivePhotoIndex(idx)}
                   aria-label={`View photo ${idx + 1}`}
                 >
-                  <img src={photo} alt="" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={photo} 
+                    alt="" 
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.opacity = '0.3'
+                    }}
+                  />
                 </button>
               ))}
             </div>
