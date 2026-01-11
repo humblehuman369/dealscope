@@ -12,7 +12,6 @@ import {
   StrategyId
 } from '@/components/analytics'
 import { useTheme } from '@/context/ThemeContext'
-import { GenerateLOIModal } from '@/components/GenerateLOIModal'
 
 /**
  * Property Analytics Page
@@ -69,7 +68,6 @@ function PropertyContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedStrategy, setSelectedStrategy] = useState<StrategyId | null>(strategyParam)
-  const [showLOIModal, setShowLOIModal] = useState(false)
 
   useEffect(() => {
     async function fetchProperty() {
@@ -183,9 +181,10 @@ function PropertyContent() {
     }
   }
 
-  // Handle Generate LOI
+  // Handle Generate LOI - Navigate to wholesale strategy where LOI can be generated
   const handleGenerateLOI = () => {
-    setShowLOIModal(true)
+    // Navigate to wholesale strategy which has LOI generation
+    handleSelectStrategy('wholesale')
   }
 
   if (isLoading) {
@@ -216,22 +215,14 @@ function PropertyContent() {
   // If no strategy is selected, show the premium property landing page
   if (!selectedStrategy) {
     return (
-      <>
-        <PropertyPremiumPage
-          property={property}
-          onBack={() => router.back()}
-          onSelectStrategy={handleSelectStrategy}
-          onSave={handleSave}
-          onShare={handleShare}
-          onGenerateLOI={handleGenerateLOI}
-        />
-        {showLOIModal && (
-          <GenerateLOIModal
-            property={property}
-            onClose={() => setShowLOIModal(false)}
-          />
-        )}
-      </>
+      <PropertyPremiumPage
+        property={property}
+        onBack={() => router.back()}
+        onSelectStrategy={handleSelectStrategy}
+        onSave={handleSave}
+        onShare={handleShare}
+        onGenerateLOI={handleGenerateLOI}
+      />
     )
   }
 
