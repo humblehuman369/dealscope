@@ -189,7 +189,7 @@ interface StrategyPromptProps {
  */
 export function StrategyPrompt({ 
   title = '6 Ways to Profit',
-  subtitle = 'Select a strategy to see your returns'
+  subtitle = 'Select each strategy to view IQ\'s custom-calculated breakdown for this property.'
 }: StrategyPromptProps) {
   return (
     <div className="text-center mb-6 mt-2">
@@ -202,7 +202,7 @@ export function StrategyPrompt({
       <h2 className="text-2xl font-extrabold text-white mb-2">
         {title}
       </h2>
-      <p className="text-base text-white/60">
+      <p className="text-base text-white/70 leading-relaxed max-w-sm mx-auto">
         {subtitle}
       </p>
     </div>
