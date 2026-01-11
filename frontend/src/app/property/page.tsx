@@ -81,15 +81,57 @@ function PropertyContent() {
         setIsLoading(true)
         setError(null)
 
-        // Fetch from API
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-        const response = await fetch(`${apiUrl}/api/v1/properties/search?address=${encodeURIComponent(addressParam)}`)
+        // Fetch from Next.js API route which proxies to backend
+        const response = await fetch('/api/v1/properties/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ address: addressParam })
+        })
         
         if (!response.ok) {
-          throw new Error('Failed to fetch property data')
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.detail || 'Failed to fetch property data')
         }
 
         const data = await response.json()
+        
+        // Fetch photos if zpid is available
+        let photos: string[] = SAMPLE_PHOTOS
+        let photoCount = 5
+        
+        if (data.zpid) {
+          try {
+            const photosResponse = await fetch(`/api/v1/photos?zpid=${data.zpid}`)
+            if (photosResponse.ok) {
+              const photosData = await photosResponse.json()
+              if (photosData.success && photosData.photos && photosData.photos.length > 0) {
+                // Extract URL strings from photo objects
+                photos = photosData.photos
+                  .map((p: { url?: string }) => p.url)
+                  .filter((url: string | undefined): url is string => !!url)
+                photoCount = photos.length
+              }
+            }
+          } catch (photoErr) {
+            console.warn('Failed to fetch photos, using samples:', photoErr)
+          }
+        }
+        
+        // Get monthly rent first (used for estimating property value if needed)
+        const monthlyRent = data.rentals?.monthly_rent_ltr || data.rentals?.average_rent || 2500
+        
+        // Estimate property value from rent if valuation data is missing
+        // Using 1% rule inverse: Property Value = Monthly Rent / 0.007 (0.7% rent ratio)
+        const estimatedValueFromRent = monthlyRent / 0.007
+        
+        // Get the best available valuation
+        const listPrice = data.valuations?.current_value_avm 
+          || data.valuations?.zestimate 
+          || data.valuations?.tax_assessed_value
+          || data.valuations?.last_sale_price
+          || estimatedValueFromRent
         
         // Transform API response to our format
         const propertyData: PropertyData = {
@@ -97,19 +139,19 @@ function PropertyContent() {
           city: data.address?.city || '',
           state: data.address?.state || '',
           zipCode: data.address?.zip_code || '',
-          listPrice: data.valuations?.current_value_avm || data.valuations?.zestimate || 350000,
-          monthlyRent: data.rentals?.monthly_rent_ltr || data.rentals?.average_rent || 2500,
-          averageDailyRate: data.rentals?.average_daily_rate || 180,
+          listPrice: Math.round(listPrice),
+          monthlyRent: monthlyRent,
+          averageDailyRate: data.rentals?.average_daily_rate || Math.round(monthlyRent / 30 * 1.5),
           occupancyRate: data.rentals?.occupancy_rate || 0.70,
-          propertyTaxes: data.market?.property_taxes_annual || 4000,
-          insurance: 2000,
+          propertyTaxes: data.market?.property_taxes_annual || Math.round(listPrice * 0.012),
+          insurance: Math.round(listPrice * 0.004),
           bedrooms: data.details?.bedrooms || 3,
           bathrooms: data.details?.bathrooms || 2,
           sqft: data.details?.square_footage || 1500,
-          arv: data.valuations?.arv || (data.valuations?.current_value_avm || 350000) * 1.15,
-          thumbnailUrl: data.photos?.[0] || SAMPLE_PHOTOS[0],
-          photos: data.photos?.length > 0 ? data.photos : SAMPLE_PHOTOS,
-          photoCount: data.photos?.length || 5
+          arv: data.valuations?.arv || Math.round(listPrice * 1.15),
+          thumbnailUrl: photos[0],
+          photos: photos,
+          photoCount: photoCount
         }
 
         setProperty(propertyData)
