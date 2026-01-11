@@ -9,17 +9,10 @@ interface ScanDemoSectionProps {
 
 export function ScanDemoSection({ onScanProperty }: ScanDemoSectionProps) {
   return (
-    <section className="demo-section" id="demo">
+    <section className="demo-section demo-section-compact" id="demo">
       <div className="container">
-        <div className="brand-line demo-brand-line">
-          Most investors guess. <span className="highlight">IQ investors know.</span>
-        </div>
-        <div className="section-header">
-          <div className="section-label">Point &amp; Scan Technology</div>
-          <h2 className="section-title">See It In Action</h2>
-          <p className="section-subtitle">
-            Point your camera at any property and<br/>get instant investment analysis across 6 strategies.
-          </p>
+        <div className="section-header section-header-tight">
+          <div className="section-label">Real Estate Investors Instant Onsite Intelligent</div>
         </div>
         
         {/* Scan Scene */}
@@ -190,6 +183,11 @@ export function ScanDemoSection({ onScanProperty }: ScanDemoSectionProps) {
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* Brand Line - Moved below scan scene */}
+        <div className="brand-line demo-brand-line">
+          Most investors guess. <span className="highlight">IQ Investors Know.</span>
         </div>
         
         {/* Demo CTA */}
