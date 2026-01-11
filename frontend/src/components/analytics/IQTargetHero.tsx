@@ -56,7 +56,7 @@ export function IQTargetHero({
       : formatCurrency(value)
 
   return (
-    <div className="relative overflow-hidden rounded-2xl p-5 text-center mb-4 bg-gradient-to-br from-green-500/[0.15] to-teal-500/[0.1] border border-green-500/40">
+    <div className="relative overflow-hidden rounded-2xl p-5 text-center mb-4 border-2 border-teal dark:border-accent-500">
       {/* Animated Radial Glow Background */}
       <div 
         className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] animate-target-glow pointer-events-none"
@@ -137,7 +137,7 @@ export function IQTargetHeroCompact({
     }).format(value)
 
   return (
-    <div className="relative overflow-hidden rounded-xl p-4 text-center bg-gradient-to-br from-green-500/[0.12] to-teal-500/[0.08] border border-green-500/30">
+    <div className="relative overflow-hidden rounded-xl p-4 text-center border-2 border-teal dark:border-accent-500">
       <div className="flex items-center justify-center gap-1.5 mb-2">
         <Target className="w-3.5 h-3.5 text-green-500" />
         <span className="text-[0.65rem] font-bold text-green-500 uppercase tracking-wider">

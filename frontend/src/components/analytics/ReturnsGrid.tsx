@@ -29,11 +29,11 @@ export function ReturnsGrid({
   data
 }: ReturnsGridProps) {
   return (
-    <div className="bg-gradient-to-br from-green-500/[0.08] to-teal-500/[0.05] border border-green-500/20 rounded-2xl p-4 mb-4">
+    <div className="border-2 border-teal dark:border-accent-500 rounded-2xl p-4 mb-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-3.5">
-        <div className="text-[1.1rem] font-bold text-green-500 flex items-center gap-1.5">
-          <CheckCircle className="w-5 h-5" />
+        <div className="text-[1.1rem] font-bold text-navy-900 dark:text-white flex items-center gap-1.5">
+          <CheckCircle className="w-5 h-5 text-teal dark:text-accent-500" />
           {title}
         </div>
         <ReturnsBadge type={data.badgeType} text={data.badge} />
@@ -256,7 +256,7 @@ interface ReturnsGridCompactProps {
 
 export function ReturnsGridCompact({ metrics }: ReturnsGridCompactProps) {
   return (
-    <div className="flex items-center justify-between bg-green-500/[0.06] border border-green-500/15 rounded-xl p-2.5">
+    <div className="flex items-center justify-between border-2 border-teal dark:border-accent-500 rounded-xl p-2.5">
       {metrics.slice(0, 4).map((metric, index) => (
         <React.Fragment key={index}>
           <div className="text-center px-2">
