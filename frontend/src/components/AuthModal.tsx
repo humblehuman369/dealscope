@@ -141,8 +141,8 @@ export default function AuthModal() {
       
       {/* Modal */}
       <div className="relative bg-white dark:bg-navy-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* Header */}
-        <div className="relative bg-gradient-to-r from-accent-500 to-teal px-6 py-8 text-white">
+        {/* Header - Teal gradient fading to background */}
+        <div className="relative bg-gradient-to-r from-teal dark:from-accent-500 to-navy-900/70 dark:to-navy-900/70 px-6 py-8 text-white">
           <button
             onClick={handleClose}
             className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/20 transition-colors"
@@ -202,7 +202,7 @@ export default function AuthModal() {
             <button
               type="submit"
               disabled={isSendingReset}
-              className="w-full py-3 bg-gradient-to-r from-accent-500 to-teal text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-accent-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              className="w-full py-3 bg-gradient-to-r from-teal dark:from-accent-500 to-navy-900/70 dark:to-navy-900/70 text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-teal/30 dark:focus:ring-accent-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
             >
               {isSendingReset ? (
                 <>
@@ -333,7 +333,7 @@ export default function AuthModal() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-gradient-to-r from-accent-500 to-teal text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-accent-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 bg-gradient-to-r from-teal dark:from-accent-500 to-navy-900/70 dark:to-navy-900/70 text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-teal/30 dark:focus:ring-accent-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <>
