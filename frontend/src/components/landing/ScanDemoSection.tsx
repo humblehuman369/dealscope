@@ -1,13 +1,12 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 
 interface ScanDemoSectionProps {
-  onScanProperty?: () => void;
+  onTryItNow?: () => void;
 }
 
-export function ScanDemoSection({ onScanProperty }: ScanDemoSectionProps) {
+export function ScanDemoSection({ onTryItNow }: ScanDemoSectionProps) {
   return (
     <section className="demo-section demo-section-compact" id="demo">
       <div className="container">
@@ -193,9 +192,9 @@ export function ScanDemoSection({ onScanProperty }: ScanDemoSectionProps) {
         
         {/* Demo CTA */}
         <div className="demo-cta">
-          <button onClick={onScanProperty} className="btn btn-primary">Scan a Property</button>
-          <span className="demo-cta-divider">or</span>
-          <Link href="/search" className="btn btn-secondary">Enter an Address</Link>
+          <button onClick={onTryItNow} className="btn btn-primary btn-large">
+            Try It Now
+          </button>
         </div>
       </div>
     </section>
