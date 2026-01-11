@@ -272,7 +272,8 @@ html:not(.dark) .landing-page .scan-data-label {
   border: 1px solid rgba(77, 208, 225, 0.25);
   padding: 10px 24px;
   border-radius: 100px;
-  margin-bottom: 32px;
+  margin-top: 40px;
+  margin-bottom: 40px;
   animation: fadeInDown 0.6s ease-out;
 }
 
