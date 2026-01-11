@@ -927,68 +927,98 @@ html.dark .text-brand-solid {
   max-width: 400px;
 }
 
-/* Light Mode Support */
-@media (prefers-color-scheme: light) {
-  .property-hero-card {
-    background: rgba(255, 255, 255, 0.95);
-    border-color: rgba(0, 126, 167, 0.2);
-  }
-  
-  .property-hero-address {
-    color: #0f172a;
-  }
-  
-  .property-hero-location {
-    color: rgba(0, 0, 0, 0.6);
-  }
-  
-  .property-hero-specs {
-    color: rgba(0, 0, 0, 0.5);
-  }
-  
-  .property-hero-price {
-    color: #0891b2;
-  }
-  
-  .property-hero-price-label {
-    color: rgba(0, 0, 0, 0.5);
-  }
-  
-  .strategy-card-premium {
-    background: rgba(0, 0, 0, 0.02);
-    border-color: rgba(0, 0, 0, 0.08);
-  }
-  
-  .strategy-card-premium:hover {
-    background: rgba(0, 0, 0, 0.04);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-  }
-  
-  .strategy-stat-label-premium {
-    color: rgba(0, 0, 0, 0.5);
-  }
-  
-  .strategy-tagline-premium {
-    color: rgba(0, 0, 0, 0.55);
-  }
-  
-  .strategy-title-main {
-    color: #0f172a;
-  }
-  
-  .strategy-subtitle-main {
-    color: rgba(0, 0, 0, 0.6);
-  }
-  
-  .strategy-badge-premium {
-    background: rgba(8, 145, 178, 0.1);
-    border-color: rgba(8, 145, 178, 0.2);
-    color: #0891b2;
-  }
-  
-  .strategy-badge-dot {
-    background: #0891b2;
-  }
+/* Light Mode Support - Class-based (html:not(.dark)) */
+html:not(.dark) .property-hero-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 126, 167, 0.2);
+}
+
+html:not(.dark) .property-hero-address {
+  color: #0f172a;
+}
+
+html:not(.dark) .property-hero-location {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+html:not(.dark) .property-hero-specs {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+html:not(.dark) .property-hero-price {
+  color: #0891b2;
+}
+
+html:not(.dark) .property-hero-price-label {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+html:not(.dark) .property-hero-photos {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+html:not(.dark) .property-hero-placeholder {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+html:not(.dark) .property-hero-action {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #64748b;
+}
+
+html:not(.dark) .property-hero-action:hover {
+  background: rgba(8, 145, 178, 0.1);
+  border-color: rgba(8, 145, 178, 0.3);
+  color: #0891b2;
+}
+
+html:not(.dark) .strategy-card-premium {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+html:not(.dark) .strategy-card-premium:hover {
+  background: rgba(0, 0, 0, 0.04);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+}
+
+html:not(.dark) .strategy-stat-label-premium {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+html:not(.dark) .strategy-tagline-premium {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+html:not(.dark) .strategy-title-main {
+  color: #0f172a;
+}
+
+html:not(.dark) .strategy-subtitle-main {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+html:not(.dark) .strategy-badge-premium {
+  background: rgba(8, 145, 178, 0.1);
+  border-color: rgba(8, 145, 178, 0.2);
+  color: #0891b2;
+}
+
+html:not(.dark) .strategy-badge-dot {
+  background: #0891b2;
+}
+
+html:not(.dark) .strategy-number-premium {
+  background: rgba(8, 145, 178, 0.15);
+}
+
+html:not(.dark) .strategy-name-premium {
+  color: #0f172a;
+}
+
+html:not(.dark) .strategy-stat-value-premium {
+  color: #0f172a;
 }
 
 /* ==========================================
