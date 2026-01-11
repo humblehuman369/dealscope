@@ -897,14 +897,18 @@
 
 .landing-page .section-header-tight .section-label {
   margin-bottom: 10px;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-transform: uppercase;
 }
 
 /* Point & Scan Technology title - larger and prominent */
 .landing-page .scan-technology-title {
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  font-weight: 800;
+  font-size: clamp(1.44rem, 3.2vw, 2.24rem);
+  font-weight: 600;
   letter-spacing: 0.08em;
-  color: var(--text-primary);
+  color: var(--electric-cyan);
+  text-transform: uppercase;
   margin-bottom: 20px;
 }
 
