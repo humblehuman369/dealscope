@@ -258,7 +258,7 @@ html:not(.dark) .landing-page .scan-data-label {
 
 /* Hero Section */
 .landing-page .hero {
-  padding: 140px 0 80px;
+  padding: 100px 0 80px;
   position: relative;
   overflow: hidden;
 }
@@ -285,7 +285,7 @@ html:not(.dark) .landing-page .scan-data-label {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 48px;
+  margin-top: 0;
   width: 100%;
 }
 
