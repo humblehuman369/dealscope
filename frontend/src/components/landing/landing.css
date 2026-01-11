@@ -1175,7 +1175,7 @@
   font-size: clamp(1.22rem, 2.72vw, 1.9rem);
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: var(--teal);
+  color: var(--teal) !important;
   text-transform: uppercase;
   margin-top: 8px;
   margin-bottom: 30px;
