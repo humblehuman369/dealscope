@@ -142,7 +142,7 @@ export default function AuthModal() {
       {/* Modal */}
       <div className="relative bg-white dark:bg-navy-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="relative bg-brand-500 px-6 py-8 text-white">
+        <div className="relative bg-gradient-to-r from-accent-500 to-teal px-6 py-8 text-white">
           <button
             onClick={handleClose}
             className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/20 transition-colors"
@@ -202,7 +202,7 @@ export default function AuthModal() {
             <button
               type="submit"
               disabled={isSendingReset}
-              className="w-full py-3 bg-brand-500 text-white font-semibold rounded-lg hover:bg-brand-600 focus:ring-4 focus:ring-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              className="w-full py-3 bg-gradient-to-r from-accent-500 to-teal text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-accent-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
             >
               {isSendingReset ? (
                 <>
@@ -222,7 +222,7 @@ export default function AuthModal() {
                 setError('')
                 setSuccess('')
               }}
-              className="w-full text-center text-sm text-gray-600 dark:text-gray-400 hover:text-brand-500 dark:hover:text-brand-400"
+              className="w-full text-center text-sm text-gray-600 dark:text-gray-400 hover:text-teal dark:hover:text-accent-500"
             >
               ← Back to Sign In
             </button>
@@ -333,7 +333,7 @@ export default function AuthModal() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-brand-500 text-white font-semibold rounded-lg hover:bg-brand-600 focus:ring-4 focus:ring-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 bg-gradient-to-r from-accent-500 to-teal text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-accent-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <>
@@ -354,7 +354,7 @@ export default function AuthModal() {
                 setError('')
                 setSuccess('')
               }}
-              className="w-full text-center text-sm text-brand-500 dark:text-brand-400 hover:underline"
+              className="w-full text-center text-sm text-teal dark:text-accent-500 hover:underline"
             >
               Forgot your password?
             </button>
@@ -368,7 +368,7 @@ export default function AuthModal() {
                 <button
                   type="button"
                   onClick={toggleMode}
-                  className="text-brand-500 dark:text-brand-400 font-semibold hover:underline"
+                  className="text-teal dark:text-accent-500 font-semibold hover:underline"
                 >
                   Sign up
                 </button>
@@ -379,7 +379,7 @@ export default function AuthModal() {
                 <button
                   type="button"
                   onClick={toggleMode}
-                  className="text-brand-500 dark:text-brand-400 font-semibold hover:underline"
+                  className="text-teal dark:text-accent-500 font-semibold hover:underline"
                 >
                   Sign in
                 </button>
