@@ -345,7 +345,7 @@ html:not(.dark) .landing-page .hero-eyebrow-text {
   font-size: clamp(2.2rem, 5vw, 3.5rem);
   font-weight: 800;
   line-height: 1.1;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   letter-spacing: -1px;
 }
 
@@ -361,7 +361,7 @@ html:not(.dark) .landing-page .hero-eyebrow-text {
   font-size: 1.1rem;
   color: var(--text-secondary);
   max-width: 520px;
-  margin: 0 auto 48px;
+  margin: 0 auto 56px;
   line-height: 1.6;
 }
 
