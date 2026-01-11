@@ -1,101 +1,86 @@
 'use client'
 
 import React from 'react'
-import { 
-  Home, 
-  Palmtree, 
-  RefreshCw, 
-  Hammer, 
-  Users, 
-  FileSignature 
-} from 'lucide-react'
 import { StrategyId } from './types'
 
 interface Strategy {
   id: StrategyId
   number: number
   name: string
-  personalizedTitle: string
   tagline: string
-  color: string
-  borderColor: string
-  icon: React.ElementType
+  description: string
   statValue: string
   statLabel: string
+  color: string
+  cssClass: string
 }
 
 const STRATEGIES: Strategy[] = [
   { 
-    id: 'ltr', 
+    id: 'ltr',
     number: 1,
     name: 'Long-Term Rental', 
-    personalizedTitle: "IQ's Long-Term Rental profit strategy for your property",
     tagline: 'Steady income & build equity',
-    color: '#0465f2',
-    borderColor: 'rgba(4, 101, 242, 0.3)',
-    icon: Home,
+    description: 'Buy and hold properties for consistent monthly rental income. Build long-term wealth through appreciation and mortgage paydown.',
     statValue: '8-12%',
-    statLabel: 'Cash-on-Cash'
+    statLabel: 'Cash-on-Cash',
+    color: '#0465f2',
+    cssClass: 'long'
   },
   { 
-    id: 'str', 
+    id: 'str',
     number: 2,
     name: 'Short-Term Rental', 
-    personalizedTitle: "IQ's Short-Term Rental income strategy for your property",
     tagline: 'Vacation & business rental income',
-    color: '#8b5cf6',
-    borderColor: 'rgba(139, 92, 246, 0.3)',
-    icon: Palmtree,
+    description: 'Maximize income through Airbnb or VRBO rentals. Higher returns with more active management and seasonal demand.',
     statValue: '15-25%',
-    statLabel: 'Cash-on-Cash'
+    statLabel: 'Cash-on-Cash',
+    color: '#8b5cf6',
+    cssClass: 'short'
   },
   { 
-    id: 'brrrr', 
+    id: 'brrrr',
     number: 3,
     name: 'BRRRR', 
-    personalizedTitle: "IQ's BRRRR wealth-building strategy for your property",
-    tagline: 'Buy-Rehab-Rent-Refi-Repeat',
-    color: '#f97316',
-    borderColor: 'rgba(249, 115, 22, 0.3)',
-    icon: RefreshCw,
+    tagline: 'Buy-Rehab-Rent-Refi-Repeat wealth builder',
+    description: 'Buy distressed property, renovate, rent, refinance to pull out capital, then repeat. Build a portfolio with the same initial investment.',
     statValue: '∞',
-    statLabel: 'Scale'
+    statLabel: 'Scale',
+    color: '#f97316',
+    cssClass: 'brrrr'
   },
   { 
-    id: 'flip', 
+    id: 'flip',
     number: 4,
     name: 'Fix & Flip', 
-    personalizedTitle: "IQ's Fix & Flip profit strategy for your property",
     tagline: 'Buy low, fix up, sell high',
-    color: '#ec4899',
-    borderColor: 'rgba(236, 72, 153, 0.3)',
-    icon: Hammer,
+    description: 'Purchase undervalued properties, renovate strategically, and sell for profit. Quick returns with active project management.',
     statValue: '$50K+',
-    statLabel: 'Profit'
+    statLabel: 'Profit',
+    color: '#ec4899',
+    cssClass: 'flip'
   },
   { 
-    id: 'house_hack', 
+    id: 'house_hack',
     number: 5,
     name: 'House Hack', 
-    personalizedTitle: "IQ's House Hack savings strategy for your property",
     tagline: 'Cut your housing costs up to 100%',
-    color: '#14b8a6',
-    borderColor: 'rgba(20, 184, 166, 0.3)',
-    icon: Users,
+    description: 'Live in one unit while renting others. Eliminate your housing payment and start building wealth from day one.',
     statValue: '75%',
-    statLabel: 'Cost Savings'
+    statLabel: 'Cost Savings',
+    color: '#14b8a6',
+    cssClass: 'hack'
   },
   { 
-    id: 'wholesale', 
+    id: 'wholesale',
     number: 6,
     name: 'Wholesale', 
-    personalizedTitle: "IQ's Wholesale deal strategy for your property",
     tagline: 'Find deals, assign contracts, profit',
-    color: '#84cc16',
-    borderColor: 'rgba(132, 204, 22, 0.3)',
-    icon: FileSignature,
+    description: 'Find properties under market value, get them under contract, then assign to other investors for a fee. Zero capital required.',
     statValue: '$10K+',
-    statLabel: 'Per Deal'
+    statLabel: 'Per Deal',
+    color: '#84cc16',
+    cssClass: 'wholesale'
   },
 ]
 
@@ -105,66 +90,64 @@ interface StrategyGridProps {
 }
 
 /**
- * StrategyGrid - 2x3 grid of strategy selection boxes
- * Matches homepage styling with numbered strategies and personalized titles
+ * StrategyGrid - Matches homepage strategy cards styling exactly
+ * 6 strategy cards in a responsive grid with numbers 1-6
  */
 export function StrategyGrid({ activeStrategy, onSelectStrategy }: StrategyGridProps) {
   return (
-    <div className="strategy-grid-analytics">
+    <div className="analytics-strategy-grid">
       {STRATEGIES.map((strategy) => {
         const isActive = activeStrategy === strategy.id
-        const Icon = strategy.icon
+        const isScale = strategy.statValue === '∞'
         
         return (
           <button
             key={strategy.id}
             onClick={() => onSelectStrategy(strategy.id)}
-            className={`strategy-card-analytics ${isActive ? 'active' : ''}`}
-            style={{
-              '--strategy-color': strategy.color,
-              '--strategy-border': strategy.borderColor,
-            } as React.CSSProperties}
+            className={`analytics-strategy-card ${strategy.cssClass} ${isActive ? 'active' : ''}`}
           >
-            {/* Color accent bar on left */}
-            <div 
-              className="strategy-accent-bar"
-              style={{ backgroundColor: strategy.color }}
-            />
+            {/* Left color bar */}
+            <div className="analytics-strategy-bar" style={{ background: strategy.color }} />
             
-            {/* Header with number and stat */}
-            <div className="strategy-card-header">
-              <div className="strategy-number-badge" style={{ backgroundColor: `${strategy.color}20`, color: strategy.color }}>
-                {strategy.number}
+            {/* Card header with number, name, and stat */}
+            <div className="analytics-strategy-header">
+              <div className="analytics-strategy-left">
+                <span className="analytics-strategy-number" style={{ color: strategy.color }}>
+                  {strategy.number}
+                </span>
+                <span className="analytics-strategy-name">{strategy.name}</span>
               </div>
-              <div className="strategy-stat">
-                <div className="strategy-stat-value" style={{ color: strategy.color }}>
-                  {strategy.statValue}
-                </div>
-                <div className="strategy-stat-label">
-                  {strategy.statLabel}
-                </div>
+              <div className="analytics-strategy-stat">
+                {isScale ? (
+                  <>
+                    <svg 
+                      className="analytics-growth-icon" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke={strategy.color}
+                      strokeWidth="2.5"
+                    >
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                      <polyline points="17 6 23 6 23 12" />
+                    </svg>
+                    <div className="analytics-stat-label">{strategy.statLabel}</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="analytics-stat-value" style={{ color: strategy.color }}>
+                      {strategy.statValue}
+                    </div>
+                    <div className="analytics-stat-label">{strategy.statLabel}</div>
+                  </>
+                )}
               </div>
             </div>
             
-            {/* Strategy name and icon */}
-            <div className="strategy-title-row">
-              <h3 className="strategy-name" style={{ color: strategy.color }}>
-                {strategy.name}
-              </h3>
-              <div className="strategy-icon" style={{ backgroundColor: `${strategy.color}15` }}>
-                <Icon size={18} style={{ color: strategy.color }} />
-              </div>
-            </div>
+            {/* Tagline */}
+            <div className="analytics-strategy-tagline">{strategy.tagline}</div>
             
-            {/* Personalized tagline */}
-            <p className="strategy-tagline">
-              {strategy.tagline}
-            </p>
-            
-            {/* Active indicator */}
-            {isActive && (
-              <div className="strategy-active-indicator" style={{ backgroundColor: strategy.color }} />
-            )}
+            {/* Description */}
+            <div className="analytics-strategy-description">{strategy.description}</div>
           </button>
         )
       })}
@@ -178,25 +161,17 @@ interface StrategyPromptProps {
 }
 
 /**
- * StrategyPrompt - Header section above the strategy grid
- * Styled to match homepage section headers
+ * StrategyPrompt - Header section matching homepage "6 Investment Strategies" section
  */
 export function StrategyPrompt({ 
   title = 'One Property, Multiple Opportunities',
   subtitle = 'IQ analyzed your property and built 6 investment strategies, each showing a different way to profit.'
 }: StrategyPromptProps) {
   return (
-    <div className="strategy-prompt">
-      <div className="strategy-prompt-badge">
-        <span className="strategy-prompt-dot" />
-        <span className="strategy-prompt-label">6 Strategies Analyzed</span>
-      </div>
-      <h2 className="strategy-prompt-title">
-        {title}
-      </h2>
-      <p className="strategy-prompt-subtitle">
-        {subtitle}
-      </p>
+    <div className="analytics-strategy-prompt">
+      <div className="analytics-prompt-label">6 Investment Strategies</div>
+      <h2 className="analytics-prompt-title">{title}</h2>
+      <p className="analytics-prompt-subtitle">{subtitle}</p>
     </div>
   )
 }
