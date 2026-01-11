@@ -254,6 +254,11 @@ function PropertyContent() {
     return <AnalyticsPageSkeleton />
   }
 
+  // Handle Try It Now - Navigate to search page
+  const handleTryItNow = () => {
+    router.push('/search')
+  }
+
   // If no strategy is selected, show the premium property landing page
   if (!selectedStrategy) {
     return (
@@ -264,6 +269,7 @@ function PropertyContent() {
         onSave={handleSave}
         onShare={handleShare}
         onGenerateLOI={handleGenerateLOI}
+        onTryItNow={handleTryItNow}
       />
     )
   }

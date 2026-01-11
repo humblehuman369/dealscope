@@ -92,6 +92,56 @@ html:not(.dark) .premium-logo span {
   width: 40px;
 }
 
+.premium-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.premium-try-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #00D4FF;
+  color: #0A1628;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.3);
+}
+
+.premium-try-btn:hover {
+  background: #00c4ed;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+}
+
+html:not(.dark) .premium-try-btn {
+  background: #0891b2;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(8, 145, 178, 0.3);
+}
+
+html:not(.dark) .premium-try-btn:hover {
+  background: #0e7490;
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.4);
+}
+
+@media (max-width: 480px) {
+  .premium-try-btn span {
+    display: none;
+  }
+  
+  .premium-try-btn {
+    padding: 10px;
+    border-radius: 12px;
+  }
+}
+
 .premium-theme-btn {
   width: 40px;
   height: 40px;
