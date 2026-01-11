@@ -42,7 +42,7 @@ export function IQWelcomeModal({ isOpen, onClose }: IQWelcomeModalProps) {
           </p>
           
           <p className="text-[15px] font-medium text-white/70 italic">
-            Explore them all, and ask me anything along the way.
+            Explore them all, I'll be here to guide you.
           </p>
         </div>
         

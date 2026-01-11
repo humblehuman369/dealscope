@@ -117,19 +117,20 @@ export function StrategyGrid({ activeStrategy, onSelectStrategy }: StrategyGridP
             className={`
               relative overflow-hidden rounded-2xl p-4 text-left
               transition-all duration-300 hover:scale-[1.02] hover:shadow-lg
+              bg-white dark:bg-transparent
               ${isActive 
-                ? 'ring-2 ring-[#4dd0e1] ring-offset-2 ring-offset-[#0b1426]' 
+                ? 'ring-2 ring-[#4dd0e1] ring-offset-2 ring-offset-white dark:ring-offset-[#0b1426]' 
                 : ''
               }
             `}
             style={{
-              background: `linear-gradient(135deg, ${strategy.gradientFrom}15 0%, ${strategy.gradientTo}08 100%)`,
-              border: `1px solid ${strategy.color}40`
+              background: `linear-gradient(135deg, ${strategy.gradientFrom}20 0%, ${strategy.gradientTo}10 100%)`,
+              border: `1px solid ${strategy.color}50`
             }}
           >
-            {/* Glow effect */}
+            {/* Glow effect - only on dark mode */}
             <div 
-              className="absolute top-0 right-0 w-24 h-24 opacity-20 blur-2xl"
+              className="absolute top-0 right-0 w-24 h-24 opacity-0 dark:opacity-20 blur-2xl"
               style={{ background: strategy.color }}
             />
             
@@ -137,7 +138,7 @@ export function StrategyGrid({ activeStrategy, onSelectStrategy }: StrategyGridP
             <div className="flex items-start justify-between mb-3 relative">
               <div 
                 className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ backgroundColor: `${strategy.color}25` }}
+                style={{ backgroundColor: `${strategy.color}20` }}
               >
                 <Icon 
                   className="w-5 h-5" 
@@ -151,17 +152,23 @@ export function StrategyGrid({ activeStrategy, onSelectStrategy }: StrategyGridP
                 >
                   {strategy.metric}
                 </div>
-                <div className="text-[10px] text-white/50 uppercase tracking-wide">
+                <div 
+                  className="text-[10px] uppercase tracking-wide"
+                  style={{ color: `${strategy.color}90` }}
+                >
                   {strategy.metricLabel}
                 </div>
               </div>
             </div>
             
             {/* Name and tagline */}
-            <h3 className="text-base font-bold text-white mb-1.5">
+            <h3 
+              className="text-base font-bold mb-1.5"
+              style={{ color: strategy.color }}
+            >
               {strategy.name}
             </h3>
-            <p className="text-[13px] text-white/70 leading-snug">
+            <p className="text-[13px] text-gray-600 dark:text-white/70 leading-snug">
               {strategy.tagline}
             </p>
             
@@ -193,16 +200,16 @@ export function StrategyPrompt({
 }: StrategyPromptProps) {
   return (
     <div className="text-center mb-6 mt-2">
-      <div className="inline-flex items-center gap-2 bg-[#4dd0e1]/10 px-4 py-1.5 rounded-full mb-3">
-        <span className="w-2 h-2 rounded-full bg-[#4dd0e1] animate-pulse" />
-        <span className="text-xs font-semibold text-[#4dd0e1] uppercase tracking-wider">
+      <div className="inline-flex items-center gap-2 bg-[#0891b2]/10 dark:bg-[#4dd0e1]/10 px-4 py-1.5 rounded-full mb-3">
+        <span className="w-2 h-2 rounded-full bg-[#0891b2] dark:bg-[#4dd0e1] animate-pulse" />
+        <span className="text-xs font-semibold text-[#0891b2] dark:text-[#4dd0e1] uppercase tracking-wider">
           Analysis Complete
         </span>
       </div>
-      <h2 className="text-2xl font-extrabold text-white mb-2">
+      <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">
         {title}
       </h2>
-      <p className="text-base text-white/70 leading-relaxed max-w-sm mx-auto">
+      <p className="text-base text-gray-600 dark:text-white/70 leading-relaxed max-w-sm mx-auto">
         {subtitle}
       </p>
     </div>
