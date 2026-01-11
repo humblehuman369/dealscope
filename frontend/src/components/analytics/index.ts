@@ -198,6 +198,9 @@ export {
 // Property Hero - Immersive property showcase
 export { PropertyHero } from './PropertyHero'
 
+// Property Premium Page - World-class property analysis landing page
+export { PropertyPremiumPage } from './PropertyPremiumPage'
+
 // Property Mini Card - Compact property header
 export {
   PropertyMiniCard,
