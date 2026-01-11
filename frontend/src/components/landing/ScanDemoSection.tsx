@@ -13,6 +13,7 @@ export function ScanDemoSection({ onScanProperty }: ScanDemoSectionProps) {
       <div className="container">
         <div className="section-header section-header-tight">
           <div className="section-label">Real Estate Investors Instant Onsite Intelligent</div>
+          <h2 className="section-title scan-technology-title">POINT & SCAN TECHNOLOGY</h2>
         </div>
         
         {/* Scan Scene */}
