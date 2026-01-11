@@ -11,8 +11,8 @@ export function ScanDemoSection({ onTryItNow }: ScanDemoSectionProps) {
     <section className="demo-section demo-section-compact" id="demo">
       <div className="container">
         <div className="section-header section-header-tight">
-          <div className="section-label">Real Estate Investors Instant Onsite Intelligence</div>
-          <h2 className="section-title scan-technology-title">POINT & SCAN TECHNOLOGY</h2>
+          <div className="section-label">Instant Onsite Intelligence</div>
+          <h2 className="section-title scan-technology-title teal">POINT & SCAN TECHNOLOGY</h2>
         </div>
         
         {/* Scan Scene */}
