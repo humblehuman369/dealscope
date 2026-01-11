@@ -6,7 +6,7 @@ import {
   DEFAULT_STRATEGIES,
   SubTabNav,
   getStrategyTabs,
-  PropertyMiniCard,
+  PropertyHero,
   IQTargetHero,
   PriceLadder,
   generatePriceLadder,
@@ -197,21 +197,19 @@ export function StrategyAnalyticsContainer({ property, onBack }: StrategyAnalyti
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0b1426] to-[#091020] text-white">
-      {/* Property Photos & Card */}
-      <div className="px-4">
-        <PropertyMiniCard
-          data={{
-            address: property.address,
-            location: `${property.city}, ${property.state} ${property.zipCode}`,
-            price: property.listPrice,
-            priceLabel: 'List Price',
-            specs: `${property.bedrooms} bd · ${property.bathrooms} ba · ${property.sqft?.toLocaleString()} sqft`,
-            thumbnailUrl: property.thumbnailUrl,
-            photoCount: property.photoCount
-          }}
+      {/* Property Hero - Immersive Photo & Details */}
+      <div className="px-4 pt-2">
+        <PropertyHero
+          address={property.address}
+          location={`${property.city}, ${property.state} ${property.zipCode}`}
+          price={property.listPrice}
+          priceLabel="List Price"
+          specs={`${property.bedrooms} bd · ${property.bathrooms} ba · ${property.sqft?.toLocaleString()} sqft`}
           photos={property.photos}
-          onExpand={onBack}
-          showExpandButton={!!onBack}
+          thumbnailUrl={property.thumbnailUrl}
+          photoCount={property.photoCount}
+          onSave={() => console.log('Save property')}
+          onShare={() => console.log('Share property')}
         />
       </div>
 
