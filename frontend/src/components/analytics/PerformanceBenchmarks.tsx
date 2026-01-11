@@ -40,7 +40,7 @@ export function PerformanceBenchmarks({
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-2xl px-2 py-3 mb-4">
+    <div className="bg-white dark:bg-white/[0.02] border-2 border-[#007ea7] dark:border-[#4dd0e1] rounded-2xl px-2 py-3 mb-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 px-2">
         <div>
@@ -139,7 +139,7 @@ function BenchmarksCompact({ benchmarks }: BenchmarksCompactProps) {
       {benchmarks.slice(0, 4).map((benchmark) => (
         <div 
           key={benchmark.id}
-          className="bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-xl p-3"
+          className="bg-white dark:bg-white/[0.02] border-2 border-[#007ea7] dark:border-[#4dd0e1] rounded-xl p-3"
         >
           <div className="flex justify-between items-center mb-2">
             <span className="text-[0.6rem] text-gray-500 dark:text-white/50 uppercase tracking-wide">

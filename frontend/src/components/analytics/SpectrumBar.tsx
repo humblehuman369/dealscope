@@ -60,26 +60,26 @@ export function SpectrumBar({
     }
   }
 
-  // For inverted spectrums, swap the zone colors
+  // For inverted spectrums, swap the zone colors - stronger colors for light mode
   const leftZoneColor = isInverted
-    ? 'bg-green-500/[0.15] text-green-500/70'
-    : 'bg-red-500/[0.15] text-red-500/70'
+    ? 'bg-green-500/[0.35] text-green-700 dark:text-green-500/70'
+    : 'bg-red-500/[0.35] text-red-700 dark:text-red-500/70'
   
   const rightZoneColor = isInverted
-    ? 'bg-red-500/[0.15] text-red-500/70'
-    : 'bg-green-500/[0.15] text-green-500/70'
+    ? 'bg-red-500/[0.35] text-red-700 dark:text-red-500/70'
+    : 'bg-green-500/[0.35] text-green-700 dark:text-green-500/70'
 
   const heightClass = size === 'compact' ? 'h-5' : 'h-6'
 
   return (
     <div className={`relative ${heightClass} rounded-xl overflow-visible`}>
-      {/* Gradient Background */}
+      {/* Gradient Background - stronger colors for light mode visibility */}
       <div 
-        className="absolute inset-0 rounded-xl"
+        className="absolute inset-0 rounded-xl spectrum-gradient"
         style={{
           background: isInverted
-            ? 'linear-gradient(90deg, rgba(34,197,94,0.3) 0%, rgba(34,197,94,0.2) 25%, rgba(234,179,8,0.2) 35%, rgba(234,179,8,0.3) 50%, rgba(234,179,8,0.2) 65%, rgba(239,68,68,0.2) 75%, rgba(239,68,68,0.3) 100%)'
-            : 'linear-gradient(90deg, rgba(239,68,68,0.3) 0%, rgba(239,68,68,0.2) 25%, rgba(234,179,8,0.2) 35%, rgba(234,179,8,0.3) 50%, rgba(234,179,8,0.2) 65%, rgba(34,197,94,0.2) 75%, rgba(34,197,94,0.3) 100%)'
+            ? 'linear-gradient(90deg, rgba(34,197,94,0.5) 0%, rgba(34,197,94,0.35) 25%, rgba(234,179,8,0.35) 35%, rgba(234,179,8,0.5) 50%, rgba(234,179,8,0.35) 65%, rgba(239,68,68,0.35) 75%, rgba(239,68,68,0.5) 100%)'
+            : 'linear-gradient(90deg, rgba(239,68,68,0.5) 0%, rgba(239,68,68,0.35) 25%, rgba(234,179,8,0.35) 35%, rgba(234,179,8,0.5) 50%, rgba(234,179,8,0.35) 65%, rgba(34,197,94,0.35) 75%, rgba(34,197,94,0.5) 100%)'
         }}
       />
 
@@ -99,7 +99,7 @@ export function SpectrumBar({
 
         {/* Average Zone */}
         <div 
-          className="flex-[1.2] flex flex-col items-center justify-center border-r border-gray-300 dark:border-white/10 bg-yellow-500/[0.1] text-yellow-500/70"
+          className="flex-[1.2] flex flex-col items-center justify-center border-r border-gray-300 dark:border-white/10 bg-yellow-500/[0.35] text-yellow-700 dark:text-yellow-500/70"
         >
           <span className="text-[0.55rem] font-semibold uppercase tracking-wide leading-none">
             {zones.average.label}
@@ -162,8 +162,8 @@ export function MiniSpectrum({ markerPosition, status, isInverted = false }: Min
     <div className="h-1.5 rounded-full relative" 
       style={{
         background: isInverted
-          ? 'linear-gradient(90deg, rgba(34,197,94,0.4) 0%, rgba(234,179,8,0.4) 50%, rgba(239,68,68,0.4) 100%)'
-          : 'linear-gradient(90deg, rgba(239,68,68,0.4) 0%, rgba(234,179,8,0.4) 50%, rgba(34,197,94,0.4) 100%)'
+          ? 'linear-gradient(90deg, rgba(34,197,94,0.6) 0%, rgba(234,179,8,0.6) 50%, rgba(239,68,68,0.6) 100%)'
+          : 'linear-gradient(90deg, rgba(239,68,68,0.6) 0%, rgba(234,179,8,0.6) 50%, rgba(34,197,94,0.6) 100%)'
       }}
     >
       <div 
