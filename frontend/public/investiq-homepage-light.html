@@ -1491,7 +1491,7 @@
       }
     }
 
-    /* Theme Toggle Button */
+    /* Theme Toggle Button - Uses explicit colors since it's outside .landing-page scope */
     .theme-toggle {
       position: fixed;
       bottom: 24px;
@@ -1499,8 +1499,8 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -1508,13 +1508,25 @@
       font-size: 1.25rem;
       z-index: 1000;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 20px var(--shadow-color);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
 
     .theme-toggle:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--electric-cyan);
+      background: rgba(0, 0, 0, 0.04);
+      border-color: #0891b2;
       transform: scale(1.05);
+    }
+
+    /* Dark mode theme toggle styles */
+    html.dark .theme-toggle {
+      background: #07172e;
+      border-color: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    html.dark .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: #4dd0e1;
     }
   </style>
 </head>
@@ -2066,20 +2078,23 @@
     const savedTheme = localStorage.getItem('theme') || 'light';
     if (savedTheme === 'dark') {
       html.classList.add('dark');
-      themeToggle.textContent = '🌙';
+      if (themeToggle) themeToggle.textContent = '🌙';
     }
     
-    themeToggle.addEventListener('click', () => {
-      if (html.classList.contains('dark')) {
-        html.classList.remove('dark');
-        themeToggle.textContent = '☀️';
-        localStorage.setItem('theme', 'light');
-      } else {
-        html.classList.add('dark');
-        themeToggle.textContent = '🌙';
-        localStorage.setItem('theme', 'dark');
-      }
-    });
+    // Only add event listener if element exists
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        if (html.classList.contains('dark')) {
+          html.classList.remove('dark');
+          themeToggle.textContent = '☀️';
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.classList.add('dark');
+          themeToggle.textContent = '🌙';
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
   </script>
 </body>
 </html>
