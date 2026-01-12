@@ -142,7 +142,8 @@ export function generatePriceLadder(
   const ninetyPercent = listPrice * 0.90
   const openingOffer = listPrice * openingOfferPercent
 
-  return [
+  // Build the rungs array
+  const rungs: PriceRung[] = [
     {
       type: 'list',
       name: 'List Price',
@@ -180,6 +181,9 @@ export function generatePriceLadder(
       percentOfList: openingOfferPercent * 100
     }
   ]
+  
+  // Sort by price descending (highest to lowest)
+  return rungs.sort((a, b) => b.price - a.price)
 }
 
 /**

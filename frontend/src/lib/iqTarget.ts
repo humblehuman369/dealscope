@@ -247,15 +247,40 @@ export function calculateLTRTarget(a: TargetAssumptions): IQTargetResult {
   // Calculate final metrics at target price
   const finalMetrics = calculateLTRMetrics(targetPrice, a)
   
-  // Find breakeven price (where cash flow = 0)
-  let breakeven = listPrice
-  for (let pct = 0.95; pct >= 0.60; pct -= 0.01) {
-    const testMetrics = calculateLTRMetrics(listPrice * pct, a)
-    if (testMetrics.monthlyCashFlow >= 0) {
-      breakeven = listPrice * pct
-    } else {
-      break
+  // Find breakeven price (where cash flow = 0) using binary search
+  let breakevenLow = listPrice * 0.30
+  let breakevenHigh = listPrice * 1.10
+  let breakeven = targetPrice // Default to target if we can't find breakeven
+  
+  // Check if breakeven exists within range
+  const lowMetrics = calculateLTRMetrics(breakevenLow, a)
+  const highMetrics = calculateLTRMetrics(breakevenHigh, a)
+  
+  if (lowMetrics.monthlyCashFlow > 0 && highMetrics.monthlyCashFlow < 0) {
+    // Binary search to find exact breakeven
+    for (let i = 0; i < 30; i++) {
+      const mid = (breakevenLow + breakevenHigh) / 2
+      const midMetrics = calculateLTRMetrics(mid, a)
+      
+      if (Math.abs(midMetrics.monthlyCashFlow) < 10) {
+        // Close enough to zero
+        breakeven = mid
+        break
+      } else if (midMetrics.monthlyCashFlow > 0) {
+        // Still positive, go higher (higher price = lower cash flow)
+        breakevenLow = mid
+      } else {
+        // Negative, go lower
+        breakevenHigh = mid
+      }
+      breakeven = mid
     }
+  } else if (lowMetrics.monthlyCashFlow <= 0) {
+    // Even at 30% of list, cash flow is negative - no viable breakeven
+    breakeven = breakevenLow
+  } else {
+    // Cash flow is positive even at 110% of list - breakeven is above list
+    breakeven = breakevenHigh
   }
   
   const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
@@ -305,14 +330,33 @@ export function calculateSTRTarget(a: TargetAssumptions): IQTargetResult {
   
   const finalMetrics = calculateSTRMetrics(targetPrice, a)
   
-  let breakeven = listPrice
-  for (let pct = 0.95; pct >= 0.60; pct -= 0.01) {
-    const testMetrics = calculateSTRMetrics(listPrice * pct, a)
-    if (testMetrics.monthlyCashFlow >= 0) {
-      breakeven = listPrice * pct
-    } else {
-      break
+  // Find breakeven price (where cash flow = 0) using binary search
+  let breakevenLow = listPrice * 0.30
+  let breakevenHigh = listPrice * 1.10
+  let breakeven = targetPrice
+  
+  const lowMetrics = calculateSTRMetrics(breakevenLow, a)
+  const highMetrics = calculateSTRMetrics(breakevenHigh, a)
+  
+  if (lowMetrics.monthlyCashFlow > 0 && highMetrics.monthlyCashFlow < 0) {
+    for (let i = 0; i < 30; i++) {
+      const mid = (breakevenLow + breakevenHigh) / 2
+      const midMetrics = calculateSTRMetrics(mid, a)
+      
+      if (Math.abs(midMetrics.monthlyCashFlow) < 10) {
+        breakeven = mid
+        break
+      } else if (midMetrics.monthlyCashFlow > 0) {
+        breakevenLow = mid
+      } else {
+        breakevenHigh = mid
+      }
+      breakeven = mid
     }
+  } else if (lowMetrics.monthlyCashFlow <= 0) {
+    breakeven = breakevenLow
+  } else {
+    breakeven = breakevenHigh
   }
   
   const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
@@ -364,15 +408,35 @@ export function calculateBRRRRTarget(a: TargetAssumptions): IQTargetResult {
   
   const finalMetrics = calculateBRRRRMetrics(targetPrice, a)
   
-  // Breakeven is where we at least get 80% back
-  let breakeven = listPrice * 0.75
-  for (let pct = 0.80; pct >= 0.50; pct -= 0.01) {
-    const testMetrics = calculateBRRRRMetrics(listPrice * pct, a)
-    if (testMetrics.cashRecoveryPercent >= 80) {
-      breakeven = listPrice * pct
-    } else {
-      break
+  // Breakeven is where we get 80% cash recovery using binary search
+  let breakevenLow = listPrice * 0.30
+  let breakevenHigh = listPrice * 0.90
+  let breakeven = targetPrice
+  
+  const lowMetrics = calculateBRRRRMetrics(breakevenLow, a)
+  const highMetrics = calculateBRRRRMetrics(breakevenHigh, a)
+  
+  // Target 80% recovery as breakeven
+  const targetRecovery = 80
+  if (lowMetrics.cashRecoveryPercent > targetRecovery && highMetrics.cashRecoveryPercent < targetRecovery) {
+    for (let i = 0; i < 30; i++) {
+      const mid = (breakevenLow + breakevenHigh) / 2
+      const midMetrics = calculateBRRRRMetrics(mid, a)
+      
+      if (Math.abs(midMetrics.cashRecoveryPercent - targetRecovery) < 2) {
+        breakeven = mid
+        break
+      } else if (midMetrics.cashRecoveryPercent > targetRecovery) {
+        breakevenLow = mid
+      } else {
+        breakevenHigh = mid
+      }
+      breakeven = mid
     }
+  } else if (lowMetrics.cashRecoveryPercent <= targetRecovery) {
+    breakeven = breakevenLow
+  } else {
+    breakeven = breakevenHigh
   }
   
   const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
@@ -428,15 +492,33 @@ export function calculateFlipTarget(a: TargetAssumptions): IQTargetResult {
   
   const finalMetrics = calculateFlipMetrics(targetPrice, a)
   
-  // Breakeven is where profit = 0
-  let breakeven = listPrice
-  for (let pct = 0.90; pct >= 0.50; pct -= 0.01) {
-    const testMetrics = calculateFlipMetrics(listPrice * pct, a)
-    if (testMetrics.netProfit >= 0) {
-      breakeven = listPrice * pct
-    } else {
-      break
+  // Breakeven is where profit = 0 using binary search
+  let breakevenLow = listPrice * 0.30
+  let breakevenHigh = listPrice * 1.10
+  let breakeven = targetPrice
+  
+  const lowMetrics = calculateFlipMetrics(breakevenLow, a)
+  const highMetrics = calculateFlipMetrics(breakevenHigh, a)
+  
+  if (lowMetrics.netProfit > 0 && highMetrics.netProfit < 0) {
+    for (let i = 0; i < 30; i++) {
+      const mid = (breakevenLow + breakevenHigh) / 2
+      const midMetrics = calculateFlipMetrics(mid, a)
+      
+      if (Math.abs(midMetrics.netProfit) < 1000) {
+        breakeven = mid
+        break
+      } else if (midMetrics.netProfit > 0) {
+        breakevenLow = mid
+      } else {
+        breakevenHigh = mid
+      }
+      breakeven = mid
     }
+  } else if (lowMetrics.netProfit <= 0) {
+    breakeven = breakevenLow
+  } else {
+    breakeven = breakevenHigh
   }
   
   const formatCurrency = (v: number) => `$${Math.round(v).toLocaleString()}`
@@ -490,16 +572,35 @@ export function calculateHouseHackTarget(a: TargetAssumptions): IQTargetResult {
   
   const finalMetrics = calculateHouseHackMetrics(targetPrice, a)
   
-  // Breakeven is where housing cost equals typical rent
+  // Breakeven is where housing cost equals typical rent using binary search
   const typicalRent = a.monthlyRent / a.totalBedrooms * 1.2
-  let breakeven = listPrice
-  for (let pct = 0.95; pct >= 0.60; pct -= 0.01) {
-    const testMetrics = calculateHouseHackMetrics(listPrice * pct, a)
-    if (testMetrics.effectiveHousingCost <= typicalRent) {
-      breakeven = listPrice * pct
-    } else {
-      break
+  let breakevenLow = listPrice * 0.30
+  let breakevenHigh = listPrice * 1.10
+  let breakeven = targetPrice
+  
+  const lowMetrics = calculateHouseHackMetrics(breakevenLow, a)
+  const highMetrics = calculateHouseHackMetrics(breakevenHigh, a)
+  
+  // For house hack, breakeven is where effective cost = typical rent
+  if (lowMetrics.effectiveHousingCost < typicalRent && highMetrics.effectiveHousingCost > typicalRent) {
+    for (let i = 0; i < 30; i++) {
+      const mid = (breakevenLow + breakevenHigh) / 2
+      const midMetrics = calculateHouseHackMetrics(mid, a)
+      
+      if (Math.abs(midMetrics.effectiveHousingCost - typicalRent) < 50) {
+        breakeven = mid
+        break
+      } else if (midMetrics.effectiveHousingCost < typicalRent) {
+        breakevenLow = mid
+      } else {
+        breakevenHigh = mid
+      }
+      breakeven = mid
     }
+  } else if (lowMetrics.effectiveHousingCost >= typicalRent) {
+    breakeven = breakevenLow
+  } else {
+    breakeven = breakevenHigh
   }
   
   const formatCurrency = (v: number) => `$${Math.abs(Math.round(v)).toLocaleString()}`
