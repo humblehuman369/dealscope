@@ -85,15 +85,19 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-produ
 // ===========================================
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading, needsOnboarding } = useAuth()
   const router = useRouter()
   
-  // Redirect if not authenticated
+  // Redirect if not authenticated or needs onboarding
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/')
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.push('/')
+      } else if (needsOnboarding) {
+        router.push('/onboarding')
+      }
     }
-  }, [isLoading, isAuthenticated, router])
+  }, [isLoading, isAuthenticated, needsOnboarding, router])
 
   if (isLoading) {
     return (
