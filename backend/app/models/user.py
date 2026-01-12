@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 class User(Base):
     """
     User account model.
-    Stores authentication credentials and account status.
+    Stores authentication credentials, account status, and business profile.
     """
     __tablename__ = "users"
     
@@ -43,7 +43,44 @@ class User(Base):
     full_name: Mapped[Optional[str]] = mapped_column(String(255))
     avatar_url: Mapped[Optional[str]] = mapped_column(String(500))
     
+    # ==========================================
+    # Business Profile Fields
+    # ==========================================
+    business_name: Mapped[Optional[str]] = mapped_column(String(255))
+    business_type: Mapped[Optional[str]] = mapped_column(String(100))  # LLC, Corp, Sole Prop, etc.
+    
+    # Business Address
+    business_address_street: Mapped[Optional[str]] = mapped_column(String(255))
+    business_address_city: Mapped[Optional[str]] = mapped_column(String(100))
+    business_address_state: Mapped[Optional[str]] = mapped_column(String(10))
+    business_address_zip: Mapped[Optional[str]] = mapped_column(String(20))
+    business_address_country: Mapped[Optional[str]] = mapped_column(String(100), default="USA")
+    
+    # Contact Information (JSON arrays for multiple entries)
+    phone_numbers: Mapped[Optional[dict]] = mapped_column(
+        JSON, 
+        default=list
+    )  # [{"type": "mobile", "number": "...", "primary": true}, ...]
+    
+    additional_emails: Mapped[Optional[List[str]]] = mapped_column(
+        ARRAY(String),
+        default=list
+    )  # Additional contact emails
+    
+    # Social & Marketing Links
+    social_links: Mapped[Optional[dict]] = mapped_column(
+        JSON,
+        default=dict
+    )  # {"linkedin": "...", "facebook": "...", "instagram": "...", "twitter": "...", "website": "..."}
+    
+    # Professional Info
+    license_number: Mapped[Optional[str]] = mapped_column(String(100))
+    license_state: Mapped[Optional[str]] = mapped_column(String(10))
+    bio: Mapped[Optional[str]] = mapped_column(Text)
+    
+    # ==========================================
     # Account status
+    # ==========================================
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
