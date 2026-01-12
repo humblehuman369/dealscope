@@ -6,6 +6,16 @@
   <meta name="description" content="InvestIQ - Know the Real Return Before You Invest. Scan any property and get instant analysis across 6 investment strategies in 60 seconds.">
   <title>InvestIQ - Real Estate Investment Intelligence</title>
   
+  <!-- Prevent theme flash - runs before page renders -->
+  <script>
+    (function() {
+      var theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+  
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
