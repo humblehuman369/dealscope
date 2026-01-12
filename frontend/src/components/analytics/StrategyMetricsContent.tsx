@@ -236,6 +236,10 @@ export function STRMetricsContent({
         rationale={iqTarget.rationale}
         highlightedMetric={iqTarget.highlightedMetric}
         secondaryMetric={iqTarget.secondaryMetric}
+        monthlyRent={assumptions.averageDailyRate * 30 * assumptions.occupancyRate}
+        downPaymentPct={assumptions.downPaymentPct}
+        interestRate={assumptions.interestRate}
+        onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
       />
 
       <PriceLadder rungs={priceLadder} />
@@ -432,6 +436,10 @@ export function BRRRRMetricsContent({
         highlightedMetric={iqTarget.highlightedMetric}
         secondaryMetric={iqTarget.secondaryMetric}
         badgeText="BRRRR Target"
+        monthlyRent={assumptions.monthlyRent}
+        downPaymentPct={assumptions.downPaymentPct}
+        interestRate={assumptions.interestRate}
+        onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
       />
 
       {/* Cash Recovery Hero */}
@@ -597,6 +605,10 @@ export function FlipMetricsContent({
         highlightedMetric={iqTarget.highlightedMetric}
         secondaryMetric={iqTarget.secondaryMetric}
         badgeText="Flip Target"
+        monthlyRent={assumptions.monthlyRent}
+        downPaymentPct={assumptions.downPaymentPct}
+        interestRate={assumptions.interestRate}
+        onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
       />
 
       {/* Net Profit Hero */}
@@ -722,6 +734,10 @@ export function HouseHackMetricsContent({
         highlightedMetric={iqTarget.highlightedMetric}
         secondaryMetric={iqTarget.secondaryMetric}
         badgeText="House Hack Target"
+        monthlyRent={assumptions.monthlyRent}
+        downPaymentPct={0.035}
+        interestRate={assumptions.interestRate}
+        onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
       />
 
       {/* Housing Cost Hero */}
@@ -859,6 +875,10 @@ export function WholesaleMetricsContent({
         secondaryMetric={iqTarget.secondaryMetric}
         badgeText="Contract Price"
         labelText="Your Maximum Contract Price"
+        monthlyRent={assumptions.monthlyRent}
+        downPaymentPct={assumptions.downPaymentPct}
+        interestRate={assumptions.interestRate}
+        onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
       />
 
       {/* Assignment Fee Hero */}

@@ -580,6 +580,10 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
         rationale={iqTarget.rationale}
         highlightedMetric={iqTarget.highlightedMetric}
         secondaryMetric={iqTarget.secondaryMetric}
+        monthlyRent={assumptions.monthlyRent}
+        downPaymentPct={assumptions.downPaymentPct}
+        interestRate={assumptions.interestRate}
+        onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
       />
 
       {/* Price Ladder */}
