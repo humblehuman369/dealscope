@@ -130,3 +130,90 @@ export const stats = [
   { value: '$2.4M', label: 'Profit Discovered' },
   { value: '60s', label: 'Average Analysis Time' },
 ];
+
+// How It Works Steps
+export interface HowItWorksStep {
+  number: number;
+  title: string;
+  description: string;
+  features: string[];
+  color: string;
+}
+
+export const howItWorksSteps: HowItWorksStep[] = [
+  {
+    number: 1,
+    title: 'Point & Scan',
+    description: 'Open InvestIQ and point your camera at any property address, For Sale sign, or MLS listing. Our AI reads it instantly.',
+    features: ['Street addresses', 'For Sale signs', 'MLS sheets', 'Property listings'],
+    color: '#4dd0e1',
+  },
+  {
+    number: 2,
+    title: 'Analyze',
+    description: 'InvestIQ pulls real-time data and runs comprehensive analysis across all six investment strategies automatically.',
+    features: ['Real-time market data', 'Rental estimates', 'Expense calculations', 'ROI projections'],
+    color: '#8b5cf6',
+  },
+  {
+    number: 3,
+    title: 'Decide',
+    description: 'Get clear recommendations on the best strategy for each property. Compare deals, save favorites, and invest with confidence.',
+    features: ['Strategy comparison', 'Risk assessment', 'Market benchmarks', 'Action recommendations'],
+    color: '#14b8a6',
+  },
+];
+
+// Testimonials
+export interface Testimonial {
+  text: string;
+  authorName: string;
+  authorTitle: string;
+  initials: string;
+}
+
+export const testimonials: Testimonial[] = [
+  {
+    text: "I analyzed 47 properties during a single Saturday driving around neighborhoods. InvestIQ found me a BRRRR deal that everyone else missed.",
+    authorName: 'Marcus Chen',
+    authorTitle: 'Portfolio Investor • Denver, CO',
+    initials: 'MC',
+  },
+  {
+    text: "The six-strategy comparison saved me from making a huge mistake. What I thought was a flip was actually a perfect long-term hold.",
+    authorName: 'Sarah Williams',
+    authorTitle: 'First-Time Investor • Austin, TX',
+    initials: 'SW',
+  },
+  {
+    text: "Finally, a tool built for how I actually find deals—in my car, driving past properties. Point, scan, done.",
+    authorName: 'David Rodriguez',
+    authorTitle: 'Real Estate Agent • Phoenix, AZ',
+    initials: 'DR',
+  },
+];
+
+// About section cards
+export interface AboutCard {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export const aboutCards: AboutCard[] = [
+  {
+    icon: 'database',
+    title: 'Data Sources',
+    description: 'We aggregate data from public records, MLS feeds, and proprietary rental estimates to ensure accuracy.',
+  },
+  {
+    icon: 'calculator',
+    title: 'Calculation Methods',
+    description: 'Every metric follows industry-standard formulas used by professional investors and lenders.',
+  },
+  {
+    icon: 'shield',
+    title: 'Accuracy Commitment',
+    description: 'Our estimates are designed for initial screening. We always recommend verifying with local data before making offers.',
+  },
+];

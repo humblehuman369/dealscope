@@ -8,7 +8,19 @@ import { FeatureCard } from './FeatureCard';
 import { Footer } from './Footer';
 import { ScanDemoSection } from './ScanDemoSection';
 import { TryItNowModal } from './TryItNowModal';
-import { strategies, features, stats } from './types';
+import { strategies, features, stats, howItWorksSteps, testimonials, aboutCards } from './types';
+import { 
+  Camera, 
+  BarChart3, 
+  Lightbulb, 
+  Check, 
+  Play,
+  Quote,
+  Database,
+  Calculator,
+  ShieldCheck,
+  ExternalLink
+} from 'lucide-react';
 
 interface ResponsiveLandingPageProps {
   onPointAndScan?: () => void;
@@ -105,6 +117,85 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
       {/* See It In Action - Point & Scan Demo Section */}
       <ScanDemoSection onTryItNow={handleTryItNow} />
 
+      {/* Social Proof Bar */}
+      <section className="social-proof">
+        <div className="container">
+          <div className="social-proof-inner">
+            <div className="social-proof-item">
+              <div className="social-proof-live"></div>
+              <span className="social-proof-number">23,847</span>
+              <span className="social-proof-label">properties analyzed</span>
+            </div>
+            <div className="social-proof-divider"></div>
+            <div className="social-proof-item">
+              <span className="social-proof-number">4.9</span>
+              <div className="social-proof-stars">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                  </svg>
+                ))}
+              </div>
+              <span className="social-proof-label">from 2,400+ investors</span>
+            </div>
+            <div className="social-proof-divider"></div>
+            <div className="social-proof-item">
+              <span className="social-proof-number">60 sec</span>
+              <span className="social-proof-label">avg. analysis time</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="how-it-works" id="how-it-works">
+        <div className="container">
+          <div className="section-header">
+            <div className="section-label">Simple 3-Step Process</div>
+            <h2 className="section-title">How <span className="highlight">Point & Scan</span> Works</h2>
+            <p className="section-subtitle">
+              No more spreadsheets. No more guesswork. Get professional-grade investment analysis in the time it takes to snap a photo.
+            </p>
+          </div>
+
+          <div className="steps-grid">
+            {howItWorksSteps.map((step) => {
+              const StepIcon = step.number === 1 ? Camera : step.number === 2 ? BarChart3 : Lightbulb;
+              return (
+                <div key={step.number} className={`step-card step-${step.number}`}>
+                  <div className="step-bg-number">{step.number}</div>
+                  <div className="step-icon">
+                    <StepIcon size={28} />
+                  </div>
+                  <h3 className="step-title">{step.title}</h3>
+                  <p className="step-description">{step.description}</p>
+                  <ul className="step-features">
+                    {step.features.map((feature, idx) => (
+                      <li key={idx}>
+                        <Check className="icon" size={16} />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="video-cta">
+            <button className="video-btn">
+              <div className="video-btn-icon">
+                <Play size={20} fill="currentColor" />
+              </div>
+              <div className="video-btn-text">
+                <div className="video-btn-title">Watch Demo</div>
+                <div className="video-btn-subtitle">See Point & Scan in action (30 sec)</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Strategies Section */}
       <section className="strategies-section" id="strategies">
         <div className="container">
@@ -141,16 +232,112 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
       <section className="features-section" id="features">
         <div className="container">
           <div className="section-header">
-            <div className="section-label">Why InvestIQ</div>
-            <h2 className="section-title">Everything You Need to Invest Smarter</h2>
+            <div className="section-label">Everything You Need</div>
+            <h2 className="section-title">What You Get with <span className="highlight">InvestIQ</span></h2>
             <p className="section-subtitle">
-              Powerful features designed to give you an edge in real estate investing.
+              Professional-grade investment analysis tools designed for modern real estate investors.
             </p>
           </div>
           <div className="features-grid">
             {features.map((feature, idx) => (
               <FeatureCard key={idx} feature={feature} />
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="testimonials">
+        <div className="container">
+          <div className="section-header">
+            <div className="section-label">Trusted by Investors</div>
+            <h2 className="section-title">What Investors Are <span className="highlight">Saying</span></h2>
+          </div>
+
+          <div className="testimonials-grid">
+            {testimonials.map((testimonial, idx) => (
+              <div key={idx} className="testimonial-card">
+                <div className="testimonial-quote-icon">
+                  <Quote size={16} />
+                </div>
+                <p className="testimonial-text">&ldquo;{testimonial.text}&rdquo;</p>
+                <div className="testimonial-author">
+                  <div className="testimonial-avatar">{testimonial.initials}</div>
+                  <div className="testimonial-info">
+                    <h4>{testimonial.authorName}</h4>
+                    <p>{testimonial.authorTitle}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="testimonials-stats">
+            <div className="stats-grid">
+              <div className="stat-item">
+                <div className="stat-value">23,847+</div>
+                <div className="stat-label">Properties Analyzed</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-value">6</div>
+                <div className="stat-label">Investment Strategies</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-value">60 sec</div>
+                <div className="stat-label">Average Analysis Time</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="about" id="about">
+        <div className="container">
+          <div className="about-grid">
+            <div className="about-content">
+              <div className="section-label">Built by Investors, For Investors</div>
+              <h2 className="section-title">Why We Built <span className="highlight">InvestIQ</span></h2>
+              
+              <p className="about-text">
+                I analyzed over 200 properties before my first purchase—each one taking 30+ minutes to run the numbers in spreadsheets. That&apos;s more than 100 hours of tedious calculations.
+              </p>
+              <p className="about-text">
+                InvestIQ was born from that frustration. I knew there had to be a faster way to screen deals without sacrificing accuracy. A way to analyze properties on the go, in real-time, as I drove past them.
+              </p>
+              <p className="about-text">
+                <strong>Now, thousands of investors use InvestIQ to screen properties in seconds, not hours. Because the best deals don&apos;t wait.</strong>
+              </p>
+
+              <div className="about-author">
+                <div className="about-author-avatar">H</div>
+                <div className="about-author-info">
+                  <h4>Humble</h4>
+                  <p>Founder, InvestIQ</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="about-cards">
+              {aboutCards.map((card, idx) => {
+                const IconComponent = card.icon === 'database' ? Database : card.icon === 'calculator' ? Calculator : ShieldCheck;
+                return (
+                  <div key={idx} className="about-card">
+                    <div className="about-card-icon">
+                      <IconComponent size={24} />
+                    </div>
+                    <div className="about-card-content">
+                      <h4>{card.title}</h4>
+                      <p>{card.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+              <a href="#methodology" className="about-link">
+                Read our full methodology
+                <ExternalLink size={16} />
+              </a>
+            </div>
           </div>
         </div>
       </section>
