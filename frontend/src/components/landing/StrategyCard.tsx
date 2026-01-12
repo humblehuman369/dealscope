@@ -8,8 +8,23 @@ interface StrategyCardProps {
   strategy: Strategy;
 }
 
+// Helper to render BRRRR description with orange capital letters
+function renderBRRRRDescription() {
+  const orange = '#f97316';
+  return (
+    <>
+      <span style={{ color: orange, fontWeight: 600 }}>B</span>uy a fixer-upper,{' '}
+      <span style={{ color: orange, fontWeight: 600 }}>R</span>enovate it,{' '}
+      <span style={{ color: orange, fontWeight: 600 }}>R</span>ent it out, then{' '}
+      <span style={{ color: orange, fontWeight: 600 }}>R</span>efinance to get your cash back and{' '}
+      <span style={{ color: orange, fontWeight: 600 }}>R</span>epeat
+    </>
+  );
+}
+
 export function StrategyCard({ strategy }: StrategyCardProps) {
   const isScale = strategy.statValue === '∞';
+  const isBRRRR = strategy.id === 'brrrr';
   
   return (
     <Link href={strategy.href} className={`strategy-card ${strategy.id}`}>
@@ -43,7 +58,9 @@ export function StrategyCard({ strategy }: StrategyCardProps) {
         </div>
       </div>
       <div className="strategy-tagline">{strategy.tagline}</div>
-      <div className="strategy-description">{strategy.description}</div>
+      <div className="strategy-description">
+        {isBRRRR ? renderBRRRRDescription() : strategy.description}
+      </div>
     </Link>
   );
 }

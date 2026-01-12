@@ -48,7 +48,7 @@ export const strategies: Strategy[] = [
     id: 'brrrr',
     name: 'BRRRR',
     tagline: 'Buy-Rehab-Rent-Refi-Repeat wealth builder',
-    description: 'Buy distressed property, renovate, rent, refinance to pull out capital, then repeat. Build a portfolio with the same initial investment.',
+    description: 'Buy a fixer-upper, Renovate it, Rent it out, then Refinance to get your cash back and Repeat',
     statValue: '∞',
     statLabel: 'Scale',
     color: '#f97316',
