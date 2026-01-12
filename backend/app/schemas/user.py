@@ -38,10 +38,51 @@ class UserCreate(UserBase):
     password: str
 
 
+class PhoneNumber(BaseModel):
+    """Schema for a phone number entry."""
+    type: str = Field(..., pattern="^(mobile|home|work|fax|other)$")
+    number: str = Field(..., min_length=10, max_length=20)
+    primary: bool = False
+
+
+class SocialLinks(BaseModel):
+    """Schema for social media links."""
+    linkedin: Optional[str] = None
+    facebook: Optional[str] = None
+    instagram: Optional[str] = None
+    twitter: Optional[str] = None
+    youtube: Optional[str] = None
+    tiktok: Optional[str] = None
+    website: Optional[str] = None
+
+
 class UserUpdate(BaseModel):
     """Schema for updating user info."""
     full_name: Optional[str] = Field(None, min_length=2, max_length=100)
     avatar_url: Optional[str] = None
+    
+    # Business Profile
+    business_name: Optional[str] = Field(None, max_length=255)
+    business_type: Optional[str] = Field(None, max_length=100)
+    
+    # Business Address
+    business_address_street: Optional[str] = Field(None, max_length=255)
+    business_address_city: Optional[str] = Field(None, max_length=100)
+    business_address_state: Optional[str] = Field(None, max_length=10)
+    business_address_zip: Optional[str] = Field(None, max_length=20)
+    business_address_country: Optional[str] = Field(None, max_length=100)
+    
+    # Contact Information
+    phone_numbers: Optional[List[PhoneNumber]] = None
+    additional_emails: Optional[List[EmailStr]] = None
+    
+    # Social Links
+    social_links: Optional[SocialLinks] = None
+    
+    # Professional Info
+    license_number: Optional[str] = Field(None, max_length=100)
+    license_state: Optional[str] = Field(None, max_length=10)
+    bio: Optional[str] = Field(None, max_length=2000)
 
 
 class UserResponse(BaseModel):
@@ -55,6 +96,21 @@ class UserResponse(BaseModel):
     is_superuser: bool = False
     created_at: datetime
     last_login: Optional[datetime]
+    
+    # Business Profile
+    business_name: Optional[str] = None
+    business_type: Optional[str] = None
+    business_address_street: Optional[str] = None
+    business_address_city: Optional[str] = None
+    business_address_state: Optional[str] = None
+    business_address_zip: Optional[str] = None
+    business_address_country: Optional[str] = None
+    phone_numbers: Optional[List[Dict[str, Any]]] = None
+    additional_emails: Optional[List[str]] = None
+    social_links: Optional[Dict[str, Any]] = None
+    license_number: Optional[str] = None
+    license_state: Optional[str] = None
+    bio: Optional[str] = None
     
     # Include profile summary
     has_profile: bool = False

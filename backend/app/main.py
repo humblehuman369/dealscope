@@ -81,6 +81,33 @@ except Exception as e:
     logger.warning(f"LOI router failed to load (OK for initial setup): {e}")
     loi_router = None
 
+# Import Search History router
+search_history_router = None
+try:
+    from app.routers.search_history import router as search_history_router
+    logger.info("Search history router loaded successfully")
+except Exception as e:
+    logger.warning(f"Search history router failed to load: {e}")
+    search_history_router = None
+
+# Import Reports router
+reports_router = None
+try:
+    from app.routers.reports import router as reports_router
+    logger.info("Reports router loaded successfully")
+except Exception as e:
+    logger.warning(f"Reports router failed to load: {e}")
+    reports_router = None
+
+# Import Documents router
+documents_router = None
+try:
+    from app.routers.documents import router as documents_router
+    logger.info("Documents router loaded successfully")
+except Exception as e:
+    logger.warning(f"Documents router failed to load: {e}")
+    documents_router = None
+
 # Import database session for cleanup
 try:
     from app.db.session import close_db
@@ -192,6 +219,21 @@ if admin_router is not None:
 if loi_router is not None:
     app.include_router(loi_router, prefix="/api/v1")
     logger.info("LOI router included")
+
+# Search History router
+if search_history_router is not None:
+    app.include_router(search_history_router)
+    logger.info("Search history router included")
+
+# Reports router
+if reports_router is not None:
+    app.include_router(reports_router)
+    logger.info("Reports router included")
+
+# Documents router
+if documents_router is not None:
+    app.include_router(documents_router)
+    logger.info("Documents router included")
 
 
 # ============================================

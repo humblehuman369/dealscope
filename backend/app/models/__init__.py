@@ -7,6 +7,7 @@ from app.models.user import User, UserProfile
 from app.models.saved_property import SavedProperty, PropertyAdjustment, PropertyStatus
 from app.models.document import Document, DocumentType
 from app.models.share import SharedLink, ShareType
+from app.models.search_history import SearchHistory
 
 __all__ = [
     "User",
@@ -18,5 +19,6 @@ __all__ = [
     "DocumentType",
     "SharedLink",
     "ShareType",
+    "SearchHistory",
 ]
 

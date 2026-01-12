@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Plus, Trash2, Search, Loader2, Building2, MapPin,
-  TrendingUp, Award, ChevronDown, ChevronUp, BarChart3, ArrowLeft, X
+  TrendingUp, Award, ChevronDown, ChevronUp, BarChart3, ArrowLeft, X,
+  Star, FolderOpen
 } from 'lucide-react'
 import {
   PropertyComparison,
@@ -12,6 +13,40 @@ import {
   savePropertyComparisons,
   loadPropertyComparisons,
 } from '@/lib/projections'
+import { useAuth } from '@/context/AuthContext'
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+
+// ===========================================
+// Types for Saved Properties
+// ===========================================
+
+interface SavedPropertySummary {
+  id: string
+  address_street: string
+  address_city?: string
+  address_state?: string
+  nickname?: string
+  property_data_snapshot?: {
+    details?: {
+      property_type?: string
+      bedrooms?: number
+      bathrooms?: number
+      square_footage?: number
+    }
+    valuations?: {
+      current_value_avm?: number
+    }
+    rentals?: {
+      monthly_rent_ltr?: number
+    }
+    market?: {
+      property_taxes_annual?: number
+    }
+  }
+  custom_purchase_price?: number
+  custom_rent_estimate?: number
+}
 
 // ============================================
 // FORMATTING
@@ -192,19 +227,26 @@ function CompactPropertyCard({
 function AddPropertySection({
   onAdd,
   onAddDemo,
+  onAddFromSaved,
   loading,
   setLoading,
-  propertyCount
+  propertyCount,
+  savedProperties,
+  isAuthenticated,
 }: {
   onAdd: (property: PropertyComparison) => void
   onAddDemo: (demo: typeof DEMO_PROPERTIES[0]) => void
+  onAddFromSaved: (saved: SavedPropertySummary) => void
   loading: boolean
   setLoading: (v: boolean) => void
   propertyCount: number
+  savedProperties: SavedPropertySummary[]
+  isAuthenticated: boolean
 }) {
   const [expanded, setExpanded] = useState(propertyCount === 0)
   const [address, setAddress] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'search' | 'saved'>('search')
   
   const handleSearch = async () => {
     if (!address.trim() || loading) return
@@ -267,51 +309,134 @@ function AddPropertySection({
       {/* Expandable Content */}
       {expanded && (
         <div className="p-3 pt-0 space-y-3">
-          {/* Search Input */}
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Enter address..."
-                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 dark:border-navy-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white dark:bg-navy-700 text-navy-900 dark:text-white placeholder-gray-400"
-                disabled={loading}
-              />
-            </div>
+          {/* Tabs for Search vs Saved */}
+          <div className="flex gap-2 border-b border-gray-100 dark:border-navy-600 -mx-3 px-3">
             <button
-              onClick={handleSearch}
-              disabled={loading || !address.trim()}
-              className="px-4 py-2.5 bg-brand-500 text-white rounded-lg hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 text-sm font-medium"
+              onClick={() => setActiveTab('search')}
+              className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'search'
+                  ? 'text-brand-500 border-brand-500'
+                  : 'text-gray-500 border-transparent hover:text-gray-700'
+              }`}
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+              <Search className="w-4 h-4 inline mr-1.5" />
               Search
             </button>
+            {isAuthenticated && savedProperties.length > 0 && (
+              <button
+                onClick={() => setActiveTab('saved')}
+                className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'saved'
+                    ? 'text-brand-500 border-brand-500'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <FolderOpen className="w-4 h-4 inline mr-1.5" />
+                Saved ({savedProperties.length})
+              </button>
+            )}
           </div>
-          
-          {error && <p className="text-xs text-red-500">{error}</p>}
-          
-          {/* Demo Properties */}
-          <div className="pt-2 border-t border-gray-100 dark:border-navy-600">
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Quick add demo:</p>
-            <div className="flex flex-wrap gap-1.5">
-              {DEMO_PROPERTIES.map((demo, i) => (
+
+          {activeTab === 'search' && (
+            <>
+              {/* Search Input */}
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    placeholder="Enter address..."
+                    className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 dark:border-navy-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white dark:bg-navy-700 text-navy-900 dark:text-white placeholder-gray-400"
+                    disabled={loading}
+                  />
+                </div>
                 <button
-                  key={i}
-                  onClick={() => {
-                    onAddDemo(demo)
-                    setExpanded(false)
-                  }}
-                  className="px-2.5 py-1 bg-gray-100 dark:bg-navy-700 hover:bg-gray-200 dark:hover:bg-navy-600 rounded-full text-xs text-gray-700 dark:text-gray-300 flex items-center gap-1"
+                  onClick={handleSearch}
+                  disabled={loading || !address.trim()}
+                  className="px-4 py-2.5 bg-brand-500 text-white rounded-lg hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 text-sm font-medium"
                 >
-                  <Plus className="w-3 h-3" />
-                  {demo.address.split(',')[0]}
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                  Search
                 </button>
-              ))}
+              </div>
+              
+              {error && <p className="text-xs text-red-500">{error}</p>}
+              
+              {/* Demo Properties */}
+              <div className="pt-2 border-t border-gray-100 dark:border-navy-600">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Quick add demo:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {DEMO_PROPERTIES.map((demo, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        onAddDemo(demo)
+                        setExpanded(false)
+                      }}
+                      className="px-2.5 py-1 bg-gray-100 dark:bg-navy-700 hover:bg-gray-200 dark:hover:bg-navy-600 rounded-full text-xs text-gray-700 dark:text-gray-300 flex items-center gap-1"
+                    >
+                      <Plus className="w-3 h-3" />
+                      {demo.address.split(',')[0]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Saved Properties Tab */}
+          {activeTab === 'saved' && isAuthenticated && (
+            <div className="max-h-64 overflow-y-auto space-y-2">
+              {savedProperties.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                  No saved properties yet
+                </p>
+              ) : (
+                savedProperties.map((saved) => {
+                  const details = saved.property_data_snapshot?.details
+                  const valuations = saved.property_data_snapshot?.valuations
+                  
+                  return (
+                    <button
+                      key={saved.id}
+                      onClick={() => {
+                        onAddFromSaved(saved)
+                        setExpanded(false)
+                      }}
+                      className="w-full flex items-center gap-3 p-3 bg-gray-50 dark:bg-navy-700 hover:bg-gray-100 dark:hover:bg-navy-600 rounded-lg text-left transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center flex-shrink-0">
+                        <Building2 className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-navy-900 dark:text-white text-sm truncate">
+                          {saved.nickname || saved.address_street}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {saved.address_city && saved.address_state 
+                            ? `${saved.address_city}, ${saved.address_state}` 
+                            : 'Address'}
+                          {details?.bedrooms && ` • ${details.bedrooms} bd`}
+                          {details?.square_footage && ` • ${details.square_footage.toLocaleString()} sqft`}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        {valuations?.current_value_avm && (
+                          <p className="text-sm font-medium text-navy-900 dark:text-white">
+                            ${(valuations.current_value_avm / 1000).toFixed(0)}K
+                          </p>
+                        )}
+                        <Star className="w-3.5 h-3.5 text-yellow-500 ml-auto" />
+                      </div>
+                    </button>
+                  )
+                })
+              )}
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
@@ -325,14 +450,44 @@ function AddPropertySection({
 function ComparePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { isAuthenticated } = useAuth()
   const [properties, setProperties] = useState<PropertyComparison[]>([])
   const [loading, setLoading] = useState(false)
   const [initialLoadDone, setInitialLoadDone] = useState(false)
+  const [savedProperties, setSavedProperties] = useState<SavedPropertySummary[]>([])
   
   // Track if URL parameter has been processed to prevent duplicate loads
   const urlLoadAttempted = useRef(false)
   // Store loaded properties for duplicate checking without causing re-renders
   const propertiesRef = useRef<PropertyComparison[]>([])
+
+  // Fetch saved properties for authenticated users
+  const fetchSavedProperties = useCallback(async () => {
+    if (!isAuthenticated) return
+    
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/saved-properties?limit=20`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setSavedProperties(data.items || data || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch saved properties:', err)
+    }
+  }, [isAuthenticated])
+
+  useEffect(() => {
+    fetchSavedProperties()
+  }, [fetchSavedProperties])
   
   // Keep ref in sync with state
   useEffect(() => {
@@ -488,9 +643,32 @@ function ComparePageContent() {
         <AddPropertySection
           onAdd={handleAddProperty}
           onAddDemo={handleAddDemo}
+          onAddFromSaved={(saved) => {
+            // Create comparison from saved property data
+            const snapshot = saved.property_data_snapshot
+            const details = snapshot?.details || {}
+            const valuations = snapshot?.valuations || {}
+            const rentals = snapshot?.rentals || {}
+            const market = snapshot?.market || {}
+            
+            const comparison = createPropertyComparison({
+              address: `${saved.address_street}, ${saved.address_city || ''}, ${saved.address_state || ''}`.trim().replace(/,\s*,/g, ','),
+              propertyType: details.property_type || 'Single Family',
+              beds: details.bedrooms || 3,
+              baths: details.bathrooms || 2,
+              sqft: details.square_footage || 1500,
+              purchasePrice: saved.custom_purchase_price || valuations.current_value_avm || 400000,
+              monthlyRent: saved.custom_rent_estimate || rentals.monthly_rent_ltr || 2000,
+              propertyTaxes: market.property_taxes_annual || 4000
+            })
+            
+            handleAddProperty(comparison)
+          }}
           loading={loading}
           setLoading={setLoading}
           propertyCount={properties.length}
+          savedProperties={savedProperties}
+          isAuthenticated={isAuthenticated}
         />
         
         {/* Property Cards */}
