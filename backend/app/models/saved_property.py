@@ -108,6 +108,12 @@ class SavedProperty(Base):
         default=dict
     )  # {"ltr": {...}, "str": {...}, etc.}
     
+    # Worksheet Assumptions (detailed analysis settings for worksheet view)
+    worksheet_assumptions: Mapped[Optional[dict]] = mapped_column(
+        JSON, 
+        default=dict
+    )  # Full worksheet assumptions saved by user
+    
     # Notes
     notes: Mapped[Optional[str]] = mapped_column(Text)
     
