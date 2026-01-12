@@ -148,9 +148,23 @@ export function DesktopStrategyAnalyticsContainer({
   const [activeSubTab, setActiveSubTab] = useState<SubTabId>('metrics')
   const [compareView, setCompareView] = useState<'target' | 'list'>('target')
   const [assumptions, setAssumptions] = useState(() => createDefaultAssumptions(property))
-  const [showWelcomeModal, setShowWelcomeModal] = useState(true)
   const [isSaved, setIsSaved] = useState(false)
   const [showLOI, setShowLOI] = useState(false)
+  
+  // Check sessionStorage to see if welcome modal has been shown this session
+  const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const hasSeenWelcome = sessionStorage.getItem('iq-welcome-shown')
+    return !hasSeenWelcome
+  })
+  
+  // Handle closing the welcome modal and saving to sessionStorage
+  const handleCloseWelcome = useCallback(() => {
+    setShowWelcomeModal(false)
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('iq-welcome-shown', 'true')
+    }
+  }, [])
   
   // Compute IQ Target
   const iqTarget = useMemo(() => {
@@ -252,10 +266,10 @@ export function DesktopStrategyAnalyticsContainer({
           showExpandButton={!!onBack}
         />
 
-        {/* IQ Welcome Modal */}
+        {/* IQ Welcome Modal - Only shows once per session */}
         <IQWelcomeModal
           isOpen={showWelcomeModal && !activeStrategy}
-          onClose={() => setShowWelcomeModal(false)}
+          onClose={handleCloseWelcome}
         />
 
         {/* Landing State - No Strategy Selected */}
@@ -285,9 +299,14 @@ export function DesktopStrategyAnalyticsContainer({
                 activeStrategy={activeStrategy}
                 strategies={DEFAULT_STRATEGIES}
                 onChange={(id) => {
-                  setActiveStrategy(id)
-                  setActiveSubTab('metrics')
-                  setCompareView('target')
+                  if (id === null) {
+                    // Back button clicked - go to premium page
+                    handleBack()
+                  } else {
+                    setActiveStrategy(id)
+                    setActiveSubTab('metrics')
+                    setCompareView('target')
+                  }
                 }}
                 showCTA={false}
               />
