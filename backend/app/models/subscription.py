@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import Optional, List
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 import enum
 
 from app.db.base import Base
@@ -87,10 +87,10 @@ class Subscription(Base):
     # Extra data from Stripe
     extra_data: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
     )
 
     # Relationship
@@ -120,7 +120,7 @@ class Subscription(Base):
         """Reset monthly usage counters."""
         self.searches_used = 0
         self.api_calls_used = 0
-        self.usage_reset_date = datetime.utcnow()
+        self.usage_reset_date = datetime.now(timezone.utc)
 
 
 class PaymentHistory(Base):
@@ -156,7 +156,7 @@ class PaymentHistory(Base):
     # Extra data from Stripe
     extra_data: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
     # Relationship
