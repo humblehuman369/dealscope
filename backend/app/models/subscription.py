@@ -84,8 +84,8 @@ class Subscription(Base):
     api_calls_used: Mapped[int] = mapped_column(Integer, default=0)
     usage_reset_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     
-    # Metadata
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    # Extra data from Stripe
+    extra_data: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.utcnow
     )
@@ -153,8 +153,8 @@ class PaymentHistory(Base):
     invoice_pdf_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     receipt_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     
-    # Metadata
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    # Extra data from Stripe
+    extra_data: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.utcnow
     )
