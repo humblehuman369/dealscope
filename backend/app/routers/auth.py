@@ -25,6 +25,7 @@ from app.schemas.auth import (
 from app.schemas.user import UserResponse
 from app.core.deps import get_current_user, CurrentUser, DbSession
 from app.core.config import settings
+from app.services.email_service import email_service
 
 logger = logging.getLogger(__name__)
 
@@ -66,10 +67,14 @@ async def register(
         )
         logger.info(f"[API] User registered successfully: {user.email} (id: {user.id})")
         
-        # TODO: Send verification email if token exists
+        # Send verification email if token exists
         if verification_token:
-            logger.info(f"[API] Verification token generated for {data.email}")
-            # await email_service.send_verification_email(user.email, verification_token)
+            logger.info(f"[API] Sending verification email to {data.email}")
+            await email_service.send_verification_email(
+                to=user.email,
+                user_name=user.full_name,
+                verification_token=verification_token,
+            )
         
         # Build response with all required fields
         # Note: We just created the profile in register_user, so it exists
@@ -323,6 +328,12 @@ async def verify_email(
             detail="Invalid or expired verification token"
         )
     
+    # Send welcome email
+    await email_service.send_welcome_email(
+        to=user.email,
+        user_name=user.full_name,
+    )
+    
     return AuthMessage(
         message="Email verified successfully",
         success=True
@@ -350,7 +361,14 @@ async def resend_verification(
         )
     
     # Generate new verification token
-    # TODO: Implement token regeneration and email sending
+    token = await auth_service.regenerate_verification_token(db, current_user)
+    
+    if token:
+        await email_service.send_verification_email(
+            to=current_user.email,
+            user_name=current_user.full_name,
+            verification_token=token,
+        )
     
     return AuthMessage(
         message="Verification email sent",
@@ -378,12 +396,16 @@ async def forgot_password(
     
     Always returns success to prevent email enumeration.
     """
-    reset_token = await auth_service.create_password_reset_token(db, data.email)
+    result = await auth_service.create_password_reset_token(db, data.email)
     
-    if reset_token:
-        # TODO: Send password reset email
+    if result:
+        reset_token, user = result
         logger.info(f"Password reset token created for {data.email}")
-        # await email_service.send_password_reset_email(data.email, reset_token)
+        await email_service.send_password_reset_email(
+            to=data.email,
+            user_name=user.full_name if user else None,
+            reset_token=reset_token,
+        )
     
     # Always return success to prevent email enumeration
     return AuthMessage(
@@ -418,6 +440,12 @@ async def reset_password(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired reset token"
         )
+    
+    # Send password changed notification
+    await email_service.send_password_changed_email(
+        to=user.email,
+        user_name=user.full_name,
+    )
     
     return AuthMessage(
         message="Password reset successfully",
@@ -457,6 +485,12 @@ async def change_password(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Current password is incorrect"
         )
+    
+    # Send password changed notification
+    await email_service.send_password_changed_email(
+        to=current_user.email,
+        user_name=current_user.full_name,
+    )
     
     return AuthMessage(
         message="Password changed successfully",
