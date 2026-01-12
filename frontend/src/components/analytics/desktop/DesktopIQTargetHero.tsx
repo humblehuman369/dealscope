@@ -139,7 +139,7 @@ export function DesktopIQTargetHero({
         <div className={`min-w-[220px] max-w-[300px] flex-shrink-0 bg-white/[0.03] border border-white/[0.08] rounded-xl p-5 transition-all duration-300 ${isEditing ? 'min-w-[280px]' : ''}`}>
           {/* Header */}
           <div className="text-xs font-medium text-white/40 mb-4 pb-3 border-b border-white/[0.06]">
-            Price calculated from your inputs
+            Target Price based on these values
           </div>
 
           {/* Assumptions List (shown when not editing) */}
@@ -148,15 +148,15 @@ export function DesktopIQTargetHero({
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-white/50">Monthly Rent</span>
-                  <span className="text-base font-semibold text-white">{formatCurrency(monthlyRent)}</span>
+                  <span className="text-base font-semibold text-[#00D4FF]">{formatCurrency(monthlyRent)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-white/50">Down Payment</span>
-                  <span className="text-base font-semibold text-white">{Math.round(downPaymentPct * 100)}%</span>
+                  <span className="text-base font-semibold text-[#00D4FF]">{Math.round(downPaymentPct * 100)}%</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-white/50">Interest Rate</span>
-                  <span className="text-base font-semibold text-white">{(interestRate * 100).toFixed(2)}%</span>
+                  <span className="text-base font-semibold text-[#00D4FF]">{(interestRate * 100).toFixed(2)}%</span>
                 </div>
               </div>
 
