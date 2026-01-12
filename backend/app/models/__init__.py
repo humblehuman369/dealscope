@@ -8,6 +8,7 @@ from app.models.saved_property import SavedProperty, PropertyAdjustment, Propert
 from app.models.document import Document, DocumentType
 from app.models.share import SharedLink, ShareType
 from app.models.search_history import SearchHistory
+from app.models.subscription import Subscription, PaymentHistory, SubscriptionTier, SubscriptionStatus
 
 __all__ = [
     "User",
@@ -20,5 +21,9 @@ __all__ = [
     "SharedLink",
     "ShareType",
     "SearchHistory",
+    "Subscription",
+    "PaymentHistory",
+    "SubscriptionTier",
+    "SubscriptionStatus",
 ]
 

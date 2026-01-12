@@ -14,6 +14,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.saved_property import SavedProperty
     from app.models.document import Document
+    from app.models.subscription import Subscription, PaymentHistory
 
 
 class User(Base):
@@ -119,6 +120,17 @@ class User(Base):
     )
     documents: Mapped[List["Document"]] = relationship(
         "Document", 
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+    subscription: Mapped[Optional["Subscription"]] = relationship(
+        "Subscription",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+    payment_history: Mapped[List["PaymentHistory"]] = relationship(
+        "PaymentHistory",
         back_populates="user",
         cascade="all, delete-orphan"
     )

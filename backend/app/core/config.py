@@ -116,6 +116,21 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:3000"
     
     # ===========================================
+    # Stripe (Billing)
+    # ===========================================
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    
+    # Price IDs (set these in Stripe Dashboard)
+    STRIPE_PRICE_STARTER_MONTHLY: str = ""
+    STRIPE_PRICE_STARTER_YEARLY: str = ""
+    STRIPE_PRICE_PRO_MONTHLY: str = ""
+    STRIPE_PRICE_PRO_YEARLY: str = ""
+    STRIPE_PRICE_ENTERPRISE_MONTHLY: str = ""
+    STRIPE_PRICE_ENTERPRISE_YEARLY: str = ""
+    
+    # ===========================================
     # Rate Limiting
     # ===========================================
     RATE_LIMIT_REQUESTS: int = 100
