@@ -350,12 +350,12 @@ class AuthService:
         self, 
         db: AsyncSession, 
         email: str
-    ) -> Optional[str]:
+    ) -> Optional[tuple[str, User]]:
         """
         Create a password reset token for a user.
         
         Returns:
-            Reset token if user found, None otherwise
+            Tuple of (reset_token, user) if user found, None otherwise
         """
         result = await db.execute(
             select(User).where(User.email == email.lower())
@@ -377,7 +377,34 @@ class AuthService:
         
         logger.info(f"Password reset token created: {email}")
         
-        return reset_token
+        return (reset_token, user)
+    
+    async def regenerate_verification_token(
+        self,
+        db: AsyncSession,
+        user: User
+    ) -> Optional[str]:
+        """
+        Regenerate a verification token for a user.
+        
+        Returns:
+            New verification token
+        """
+        if user.is_verified:
+            return None
+        
+        # Generate new token
+        verification_token = secrets.token_urlsafe(32)
+        user.verification_token = verification_token
+        user.verification_token_expires = datetime.utcnow() + timedelta(
+            hours=settings.VERIFICATION_TOKEN_EXPIRE_HOURS
+        )
+        
+        await db.commit()
+        
+        logger.info(f"Verification token regenerated: {user.email}")
+        
+        return verification_token
     
     async def reset_password(
         self, 

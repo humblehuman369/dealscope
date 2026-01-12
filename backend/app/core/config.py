@@ -73,10 +73,11 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # Password Reset
-    PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = 24
+    PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = 1  # 1 hour for security
     
     # Email Verification
     EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS: int = 48
+    VERIFICATION_TOKEN_EXPIRE_HOURS: int = 48  # Alias for consistency
     
     # ===========================================
     # File Storage (S3/R2)
