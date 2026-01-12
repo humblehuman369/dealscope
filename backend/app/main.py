@@ -108,6 +108,15 @@ except Exception as e:
     logger.warning(f"Documents router failed to load: {e}")
     documents_router = None
 
+# Import Billing router
+billing_router = None
+try:
+    from app.routers.billing import router as billing_router
+    logger.info("Billing router loaded successfully")
+except Exception as e:
+    logger.warning(f"Billing router failed to load: {e}")
+    billing_router = None
+
 # Import database session for cleanup
 try:
     from app.db.session import close_db
@@ -234,6 +243,11 @@ if reports_router is not None:
 if documents_router is not None:
     app.include_router(documents_router)
     logger.info("Documents router included")
+
+# Billing router
+if billing_router is not None:
+    app.include_router(billing_router)
+    logger.info("Billing router included")
 
 
 # ============================================
