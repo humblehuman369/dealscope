@@ -241,8 +241,28 @@ export default function MapScreen() {
 
   const hasScannedProperties = mapProperties.length > 0;
 
+  // Dynamic styles based on theme
+  const dynamicStyles = {
+    container: { backgroundColor: isDark ? colors.navy[950] : colors.gray[100] },
+    searchBar: { backgroundColor: isDark ? colors.navy[800] : '#fff' },
+    searchInput: { color: theme.text },
+    settingsButton: { backgroundColor: isDark ? colors.navy[800] : '#fff' },
+    countBadge: { backgroundColor: isDark ? colors.navy[800] : '#fff' },
+    countText: { color: theme.textSecondary },
+    loadingContainer: { backgroundColor: isDark ? colors.navy[800] : '#fff' },
+    loadingText: { color: theme.textMuted },
+    locationButton: { backgroundColor: isDark ? colors.navy[800] : '#fff' },
+    propertyCard: { backgroundColor: isDark ? colors.navy[800] : '#fff' },
+    propertyAddress: { color: theme.text },
+    propertyStrategy: { color: theme.textSecondary },
+    emptyState: { backgroundColor: isDark ? 'rgba(11,34,54,0.98)' : 'rgba(255,255,255,0.98)' },
+    emptyStateTitle: { color: theme.text },
+    emptyStateText: { color: theme.textMuted },
+    markerText: { color: isDark ? colors.gray[100] : colors.gray[900] },
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, dynamicStyles.container]}>
       {/* Map */}
       <MapView
         ref={mapRef}
@@ -253,6 +273,7 @@ export default function MapScreen() {
         initialRegion={region}
         onRegionChangeComplete={handleRegionChange}
         onPress={handleMapPress}
+        userInterfaceStyle={isDark ? 'dark' : 'light'}
       >
         {visibleProperties.map((property) => (
           <Marker
@@ -265,7 +286,7 @@ export default function MapScreen() {
               property.monthlyProfit > 0 ? styles.markerProfit : styles.markerLoss,
               selectedProperty?.id === property.id && styles.markerSelected,
             ]}>
-              <Text style={styles.markerText}>
+              <Text style={[styles.markerText, dynamicStyles.markerText]}>
                 {formatCurrency(property.monthlyProfit)}
               </Text>
             </View>
@@ -275,37 +296,37 @@ export default function MapScreen() {
 
       {/* Search Bar */}
       <View style={[styles.searchContainer, { paddingTop: insets.top + 8 }]}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={18} color={colors.gray[400]} />
+        <View style={[styles.searchBar, dynamicStyles.searchBar]}>
+          <Ionicons name="search" size={18} color={isDark ? colors.gray[500] : colors.gray[400]} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, dynamicStyles.searchInput]}
             placeholder="Search address..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor={colors.gray[400]}
+            placeholderTextColor={isDark ? colors.gray[500] : colors.gray[400]}
             returnKeyType="search"
             onSubmitEditing={handleSearch}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={18} color={colors.gray[400]} />
+              <Ionicons name="close-circle" size={18} color={isDark ? colors.gray[500] : colors.gray[400]} />
             </TouchableOpacity>
           )}
         </View>
 
         <TouchableOpacity 
-          style={styles.settingsButton}
+          style={[styles.settingsButton, dynamicStyles.settingsButton]}
           onPress={() => router.push('/search')}
         >
-          <Ionicons name="add" size={22} color={colors.primary[600]} />
+          <Ionicons name="add" size={22} color={colors.primary[isDark ? 400 : 600]} />
         </TouchableOpacity>
       </View>
       
       {/* Property Count Badge */}
       {hasScannedProperties && !isLoadingLocation && (
-        <View style={styles.countBadge}>
-          <Ionicons name="home" size={14} color={colors.primary[600]} />
-          <Text style={styles.countText}>
+        <View style={[styles.countBadge, dynamicStyles.countBadge]}>
+          <Ionicons name="home" size={14} color={colors.primary[isDark ? 400 : 600]} />
+          <Text style={[styles.countText, dynamicStyles.countText]}>
             {visibleProperties.length} of {mapProperties.length} properties
           </Text>
         </View>
@@ -313,29 +334,29 @@ export default function MapScreen() {
 
       {/* Loading Indicator */}
       {isLoadingLocation && (
-        <View style={styles.loadingContainer}>
+        <View style={[styles.loadingContainer, dynamicStyles.loadingContainer]}>
           <ActivityIndicator size="small" color={colors.primary[600]} />
-          <Text style={styles.loadingText}>Finding your location...</Text>
+          <Text style={[styles.loadingText, dynamicStyles.loadingText]}>Finding your location...</Text>
         </View>
       )}
 
       {/* My Location Button */}
       <TouchableOpacity
-        style={[styles.locationButton, { bottom: insets.bottom + 120 }]}
+        style={[styles.locationButton, dynamicStyles.locationButton, { bottom: insets.bottom + 120 }]}
         onPress={handleCenterOnLocation}
       >
         <Ionicons 
           name={userLocation ? "locate" : "locate-outline"} 
           size={22} 
-          color={userLocation ? colors.primary[600] : colors.gray[400]} 
+          color={userLocation ? colors.primary[isDark ? 400 : 600] : (isDark ? colors.gray[500] : colors.gray[400])} 
         />
       </TouchableOpacity>
 
       {/* Selected Property Card */}
       {selectedProperty && (
-        <View style={[styles.propertyCard, { bottom: insets.bottom + 100 }]}>
+        <View style={[styles.propertyCard, dynamicStyles.propertyCard, { bottom: insets.bottom + 100 }]}>
           <View style={styles.propertyCardContent}>
-            <Text style={styles.propertyAddress} numberOfLines={1}>
+            <Text style={[styles.propertyAddress, dynamicStyles.propertyAddress]} numberOfLines={1}>
               {selectedProperty.address}
             </Text>
             <View style={styles.propertyMetrics}>
@@ -347,7 +368,7 @@ export default function MapScreen() {
               ]}>
                 {formatCurrency(selectedProperty.monthlyProfit)}/mo
               </Text>
-              <Text style={styles.propertyStrategy}>
+              <Text style={[styles.propertyStrategy, dynamicStyles.propertyStrategy]}>
                 {selectedProperty.strategy}
               </Text>
             </View>
@@ -364,10 +385,10 @@ export default function MapScreen() {
 
       {/* Empty State - only show after location is loaded and if no scanned properties */}
       {!isLoadingLocation && dbReady && !hasScannedProperties && (
-        <View style={styles.emptyState}>
-          <Ionicons name="compass-outline" size={40} color={colors.primary[400]} />
-          <Text style={styles.emptyStateTitle}>Explore Properties</Text>
-          <Text style={styles.emptyStateText}>
+        <View style={[styles.emptyState, dynamicStyles.emptyState]}>
+          <Ionicons name="compass-outline" size={40} color={colors.primary[isDark ? 400 : 400]} />
+          <Text style={[styles.emptyStateTitle, dynamicStyles.emptyStateTitle]}>Explore Properties</Text>
+          <Text style={[styles.emptyStateText, dynamicStyles.emptyStateText]}>
             Use the Scan tab to analyze properties near you, or search for a specific address
           </Text>
           <TouchableOpacity 
@@ -386,7 +407,6 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[100],
   },
   map: {
     ...StyleSheet.absoluteFillObject,
@@ -405,7 +425,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -420,10 +439,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontWeight: '400',
     fontSize: 15,
-    color: colors.gray[900],
   },
   settingsButton: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 12,
     shadowColor: '#000',
@@ -439,7 +456,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#fff',
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 20,
@@ -452,7 +468,6 @@ const styles = StyleSheet.create({
   countText: {
     fontSize: 13,
     fontWeight: '500',
-    color: colors.gray[700],
   },
   loadingContainer: {
     position: 'absolute',
@@ -463,7 +478,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#fff',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 12,
@@ -476,12 +490,10 @@ const styles = StyleSheet.create({
   loadingText: {
     fontWeight: '500',
     fontSize: 14,
-    color: colors.gray[600],
   },
   locationButton: {
     position: 'absolute',
     right: 16,
-    backgroundColor: '#fff',
     width: 48,
     height: 48,
     borderRadius: 24,
@@ -513,13 +525,11 @@ const styles = StyleSheet.create({
   markerText: {
     fontWeight: '700',
     fontSize: 13,
-    color: colors.gray[900],
   },
   propertyCard: {
     position: 'absolute',
     left: 16,
     right: 16,
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
@@ -536,7 +546,6 @@ const styles = StyleSheet.create({
   propertyAddress: {
     fontWeight: '600',
     fontSize: 15,
-    color: colors.gray[900],
     marginBottom: 4,
   },
   propertyMetrics: {
@@ -557,7 +566,6 @@ const styles = StyleSheet.create({
   propertyStrategy: {
     fontWeight: '500',
     fontSize: 13,
-    color: colors.gray[700],
   },
   viewButton: {
     flexDirection: 'row',
@@ -579,7 +587,6 @@ const styles = StyleSheet.create({
     left: 24,
     right: 24,
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.98)',
     padding: 28,
     borderRadius: 20,
     transform: [{ translateY: -80 }],
@@ -592,14 +599,12 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontWeight: '600',
     fontSize: 18,
-    color: colors.gray[900],
     marginTop: 12,
     marginBottom: 8,
   },
   emptyStateText: {
     fontWeight: '400',
     fontSize: 14,
-    color: colors.gray[500],
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 20,
