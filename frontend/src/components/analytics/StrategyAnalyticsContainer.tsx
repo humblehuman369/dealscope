@@ -288,12 +288,50 @@ export function StrategyAnalyticsContainer({ property, onBack, initialStrategy }
       {/* Strategy Content */}
       {activeStrategy && (
         <div className="px-4 pb-24">
-          {/* Sub Tab Navigation */}
-          <SubTabNav
-            tabs={tabs}
-            activeTab={activeSubTab}
-            onChange={setActiveSubTab}
-          />
+          {/* Sub Tab Navigation - Horizontal numbered tabs */}
+          <div className="mb-4">
+            {/* Progress line with active indicator */}
+            <div className="relative h-[3px] bg-white/[0.08] rounded-full mb-3">
+              <div 
+                className="absolute top-0 h-[3px] bg-gradient-to-r from-teal to-blue-500 rounded-full transition-all duration-300"
+                style={{
+                  left: `${(tabs.findIndex(t => t.id === activeSubTab) / tabs.length) * 100}%`,
+                  width: `${100 / tabs.length}%`,
+                }}
+              />
+            </div>
+            
+            {/* Tab buttons row */}
+            <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+              {tabs.map((tab, index) => {
+                const isActive = tab.id === activeSubTab
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveSubTab(tab.id)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 whitespace-nowrap flex-shrink-0"
+                  >
+                    {/* Numbered badge */}
+                    <span className={`w-5 h-5 flex items-center justify-center text-[0.65rem] font-bold rounded-full transition-all ${
+                      isActive 
+                        ? 'bg-gradient-to-r from-teal to-blue-500 text-white' 
+                        : 'bg-white/[0.08] text-white/40'
+                    }`}>
+                      {index + 1}
+                    </span>
+                    {/* Tab label */}
+                    <span className={`text-[0.72rem] font-medium transition-colors ${
+                      isActive 
+                        ? 'text-teal font-semibold' 
+                        : 'text-white/50 hover:text-white/70'
+                    }`}>
+                      {tab.label}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
           {/* Tab Content */}
           {activeSubTab === 'metrics' && iqTarget && currentMetrics && (

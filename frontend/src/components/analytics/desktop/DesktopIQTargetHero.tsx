@@ -87,7 +87,7 @@ export function DesktopIQTargetHero({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl p-6 mb-5 border border-[rgba(0,212,255,0.25)] bg-white/[0.02] shadow-[0_0_20px_rgba(0,212,255,0.05)]">
+    <div className="relative overflow-hidden rounded-2xl p-6 mb-5 border-2 border-teal/40 dark:border-accent-500/40 bg-white/[0.02]">
       {/* Two-column layout */}
       <div className="flex gap-8 items-start">
         

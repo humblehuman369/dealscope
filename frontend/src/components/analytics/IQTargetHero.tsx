@@ -91,7 +91,7 @@ export function IQTargetHero({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl p-5 md:p-6 mb-4 border border-[rgba(0,212,255,0.25)] bg-white/[0.02] dark:bg-white/[0.02] shadow-[0_0_20px_rgba(0,212,255,0.05)]">
+    <div className="relative overflow-hidden rounded-2xl p-5 md:p-6 mb-4 border-2 border-teal/40 dark:border-accent-500/40 bg-white/[0.02] dark:bg-white/[0.02]">
       {/* Two-column layout on larger screens */}
       <div className="flex flex-col md:flex-row gap-6 items-start">
         
