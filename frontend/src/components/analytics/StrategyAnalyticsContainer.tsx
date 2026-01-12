@@ -238,18 +238,20 @@ export function StrategyAnalyticsContainer({ property, onBack, initialStrategy }
         </div>
       )}
 
-      {/* Strategy Selected - Show Horizontal Selector + Content */}
+      {/* Strategy Selected - Show Strategy Header with Back Button */}
       {activeStrategy && (
         <>
-          {/* Strategy Selector Pills */}
+          {/* Strategy Selector - Single strategy view with back button */}
           <div className="px-4">
             <StrategySelector
               activeStrategy={activeStrategy}
               strategies={DEFAULT_STRATEGIES}
               onChange={(id) => {
                 setActiveStrategy(id)
-                setActiveSubTab('metrics')
-                setCompareView('target')
+                if (id) {
+                  setActiveSubTab('metrics')
+                  setCompareView('target')
+                }
               }}
               showCTA={false}
             />

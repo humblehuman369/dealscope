@@ -1,20 +1,20 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, ArrowLeft } from 'lucide-react'
 import { Strategy, StrategyId, GradeLevel, StrategyGrade } from './types'
 
 /**
  * StrategySelector Component
  * 
- * Horizontal scrollable pills for selecting investment strategies.
- * Shows grades next to each strategy name when available.
+ * REDESIGNED: Shows only selected strategy with back button when active.
+ * When no strategy selected, shows horizontal pills.
  * 
  * Features:
- * - Initial CTA banner that collapses after first selection
- * - Horizontal scroll with hidden scrollbar
- * - Active state with gradient background
- * - Grade badges (A, B, C, D, F) based on deal quality
+ * - Single strategy view with "Back To Strategy Options" when selected
+ * - Line above strategy title for visual continuity
+ * - No icons for cleaner design
+ * - Grade badges when available
  */
 
 interface StrategySelectorProps {
@@ -24,8 +24,8 @@ interface StrategySelectorProps {
   strategies: Strategy[]
   /** Strategy grades (optional) */
   grades?: StrategyGrade[]
-  /** Callback when strategy changes */
-  onChange: (strategyId: StrategyId) => void
+  /** Callback when strategy changes - null to go back to selection */
+  onChange: (strategyId: StrategyId | null) => void
   /** Whether to show the initial CTA banner */
   showCTA?: boolean
 }
@@ -44,10 +44,48 @@ export function StrategySelector({
     onChange(strategyId)
   }
 
+  const handleBackClick = () => {
+    onChange(null)
+  }
+
   const getGrade = (strategyId: StrategyId): GradeLevel | null => {
     return grades?.find(g => g.strategyId === strategyId)?.grade ?? null
   }
 
+  // When a strategy is selected, show single strategy header with back button
+  if (activeStrategy) {
+    const activeStrategyData = strategies.find(s => s.id === activeStrategy)
+    const grade = getGrade(activeStrategy)
+    
+    return (
+      <div className="mb-4">
+        {/* Top line indicator */}
+        <div className="h-[3px] bg-gradient-to-r from-teal to-blue-500 rounded-full mb-3" />
+        
+        {/* Strategy header with back button */}
+        <div className="flex items-center justify-between">
+          {/* Left side: Strategy name + grade */}
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+              {activeStrategyData?.name}
+            </h2>
+            {grade && <GradeBadge grade={grade} />}
+          </div>
+
+          {/* Right side: Back button */}
+          <button
+            onClick={handleBackClick}
+            className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 dark:text-white/70 bg-gray-100 dark:bg-white/[0.06] hover:bg-gray-200 dark:hover:bg-white/[0.1] border border-gray-200 dark:border-white/[0.1] rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Strategy Options</span>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // No strategy selected - show all strategy options
   return (
     <div className="mb-4">
       {/* CTA Banner - shows before first strategy selection */}
@@ -66,13 +104,12 @@ export function StrategySelector({
         </div>
       )}
 
-      {/* Strategy Pills */}
+      {/* Strategy Pills - No icons */}
       <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
         {strategies.map((strategy) => (
           <StrategyPill
             key={strategy.id}
             strategy={strategy}
-            isActive={strategy.id === activeStrategy}
             grade={getGrade(strategy.id)}
             onClick={() => handleStrategyClick(strategy.id)}
           />
@@ -84,24 +121,16 @@ export function StrategySelector({
 
 interface StrategyPillProps {
   strategy: Strategy
-  isActive: boolean
   grade: GradeLevel | null
   onClick: () => void
 }
 
-function StrategyPill({ strategy, isActive, grade, onClick }: StrategyPillProps) {
-  const baseClasses = "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[0.72rem] font-semibold transition-all duration-200 whitespace-nowrap flex-shrink-0"
-  
-  const activeClasses = isActive
-    ? "bg-gradient-to-r from-brand-500 dark:from-teal to-blue-500 text-white shadow-[0_3px_12px_rgba(0,175,168,0.4)]"
-    : "bg-neutral-100 dark:bg-white/[0.03] text-neutral-600 dark:text-white/60 border border-neutral-200 dark:border-white/[0.08] hover:bg-neutral-200 dark:hover:bg-white/[0.06] transition-colors"
-
+function StrategyPill({ strategy, grade, onClick }: StrategyPillProps) {
   return (
     <button
       onClick={onClick}
-      className={`${baseClasses} ${activeClasses}`}
+      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[0.72rem] font-semibold transition-all duration-200 whitespace-nowrap flex-shrink-0 bg-gray-100 dark:bg-white/[0.03] text-gray-700 dark:text-white/80 border border-gray-200 dark:border-white/[0.08] hover:bg-gray-200 dark:hover:bg-white/[0.06] hover:border-gray-300 dark:hover:border-white/[0.15]"
     >
-      <span className="text-sm">{strategy.icon}</span>
       <span>{strategy.shortName}</span>
       {grade && <GradeBadge grade={grade} />}
     </button>
@@ -136,7 +165,7 @@ function GradeBadge({ grade }: GradeBadgeProps) {
 }
 
 /**
- * Default strategy configurations
+ * Default strategy configurations - No icons
  */
 
 export const DEFAULT_STRATEGIES: Strategy[] = [
@@ -222,7 +251,6 @@ export function StrategySelectorCompact({
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.05] border border-white/10 rounded-lg text-[0.75rem]"
       >
-        <span>{active?.icon}</span>
         <span className="text-white font-medium">{active?.shortName}</span>
         <ChevronDown className={`w-3.5 h-3.5 text-white/60 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -240,7 +268,6 @@ export function StrategySelectorCompact({
                 strategy.id === activeStrategy ? 'bg-teal/10 text-teal' : 'text-white/80'
               }`}
             >
-              <span>{strategy.icon}</span>
               <span>{strategy.name}</span>
             </button>
           ))}
