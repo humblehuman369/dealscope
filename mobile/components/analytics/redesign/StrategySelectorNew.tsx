@@ -1,18 +1,22 @@
 /**
- * StrategySelectorNew - Enhanced strategy pills with grades
- * Features: Horizontal scroll, grade badges, CTA banner
- * Design matches: investiq-property-analytics-complete-redesign (final).html
+ * StrategySelectorNew - Enhanced strategy selector with simplified selected state
+ * Features: 
+ * - Shows all 6 strategies when no selection
+ * - Shows only selected strategy with "Back To Strategy Options" button when selected
+ * - Numbered sub-tabs with line indicator above
+ * Design matches: Strategy tabs redesign spec
  */
 
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { StrategyId, STRATEGY_CONFIG } from './types';
 
 interface StrategySelectorNewProps {
   activeStrategy: StrategyId | null;
-  onStrategyChange: (strategy: StrategyId) => void;
+  onStrategyChange: (strategy: StrategyId | null) => void;
   strategyGrades?: Partial<Record<StrategyId, { grade: string; score: number }>>;
   isDark?: boolean;
   showCTABanner?: boolean;
@@ -49,10 +53,71 @@ export function StrategySelectorNew({
     onStrategyChange(strategyId);
   };
 
+  const handleBackToStrategies = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onStrategyChange(null);
+  };
+
+  // When a strategy is selected, show single strategy header with back button
+  if (activeStrategy) {
+    const config = STRATEGY_CONFIG[activeStrategy];
+    const gradeData = strategyGrades?.[activeStrategy];
+    const gradeStyle = gradeData ? getGradeStyle(gradeData.grade) : null;
+
+    return (
+      <View style={styles.selectedContainer}>
+        {/* Top line indicator */}
+        <View style={[styles.topLine, { backgroundColor: isDark ? '#4dd0e1' : '#007ea7' }]} />
+        
+        <View style={styles.selectedContent}>
+          {/* Strategy name with grade */}
+          <View style={styles.selectedLeft}>
+            <Text style={[styles.selectedStrategyName, { color: isDark ? '#fff' : '#07172e' }]}>
+              {config.name}
+            </Text>
+            {gradeData && gradeStyle && (
+              <View style={[styles.selectedGradeBadge, { backgroundColor: gradeStyle.bg }]}>
+                <Text style={[styles.selectedGradeText, { color: gradeStyle.text }]}>
+                  {gradeData.grade}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Back to Strategy Options button */}
+          <TouchableOpacity
+            style={[
+              styles.backButton,
+              { 
+                backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,23,46,0.04)',
+                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(7,23,46,0.1)',
+              }
+            ]}
+            onPress={handleBackToStrategies}
+            activeOpacity={0.7}
+          >
+            <Ionicons 
+              name="arrow-back" 
+              size={14} 
+              color={isDark ? 'rgba(255,255,255,0.7)' : 'rgba(7,23,46,0.7)'} 
+            />
+            <Text style={[
+              styles.backButtonText, 
+              { color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(7,23,46,0.7)' }
+            ]}>
+              Strategy Options
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  // No strategy selected - show all strategy options
   return (
     <View style={styles.container}>
       {/* CTA Banner when no strategy selected */}
-      {showCTABanner && !activeStrategy && (
+      {showCTABanner && (
         <LinearGradient
           colors={['rgba(77, 208, 225, 0.12)', 'rgba(4, 101, 242, 0.12)']}
           start={{ x: 0, y: 0 }}
@@ -60,12 +125,14 @@ export function StrategySelectorNew({
           style={styles.ctaBanner}
         >
           <Text style={styles.ctaText}>👆 Pick a Strategy to Unlock Insights</Text>
-          <Text style={styles.ctaSubtext}>Select a strategy below to see your personalized analysis</Text>
+          <Text style={[styles.ctaSubtext, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)' }]}>
+            Select a strategy below to see your personalized analysis
+          </Text>
           <Text style={styles.ctaArrow}>↓</Text>
         </LinearGradient>
       )}
 
-      {/* Strategy Pills */}
+      {/* Strategy Pills - Show all when none selected */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -73,7 +140,6 @@ export function StrategySelectorNew({
       >
         {STRATEGY_ORDER.map((strategyId) => {
           const config = STRATEGY_CONFIG[strategyId];
-          const isActive = activeStrategy === strategyId;
           const gradeData = strategyGrades?.[strategyId];
           const gradeStyle = gradeData ? getGradeStyle(gradeData.grade) : null;
 
@@ -82,9 +148,7 @@ export function StrategySelectorNew({
               key={strategyId}
               style={[
                 styles.pill,
-                isActive && styles.pillActiveContainer,
-                isActive && { borderColor: '#4dd0e1', backgroundColor: 'rgba(77, 208, 225, 0.12)' },
-                !isActive && { 
+                { 
                   backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(7,23,46,0.03)',
                   borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.08)',
                 },
@@ -94,7 +158,7 @@ export function StrategySelectorNew({
             >
               <Text style={[
                 styles.pillLabel, 
-                { color: isActive ? '#4dd0e1' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(7,23,46,0.6)') }
+                { color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(7,23,46,0.8)' }
               ]}>
                 {config.shortName}
               </Text>
@@ -109,16 +173,11 @@ export function StrategySelectorNew({
           );
         })}
       </ScrollView>
-      
-      {/* Interactive Strategy Selector label */}
-      <Text style={[styles.interactiveLabel, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
-        Interactive Strategy Selector
-      </Text>
     </View>
   );
 }
 
-// Sub-tab navigation component
+// Sub-tab navigation component with numbered indicators
 interface SubTabNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
@@ -127,51 +186,93 @@ interface SubTabNavProps {
 }
 
 export function SubTabNav({ activeTab, onTabChange, tabs, isDark = true }: SubTabNavProps) {
+  const activeIndex = tabs.findIndex(t => t.id === activeTab);
+  
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.subTabContainer}
-    >
-      {tabs.map((tab) => {
-        const isActive = activeTab === tab.id;
-        return (
-          <TouchableOpacity
-            key={tab.id}
-            style={[
-              styles.subTab,
-              isActive && styles.subTabActive,
-              {
-                backgroundColor: isActive
-                  ? (isDark ? '#4dd0e1' : '#007ea7')
-                  : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(7,23,46,0.03)'),
-              },
-            ]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              onTabChange(tab.id);
-            }}
-            activeOpacity={0.7}
-          >
-            <Text
+    <View style={styles.subTabWrapper}>
+      {/* Top line with active indicator */}
+      <View style={[styles.subTabTopLine, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.08)' }]}>
+        {/* Active indicator positioned above selected tab */}
+        <View 
+          style={[
+            styles.subTabActiveIndicator,
+            { 
+              backgroundColor: isDark ? '#4dd0e1' : '#007ea7',
+              left: `${(activeIndex / tabs.length) * 100}%`,
+              width: `${100 / tabs.length}%`,
+            }
+          ]} 
+        />
+      </View>
+
+      {/* Tab buttons */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.subTabContainer}
+      >
+        {tabs.map((tab, index) => {
+          const isActive = activeTab === tab.id;
+          const tabNumber = index + 1;
+          
+          return (
+            <TouchableOpacity
+              key={tab.id}
               style={[
-                styles.subTabText,
-                { color: isActive ? '#fff' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(7,23,46,0.6)') },
+                styles.subTab,
+                isActive && styles.subTabActiveBox,
               ]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onTabChange(tab.id);
+              }}
+              activeOpacity={0.7}
             >
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </ScrollView>
+              {/* Numbered indicator */}
+              <View style={[
+                styles.tabNumberBadge,
+                isActive 
+                  ? { backgroundColor: isDark ? '#4dd0e1' : '#007ea7' }
+                  : { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.06)' }
+              ]}>
+                <Text style={[
+                  styles.tabNumberText,
+                  isActive 
+                    ? { color: isDark ? '#07172e' : '#fff' }
+                    : { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(7,23,46,0.4)' }
+                ]}>
+                  {tabNumber}
+                </Text>
+              </View>
+              
+              {/* Tab label */}
+              <Text
+                style={[
+                  styles.subTabText,
+                  { color: isActive 
+                    ? (isDark ? '#4dd0e1' : '#007ea7') 
+                    : (isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)') 
+                  },
+                  isActive && styles.subTabTextActive,
+                ]}
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // === Container styles ===
   container: {
     marginBottom: 14,
   },
+  
+  // === CTA Banner styles ===
   ctaBanner: {
     alignItems: 'center',
     paddingVertical: 14,
@@ -189,13 +290,14 @@ const styles = StyleSheet.create({
   },
   ctaSubtext: {
     fontSize: 11,
-    color: 'rgba(255,255,255,0.5)',
     marginBottom: 8,
   },
   ctaArrow: {
     fontSize: 22,
     color: '#4dd0e1',
   },
+  
+  // === All strategies view ===
   scrollContent: {
     gap: 8,
     paddingRight: 16,
@@ -207,9 +309,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 10,
-    borderWidth: 1,
-  },
-  pillActiveContainer: {
     borderWidth: 1,
   },
   pillLabel: {
@@ -225,25 +324,99 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
   },
-  interactiveLabel: {
+  
+  // === Selected strategy view ===
+  selectedContainer: {
+    marginBottom: 14,
+  },
+  topLine: {
+    height: 3,
+    borderRadius: 2,
+    marginBottom: 12,
+  },
+  selectedContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  selectedLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  selectedStrategyName: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  selectedGradeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 5,
+  },
+  selectedGradeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  backButtonText: {
     fontSize: 12,
     fontWeight: '600',
-    textAlign: 'center',
-    marginTop: 12,
   },
-  // Sub-tab styles
+  
+  // === Sub-tab styles ===
+  subTabWrapper: {
+    marginBottom: 10,
+  },
+  subTabTopLine: {
+    height: 2,
+    position: 'relative',
+    marginBottom: 12,
+  },
+  subTabActiveIndicator: {
+    position: 'absolute',
+    top: 0,
+    height: 2,
+  },
   subTabContainer: {
-    gap: 8,
+    gap: 6,
     paddingVertical: 4,
   },
   subTab: {
-    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 8,
   },
-  subTabActive: {},
+  subTabActiveBox: {
+    // Active styles applied via inline
+  },
+  tabNumberBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabNumberText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
   subTabText: {
     fontSize: 12,
+    fontWeight: '500',
+  },
+  subTabTextActive: {
     fontWeight: '600',
   },
 });
