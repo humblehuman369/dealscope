@@ -67,14 +67,18 @@ async def register(
         )
         logger.info(f"[API] User registered successfully: {user.email} (id: {user.id})")
         
-        # Send verification email if token exists
+        # Send verification email if token exists (don't let email failure break registration)
         if verification_token:
-            logger.info(f"[API] Sending verification email to {data.email}")
-            await email_service.send_verification_email(
-                to=user.email,
-                user_name=user.full_name,
-                verification_token=verification_token,
-            )
+            try:
+                logger.info(f"[API] Sending verification email to {data.email}")
+                await email_service.send_verification_email(
+                    to=user.email,
+                    user_name=user.full_name,
+                    verification_token=verification_token,
+                )
+            except Exception as email_error:
+                # Log but don't fail registration if email fails
+                logger.warning(f"[API] Failed to send verification email: {email_error}")
         
         # Build response with all required fields
         # Note: We just created the profile in register_user, so it exists

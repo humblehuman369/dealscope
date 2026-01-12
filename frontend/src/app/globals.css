@@ -2,14 +2,15 @@
    INVESTIQ DESIGN SYSTEM - Global Styles
    ========================================== */
 
+/* ==========================================
+   CSS Imports (must be at top before @tailwind)
+   ========================================== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+@import '../components/landing/landing.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* ==========================================
-   Font Imports
-   ========================================== */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 
 /* ==========================================
    Theme Color Variables
@@ -1022,6 +1023,5 @@ html:not(.dark) .strategy-stat-value-premium {
 }
 
 /* ==========================================
-   Landing Page Imports
+   Landing Page Imports (moved to top of file)
    ========================================== */
-@import '../components/landing/landing.css';
