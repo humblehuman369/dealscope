@@ -776,11 +776,19 @@ function SavedPropertiesSection() {
 
                   <div className="flex items-center gap-2 mt-3">
                     <Link
-                      href={`/property?address=${encodeURIComponent(property.address_street + ', ' + (property.address_city || '') + ', ' + (property.address_state || ''))}`}
+                      href={`/property/${property.id}/worksheet`}
                       className="text-xs text-brand-500 hover:text-brand-600 font-medium flex items-center gap-1"
                     >
+                      <FileText className="w-3 h-3" />
+                      Worksheet
+                    </Link>
+                    <span className="text-neutral-300 dark:text-neutral-600">|</span>
+                    <Link
+                      href={`/property?address=${encodeURIComponent(property.address_street + ', ' + (property.address_city || '') + ', ' + (property.address_state || ''))}`}
+                      className="text-xs text-gray-500 hover:text-brand-500 font-medium flex items-center gap-1"
+                    >
                       <Eye className="w-3 h-3" />
-                      View Analysis
+                      Quick View
                     </Link>
                     <span className="text-neutral-300 dark:text-neutral-600">|</span>
                     <button

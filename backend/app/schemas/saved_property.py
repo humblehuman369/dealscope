@@ -78,6 +78,9 @@ class SavedPropertyUpdate(SavedPropertyBase):
     
     # Custom assumptions per strategy
     custom_assumptions: Optional[Dict[str, Any]] = None
+    
+    # Worksheet assumptions (detailed analysis settings)
+    worksheet_assumptions: Optional[Dict[str, Any]] = None
 
 
 class SavedPropertySummary(BaseModel):
@@ -132,6 +135,9 @@ class SavedPropertyResponse(SavedPropertySummary):
     custom_daily_rate: Optional[float]
     custom_occupancy_rate: Optional[float]
     custom_assumptions: Optional[Dict[str, Any]]
+    
+    # Worksheet assumptions
+    worksheet_assumptions: Optional[Dict[str, Any]]
     
     # Notes
     notes: Optional[str]
