@@ -59,8 +59,8 @@ def upgrade() -> None:
         sa.Column('api_calls_used', sa.Integer(), default=0),
         sa.Column('usage_reset_date', sa.DateTime(timezone=True), nullable=True),
         
-        # Metadata
-        sa.Column('metadata', postgresql.JSON(), nullable=True),
+        # Extra data from Stripe
+        sa.Column('extra_data', postgresql.JSON(), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now()),
         sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now()),
     )
@@ -91,8 +91,8 @@ def upgrade() -> None:
         sa.Column('invoice_pdf_url', sa.String(500), nullable=True),
         sa.Column('receipt_url', sa.String(500), nullable=True),
         
-        # Metadata
-        sa.Column('metadata', postgresql.JSON(), nullable=True),
+        # Extra data from Stripe
+        sa.Column('extra_data', postgresql.JSON(), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
     
