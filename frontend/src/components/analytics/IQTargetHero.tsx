@@ -143,7 +143,7 @@ export function IQTargetHero({
         <div className={`w-full md:w-auto md:min-w-[200px] md:max-w-[280px] flex-shrink-0 bg-white/[0.03] dark:bg-white/[0.03] border border-white/[0.08] rounded-xl p-4 transition-all duration-300 ${isEditing ? 'md:min-w-[260px]' : ''}`}>
           {/* Header */}
           <div className="text-[11px] font-medium text-white/40 mb-3.5 pb-2.5 border-b border-white/[0.06]">
-            Price calculated from your inputs
+            Target Price based on these values
           </div>
 
           {/* Assumptions List (shown when not editing) */}
@@ -152,15 +152,15 @@ export function IQTargetHero({
               <div className="flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-white/50">Monthly Rent</span>
-                  <span className="text-sm font-semibold text-white">{formatCurrency(monthlyRent)}</span>
+                  <span className="text-sm font-semibold text-[#00D4FF]">{formatCurrency(monthlyRent)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-white/50">Down Payment</span>
-                  <span className="text-sm font-semibold text-white">{Math.round(downPaymentPct * 100)}%</span>
+                  <span className="text-sm font-semibold text-[#00D4FF]">{Math.round(downPaymentPct * 100)}%</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-white/50">Interest Rate</span>
-                  <span className="text-sm font-semibold text-white">{(interestRate * 100).toFixed(2)}%</span>
+                  <span className="text-sm font-semibold text-[#00D4FF]">{(interestRate * 100).toFixed(2)}%</span>
                 </div>
               </div>
 
