@@ -23,6 +23,7 @@ import { ScanResultSheet } from '../../components/scanner/ScanResultSheet';
 import { CalibrationPanel } from '../../components/scanner/CalibrationPanel';
 import { ScanHelpTooltip } from '../../components/scanner/ScanHelpTooltip';
 import { colors } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -37,6 +38,7 @@ const LOADING_MESSAGES = [
 export default function ScanScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { theme, isDark } = useTheme();
   const [permission, requestPermission] = useCameraPermissions();
   
   // Scanner state - use the scanner from usePropertyScan to ensure single instance
@@ -173,18 +175,18 @@ export default function ScanScreen() {
   // Permission handling
   if (!permission) {
     return (
-      <View style={styles.permissionContainer}>
-        <Text style={styles.permissionText}>Requesting camera permission...</Text>
+      <View style={[styles.permissionContainer, { backgroundColor: theme.background }]}>
+        <Text style={[styles.permissionText, { color: theme.textMuted }]}>Requesting camera permission...</Text>
       </View>
     );
   }
 
   if (!permission.granted) {
     return (
-      <View style={styles.permissionContainer}>
-        <Ionicons name="camera-outline" size={64} color={colors.gray[400]} />
-        <Text style={styles.permissionTitle}>Camera Access Required</Text>
-        <Text style={styles.permissionText}>
+      <View style={[styles.permissionContainer, { backgroundColor: theme.background }]}>
+        <Ionicons name="camera-outline" size={64} color={theme.textMuted} />
+        <Text style={[styles.permissionTitle, { color: theme.text }]}>Camera Access Required</Text>
+        <Text style={[styles.permissionText, { color: theme.textSecondary }]}>
           InvestIQ needs camera access to scan properties and provide instant investment analytics.
         </Text>
         <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
@@ -657,20 +659,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
     paddingHorizontal: 32,
   },
   permissionTitle: {
     fontWeight: '600',
     fontSize: 20,
-    color: colors.gray[900],
     marginTop: 16,
     marginBottom: 8,
   },
   permissionText: {
     fontWeight: '400',
     fontSize: 14,
-    color: colors.gray[600],
     textAlign: 'center',
     lineHeight: 22,
   },

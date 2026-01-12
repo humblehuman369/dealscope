@@ -186,7 +186,7 @@ export default function PortfolioScreen() {
             ))}
           </View>
         ) : (
-          <View style={styles.emptyState}>
+          <View style={[styles.emptyState, { backgroundColor: theme.card }]}>
             <View style={[styles.emptyIconContainer, { backgroundColor: isDark ? colors.navy[800] : colors.gray[100] }]}>
               <Ionicons name="briefcase-outline" size={64} color={isDark ? colors.gray[500] : colors.gray[300]} />
             </View>
@@ -196,15 +196,15 @@ export default function PortfolioScreen() {
             </Text>
             
             <TouchableOpacity style={styles.emptyButton} onPress={handleAddProperty}>
-              <Ionicons name="add-circle-outline" size={20} color={colors.primary[600]} />
-              <Text style={styles.emptyButtonText}>Add Your First Property</Text>
+              <Ionicons name="add-circle-outline" size={20} color={colors.primary[isDark ? 400 : 600]} />
+              <Text style={[styles.emptyButtonText, { color: colors.primary[isDark ? 400 : 600] }]}>Add Your First Property</Text>
             </TouchableOpacity>
 
             <View style={styles.featureList}>
-              <FeatureItem icon="analytics" text="Track property performance" />
-              <FeatureItem icon="pie-chart" text="View portfolio allocation" />
-              <FeatureItem icon="calendar" text="Monitor monthly cash flow" />
-              <FeatureItem icon="trending-up" text="Measure equity growth" />
+              <FeatureItem icon="analytics" text="Track property performance" isDark={isDark} />
+              <FeatureItem icon="pie-chart" text="View portfolio allocation" isDark={isDark} />
+              <FeatureItem icon="calendar" text="Monitor monthly cash flow" isDark={isDark} />
+              <FeatureItem icon="trending-up" text="Measure equity growth" isDark={isDark} />
             </View>
           </View>
         )}
@@ -295,13 +295,13 @@ function PropertyCard({ property, onPress, onDelete, theme, isDark }: PropertyCa
   );
 }
 
-function FeatureItem({ icon, text }: { icon: string; text: string }) {
+function FeatureItem({ icon, text, isDark }: { icon: string; text: string; isDark: boolean }) {
   return (
     <View style={styles.featureItem}>
-      <View style={styles.featureIcon}>
-        <Ionicons name={icon as any} size={18} color={colors.primary[600]} />
+      <View style={[styles.featureIcon, { backgroundColor: isDark ? colors.primary[900] : colors.primary[50] }]}>
+        <Ionicons name={icon as any} size={18} color={colors.primary[isDark ? 400 : 600]} />
       </View>
-      <Text style={styles.featureText}>{text}</Text>
+      <Text style={[styles.featureText, { color: isDark ? colors.gray[300] : colors.gray[700] }]}>{text}</Text>
     </View>
   );
 }
@@ -315,6 +315,7 @@ interface AddPropertyModalProps {
 
 function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyModalProps) {
   const insets = useSafeAreaInsets();
+  const { theme, isDark } = useTheme();
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
@@ -360,6 +361,30 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
     handleClose();
   }, [address, city, state, zip, purchasePrice, strategy, onAdd, handleClose]);
 
+  // Dynamic modal styles based on theme
+  const modalTheme = {
+    container: { backgroundColor: theme.background },
+    header: { borderBottomColor: isDark ? colors.navy[700] : colors.gray[200] },
+    title: { color: theme.text },
+    cancelText: { color: theme.textMuted },
+    inputLabel: { color: isDark ? colors.gray[300] : colors.gray[700] },
+    textInput: { 
+      backgroundColor: isDark ? colors.navy[800] : colors.gray[50],
+      borderColor: isDark ? colors.navy[600] : colors.gray[200],
+      color: theme.text,
+    },
+    placeholder: isDark ? colors.gray[500] : colors.gray[400],
+    pricePrefix: { color: isDark ? colors.gray[400] : colors.gray[500] },
+    strategyOptions: { 
+      backgroundColor: isDark ? colors.navy[800] : '#fff',
+      borderColor: isDark ? colors.navy[600] : colors.gray[200],
+    },
+    strategyOption: { borderBottomColor: isDark ? colors.navy[700] : colors.gray[100] },
+    strategyOptionText: { color: isDark ? colors.gray[300] : colors.gray[700] },
+    strategyOptionSelected: { backgroundColor: isDark ? colors.primary[900] : colors.primary[50] },
+    strategyOptionTextSelected: { color: colors.primary[isDark ? 300 : 700] },
+  };
+
   return (
     <Modal
       visible={visible}
@@ -368,16 +393,16 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
       onRequestClose={handleClose}
     >
       <KeyboardAvoidingView
-        style={styles.modalContainer}
+        style={[styles.modalContainer, modalTheme.container]}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={[styles.modalContent, { paddingTop: insets.top + 16 }]}>
           {/* Modal Header */}
-          <View style={styles.modalHeader}>
+          <View style={[styles.modalHeader, modalTheme.header]}>
             <TouchableOpacity onPress={handleClose}>
-              <Text style={styles.modalCancelText}>Cancel</Text>
+              <Text style={[styles.modalCancelText, modalTheme.cancelText]}>Cancel</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Add Property</Text>
+            <Text style={[styles.modalTitle, modalTheme.title]}>Add Property</Text>
             <TouchableOpacity onPress={handleSubmit} disabled={isLoading}>
               {isLoading ? (
                 <ActivityIndicator size="small" color={colors.primary[600]} />
@@ -394,11 +419,11 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
           >
             {/* Address */}
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Street Address *</Text>
+              <Text style={[styles.inputLabel, modalTheme.inputLabel]}>Street Address *</Text>
               <TextInput
-                style={styles.textInput}
+                style={[styles.textInput, modalTheme.textInput]}
                 placeholder="123 Main Street"
-                placeholderTextColor={colors.gray[400]}
+                placeholderTextColor={modalTheme.placeholder}
                 value={address}
                 onChangeText={setAddress}
                 autoCapitalize="words"
@@ -408,22 +433,22 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
             {/* City, State, Zip Row */}
             <View style={styles.inputRow}>
               <View style={[styles.inputGroup, { flex: 2 }]}>
-                <Text style={styles.inputLabel}>City</Text>
+                <Text style={[styles.inputLabel, modalTheme.inputLabel]}>City</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, modalTheme.textInput]}
                   placeholder="City"
-                  placeholderTextColor={colors.gray[400]}
+                  placeholderTextColor={modalTheme.placeholder}
                   value={city}
                   onChangeText={setCity}
                   autoCapitalize="words"
                 />
               </View>
               <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.inputLabel}>State</Text>
+                <Text style={[styles.inputLabel, modalTheme.inputLabel]}>State</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, modalTheme.textInput]}
                   placeholder="FL"
-                  placeholderTextColor={colors.gray[400]}
+                  placeholderTextColor={modalTheme.placeholder}
                   value={state}
                   onChangeText={setState}
                   autoCapitalize="characters"
@@ -431,11 +456,11 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
                 />
               </View>
               <View style={[styles.inputGroup, { flex: 1.2 }]}>
-                <Text style={styles.inputLabel}>ZIP</Text>
+                <Text style={[styles.inputLabel, modalTheme.inputLabel]}>ZIP</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, modalTheme.textInput]}
                   placeholder="33401"
-                  placeholderTextColor={colors.gray[400]}
+                  placeholderTextColor={modalTheme.placeholder}
                   value={zip}
                   onChangeText={setZip}
                   keyboardType="number-pad"
@@ -446,13 +471,13 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
 
             {/* Purchase Price */}
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Purchase Price</Text>
-              <View style={styles.priceInputContainer}>
-                <Text style={styles.pricePrefix}>$</Text>
+              <Text style={[styles.inputLabel, modalTheme.inputLabel]}>Purchase Price</Text>
+              <View style={[styles.priceInputContainer, modalTheme.textInput]}>
+                <Text style={[styles.pricePrefix, modalTheme.pricePrefix]}>$</Text>
                 <TextInput
-                  style={styles.priceInput}
+                  style={[styles.priceInput, { color: theme.text }]}
                   placeholder="450,000"
-                  placeholderTextColor={colors.gray[400]}
+                  placeholderTextColor={modalTheme.placeholder}
                   value={purchasePrice}
                   onChangeText={setPurchasePrice}
                   keyboardType="number-pad"
@@ -462,32 +487,34 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
 
             {/* Strategy */}
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Investment Strategy</Text>
+              <Text style={[styles.inputLabel, modalTheme.inputLabel]}>Investment Strategy</Text>
               <TouchableOpacity
-                style={styles.strategySelector}
+                style={[styles.strategySelector, modalTheme.textInput]}
                 onPress={() => setShowStrategyPicker(!showStrategyPicker)}
               >
                 <Text style={[
                   styles.strategySelectorText,
-                  !strategy && styles.strategySelectorPlaceholder
+                  { color: theme.text },
+                  !strategy && { color: modalTheme.placeholder }
                 ]}>
                   {STRATEGY_OPTIONS.find(s => s.value === strategy)?.label || 'Select strategy'}
                 </Text>
                 <Ionicons
                   name={showStrategyPicker ? 'chevron-up' : 'chevron-down'}
                   size={20}
-                  color={colors.gray[400]}
+                  color={modalTheme.placeholder}
                 />
               </TouchableOpacity>
 
               {showStrategyPicker && (
-                <View style={styles.strategyOptions}>
+                <View style={[styles.strategyOptions, modalTheme.strategyOptions]}>
                   {STRATEGY_OPTIONS.map((option) => (
                     <TouchableOpacity
                       key={option.value}
                       style={[
                         styles.strategyOption,
-                        strategy === option.value && styles.strategyOptionSelected
+                        modalTheme.strategyOption,
+                        strategy === option.value && modalTheme.strategyOptionSelected
                       ]}
                       onPress={() => {
                         setStrategy(option.value);
@@ -496,12 +523,13 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
                     >
                       <Text style={[
                         styles.strategyOptionText,
-                        strategy === option.value && styles.strategyOptionTextSelected
+                        modalTheme.strategyOptionText,
+                        strategy === option.value && modalTheme.strategyOptionTextSelected
                       ]}>
                         {option.label}
                       </Text>
                       {strategy === option.value && (
-                        <Ionicons name="checkmark" size={20} color={colors.primary[600]} />
+                        <Ionicons name="checkmark" size={20} color={colors.primary[isDark ? 400 : 600]} />
                       )}
                     </TouchableOpacity>
                   ))}
@@ -664,7 +692,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   emptyState: {
-    backgroundColor: '#fff',
     borderRadius: 20,
     padding: 32,
     alignItems: 'center',
@@ -678,7 +705,6 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: colors.gray[100],
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -686,13 +712,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontWeight: '700',
     fontSize: 20,
-    color: colors.gray[900],
     marginBottom: 8,
   },
   emptyText: {
     fontWeight: '400',
     fontSize: 14,
-    color: colors.gray[500],
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -711,7 +735,6 @@ const styles = StyleSheet.create({
   emptyButtonText: {
     fontWeight: '600',
     fontSize: 15,
-    color: colors.primary[600],
   },
   featureList: {
     width: '100%',
@@ -726,19 +749,16 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.primary[50],
     justifyContent: 'center',
     alignItems: 'center',
   },
   featureText: {
     fontWeight: '500',
     fontSize: 14,
-    color: colors.gray[700],
   },
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   modalContent: {
     flex: 1,
@@ -750,16 +770,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray[200],
   },
   modalTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: colors.gray[900],
   },
   modalCancelText: {
     fontSize: 16,
-    color: colors.gray[600],
   },
   modalSaveText: {
     fontSize: 16,
@@ -779,17 +796,13 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: colors.gray[700],
   },
   textInput: {
-    backgroundColor: colors.gray[50],
     borderWidth: 1,
-    borderColor: colors.gray[200],
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: colors.gray[900],
   },
   inputRow: {
     flexDirection: 'row',
@@ -798,46 +811,37 @@ const styles = StyleSheet.create({
   priceInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.gray[50],
     borderWidth: 1,
-    borderColor: colors.gray[200],
     borderRadius: 12,
     paddingHorizontal: 14,
   },
   pricePrefix: {
     fontSize: 16,
-    color: colors.gray[500],
     marginRight: 4,
   },
   priceInput: {
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
-    color: colors.gray[900],
   },
   strategySelector: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.gray[50],
     borderWidth: 1,
-    borderColor: colors.gray[200],
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
   strategySelectorText: {
     fontSize: 16,
-    color: colors.gray[900],
   },
   strategySelectorPlaceholder: {
-    color: colors.gray[400],
+    // Color applied dynamically
   },
   strategyOptions: {
     marginTop: 8,
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: colors.gray[200],
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -848,17 +852,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray[100],
   },
   strategyOptionSelected: {
-    backgroundColor: colors.primary[50],
+    // Background applied dynamically
   },
   strategyOptionText: {
     fontSize: 15,
-    color: colors.gray[700],
   },
   strategyOptionTextSelected: {
-    color: colors.primary[700],
     fontWeight: '500',
   },
 });

@@ -16,10 +16,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 
 export default function SearchScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { theme, isDark } = useTheme();
   const [address, setAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,16 +57,40 @@ export default function SearchScreen() {
     '456 Ocean Ave, Fort Lauderdale, FL 33301',
   ];
 
+  // Dynamic styles based on theme
+  const dynamicStyles = {
+    container: { backgroundColor: theme.background },
+    header: { 
+      backgroundColor: theme.headerBackground, 
+      borderBottomColor: theme.headerBorder 
+    },
+    backIcon: theme.text,
+    headerTitle: { color: theme.text },
+    label: { color: isDark ? colors.gray[300] : colors.gray[700] },
+    inputContainer: { 
+      backgroundColor: isDark ? colors.navy[800] : colors.gray[50],
+      borderColor: isDark ? colors.navy[600] : colors.gray[200],
+    },
+    input: { color: theme.text },
+    inputIcon: isDark ? colors.gray[500] : colors.gray[400],
+    examplesTitle: { color: theme.textMuted },
+    exampleItem: { backgroundColor: isDark ? colors.navy[800] : colors.gray[50] },
+    exampleText: { color: theme.textSecondary },
+    tipsSection: { backgroundColor: isDark ? colors.primary[900] : colors.primary[50] },
+    tipsTitle: { color: isDark ? colors.primary[300] : colors.primary[700] },
+    tipText: { color: theme.textSecondary },
+  };
+
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, dynamicStyles.container]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+      <View style={[styles.header, dynamicStyles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Ionicons name="arrow-back" size={24} color={colors.gray[900]} />
+          <Ionicons name="arrow-back" size={24} color={dynamicStyles.backIcon} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Search Property</Text>
+        <Text style={[styles.headerTitle, dynamicStyles.headerTitle]}>Search Property</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -75,18 +101,18 @@ export default function SearchScreen() {
       >
         {/* Search Input */}
         <View style={styles.searchSection}>
-          <Text style={styles.label}>Property Address</Text>
-          <View style={styles.inputContainer}>
+          <Text style={[styles.label, dynamicStyles.label]}>Property Address</Text>
+          <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
             <Ionicons
               name="location-outline"
               size={20}
-              color={colors.gray[400]}
+              color={dynamicStyles.inputIcon}
               style={styles.inputIcon}
             />
             <TextInput
-              style={styles.input}
+              style={[styles.input, dynamicStyles.input]}
               placeholder="Enter full property address..."
-              placeholderTextColor={colors.gray[400]}
+              placeholderTextColor={dynamicStyles.inputIcon}
               value={address}
               onChangeText={setAddress}
               autoCapitalize="words"
@@ -99,7 +125,7 @@ export default function SearchScreen() {
                 style={styles.clearButton}
                 onPress={() => setAddress('')}
               >
-                <Ionicons name="close-circle" size={20} color={colors.gray[400]} />
+                <Ionicons name="close-circle" size={20} color={dynamicStyles.inputIcon} />
               </TouchableOpacity>
             )}
           </View>
@@ -135,37 +161,37 @@ export default function SearchScreen() {
 
         {/* Example Addresses */}
         <View style={styles.examplesSection}>
-          <Text style={styles.examplesTitle}>Try an example address</Text>
+          <Text style={[styles.examplesTitle, dynamicStyles.examplesTitle]}>Try an example address</Text>
           {exampleAddresses.map((example, index) => (
             <TouchableOpacity
               key={index}
-              style={styles.exampleItem}
+              style={[styles.exampleItem, dynamicStyles.exampleItem]}
               onPress={() => setAddress(example)}
               activeOpacity={0.7}
             >
-              <Ionicons name="home-outline" size={18} color={colors.primary[600]} />
-              <Text style={styles.exampleText} numberOfLines={1}>
+              <Ionicons name="home-outline" size={18} color={colors.primary[isDark ? 400 : 600]} />
+              <Text style={[styles.exampleText, dynamicStyles.exampleText]} numberOfLines={1}>
                 {example}
               </Text>
-              <Ionicons name="arrow-forward" size={16} color={colors.gray[400]} />
+              <Ionicons name="arrow-forward" size={16} color={dynamicStyles.inputIcon} />
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Tips */}
-        <View style={styles.tipsSection}>
-          <Text style={styles.tipsTitle}>Search Tips</Text>
+        <View style={[styles.tipsSection, dynamicStyles.tipsSection]}>
+          <Text style={[styles.tipsTitle, dynamicStyles.tipsTitle]}>Search Tips</Text>
           <View style={styles.tipItem}>
             <Ionicons name="checkmark-circle" size={16} color={colors.profit.main} />
-            <Text style={styles.tipText}>Include street number and name</Text>
+            <Text style={[styles.tipText, dynamicStyles.tipText]}>Include street number and name</Text>
           </View>
           <View style={styles.tipItem}>
             <Ionicons name="checkmark-circle" size={16} color={colors.profit.main} />
-            <Text style={styles.tipText}>Add city, state, and ZIP code</Text>
+            <Text style={[styles.tipText, dynamicStyles.tipText]}>Add city, state, and ZIP code</Text>
           </View>
           <View style={styles.tipItem}>
             <Ionicons name="checkmark-circle" size={16} color={colors.profit.main} />
-            <Text style={styles.tipText}>Use full address for best results</Text>
+            <Text style={[styles.tipText, dynamicStyles.tipText]}>Use full address for best results</Text>
           </View>
         </View>
       </ScrollView>
@@ -176,7 +202,6 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -185,7 +210,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray[200],
   },
   backButton: {
     padding: 8,
@@ -194,7 +218,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontWeight: '600',
     fontSize: 17,
-    color: colors.gray[900],
   },
   headerSpacer: {
     width: 40,
@@ -211,16 +234,13 @@ const styles = StyleSheet.create({
   label: {
     fontWeight: '600',
     fontSize: 14,
-    color: colors.gray[700],
     marginBottom: 8,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.gray[50],
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.gray[200],
     paddingHorizontal: 12,
   },
   inputIcon: {
@@ -230,7 +250,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     fontSize: 16,
-    color: colors.gray[900],
   },
   clearButton: {
     padding: 4,
@@ -262,7 +281,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   searchButtonDisabled: {
-    backgroundColor: colors.gray[300],
+    backgroundColor: colors.gray[400],
     shadowOpacity: 0,
   },
   searchButtonText: {
@@ -276,7 +295,6 @@ const styles = StyleSheet.create({
   examplesTitle: {
     fontWeight: '600',
     fontSize: 14,
-    color: colors.gray[500],
     marginBottom: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -285,7 +303,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: colors.gray[50],
     padding: 14,
     borderRadius: 12,
     marginBottom: 8,
@@ -294,17 +311,14 @@ const styles = StyleSheet.create({
     flex: 1,
     fontWeight: '500',
     fontSize: 14,
-    color: colors.gray[700],
   },
   tipsSection: {
-    backgroundColor: colors.primary[50],
     padding: 16,
     borderRadius: 12,
   },
   tipsTitle: {
     fontWeight: '600',
     fontSize: 14,
-    color: colors.primary[700],
     marginBottom: 12,
   },
   tipItem: {
@@ -316,7 +330,5 @@ const styles = StyleSheet.create({
   tipText: {
     fontWeight: '400',
     fontSize: 14,
-    color: colors.gray[600],
   },
 });
-
