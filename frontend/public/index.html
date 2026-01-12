@@ -16,10 +16,13 @@
     })();
   </script>
   
-  <!-- Google Fonts -->
+  <!-- Google Fonts - Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
   
   <style>
     /* Reset */
@@ -33,9 +36,10 @@
       scroll-behavior: smooth;
     }
 
-    /* Landing Page Styles - Responsive Design */
-    /* CSS Variables - Dark Mode (Default) */
-    .landing-page {
+    /* ============================================ */
+    /* CSS VARIABLES - Dark Mode (Default) */
+    /* ============================================ */
+    :root {
       --deep-navy: #07172e;
       --dark-bg: #0a0a12;
       --electric-cyan: #4dd0e1;
@@ -47,12 +51,8 @@
       --gray-400: #9ca3af;
       --gray-600: #6b7280;
       
-      /* Primary accent color - Red/Coral */
+      /* Primary accent color */
       --accent-red: #ff5a5f;
-      --accent-red-dark: #e04a4f;
-      
-      /* IQ Icon Color (theme-aware) */
-      --iq-icon-color: #4dd0e1;
       
       /* Theme-aware colors (dark mode defaults) */
       --bg-primary: #0a0a12;
@@ -75,17 +75,10 @@
       --flip: #ec4899;
       --hack: #14b8a6;
       --wholesale: #84cc16;
-
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.6;
-      overflow-x: hidden;
-      min-height: 100vh;
     }
 
-    /* Light Mode - Class-based (html:not(.dark)) */
-    html:not(.dark) .landing-page {
+    /* Light Mode */
+    html:not(.dark) {
       --bg-primary: #f8fafc;
       --bg-secondary: #ffffff;
       --bg-card: rgba(0, 0, 0, 0.02);
@@ -100,80 +93,46 @@
       --scan-glow: rgba(0, 126, 167, 0.3);
       --electric-cyan: #0891b2;
       --teal: #0e7490;
-      --iq-icon-color: #0891b2;
     }
 
-    /* Demo section light mode enhancements */
-    html:not(.dark) .landing-page .demo-section {
-      background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+    /* Light mode - House SVG adjustments (inside dark phone) */
+    html:not(.dark) .phone-house-container svg path,
+    html:not(.dark) .phone-house-container svg rect,
+    html:not(.dark) .phone-house-container svg line,
+    html:not(.dark) .phone-house-container svg circle {
+      stroke: rgba(77, 208, 225, 0.7);
     }
 
-    /* Glowing shadow behind scan scene */
-    html:not(.dark) .landing-page .scan-scene {
-      background: radial-gradient(ellipse at center, rgba(8, 145, 178, 0.08) 0%, transparent 70%);
-      border-radius: 32px;
-      padding: 40px;
-      box-shadow: 0 20px 60px rgba(8, 145, 178, 0.15), 0 0 100px rgba(8, 145, 178, 0.1);
+    html:not(.dark) .phone-house-container svg path[fill],
+    html:not(.dark) .phone-house-container svg rect[fill] {
+      fill: rgba(77, 208, 225, 0.08);
     }
 
-    /* Darken house SVG for light mode visibility */
-    html:not(.dark) .landing-page .scan-house svg path,
-    html:not(.dark) .landing-page .scan-house svg rect,
-    html:not(.dark) .landing-page .scan-house svg line,
-    html:not(.dark) .landing-page .scan-house svg circle,
-    html:not(.dark) .landing-page .scan-house svg ellipse {
-      stroke: rgba(8, 145, 178, 0.7) !important;
+    html:not(.dark) .phone-scan-bracket {
+      border-color: var(--electric-cyan);
     }
 
-    html:not(.dark) .landing-page .scan-house svg path[fill],
-    html:not(.dark) .landing-page .scan-house svg rect[fill] {
-      fill: rgba(8, 145, 178, 0.1) !important;
-    }
-
-    /* Fix brand line visibility in light mode */
-    html:not(.dark) .landing-page .demo-brand-line {
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
       color: var(--text-primary);
-    }
-
-    html:not(.dark) .landing-page .demo-brand-line .highlight {
-      color: var(--electric-cyan);
-    }
-
-    /* Scan brackets more visible */
-    html:not(.dark) .landing-page .scan-bracket {
-      border-color: rgba(8, 145, 178, 0.6);
-    }
-
-    /* Phone mockup shadow */
-    html:not(.dark) .landing-page .scan-phone {
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Data cards with better contrast */
-    html:not(.dark) .landing-page .scan-data-card {
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid rgba(8, 145, 178, 0.2);
-      box-shadow: 0 4px 20px rgba(8, 145, 178, 0.15);
-    }
-
-    html:not(.dark) .landing-page .scan-data-value {
-      color: var(--text-primary);
-    }
-
-    html:not(.dark) .landing-page .scan-data-label {
-      color: var(--text-secondary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
     }
 
     /* Container */
-    .landing-page .container {
+    .container {
       width: 100%;
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 24px;
     }
 
-    /* Header */
-    .landing-header {
+    /* ============================================ */
+    /* HEADER */
+    /* ============================================ */
+    .header {
       position: fixed;
       top: 0;
       left: 0;
@@ -181,36 +140,50 @@
       z-index: 1000;
       padding: 16px 0;
       background: var(--header-bg);
-      -webkit-backdrop-filter: blur(20px);
       backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border-color);
+      transition: all 0.3s ease;
     }
 
-    .landing-page .header-inner {
+    .header.scrolled {
+      padding: 12px 0;
+      box-shadow: 0 4px 30px var(--shadow-color);
+    }
+
+    .header-inner {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .landing-page .logo {
+    .logo {
       font-size: 1.5rem;
       font-weight: 800;
       color: var(--text-primary);
       text-decoration: none;
       letter-spacing: -0.5px;
+      flex-shrink: 0;
+      margin-right: auto;
     }
 
-    .landing-page .logo span {
+    .logo span {
       color: var(--electric-cyan);
     }
 
-    .landing-page .nav-links {
+    .nav-links {
       display: none;
       gap: 32px;
       align-items: center;
     }
 
-    .landing-page .nav-links a {
+    @media (min-width: 1024px) {
+      .nav-links {
+        display: flex;
+      }
+    }
+
+    .nav-links a {
       color: var(--text-secondary);
       text-decoration: none;
       font-size: 0.9rem;
@@ -218,40 +191,22 @@
       transition: color 0.2s;
     }
 
-    .landing-page .nav-links a:hover {
+    .nav-links a:hover {
       color: var(--text-primary);
     }
 
-    .landing-page .header-cta {
+    .header-cta {
       display: flex;
       gap: 12px;
       align-items: center;
     }
 
-    /* Ensure logo stays on far left */
-    .landing-page .header-inner .logo {
-      flex-shrink: 0;
-      margin-right: auto;
-    }
-
-    /* Header Get Started button - smaller with gradient */
-    .landing-page .header-cta .btn-primary {
-      padding: 6px 14px;
-      font-size: 0.75rem;
-      background: linear-gradient(90deg, var(--electric-cyan) 0%, var(--deep-navy) 100%);
-      color: #ffffff;
-      box-shadow: 0 2px 12px rgba(77, 208, 225, 0.25);
-    }
-
-    .landing-page .header-cta .btn-primary:hover {
-      box-shadow: 0 4px 16px rgba(77, 208, 225, 0.35);
-    }
-
     /* Buttons */
-    .landing-page .btn {
+    .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 8px;
       padding: 12px 24px;
       border-radius: 12px;
       font-size: 0.9rem;
@@ -260,80 +215,198 @@
       transition: all 0.3s ease;
       cursor: pointer;
       border: none;
+      font-family: inherit;
     }
 
-    .landing-page .btn-ghost {
-      background: transparent;
-      color: var(--text-primary);
-    }
-
-    .landing-page .btn-ghost:hover {
-      background: var(--bg-card-hover);
-    }
-
-    .landing-page .btn-primary {
+    .btn-primary {
       background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
       color: var(--deep-navy);
       box-shadow: 0 4px 20px rgba(77, 208, 225, 0.3);
     }
 
-    .landing-page .btn-primary:hover {
+    .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 30px rgba(77, 208, 225, 0.4);
     }
 
-    .landing-page .btn-large {
-      padding: 18px 40px;
-      font-size: 1.05rem;
-    }
-
-    .landing-page .btn-secondary {
+    .btn-secondary {
       background: transparent;
       border: 1px solid var(--electric-cyan);
       color: var(--electric-cyan);
     }
 
-    .landing-page .btn-secondary:hover {
+    .btn-secondary:hover {
       background: var(--bg-card-hover);
       border-color: var(--teal);
     }
 
-    /* Hero Section */
-    .landing-page .hero {
-      padding: 120px 0 100px;
+    .btn-ghost {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-hover);
+    }
+
+    .btn-large {
+      padding: 18px 40px;
+      font-size: 1.05rem;
+    }
+
+    .btn-small {
+      padding: 8px 16px;
+      font-size: 0.8rem;
+    }
+
+    /* Header Get Started button - smaller with gradient */
+    .btn-header {
+      padding: 6px 14px;
+      font-size: 0.75rem;
+      background: linear-gradient(90deg, var(--electric-cyan) 0%, var(--deep-navy) 100%);
+      color: #ffffff;
+      box-shadow: 0 2px 12px rgba(77, 208, 225, 0.25);
+    }
+
+    .btn-header:hover {
+      box-shadow: 0 4px 16px rgba(77, 208, 225, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Header ghost button - smaller */
+    .header-cta .btn-ghost {
+      padding: 6px 14px;
+      font-size: 0.75rem;
+    }
+
+    /* Mobile Menu */
+    .mobile-menu-btn {
+      display: flex;
+      padding: 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+
+    @media (min-width: 1024px) {
+      .mobile-menu-btn {
+        display: none;
+      }
+    }
+
+    .mobile-menu {
+      position: fixed;
+      top: 70px;
+      left: 0;
+      right: 0;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 20px;
+      transform: translateY(-100%);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 999;
+    }
+
+    .mobile-menu.open {
+      transform: translateY(0);
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-menu a {
+      display: block;
+      padding: 12px 16px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .mobile-menu a:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+    }
+
+    /* ============================================ */
+    /* HERO SECTION */
+    /* ============================================ */
+    .hero {
+      padding: 140px 0 100px;
       position: relative;
       overflow: hidden;
     }
 
-    /* Hero Eyebrow - Tagline pill */
-    .landing-page .hero-eyebrow {
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150%;
+      height: 100%;
+      background: radial-gradient(ellipse at center top, var(--scan-glow) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 10;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    @media (min-width: 1024px) {
+      .hero-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 80px;
+      }
+    }
+
+    .hero-text {
+      text-align: center;
+    }
+
+    @media (min-width: 1024px) {
+      .hero-text {
+        text-align: left;
+      }
+    }
+
+    .hero-eyebrow {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
       background: rgba(77, 208, 225, 0.1);
       border: 1px solid rgba(77, 208, 225, 0.25);
-      padding: 10px 24px;
+      padding: 12px 24px;
       border-radius: 100px;
-      margin-top: 0;
-      margin-bottom: 56px;
+      margin-bottom: 32px;
       animation: fadeInDown 0.6s ease-out;
     }
 
-    html:not(.dark) .landing-page .hero-eyebrow {
-      background: rgba(8, 145, 178, 0.08);
-      border-color: rgba(8, 145, 178, 0.25);
+    .hero-eyebrow-icon {
+      width: 18px;
+      height: 18px;
+      color: var(--electric-cyan);
     }
 
-    .landing-page .hero-eyebrow-text {
+    .hero-eyebrow-text {
       font-size: 13px;
       font-weight: 600;
       color: var(--electric-cyan);
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
       text-transform: uppercase;
-    }
-
-    html:not(.dark) .landing-page .hero-eyebrow-text {
-      color: #0891b2;
     }
 
     @keyframes fadeInDown {
@@ -347,105 +420,461 @@
       }
     }
 
-    .landing-page .hero::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 150%;
-      height: 100%;
-      background: radial-gradient(ellipse at center top, var(--scan-glow) 0%, transparent 60%);
-      pointer-events: none;
-    }
-
-    .landing-page .hero-content {
-      text-align: center;
-    }
-
-    .landing-page .hero-badge {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 0;
-      width: 100%;
-    }
-
-    .landing-page .hero h1 {
-      font-size: clamp(2.2rem, 5vw, 3.5rem);
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 4rem);
       font-weight: 800;
       line-height: 1.1;
-      margin-bottom: 32px;
-      letter-spacing: -1px;
+      margin-bottom: 24px;
+      letter-spacing: -1.5px;
     }
 
-    .landing-page .hero h1 .highlight,
-    .landing-page .cta-title .highlight {
+    .hero h1 .highlight {
       background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
-    .landing-page .hero-subtitle {
-      font-size: 1.1rem;
+    .hero-subtitle {
+      font-size: 1.15rem;
       color: var(--text-secondary);
-      max-width: 520px;
-      margin: 0 auto 56px;
-      line-height: 1.6;
+      max-width: 480px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
     }
 
-    .landing-page .hero-cta {
+    @media (min-width: 1024px) {
+      .hero-subtitle {
+        margin: 0 0 40px;
+      }
+    }
+
+    .hero-cta {
       display: flex;
       flex-direction: column;
       gap: 16px;
       align-items: center;
-      justify-content: center;
-      width: 100%;
-      margin-bottom: 0;
+      margin-bottom: 32px;
     }
 
-    .landing-page .hero-cta .btn-primary {
+    @media (min-width: 640px) {
+      .hero-cta {
+        flex-direction: row;
+        justify-content: center;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .hero-cta {
+        justify-content: flex-start;
+      }
+    }
+
+    .hero-cta .btn-primary {
       padding: 16px 32px;
       font-size: 1rem;
     }
 
-    .landing-page .trust-signals {
+    .trust-signals {
       display: flex;
-      gap: 32px;
+      flex-wrap: wrap;
+      gap: 24px;
       justify-content: center;
-      margin-top: 24px;
       font-size: 0.875rem;
       color: var(--text-muted);
     }
 
-    .landing-page .trust-signals span {
+    @media (min-width: 1024px) {
+      .trust-signals {
+        justify-content: flex-start;
+      }
+    }
+
+    .trust-signals span {
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    /* Demo Section */
-    .landing-page .demo-section {
-      padding: 60px 0 100px;
-      background: var(--bg-secondary);
+    .trust-signals .icon {
+      width: 16px;
+      height: 16px;
+      color: var(--electric-cyan);
+    }
+
+    /* Phone Mockup */
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      position: relative;
+    }
+
+    .phone-mockup {
+      width: 280px;
+      height: 560px;
+      background: linear-gradient(145deg, #1a2d45 0%, #0d1a2d 100%);
+      border-radius: 40px;
+      padding: 10px;
+      box-shadow: 
+        0 30px 60px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(77, 208, 225, 0.2),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
+      position: relative;
+      animation: phoneFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes phoneFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, var(--deep-navy) 0%, #0a1e38 100%);
+      border-radius: 30px;
+      position: relative;
       overflow: hidden;
     }
 
-    .landing-page .demo-section.demo-section-compact {
-      padding: 30px 0 80px;
+    .phone-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 28px;
+      background: #0d1a2d;
+      border-radius: 0 0 18px 18px;
+      z-index: 20;
     }
 
-    .landing-page .section-header {
+    .phone-content {
+      padding: 50px 16px 16px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .phone-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .phone-logo {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.7rem;
+      color: var(--deep-navy);
+    }
+
+    .phone-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .scan-animation {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    /* House Being Scanned Inside Phone */
+    .phone-house-scan {
+      width: 180px;
+      height: 180px;
+      position: relative;
+    }
+
+    .phone-house-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .phone-house-container svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 4px 20px rgba(77, 208, 225, 0.3));
+    }
+
+    /* Scan Line Effect */
+    .phone-scan-line-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .phone-scan-line {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, var(--electric-cyan) 50%, transparent 100%);
+      box-shadow: 0 0 10px var(--electric-cyan), 0 0 20px var(--electric-cyan);
+      animation: phoneScanSweep 2.5s ease-in-out infinite;
+    }
+
+    @keyframes phoneScanSweep {
+      0% { top: 0; opacity: 1; }
+      100% { top: 100%; opacity: 0.5; }
+    }
+
+    /* Corner Brackets */
+    .phone-scan-brackets {
+      position: absolute;
+      inset: 8px;
+      pointer-events: none;
+    }
+
+    .phone-scan-bracket {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--electric-cyan);
+    }
+
+    .phone-scan-bracket.tl {
+      top: 0;
+      left: 0;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .phone-scan-bracket.tr {
+      top: 0;
+      right: 0;
+      border-left: none;
+      border-bottom: none;
+    }
+
+    .phone-scan-bracket.bl {
+      bottom: 0;
+      left: 0;
+      border-right: none;
+      border-top: none;
+    }
+
+    .phone-scan-bracket.br {
+      bottom: 0;
+      right: 0;
+      border-left: none;
+      border-top: none;
+    }
+
+    .scan-status {
+      text-align: center;
+    }
+
+    .scan-status-text {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--electric-cyan);
+      margin-bottom: 4px;
+    }
+
+    .scan-status-address {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .phone-results {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: auto;
+    }
+
+    .phone-results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .phone-results-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .phone-results-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.15);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .phone-results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .phone-result-item {
+      text-align: center;
+    }
+
+    .phone-result-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .phone-result-value.green { color: #10b981; }
+    .phone-result-value.cyan { color: var(--electric-cyan); }
+    .phone-result-value.blue { color: var(--iq-blue); }
+
+    .phone-result-label {
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Decorative glow behind phone */
+    .phone-glow {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(77, 208, 225, 0.2) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+    }
+
+    /* ============================================ */
+    /* SOCIAL PROOF BAR */
+    /* ============================================ */
+    .social-proof {
+      padding: 24px 0;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .social-proof-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (min-width: 768px) {
+      .social-proof-inner {
+        flex-direction: row;
+        gap: 48px;
+      }
+    }
+
+    .social-proof-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .social-proof-live {
+      position: relative;
+      width: 10px;
+      height: 10px;
+    }
+
+    .social-proof-live::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #10b981;
+      border-radius: 50%;
+      animation: livePulse 2s ease-in-out infinite;
+    }
+
+    .social-proof-live::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #10b981;
+      border-radius: 50%;
+    }
+
+    @keyframes livePulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(2); opacity: 0; }
+    }
+
+    .social-proof-number {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .social-proof-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .social-proof-divider {
+      display: none;
+      width: 1px;
+      height: 32px;
+      background: var(--border-color);
+    }
+
+    @media (min-width: 768px) {
+      .social-proof-divider {
+        display: block;
+      }
+    }
+
+    .social-proof-stars {
+      display: flex;
+      gap: 2px;
+      align-items: center;
+    }
+
+    .social-proof-stars svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .social-proof-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--electric-cyan);
+    }
+
+    /* ============================================ */
+    /* HOW IT WORKS SECTION */
+    /* ============================================ */
+    .how-it-works {
+      padding: 100px 0;
+      background: var(--bg-secondary);
+    }
+
+    .section-header {
       text-align: center;
       margin-bottom: 60px;
     }
 
-    .landing-page .section-header-tight {
-      margin-bottom: 0;
-    }
-
-    .landing-page .section-label {
+    .section-label {
       font-size: 0.8rem;
       font-weight: 600;
       color: var(--electric-cyan);
@@ -454,665 +883,751 @@
       margin-bottom: 16px;
     }
 
-    .landing-page .section-header-tight .section-label {
-      margin-bottom: 16px;
-      font-size: 1.04rem;
-      font-weight: 800;
-      color: var(--text-primary);
-      text-transform: capitalize;
-      letter-spacing: 0.1em;
-    }
-
-    .landing-page .section-title {
+    .section-title {
       font-size: clamp(1.8rem, 4vw, 2.5rem);
       font-weight: 800;
       margin-bottom: 16px;
       letter-spacing: -0.5px;
     }
 
-    .landing-page .scan-technology-title {
-      font-size: clamp(1.22rem, 2.72vw, 1.9rem);
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      color: var(--teal) !important;
-      text-transform: uppercase;
-      margin-top: 8px;
-      margin-bottom: 30px;
+    .section-title .highlight {
+      background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    .landing-page .section-subtitle {
+    .section-subtitle {
       font-size: 1rem;
       color: var(--text-secondary);
       max-width: 600px;
       margin: 0 auto;
     }
 
-    .landing-page .brand-line {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: rgba(255,255,255,0.7);
-      margin-bottom: 48px;
-      letter-spacing: 0.02em;
+    .steps-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
     }
 
-    .landing-page .demo-brand-line {
-      text-align: center;
-      font-size: 1.4rem;
-      margin-bottom: 30px;
-      margin-top: 40px;
+    @media (min-width: 768px) {
+      .steps-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 40px;
+      }
     }
 
-    .landing-page .brand-line .highlight {
-      color: var(--electric-cyan);
-    }
-
-    /* Scan Scene Container */
-    .landing-page .scan-scene {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 40px;
-      margin-top: 50px;
+    .step-card {
       position: relative;
-      min-height: 550px;
-      padding: 0 20px;
-    }
-
-    /* Phone in scanning position */
-    .landing-page .scan-phone {
-      width: 260px;
-      height: 520px;
-      background: linear-gradient(145deg, #1a2d45 0%, #0d1a2d 100%);
-      border-radius: 36px;
-      padding: 10px;
-      box-shadow: 
-        0 30px 60px rgba(0,0,0,0.5),
-        0 0 0 1px rgba(77, 208, 225, 0.2),
-        inset 0 0 0 1px rgba(255,255,255,0.05);
-      position: relative;
-      transform: perspective(800px) rotateY(-15deg) rotateX(5deg);
-      flex-shrink: 0;
-      z-index: 10;
-    }
-
-    .landing-page .scan-phone-screen {
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(180deg, #07172e 0%, #0a1e38 100%);
-      border-radius: 26px;
-      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 32px;
+      transition: all 0.3s ease;
       overflow: hidden;
     }
 
-    .landing-page .scan-phone-notch {
+    /* Colored top border for each step */
+    .step-card::before {
+      content: '';
       position: absolute;
       top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90px;
-      height: 26px;
-      background: #0d1a2d;
-      border-radius: 0 0 16px 16px;
-      z-index: 20;
+      left: 0;
+      right: 0;
+      height: 4px;
+      border-radius: 24px 24px 0 0;
     }
 
-    /* App Screen Content */
-    .landing-page .app-screen {
-      padding: 40px 14px 14px;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
+    .step-card.step-1::before { background: var(--electric-cyan); }
+    .step-card.step-2::before { background: #8b5cf6; }
+    .step-card.step-3::before { background: #14b8a6; }
+
+    .step-card:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-card-hover);
+      transform: translateY(-4px);
     }
 
-    .landing-page .app-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
+    /* Large background number - top right, subtle */
+    .step-bg-number {
+      position: absolute;
+      right: 20px;
+      top: 15px;
+      font-size: 7rem;
+      font-weight: 800;
+      line-height: 0.8;
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
     }
 
-    .landing-page .app-back {
-      width: 32px;
-      height: 32px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 50%;
+    /* Different colors for each step number */
+    .step-card.step-1 .step-bg-number { color: var(--electric-cyan); }
+    .step-card.step-2 .step-bg-number { color: #8b5cf6; }
+    .step-card.step-3 .step-bg-number { color: #14b8a6; }
+
+    /* Icon container backgrounds to match */
+    .step-card.step-1 .step-icon { 
+      background: linear-gradient(135deg, rgba(77, 208, 225, 0.15) 0%, rgba(0, 126, 167, 0.15) 100%); 
+    }
+    .step-card.step-2 .step-icon { 
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(124, 58, 237, 0.15) 100%); 
+    }
+    .step-card.step-3 .step-icon { 
+      background: linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(13, 148, 136, 0.15) 100%); 
+    }
+
+    .step-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.8rem;
-      color: white;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
     }
 
-    .landing-page .app-title {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: white;
+    /* Step icon SVG styling */
+    .step-icon svg {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
     }
 
-    .landing-page .app-theme {
+    /* Icon colors for each step */
+    .step-card.step-1 .step-icon { color: var(--electric-cyan); }
+    .step-card.step-2 .step-icon { color: #8b5cf6; }
+    .step-card.step-3 .step-icon { color: #14b8a6; }
+
+    .step-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-description {
       font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
     }
 
-    /* IQ Target Card */
-    .landing-page .app-target-card {
-      background: linear-gradient(145deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      border-radius: 16px;
-      padding: 16px;
-      text-align: center;
-      margin-bottom: 14px;
+    .step-features {
+      list-style: none;
+      position: relative;
+      z-index: 1;
     }
 
-    .landing-page .app-target-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: rgba(16, 185, 129, 0.3);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 0.55rem;
-      font-weight: 700;
-      color: #10b981;
-      margin-bottom: 6px;
-    }
-
-    .landing-page .app-target-label {
-      font-size: 0.55rem;
-      color: rgba(255,255,255,0.6);
-      margin-bottom: 2px;
-    }
-
-    .landing-page .app-target-price {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: #10b981;
-      margin-bottom: 2px;
-    }
-
-    .landing-page .app-target-savings {
-      font-size: 0.55rem;
-      color: #10b981;
-    }
-
-    /* Price Ladder in Phone */
-    .landing-page .app-ladder {
-      background: rgba(255,255,255,0.03);
-      border-radius: 12px;
-      padding: 12px;
-      flex: 1;
-    }
-
-    .landing-page .app-ladder-title {
-      font-size: 0.5rem;
-      font-weight: 700;
-      color: rgba(255,255,255,0.5);
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .landing-page .app-ladder-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 7px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .landing-page .app-ladder-row:last-child {
-      border-bottom: none;
-    }
-
-    .landing-page .app-ladder-row.highlight {
-      background: rgba(16, 185, 129, 0.1);
-      border-radius: 8px;
-      margin: 0 -12px;
-      padding: 7px 12px;
-      border-bottom: none;
-    }
-
-    .landing-page .app-ladder-left {
+    .step-features li {
       display: flex;
       align-items: center;
       gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding: 6px 0;
     }
 
-    .landing-page .app-ladder-dot {
-      width: 7px;
-      height: 7px;
+    .step-features .icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Checkmark colors for each step */
+    .step-card.step-1 .step-features .icon { color: var(--electric-cyan); }
+    .step-card.step-2 .step-features .icon { color: #8b5cf6; }
+    .step-card.step-3 .step-features .icon { color: #14b8a6; }
+
+    /* Video CTA */
+    .video-cta {
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    .video-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .video-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-hover);
+    }
+
+    .video-btn-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
       border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(77, 208, 225, 0.3);
+      transition: transform 0.3s ease;
     }
 
-    .landing-page .app-ladder-dot.red { background: #ef4444; }
-    .landing-page .app-ladder-dot.orange { background: #f97316; }
-    .landing-page .app-ladder-dot.yellow { background: #eab308; }
-    .landing-page .app-ladder-dot.green { background: #10b981; }
-    .landing-page .app-ladder-dot.cyan { background: #4dd0e1; }
-
-    .landing-page .app-ladder-name {
-      font-size: 0.55rem;
-      color: rgba(255,255,255,0.8);
+    .video-btn:hover .video-btn-icon {
+      transform: scale(1.1);
     }
 
-    .landing-page .app-ladder-name.green {
-      color: #10b981;
+    .video-btn-icon .icon {
+      width: 20px;
+      height: 20px;
+      color: var(--deep-navy);
+      margin-left: 2px;
+    }
+
+    .video-btn-text {
+      text-align: left;
+    }
+
+    .video-btn-title {
+      font-size: 1rem;
       font-weight: 600;
+      color: var(--text-primary);
     }
 
-    .landing-page .app-ladder-value {
-      font-size: 0.55rem;
-      font-weight: 700;
-      color: rgba(255,255,255,0.9);
+    .video-btn-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
     }
 
-    .landing-page .app-ladder-value.green {
-      color: #10b981;
-    }
-
-    /* Scan Rays */
-    .landing-page .scan-rays {
-      position: absolute;
-      left: 280px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 180px;
-      height: 320px;
-      z-index: 5;
-      pointer-events: none;
-    }
-
-    .landing-page .scan-ray {
-      position: absolute;
-      left: 0;
-      height: 2px;
-      background: linear-gradient(90deg, rgba(77, 208, 225, 0.8) 0%, rgba(77, 208, 225, 0.1) 100%);
-      transform-origin: left center;
-      animation: rayPulse 2s ease-in-out infinite;
-    }
-
-    .landing-page .scan-ray:nth-child(1) { top: 20%; width: 180px; transform: rotate(-20deg); animation-delay: 0s; }
-    .landing-page .scan-ray:nth-child(2) { top: 35%; width: 200px; transform: rotate(-10deg); animation-delay: 0.2s; }
-    .landing-page .scan-ray:nth-child(3) { top: 50%; width: 220px; transform: rotate(0deg); animation-delay: 0.4s; }
-    .landing-page .scan-ray:nth-child(4) { top: 65%; width: 200px; transform: rotate(10deg); animation-delay: 0.6s; }
-    .landing-page .scan-ray:nth-child(5) { top: 80%; width: 180px; transform: rotate(20deg); animation-delay: 0.8s; }
-
-    @keyframes rayPulse {
-      0%, 100% { opacity: 0.2; }
-      50% { opacity: 0.9; }
-    }
-
-    /* House Being Scanned */
-    .landing-page .scan-house {
-      width: 340px;
-      height: 380px;
-      position: relative;
-      z-index: 3;
-      flex-shrink: 0;
-      display: block !important;
-    }
-
-    .landing-page .house-container {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      animation: houseFloat 4s ease-in-out infinite;
-    }
-
-    @keyframes houseFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    .landing-page .house-container svg {
-      width: 100%;
-      height: 100%;
-      filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4)) drop-shadow(0 0 60px rgba(77, 208, 225, 0.2));
-    }
-
-    /* Scan Line Effect */
-    .landing-page .scan-line-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      pointer-events: none;
-    }
-
-    .landing-page .scan-line {
-      position: absolute;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: linear-gradient(90deg, transparent 0%, var(--electric-cyan) 50%, transparent 100%);
-      box-shadow: 0 0 15px var(--electric-cyan), 0 0 30px var(--electric-cyan);
-      animation: scanSweep 2.5s ease-in-out infinite;
-    }
-
-    @keyframes scanSweep {
-      0% { top: 0; opacity: 1; }
-      100% { top: 100%; opacity: 0.5; }
-    }
-
-    /* Corner Brackets */
-    .landing-page .scan-brackets {
-      position: absolute;
-      inset: 20px;
-      border: 2px solid transparent;
-      pointer-events: none;
-    }
-
-    .landing-page .scan-bracket {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      border: 3px solid var(--electric-cyan);
-    }
-
-    .landing-page .scan-bracket.tl {
-      top: 0;
-      left: 0;
-      border-right: none;
-      border-bottom: none;
-    }
-
-    .landing-page .scan-bracket.tr {
-      top: 0;
-      right: 0;
-      border-left: none;
-      border-bottom: none;
-    }
-
-    .landing-page .scan-bracket.bl {
-      bottom: 0;
-      left: 0;
-      border-right: none;
-      border-top: none;
-    }
-
-    .landing-page .scan-bracket.br {
-      bottom: 0;
-      right: 0;
-      border-left: none;
-      border-top: none;
-    }
-
-    /* Floating Data Cards */
-    .landing-page .scan-data-cards {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      z-index: 15;
-      flex-shrink: 0;
-    }
-
-    .landing-page .scan-data-card {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--electric-cyan);
-      border-radius: 14px;
-      padding: 16px 20px;
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
-      animation: cardSlideIn 0.5s ease-out forwards;
-      opacity: 0;
-      transform: translateX(30px);
-      min-width: 200px;
-      box-shadow: 0 4px 20px var(--shadow-color);
-    }
-
-    .landing-page .scan-data-card:nth-child(1) { animation-delay: 0.5s; }
-    .landing-page .scan-data-card:nth-child(2) { animation-delay: 1s; }
-    .landing-page .scan-data-card:nth-child(3) { animation-delay: 1.5s; }
-    .landing-page .scan-data-card:nth-child(4) { animation-delay: 2s; }
-
-    @keyframes cardSlideIn {
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    .landing-page .scan-data-icon {
-      width: 44px;
-      height: 44px;
-      background: linear-gradient(135deg, rgba(77, 208, 225, 0.2) 0%, rgba(4, 101, 242, 0.2) 100%);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-    }
-
-    .landing-page .scan-data-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .landing-page .scan-data-value {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--electric-cyan);
-    }
-
-    .landing-page .scan-data-label {
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    /* Demo CTA */
-    .landing-page .demo-cta {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 60px;
-      padding-top: 40px;
-    }
-
-    /* Strategies Section */
-    .landing-page .strategies-section {
+    /* ============================================ */
+    /* STRATEGIES SECTION */
+    /* ============================================ */
+    .strategies {
       padding: 100px 0;
-      position: relative;
     }
 
-    .landing-page .strategy-grid {
+    .strategies-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 20px;
     }
 
-    .landing-page .strategy-card {
-      display: block;
-      text-decoration: none;
-      color: inherit;
+    @media (min-width: 640px) {
+      .strategies-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .strategies-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .strategy-card {
+      position: relative;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 20px;
-      padding: 24px;
+      padding: 28px;
       cursor: pointer;
       transition: all 0.3s ease;
-      position: relative;
       overflow: hidden;
     }
 
-    .landing-page .strategy-card::before {
+    .strategy-card::before {
       content: '';
       position: absolute;
       top: 0;
       left: 0;
       width: 4px;
       height: 100%;
-      opacity: 0.8;
+      opacity: 0.9;
     }
 
-    .landing-page .strategy-card:hover {
+    .strategy-card:hover {
       transform: translateY(-4px);
       border-color: var(--border-hover);
       box-shadow: 0 20px 60px var(--shadow-color);
     }
 
-    .landing-page .strategy-card.long::before { background: var(--long-rental); }
-    .landing-page .strategy-card.short::before { background: var(--short-rental); }
-    .landing-page .strategy-card.brrrr::before { background: var(--brrrr); }
-    .landing-page .strategy-card.flip::before { background: var(--flip); }
-    .landing-page .strategy-card.hack::before { background: var(--hack); }
-    .landing-page .strategy-card.wholesale::before { background: var(--wholesale); }
+    /* Strategy accent colors */
+    .strategy-card.long::before { background: var(--long-rental); }
+    .strategy-card.short::before { background: var(--short-rental); }
+    .strategy-card.brrrr::before { background: var(--brrrr); }
+    .strategy-card.flip::before { background: var(--flip); }
+    .strategy-card.hack::before { background: var(--hack); }
+    .strategy-card.wholesale::before { background: var(--wholesale); }
 
-    .landing-page .strategy-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-
-    .landing-page .strategy-name {
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-
-    .landing-page .strategy-stat {
-      text-align: right;
-    }
-
-    .landing-page .strategy-stat-value {
-      font-size: 1.1rem;
-      font-weight: 800;
-    }
-
-    .landing-page .strategy-stat-label {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .landing-page .strategy-tagline {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      margin-bottom: 16px;
-    }
-
-    .landing-page .strategy-description {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-
-    .landing-page .growth-icon {
-      width: 24px;
-      height: 24px;
-    }
-
-    /* Stats Section */
-    .landing-page .stats-section {
-      padding: 60px 0;
-      background: linear-gradient(180deg, #0b1426 0%, #091020 100%);
-    }
-
-    html:not(.dark) .landing-page .stats-section {
-      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-    }
-
-    .landing-page .stats-grid {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 80px;
-      text-align: center;
-    }
-
-    .landing-page .stat-item {
-      padding: 20px 0;
-      background: transparent;
-      border: none;
-      border-radius: 0;
-      transition: all 0.3s ease;
-    }
-
-    .landing-page .stat-item:hover {
-      transform: translateY(-2px);
-    }
-
-    .landing-page .stat-value {
-      font-size: clamp(2.5rem, 5vw, 3.5rem);
-      font-weight: 800;
-      color: var(--electric-cyan);
-      margin-bottom: 8px;
-      letter-spacing: -1px;
-    }
-
-    .landing-page .stat-label {
-      font-size: 1rem;
-      color: rgba(255, 255, 255, 0.7);
-      font-weight: 500;
-    }
-
-    /* Features Section */
-    .landing-page .features-section {
-      padding: 100px 0;
-    }
-
-    .landing-page .features-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 24px;
-    }
-
-    .landing-page .feature-card {
-      padding: 32px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      transition: all 0.3s ease;
-    }
-
-    .landing-page .feature-card:hover {
-      border-color: var(--electric-cyan);
-      background: var(--bg-card-hover);
-    }
-
-    .landing-page .feature-icon {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, rgba(77,208,225,0.15) 0%, rgba(0,126,167,0.15) 100%);
-      border-radius: 12px;
+    .strategy-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 20px;
     }
 
-    .landing-page .feature-icon svg {
-      width: 24px;
-      height: 24px;
-      stroke: var(--electric-cyan);
-      stroke-width: 2;
-      fill: none;
+    .strategy-icon svg {
+      width: 26px;
+      height: 26px;
     }
 
-    .landing-page .feature-title {
-      font-size: 1.1rem;
+    .strategy-card.long .strategy-icon { background: linear-gradient(135deg, var(--long-rental) 0%, #0352c9 100%); }
+    .strategy-card.short .strategy-icon { background: linear-gradient(135deg, var(--short-rental) 0%, #7c3aed 100%); }
+    .strategy-card.brrrr .strategy-icon { background: linear-gradient(135deg, var(--brrrr) 0%, #ea580c 100%); }
+    .strategy-card.flip .strategy-icon { background: linear-gradient(135deg, var(--flip) 0%, #db2777 100%); }
+    .strategy-card.hack .strategy-icon { background: linear-gradient(135deg, var(--hack) 0%, #0d9488 100%); }
+    .strategy-card.wholesale .strategy-icon { background: linear-gradient(135deg, var(--wholesale) 0%, #65a30d 100%); }
+
+    .strategy-name {
+      font-size: 1.15rem;
       font-weight: 700;
       margin-bottom: 8px;
     }
 
-    .landing-page .feature-description {
+    .strategy-tagline {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .strategy-benefit {
+      font-size: 0.85rem;
+      font-weight: 500;
+      font-style: italic;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    /* Benefit colors matching each strategy */
+    .strategy-card.long .strategy-benefit { color: var(--long-rental); }
+    .strategy-card.short .strategy-benefit { color: var(--short-rental); }
+    .strategy-card.brrrr .strategy-benefit { color: var(--brrrr); }
+    .strategy-card.flip .strategy-benefit { color: var(--flip); }
+    .strategy-card.hack .strategy-benefit { color: var(--hack); }
+    .strategy-card.wholesale .strategy-benefit { color: var(--wholesale); }
+
+    .strategy-metrics {
+      margin-bottom: 20px;
+    }
+
+    .strategy-metrics-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .strategy-metrics-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .strategy-metrics-tag {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: var(--bg-card-hover);
+      padding: 5px 10px;
+      border-radius: 8px;
+    }
+
+    .strategy-ideal {
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .strategy-ideal strong {
+      color: var(--text-secondary);
+    }
+
+    /* Strategies CTA */
+    .strategies-cta {
+      margin-top: 50px;
+      text-align: center;
+    }
+
+    .strategies-cta-box {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+      padding: 32px 48px;
+      background: linear-gradient(135deg, rgba(77, 208, 225, 0.08) 0%, rgba(0, 126, 167, 0.08) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+    }
+
+    @media (min-width: 640px) {
+      .strategies-cta-box {
+        flex-direction: row;
+        gap: 40px;
+      }
+    }
+
+    .strategies-cta-text h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .strategies-cta-text p {
       font-size: 0.9rem;
       color: var(--text-secondary);
     }
 
-    /* CTA Section */
-    .landing-page .cta-section {
+    /* ============================================ */
+    /* FEATURES SECTION */
+    /* ============================================ */
+    .features {
       padding: 100px 0;
-      text-align: center;
-      position: relative;
+      background: var(--bg-secondary);
     }
 
-    .landing-page .cta-section::before {
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 640px) {
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .features-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .feature-card {
+      padding: 28px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-color: var(--electric-cyan);
+      background: var(--bg-card-hover);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, rgba(77, 208, 225, 0.15) 0%, rgba(0, 126, 167, 0.15) 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+      transform: scale(1.1);
+    }
+
+    .feature-icon .icon {
+      width: 24px;
+      height: 24px;
+      color: var(--electric-cyan);
+    }
+
+    .feature-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .feature-description {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ============================================ */
+    /* TESTIMONIALS SECTION */
+    /* ============================================ */
+    .testimonials {
+      padding: 100px 0;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    @media (min-width: 768px) {
+      .testimonials-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .testimonial-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 32px;
+      transition: all 0.3s ease;
+    }
+
+    .testimonial-card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .testimonial-quote-icon {
+      position: absolute;
+      top: -14px;
+      left: 28px;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(77, 208, 225, 0.3);
+    }
+
+    .testimonial-quote-icon .icon {
+      width: 16px;
+      height: 16px;
+      color: var(--deep-navy);
+    }
+
+    .testimonial-text {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin: 20px 0 24px;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .testimonial-avatar {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--bg-card-hover) 0%, var(--bg-secondary) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    .testimonial-info h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .testimonial-info p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Stats row */
+    .testimonials-stats {
+      margin-top: 60px;
+      padding-top: 60px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      color: var(--electric-cyan);
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    /* ============================================ */
+    /* ABOUT SECTION */
+    /* ============================================ */
+    .about {
+      padding: 100px 0;
+      background: var(--bg-secondary);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    @media (min-width: 1024px) {
+      .about-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .about-content .section-label {
+      text-align: left;
+    }
+
+    .about-content .section-title {
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .about-text {
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    .about-text strong {
+      color: var(--text-primary);
+    }
+
+    .about-author {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-top: 24px;
+      margin-top: 24px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .about-author-avatar {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--deep-navy);
+    }
+
+    .about-author-info h4 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .about-author-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .about-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .about-card {
+      display: flex;
+      gap: 16px;
+      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .about-card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .about-card-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, rgba(77, 208, 225, 0.15) 0%, rgba(0, 126, 167, 0.15) 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .about-card-icon .icon {
+      width: 24px;
+      height: 24px;
+      color: var(--electric-cyan);
+    }
+
+    .about-card-content h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .about-card-content p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .about-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--electric-cyan);
+      font-weight: 500;
+      font-size: 0.9rem;
+      text-decoration: none;
+      margin-top: 16px;
+      transition: gap 0.2s ease;
+    }
+
+    .about-link:hover {
+      gap: 10px;
+    }
+
+    .about-link .icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ============================================ */
+    /* FINAL CTA SECTION */
+    /* ============================================ */
+    .final-cta {
+      padding: 100px 0;
+      position: relative;
+      text-align: center;
+    }
+
+    .final-cta::before {
       content: '';
       position: absolute;
       bottom: 0;
@@ -1124,45 +1639,95 @@
       pointer-events: none;
     }
 
-    .landing-page .cta-content {
+    .final-cta-content {
       position: relative;
       z-index: 1;
+      max-width: 700px;
+      margin: 0 auto;
     }
 
-    .landing-page .cta-title {
+    .final-cta-title {
       font-size: clamp(2rem, 4vw, 3rem);
       font-weight: 800;
       margin-bottom: 16px;
       letter-spacing: -0.5px;
     }
 
-    .landing-page .cta-subtitle {
+    .final-cta-subtitle {
       font-size: 1.1rem;
       color: var(--text-secondary);
-      margin-bottom: 32px;
+      margin-bottom: 40px;
       max-width: 550px;
       margin-left: auto;
       margin-right: auto;
     }
 
-    .landing-page .cta-buttons {
+    .final-cta-input {
       display: flex;
       flex-direction: column;
       gap: 16px;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
+      max-width: 500px;
+      margin: 0 auto 24px;
     }
 
-    .landing-page .app-badges {
+    @media (min-width: 640px) {
+      .final-cta-input {
+        flex-direction: row;
+      }
+    }
+
+    .final-cta-input input {
+      flex: 1;
+      padding: 16px 20px 16px 48px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-family: inherit;
+      transition: all 0.3s ease;
+    }
+
+    .final-cta-input input:focus {
+      outline: none;
+      border-color: var(--electric-cyan);
+      box-shadow: 0 0 0 3px rgba(77, 208, 225, 0.15);
+    }
+
+    .final-cta-input input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .input-wrapper {
+      position: relative;
+      flex: 1;
+    }
+
+    .input-wrapper .icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      color: var(--text-muted);
+    }
+
+    .final-cta-divider {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+
+    .app-badges {
       display: flex;
       gap: 16px;
-      margin-top: 24px;
-      flex-wrap: wrap;
       justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 32px;
     }
 
-    .landing-page .app-badge {
+    .app-badge {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -1175,781 +1740,1020 @@
       transition: all 0.3s ease;
     }
 
-    .landing-page .app-badge:hover {
+    .app-badge:hover {
       background: var(--bg-card-hover);
       border-color: var(--border-hover);
     }
 
-    .landing-page .app-badge svg {
+    .app-badge .icon {
       width: 24px;
       height: 24px;
-      fill: var(--text-primary);
     }
 
-    .landing-page .app-badge-text {
+    .app-badge-text {
       text-align: left;
     }
 
-    .landing-page .app-badge-small {
+    .app-badge-small {
       font-size: 0.65rem;
       color: var(--text-muted);
     }
 
-    .landing-page .app-badge-large {
+    .app-badge-large {
       font-size: 0.9rem;
       font-weight: 600;
     }
 
-    /* Footer */
-    .landing-page .landing-footer {
+    /* ============================================ */
+    /* FOOTER */
+    /* ============================================ */
+    .footer {
       padding: 60px 0 40px;
       border-top: 1px solid var(--border-color);
       background: var(--bg-secondary);
     }
 
-    .landing-page .footer-grid {
+    .footer-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 40px;
       margin-bottom: 40px;
     }
 
-    .landing-page .footer-brand .logo {
-      margin-bottom: 16px;
-      display: inline-block;
+    @media (min-width: 640px) {
+      .footer-grid {
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+      }
     }
 
-    .landing-page .footer-tagline {
+    .footer-brand .logo {
+      margin-bottom: 16px;
+    }
+
+    .footer-tagline {
       font-size: 0.9rem;
-      color: var(--text-muted);
-      max-width: 300px;
+      color: var(--text-secondary);
+      line-height: 1.6;
     }
 
-    .landing-page .footer-links h4 {
-      font-size: 0.85rem;
-      font-weight: 700;
+    .footer-links h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
       margin-bottom: 16px;
-      color: var(--text-primary);
     }
 
-    .landing-page .footer-links ul {
+    .footer-links ul {
       list-style: none;
-      padding: 0;
-      margin: 0;
     }
 
-    .landing-page .footer-links li {
+    .footer-links li {
       margin-bottom: 10px;
     }
 
-    .landing-page .footer-links a {
+    .footer-links a {
       font-size: 0.85rem;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       text-decoration: none;
       transition: color 0.2s;
     }
 
-    .landing-page .footer-links a:hover {
-      color: var(--electric-cyan);
+    .footer-links a:hover {
+      color: var(--text-primary);
     }
 
-    .landing-page .footer-bottom {
+    .footer-bottom {
       display: flex;
       flex-direction: column;
       gap: 16px;
       align-items: center;
-      padding-top: 40px;
+      padding-top: 24px;
       border-top: 1px solid var(--border-color);
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
-    }
-
-    .landing-page .footer-legal {
-      display: flex;
-      gap: 24px;
-    }
-
-    .landing-page .footer-legal a {
-      color: var(--text-muted);
-      text-decoration: none;
-    }
-
-    .landing-page .footer-legal a:hover {
-      color: var(--electric-cyan);
-    }
-
-    /* Responsive Breakpoints */
-    @media (max-width: 768px) {
-      .landing-page .stats-grid {
-        flex-wrap: wrap;
-        gap: 40px;
-      }
-      
-      .landing-page .stat-item {
-        flex: 0 0 calc(50% - 20px);
-        min-width: 140px;
-      }
-      
-      .landing-page .stat-item:last-child {
-        flex: 0 0 100%;
-      }
-
-      .landing-page .floating-cards {
-        display: none;
-      }
-    }
-
-    /* Medium screens */
-    @media (max-width: 1024px) and (min-width: 768px) {
-      .landing-page .scan-scene {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 30px;
-        min-height: auto;
-      }
-      
-      .landing-page .scan-phone {
-        transform: perspective(800px) rotateY(-10deg) rotateX(3deg);
-        width: 220px;
-        height: 440px;
-      }
-      
-      .landing-page .scan-house {
-        width: 280px;
-        height: 320px;
-      }
-      
-      .landing-page .scan-rays {
-        display: none;
-      }
-      
-      .landing-page .scan-data-cards {
-        flex-basis: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 16px;
-        max-width: 500px;
-        margin-top: 20px;
-      }
-      
-      .landing-page .scan-data-card {
-        flex: 0 0 calc(50% - 8px);
-        max-width: calc(50% - 8px);
-        min-width: 180px;
-      }
-    }
-
-    /* Small screens */
-    @media (max-width: 767px) {
-      .landing-page .scan-scene {
-        flex-direction: column;
-        align-items: center;
-        gap: 30px;
-        min-height: auto;
-        padding: 20px;
-      }
-      
-      .landing-page .scan-phone {
-        display: none;
-      }
-      
-      .landing-page .scan-rays {
-        display: none;
-      }
-      
-      .landing-page .scan-house {
-        display: block !important;
-        width: 280px;
-        height: 320px;
-        order: 1;
-      }
-      
-      .landing-page .scan-data-cards {
-        order: 2;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-        max-width: 280px;
-      }
-      
-      .landing-page .scan-data-card {
-        width: 100%;
-        max-width: 280px;
-        min-width: unset;
-        flex: none;
-      }
-      
-      .landing-page .demo-brand-line {
-        font-size: 1.1rem;
-      }
-    }
-
-    @media (max-width: 500px) {
-      .landing-page .demo-cta {
-        flex-direction: column;
-        gap: 12px;
-      }
-      
-      .landing-page .scan-house {
-        width: 240px;
-        height: 280px;
-      }
-      
-      .landing-page .scan-data-card {
-        max-width: 240px;
-      }
     }
 
     @media (min-width: 640px) {
-      .landing-page .hero-cta {
-        flex-direction: row;
-        justify-content: center;
-      }
-
-      .landing-page .cta-buttons {
-        flex-direction: row;
-        justify-content: center;
-      }
-
-      .landing-page .strategy-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .landing-page .features-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .landing-page .footer-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (min-width: 768px) {
-      .landing-page .nav-links {
-        display: flex;
-      }
-
-      .landing-page .footer-grid {
-        grid-template-columns: 2fr 1fr 1fr 1fr;
-      }
-
-      .landing-page .footer-bottom {
+      .footer-bottom {
         flex-direction: row;
         justify-content: space-between;
       }
     }
 
-    @media (min-width: 1024px) {
-      .landing-page .strategy-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .landing-page .features-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .landing-page .phone-mockup {
-        width: 320px;
-        height: 660px;
-      }
+    .footer-legal {
+      display: flex;
+      gap: 24px;
     }
 
-    /* Theme Toggle Button - Uses explicit colors since it's outside .landing-page scope */
+    .footer-legal a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-legal a:hover {
+      color: var(--text-primary);
+    }
+
+    .footer-contact {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-contact .icon {
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+    }
+
+    .footer-contact a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-contact a:hover {
+      color: var(--text-primary);
+    }
+
+    /* ============================================ */
+    /* THEME TOGGLE */
+    /* ============================================ */
     .theme-toggle {
       position: fixed;
       bottom: 24px;
       right: 24px;
       width: 48px;
       height: 48px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       border-radius: 50%;
-      background: #07172e;
-      border: 1px solid rgba(255, 255, 255, 0.06);
       cursor: pointer;
+      font-size: 1.2rem;
+      z-index: 1000;
+      transition: all 0.3s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
-      z-index: 1000;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
     .theme-toggle:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: #4dd0e1;
-      transform: scale(1.05);
+      background: var(--bg-card-hover);
+      border-color: var(--border-hover);
+      transform: scale(1.1);
     }
 
-    /* Light mode theme toggle styles */
-    html:not(.dark) .theme-toggle {
-      background: #ffffff;
-      border-color: rgba(0, 0, 0, 0.08);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    html:not(.dark) .theme-toggle:hover {
-      background: rgba(0, 0, 0, 0.04);
-      border-color: #0891b2;
+    /* ============================================ */
+    /* UTILITIES */
+    /* ============================================ */
+    .highlight {
+      background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
   </style>
 </head>
 <body>
-  <div class="landing-page">
-    <!-- Header -->
-    <header class="landing-header">
-      <div class="container header-inner">
-        <a href="/" class="logo">
+  <!-- ============================================ -->
+  <!-- HEADER -->
+  <!-- ============================================ -->
+  <header class="header" id="header">
+    <div class="container">
+      <div class="header-inner">
+        <a href="#" class="logo">
           Invest<span>IQ</span>
         </a>
-        
+
         <nav class="nav-links">
           <a href="#demo">Demo</a>
           <a href="#strategies">Strategies</a>
           <a href="#features">Features</a>
         </nav>
-        
+
         <div class="header-cta">
           <button class="btn btn-ghost">Sign In</button>
-          <button class="btn btn-primary">Get Started</button>
+          <button class="btn btn-primary btn-header">Get Started</button>
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i data-lucide="menu" class="icon" style="width:24px;height:24px;"></i>
+          </button>
         </div>
       </div>
-    </header>
+    </div>
 
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="container">
-        <div class="hero-content">
-          <!-- Eyebrow tagline -->
-          <div class="hero-eyebrow">
-            <span class="hero-eyebrow-text">Intel for Real Estate Investors</span>
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu" id="mobileMenu">
+      <a href="#demo">Demo</a>
+      <a href="#strategies">Strategies</a>
+      <a href="#features">Features</a>
+      <a href="#cta" class="btn btn-primary" style="margin-top:16px;text-align:center;">Get Started</a>
+    </nav>
+  </header>
+
+  <!-- ============================================ -->
+  <!-- HERO SECTION -->
+  <!-- ============================================ -->
+  <section class="hero" id="demo">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-grid">
+          <!-- Text Content -->
+          <div class="hero-text">
+            <div class="hero-eyebrow">
+              <span class="hero-eyebrow-text">Intel for Real Estate Investors</span>
+            </div>
+
+            <h1>
+              Point. Scan.<br>
+              <span class="highlight">Invest Smarter.</span>
+            </h1>
+
+            <p class="hero-subtitle">
+              Just point your phone at a property, IQ collects<br>real-time multi-source market info and analyzes across<br><strong>six investment strategies</strong> in 60 seconds.
+            </p>
+
+            <div class="hero-cta">
+              <a href="#cta" class="btn btn-primary btn-large">
+                <!-- Camera icon -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+                </svg>
+                Try It Now Free
+              </a>
+              <a href="#cta" class="btn btn-ghost">
+                <!-- Map pin icon -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                Enter Address
+              </a>
+            </div>
+
+            <div class="trust-signals">
+              <span>
+                <!-- Check circle icon -->
+                <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                Start Free
+              </span>
+              <span>
+                <!-- Check circle icon -->
+                <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                No Credit Card
+              </span>
+              <span>
+                <!-- Check circle icon -->
+                <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                Instant Results
+              </span>
+            </div>
           </div>
-          
-          <h1>
-            Know the <span class="highlight">Real Return</span><br/>
-            Before You Invest
-          </h1>
-          <p class="hero-subtitle">
-            Scan any property with phone or enter an address.<br/>
-            IQ analyzes the deal and local market across<br/>
-            6 strategies in 60 seconds.
-          </p>
-          <div class="hero-cta">
-            <button class="btn btn-primary">Try It Now</button>
-            <a href="#demo" class="btn btn-ghost">Watch Demo</a>
-          </div>
-          <div class="trust-signals">
-            <span>✓ No credit card required</span>
-            <span>✓ 10K+ properties analyzed</span>
+
+          <!-- Phone Visual -->
+          <div class="hero-visual">
+            <div class="phone-glow"></div>
+            <div class="phone-mockup">
+              <div class="phone-screen">
+                <div class="phone-notch"></div>
+                <div class="phone-content">
+                  <div class="phone-header">
+                    <div class="phone-logo">IQ</div>
+                    <span class="phone-title">InvestIQ</span>
+                  </div>
+
+                  <div class="scan-animation">
+                    <!-- House Being Scanned -->
+                    <div class="phone-house-scan">
+                      <div class="phone-house-container">
+                        <svg viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <!-- House body fill -->
+                          <path d="M150 50 L260 130 L260 290 L40 290 L40 130 Z" fill="rgba(77, 208, 225, 0.03)" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5"/>
+                          
+                          <!-- Roof -->
+                          <path d="M150 30 L20 120 L40 120 L40 130 L150 50 L260 130 L260 120 L280 120 Z" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.7)" stroke-width="2"/>
+                          
+                          <!-- Chimney -->
+                          <rect x="195" y="65" width="25" height="45" fill="rgba(77, 208, 225, 0.03)" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5"/>
+                          
+                          <!-- Front Door -->
+                          <rect x="130" y="195" width="40" height="75" rx="3" fill="rgba(77, 208, 225, 0.08)" stroke="rgba(77, 208, 225, 0.7)" stroke-width="2"/>
+                          <circle cx="160" cy="235" r="3" fill="rgba(77, 208, 225, 0.9)"/>
+                          
+                          <!-- Door frame top -->
+                          <path d="M125 195 L150 180 L175 195" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5" fill="none"/>
+                          
+                          <!-- Left Window -->
+                          <rect x="60" y="155" width="45" height="40" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.7)" stroke-width="1.5"/>
+                          <line x1="82.5" y1="155" x2="82.5" y2="195" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
+                          <line x1="60" y1="175" x2="105" y2="175" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
+                          
+                          <!-- Right Window -->
+                          <rect x="195" y="155" width="45" height="40" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.7)" stroke-width="1.5"/>
+                          <line x1="217.5" y1="155" x2="217.5" y2="195" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
+                          <line x1="195" y1="175" x2="240" y2="175" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
+                          
+                          <!-- Garage Door -->
+                          <rect x="60" y="225" width="50" height="45" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5"/>
+                          <line x1="60" y1="238" x2="110" y2="238" stroke="rgba(77, 208, 225, 0.3)" stroke-width="1"/>
+                          <line x1="60" y1="252" x2="110" y2="252" stroke="rgba(77, 208, 225, 0.3)" stroke-width="1"/>
+                          
+                          <!-- Ground line -->
+                          <line x1="20" y1="290" x2="280" y2="290" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
+                        </svg>
+                        
+                        <!-- Scan line overlay -->
+                        <div class="phone-scan-line-overlay">
+                          <div class="phone-scan-line"></div>
+                        </div>
+                        
+                        <!-- Corner brackets -->
+                        <div class="phone-scan-brackets">
+                          <div class="phone-scan-bracket tl"></div>
+                          <div class="phone-scan-bracket tr"></div>
+                          <div class="phone-scan-bracket bl"></div>
+                          <div class="phone-scan-bracket br"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="scan-status">
+                      <div class="scan-status-text">Scanning Property...</div>
+                      <div class="scan-status-address">1842 Investor Lane, Denver</div>
+                    </div>
+                  </div>
+
+                  <div class="phone-results">
+                    <div class="phone-results-header">
+                      <span class="phone-results-label">Analysis Complete</span>
+                      <span class="phone-results-badge">✓ 6 Strategies</span>
+                    </div>
+                    <div class="phone-results-grid">
+                      <div class="phone-result-item">
+                        <div class="phone-result-value green">14.3%</div>
+                        <div class="phone-result-label">ROI</div>
+                      </div>
+                      <div class="phone-result-item">
+                        <div class="phone-result-value cyan">$187</div>
+                        <div class="phone-result-label">Cash Flow</div>
+                      </div>
+                      <div class="phone-result-item">
+                        <div class="phone-result-value blue">8.2%</div>
+                        <div class="phone-result-label">Cap Rate</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- See It In Action - Point & Scan Demo Section -->
-    <section class="demo-section demo-section-compact" id="demo">
-      <div class="container">
-        <div class="section-header section-header-tight">
-          <div class="section-label">Instant Onsite Intelligence</div>
-          <h2 class="section-title scan-technology-title teal">POINT & SCAN TECHNOLOGY</h2>
+  <!-- ============================================ -->
+  <!-- SOCIAL PROOF BAR -->
+  <!-- ============================================ -->
+  <section class="social-proof">
+    <div class="container">
+      <div class="social-proof-inner">
+        <div class="social-proof-item">
+          <div class="social-proof-live"></div>
+          <span class="social-proof-number" id="analysisCounter">23,847</span>
+          <span class="social-proof-label">properties analyzed</span>
         </div>
-        
-        <!-- Scan Scene -->
-        <div class="scan-scene">
-          <!-- Phone with App Screen -->
-          <div class="scan-phone">
-            <div class="scan-phone-screen">
-              <div class="scan-phone-notch"></div>
-              <div class="app-screen">
-                <div class="app-header">
-                  <div class="app-back">←</div>
-                  <div class="app-title">Property Analytics</div>
-                  <div class="app-theme">☀️</div>
-                </div>
-                
-                <!-- IQ Target Card -->
-                <div class="app-target-card">
-                  <div class="app-target-badge">🎯 IQ TARGET PRICE</div>
-                  <div class="app-target-label">Your Profitable Entry Point</div>
-                  <div class="app-target-price">$280,000</div>
-                  <div class="app-target-savings">$70K below list (20%)</div>
-                </div>
-                
-                <!-- Price Ladder -->
-                <div class="app-ladder">
-                  <div class="app-ladder-title">Price Position Ladder</div>
-                  <div class="app-ladder-row">
-                    <div class="app-ladder-left">
-                      <div class="app-ladder-dot red"></div>
-                      <div class="app-ladder-name">List Price</div>
-                    </div>
-                    <div class="app-ladder-value">$350,000</div>
-                  </div>
-                  <div class="app-ladder-row">
-                    <div class="app-ladder-left">
-                      <div class="app-ladder-dot orange"></div>
-                      <div class="app-ladder-name">90% of List</div>
-                    </div>
-                    <div class="app-ladder-value">$315,000</div>
-                  </div>
-                  <div class="app-ladder-row">
-                    <div class="app-ladder-left">
-                      <div class="app-ladder-dot yellow"></div>
-                      <div class="app-ladder-name">Breakeven</div>
-                    </div>
-                    <div class="app-ladder-value">$308,000</div>
-                  </div>
-                  <div class="app-ladder-row highlight">
-                    <div class="app-ladder-left">
-                      <div class="app-ladder-dot green"></div>
-                      <div class="app-ladder-name green">IQ Target</div>
-                    </div>
-                    <div class="app-ladder-value green">$280,000</div>
-                  </div>
-                  <div class="app-ladder-row">
-                    <div class="app-ladder-left">
-                      <div class="app-ladder-dot cyan"></div>
-                      <div class="app-ladder-name">Opening Offer</div>
-                    </div>
-                    <div class="app-ladder-value">$245,000</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Scan Rays -->
-          <div class="scan-rays">
-            <div class="scan-ray"></div>
-            <div class="scan-ray"></div>
-            <div class="scan-ray"></div>
-            <div class="scan-ray"></div>
-            <div class="scan-ray"></div>
-          </div>
+        <div class="social-proof-divider"></div>
 
-          <!-- Detailed House Being Scanned -->
-          <div class="scan-house">
-            <div class="house-container">
-              <svg viewBox="0 0 300 350" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- House body fill -->
-                <path d="M150 30 L270 120 L270 310 L30 310 L30 120 Z" fill="rgba(77, 208, 225, 0.03)" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1.5"/>
-                
-                <!-- Roof -->
-                <path d="M150 10 L10 110 L30 110 L30 120 L150 30 L270 120 L270 110 L290 110 Z" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.6)" stroke-width="2"/>
-                
-                <!-- Chimney -->
-                <rect x="200" y="50" width="30" height="55" fill="rgba(77, 208, 225, 0.03)" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5"/>
-                
-                <!-- Front Door -->
-                <rect x="125" y="200" width="50" height="90" rx="3" fill="rgba(77, 208, 225, 0.08)" stroke="rgba(77, 208, 225, 0.6)" stroke-width="2"/>
-                <circle cx="165" cy="250" r="4" fill="rgba(77, 208, 225, 0.8)"/>
-                
-                <!-- Door frame top -->
-                <path d="M120 200 L150 180 L180 200" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5" fill="none"/>
-                
-                <!-- Left Window -->
-                <rect x="50" y="150" width="55" height="50" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.6)" stroke-width="1.5"/>
-                <line x1="77.5" y1="150" x2="77.5" y2="200" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
-                <line x1="50" y1="175" x2="105" y2="175" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
-                
-                <!-- Right Window -->
-                <rect x="195" y="150" width="55" height="50" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.6)" stroke-width="1.5"/>
-                <line x1="222.5" y1="150" x2="222.5" y2="200" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
-                <line x1="195" y1="175" x2="250" y2="175" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
-                
-                <!-- Garage Door -->
-                <rect x="50" y="240" width="60" height="50" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5"/>
-                <line x1="50" y1="255" x2="110" y2="255" stroke="rgba(77, 208, 225, 0.3)" stroke-width="1"/>
-                <line x1="50" y1="270" x2="110" y2="270" stroke="rgba(77, 208, 225, 0.3)" stroke-width="1"/>
-                
-                <!-- Driveway -->
-                <path d="M50 310 L50 290 L110 290 L110 310" stroke="rgba(77, 208, 225, 0.3)" stroke-width="1" fill="none"/>
-                
-                <!-- Walkway -->
-                <path d="M140 310 L140 290 L160 290 L160 310" stroke="rgba(77, 208, 225, 0.3)" stroke-width="1" fill="none"/>
-                
-                <!-- Ground line -->
-                <line x1="10" y1="310" x2="290" y2="310" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
-                
-                <!-- Bushes/landscaping -->
-                <ellipse cx="35" cy="300" rx="20" ry="12" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.3)" stroke-width="1"/>
-                <ellipse cx="265" cy="300" rx="20" ry="12" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.3)" stroke-width="1"/>
-              </svg>
-              
-              <!-- Scan line overlay -->
-              <div class="scan-line-overlay">
-                <div class="scan-line"></div>
-              </div>
-              
-              <!-- Corner brackets -->
-              <div class="scan-brackets">
-                <div class="scan-bracket tl"></div>
-                <div class="scan-bracket tr"></div>
-                <div class="scan-bracket bl"></div>
-                <div class="scan-bracket br"></div>
-              </div>
-            </div>
+        <div class="social-proof-item">
+          <span class="social-proof-number">4.9</span>
+          <div class="social-proof-stars">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
           </div>
-
-          <!-- Data Cards Appearing -->
-          <div class="scan-data-cards">
-            <div class="scan-data-card">
-              <div class="scan-data-icon">💰</div>
-              <div class="scan-data-info">
-                <div class="scan-data-value">$847/mo</div>
-                <div class="scan-data-label">Cash Flow</div>
-              </div>
-            </div>
-            <div class="scan-data-card">
-              <div class="scan-data-icon">📈</div>
-              <div class="scan-data-info">
-                <div class="scan-data-value">12.4%</div>
-                <div class="scan-data-label">Cash-on-Cash</div>
-              </div>
-            </div>
-            <div class="scan-data-card">
-              <div class="scan-data-icon">🏠</div>
-              <div class="scan-data-info">
-                <div class="scan-data-value">$485K</div>
-                <div class="scan-data-label">Market Value</div>
-              </div>
-            </div>
-            <div class="scan-data-card">
-              <div class="scan-data-icon">⭐</div>
-              <div class="scan-data-info">
-                <div class="scan-data-value">A+</div>
-                <div class="scan-data-label">Deal Grade</div>
-              </div>
-            </div>
-          </div>
+          <span class="social-proof-label">from 2,400+ investors</span>
         </div>
-        
-        <!-- Brand Line - Moved below scan scene -->
-        <div class="brand-line demo-brand-line">
-          Most investors guess. <span class="highlight">IQ Investors Know.</span>
-        </div>
-        
-        <!-- Demo CTA -->
-        <div class="demo-cta">
-          <button class="btn btn-primary btn-large">Try It Now</button>
+
+        <div class="social-proof-divider"></div>
+
+        <div class="social-proof-item">
+          <svg class="social-proof-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span class="social-proof-number">60 sec</span>
+          <span class="social-proof-label">avg. analysis time</span>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Strategies Section -->
-    <section class="strategies-section" id="strategies">
-      <div class="container">
-        <div class="section-header">
-          <div class="section-label">6 Investment Strategies</div>
-          <h2 class="section-title">One Property, Multiple Opportunities</h2>
-          <p class="section-subtitle">
-            Instantly see how any property performs across all major real estate investment strategies.
-          </p>
+  <!-- ============================================ -->
+  <!-- HOW IT WORKS -->
+  <!-- ============================================ -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">Simple 3-Step Process</div>
+        <h2 class="section-title">How <span class="highlight">Point & Scan</span> Works</h2>
+        <p class="section-subtitle">
+          No more spreadsheets. No more guesswork. Get professional-grade investment analysis in the time it takes to snap a photo.
+        </p>
+      </div>
+
+      <div class="steps-grid">
+        <!-- Step 1 -->
+        <div class="step-card step-1">
+          <div class="step-bg-number">1</div>
+          <div class="step-icon">
+            <!-- Point & Scan Icon - Camera with scan lines -->
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="7" width="22" height="16" rx="3" stroke="currentColor" stroke-width="2" fill="none"/>
+              <circle cx="14" cy="15" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+              <path d="M10 7V5C10 4.44772 10.4477 4 11 4H17C17.5523 4 18 4.44772 18 5V7" stroke="currentColor" stroke-width="2"/>
+              <line x1="1" y1="11" x2="3" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="1" y1="15" x2="3" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="1" y1="19" x2="3" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="25" y1="11" x2="27" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="25" y1="15" x2="27" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="25" y1="19" x2="27" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3 class="step-title">Point & Scan</h3>
+          <p class="step-description">Open InvestIQ and point your camera at any property address, For Sale sign, or MLS listing. Our AI reads it instantly.</p>
+          <ul class="step-features">
+            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Street addresses</li>
+            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> For Sale signs</li>
+            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> MLS sheets</li>
+            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Property listings</li>
+          </ul>
         </div>
-        <div class="strategy-grid">
-          <!-- Long-Term Rental -->
-          <a href="/strategies/long-term-rental" class="strategy-card long">
-            <div class="strategy-card-header">
-              <div class="strategy-name">Long-Term Rental</div>
-              <div class="strategy-stat">
-                <div class="strategy-stat-value" style="color: #0465f2;">8-12%</div>
-                <div class="strategy-stat-label">Cash-on-Cash</div>
-              </div>
+
+        <!-- Step 2 -->
+        <div class="step-card step-2">
+          <div class="step-bg-number">2</div>
+          <div class="step-icon">
+            <!-- Analyze Icon - Chart with magnifying glass -->
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+              <line x1="6" y1="16" x2="6" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="10" y1="16" x2="10" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="14" y1="16" x2="14" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="21" cy="21" r="5" stroke="currentColor" stroke-width="2" fill="none"/>
+              <line x1="24.5" y1="24.5" x2="27" y2="27" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3 class="step-title">Analyze</h3>
+          <p class="step-description">InvestIQ pulls real-time data and runs comprehensive analysis across all six investment strategies automatically.</p>
+          <ul class="step-features">
+            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Real-time market data</li>
+            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Rental estimates</li>
+            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Expense calculations</li>
+            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ROI projections</li>
+          </ul>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card step-3">
+          <div class="step-bg-number">3</div>
+          <div class="step-icon">
+            <!-- Decide Icon - Lightbulb with checkmark -->
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 2C9.58 2 6 5.58 6 10C6 12.76 7.36 15.18 9.5 16.6V19C9.5 19.55 9.95 20 10.5 20H17.5C18.05 20 18.5 19.55 18.5 19V16.6C20.64 15.18 22 12.76 22 10C22 5.58 18.42 2 14 2Z" stroke="currentColor" stroke-width="2" fill="none"/>
+              <line x1="10" y1="23" x2="18" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="11" y1="26" x2="17" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M11 11L13 13L17 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="step-title">Decide</h3>
+          <p class="step-description">Get clear recommendations on the best strategy for each property. Compare deals, save favorites, and invest with confidence.</p>
+          <ul class="step-features">
+            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Strategy comparison</li>
+            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Risk assessment</li>
+            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Market benchmarks</li>
+            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Action recommendations</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="video-cta">
+        <button class="video-btn">
+          <div class="video-btn-icon">
+            <!-- Play icon -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          </div>
+          <div class="video-btn-text">
+            <div class="video-btn-title">Watch Demo</div>
+            <div class="video-btn-subtitle">See Point & Scan in action (30 sec)</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- STRATEGIES SECTION -->
+  <!-- ============================================ -->
+  <section class="strategies" id="strategies">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">One Property. Six Strategies.</div>
+        <h2 class="section-title">Every Strategy, <span class="highlight">Analyzed Automatically</span></h2>
+        <p class="section-subtitle">
+          InvestIQ analyzes every property for all six investment strategies simultaneously—so you never miss the best opportunity.
+        </p>
+      </div>
+
+      <div class="strategies-grid">
+        <!-- Long-Term Rental -->
+        <div class="strategy-card long">
+          <div class="strategy-icon">
+            <!-- Building icon -->
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="6" width="20" height="18" rx="2" stroke="white" stroke-width="2" fill="none"/>
+              <line x1="13" y1="6" x2="13" y2="24" stroke="white" stroke-width="2"/>
+              <rect x="6" y="10" width="3" height="3" fill="white"/>
+              <rect x="6" y="16" width="3" height="3" fill="white"/>
+              <rect x="17" y="10" width="3" height="3" fill="white"/>
+              <rect x="17" y="16" width="3" height="3" fill="white"/>
+              <path d="M3 6L13 2L23 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="strategy-name">Long-Term Rental</h3>
+          <p class="strategy-tagline">Rent your property to tenants on yearly leases and collect monthly income</p>
+          <p class="strategy-benefit">Build wealth while you sleep with predictable passive income every month!</p>
+          <div class="strategy-metrics">
+            <div class="strategy-metrics-label">Key Metrics</div>
+            <div class="strategy-metrics-tags">
+              <span class="strategy-metrics-tag">Monthly Cash Flow</span>
+              <span class="strategy-metrics-tag">Cap Rate</span>
+              <span class="strategy-metrics-tag">Annual ROI</span>
             </div>
-            <div class="strategy-tagline">Steady income & build equity</div>
-            <div class="strategy-description">Buy and hold properties for consistent monthly rental income. Build long-term wealth through appreciation and mortgage paydown.</div>
-          </a>
-          
-          <!-- Short-Term Rental -->
-          <a href="/strategies/short-term-rental" class="strategy-card short">
-            <div class="strategy-card-header">
-              <div class="strategy-name">Short-Term Rental</div>
-              <div class="strategy-stat">
-                <div class="strategy-stat-value" style="color: #8b5cf6;">15-25%</div>
-                <div class="strategy-stat-label">Cash-on-Cash</div>
-              </div>
+          </div>
+          <div class="strategy-ideal"><strong>Ideal for:</strong> Passive investors seeking consistent income</div>
+        </div>
+
+        <!-- Short-Term Rental -->
+        <div class="strategy-card short">
+          <div class="strategy-icon">
+            <!-- Star icon -->
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 2L15.9 9.2L24 10L18 15.5L19.8 24L13 19.5L6.2 24L8 15.5L2 10L10.1 9.2L13 2Z" stroke="white" stroke-width="2" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </div>
+          <h3 class="strategy-name">Short-Term Rental</h3>
+          <p class="strategy-tagline">List your property on Airbnb or VRBO and earn nightly income from travelers</p>
+          <p class="strategy-benefit">Earn 2-3x more income than traditional rentals in the right markets!</p>
+          <div class="strategy-metrics">
+            <div class="strategy-metrics-label">Key Metrics</div>
+            <div class="strategy-metrics-tags">
+              <span class="strategy-metrics-tag">Nightly Rate</span>
+              <span class="strategy-metrics-tag">Occupancy Rate</span>
+              <span class="strategy-metrics-tag">Annual Revenue</span>
             </div>
-            <div class="strategy-tagline">Vacation & business rental income</div>
-            <div class="strategy-description">Maximize income through Airbnb or VRBO rentals. Higher returns with more active management and seasonal demand.</div>
-          </a>
-          
-          <!-- BRRRR -->
-          <a href="/strategies/brrrr" class="strategy-card brrrr">
-            <div class="strategy-card-header">
-              <div class="strategy-name">BRRRR</div>
-              <div class="strategy-stat">
-                <div class="strategy-stat-value">
-                  <svg class="growth-icon" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2">
-                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                    <polyline points="17 6 23 6 23 12"></polyline>
-                  </svg>
-                </div>
-                <div class="strategy-stat-label">Scale</div>
-              </div>
+          </div>
+          <div class="strategy-ideal"><strong>Ideal for:</strong> Active investors in tourist markets</div>
+        </div>
+
+        <!-- BRRRR -->
+        <div class="strategy-card brrrr">
+          <div class="strategy-icon">
+            <!-- Circular arrows / repeat icon -->
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 8L23 5L20 2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 13C3 7.477 7.477 3 13 3H23" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M6 18L3 21L6 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M23 13C23 18.523 18.523 23 13 23H3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3 class="strategy-name">BRRRR</h3>
+          <p class="strategy-tagline">Buy a fixer-upper, renovate it, rent it out, then refinance to get your cash back and repeat</p>
+          <p class="strategy-benefit">Recycle the same capital to build an entire portfolio—infinite scaling potential!</p>
+          <div class="strategy-metrics">
+            <div class="strategy-metrics-label">Key Metrics</div>
+            <div class="strategy-metrics-tags">
+              <span class="strategy-metrics-tag">ARV</span>
+              <span class="strategy-metrics-tag">Rehab Costs</span>
+              <span class="strategy-metrics-tag">Cash-Out Potential</span>
             </div>
-            <div class="strategy-tagline">Buy-Rehab-Rent-Refi-Repeat wealth builder</div>
-            <div class="strategy-description">Buy distressed property, renovate, rent, refinance to pull out capital, then repeat. Build a portfolio with the same initial investment.</div>
-          </a>
-          
-          <!-- Fix & Flip -->
-          <a href="/strategies/fix-flip" class="strategy-card flip">
-            <div class="strategy-card-header">
-              <div class="strategy-name">Fix & Flip</div>
-              <div class="strategy-stat">
-                <div class="strategy-stat-value" style="color: #ec4899;">$50K+</div>
-                <div class="strategy-stat-label">Profit</div>
-              </div>
+          </div>
+          <div class="strategy-ideal"><strong>Ideal for:</strong> Growth-focused investors building portfolios</div>
+        </div>
+
+        <!-- Fix & Flip -->
+        <div class="strategy-card flip">
+          <div class="strategy-icon">
+            <!-- Hammer icon -->
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 10L22 2L24 4L16 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M15 11L4 22C3.4 22.6 3.4 23.6 4 24.2C4.6 24.8 5.6 24.8 6.2 24.2L17 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M19 5L21 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3 class="strategy-name">Fix & Flip</h3>
+          <p class="strategy-tagline">Buy an undervalued property, renovate it, and sell it quickly for a profit</p>
+          <p class="strategy-benefit">Turn sweat equity into big paydays—some flippers make a year's salary in one deal!</p>
+          <div class="strategy-metrics">
+            <div class="strategy-metrics-label">Key Metrics</div>
+            <div class="strategy-metrics-tags">
+              <span class="strategy-metrics-tag">Purchase Price</span>
+              <span class="strategy-metrics-tag">Repair Estimate</span>
+              <span class="strategy-metrics-tag">Profit Margin</span>
             </div>
-            <div class="strategy-tagline">Buy low, fix up, sell high</div>
-            <div class="strategy-description">Purchase undervalued properties, renovate strategically, and sell for profit. Quick returns with active project management.</div>
-          </a>
-          
-          <!-- House Hack -->
-          <a href="/strategies/house-hack" class="strategy-card hack">
-            <div class="strategy-card-header">
-              <div class="strategy-name">House Hack</div>
-              <div class="strategy-stat">
-                <div class="strategy-stat-value" style="color: #14b8a6;">75%</div>
-                <div class="strategy-stat-label">Cost Savings</div>
-              </div>
+          </div>
+          <div class="strategy-ideal"><strong>Ideal for:</strong> Active investors with renovation expertise</div>
+        </div>
+
+        <!-- House Hack -->
+        <div class="strategy-card hack">
+          <div class="strategy-icon">
+            <!-- House with people icon -->
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 12L13 3L23 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5 10V22H21V10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="10" cy="15" r="2" stroke="white" stroke-width="1.5" fill="none"/>
+              <circle cx="16" cy="15" r="2" stroke="white" stroke-width="1.5" fill="none"/>
+              <path d="M7 22V20C7 18.5 8.5 17.5 10 17.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M19 22V20C19 18.5 17.5 17.5 16 17.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3 class="strategy-name">House Hack</h3>
+          <p class="strategy-tagline">Live in one unit of a multi-unit property and rent out the others to cover your mortgage</p>
+          <p class="strategy-benefit">Live for free (or even get paid!) while building equity in your own home!</p>
+          <div class="strategy-metrics">
+            <div class="strategy-metrics-label">Key Metrics</div>
+            <div class="strategy-metrics-tags">
+              <span class="strategy-metrics-tag">Owner Unit Cost</span>
+              <span class="strategy-metrics-tag">Rental Income</span>
+              <span class="strategy-metrics-tag">Net Housing Cost</span>
             </div>
-            <div class="strategy-tagline">Cut your housing costs up to 100%</div>
-            <div class="strategy-description">Live in one unit while renting others. Eliminate your housing payment and start building wealth from day one.</div>
-          </a>
-          
-          <!-- Wholesale -->
-          <a href="/strategies/wholesale" class="strategy-card wholesale">
-            <div class="strategy-card-header">
-              <div class="strategy-name">Wholesale</div>
-              <div class="strategy-stat">
-                <div class="strategy-stat-value" style="color: #84cc16;">$10K+</div>
-                <div class="strategy-stat-label">Per Deal</div>
-              </div>
+          </div>
+          <div class="strategy-ideal"><strong>Ideal for:</strong> First-time investors reducing living expenses</div>
+        </div>
+
+        <!-- Wholesale -->
+        <div class="strategy-card wholesale">
+          <div class="strategy-icon">
+            <!-- Document/Contract icon -->
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 3H16L21 8V23H6V3Z" stroke="white" stroke-width="2" stroke-linejoin="round" fill="none"/>
+              <path d="M15 3V9H21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="9" y1="13" x2="17" y2="13" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <line x1="9" y1="17" x2="17" y2="17" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M9 21L11 19L13 21L15 19L17 21" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="strategy-name">Wholesale</h3>
+          <p class="strategy-tagline">Find discounted deals and sell the contract to another investor for a fee—no purchase required</p>
+          <p class="strategy-benefit">Start investing with little to no money—perfect for building capital fast!</p>
+          <div class="strategy-metrics">
+            <div class="strategy-metrics-label">Key Metrics</div>
+            <div class="strategy-metrics-tags">
+              <span class="strategy-metrics-tag">ARV</span>
+              <span class="strategy-metrics-tag">Repair Estimate</span>
+              <span class="strategy-metrics-tag">Assignment Fee</span>
             </div>
-            <div class="strategy-tagline">Find deals, assign contracts, profit</div>
-            <div class="strategy-description">Find properties under market value, get them under contract, then assign to other investors for a fee. Zero capital required.</div>
+          </div>
+          <div class="strategy-ideal"><strong>Ideal for:</strong> Beginners with limited capital</div>
+        </div>
+      </div>
+
+      <div class="strategies-cta">
+        <div class="strategies-cta-box">
+          <div class="strategies-cta-text">
+            <h3>Check out any property, anywhere, anytime!</h3>
+            <p>It's fast, informative, fun and free—no credit card required</p>
+          </div>
+          <a href="#cta" class="btn btn-primary">
+            <!-- Scan icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/>
+            </svg>
+            Try It Free
           </a>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Stats Section -->
-    <section class="stats-section">
-      <div class="container">
+  <!-- ============================================ -->
+  <!-- FEATURES SECTION -->
+  <!-- ============================================ -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">Everything You Need</div>
+        <h2 class="section-title">What You Get with <span class="highlight">InvestIQ</span></h2>
+        <p class="section-subtitle">
+          Professional-grade investment analysis tools designed for modern real estate investors.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <!-- Scan icon -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Point & Scan</h3>
+          <p class="feature-description">Analyze any property with your phone camera</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <!-- Trending up icon -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Instant ROI</h3>
+          <p class="feature-description">Real-time return calculations</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <!-- Dollar sign icon -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Cash Flow Analysis</h3>
+          <p class="feature-description">Monthly income vs. expenses</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <!-- Percent icon -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Cap Rate</h3>
+          <p class="feature-description">Market-accurate capitalization rates</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <!-- Layers icon -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">6-Strategy Analysis</h3>
+          <p class="feature-description">Every strategy, automatically</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <!-- Calculator icon -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/><line x1="16" y1="18" x2="16" y2="18"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Expense Calculator</h3>
+          <p class="feature-description">Taxes, insurance, maintenance</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <!-- Smartphone icon -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Mobile First</h3>
+          <p class="feature-description">Analyze properties on the go</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <!-- Folder icon -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <h3 class="feature-title">Portfolio Tracking</h3>
+          <p class="feature-description">Save and compare your deals</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- TESTIMONIALS SECTION -->
+  <!-- ============================================ -->
+  <section class="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">Trusted by Investors</div>
+        <h2 class="section-title">What Investors Are <span class="highlight">Saying</span></h2>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="testimonial-quote-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
+            </svg>
+          </div>
+          <p class="testimonial-text">"I analyzed 47 properties during a single Saturday driving around neighborhoods. InvestIQ found me a BRRRR deal that everyone else missed."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">MC</div>
+            <div class="testimonial-info">
+              <h4>Marcus Chen</h4>
+              <p>Portfolio Investor • Denver, CO</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testimonial-quote-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
+            </svg>
+          </div>
+          <p class="testimonial-text">"The six-strategy comparison saved me from making a huge mistake. What I thought was a flip was actually a perfect long-term hold."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">SW</div>
+            <div class="testimonial-info">
+              <h4>Sarah Williams</h4>
+              <p>First-Time Investor • Austin, TX</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testimonial-quote-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
+            </svg>
+          </div>
+          <p class="testimonial-text">"Finally, a tool built for how I actually find deals—in my car, driving past properties. Point, scan, done."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">DR</div>
+            <div class="testimonial-info">
+              <h4>David Rodriguez</h4>
+              <p>Real Estate Agent • Phoenix, AZ</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonials-stats">
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-value">10K+</div>
+            <div class="stat-value">23,847+</div>
             <div class="stat-label">Properties Analyzed</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">$2.4M</div>
-            <div class="stat-label">Profit Discovered</div>
+            <div class="stat-value">6</div>
+            <div class="stat-label">Investment Strategies</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">60s</div>
+            <div class="stat-value">60 sec</div>
             <div class="stat-label">Average Analysis Time</div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Features Section -->
-    <section class="features-section" id="features">
-      <div class="container">
-        <div class="section-header">
-          <div class="section-label">Why InvestIQ</div>
-          <h2 class="section-title">Everything You Need to Invest Smarter</h2>
-          <p class="section-subtitle">
-            Powerful features designed to give you an edge in real estate investing.
+  <!-- ============================================ -->
+  <!-- ABOUT SECTION -->
+  <!-- ============================================ -->
+  <section class="about" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-content">
+          <div class="section-label">Built by Investors, For Investors</div>
+          <h2 class="section-title">Why We Built <span class="highlight">InvestIQ</span></h2>
+          
+          <p class="about-text">
+            I analyzed over 200 properties before my first purchase—each one taking 30+ minutes to run the numbers in spreadsheets. That's more than 100 hours of tedious calculations.
           </p>
+          <p class="about-text">
+            InvestIQ was born from that frustration. I knew there had to be a faster way to screen deals without sacrificing accuracy. A way to analyze properties on the go, in real-time, as I drove past them.
+          </p>
+          <p class="about-text">
+            <strong>Now, thousands of investors use InvestIQ to screen properties in seconds, not hours. Because the best deals don't wait.</strong>
+          </p>
+
+          <div class="about-author">
+            <div class="about-author-avatar">H</div>
+            <div class="about-author-info">
+              <h4>Humble</h4>
+              <p>Founder, InvestIQ</p>
+            </div>
+          </div>
         </div>
-        <div class="features-grid">
-          <!-- Point & Scan -->
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+
+        <div class="about-cards">
+          <div class="about-card">
+            <div class="about-card-icon">
+              <!-- Database icon -->
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
               </svg>
             </div>
-            <h3 class="feature-title">Point & Scan</h3>
-            <p class="feature-description">Just point your camera at any property. Our AI instantly identifies it and pulls comprehensive data.</p>
+            <div class="about-card-content">
+              <h4>Data Sources</h4>
+              <p>We aggregate data from public records, MLS feeds, and proprietary rental estimates to ensure accuracy.</p>
+            </div>
           </div>
-          
-          <!-- 6 Strategies Compared -->
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+
+          <div class="about-card">
+            <div class="about-card-icon">
+              <!-- Calculator icon -->
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/><line x1="16" y1="18" x2="16" y2="18"/>
               </svg>
             </div>
-            <h3 class="feature-title">6 Strategies Compared</h3>
-            <p class="feature-description">See how each property performs across all major investment strategies, side by side, instantly.</p>
+            <div class="about-card-content">
+              <h4>Calculation Methods</h4>
+              <p>Every metric follows industry-standard formulas used by professional investors and lenders.</p>
+            </div>
           </div>
-          
-          <!-- 60-Second Analysis -->
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 7v5l3 3M12 3a9 9 0 110 18 9 9 0 010-18z"></path>
+
+          <div class="about-card">
+            <div class="about-card-icon">
+              <!-- Shield check icon -->
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
               </svg>
             </div>
-            <h3 class="feature-title">60-Second Analysis</h3>
-            <p class="feature-description">From address to investment decision in under a minute. Stop wasting hours on spreadsheets.</p>
-          </div>
-          
-          <!-- Accurate Projections -->
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
+            <div class="about-card-content">
+              <h4>Accuracy Commitment</h4>
+              <p>Our estimates are designed for initial screening. We always recommend verifying with local data before making offers.</p>
             </div>
-            <h3 class="feature-title">Accurate Projections</h3>
-            <p class="feature-description">Real market data, local comps, and proven formulas power every calculation.</p>
           </div>
-          
-          <!-- Portfolio Tracking -->
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
-              </svg>
-            </div>
-            <h3 class="feature-title">Portfolio Tracking</h3>
-            <p class="feature-description">Save properties, track performance, and monitor your entire portfolio from one dashboard.</p>
-          </div>
-          
-          <!-- Bank-Level Security -->
-          <div class="feature-card">
-            <div class="feature-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-              </svg>
-            </div>
-            <h3 class="feature-title">Bank-Level Security</h3>
-            <p class="feature-description">Your data is encrypted and secure. We never share your information with third parties.</p>
-          </div>
+
+          <a href="#methodology" class="about-link">
+            Read our full methodology
+            <!-- External link icon -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+          </a>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-      <div class="container cta-content">
+  <!-- ============================================ -->
+  <!-- FINAL CTA SECTION -->
+  <!-- ============================================ -->
+  <section class="final-cta" id="cta">
+    <div class="container">
+      <div class="final-cta-content">
         <div class="section-label">Get Started Today</div>
-        <h2 class="cta-title">
+        <h2 class="final-cta-title">
           Let IQ Analyze Your First Property <span class="highlight">Free</span>
         </h2>
-        <p class="cta-subtitle">
+        <p class="final-cta-subtitle">
           Point your camera at any property and IQ will deliver genius-level analysis across 6 investment strategies. No credit card required.
         </p>
-        <div class="cta-buttons">
-          <button class="btn btn-primary btn-large">Try It Now</button>
+
+        <div class="final-cta-input">
+          <div class="input-wrapper">
+            <!-- Map pin icon -->
+            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            <input type="text" placeholder="Enter property address...">
+          </div>
+          <button class="btn btn-primary">
+            <!-- Scan icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/>
+            </svg>
+            Analyze
+          </button>
         </div>
+
+        <div class="final-cta-divider">or</div>
+
+        <button class="btn btn-ghost">
+          <!-- Camera icon -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+          </svg>
+          Open Camera to Scan
+        </button>
+
         <div class="app-badges">
           <a href="#" class="app-badge">
-            <svg viewBox="0 0 24 24" fill="currentColor">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:24px;height:24px;">
               <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
             </svg>
             <div class="app-badge-text">
@@ -1958,7 +2762,7 @@
             </div>
           </a>
           <a href="#" class="app-badge">
-            <svg viewBox="0 0 24 24" fill="currentColor">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:24px;height:24px;">
               <path d="M3 20.5v-17c0-.59.34-1.11.84-1.35L13.69 12l-9.85 9.85c-.5-.25-.84-.76-.84-1.35zm13.81-5.38L6.05 21.34l8.49-8.49 2.27 2.27zm3.35-4.31c.34.27.59.69.59 1.19s-.22.9-.57 1.18l-2.29 1.32-2.5-2.5 2.5-2.5 2.27 1.31zM6.05 2.66l10.76 6.22-2.27 2.27-8.49-8.49z"/>
             </svg>
             <div class="app-badge-text">
@@ -1968,86 +2772,131 @@
           </a>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Footer -->
-    <footer class="landing-footer">
-      <div class="container">
-        <div class="footer-grid">
-          <!-- Brand -->
-          <div class="footer-brand">
-            <a href="/" class="logo">
-              Invest<span>IQ</span>
-            </a>
-            <p class="footer-tagline">
-              The fastest path from address to investable decision. Analyze any property in 60 seconds.
-            </p>
-          </div>
-
-          <!-- Product Links -->
-          <div class="footer-links">
-            <h4>Product</h4>
-            <ul>
-              <li><a href="#features">Features</a></li>
-              <li><a href="#pricing">Pricing</a></li>
-              <li><a href="#strategies">Strategies</a></li>
-              <li><a href="#">API</a></li>
-            </ul>
-          </div>
-
-          <!-- Company Links -->
-          <div class="footer-links">
-            <h4>Company</h4>
-            <ul>
-              <li><a href="#">About</a></li>
-              <li><a href="#">Blog</a></li>
-              <li><a href="#">Careers</a></li>
-              <li><a href="#">Contact</a></li>
-            </ul>
-          </div>
-
-          <!-- Support Links -->
-          <div class="footer-links">
-            <h4>Support</h4>
-            <ul>
-              <li><a href="#">Help Center</a></li>
-              <li><a href="#">Documentation</a></li>
-              <li><a href="#">Community</a></li>
-              <li><a href="#">Status</a></li>
-            </ul>
-          </div>
+  <!-- ============================================ -->
+  <!-- FOOTER -->
+  <!-- ============================================ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="logo">
+            Invest<span>IQ</span>
+          </a>
+          <p class="footer-tagline">
+            The fastest path from address to investable decision. Analyze any property in 60 seconds.
+          </p>
         </div>
 
-        <div class="footer-bottom">
-          <div>© 2026 InvestIQ. All rights reserved.</div>
-          <div class="footer-legal">
-            <a href="/privacy">Privacy Policy</a>
-            <a href="/terms">Terms of Service</a>
-          </div>
+        <div class="footer-links">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#strategies">Strategies</a></li>
+            <li><a href="#">API</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links">
+          <h4>Support</h4>
+          <ul>
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Status</a></li>
+          </ul>
         </div>
       </div>
-    </footer>
-  </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 InvestIQ. All rights reserved.</div>
+        <div class="footer-contact">
+          <!-- Mail icon -->
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <a href="/cdn-cgi/l/email-protection#4c24292020230c25223a293f38253d622b393e39"><span class="__cf_email__" data-cfemail="78101d1414173811160e1d0b0c1109561f0d0a0d">[email&#160;protected]</span></a>
+        </div>
+        <div class="footer-legal">
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
 
   <!-- Theme Toggle Button -->
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
     🌙
   </button>
 
-  <script>
-    // Theme toggle functionality
+  <!-- ============================================ -->
+  <!-- SCRIPTS -->
+  <!-- ============================================ -->
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Header scroll effect
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('open');
+      const icon = mobileMenuBtn.querySelector('.icon');
+      if (mobileMenu.classList.contains('open')) {
+        icon.setAttribute('data-lucide', 'x');
+      } else {
+        icon.setAttribute('data-lucide', 'menu');
+      }
+      lucide.createIcons();
+    });
+
+    // Close mobile menu when clicking a link
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('open');
+        const icon = mobileMenuBtn.querySelector('.icon');
+        icon.setAttribute('data-lucide', 'menu');
+        lucide.createIcons();
+      });
+    });
+
+    // Theme toggle with null checking
     const themeToggle = document.getElementById('themeToggle');
     const html = document.documentElement;
     
-    // Check for saved theme preference or default to dark
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    if (savedTheme === 'light') {
-      html.classList.remove('dark');
-      if (themeToggle) themeToggle.textContent = '☀️';
-    }
-    
-    // Only add event listener if element exists
     if (themeToggle) {
+      // Check for saved theme preference or default to dark
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      if (savedTheme === 'light') {
+        html.classList.remove('dark');
+        themeToggle.textContent = '☀️';
+      }
+      
       themeToggle.addEventListener('click', () => {
         if (html.classList.contains('dark')) {
           html.classList.remove('dark');
@@ -2060,7 +2909,17 @@
         }
       });
     }
+
+    // Live counter animation
+    const counter = document.getElementById('analysisCounter');
+    if (counter) {
+      const baseCount = 23847;
+      let currentCount = baseCount;
+      setInterval(() => {
+        currentCount += Math.floor(Math.random() * 3);
+        counter.textContent = currentCount.toLocaleString();
+      }, 5000);
+    }
   </script>
 </body>
 </html>
-
