@@ -258,9 +258,49 @@ html:not(.dark) .landing-page .scan-data-label {
 
 /* Hero Section - Apple-style generous spacing (8px base unit) */
 .landing-page .hero {
-  padding: 120px 0 100px;
+  padding: 140px 0 100px;
   position: relative;
   overflow: hidden;
+}
+
+/* Hero Grid Layout */
+.landing-page .hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .landing-page .hero-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+  }
+}
+
+.landing-page .hero-text {
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .landing-page .hero-text {
+    text-align: left;
+  }
+}
+
+@media (min-width: 1024px) {
+  .landing-page .hero-text .trust-signals {
+    justify-content: flex-start;
+  }
+  
+  .landing-page .hero-text .hero-cta {
+    justify-content: flex-start;
+  }
+  
+  .landing-page .hero-text .hero-eyebrow {
+    margin-left: 0;
+    margin-right: auto;
+  }
 }
 
 /* Hero Eyebrow - Tagline pill - centered between header and hero */
@@ -405,44 +445,255 @@ html:not(.dark) .landing-page .hero-eyebrow-text {
 
 .landing-page .phone-mockup {
   width: 280px;
-  height: 580px;
-  background: var(--deep-navy);
-  border-radius: 36px;
+  height: 560px;
+  background: linear-gradient(145deg, #1a2d45 0%, #0d1a2d 100%);
+  border-radius: 40px;
   padding: 10px;
   box-shadow: 
-    0 25px 80px rgba(0,0,0,0.5),
-    0 0 0 1px rgba(77, 208, 225, 0.1),
+    0 30px 60px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(77, 208, 225, 0.2),
     inset 0 0 0 1px rgba(255,255,255,0.05);
   position: relative;
-  transform: rotateY(-5deg) rotateX(2deg);
-  animation: phoneFloat 6s ease-in-out infinite;
+  animation: phoneFloat 4s ease-in-out infinite;
 }
 
 @keyframes phoneFloat {
-  0%, 100% { transform: rotateY(-5deg) rotateX(2deg) translateY(0); }
-  50% { transform: rotateY(-5deg) rotateX(2deg) translateY(-10px); }
-}
-
-.landing-page .phone-mockup::before {
-  content: '';
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 24px;
-  background: var(--deep-navy);
-  border-radius: 0 0 16px 16px;
-  z-index: 10;
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
 }
 
 .landing-page .phone-screen {
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, var(--deep-navy) 0%, #0d2341 100%);
-  border-radius: 28px;
+  background: linear-gradient(180deg, var(--deep-navy) 0%, #0a1e38 100%);
+  border-radius: 30px;
+  position: relative;
   overflow: hidden;
-  padding: 40px 14px 14px;
+}
+
+.landing-page .phone-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 28px;
+  background: #0d1a2d;
+  border-radius: 0 0 18px 18px;
+  z-index: 20;
+}
+
+.landing-page .phone-content {
+  padding: 50px 16px 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-page .phone-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.landing-page .phone-logo {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.7rem;
+  color: var(--deep-navy);
+}
+
+.landing-page .phone-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: white;
+}
+
+.landing-page .scan-animation {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* House Being Scanned Inside Phone */
+.landing-page .phone-house-scan {
+  width: 180px;
+  height: 180px;
+  position: relative;
+}
+
+.landing-page .phone-house-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.landing-page .phone-house-container svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 20px rgba(77, 208, 225, 0.3));
+}
+
+/* Scan Line Effect */
+.landing-page .phone-scan-line-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.landing-page .phone-scan-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--electric-cyan) 50%, transparent 100%);
+  box-shadow: 0 0 10px var(--electric-cyan), 0 0 20px var(--electric-cyan);
+  animation: phoneScanSweep 2.5s ease-in-out infinite;
+}
+
+@keyframes phoneScanSweep {
+  0% { top: 0; opacity: 1; }
+  100% { top: 100%; opacity: 0.5; }
+}
+
+/* Corner Brackets */
+.landing-page .phone-scan-brackets {
+  position: absolute;
+  inset: 8px;
+  pointer-events: none;
+}
+
+.landing-page .phone-scan-bracket {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--electric-cyan);
+}
+
+.landing-page .phone-scan-bracket.tl {
+  top: 0;
+  left: 0;
+  border-right: none;
+  border-bottom: none;
+}
+
+.landing-page .phone-scan-bracket.tr {
+  top: 0;
+  right: 0;
+  border-left: none;
+  border-bottom: none;
+}
+
+.landing-page .phone-scan-bracket.bl {
+  bottom: 0;
+  left: 0;
+  border-right: none;
+  border-top: none;
+}
+
+.landing-page .phone-scan-bracket.br {
+  bottom: 0;
+  right: 0;
+  border-left: none;
+  border-top: none;
+}
+
+.landing-page .scan-status {
+  text-align: center;
+}
+
+.landing-page .scan-status-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--electric-cyan);
+  margin-bottom: 4px;
+}
+
+.landing-page .scan-status-address {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Phone Results */
+.landing-page .phone-results {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 14px;
+  margin-top: auto;
+}
+
+.landing-page .phone-results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.landing-page .phone-results-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.landing-page .phone-results-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.landing-page .phone-results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.landing-page .phone-result-item {
+  text-align: center;
+}
+
+.landing-page .phone-result-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.landing-page .phone-result-value.green { color: #10b981; }
+.landing-page .phone-result-value.cyan { color: var(--electric-cyan); }
+.landing-page .phone-result-value.blue { color: var(--iq-blue); }
+
+.landing-page .phone-result-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Decorative glow behind phone */
+.landing-page .phone-glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(77, 208, 225, 0.2) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1;
 }
 
 /* Property Card in Phone */
