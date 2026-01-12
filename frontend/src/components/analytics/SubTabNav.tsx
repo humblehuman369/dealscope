@@ -7,18 +7,13 @@ import { SubTab, SubTabId, Strategy } from './types'
 /**
  * SubTabNav Component
  * 
- * Horizontal tab navigation for switching between sub-views within a strategy.
- * Each strategy has different sub-tabs based on relevant analytics.
+ * REDESIGNED: Numbered tabs with line indicator above.
  * 
- * Common sub-tabs:
- * - Metrics: Core KPIs and benchmarks
- * - Funding: Loan details and capital structure
- * - 10-Year: Long-term projections
- * - Growth: Appreciation and equity growth
- * - Score: Deal quality scoring
- * - What-If: Sensitivity analysis
- * - Buyer: End buyer analysis (Wholesale)
- * - Comps: Comparable properties
+ * Features:
+ * - Line above with active indicator that moves
+ * - Numbered badges (1, 2, 3...) for each tab
+ * - Active tab has highlighted number
+ * - Clean design without background pills
  */
 
 interface SubTabNavProps {
@@ -31,40 +26,72 @@ interface SubTabNavProps {
 }
 
 export function SubTabNav({ tabs, activeTab, onChange }: SubTabNavProps) {
+  const activeIndex = tabs.findIndex(t => t.id === activeTab)
+  
   return (
-    <div className="flex gap-1.5 mb-4 overflow-x-auto scrollbar-hide pb-0.5">
-      {tabs.map((tab) => (
-        <SubTabButton
-          key={tab.id}
-          tab={tab}
-          isActive={tab.id === activeTab}
-          onClick={() => onChange(tab.id)}
+    <div className="mb-4">
+      {/* Top line with active indicator */}
+      <div className="relative h-[2px] bg-gray-200 dark:bg-white/[0.08] mb-3">
+        {/* Active indicator */}
+        <div 
+          className="absolute top-0 h-[2px] bg-gradient-to-r from-teal to-blue-500 transition-all duration-300 ease-out"
+          style={{
+            left: `${(activeIndex / tabs.length) * 100}%`,
+            width: `${100 / tabs.length}%`,
+          }}
         />
-      ))}
+      </div>
+
+      {/* Tab buttons with numbers */}
+      <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+        {tabs.map((tab, index) => (
+          <SubTabButton
+            key={tab.id}
+            tab={tab}
+            number={index + 1}
+            isActive={tab.id === activeTab}
+            onClick={() => onChange(tab.id)}
+          />
+        ))}
+      </div>
     </div>
   )
 }
 
 interface SubTabButtonProps {
   tab: SubTab
+  number: number
   isActive: boolean
   onClick: () => void
 }
 
-function SubTabButton({ tab, isActive, onClick }: SubTabButtonProps) {
-  const baseClasses = "px-3 py-2 text-[0.7rem] font-medium rounded-xl transition-all duration-200 whitespace-nowrap"
-  
-  // Use gradient for active state (matching strategy pills)
-  const activeClasses = isActive
-    ? "bg-gradient-to-r from-brand-500 dark:from-teal to-blue-500 text-white shadow-[0_2px_10px_rgba(0,175,168,0.4)]"
-    : "bg-neutral-100 dark:bg-white/[0.03] text-neutral-600 dark:text-white/60 hover:bg-neutral-200 dark:hover:bg-white/[0.06] hover:text-neutral-800 dark:hover:text-white/80 transition-colors"
-
+function SubTabButton({ tab, number, isActive, onClick }: SubTabButtonProps) {
   return (
     <button
       onClick={onClick}
-      className={`${baseClasses} ${activeClasses}`}
+      className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 whitespace-nowrap"
     >
-      {tab.label}
+      {/* Numbered badge */}
+      <span 
+        className={`w-5 h-5 flex items-center justify-center text-[0.65rem] font-bold rounded-full transition-all ${
+          isActive 
+            ? 'bg-gradient-to-r from-teal to-blue-500 text-white' 
+            : 'bg-gray-100 dark:bg-white/[0.08] text-gray-500 dark:text-white/40'
+        }`}
+      >
+        {number}
+      </span>
+      
+      {/* Tab label */}
+      <span 
+        className={`text-[0.72rem] font-medium transition-colors ${
+          isActive 
+            ? 'text-teal dark:text-teal font-semibold' 
+            : 'text-gray-600 dark:text-white/50 hover:text-gray-800 dark:hover:text-white/70'
+        }`}
+      >
+        {tab.label}
+      </span>
     </button>
   )
 }
@@ -154,16 +181,23 @@ interface SubTabNavCompactProps {
 export function SubTabNavCompact({ tabs, activeTab, onChange }: SubTabNavCompactProps) {
   return (
     <div className="flex gap-1 overflow-x-auto scrollbar-hide">
-      {tabs.map((tab) => (
+      {tabs.map((tab, index) => (
         <button
           key={tab.id}
           onClick={() => onChange(tab.id)}
-          className={`px-2 py-1 text-[0.6rem] font-medium rounded-md transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 px-2 py-1 text-[0.6rem] font-medium rounded-md transition-all whitespace-nowrap ${
             tab.id === activeTab
-              ? 'bg-gradient-to-r from-brand-500 dark:from-teal to-blue-500 text-white'
-              : 'text-neutral-500 dark:text-white/50 hover:text-neutral-700 dark:hover:text-white/70'
+              ? 'text-teal font-semibold'
+              : 'text-gray-500 dark:text-white/50 hover:text-gray-700 dark:hover:text-white/70'
           }`}
         >
+          <span className={`w-4 h-4 flex items-center justify-center text-[0.55rem] font-bold rounded-full ${
+            tab.id === activeTab
+              ? 'bg-gradient-to-r from-teal to-blue-500 text-white'
+              : 'bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-white/30'
+          }`}>
+            {index + 1}
+          </span>
           {tab.label}
         </button>
       ))}
@@ -194,6 +228,7 @@ export function SubTabDropdown({ tabs, activeTab, onChange, strategy }: SubTabDr
   const dropdownRef = useRef<HTMLDivElement>(null)
   
   const activeTabData = tabs.find(t => t.id === activeTab)
+  const activeIndex = tabs.findIndex(t => t.id === activeTab)
   
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -219,10 +254,10 @@ export function SubTabDropdown({ tabs, activeTab, onChange, strategy }: SubTabDr
         className="w-full flex items-center justify-between px-4 py-3 bg-gray-100 dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.08] rounded-xl hover:bg-gray-200 dark:hover:bg-white/[0.06] transition-colors"
       >
         <div className="flex items-center gap-3">
-          {/* Strategy indicator */}
-          {strategy && (
-            <span className="text-lg">{strategy.icon}</span>
-          )}
+          {/* Tab number indicator */}
+          <span className="w-6 h-6 flex items-center justify-center text-xs font-bold rounded-full bg-gradient-to-r from-teal to-blue-500 text-white">
+            {activeIndex + 1}
+          </span>
           <div className="text-left">
             <div className="text-[0.65rem] text-gray-500 dark:text-white/50 uppercase tracking-wide">
               {strategy ? `${strategy.shortName} Details` : 'View Details'}
@@ -240,20 +275,24 @@ export function SubTabDropdown({ tabs, activeTab, onChange, strategy }: SubTabDr
       {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-navy-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-lg z-50 overflow-hidden">
-          {tabs.map((tab) => (
+          {tabs.map((tab, index) => (
             <button
               key={tab.id}
               onClick={() => handleSelect(tab.id)}
-              className={`w-full flex items-center justify-between px-4 py-3 text-left text-[0.8rem] transition-colors ${
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left text-[0.8rem] transition-colors ${
                 tab.id === activeTab
-                  ? 'bg-brand-500/10 dark:bg-teal/10 text-brand-600 dark:text-teal font-semibold'
+                  ? 'bg-teal/10 dark:bg-teal/10 text-teal font-semibold'
                   : 'text-gray-700 dark:text-white/80 hover:bg-gray-100 dark:hover:bg-white/[0.05]'
               }`}
             >
+              <span className={`w-5 h-5 flex items-center justify-center text-[0.6rem] font-bold rounded-full ${
+                tab.id === activeTab
+                  ? 'bg-gradient-to-r from-teal to-blue-500 text-white'
+                  : 'bg-gray-200 dark:bg-white/10 text-gray-500 dark:text-white/40'
+              }`}>
+                {index + 1}
+              </span>
               <span>{tab.label}</span>
-              {tab.id === activeTab && (
-                <span className="text-brand-500 dark:text-teal">✓</span>
-              )}
             </button>
           ))}
         </div>
