@@ -29,15 +29,16 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               // Scripts: self + unsafe-inline for Next.js hydration, unsafe-eval for dynamic imports/code splitting
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-              // Styles: self + unsafe-inline for Tailwind CSS and inline styles
-              "style-src 'self' 'unsafe-inline'",
-              // Connections: self + HTTPS for API calls + localhost for dev
-              "connect-src 'self' https: wss: http://localhost:* ws://localhost:* http://127.0.0.1:*",
+              // Added Sentry and common CDNs
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.sentry.io https://*.sentry-cdn.com",
+              // Styles: self + unsafe-inline for Tailwind CSS and inline styles + Google Fonts
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              // Connections: self + HTTPS for API calls + Sentry + localhost for dev
+              "connect-src 'self' https: wss: http://localhost:* ws://localhost:* http://127.0.0.1:* https://*.sentry.io",
               // Images: allow any source for property photos
               "img-src * data: blob:",
-              // Fonts: self + data URIs
-              "font-src 'self' data:",
+              // Fonts: self + data URIs + Google Fonts
+              "font-src 'self' data: https://fonts.gstatic.com",
               // Prevent embedding in frames (clickjacking protection)
               "frame-ancestors 'none'",
               // Workers for service workers if needed
