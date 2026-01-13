@@ -184,14 +184,24 @@ export default function DashboardPage() {
   
   // Redirect if not authenticated or needs onboarding
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard/page.tsx:186',message:'Dashboard useEffect check',data:{isLoading,isAuthenticated,needsOnboarding,userOnboardingCompleted:user?.onboarding_completed},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
+    
     if (!isLoading) {
       if (!isAuthenticated) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard/page.tsx:192',message:'Redirecting to home - not authenticated',data:{},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
+        // #endregion
         router.push('/')
       } else if (needsOnboarding) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard/page.tsx:198',message:'Redirecting to onboarding - needsOnboarding true',data:{needsOnboarding},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
+        // #endregion
         router.push('/onboarding')
       }
     }
-  }, [isLoading, isAuthenticated, needsOnboarding, router])
+  }, [isLoading, isAuthenticated, needsOnboarding, router, user?.onboarding_completed])
 
   if (isLoading) {
     return (
