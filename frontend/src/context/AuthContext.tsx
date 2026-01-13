@@ -83,10 +83,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Fetch current user from API
   const fetchCurrentUser = async (token: string) => {
-    // #region agent log
-    console.log('[DEBUG-F] fetchCurrentUser called');
-    // #endregion
-    
     const response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -95,16 +91,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
 
     if (!response.ok) {
-      // #region agent log
-      console.log('[DEBUG-F] fetchCurrentUser FAILED', { status: response.status });
-      // #endregion
       throw new Error('Failed to fetch user')
     }
 
     const userData = await response.json()
-    // #region agent log
-    console.log('[DEBUG-H] API /auth/me response', { onboarding_completed: userData.onboarding_completed, has_profile: userData.has_profile, fullData: userData });
-    // #endregion
     setUser(userData)
   }
 

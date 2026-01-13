@@ -296,10 +296,6 @@ async def get_me(current_user: CurrentUser, db: DbSession):
     has_profile = profile is not None
     onboarding_completed = profile.onboarding_completed if profile else False
     
-    # #region agent log
-    logger.info(f"[DEBUG-G] /auth/me returning onboarding_completed={onboarding_completed} for user {current_user.email}")
-    # #endregion
-    
     return UserResponse(
         id=str(current_user.id),
         email=current_user.email,
