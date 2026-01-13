@@ -873,7 +873,7 @@
     .summary-cards {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
-      gap: 12px;
+      gap: clamp(6px, 1vw, 12px);
       margin-bottom: 24px;
       position: sticky;
       top: 0;
@@ -887,9 +887,10 @@
     .summary-card {
       background: white;
       border: 1px solid var(--ws-border);
-      border-radius: 12px;
-      padding: 14px 16px;
+      border-radius: clamp(8px, 1vw, 12px);
+      padding: clamp(8px, 1.5vw, 16px) clamp(8px, 1.5vw, 20px);
       box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      min-width: 0; /* Allow shrinking */
     }
     
     .summary-card.target-price {
@@ -902,27 +903,33 @@
       content: '';
       position: absolute;
       top: -1px;
-      left: 20px;
-      right: 20px;
+      left: clamp(10px, 2vw, 20px);
+      right: clamp(10px, 2vw, 20px);
       height: 3px;
       background: linear-gradient(90deg, var(--iq-teal), var(--iq-teal-light));
       border-radius: 0 0 3px 3px;
     }
     
     .summary-card-label {
-      font-size: 11px;
+      font-size: clamp(8px, 1vw, 11px);
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--ws-text-muted);
-      margin-bottom: 8px;
+      margin-bottom: clamp(4px, 0.6vw, 8px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .summary-card-value {
-      font-size: 24px;
+      font-size: clamp(14px, 2vw, 24px);
       font-weight: 700;
       color: var(--ws-text-primary);
       line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .summary-card-value.positive {
@@ -930,9 +937,12 @@
     }
     
     .summary-card-subtitle {
-      font-size: 12px;
+      font-size: clamp(9px, 1vw, 12px);
       color: var(--ws-text-secondary);
-      margin-top: 4px;
+      margin-top: clamp(2px, 0.4vw, 4px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     /* Section Cards */
@@ -1375,21 +1385,6 @@
       }
     }
     
-    @media (max-width: 1200px) {
-      .summary-cards {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-    
-    @media (max-width: 900px) {
-      .summary-cards {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .summary-card.target-price {
-        grid-column: span 1;
-      }
-    }
-    
     @media (max-width: 768px) {
       .worksheet-main-area {
         grid-template-columns: 1fr;
@@ -1397,15 +1392,6 @@
       
       .worksheet-charts-sidebar {
         position: static;
-      }
-      
-      .summary-cards {
-        grid-template-columns: repeat(2, 1fr);
-        position: static;
-      }
-      
-      .summary-card.target-price {
-        grid-column: span 2;
       }
       
       .section-two-column {
@@ -1987,9 +1973,9 @@
             </div>
           </div>
           
-          <!-- Target Price (Breakeven) -->
+          <!-- Breakeven Price -->
           <div class="pricing-ladder-item">
-            <div class="pricing-ladder-label">Target Price</div>
+            <div class="pricing-ladder-label">Breakeven</div>
             <div class="pricing-ladder-marker target"></div>
             <div class="pricing-ladder-value target" id="ladder-target-price">$680,000
               <span class="pricing-ladder-diff positive">-14%</span>
