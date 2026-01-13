@@ -209,7 +209,7 @@
   display: flex;
   gap: 24px;
   padding: 24px;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -294,12 +294,41 @@
 .worksheet-content-area {
   flex: 1;
   min-width: 0;
-  max-width: 800px;
+  max-width: 880px;
 }
 
 .worksheet-content-area.full-width {
-  max-width: 900px;
+  max-width: 960px;
   margin: 0 auto;
+}
+
+/* Section Layout Options */
+.section-single-column {
+  width: 100%;
+}
+
+.section-two-column {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .section-two-column {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.section-two-column-equal {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .section-two-column-equal {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .worksheet-sections {
@@ -702,5 +731,5 @@
 
 .worksheet-content {
   padding: 24px;
-  max-width: 800px;
+  max-width: 880px;
 }
