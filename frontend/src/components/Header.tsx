@@ -11,6 +11,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
 import { usePropertyStore } from '@/stores'
+import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
 /**
  * Universal Header Component
@@ -34,6 +35,7 @@ export default function Header() {
   const { user, isAuthenticated, logout, setShowAuthModal } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [showSearchModal, setShowSearchModal] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   
   const { currentProperty, recentSearches } = usePropertyStore()
@@ -106,6 +108,20 @@ export default function Header() {
           {navItems.map((item) => {
             // Skip auth-required items for non-authenticated users
             if (item.auth && !isAuthenticated) return null
+            
+            // Special case: Search opens modal
+            if (item.label === 'Search') {
+              return (
+                <button 
+                  key="search"
+                  onClick={() => setShowSearchModal(true)}
+                  className="header-nav-link"
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </button>
+              )
+            }
             
             const active = item.href === '/dashboard' 
               ? isActive('/dashboard')
@@ -277,6 +293,12 @@ export default function Header() {
           </nav>
         </div>
       )}
+      
+      {/* Search Property Modal */}
+      <SearchPropertyModal 
+        isOpen={showSearchModal} 
+        onClose={() => setShowSearchModal(false)} 
+      />
     </header>
   )
 }
