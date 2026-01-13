@@ -433,45 +433,30 @@
   min-width: 100px;
 }
 
-/* Multi-value rows - primary value + secondary annotation */
+/* Value column - all values align to same right edge */
+.data-row > div:last-child {
+  min-width: 120px;
+  text-align: right;
+}
+
+/* Multi-value rows - stack vertically for alignment */
 .data-row .value-group {
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-end;
-  gap: 16px;
-}
-
-.data-row .value-primary {
-  font-weight: 500;
-  color: var(--ws-text-primary);
-  white-space: nowrap;
-  min-width: 70px;
-  text-align: right;
-}
-
-.data-row .value-secondary {
-  font-size: 12px;
-  color: var(--ws-text-muted);
-  white-space: nowrap;
-  min-width: 70px;
-  text-align: right;
-}
-
-/* For rows with percentage + calculated value */
-.data-row .value-with-calc {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
 }
 
-.data-row .value-with-calc .value-primary {
+.data-row .value-primary {
   font-weight: 500;
+  color: var(--ws-text-primary);
+  white-space: nowrap;
 }
 
-.data-row .value-with-calc .value-secondary {
-  font-size: 11px;
+.data-row .value-secondary {
+  font-size: 12px;
   color: var(--ws-text-muted);
+  white-space: nowrap;
 }
 
 .data-value.positive {
