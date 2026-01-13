@@ -220,7 +220,7 @@ export function StrategyAnalyticsContainer({ property, onBack, initialStrategy }
   }, [activeStrategy, currentPrice, assumptions])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0b1426] to-[#091020] text-white">
+    <div className="min-h-screen bg-gradient-to-b from-[#f0f8fa] to-[#e8f4f8] text-slate-900 dark:from-[#0b1426] dark:to-[#091020] dark:text-white">
       {/* Property Hero - Immersive Photo & Details */}
       <div className="px-4 pt-2">
         <PropertyHero
@@ -291,7 +291,7 @@ export function StrategyAnalyticsContainer({ property, onBack, initialStrategy }
           {/* Sub Tab Navigation - Horizontal numbered tabs */}
           <div className="mb-4">
             {/* Progress line with active indicator */}
-            <div className="relative h-[3px] bg-white/[0.08] rounded-full mb-3">
+            <div className="relative h-[3px] bg-slate-300/50 dark:bg-white/[0.08] rounded-full mb-3">
               <div 
                 className="absolute top-0 h-[3px] bg-gradient-to-r from-teal to-blue-500 rounded-full transition-all duration-300"
                 style={{
@@ -315,7 +315,7 @@ export function StrategyAnalyticsContainer({ property, onBack, initialStrategy }
                     <span className={`w-5 h-5 flex items-center justify-center text-[0.65rem] font-bold rounded-full transition-all ${
                       isActive 
                         ? 'bg-gradient-to-r from-teal to-blue-500 text-white' 
-                        : 'bg-white/[0.08] text-white/40'
+                        : 'bg-slate-200 text-slate-500 dark:bg-white/[0.08] dark:text-white/40'
                     }`}>
                       {index + 1}
                     </span>
@@ -323,7 +323,7 @@ export function StrategyAnalyticsContainer({ property, onBack, initialStrategy }
                     <span className={`text-[0.72rem] font-medium transition-colors ${
                       isActive 
                         ? 'text-teal font-semibold' 
-                        : 'text-white/50 hover:text-white/70'
+                        : 'text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/70'
                     }`}>
                       {tab.label}
                     </span>
@@ -1054,8 +1054,8 @@ function WhatIfTabContent({ assumptions, updateAssumption }: WhatIfTabContentPro
   return (
     <div className="space-y-4">
       <div className="text-center py-4">
-        <h3 className="text-lg font-bold text-white mb-1">Sensitivity Analysis</h3>
-        <p className="text-sm text-white/60">Adjust assumptions to see how they impact your returns</p>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Sensitivity Analysis</h3>
+        <p className="text-sm text-slate-600 dark:text-white/60">Adjust assumptions to see how they impact your returns</p>
       </div>
       
       {tuneGroups.map(group => (

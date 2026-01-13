@@ -25,7 +25,7 @@ export function BottomNav({ activeTab = 'analytics', onNavigate }: BottomNavProp
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[#0b1426]/95 backdrop-blur-lg border-t border-white/[0.06] z-50 safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#0b1426]/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/[0.06] z-50 safe-area-pb">
       <div className="max-w-lg mx-auto flex items-center justify-around h-16">
         {tabs.map(({ id, label, icon: Icon }) => {
           const isActive = id === activeTab
@@ -37,7 +37,7 @@ export function BottomNav({ activeTab = 'analytics', onNavigate }: BottomNavProp
               className={`relative flex flex-col items-center justify-center flex-1 h-full transition-colors ${
                 isActive 
                   ? 'text-teal' 
-                  : 'text-white/40 hover:text-white/60'
+                  : 'text-slate-400 hover:text-slate-600 dark:text-white/40 dark:hover:text-white/60'
               }`}
             >
               <Icon 
@@ -88,7 +88,7 @@ export function AnalyticsBottomBar({
   isSaved = false 
 }: AnalyticsBottomBarProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#0b1426]/95 backdrop-blur-lg border-t border-white/[0.06] z-50 safe-area-pb">
+    <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#0b1426]/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/[0.06] z-50 safe-area-pb">
       <div className="max-w-lg mx-auto flex items-center gap-2 p-3">
         {/* Save Button */}
         <button
@@ -96,7 +96,7 @@ export function AnalyticsBottomBar({
           className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-medium text-sm transition-colors ${
             isSaved 
               ? 'bg-green-500/20 text-green-500 border border-green-500/30' 
-              : 'bg-white/[0.05] text-white/70 border border-white/10 hover:bg-white/[0.1]'
+              : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 dark:bg-white/[0.05] dark:text-white/70 dark:border-white/10 dark:hover:bg-white/[0.1]'
           }`}
         >
           <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-green-500' : ''}`} />

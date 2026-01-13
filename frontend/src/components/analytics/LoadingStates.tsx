@@ -202,7 +202,7 @@ export function PropertyMiniCardSkeleton() {
  */
 export function AnalyticsPageSkeleton() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0b1426] to-[#091020] text-white p-4">
+    <div className="min-h-screen bg-gradient-to-b from-[#f0f8fa] to-[#e8f4f8] text-slate-900 dark:from-[#0b1426] dark:to-[#091020] dark:text-white p-4">
       <PropertyMiniCardSkeleton />
       <StrategySelectorSkeleton />
       
@@ -256,9 +256,9 @@ interface LoadingOverlayProps {
 
 export function LoadingOverlay({ message = 'Loading analytics...' }: LoadingOverlayProps) {
   return (
-    <div className="fixed inset-0 bg-[#0b1426]/90 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+    <div className="fixed inset-0 bg-white/90 dark:bg-[#0b1426]/90 backdrop-blur-sm flex flex-col items-center justify-center z-50">
       <LoadingSpinner size="lg" />
-      <p className="mt-4 text-white/60 text-sm font-medium">{message}</p>
+      <p className="mt-4 text-slate-600 dark:text-white/60 text-sm font-medium">{message}</p>
     </div>
   )
 }

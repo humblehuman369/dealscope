@@ -1,12 +1,14 @@
 /* ========================================
    DESKTOP ANALYTICS - CSS VARIABLES & THEMING
    Based on InvestIQ Property Analytics Redesign
+   NOTE: Light mode is default. Dark mode via .dark class.
 ======================================== */
 
 :root {
+  /* Shared accent colors */
   --deep-navy: #07172e;
   --card-bg: #0d1e38;
-  --electric-cyan: #4dd0e1;
+  --electric-cyan: #0891b2;
   --teal: #007ea7;
   --white: #ffffff;
   --green: #10b981;
@@ -16,6 +18,26 @@
   --purple: #8b5cf6;
   --pink: #ec4899;
   --lime: #84cc16;
+  
+  /* Light mode defaults */
+  --bg-primary: #f0f8fa;
+  --bg-secondary: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border-color: rgba(0, 126, 167, 0.2);
+  --teal-accent: #007ea7;
+}
+
+/* Dark mode variables */
+html.dark {
+  --bg-primary: #07172e;
+  --bg-secondary: #0d1e38;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --electric-cyan: #4dd0e1;
 }
 
 /* ========================================
@@ -28,8 +50,13 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-primary, #07172e);
-  color: var(--text-primary, #ffffff);
+  background: linear-gradient(180deg, rgba(0, 126, 167, 0.08) 0%, rgba(0, 126, 167, 0.04) 100%);
+  color: var(--text-primary);
+}
+
+html.dark .desktop-analytics-container {
+  background: #07172e !important;
+  color: #ffffff !important;
 }
 
 .desktop-app-content {
@@ -48,8 +75,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: var(--bg-primary, #07172e);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -69,15 +96,20 @@
 .desktop-back-btn {
   width: 36px;
   height: 36px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
+}
+
+html.dark .desktop-back-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .desktop-back-btn:hover {
@@ -226,7 +258,7 @@ html:not(.dark) .desktop-auth-ghost:hover {
 ======================================== */
 
 .desktop-property-card {
-  background: var(--card-bg, #0d1e38);
+  background: var(--bg-secondary);
   border: 2px solid var(--electric-cyan);
   border-radius: 16px;
   margin-bottom: 20px;
@@ -518,7 +550,7 @@ html:not(.dark) .desktop-expand-btn {
 ======================================== */
 
 .desktop-strategy-selector-section {
-  background: var(--card-bg, #0d1e38);
+  background: var(--bg-secondary);
   border: 2px solid var(--electric-cyan);
   border-radius: 16px;
   padding: 16px 20px;
@@ -572,12 +604,12 @@ html:not(.dark) .desktop-expand-btn {
 .desktop-strategy-pill {
   flex-shrink: 0;
   padding: 14px 24px;
-  background: var(--card-bg, #0d1e38);
+  background: var(--bg-secondary);
   border: 2px solid rgba(0, 126, 167, 0.4);
   border-radius: 14px;
   font-size: 0.95rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -602,7 +634,7 @@ html:not(.dark) .desktop-expand-btn {
 ======================================== */
 
 .desktop-subtab-section {
-  background: var(--card-bg, #0d1e38);
+  background: var(--bg-secondary);
   border: 2px solid var(--electric-cyan);
   border-radius: 16px;
   padding: 12px 20px 16px;
