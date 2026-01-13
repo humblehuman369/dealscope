@@ -1,19 +1,13 @@
-/* Property Worksheet - Light Mode Design System */
-
-/* Custom breakpoint classes for worksheet (900px) */
-@media (min-width: 900px) {
-  .ws-hidden-desktop {
-    display: none !important;
-  }
-}
-
-@media (max-width: 899px) {
-  .ws-hidden-mobile {
-    display: none !important;
-  }
-}
+/* Property Worksheet - InvestIQ Brand Design */
 
 :root {
+  /* InvestIQ Brand Colors */
+  --iq-teal: #14b8a6;
+  --iq-teal-dark: #0d9488;
+  --iq-teal-light: #5eead4;
+  --iq-navy: #0f172a;
+  --iq-navy-light: #1e293b;
+  
   /* Background Colors */
   --ws-bg: #f8fafc;
   --ws-bg-alt: #f1f5f9;
@@ -23,7 +17,7 @@
   /* Border Colors */
   --ws-border: #e2e8f0;
   --ws-border-light: #f1f5f9;
-  --ws-border-focus: #0284c7;
+  --ws-border-focus: var(--iq-teal);
   
   /* Text Colors */
   --ws-text-primary: #1e293b;
@@ -32,10 +26,10 @@
   --ws-text-label: #475569;
   
   /* Brand Colors */
-  --ws-accent: #0284c7;
-  --ws-accent-hover: #0369a1;
-  --ws-accent-light: #e0f2fe;
-  --ws-accent-bg: #f0f9ff;
+  --ws-accent: var(--iq-teal);
+  --ws-accent-hover: var(--iq-teal-dark);
+  --ws-accent-light: #ccfbf1;
+  --ws-accent-bg: #f0fdfa;
   
   /* Status Colors */
   --ws-positive: #16a34a;
@@ -46,15 +40,8 @@
   --ws-warning-light: #fef3c7;
   
   /* Section Colors */
-  --ws-section-header: #f1f5f9;
+  --ws-section-header: linear-gradient(135deg, #f0fdfa 0%, #f1f5f9 100%);
   --ws-section-header-text: #334155;
-  
-  /* Sidebar */
-  --ws-sidebar-bg: #ffffff;
-  --ws-sidebar-width: 260px;
-  --ws-sidebar-item-hover: #f1f5f9;
-  --ws-sidebar-item-active: #e0f2fe;
-  --ws-sidebar-item-active-text: #0284c7;
   
   /* Shadows */
   --ws-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -62,134 +49,300 @@
   --ws-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
-/* Layout */
-.worksheet-container {
-  display: flex;
+/* ==========================================
+   NEW LAYOUT - Horizontal Tabs
+   ========================================== */
+
+.worksheet-container-v2 {
   min-height: 100vh;
-  background-color: var(--ws-bg);
+  background: linear-gradient(180deg, #f0fdfa 0%, #f8fafc 100%);
 }
 
-.worksheet-sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--ws-sidebar-width);
-  background-color: var(--ws-sidebar-bg);
-  border-right: 1px solid var(--ws-border);
-  overflow-y: auto;
-  z-index: 40;
-}
-
-.worksheet-main {
-  margin-left: var(--ws-sidebar-width);
-  flex: 1;
-  min-height: 100vh;
-}
-
-.worksheet-header {
-  position: sticky;
-  top: 0;
-  background-color: var(--ws-card);
-  border-bottom: 1px solid var(--ws-border);
-  z-index: 30;
-  padding: 16px 24px;
-}
-
-.worksheet-content {
-  padding: 24px;
-  max-width: 800px; /* Tighter ledger-style width */
-}
-
-/* Two-column layout for wider screens */
-@media (min-width: 1400px) {
-  .worksheet-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    max-width: 1400px;
-  }
-  
-  .worksheet-content > .section-card {
-    margin-bottom: 0;
-  }
-}
-
-/* Sidebar Navigation */
-.sidebar-section {
-  padding: 8px 0;
-}
-
-.sidebar-section-title {
-  padding: 8px 16px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--ws-text-muted);
-}
-
-.sidebar-item {
+/* Top Bar */
+.worksheet-topbar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  font-size: 14px;
-  color: var(--ws-text-secondary);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  border-left: 3px solid transparent;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: white;
+  border-bottom: 1px solid var(--ws-border);
+  box-shadow: var(--ws-shadow-sm);
 }
 
-.sidebar-item:hover {
-  background-color: var(--ws-sidebar-item-hover);
+.worksheet-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.worksheet-back-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  color: var(--ws-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.worksheet-back-link:hover {
+  background: var(--ws-bg-alt);
   color: var(--ws-text-primary);
 }
 
-.sidebar-item.active {
-  background-color: var(--ws-sidebar-item-active);
-  color: var(--ws-sidebar-item-active-text);
-  border-left-color: var(--ws-accent);
-  font-weight: 500;
+.worksheet-property-info {
+  border-left: 1px solid var(--ws-border);
+  padding-left: 16px;
 }
 
-.sidebar-item svg {
+.worksheet-property-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ws-text-primary);
+}
+
+.worksheet-property-subtitle {
+  font-size: 13px;
+  color: var(--ws-text-secondary);
+}
+
+.worksheet-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.worksheet-price-badge {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--iq-teal);
+  padding: 8px 16px;
+  background: var(--ws-accent-bg);
+  border-radius: 8px;
+  border: 1px solid var(--iq-teal-light);
+}
+
+/* Horizontal Tab Navigation */
+.worksheet-tab-nav {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-bottom: 2px solid var(--ws-border);
+  padding: 0 24px;
+}
+
+.worksheet-tabs-scroll {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex: 1;
+}
+
+.worksheet-tabs-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.worksheet-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ws-text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.worksheet-tab:hover:not(.disabled) {
+  color: var(--ws-text-primary);
+  background: var(--ws-bg-alt);
+}
+
+.worksheet-tab.active {
+  color: var(--iq-teal);
+  border-bottom-color: var(--iq-teal);
+  background: var(--ws-accent-bg);
+}
+
+.worksheet-tab.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.worksheet-tab-icon {
   width: 18px;
   height: 18px;
-  flex-shrink: 0;
 }
 
-/* Section Cards */
+.worksheet-tab-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--ws-bg-alt);
+  border-radius: 4px;
+  color: var(--ws-text-muted);
+}
+
+.worksheet-help-btn {
+  padding: 10px;
+  color: var(--ws-text-secondary);
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.worksheet-help-btn:hover {
+  background: var(--ws-bg-alt);
+  color: var(--iq-teal);
+}
+
+/* Main Content Area */
+.worksheet-main-area {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Help Panel */
+.worksheet-help-panel {
+  width: 280px;
+  flex-shrink: 0;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--ws-border);
+  box-shadow: var(--ws-shadow);
+  height: fit-content;
+  position: sticky;
+  top: 24px;
+}
+
+.worksheet-help-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fff7ed 100%);
+  border-bottom: 1px solid #fde68a;
+  border-radius: 12px 12px 0 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: #92400e;
+}
+
+.worksheet-help-close {
+  margin-left: auto;
+  font-size: 20px;
+  line-height: 1;
+  color: #92400e;
+  opacity: 0.6;
+}
+
+.worksheet-help-close:hover {
+  opacity: 1;
+}
+
+.worksheet-help-list {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.worksheet-help-item {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--ws-text-secondary);
+  line-height: 1.5;
+}
+
+.worksheet-help-toggle {
+  position: fixed;
+  left: 24px;
+  top: 200px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid var(--ws-border);
+  border-radius: 50%;
+  box-shadow: var(--ws-shadow-md);
+  color: var(--iq-teal);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.worksheet-help-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+}
+
+/* Content Area */
+.worksheet-content-area {
+  flex: 1;
+  min-width: 0;
+  max-width: 800px;
+}
+
+.worksheet-content-area.full-width {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.worksheet-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Section Cards - InvestIQ Style */
 .section-card {
   background-color: var(--ws-card);
   border: 1px solid var(--ws-border);
-  border-radius: 8px;
-  margin-bottom: 16px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: var(--ws-shadow-sm);
+  box-shadow: var(--ws-shadow);
+  transition: box-shadow 0.2s ease;
+}
+
+.section-card:hover {
+  box-shadow: var(--ws-shadow-md);
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  background-color: var(--ws-section-header);
+  padding: 14px 20px;
+  background: var(--ws-section-header);
   border-bottom: 1px solid var(--ws-border);
   cursor: pointer;
   user-select: none;
 }
 
 .section-header:hover {
-  background-color: #e8eef3;
+  background: linear-gradient(135deg, #e6fffa 0%, #e8eef3 100%);
 }
 
 .section-title {
   font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
-  color: var(--ws-section-header-text);
+  letter-spacing: 0.05em;
+  color: var(--iq-teal-dark);
 }
 
 .section-content {
@@ -202,7 +355,7 @@
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 16px;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-bottom: 1px solid var(--ws-border-light);
   font-size: 14px;
 }
@@ -212,31 +365,32 @@
 }
 
 .data-row:hover {
-  background-color: var(--ws-card-hover);
+  background-color: var(--ws-accent-bg);
 }
 
 .data-row.total {
-  background-color: var(--ws-bg-alt);
+  background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
   font-weight: 600;
-  padding: 10px 16px;
+  padding: 12px 20px;
 }
 
 .data-row.highlight {
   background-color: var(--ws-accent-bg);
+  border-left: 3px solid var(--iq-teal);
 }
 
 .data-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: var(--ws-text-label);
   white-space: nowrap;
 }
 
 .data-label .icon {
-  width: 16px;
-  height: 16px;
-  color: var(--ws-text-muted);
+  width: 18px;
+  height: 18px;
+  color: var(--iq-teal);
 }
 
 .data-value {
@@ -261,7 +415,7 @@
 .data-value .edit-icon {
   width: 14px;
   height: 14px;
-  color: var(--ws-accent);
+  color: var(--iq-teal);
   opacity: 0;
   cursor: pointer;
   transition: opacity 0.15s ease;
@@ -285,22 +439,22 @@
   background: transparent;
   border: none;
   text-align: right;
-  padding: 4px 8px;
-  margin: -4px -8px;
-  border-radius: 4px;
+  padding: 6px 10px;
+  margin: -6px -10px;
+  border-radius: 6px;
   transition: all 0.15s ease;
   width: auto;
   min-width: 80px;
 }
 
 .editable-field input:hover {
-  background-color: var(--ws-bg-alt);
+  background-color: var(--ws-accent-bg);
 }
 
 .editable-field input:focus {
-  background-color: var(--ws-card);
+  background-color: white;
   outline: none;
-  box-shadow: 0 0 0 2px var(--ws-border-focus);
+  box-shadow: 0 0 0 2px var(--iq-teal);
 }
 
 /* Summary Cards */
@@ -312,24 +466,30 @@
 }
 
 .summary-card {
-  background-color: var(--ws-card);
+  background: white;
   border: 1px solid var(--ws-border);
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: var(--ws-shadow-sm);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: var(--ws-shadow);
+  transition: all 0.2s ease;
+}
+
+.summary-card:hover {
+  border-color: var(--iq-teal-light);
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.15);
 }
 
 .summary-card-label {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.05em;
   color: var(--ws-text-muted);
   margin-bottom: 8px;
 }
 
 .summary-card-value {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--ws-text-primary);
   line-height: 1.2;
@@ -352,36 +512,36 @@
 /* Toggle Switch */
 .toggle-group {
   display: inline-flex;
-  background-color: var(--ws-bg-alt);
-  border-radius: 6px;
-  padding: 2px;
+  background: var(--ws-bg-alt);
+  border-radius: 8px;
+  padding: 3px;
 }
 
 .toggle-btn {
-  padding: 6px 16px;
+  padding: 8px 18px;
   font-size: 13px;
   font-weight: 500;
   color: var(--ws-text-secondary);
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .toggle-btn.active {
-  background-color: var(--ws-card);
-  color: var(--ws-text-primary);
-  box-shadow: var(--ws-shadow-sm);
+  background: white;
+  color: var(--iq-teal);
+  box-shadow: var(--ws-shadow);
 }
 
 /* Charts */
 .chart-container {
-  background-color: var(--ws-card);
+  background: white;
   border: 1px solid var(--ws-border);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 20px;
-  margin-bottom: 16px;
+  box-shadow: var(--ws-shadow);
 }
 
 .chart-title {
@@ -399,11 +559,11 @@
 }
 
 .projections-table th {
-  padding: 10px 12px;
+  padding: 12px 14px;
   text-align: right;
   font-weight: 600;
   color: var(--ws-text-primary);
-  background-color: var(--ws-section-header);
+  background: linear-gradient(135deg, #f0fdfa 0%, #f1f5f9 100%);
   border-bottom: 2px solid var(--ws-border);
   position: sticky;
   top: 0;
@@ -414,11 +574,10 @@
   position: sticky;
   left: 0;
   z-index: 10;
-  background-color: var(--ws-section-header);
 }
 
 .projections-table td {
-  padding: 8px 12px;
+  padding: 10px 14px;
   text-align: right;
   color: var(--ws-text-primary);
   border-bottom: 1px solid var(--ws-border-light);
@@ -428,44 +587,56 @@
   text-align: left;
   position: sticky;
   left: 0;
-  background-color: var(--ws-card);
+  background: white;
   font-weight: 500;
   color: var(--ws-text-label);
 }
 
 .projections-table tr:hover td {
-  background-color: var(--ws-card-hover);
+  background-color: var(--ws-accent-bg);
 }
 
 .projections-table tr.section-row td {
-  background-color: var(--ws-bg-alt);
+  background: linear-gradient(135deg, #f0fdfa 0%, #f1f5f9 100%);
   font-weight: 600;
-  color: var(--ws-section-header-text);
+  color: var(--iq-teal-dark);
 }
 
 .projections-table tr.total-row td {
-  background-color: var(--ws-accent-bg);
+  background: linear-gradient(135deg, #ccfbf1 0%, #e0f2fe 100%);
   font-weight: 600;
-  color: var(--ws-accent);
+  color: var(--iq-teal-dark);
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .worksheet-help-panel {
+    display: none;
+  }
+  
+  .worksheet-content-area {
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 900px) {
-  .worksheet-sidebar {
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
+  .worksheet-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
   
-  .worksheet-sidebar.open {
-    transform: translateX(0);
-  }
-  
-  .worksheet-main {
-    margin-left: 0;
+  .worksheet-property-info {
+    border-left: none;
+    padding-left: 0;
   }
   
   .summary-cards {
     grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .worksheet-main-area {
+    padding: 16px;
   }
 }
 
@@ -475,8 +646,61 @@
   }
   
   .data-row {
-    padding: 10px 12px;
+    padding: 10px 14px;
     font-size: 13px;
+  }
+  
+  .worksheet-tab-label {
+    display: none;
+  }
+  
+  .worksheet-tab {
+    padding: 12px;
   }
 }
 
+/* ==========================================
+   LEGACY STYLES (keeping for backwards compat)
+   ========================================== */
+
+.worksheet-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--ws-bg);
+}
+
+.worksheet-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 260px;
+  background-color: white;
+  border-right: 1px solid var(--ws-border);
+  overflow-y: auto;
+  z-index: 40;
+  transform: translateX(-100%);
+}
+
+.worksheet-sidebar.open {
+  transform: translateX(0);
+}
+
+.worksheet-main {
+  flex: 1;
+  min-height: 100vh;
+}
+
+.worksheet-header {
+  position: sticky;
+  top: 0;
+  background-color: var(--ws-card);
+  border-bottom: 1px solid var(--ws-border);
+  z-index: 30;
+  padding: 16px 24px;
+}
+
+.worksheet-content {
+  padding: 24px;
+  max-width: 800px;
+}

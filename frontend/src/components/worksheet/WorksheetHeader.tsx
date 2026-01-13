@@ -1,14 +1,12 @@
 'use client'
 
-import { useWorksheetStore } from '@/stores/worksheetStore'
+import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { WorksheetExport } from './WorksheetExport'
 import {
   Edit3,
   Share2,
   Loader2,
   Check,
-  BarChart3,
-  TrendingUp,
 } from 'lucide-react'
 
 interface WorksheetHeaderProps {
@@ -24,8 +22,8 @@ interface WorksheetHeaderProps {
 }
 
 export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) {
-  const { isDirty, isSaving, lastSaved, activeSection, setActiveSection } = useWorksheetStore()
-  const propertyData = property.property_data_snapshot || {}
+  const { isDirty, isSaving, lastSaved, viewMode, setViewMode } = useWorksheetStore()
+  const derived = useWorksheetDerived()
 
   const formatLastSaved = () => {
     if (!lastSaved) return null
@@ -35,29 +33,72 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
     return `Saved ${lastSaved.toLocaleTimeString()}`
   }
 
-  const tabs = [
-    { id: 'analysis', label: 'Property Analysis', icon: BarChart3 },
-    { id: 'projections', label: 'Buy & Hold Projections', icon: TrendingUp },
-  ]
+  // Format currency
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
+
+  // Calculate key metrics
+  const cashNeeded = derived.totalCashNeeded || 0
+  const cashFlow = derived.annualCashFlow || 0
+  const monthlyCashFlow = derived.monthlyCashFlow || 0
+  const capRate = derived.capRate || 0
+  const cocReturn = derived.cashOnCash || 0
 
   return (
-    <header className="worksheet-header">
-      <div className="flex items-center justify-between">
-        {/* Property Info */}
-        <div className="flex items-center gap-4">
-          <div>
-            <h1 className="text-lg font-semibold text-[var(--ws-text-primary)]">
-              {property.address}
-            </h1>
-            <p className="text-sm text-[var(--ws-text-secondary)]">
-              {property.city}, {property.state} {property.zip_code} • 
-              {propertyData.bedrooms} BR • {propertyData.bathrooms} BA • 
-              {(propertyData.sqft || 0).toLocaleString()} Sq.Ft.
-            </p>
-          </div>
+    <div className="worksheet-header-v2">
+      {/* Summary Cards Row */}
+      <div className="summary-cards">
+        <div className="summary-card">
+          <div className="summary-card-label">Cash Needed</div>
+          <div className="summary-card-value">{formatCurrency(cashNeeded)}</div>
         </div>
         
-        {/* Actions */}
+        <div className="summary-card">
+          <div className="summary-card-label">Cash Flow</div>
+          <div className={`summary-card-value ${cashFlow >= 0 ? 'positive' : 'negative'}`}>
+            {formatCurrency(cashFlow)}/yr
+          </div>
+          <div className="summary-card-subtitle">{formatCurrency(monthlyCashFlow)}/mo</div>
+        </div>
+        
+        <div className="summary-card">
+          <div className="summary-card-label">Cap Rate</div>
+          <div className="summary-card-value">{capRate.toFixed(1)}%</div>
+        </div>
+        
+        <div className="summary-card">
+          <div className="summary-card-label">CoC Return</div>
+          <div className={`summary-card-value ${cocReturn >= 10 ? 'positive' : ''}`}>
+            {cocReturn.toFixed(1)}%
+          </div>
+        </div>
+      </div>
+      
+      {/* Actions Row */}
+      <div className="flex items-center justify-between">
+        {/* View Toggle */}
+        <div className="toggle-group">
+          <button 
+            className={`toggle-btn ${viewMode === 'monthly' ? 'active' : ''}`}
+            onClick={() => setViewMode('monthly')}
+          >
+            Monthly
+          </button>
+          <button 
+            className={`toggle-btn ${viewMode === 'yearly' ? 'active' : ''}`}
+            onClick={() => setViewMode('yearly')}
+          >
+            Yearly
+          </button>
+        </div>
+        
+        {/* Right side actions */}
         <div className="flex items-center gap-3">
           {/* Save indicator */}
           <div className="flex items-center gap-2 text-sm text-[var(--ws-text-secondary)]">
@@ -98,29 +139,6 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
           </button>
         </div>
       </div>
-      
-      {/* Tabs */}
-      <div className="flex items-center gap-1 mt-4 border-b border-[var(--ws-border)] -mx-6 px-6">
-        {tabs.map((tab) => {
-          const Icon = tab.icon
-          const isActive = activeSection === tab.id
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveSection(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                isActive 
-                  ? 'text-[var(--ws-accent)] border-[var(--ws-accent)]' 
-                  : 'text-[var(--ws-text-secondary)] border-transparent hover:text-[var(--ws-text-primary)]'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          )
-        })}
-      </div>
-    </header>
+    </div>
   )
 }
-
