@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fix & Flip Worksheet - InvestIQ</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      /* Fix & Flip uses Orange/Amber accent */
+      --flip-primary: #d97706;
+      --flip-primary-dark: #b45309;
+      --flip-primary-light: #fbbf24;
+      --flip-accent-bg: rgba(217, 119, 6, 0.1);
+      --flip-accent-bg-hover: rgba(217, 119, 6, 0.15);
+      
+      --ws-bg: #f8fafc;
+      --ws-card: #ffffff;
+      --ws-border: #e2e8f0;
+      --ws-border-light: #f1f5f9;
+      --ws-text-primary: #0f172a;
+      --ws-text-secondary: #475569;
+      --ws-text-muted: #94a3b8;
+      --ws-text-label: #64748b;
+      --ws-positive: #10b981;
+      --ws-positive-light: rgba(16, 185, 129, 0.1);
+      --ws-negative: #ef4444;
+      --ws-negative-light: rgba(239, 68, 68, 0.1);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--ws-bg);
+      color: var(--ws-text-primary);
+      line-height: 1.5;
+    }
+    
+    /* Top Bar */
+    .worksheet-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: white;
+      border-bottom: 1px solid var(--ws-border);
+    }
+    
+    .worksheet-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .worksheet-back-link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--ws-text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+    }
+    
+    .worksheet-back-link:hover {
+      background: var(--ws-bg);
+      color: var(--ws-text-primary);
+    }
+    
+    .worksheet-property-info {
+      border-left: 1px solid var(--ws-border);
+      padding-left: 16px;
+    }
+    
+    .worksheet-property-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    .worksheet-property-subtitle {
+      font-size: 13px;
+      color: var(--ws-text-muted);
+    }
+    
+    .worksheet-price-badge {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--flip-primary);
+      padding: 8px 16px;
+      background: var(--flip-accent-bg);
+      border-radius: 8px;
+      border: 1px solid rgba(217, 119, 6, 0.2);
+    }
+    
+    /* Tab Navigation */
+    .worksheet-tab-nav {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-bottom: 2px solid var(--ws-border);
+      padding: 0 24px;
+    }
+    
+    .worksheet-tabs-scroll {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      flex: 1;
+    }
+    
+    .worksheet-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ws-text-secondary);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    
+    .worksheet-tab:hover:not(.disabled) {
+      color: var(--flip-primary);
+    }
+    
+    .worksheet-tab.active {
+      color: var(--flip-primary);
+      border-bottom-color: var(--flip-primary);
+    }
+    
+    .worksheet-tab.disabled {
+      color: var(--ws-text-muted);
+      cursor: not-allowed;
+    }
+    
+    /* Summary Cards - Full Width */
+    .summary-cards-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: white;
+      border-bottom: 1px solid var(--ws-border);
+      padding: 16px 24px;
+    }
+    
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: clamp(6px, 1vw, 12px);
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    
+    .summary-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: clamp(8px, 1vw, 12px);
+      padding: clamp(8px, 1.5vw, 16px) clamp(8px, 1.5vw, 20px);
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      min-width: 0;
+    }
+    
+    .summary-card.highlight {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 2px solid var(--flip-primary);
+      position: relative;
+    }
+    
+    .summary-card.highlight::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: clamp(10px, 2vw, 20px);
+      right: clamp(10px, 2vw, 20px);
+      height: 3px;
+      background: linear-gradient(90deg, var(--flip-primary), var(--flip-primary-light));
+      border-radius: 0 0 3px 3px;
+    }
+    
+    .summary-card-label {
+      font-size: clamp(8px, 1vw, 11px);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ws-text-muted);
+      margin-bottom: clamp(4px, 0.6vw, 8px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .summary-card-value {
+      font-size: clamp(14px, 2vw, 24px);
+      font-weight: 700;
+      color: var(--ws-text-primary);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .summary-card-value.positive {
+      color: var(--ws-positive);
+    }
+    
+    .summary-card-value.negative {
+      color: var(--ws-negative);
+    }
+    
+    .summary-card-value.accent {
+      color: var(--flip-primary);
+    }
+    
+    .summary-card-subtitle {
+      font-size: clamp(9px, 1vw, 12px);
+      color: var(--ws-text-secondary);
+      margin-top: clamp(2px, 0.4vw, 4px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    /* Main Content Area */
+    .worksheet-main-area {
+      display: grid;
+      grid-template-columns: 200px 1fr 320px;
+      gap: 20px;
+      padding: 24px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    
+    /* Help Panel */
+    .worksheet-help-panel {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      padding: 16px;
+      height: fit-content;
+      position: sticky;
+      top: 120px;
+    }
+    
+    .worksheet-help-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--flip-primary);
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--ws-border-light);
+    }
+    
+    .worksheet-help-list {
+      list-style: none;
+    }
+    
+    .worksheet-help-item {
+      display: flex;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--ws-text-secondary);
+      padding: 8px 0;
+      border-bottom: 1px solid var(--ws-border-light);
+    }
+    
+    .worksheet-help-item:last-child {
+      border-bottom: none;
+    }
+    
+    .help-icon {
+      flex-shrink: 0;
+      color: var(--flip-primary);
+      opacity: 0.7;
+    }
+    
+    /* Content Area */
+    .worksheet-content-area {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    /* Section Cards */
+    .section-card {
+      background-color: var(--ws-card);
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(251, 191, 36, 0.05) 100%);
+      border-bottom: 1px solid var(--ws-border-light);
+      cursor: pointer;
+    }
+    
+    .section-header:hover {
+      background: var(--flip-accent-bg-hover);
+    }
+    
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--flip-primary-dark);
+    }
+    
+    .section-content {
+      padding: 16px 20px;
+    }
+    
+    /* Data Rows */
+    .data-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--ws-border-light);
+      align-items: center;
+    }
+    
+    .data-row:last-child {
+      border-bottom: none;
+    }
+    
+    .data-row.total {
+      background: linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(251, 191, 36, 0.05) 100%);
+      margin: 0 -20px;
+      padding: 14px 20px;
+      border-bottom: none;
+      margin-top: 8px;
+    }
+    
+    .data-row.total .data-label span {
+      font-weight: 700;
+      color: var(--flip-primary-dark);
+    }
+    
+    .data-row.total .value-primary {
+      font-weight: 700;
+      color: var(--flip-primary-dark);
+      font-size: 16px;
+    }
+    
+    .data-row.calculated {
+      background: var(--ws-bg);
+      margin: 0 -20px;
+      padding: 10px 20px;
+    }
+    
+    .data-row.has-slider {
+      grid-template-columns: 140px 1fr auto;
+    }
+    
+    .data-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ws-text-label);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .data-label .icon {
+      color: var(--ws-text-muted);
+    }
+    
+    .value-primary {
+      font-weight: 600;
+      color: var(--ws-text-primary);
+      text-align: right;
+      min-width: 80px;
+    }
+    
+    .value-secondary {
+      font-size: 13px;
+      color: var(--ws-text-muted);
+      text-align: right;
+    }
+    
+    /* Slider Styling */
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+    
+    .slider-wrapper {
+      flex: 1;
+      position: relative;
+    }
+    
+    .slider-input {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #e2e8f0;
+      outline: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+    
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--flip-primary);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition: transform 0.15s ease;
+    }
+    
+    .slider-input::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+    }
+    
+    .slider-input::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--flip-primary);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    
+    .slider-value {
+      min-width: 90px;
+      padding: 6px 10px;
+      border: 1px solid var(--ws-border);
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: right;
+      color: var(--ws-text-primary);
+      background: white;
+    }
+    
+    .slider-value:focus {
+      outline: none;
+      border-color: var(--flip-primary);
+      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+    }
+    
+    .slider-dual-value {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    
+    .slider-secondary {
+      font-size: 12px;
+      color: var(--ws-text-muted);
+    }
+    
+    /* Select Input */
+    .select-input {
+      padding: 8px 12px;
+      border: 1px solid var(--ws-border);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--ws-text-primary);
+      background: white;
+      cursor: pointer;
+      min-width: 180px;
+    }
+    
+    .select-input:focus {
+      outline: none;
+      border-color: var(--flip-primary);
+    }
+    
+    /* Charts Sidebar */
+    .worksheet-charts-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: 120px;
+      height: fit-content;
+    }
+    
+    .chart-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+    
+    .chart-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--flip-primary-dark);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--ws-border-light);
+    }
+    
+    /* Holding Period Selector */
+    .holding-period-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .holding-period-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--ws-border);
+      background: white;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ws-text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    
+    .holding-period-btn:hover {
+      border-color: var(--flip-primary);
+      color: var(--flip-primary);
+    }
+    
+    .holding-period-btn.active {
+      background: var(--flip-primary);
+      border-color: var(--flip-primary);
+      color: white;
+    }
+    
+    /* Profit Timeline Chart */
+    .profit-timeline {
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .timeline-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .timeline-label {
+      width: 60px;
+      font-size: 11px;
+      color: var(--ws-text-muted);
+      text-align: right;
+    }
+    
+    .timeline-bar-container {
+      flex: 1;
+      height: 24px;
+      background: var(--ws-border-light);
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .timeline-bar {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    .timeline-bar.profit {
+      background: linear-gradient(90deg, var(--flip-primary), var(--flip-primary-light));
+    }
+    
+    .timeline-bar.loss {
+      background: linear-gradient(90deg, var(--ws-negative), #fca5a5);
+    }
+    
+    .timeline-value {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    /* Donut Chart */
+    .mini-donut {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .mini-donut-center {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .mini-donut-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ws-text-primary);
+    }
+    
+    .mini-donut-label {
+      font-size: 9px;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+    }
+    
+    /* ROI Gauge */
+    .roi-gauge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0;
+    }
+    
+    .roi-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--flip-primary);
+    }
+    
+    .roi-label {
+      font-size: 12px;
+      color: var(--ws-text-muted);
+      margin-top: 4px;
+    }
+    
+    .roi-annualized {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--ws-border-light);
+      text-align: center;
+    }
+    
+    .roi-annualized-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--ws-positive);
+    }
+    
+    .roi-annualized-label {
+      font-size: 11px;
+      color: var(--ws-text-muted);
+    }
+    
+    /* Purchase Criteria */
+    .criteria-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .criteria-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    
+    .criteria-item.pass {
+      background: var(--ws-positive-light);
+      color: var(--ws-positive);
+    }
+    
+    .criteria-item.fail {
+      background: var(--ws-negative-light);
+      color: var(--ws-negative);
+    }
+    
+    .criteria-item.warn {
+      background: rgba(251, 191, 36, 0.15);
+      color: var(--flip-primary-dark);
+    }
+    
+    /* Strategy Dropdown */
+    .strategy-dropdown {
+      position: relative;
+    }
+    
+    .strategy-dropdown-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: linear-gradient(135deg, var(--flip-primary) 0%, var(--flip-primary-dark) 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(217, 119, 6, 0.3);
+    }
+    
+    .strategy-dropdown-trigger:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(217, 119, 6, 0.4);
+    }
+    
+    .strategy-dropdown-trigger .dropdown-arrow {
+      transition: transform 0.2s ease;
+    }
+    
+    .strategy-dropdown.open .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+    
+    .strategy-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 220px;
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.2s ease;
+      z-index: 100;
+      overflow: hidden;
+    }
+    
+    .strategy-dropdown.open .strategy-dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    
+    .strategy-dropdown-header {
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ws-text-muted);
+      background: var(--ws-bg);
+      border-bottom: 1px solid var(--ws-border-light);
+    }
+    
+    .strategy-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    
+    .strategy-option:hover {
+      background: var(--flip-accent-bg);
+    }
+    
+    .strategy-option.active {
+      background: var(--flip-accent-bg-hover);
+    }
+    
+    .strategy-option-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .strategy-option-icon.ltr {
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+      color: #007ea7;
+    }
+    
+    .strategy-option-icon.brrrr {
+      background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+      color: #7c3aed;
+    }
+    
+    .strategy-option-icon.flip {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      color: #d97706;
+    }
+    
+    .strategy-option-icon.wholesale {
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      color: #2563eb;
+    }
+    
+    .strategy-option-icon.str {
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+      color: #16a34a;
+    }
+    
+    .strategy-option-content {
+      flex: 1;
+    }
+    
+    .strategy-option-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+      margin-bottom: 2px;
+    }
+    
+    .strategy-option-desc {
+      font-size: 12px;
+      color: var(--ws-text-muted);
+    }
+    
+    .strategy-option-check {
+      width: 20px;
+      height: 20px;
+      color: var(--flip-primary);
+      opacity: 0;
+    }
+    
+    .strategy-option.active .strategy-option-check {
+      opacity: 1;
+    }
+    
+    .strategy-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      background: var(--ws-border-light);
+      color: var(--ws-text-muted);
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .worksheet-main-area {
+        grid-template-columns: 1fr 300px;
+      }
+      .worksheet-help-panel {
+        display: none;
+      }
+    }
+    
+    @media (max-width: 900px) {
+      .worksheet-main-area {
+        grid-template-columns: 1fr;
+      }
+      .worksheet-charts-sidebar {
+        position: static;
+      }
+      .summary-cards {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    @media (max-width: 600px) {
+      .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="worksheet-topbar">
+    <div class="worksheet-topbar-left">
+      <a href="#" class="worksheet-back-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        <span>Back</span>
+      </a>
+      <div class="worksheet-property-info">
+        <h1 class="worksheet-property-title">8204 Rugby Ave</h1>
+        <p class="worksheet-property-subtitle">Birmingham, AL 35206 • 2 BR • 1 BA • 954 Sq.Ft.</p>
+      </div>
+    </div>
+    <div class="worksheet-price-badge">$24,000</div>
+  </header>
+  
+  <!-- Tab Navigation -->
+  <nav class="worksheet-tab-nav">
+    <div class="worksheet-tabs-scroll">
+      <!-- Strategy Dropdown -->
+      <div class="strategy-dropdown" id="strategy-dropdown">
+        <button class="strategy-dropdown-trigger" onclick="toggleStrategyDropdown()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+          <span id="current-strategy-name">Fix & Flip</span>
+          <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        
+        <!-- Dropdown Menu -->
+        <div class="strategy-dropdown-menu">
+          <div class="strategy-dropdown-header">Select Strategy</div>
+          
+          <button class="strategy-option" data-strategy="ltr" onclick="selectStrategy('ltr', 'LTR Worksheet', 'worksheet-preview.html')">
+            <div class="strategy-option-icon ltr">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">LTR (Long-Term Rental)</div>
+              <div class="strategy-option-desc">Buy & hold for monthly cash flow</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <button class="strategy-option" data-strategy="brrrr" onclick="selectStrategy('brrrr', 'BRRRR Worksheet', 'worksheet-brrrr.html')">
+            <div class="strategy-option-icon brrrr">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">BRRRR</div>
+              <div class="strategy-option-desc">Buy, Rehab, Rent, Refinance, Repeat</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <button class="strategy-option active" data-strategy="flip" onclick="selectStrategy('flip', 'Fix & Flip', 'worksheet-flip.html')">
+            <div class="strategy-option-icon flip">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">Fix & Flip</div>
+              <div class="strategy-option-desc">Buy, renovate, sell for profit</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <button class="strategy-option" data-strategy="wholesale" onclick="selectStrategy('wholesale', 'Wholesale', 'worksheet-wholesale.html')">
+            <div class="strategy-option-icon wholesale">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 3h5v5"/>
+                <path d="M8 21H3v-5"/>
+                <path d="M21 3l-9 9"/>
+                <path d="M3 21l9-9"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">Wholesale</div>
+              <div class="strategy-option-desc">Assign contracts for quick profit</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <button class="strategy-option" data-strategy="str" onclick="selectStrategy('str', 'STR Worksheet', '#')">
+            <div class="strategy-option-icon str">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">Short-Term Rental <span class="strategy-badge">Soon</span></div>
+              <div class="strategy-option-desc">Vacation rentals & Airbnb</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <button class="worksheet-tab">Profit Projections</button>
+      <button class="worksheet-tab disabled">Comps <span class="strategy-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">ARV Analysis <span class="strategy-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">Rehab Scope <span class="strategy-badge">Soon</span></button>
+    </div>
+  </nav>
+  
+  <!-- Summary Cards - Full Width -->
+  <div class="summary-cards-wrapper">
+    <div class="summary-cards">
+      <div class="summary-card highlight">
+        <div class="summary-card-label">Total Profit</div>
+        <div class="summary-card-value accent" id="summary-profit">$24,976</div>
+        <div class="summary-card-subtitle">After all costs</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">Cash Needed</div>
+        <div class="summary-card-value" id="summary-cash">$11,946</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">ROI</div>
+        <div class="summary-card-value positive" id="summary-roi">198.4%</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">Annualized ROI</div>
+        <div class="summary-card-value positive" id="summary-aroi">2.4k%</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">Holding Period</div>
+        <div class="summary-card-value" id="summary-holding">3 mo</div>
+      </div>
+      <div class="summary-card" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.1) 0%, white 100%); border-color: var(--flip-primary-light);">
+        <div class="summary-card-label">Deal Score</div>
+        <div class="summary-card-value accent" id="summary-score">92</div>
+        <div class="summary-card-subtitle">Excellent</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="worksheet-main-area">
+    <!-- Help Panel -->
+    <aside class="worksheet-help-panel">
+      <div class="worksheet-help-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+        Fix & Flip Tips
+      </div>
+      <ul class="worksheet-help-list">
+        <li class="worksheet-help-item">
+          <svg class="help-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+          </svg>
+          <span>The 70% rule: Never pay more than 70% of ARV minus repairs</span>
+        </li>
+        <li class="worksheet-help-item">
+          <svg class="help-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+          </svg>
+          <span>Holding costs add up quickly - minimize your timeline</span>
+        </li>
+        <li class="worksheet-help-item">
+          <svg class="help-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+          </svg>
+          <span>Budget 10-20% contingency for unexpected repairs</span>
+        </li>
+        <li class="worksheet-help-item">
+          <svg class="help-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+          </svg>
+          <span>Aim for 15%+ profit margin on the sale price</span>
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- Content Area -->
+    <main class="worksheet-content-area">
+      <!-- Purchase & Rehab Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Purchase & Rehab</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row has-slider">
+            <div class="data-label">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              </svg>
+              <span>Purchase Price</span>
+            </div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" id="purchase-price" min="10000" max="100000" value="24000">
+              </div>
+            </div>
+            <input type="text" class="slider-value" id="purchase-price-val" value="$24,000">
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+              <span>Rehab Costs</span>
+            </div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" id="rehab-costs" min="0" max="50000" value="18865">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value" id="rehab-costs-val" value="$18,865">
+              <span class="slider-secondary">$19.78/sqft</span>
+            </div>
+          </div>
+          
+          <div class="data-row calculated">
+            <div class="data-label"><span>Amount Financed</span></div>
+            <div class="value-primary" id="amount-financed">$32,219</div>
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              <span>Down Payment</span>
+            </div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" id="down-payment" min="0" max="100" value="25">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value" id="down-payment-val" value="25%" style="min-width: 60px;">
+              <span class="slider-secondary" id="down-payment-amt">$10,721</span>
+            </div>
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Purchase Costs</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" id="purchase-costs" min="0" max="5000" value="1225">
+              </div>
+            </div>
+            <input type="text" class="slider-value" id="purchase-costs-val" value="$1,225">
+          </div>
+          
+          <div class="data-row total">
+            <div class="data-label"><span>Total Cash Needed</span></div>
+            <div class="value-primary" id="total-cash">$11,946</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Financing Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Financing (Hard Money)</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row calculated">
+            <div class="data-label"><span>Loan Amount</span></div>
+            <div class="value-primary">$32,219</div>
+          </div>
+          
+          <div class="data-row">
+            <div class="data-label"><span>Loan to Cost</span></div>
+            <div class="value-primary">75%</div>
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Financing Of</span></div>
+            <div class="slider-container">
+              <select class="select-input" id="financing-of">
+                <option value="price">Purchase Price</option>
+                <option value="cost" selected>Price + Rehab (75%)</option>
+                <option value="arv">After Repair Value</option>
+              </select>
+            </div>
+            <span class="value-primary">75%</span>
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Loan Type</span></div>
+            <div class="slider-container">
+              <select class="select-input" id="loan-type">
+                <option value="interest-only" selected>Interest Only</option>
+                <option value="amortizing">Amortizing</option>
+              </select>
+            </div>
+            <span style="width: 60px;"></span>
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Interest Rate</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" id="interest-rate" min="8" max="18" value="12" step="0.5">
+              </div>
+            </div>
+            <input type="text" class="slider-value" id="interest-rate-val" value="12.0%">
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Points</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" id="points" min="0" max="5" value="2" step="0.5">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value" id="points-val" value="2 pts" style="min-width: 60px;">
+              <span class="slider-secondary">$644</span>
+            </div>
+          </div>
+          
+          <div class="data-row total">
+            <div class="data-label"><span>Monthly Payment</span></div>
+            <div class="value-primary">$348/mo</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Holding Costs Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Holding Costs</span>
+          <div class="holding-period-selector">
+            <button class="holding-period-btn active">1 Month</button>
+            <button class="holding-period-btn">6 Weeks</button>
+            <button class="holding-period-btn">2 Months</button>
+            <button class="holding-period-btn">3 Months</button>
+          </div>
+        </div>
+        <div class="section-content">
+          <div class="data-row">
+            <div class="data-label"><span>Loan Payments</span></div>
+            <div class="value-primary">$348</div>
+            <div class="value-secondary">× 3 mo = $1,044</div>
+          </div>
+          
+          <div class="data-row">
+            <div class="data-label"><span>Property Taxes</span></div>
+            <div class="value-primary">+ $66</div>
+            <div class="value-secondary">+ $198</div>
+          </div>
+          
+          <div class="data-row">
+            <div class="data-label"><span>Insurance</span></div>
+            <div class="value-primary">+ $54</div>
+            <div class="value-secondary">+ $162</div>
+          </div>
+          
+          <div class="data-row">
+            <div class="data-label"><span>Utilities</span></div>
+            <div class="value-primary">+ $75</div>
+            <div class="value-secondary">+ $225</div>
+          </div>
+          
+          <div class="data-row">
+            <div class="data-label"><span>Dumpster Rental</span></div>
+            <div class="value-primary">+ $100</div>
+            <div class="value-secondary">+ $300</div>
+          </div>
+          
+          <div class="data-row total">
+            <div class="data-label"><span>Total Holding Costs</span></div>
+            <div class="value-primary" id="total-holding">$643</div>
+            <div class="value-secondary" style="font-weight: 600; color: var(--flip-primary-dark);">$1,929</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Sale & Profit Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Sale & Profit</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row has-slider">
+            <div class="data-label">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4"/>
+              </svg>
+              <span>After Repair Value</span>
+            </div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" id="arv" min="50000" max="150000" value="75000">
+              </div>
+            </div>
+            <input type="text" class="slider-value" id="arv-val" value="$75,000">
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Selling Costs</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" id="selling-costs" min="3" max="10" value="6" step="0.5">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value" id="selling-costs-val" value="6%" style="min-width: 60px;">
+              <span class="slider-secondary">$4,500</span>
+            </div>
+          </div>
+          
+          <div class="data-row calculated">
+            <div class="data-label"><span>Sale Proceeds</span></div>
+            <div class="value-primary" style="color: var(--ws-positive);">$71,000</div>
+          </div>
+          
+          <div class="data-row">
+            <div class="data-label"><span>Loan Repayment</span></div>
+            <div class="value-primary">- $32,219</div>
+          </div>
+          
+          <div class="data-row">
+            <div class="data-label"><span>Holding Costs</span></div>
+            <div class="value-primary">- $1,929</div>
+          </div>
+          
+          <div class="data-row">
+            <div class="data-label"><span>Invested Cash</span></div>
+            <div class="value-primary">- $11,946</div>
+          </div>
+          
+          <div class="data-row total">
+            <div class="data-label"><span>Total Profit</span></div>
+            <div class="value-primary" id="total-profit" style="color: var(--ws-positive); font-size: 18px;">$24,976</div>
+          </div>
+          
+          <div class="data-row calculated">
+            <div class="data-label"><span>Post-Tax Profit</span></div>
+            <div class="value-primary" id="post-tax-profit">$19,981</div>
+            <div class="value-secondary">@ 20% cap gains</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Investment Returns Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Investment Returns</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row">
+            <div class="data-label"><span>Return on Investment</span></div>
+            <div class="value-primary" style="color: var(--ws-positive); font-size: 16px; font-weight: 700;">198.4%</div>
+          </div>
+          
+          <div class="data-row">
+            <div class="data-label"><span>Annualized ROI</span></div>
+            <div class="value-primary" style="color: var(--ws-positive); font-size: 16px; font-weight: 700;">2.4k%</div>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <!-- Charts Sidebar -->
+    <aside class="worksheet-charts-sidebar">
+      <!-- ROI Display -->
+      <div class="chart-card">
+        <div class="chart-card-title">Return on Investment</div>
+        <div class="roi-gauge">
+          <div class="roi-value" id="roi-display">198%</div>
+          <div class="roi-label">Total ROI</div>
+          <div class="roi-annualized">
+            <div class="roi-annualized-value" id="aroi-display">2.4k%</div>
+            <div class="roi-annualized-label">Annualized (3 months)</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Profit Timeline -->
+      <div class="chart-card">
+        <div class="chart-card-title">Profit by Holding Period</div>
+        <div class="profit-timeline">
+          <div class="timeline-row">
+            <span class="timeline-label">1 mo</span>
+            <div class="timeline-bar-container">
+              <div class="timeline-bar profit" style="width: 100%;"></div>
+              <span class="timeline-value">$24,976</span>
+            </div>
+          </div>
+          <div class="timeline-row">
+            <span class="timeline-label">2 mo</span>
+            <div class="timeline-bar-container">
+              <div class="timeline-bar profit" style="width: 97%;"></div>
+              <span class="timeline-value">$24,654</span>
+            </div>
+          </div>
+          <div class="timeline-row">
+            <span class="timeline-label">3 mo</span>
+            <div class="timeline-bar-container">
+              <div class="timeline-bar profit" style="width: 94%;"></div>
+              <span class="timeline-value">$24,332</span>
+            </div>
+          </div>
+          <div class="timeline-row">
+            <span class="timeline-label">4 mo</span>
+            <div class="timeline-bar-container">
+              <div class="timeline-bar profit" style="width: 91%;"></div>
+              <span class="timeline-value">$24,010</span>
+            </div>
+          </div>
+          <div class="timeline-row">
+            <span class="timeline-label">5 mo</span>
+            <div class="timeline-bar-container">
+              <div class="timeline-bar profit" style="width: 88%;"></div>
+              <span class="timeline-value">$23,688</span>
+            </div>
+          </div>
+          <div class="timeline-row">
+            <span class="timeline-label">6 mo</span>
+            <div class="timeline-bar-container">
+              <div class="timeline-bar profit" style="width: 85%;"></div>
+              <span class="timeline-value">$23,366</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Cash Breakdown -->
+      <div class="chart-card">
+        <div class="chart-card-title">Cash Breakdown</div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div class="mini-donut" style="background: conic-gradient(var(--flip-primary) 0deg 270deg, #64748b 270deg 290deg, #94a3b8 290deg 360deg);">
+            <div class="mini-donut-center">
+              <span class="mini-donut-value">$12K</span>
+              <span class="mini-donut-label">Total</span>
+            </div>
+          </div>
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+              <span style="width: 10px; height: 10px; background: var(--flip-primary); border-radius: 2px;"></span>
+              <span style="font-size: 12px; color: var(--ws-text-secondary);">Down Payment</span>
+              <span style="font-size: 12px; font-weight: 600; margin-left: auto;">$10.7K</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+              <span style="width: 10px; height: 10px; background: #64748b; border-radius: 2px;"></span>
+              <span style="font-size: 12px; color: var(--ws-text-secondary);">Purchase Costs</span>
+              <span style="font-size: 12px; font-weight: 600; margin-left: auto;">$1.2K</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="width: 10px; height: 10px; background: #94a3b8; border-radius: 2px;"></span>
+              <span style="font-size: 12px; color: var(--ws-text-secondary);">Points/Fees</span>
+              <span style="font-size: 12px; font-weight: 600; margin-left: auto;">$0.6K</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Purchase Criteria -->
+      <div class="chart-card">
+        <div class="chart-card-title">Purchase Criteria</div>
+        <div class="criteria-list">
+          <div class="criteria-item pass">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Total Profit > $10,000</span>
+          </div>
+          <div class="criteria-item pass">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>ROI > 25%</span>
+          </div>
+          <div class="criteria-item pass">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Purchase ≤ 70% ARV</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  
+  <script>
+    // Initialize sliders with progress
+    document.querySelectorAll('.slider-input').forEach(slider => {
+      function updateProgress() {
+        const min = parseFloat(slider.min);
+        const max = parseFloat(slider.max);
+        const value = parseFloat(slider.value);
+        const progress = ((value - min) / (max - min)) * 100;
+        slider.style.background = `linear-gradient(to right, #d97706 0%, #d97706 ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+      }
+      updateProgress();
+      slider.addEventListener('input', updateProgress);
+    });
+    
+    // Add hover effect to slider rows
+    document.querySelectorAll('.data-row.has-slider').forEach(row => {
+      row.addEventListener('mouseenter', function() {
+        this.style.backgroundColor = 'rgba(217, 119, 6, 0.04)';
+      });
+      row.addEventListener('mouseleave', function() {
+        this.style.backgroundColor = '';
+      });
+    });
+    
+    // Holding period buttons
+    document.querySelectorAll('.holding-period-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.holding-period-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+    
+    // Strategy Dropdown
+    function toggleStrategyDropdown() {
+      const dropdown = document.getElementById('strategy-dropdown');
+      dropdown.classList.toggle('open');
+    }
+    
+    function selectStrategy(strategy, name, url) {
+      document.getElementById('current-strategy-name').textContent = name;
+      document.querySelectorAll('.strategy-option').forEach(opt => {
+        opt.classList.remove('active');
+      });
+      document.querySelector(`[data-strategy="${strategy}"]`).classList.add('active');
+      document.getElementById('strategy-dropdown').classList.remove('open');
+      
+      if (url && url !== '#' && !window.location.href.includes(url)) {
+        window.location.href = url;
+      }
+    }
+    
+    document.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('strategy-dropdown');
+      if (!dropdown.contains(event.target)) {
+        dropdown.classList.remove('open');
+      }
+    });
+  </script>
+</body>
+</html>
+
