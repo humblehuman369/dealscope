@@ -32,30 +32,36 @@ export function CashFlowSection() {
           </div>
           
           <DataRow label="Gross Rent" icon={<Home className="w-4 h-4" />}>
-            <div className="flex items-center gap-2">
-              <EditableField
-                value={assumptions.monthlyRent}
-                onChange={(val) => updateAssumption('monthlyRent', val)}
-                format="currency"
-              />
-              <span className="text-[var(--ws-text-muted)] text-xs">
-                ({formatValue(derived.annualGrossRent)}{label})
+            <div className="value-group">
+              <span className="value-primary">
+                <EditableField
+                  value={assumptions.monthlyRent}
+                  onChange={(val) => updateAssumption('monthlyRent', val)}
+                  format="currency"
+                />
+              </span>
+              <span className="value-secondary">
+                {formatValue(derived.annualGrossRent)}{label}
               </span>
             </div>
           </DataRow>
           
           <DataRow label="Vacancy">
-            <div className="flex items-center gap-2">
-              <EditableField
-                value={assumptions.vacancyRate}
-                onChange={(val) => updateAssumption('vacancyRate', val)}
-                format="percent"
-              />
-              <DisplayField 
-                value={-derived.vacancy * multiplier} 
-                format="currency"
-                isNegative
-              />
+            <div className="value-group">
+              <span className="value-primary">
+                <EditableField
+                  value={assumptions.vacancyRate}
+                  onChange={(val) => updateAssumption('vacancyRate', val)}
+                  format="percent"
+                />
+              </span>
+              <span className="value-secondary">
+                <DisplayField 
+                  value={-derived.vacancy * multiplier} 
+                  format="currency"
+                  isNegative
+                />
+              </span>
             </div>
           </DataRow>
           
@@ -85,40 +91,46 @@ export function CashFlowSection() {
           </DataRow>
           
           <DataRow label="Property Management" icon={<Users className="w-4 h-4" />}>
-            <div className="flex items-center gap-2">
-              <EditableField
-                value={assumptions.managementPct}
-                onChange={(val) => updateAssumption('managementPct', val)}
-                format="percent"
-              />
-              <span className="text-[var(--ws-text-muted)] text-xs">
-                ({formatValue(derived.propertyManagement)})
+            <div className="value-group">
+              <span className="value-primary">
+                <EditableField
+                  value={assumptions.managementPct}
+                  onChange={(val) => updateAssumption('managementPct', val)}
+                  format="percent"
+                />
+              </span>
+              <span className="value-secondary">
+                {formatValue(derived.propertyManagement)}
               </span>
             </div>
           </DataRow>
           
           <DataRow label="Maintenance" icon={<Wrench className="w-4 h-4" />}>
-            <div className="flex items-center gap-2">
-              <EditableField
-                value={assumptions.maintenancePct}
-                onChange={(val) => updateAssumption('maintenancePct', val)}
-                format="percent"
-              />
-              <span className="text-[var(--ws-text-muted)] text-xs">
-                ({formatValue(derived.maintenance)})
+            <div className="value-group">
+              <span className="value-primary">
+                <EditableField
+                  value={assumptions.maintenancePct}
+                  onChange={(val) => updateAssumption('maintenancePct', val)}
+                  format="percent"
+                />
+              </span>
+              <span className="value-secondary">
+                {formatValue(derived.maintenance)}
               </span>
             </div>
           </DataRow>
           
           <DataRow label="Capital Expenditures" icon={<PiggyBank className="w-4 h-4" />}>
-            <div className="flex items-center gap-2">
-              <EditableField
-                value={assumptions.capexReservePct}
-                onChange={(val) => updateAssumption('capexReservePct', val)}
-                format="percent"
-              />
-              <span className="text-[var(--ws-text-muted)] text-xs">
-                ({formatValue(derived.capex)})
+            <div className="value-group">
+              <span className="value-primary">
+                <EditableField
+                  value={assumptions.capexReservePct}
+                  onChange={(val) => updateAssumption('capexReservePct', val)}
+                  format="percent"
+                />
+              </span>
+              <span className="value-secondary">
+                {formatValue(derived.capex)}
               </span>
             </div>
           </DataRow>
