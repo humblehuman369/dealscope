@@ -75,10 +75,10 @@ export function WorksheetLayout({ property, propertyId }: WorksheetLayoutProps) 
 
   return (
     <>
-      {/* Mobile menu button */}
+      {/* Mobile menu button - visible below 900px */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md border border-[var(--ws-border)]"
+        className="ws-hidden-desktop fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md border border-[var(--ws-border)]"
       >
         <Menu className="w-5 h-5 text-[var(--ws-text-primary)]" />
       </button>
@@ -102,10 +102,10 @@ export function WorksheetLayout({ property, propertyId }: WorksheetLayoutProps) 
         </div>
       </main>
       
-      {/* Mobile overlay */}
+      {/* Mobile overlay - visible below 900px */}
       {sidebarOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          className="ws-hidden-desktop fixed inset-0 bg-black/50 z-30"
           onClick={() => setSidebarOpen(false)}
         />
       )}

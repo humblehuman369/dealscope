@@ -1,5 +1,18 @@
 /* Property Worksheet - Light Mode Design System */
 
+/* Custom breakpoint classes for worksheet (900px) */
+@media (min-width: 900px) {
+  .ws-hidden-desktop {
+    display: none !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .ws-hidden-mobile {
+    display: none !important;
+  }
+}
+
 :root {
   /* Background Colors */
   --ws-bg: #f8fafc;
@@ -85,7 +98,21 @@
 
 .worksheet-content {
   padding: 24px;
-  max-width: 1200px;
+  max-width: 800px; /* Tighter ledger-style width */
+}
+
+/* Two-column layout for wider screens */
+@media (min-width: 1400px) {
+  .worksheet-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1400px;
+  }
+  
+  .worksheet-content > .section-card {
+    margin-bottom: 0;
+  }
 }
 
 /* Sidebar Navigation */
@@ -169,12 +196,13 @@
   padding: 0;
 }
 
-/* Data Rows */
+/* Data Rows - Ledger Style */
 .data-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
+  gap: 16px;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--ws-border-light);
   font-size: 14px;
 }
@@ -190,6 +218,7 @@
 .data-row.total {
   background-color: var(--ws-bg-alt);
   font-weight: 600;
+  padding: 10px 16px;
 }
 
 .data-row.highlight {
@@ -201,6 +230,7 @@
   align-items: center;
   gap: 8px;
   color: var(--ws-text-label);
+  white-space: nowrap;
 }
 
 .data-label .icon {
@@ -214,7 +244,10 @@
   color: var(--ws-text-primary);
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
+  text-align: right;
+  min-width: 100px;
 }
 
 .data-value.positive {
@@ -417,7 +450,7 @@
 }
 
 /* Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 900px) {
   .worksheet-sidebar {
     transform: translateX(-100%);
     transition: transform 0.3s ease;
@@ -439,6 +472,11 @@
 @media (max-width: 640px) {
   .summary-cards {
     grid-template-columns: 1fr;
+  }
+  
+  .data-row {
+    padding: 10px 12px;
+    font-size: 13px;
   }
 }
 
