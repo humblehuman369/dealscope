@@ -872,9 +872,16 @@
     /* Summary Cards */
     .summary-cards {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 12px;
       margin-bottom: 24px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: white;
+      padding: 16px 0;
+      margin: -16px 0 24px 0;
+      border-bottom: 1px solid var(--ws-border);
     }
     
     .summary-card {
@@ -1368,9 +1375,15 @@
       }
     }
     
-    @media (max-width: 1100px) {
+    @media (max-width: 1200px) {
       .summary-cards {
         grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    @media (max-width: 900px) {
+      .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
       }
       .summary-card.target-price {
         grid-column: span 1;
@@ -1388,6 +1401,7 @@
       
       .summary-cards {
         grid-template-columns: repeat(2, 1fr);
+        position: static;
       }
       
       .summary-card.target-price {
@@ -1517,6 +1531,11 @@
         <div class="summary-card">
           <div class="summary-card-label">CoC Return</div>
           <div class="summary-card-value positive">10.6%</div>
+        </div>
+        <div class="summary-card" style="background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, white 100%); border-color: var(--iq-teal-light);">
+          <div class="summary-card-label">Deal Score</div>
+          <div class="summary-card-value" id="summary-deal-score" style="color: var(--iq-teal);">85</div>
+          <div class="summary-card-subtitle">Good Investment</div>
         </div>
       </div>
       
@@ -2001,50 +2020,6 @@
           <div class="pricing-summary-item">
             <div class="pricing-summary-value positive" id="above-target">+$43,600</div>
             <div class="pricing-summary-label">vs Target</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Deal Score Gauge -->
-      <div class="chart-card">
-        <div class="chart-card-title">Deal Score</div>
-        <div class="gauge-container">
-          <svg class="gauge-svg" viewBox="0 0 140 80">
-            <!-- Background arc -->
-            <path d="M 15 70 A 55 55 0 0 1 125 70" fill="none" stroke="#e2e8f0" stroke-width="12" stroke-linecap="round"/>
-            <!-- Score arc (85% = good deal) -->
-            <path d="M 15 70 A 55 55 0 0 1 110 35" fill="none" stroke="url(#gaugeGradient)" stroke-width="12" stroke-linecap="round"/>
-            <defs>
-              <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" style="stop-color:#007ea7"/>
-                <stop offset="100%" style="stop-color:#33a5c4"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <div class="gauge-value" id="deal-score">85</div>
-          <div class="gauge-label">Good Investment</div>
-        </div>
-      </div>
-      
-      <!-- Key Metrics 2x2 Grid - Dynamic -->
-      <div class="chart-card">
-        <div class="chart-card-title">Key Metrics</div>
-        <div class="mini-stats-grid">
-          <div class="mini-stat">
-            <div class="mini-stat-value" id="metric-cap-rate">8.8%</div>
-            <div class="mini-stat-label">Cap Rate</div>
-          </div>
-          <div class="mini-stat">
-            <div class="mini-stat-value" id="metric-coc-return">10.6%</div>
-            <div class="mini-stat-label">CoC Return</div>
-          </div>
-          <div class="mini-stat">
-            <div class="mini-stat-value" id="metric-dscr">1.38x</div>
-            <div class="mini-stat-label">DSCR</div>
-          </div>
-          <div class="mini-stat">
-            <div class="mini-stat-value" id="metric-rent-value">1.12%</div>
-            <div class="mini-stat-label">Rent/Value</div>
           </div>
         </div>
       </div>
