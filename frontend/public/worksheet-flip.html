@@ -1560,18 +1560,33 @@
       });
     });
     
-    // Strategy Dropdown - Global functions for onclick handlers
-    window.toggleStrategyDropdown = function() {
+    // ===== STRATEGY DROPDOWN =====
+    (function() {
       const dropdown = document.getElementById('strategy-dropdown');
-      dropdown.classList.toggle('open');
-    }
+      const trigger = document.querySelector('.strategy-dropdown-trigger');
+      
+      if (trigger) {
+        trigger.addEventListener('click', function(event) {
+          event.stopPropagation();
+          dropdown.classList.toggle('open');
+        });
+      }
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(event) {
+        if (dropdown && !dropdown.contains(event.target)) {
+          dropdown.classList.remove('open');
+        }
+      });
+    })();
     
     window.selectStrategy = function(strategy, name, url) {
       document.getElementById('current-strategy-name').textContent = name;
       document.querySelectorAll('.strategy-option').forEach(opt => {
         opt.classList.remove('active');
       });
-      document.querySelector(`[data-strategy="${strategy}"]`).classList.add('active');
+      const activeOption = document.querySelector(`[data-strategy="${strategy}"]`);
+      if (activeOption) activeOption.classList.add('active');
       document.getElementById('strategy-dropdown').classList.remove('open');
       
       if (url && url !== '#' && !window.location.href.includes(url)) {
@@ -1579,16 +1594,11 @@
       }
     }
     
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(event) {
+    // Keep window.toggleStrategyDropdown for backwards compatibility with onclick
+    window.toggleStrategyDropdown = function() {
       const dropdown = document.getElementById('strategy-dropdown');
-      const trigger = document.querySelector('.strategy-dropdown-trigger');
-      
-      // Only close if clicking outside the dropdown AND not on the trigger
-      if (dropdown && !dropdown.contains(event.target)) {
-        dropdown.classList.remove('open');
-      }
-    });
+      if (dropdown) dropdown.classList.toggle('open');
+    }
   </script>
 </body>
 </html>

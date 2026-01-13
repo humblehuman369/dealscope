@@ -2861,11 +2861,25 @@
       });
     });
     
-    // ===== STRATEGY DROPDOWN - Global functions for onclick handlers =====
-    window.toggleStrategyDropdown = function() {
+    // ===== STRATEGY DROPDOWN =====
+    (function() {
       const dropdown = document.getElementById('strategy-dropdown');
-      dropdown.classList.toggle('open');
-    }
+      const trigger = document.querySelector('.strategy-dropdown-trigger');
+      
+      if (trigger) {
+        trigger.addEventListener('click', function(event) {
+          event.stopPropagation();
+          dropdown.classList.toggle('open');
+        });
+      }
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(event) {
+        if (dropdown && !dropdown.contains(event.target)) {
+          dropdown.classList.remove('open');
+        }
+      });
+    })();
     
     window.selectStrategy = function(strategy, name, url) {
       // Update the button text
@@ -2875,7 +2889,8 @@
       document.querySelectorAll('.strategy-option').forEach(opt => {
         opt.classList.remove('active');
       });
-      document.querySelector(`[data-strategy="${strategy}"]`).classList.add('active');
+      const activeOption = document.querySelector(`[data-strategy="${strategy}"]`);
+      if (activeOption) activeOption.classList.add('active');
       
       // Close dropdown
       document.getElementById('strategy-dropdown').classList.remove('open');
@@ -2886,13 +2901,11 @@
       }
     }
     
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(event) {
+    // Keep window.toggleStrategyDropdown for backwards compatibility with onclick
+    window.toggleStrategyDropdown = function() {
       const dropdown = document.getElementById('strategy-dropdown');
-      if (dropdown && !dropdown.contains(event.target)) {
-        dropdown.classList.remove('open');
-      }
-    });
+      if (dropdown) dropdown.classList.toggle('open');
+    }
     
     // Initial calculation
     recalculateAll();
