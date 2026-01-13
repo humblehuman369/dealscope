@@ -872,8 +872,8 @@
     /* Summary Cards */
     .summary-cards {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
       margin-bottom: 24px;
     }
     
@@ -881,8 +881,25 @@
       background: white;
       border: 1px solid var(--ws-border);
       border-radius: 12px;
-      padding: 16px 20px;
+      padding: 14px 16px;
       box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+    
+    .summary-card.target-price {
+      background: linear-gradient(135deg, #f0fdfa 0%, #e0f7fa 100%);
+      border: 2px solid var(--iq-teal);
+      position: relative;
+    }
+    
+    .summary-card.target-price::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: 20px;
+      right: 20px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--iq-teal), var(--iq-teal-light));
+      border-radius: 0 0 3px 3px;
     }
     
     .summary-card-label {
@@ -1200,6 +1217,141 @@
       color: var(--ws-text-muted);
     }
     
+    /* ===== PRICING LADDER ===== */
+    .pricing-ladder {
+      position: relative;
+      padding: 16px 0;
+    }
+    
+    .pricing-ladder-track {
+      position: absolute;
+      left: 50%;
+      top: 20px;
+      bottom: 20px;
+      width: 4px;
+      background: linear-gradient(180deg, #dc2626 0%, #f97316 25%, #eab308 50%, #10b981 75%, var(--iq-teal) 100%);
+      border-radius: 2px;
+      transform: translateX(-50%);
+    }
+    
+    .pricing-ladder-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      position: relative;
+    }
+    
+    .pricing-ladder-label {
+      flex: 1;
+      text-align: right;
+      padding-right: 20px;
+      font-size: 11px;
+      color: var(--ws-text-muted);
+    }
+    
+    .pricing-ladder-marker {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--ws-border);
+      z-index: 1;
+      flex-shrink: 0;
+    }
+    
+    .pricing-ladder-marker.active {
+      border-color: var(--iq-teal);
+      background: var(--iq-teal);
+      box-shadow: 0 0 0 4px rgba(0, 126, 167, 0.2);
+    }
+    
+    .pricing-ladder-marker.target {
+      border-color: #10b981;
+      background: #10b981;
+    }
+    
+    .pricing-ladder-marker.breakeven {
+      border-color: #eab308;
+      background: #eab308;
+    }
+    
+    .pricing-ladder-marker.list {
+      border-color: #dc2626;
+      background: white;
+    }
+    
+    .pricing-ladder-value {
+      flex: 1;
+      padding-left: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    .pricing-ladder-value.current {
+      color: var(--iq-teal);
+      font-size: 14px;
+    }
+    
+    .pricing-ladder-value.target {
+      color: #10b981;
+    }
+    
+    .pricing-ladder-diff {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+    
+    .pricing-ladder-diff.positive {
+      background: var(--ws-positive-light);
+      color: #10b981;
+    }
+    
+    .pricing-ladder-diff.negative {
+      background: var(--ws-negative-light);
+      color: var(--ws-negative);
+    }
+    
+    /* Pricing ladder summary */
+    .pricing-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--ws-border-light);
+    }
+    
+    .pricing-summary-item {
+      text-align: center;
+      padding: 8px;
+      background: var(--ws-bg-alt);
+      border-radius: 6px;
+    }
+    
+    .pricing-summary-value {
+      font-size: 14px;
+      font-weight: 700;
+    }
+    
+    .pricing-summary-value.positive {
+      color: #10b981;
+    }
+    
+    .pricing-summary-value.negative {
+      color: var(--ws-negative);
+    }
+    
+    .pricing-summary-label {
+      font-size: 9px;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
     @media (max-width: 1200px) {
       .worksheet-main-area {
         grid-template-columns: 200px 1fr 280px;
@@ -1216,6 +1368,15 @@
       }
     }
     
+    @media (max-width: 1100px) {
+      .summary-cards {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .summary-card.target-price {
+        grid-column: span 1;
+      }
+    }
+    
     @media (max-width: 768px) {
       .worksheet-main-area {
         grid-template-columns: 1fr;
@@ -1227,6 +1388,10 @@
       
       .summary-cards {
         grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .summary-card.target-price {
+        grid-column: span 2;
       }
       
       .section-two-column {
@@ -1331,6 +1496,11 @@
     <main class="worksheet-content-area">
       <!-- Summary Cards -->
       <div class="summary-cards">
+        <div class="summary-card target-price">
+          <div class="summary-card-label">Target Price</div>
+          <div class="summary-card-value" id="target-price-value" style="color: var(--iq-teal);">$680,000</div>
+          <div class="summary-card-subtitle">Breakeven Price</div>
+        </div>
         <div class="summary-card">
           <div class="summary-card-label">Cash Needed</div>
           <div class="summary-card-value">$166,428</div>
@@ -1776,6 +1946,65 @@
     
     <!-- Charts Sidebar - Dynamic Visualizations -->
     <aside class="worksheet-charts-sidebar">
+      <!-- Pricing Ladder -->
+      <div class="chart-card">
+        <div class="chart-card-title">Pricing Ladder</div>
+        <div class="pricing-ladder">
+          <div class="pricing-ladder-track"></div>
+          
+          <!-- List Price -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">List Price</div>
+            <div class="pricing-ladder-marker list"></div>
+            <div class="pricing-ladder-value">$795,000</div>
+          </div>
+          
+          <!-- Current Offer -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">Your Offer</div>
+            <div class="pricing-ladder-marker active"></div>
+            <div class="pricing-ladder-value current" id="ladder-current-price">$723,600
+              <span class="pricing-ladder-diff negative">-9%</span>
+            </div>
+          </div>
+          
+          <!-- Target Price (Breakeven) -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">Target Price</div>
+            <div class="pricing-ladder-marker target"></div>
+            <div class="pricing-ladder-value target" id="ladder-target-price">$680,000
+              <span class="pricing-ladder-diff positive">-14%</span>
+            </div>
+          </div>
+          
+          <!-- 10% CoC Price -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">10% CoC</div>
+            <div class="pricing-ladder-marker breakeven"></div>
+            <div class="pricing-ladder-value" id="ladder-10-coc">$650,000</div>
+          </div>
+          
+          <!-- MAO (Maximum Allowable Offer) -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">MAO (70%)</div>
+            <div class="pricing-ladder-marker"></div>
+            <div class="pricing-ladder-value" id="ladder-mao">$556,500</div>
+          </div>
+        </div>
+        
+        <!-- Pricing Summary -->
+        <div class="pricing-summary">
+          <div class="pricing-summary-item">
+            <div class="pricing-summary-value negative" id="discount-from-list">-$71,400</div>
+            <div class="pricing-summary-label">vs List Price</div>
+          </div>
+          <div class="pricing-summary-item">
+            <div class="pricing-summary-value positive" id="above-target">+$43,600</div>
+            <div class="pricing-summary-label">vs Target</div>
+          </div>
+        </div>
+      </div>
+      
       <!-- Deal Score Gauge -->
       <div class="chart-card">
         <div class="chart-card-title">Deal Score</div>
@@ -2189,6 +2418,9 @@
         equity,
         loanAmount
       });
+      
+      // Update Pricing Ladder
+      updatePricingLadder(purchasePrice, grossRentMonthly, totalOpEx, annualDebtService);
     }
     
     // Get slider value by label text
@@ -2282,6 +2514,83 @@
         } else {
           el.style.background = 'linear-gradient(90deg, #f97316 0%, #eab308 100%)';
         }
+      }
+    }
+    
+    // ===== PRICING LADDER CALCULATIONS =====
+    function updatePricingLadder(purchasePrice, grossRentMonthly, totalOpEx, annualDebtService) {
+      const listPrice = 795000; // Could be dynamic from property data
+      const arv = 795960; // After Repair Value
+      
+      // Calculate breakeven price (where cash flow = 0)
+      // At breakeven: NOI = Debt Service
+      // We need to find the price where this is true
+      const grossRentAnnual = grossRentMonthly * 12;
+      const effectiveIncome = grossRentAnnual * 0.92; // 8% vacancy
+      const noi = effectiveIncome - totalOpEx;
+      
+      // For a rough breakeven calculation:
+      // Breakeven is where cash flow = 0, meaning we can pay more for the property
+      // Lower price = lower mortgage = positive cash flow
+      // We calculate what price gives us 0 cash flow at current terms
+      const breakeven = purchasePrice - (annualDebtService - noi) / 0.08 * 0.8; // Rough approximation
+      const targetPrice = Math.round(breakeven / 1000) * 1000; // Round to nearest $1000
+      
+      // Calculate price for 10% CoC return
+      const tenPercentCoCPrice = purchasePrice * 0.9; // Simplified
+      
+      // MAO (Maximum Allowable Offer) - 70% of ARV
+      const mao = arv * 0.7;
+      
+      // Update Target Price summary card
+      updateElement('target-price-value', formatCurrency(targetPrice));
+      
+      // Update Pricing Ladder
+      updateElement('ladder-current-price', formatCurrency(purchasePrice));
+      updateElement('ladder-target-price', formatCurrency(targetPrice));
+      updateElement('ladder-10-coc', formatCurrency(tenPercentCoCPrice));
+      updateElement('ladder-mao', formatCurrency(mao));
+      
+      // Update discount/premium indicators
+      const discountFromList = purchasePrice - listPrice;
+      const aboveTarget = purchasePrice - targetPrice;
+      
+      const discountEl = document.getElementById('discount-from-list');
+      if (discountEl) {
+        if (discountFromList <= 0) {
+          discountEl.textContent = formatCurrency(discountFromList);
+          discountEl.className = 'pricing-summary-value positive';
+        } else {
+          discountEl.textContent = '+' + formatCurrency(discountFromList);
+          discountEl.className = 'pricing-summary-value negative';
+        }
+      }
+      
+      const aboveTargetEl = document.getElementById('above-target');
+      if (aboveTargetEl) {
+        if (aboveTarget <= 0) {
+          aboveTargetEl.textContent = formatCurrency(aboveTarget);
+          aboveTargetEl.className = 'pricing-summary-value positive';
+        } else {
+          aboveTargetEl.textContent = '+' + formatCurrency(aboveTarget);
+          aboveTargetEl.className = 'pricing-summary-value negative';
+        }
+      }
+      
+      // Update percentage badges
+      const listPct = ((purchasePrice - listPrice) / listPrice * 100).toFixed(0);
+      const targetPct = ((targetPrice - listPrice) / listPrice * 100).toFixed(0);
+      
+      const currentPriceEl = document.getElementById('ladder-current-price');
+      if (currentPriceEl) {
+        currentPriceEl.innerHTML = formatCurrency(purchasePrice) + 
+          ` <span class="pricing-ladder-diff ${listPct <= 0 ? 'positive' : 'negative'}">${listPct}%</span>`;
+      }
+      
+      const targetPriceEl = document.getElementById('ladder-target-price');
+      if (targetPriceEl) {
+        targetPriceEl.innerHTML = formatCurrency(targetPrice) + 
+          ` <span class="pricing-ladder-diff positive">${targetPct}%</span>`;
       }
     }
     
