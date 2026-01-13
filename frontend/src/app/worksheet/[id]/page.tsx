@@ -7,7 +7,8 @@ import { useAuth } from '@/context/AuthContext'
 import { WorksheetLayout } from '@/components/worksheet/WorksheetLayout'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+// Use relative paths for API calls to go through Next.js API routes
+const API_BASE_URL = ''
 
 interface SavedProperty {
   id: string
