@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, Suspense } from 'react'
+import React, { useState, useEffect, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Sun, Moon } from 'lucide-react'
@@ -12,6 +12,9 @@ import {
   StrategyId
 } from '@/components/analytics'
 import { useTheme } from '@/context/ThemeContext'
+import { useAuth } from '@/context/AuthContext'
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
 /**
  * Property Analytics Page
@@ -62,12 +65,18 @@ function PropertyContent() {
   const addressParam = searchParams.get('address')
   const strategyParam = searchParams.get('strategy') as StrategyId | null
   const { theme, toggleTheme } = useTheme()
+  const { isAuthenticated, setShowAuthModal } = useAuth()
   const viewMode = useAnalyticsViewMode()
   
   const [property, setProperty] = useState<PropertyData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedStrategy, setSelectedStrategy] = useState<StrategyId | null>(strategyParam)
+  
+  // Save property state
+  const [isSaved, setIsSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveMessage, setSaveMessage] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchProperty() {
@@ -204,11 +213,87 @@ function PropertyContent() {
     }
   }
 
-  // Handle save
-  const handleSave = () => {
-    // TODO: Implement save functionality
-    console.log('Save property')
-  }
+  // Handle save property
+  const handleSave = useCallback(async () => {
+    // Require authentication
+    if (!isAuthenticated) {
+      setShowAuthModal('login')
+      return
+    }
+
+    if (!property || isSaving) return
+
+    // If already saved, show message
+    if (isSaved) {
+      setSaveMessage('Property already saved!')
+      setTimeout(() => setSaveMessage(null), 2000)
+      return
+    }
+
+    setIsSaving(true)
+    setSaveMessage(null)
+
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        setShowAuthModal('login')
+        return
+      }
+
+      const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`.trim()
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/saved-properties/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          address_street: property.address,
+          address_city: property.city,
+          address_state: property.state,
+          address_zip: property.zipCode,
+          full_address: fullAddress,
+          status: 'watching',
+          property_data_snapshot: {
+            listPrice: property.listPrice,
+            monthlyRent: property.monthlyRent,
+            averageDailyRate: property.averageDailyRate,
+            occupancyRate: property.occupancyRate,
+            propertyTaxes: property.propertyTaxes,
+            insurance: property.insurance,
+            bedrooms: property.bedrooms,
+            bathrooms: property.bathrooms,
+            sqft: property.sqft,
+            arv: property.arv,
+            photos: property.photos,
+          },
+        }),
+      })
+
+      if (response.ok) {
+        setIsSaved(true)
+        setSaveMessage('Property saved!')
+        setTimeout(() => setSaveMessage(null), 3000)
+      } else if (response.status === 409) {
+        // Property already saved
+        setIsSaved(true)
+        setSaveMessage('Property already in your portfolio')
+        setTimeout(() => setSaveMessage(null), 3000)
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Failed to save property:', errorData)
+        setSaveMessage('Failed to save. Please try again.')
+        setTimeout(() => setSaveMessage(null), 3000)
+      }
+    } catch (err) {
+      console.error('Error saving property:', err)
+      setSaveMessage('Failed to save. Please try again.')
+      setTimeout(() => setSaveMessage(null), 3000)
+    } finally {
+      setIsSaving(false)
+    }
+  }, [property, isAuthenticated, setShowAuthModal, isSaving, isSaved])
 
   // Handle share
   const handleShare = () => {
@@ -270,6 +355,9 @@ function PropertyContent() {
         onShare={handleShare}
         onGenerateLOI={handleGenerateLOI}
         onTryItNow={handleTryItNow}
+        isSaved={isSaved}
+        isSaving={isSaving}
+        saveMessage={saveMessage}
       />
     )
   }

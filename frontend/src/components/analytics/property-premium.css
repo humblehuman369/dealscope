@@ -226,8 +226,9 @@ html:not(.dark) .premium-hero-placeholder {
   background: linear-gradient(to bottom, rgba(10, 22, 40, 0.3) 0%, rgba(10, 22, 40, 0) 30%, rgba(10, 22, 40, 0.8) 70%, #0A1628 100%);
 }
 
+/* Light mode: minimal overlay - only subtle gradient at bottom for text readability */
 html:not(.dark) .premium-hero-overlay {
-  background: linear-gradient(to bottom, rgba(248, 250, 252, 0.3) 0%, rgba(248, 250, 252, 0) 30%, rgba(248, 250, 252, 0.85) 70%, #f8fafc 100%);
+  background: linear-gradient(to bottom, transparent 0%, transparent 60%, rgba(0, 0, 0, 0.15) 100%);
 }
 
 .premium-image-counter {
@@ -758,6 +759,30 @@ html:not(.dark) .premium-action-btn span {
 
 html:not(.dark) .premium-action-btn svg {
   stroke: #64748b;
+}
+
+/* Saved state */
+.premium-action-btn-saved span {
+  color: #22c55e !important;
+}
+
+.premium-action-btn-saved svg {
+  stroke: #22c55e !important;
+  fill: #22c55e;
+}
+
+html:not(.dark) .premium-action-btn-saved span {
+  color: #16a34a !important;
+}
+
+html:not(.dark) .premium-action-btn-saved svg {
+  stroke: #16a34a !important;
+  fill: #16a34a;
+}
+
+.premium-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .premium-primary-btn {
