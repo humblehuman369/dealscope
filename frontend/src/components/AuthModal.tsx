@@ -113,13 +113,15 @@ export default function AuthModal() {
       if (isLogin) {
         await login(email, password)
         setSuccess('Login successful!')
-        // Redirect to dashboard after successful login
+        // Redirect to dashboard first, then close modal
         router.push('/dashboard')
+        setShowAuthModal(null)
       } else {
         await register(email, password, fullName)
         setSuccess('Account created successfully!')
-        // Redirect to dashboard after successful registration
+        // Redirect to dashboard first, then close modal
         router.push('/dashboard')
+        setShowAuthModal(null)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
