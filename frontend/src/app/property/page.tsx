@@ -13,6 +13,7 @@ import {
 } from '@/components/analytics'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
+import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
@@ -77,6 +78,7 @@ function PropertyContent() {
   const [isSaved, setIsSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
+  const [showSearchModal, setShowSearchModal] = useState(false)
 
   useEffect(() => {
     async function fetchProperty() {
@@ -322,18 +324,21 @@ function PropertyContent() {
 
   if (error && !property) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-[#0b1426] flex flex-col items-center justify-center p-6 transition-colors">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-navy-900 dark:text-white mb-4">Property Not Found</h1>
-          <p className="text-neutral-500 dark:text-gray-400 mb-8">{error}</p>
-          <Link 
-            href="/search"
-            className="px-6 py-3 bg-brand-500 dark:bg-[#4dd0e1] text-white dark:text-[#07172e] font-semibold rounded-xl hover:bg-brand-600 dark:hover:bg-[#3bc4d5] transition-colors"
-          >
-            Search for a Property
-          </Link>
+      <>
+        <div className="min-h-screen bg-neutral-50 dark:bg-[#0b1426] flex flex-col items-center justify-center p-6 transition-colors">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-navy-900 dark:text-white mb-4">Property Not Found</h1>
+            <p className="text-neutral-500 dark:text-gray-400 mb-8">{error}</p>
+            <button 
+              onClick={() => setShowSearchModal(true)}
+              className="px-6 py-3 bg-brand-500 dark:bg-[#4dd0e1] text-white dark:text-[#07172e] font-semibold rounded-xl hover:bg-brand-600 dark:hover:bg-[#3bc4d5] transition-colors"
+            >
+              Search for a Property
+            </button>
+          </div>
         </div>
-      </div>
+        <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
+      </>
     )
   }
 
@@ -341,9 +346,9 @@ function PropertyContent() {
     return <AnalyticsPageSkeleton />
   }
 
-  // Handle Try It Now - Navigate to search page
+  // Handle Try It Now - Open search modal
   const handleTryItNow = () => {
-    router.push('/search')
+    setShowSearchModal(true)
   }
 
   // If no strategy is selected, show the premium property landing page
@@ -418,6 +423,9 @@ function PropertyContent() {
         onBack={handleBackFromStrategy}
         initialStrategy={selectedStrategy}
       />
+      
+      {/* Search Property Modal */}
+      <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
     </div>
   )
 }

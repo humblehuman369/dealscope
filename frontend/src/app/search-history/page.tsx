@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
+import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { 
   History, Search, MapPin, Building2, Clock, Trash2, 
   ExternalLink, ChevronRight, TrendingUp, Filter,
@@ -62,6 +63,7 @@ export default function SearchHistoryPage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filterSuccessful, setFilterSuccessful] = useState(false)
+  const [showSearchModal, setShowSearchModal] = useState(false)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -335,13 +337,14 @@ export default function SearchHistoryPage() {
               <p className="text-neutral-500 dark:text-neutral-400 mb-6 max-w-sm">
                 Start searching for properties to build your history
               </p>
-              <Link
-                href="/search"
+              <button
+                onClick={() => setShowSearchModal(true)}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors"
               >
                 <Search className="w-4 h-4" />
                 Search Properties
-              </Link>
+              </button>
+              <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
             </div>
           ) : (
             <div className="divide-y divide-neutral-200 dark:divide-neutral-700">

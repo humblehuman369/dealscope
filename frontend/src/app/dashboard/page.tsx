@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
+import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { 
   User, 
   Mail, 
@@ -273,29 +274,51 @@ export default function DashboardPage() {
 // ===========================================
 
 function QuickActionsSection() {
-  const actions = [
-    { label: 'Search Property', href: '/search', icon: Search, color: 'bg-brand-500', description: 'Find and analyze properties' },
+  const [showSearchModal, setShowSearchModal] = useState(false)
+  
+  const linkActions = [
     { label: 'Compare Deals', href: '/compare', icon: BarChart3, color: 'bg-purple-500', description: 'Side-by-side comparison' },
     { label: 'View Strategies', href: '/strategies', icon: Target, color: 'bg-orange-500', description: 'Explore investment types' },
     { label: 'Search History', href: '/search-history', icon: History, color: 'bg-green-500', description: 'Past searches' },
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      {actions.map((action) => (
-        <Link
-          key={action.href}
-          href={action.href}
-          className="group bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 hover:border-brand-300 dark:hover:border-brand-600 hover:shadow-lg transition-all"
+    <>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Search Property - Opens Modal */}
+        <button
+          onClick={() => setShowSearchModal(true)}
+          className="group bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 hover:border-brand-300 dark:hover:border-brand-600 hover:shadow-lg transition-all text-left"
         >
-          <div className={`w-10 h-10 ${action.color} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-            <action.icon className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 bg-brand-500 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+            <Search className="w-5 h-5 text-white" />
           </div>
-          <h3 className="font-semibold text-navy-900 dark:text-white text-sm">{action.label}</h3>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{action.description}</p>
-        </Link>
-      ))}
-    </div>
+          <h3 className="font-semibold text-navy-900 dark:text-white text-sm">Search Property</h3>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Find and analyze properties</p>
+        </button>
+
+        {/* Other Actions - Links */}
+        {linkActions.map((action) => (
+          <Link
+            key={action.href}
+            href={action.href}
+            className="group bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 hover:border-brand-300 dark:hover:border-brand-600 hover:shadow-lg transition-all"
+          >
+            <div className={`w-10 h-10 ${action.color} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+              <action.icon className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="font-semibold text-navy-900 dark:text-white text-sm">{action.label}</h3>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{action.description}</p>
+          </Link>
+        ))}
+      </div>
+
+      {/* Search Property Modal */}
+      <SearchPropertyModal 
+        isOpen={showSearchModal} 
+        onClose={() => setShowSearchModal(false)} 
+      />
+    </>
   )
 }
 
@@ -427,6 +450,7 @@ function PortfolioStatsSection() {
 function RecentActivitySection() {
   const [activity, setActivity] = useState<SearchHistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [showSearchModal, setShowSearchModal] = useState(false)
 
   useEffect(() => {
     const fetchActivity = async () => {
@@ -480,13 +504,19 @@ function RecentActivitySection() {
           ))}
         </div>
       ) : activity.length === 0 ? (
-        <div className="p-6 text-center">
-          <Search className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">No recent searches</p>
-          <Link href="/search" className="text-xs text-brand-500 hover:text-brand-600 font-medium mt-1 inline-block">
-            Search a property
-          </Link>
-        </div>
+        <>
+          <div className="p-6 text-center">
+            <Search className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">No recent searches</p>
+            <button 
+              onClick={() => setShowSearchModal(true)}
+              className="text-xs text-brand-500 hover:text-brand-600 font-medium mt-1 inline-block"
+            >
+              Search a property
+            </button>
+          </div>
+          <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
+        </>
       ) : (
         <div className="divide-y divide-neutral-100 dark:divide-neutral-700">
           {activity.map((item) => (
@@ -564,6 +594,7 @@ function SavedPropertiesSection() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const [showSearchModal, setShowSearchModal] = useState(false)
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -635,6 +666,7 @@ function SavedPropertiesSection() {
   }
 
   return (
+    <>
     <div className="bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-neutral-200 dark:border-neutral-700">
@@ -656,13 +688,13 @@ function SavedPropertiesSection() {
                 className="w-full sm:w-48 pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-navy-700 border border-neutral-200 dark:border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-navy-900 dark:text-white"
               />
             </div>
-            <Link
-              href="/search"
+            <button
+              onClick={() => setShowSearchModal(true)}
               className="p-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors"
               title="Add property"
             >
               <PlusCircle className="w-4 h-4" />
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -711,13 +743,13 @@ function SavedPropertiesSection() {
             {searchQuery || statusFilter ? 'Try adjusting your filters' : 'Search for properties and save them to track here'}
           </p>
           {!searchQuery && !statusFilter && (
-            <Link
-              href="/search"
+            <button
+              onClick={() => setShowSearchModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors text-sm font-medium"
             >
               <Search className="w-4 h-4" />
               Search Properties
-            </Link>
+            </button>
           )}
         </div>
       ) : (
@@ -819,6 +851,8 @@ function SavedPropertiesSection() {
         </div>
       )}
     </div>
+    <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
+    </>
   )
 }
 

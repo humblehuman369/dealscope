@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
 import { StrategyId } from './types'
+import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import './property-premium.css'
 
 interface PropertyData {
@@ -145,6 +146,7 @@ export function PropertyPremiumPage({
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
+  const [showSearchModal, setShowSearchModal] = useState(false)
 
   // Build photo list
   const photos = property.photos && property.photos.length > 0 
@@ -190,7 +192,7 @@ export function PropertyPremiumPage({
         <div className="premium-header-actions">
           <button 
             className="premium-try-btn"
-            onClick={onTryItNow || (() => router.push('/search'))}
+            onClick={onTryItNow || (() => setShowSearchModal(true))}
           >
             <Search className="w-4 h-4" />
             <span>Try It Now</span>
@@ -334,6 +336,9 @@ export function PropertyPremiumPage({
           <span>Share</span>
         </button>
       </div>
+      
+      {/* Search Property Modal */}
+      <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
     </div>
   )
 }
