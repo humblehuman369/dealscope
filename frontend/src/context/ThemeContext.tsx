@@ -14,40 +14,32 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark')
+  // Default to light mode - dark mode is disabled for now
+  const [theme, setThemeState] = useState<Theme>('light')
   const [mounted, setMounted] = useState(false)
 
-  // Load theme from localStorage on mount (default to dark if no preference)
+  // Always use light mode - ignore localStorage
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme | null
-    if (savedTheme) {
-      setThemeState(savedTheme)
-    } else {
-      // Default to dark mode
-      setThemeState('dark')
-    }
+    setThemeState('light')
     setMounted(true)
   }, [])
 
-  // Apply theme class to html element
+  // Ensure dark class is never on the html element
   useEffect(() => {
     if (!mounted) return
     
     const root = document.documentElement
-    if (theme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-    localStorage.setItem('theme', theme)
-  }, [theme, mounted])
+    // Always remove dark class - light mode only
+    root.classList.remove('dark')
+  }, [mounted])
 
+  // Theme toggle is disabled - always returns light
   const toggleTheme = () => {
-    setThemeState(prev => prev === 'light' ? 'dark' : 'light')
+    // No-op: dark mode is disabled
   }
 
   const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme)
+    // No-op: dark mode is disabled, always stay on light
   }
 
   // Always render children - don't block rendering

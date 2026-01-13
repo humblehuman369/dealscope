@@ -1,56 +1,26 @@
-/* Landing Page Styles - Responsive Design */
+/* Landing Page Styles - Light Mode Only */
 
-/* CSS Variables - Dark Mode (Default) */
+/* CSS Variables - Light Mode */
 .landing-page {
-  --deep-navy: #07172e;
-  --dark-bg: #0a0a12;
-  --electric-cyan: #4dd0e1;
-  --iq-blue: #1976d2;
-  --teal: #007ea7;
+  /* Brand Colors */
+  --electric-cyan: #0891b2;
+  --iq-blue: #0369a1;
+  --teal: #0e7490;
+  --deep-navy: #0f172a;
   --white: #ffffff;
   --gray-100: #f7f8fa;
   --gray-200: #e5e7eb;
   --gray-400: #9ca3af;
   --gray-600: #6b7280;
   
-  /* Primary accent color - Red/Coral */
-  --accent-red: #ff5a5f;
-  --accent-red-dark: #e04a4f;
+  /* Primary accent color */
+  --accent-red: #dc2626;
+  --accent-red-dark: #b91c1c;
   
-  /* IQ Icon Color (theme-aware) */
-  --iq-icon-color: #4dd0e1;
+  /* IQ Icon Color */
+  --iq-icon-color: #0891b2;
   
-  /* Theme-aware colors (dark mode defaults) */
-  --bg-primary: #0a0a12;
-  --bg-secondary: #07172e;
-  --bg-card: rgba(255, 255, 255, 0.02);
-  --bg-card-hover: rgba(255, 255, 255, 0.05);
-  --text-primary: #ffffff;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
-  --border-color: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(255, 255, 255, 0.12);
-  --shadow-color: rgba(0, 0, 0, 0.3);
-  --header-bg: rgba(10, 10, 18, 0.85);
-  --scan-glow: rgba(77, 208, 225, 0.3);
-  
-  /* Strategy Colors */
-  --long-rental: #0465f2;
-  --short-rental: #8b5cf6;
-  --brrrr: #f97316;
-  --flip: #ec4899;
-  --hack: #14b8a6;
-  --wholesale: #84cc16;
-
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.6;
-  overflow-x: hidden;
-}
-
-/* Light Mode - Class-based (html:not(.dark)) */
-html:not(.dark) .landing-page {
+  /* Light Theme Colors */
   --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --bg-card: rgba(0, 0, 0, 0.02);
@@ -61,72 +31,22 @@ html:not(.dark) .landing-page {
   --border-color: rgba(0, 0, 0, 0.08);
   --border-hover: rgba(0, 0, 0, 0.15);
   --shadow-color: rgba(0, 0, 0, 0.1);
-  --header-bg: rgba(255, 255, 255, 0.9);
-  --scan-glow: rgba(0, 126, 167, 0.3);
-  --electric-cyan: #0891b2;
-  --teal: #0e7490;
-  --iq-icon-color: #0891b2;
-}
+  --header-bg: rgba(255, 255, 255, 0.92);
+  --scan-glow: rgba(8, 145, 178, 0.2);
+  
+  /* Strategy Colors - Vibrant for light backgrounds */
+  --long-rental: #0465f2;
+  --short-rental: #7c3aed;
+  --brrrr: #ea580c;
+  --flip: #db2777;
+  --hack: #0d9488;
+  --wholesale: #65a30d;
 
-/* Demo section light mode enhancements */
-html:not(.dark) .landing-page .demo-section {
-  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
-}
-
-/* Glowing shadow behind scan scene */
-html:not(.dark) .landing-page .scan-scene {
-  background: radial-gradient(ellipse at center, rgba(8, 145, 178, 0.08) 0%, transparent 70%);
-  border-radius: 32px;
-  padding: 40px;
-  box-shadow: 0 20px 60px rgba(8, 145, 178, 0.15), 0 0 100px rgba(8, 145, 178, 0.1);
-}
-
-/* Darken house SVG for light mode visibility */
-html:not(.dark) .landing-page .scan-house svg path,
-html:not(.dark) .landing-page .scan-house svg rect,
-html:not(.dark) .landing-page .scan-house svg line,
-html:not(.dark) .landing-page .scan-house svg circle,
-html:not(.dark) .landing-page .scan-house svg ellipse {
-  stroke: rgba(8, 145, 178, 0.7) !important;
-}
-
-html:not(.dark) .landing-page .scan-house svg path[fill],
-html:not(.dark) .landing-page .scan-house svg rect[fill] {
-  fill: rgba(8, 145, 178, 0.1) !important;
-}
-
-/* Fix brand line visibility in light mode */
-html:not(.dark) .landing-page .demo-brand-line {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
   color: var(--text-primary);
-}
-
-html:not(.dark) .landing-page .demo-brand-line .highlight {
-  color: var(--electric-cyan);
-}
-
-/* Scan brackets more visible */
-html:not(.dark) .landing-page .scan-bracket {
-  border-color: rgba(8, 145, 178, 0.6);
-}
-
-/* Phone mockup shadow */
-html:not(.dark) .landing-page .scan-phone {
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
-}
-
-/* Data cards with better contrast */
-html:not(.dark) .landing-page .scan-data-card {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(8, 145, 178, 0.2);
-  box-shadow: 0 4px 20px rgba(8, 145, 178, 0.15);
-}
-
-html:not(.dark) .landing-page .scan-data-value {
-  color: var(--text-primary);
-}
-
-html:not(.dark) .landing-page .scan-data-label {
-  color: var(--text-secondary);
+  line-height: 1.6;
+  overflow-x: hidden;
 }
 
 .landing-page * {
@@ -308,18 +228,13 @@ html:not(.dark) .landing-page .scan-data-label {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(77, 208, 225, 0.1);
-  border: 1px solid rgba(77, 208, 225, 0.25);
+  background: rgba(8, 145, 178, 0.08);
+  border: 1px solid rgba(8, 145, 178, 0.2);
   padding: 10px 24px;
   border-radius: 100px;
   margin-top: 0;
   margin-bottom: 56px;
   animation: fadeInDown 0.6s ease-out;
-}
-
-html:not(.dark) .landing-page .hero-eyebrow {
-  background: rgba(8, 145, 178, 0.08);
-  border-color: rgba(8, 145, 178, 0.25);
 }
 
 .landing-page .hero-eyebrow-text {
@@ -328,10 +243,6 @@ html:not(.dark) .landing-page .hero-eyebrow {
   color: var(--electric-cyan);
   letter-spacing: 0.5px;
   text-transform: uppercase;
-}
-
-html:not(.dark) .landing-page .hero-eyebrow-text {
-  color: #0891b2;
 }
 
 @keyframes fadeInDown {
@@ -446,13 +357,13 @@ html:not(.dark) .landing-page .hero-eyebrow-text {
 .landing-page .phone-mockup {
   width: 280px;
   height: 560px;
-  background: linear-gradient(145deg, #1a2d45 0%, #0d1a2d 100%);
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
   border-radius: 40px;
   padding: 10px;
   box-shadow: 
-    0 30px 60px rgba(0,0,0,0.5),
-    0 0 0 1px rgba(77, 208, 225, 0.2),
-    inset 0 0 0 1px rgba(255,255,255,0.05);
+    0 30px 60px rgba(0, 0, 0, 0.25),
+    0 10px 30px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.1);
   position: relative;
   animation: phoneFloat 4s ease-in-out infinite;
 }
@@ -465,7 +376,7 @@ html:not(.dark) .landing-page .hero-eyebrow-text {
 .landing-page .phone-screen {
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, var(--deep-navy) 0%, #0a1e38 100%);
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
   border-radius: 30px;
   position: relative;
   overflow: hidden;
@@ -478,7 +389,7 @@ html:not(.dark) .landing-page .hero-eyebrow-text {
   transform: translateX(-50%);
   width: 100px;
   height: 28px;
-  background: #0d1a2d;
+  background: #0f172a;
   border-radius: 0 0 18px 18px;
   z-index: 20;
 }
@@ -942,13 +853,9 @@ html:not(.dark) .landing-page .hero-eyebrow-text {
   height: 24px;
 }
 
-/* Stats Section - Dark Banner Style */
+/* Stats Section - Accent Banner */
 .landing-page .stats-section {
   padding: 60px 0;
-  background: linear-gradient(180deg, #0b1426 0%, #091020 100%);
-}
-
-html:not(.dark) .landing-page .stats-section {
   background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
 }
 
@@ -975,14 +882,14 @@ html:not(.dark) .landing-page .stats-section {
 .landing-page .stat-value {
   font-size: clamp(2.5rem, 5vw, 3.5rem);
   font-weight: 800;
-  color: var(--electric-cyan);
+  color: #22d3ee;
   margin-bottom: 8px;
   letter-spacing: -1px;
 }
 
 .landing-page .stat-label {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.85);
   font-weight: 500;
 }
 
@@ -1181,7 +1088,8 @@ html:not(.dark) .landing-page .stats-section {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -1191,14 +1099,14 @@ html:not(.dark) .landing-page .stats-section {
 }
 
 .try-modal {
-  background: linear-gradient(180deg, #0d1829 0%, #07172e 100%);
-  border: 1px solid rgba(77, 208, 225, 0.2);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 24px;
   padding: 40px;
   max-width: 500px;
   width: 100%;
   position: relative;
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 40px rgba(77, 208, 225, 0.1);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15), 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .try-modal-close {
@@ -1207,7 +1115,7 @@ html:not(.dark) .landing-page .stats-section {
   right: 16px;
   background: none;
   border: none;
-  color: var(--gray-400);
+  color: var(--text-muted);
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
@@ -1215,8 +1123,8 @@ html:not(.dark) .landing-page .stats-section {
 }
 
 .try-modal-close:hover {
-  color: var(--white);
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .try-modal-header {
@@ -1236,13 +1144,13 @@ html:not(.dark) .landing-page .stats-section {
 .try-modal-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
 .try-modal-subtitle {
   font-size: 0.95rem;
-  color: var(--gray-400);
+  color: var(--text-secondary);
 }
 
 .try-modal-options {
@@ -1256,8 +1164,8 @@ html:not(.dark) .landing-page .stats-section {
   align-items: center;
   gap: 20px;
   padding: 24px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1266,7 +1174,7 @@ html:not(.dark) .landing-page .stats-section {
 }
 
 .try-modal-option:hover {
-  background: rgba(77, 208, 225, 0.05);
+  background: rgba(8, 145, 178, 0.05);
   border-color: var(--electric-cyan);
   transform: translateY(-2px);
 }
@@ -1279,7 +1187,7 @@ html:not(.dark) .landing-page .stats-section {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--deep-navy);
+  color: #ffffff;
   flex-shrink: 0;
 }
 
@@ -1290,13 +1198,13 @@ html:not(.dark) .landing-page .stats-section {
 .try-modal-option-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .try-modal-option-desc {
   font-size: 0.9rem;
-  color: var(--gray-400);
+  color: var(--text-secondary);
   line-height: 1.4;
 }
 
@@ -1316,29 +1224,29 @@ html:not(.dark) .landing-page .stats-section {
 .try-modal-input-icon {
   position: absolute;
   left: 16px;
-  color: var(--gray-400);
+  color: var(--text-muted);
   pointer-events: none;
 }
 
 .try-modal-input {
   width: 100%;
   padding: 16px 16px 16px 48px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   font-size: 1rem;
-  color: var(--white);
+  color: var(--text-primary);
   outline: none;
   transition: all 0.2s ease;
 }
 
 .try-modal-input::placeholder {
-  color: var(--gray-600);
+  color: var(--text-muted);
 }
 
 .try-modal-input:focus {
   border-color: var(--electric-cyan);
-  background: rgba(77, 208, 225, 0.05);
+  background: rgba(8, 145, 178, 0.03);
 }
 
 .try-modal-form-actions {
@@ -1461,7 +1369,7 @@ html:not(.dark) .landing-page .stats-section {
 
 .landing-page .demo-section {
   padding: 60px 0 100px;
-  background: var(--bg-secondary);
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
   overflow: hidden;
 }
 
@@ -1522,20 +1430,22 @@ html:not(.dark) .landing-page .stats-section {
   margin-top: 50px;
   position: relative;
   min-height: 550px;
-  padding: 0 20px;
+  padding: 40px 20px;
+  background: radial-gradient(ellipse at center, rgba(8, 145, 178, 0.06) 0%, transparent 70%);
+  border-radius: 32px;
 }
 
 /* Phone in scanning position - pointing RIGHT */
 .landing-page .scan-phone {
   width: 260px;
   height: 520px;
-  background: linear-gradient(145deg, #1a2d45 0%, #0d1a2d 100%);
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
   border-radius: 36px;
   padding: 10px;
   box-shadow: 
-    0 30px 60px rgba(0,0,0,0.5),
-    0 0 0 1px rgba(77, 208, 225, 0.2),
-    inset 0 0 0 1px rgba(255,255,255,0.05);
+    0 25px 50px rgba(0, 0, 0, 0.2),
+    0 10px 30px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.1);
   position: relative;
   transform: perspective(800px) rotateY(-15deg) rotateX(5deg);
   flex-shrink: 0;
@@ -1545,7 +1455,7 @@ html:not(.dark) .landing-page .stats-section {
 .landing-page .scan-phone-screen {
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, #07172e 0%, #0a1e38 100%);
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
   border-radius: 26px;
   position: relative;
   overflow: hidden;
@@ -1559,7 +1469,7 @@ html:not(.dark) .landing-page .stats-section {
   transform: translateX(-50%);
   width: 90px;
   height: 26px;
-  background: #0d1a2d;
+  background: #0f172a;
   border-radius: 0 0 16px 16px;
   z-index: 20;
 }
@@ -1733,7 +1643,7 @@ html:not(.dark) .landing-page .stats-section {
   position: absolute;
   left: 0;
   height: 2px;
-  background: linear-gradient(90deg, rgba(77, 208, 225, 0.8) 0%, rgba(77, 208, 225, 0.1) 100%);
+  background: linear-gradient(90deg, rgba(8, 145, 178, 0.7) 0%, rgba(8, 145, 178, 0.1) 100%);
   transform-origin: left center;
   animation: rayPulse 2s ease-in-out infinite;
 }
@@ -1872,8 +1782,8 @@ html:not(.dark) .landing-page .stats-section {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--electric-cyan);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(8, 145, 178, 0.2);
   border-radius: 14px;
   padding: 16px 20px;
   -webkit-backdrop-filter: blur(10px);
@@ -1882,7 +1792,7 @@ html:not(.dark) .landing-page .stats-section {
   opacity: 0;
   transform: translateX(30px);
   min-width: 200px;
-  box-shadow: 0 4px 20px var(--shadow-color);
+  box-shadow: 0 4px 20px rgba(8, 145, 178, 0.15);
 }
 
 .landing-page .scan-data-card:nth-child(1) { animation-delay: 0.5s; }
@@ -1897,7 +1807,7 @@ html:not(.dark) .landing-page .stats-section {
 .landing-page .scan-data-icon {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, rgba(77, 208, 225, 0.2) 0%, rgba(4, 101, 242, 0.2) 100%);
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
