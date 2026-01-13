@@ -389,10 +389,10 @@ export function DesktopStrategyAnalyticsContainer({
 
       {/* LOI Loading Overlay */}
       {showLOI && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-[#0d1e38] border border-teal/30 rounded-2xl p-8 text-center">
+        <div className="fixed inset-0 bg-black/40 dark:bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-[#0d1e38] border border-teal/30 rounded-2xl p-8 text-center shadow-xl">
             <div className="w-12 h-12 border-4 border-teal border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-white font-semibold">Generating LOI...</p>
+            <p className="text-slate-900 dark:text-white font-semibold">Generating LOI...</p>
           </div>
         </div>
       )}
