@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { X, Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
 export default function AuthModal() {
+  const router = useRouter()
   const { showAuthModal, setShowAuthModal, login, register, isLoading } = useAuth()
   const [isLogin, setIsLogin] = useState(true)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
@@ -111,9 +113,13 @@ export default function AuthModal() {
       if (isLogin) {
         await login(email, password)
         setSuccess('Login successful!')
+        // Redirect to dashboard after successful login
+        router.push('/dashboard')
       } else {
         await register(email, password, fullName)
         setSuccess('Account created successfully!')
+        // Redirect to dashboard after successful registration
+        router.push('/dashboard')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -146,6 +152,7 @@ export default function AuthModal() {
           <button
             onClick={handleClose}
             className="absolute top-4 right-4 p-1 rounded-full hover:bg-white/20 transition-colors"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
