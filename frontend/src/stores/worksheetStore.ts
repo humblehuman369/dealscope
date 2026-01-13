@@ -7,7 +7,8 @@ import {
   ProjectionSummary
 } from '@/lib/projections'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+// Use relative paths for API calls to go through Next.js API routes
+const API_BASE_URL = ''
 
 // Debounce helper
 let saveTimeout: NodeJS.Timeout | null = null
