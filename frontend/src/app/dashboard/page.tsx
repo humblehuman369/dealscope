@@ -184,28 +184,14 @@ export default function DashboardPage() {
   
   // Redirect if not authenticated or needs onboarding
   useEffect(() => {
-    // #region agent log
-    console.log('[DEBUG-E] Dashboard useEffect check', { isLoading, isAuthenticated, needsOnboarding, userOnboardingCompleted: user?.onboarding_completed });
-    // #endregion
-    
     if (!isLoading) {
       if (!isAuthenticated) {
-        // #region agent log
-        console.log('[DEBUG-E] Redirecting to home - not authenticated');
-        // #endregion
         router.push('/')
       } else if (needsOnboarding) {
-        // #region agent log
-        console.log('[DEBUG-E] Redirecting to onboarding - needsOnboarding true', { needsOnboarding });
-        // #endregion
         router.push('/onboarding')
-      } else {
-        // #region agent log
-        console.log('[DEBUG-E] Dashboard access OK - no redirect needed');
-        // #endregion
       }
     }
-  }, [isLoading, isAuthenticated, needsOnboarding, router, user?.onboarding_completed])
+  }, [isLoading, isAuthenticated, needsOnboarding, router])
 
   if (isLoading) {
     return (

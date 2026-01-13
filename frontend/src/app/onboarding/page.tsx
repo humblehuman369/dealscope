@@ -208,10 +208,6 @@ export default function OnboardingPage() {
       }
 
       if (completed) {
-        // #region agent log
-        console.log('[DEBUG-B] Starting completion flow', { step, completed });
-        // #endregion
-        
         // Mark as complete
         const completeResponse = await fetch(`${API_BASE_URL}/api/v1/users/me/onboarding/complete`, {
           method: 'POST',
@@ -220,24 +216,12 @@ export default function OnboardingPage() {
           },
         })
         
-        // #region agent log
-        console.log('[DEBUG-B] Complete API response', { ok: completeResponse.ok, status: completeResponse.status });
-        // #endregion
-        
         if (!completeResponse.ok) {
           throw new Error('Failed to complete onboarding')
         }
         
-        // #region agent log
-        console.log('[DEBUG-A] Refreshing user BEFORE navigation');
-        // #endregion
-        
         // AWAIT refreshUser so dashboard has updated user data
         await refreshUser()
-        
-        // #region agent log
-        console.log('[DEBUG-A] User refreshed, now navigating to dashboard');
-        // #endregion
         
         router.push('/dashboard')
         
