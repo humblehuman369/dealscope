@@ -171,16 +171,17 @@
     
     /* Main Content Area */
     .worksheet-main-area {
-      display: flex;
-      gap: 24px;
+      display: grid;
+      grid-template-columns: 220px 1fr 320px;
+      gap: 20px;
       padding: 24px;
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
     }
     
     /* Help Panel */
     .worksheet-help-panel {
-      width: 260px;
+      width: 100%;
       flex-shrink: 0;
       background: white;
       border-radius: 12px;
@@ -189,6 +190,172 @@
       height: fit-content;
       position: sticky;
       top: 24px;
+    }
+    
+    /* Charts Sidebar */
+    .worksheet-charts-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: 24px;
+      height: fit-content;
+    }
+    
+    .chart-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+    
+    .chart-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--iq-teal-dark);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--ws-border-light);
+    }
+    
+    /* Gauge Chart */
+    .gauge-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 0;
+    }
+    
+    .gauge-svg {
+      width: 140px;
+      height: 80px;
+    }
+    
+    .gauge-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--iq-teal);
+      margin-top: 8px;
+    }
+    
+    .gauge-label {
+      font-size: 11px;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    /* Mini Stat Cards */
+    .mini-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .mini-stat {
+      text-align: center;
+      padding: 12px 8px;
+      background: var(--ws-bg-alt);
+      border-radius: 8px;
+    }
+    
+    .mini-stat-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--iq-teal);
+    }
+    
+    .mini-stat-label {
+      font-size: 10px;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-top: 4px;
+    }
+    
+    /* Horizontal Bar Chart */
+    .h-bar-item {
+      margin-bottom: 12px;
+    }
+    
+    .h-bar-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .h-bar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    
+    .h-bar-label {
+      font-size: 11px;
+      color: var(--ws-text-label);
+    }
+    
+    .h-bar-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--iq-teal);
+    }
+    
+    .h-bar-track {
+      height: 6px;
+      background: var(--ws-bg-alt);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .h-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--iq-teal) 0%, var(--iq-teal-light) 100%);
+    }
+    
+    /* Stacked Bar Visualization */
+    .stacked-bar-container {
+      padding: 12px 0;
+    }
+    
+    .stacked-bar {
+      display: flex;
+      height: 24px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    
+    .stacked-bar-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .stacked-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .stacked-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--ws-text-secondary);
+    }
+    
+    .stacked-legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
     }
     
     .worksheet-help-header {
@@ -224,11 +391,20 @@
       margin-top: 2px;
     }
     
-    /* Content Area */
+    /* Ledger Content Area - Narrow */
     .worksheet-content-area {
       flex: 1;
       min-width: 0;
-      max-width: 880px;
+      max-width: 520px;
+    }
+    
+    /* Compact section cards for ledger */
+    .section-card .data-row {
+      padding: 10px 16px;
+    }
+    
+    .section-card .section-header {
+      padding: 12px 16px;
     }
     
     /* Summary Cards */
@@ -562,9 +738,29 @@
       color: var(--ws-text-muted);
     }
     
-    @media (max-width: 900px) {
+    @media (max-width: 1200px) {
+      .worksheet-main-area {
+        grid-template-columns: 200px 1fr 280px;
+      }
+    }
+    
+    @media (max-width: 1000px) {
+      .worksheet-main-area {
+        grid-template-columns: 1fr 280px;
+      }
+      
       .worksheet-help-panel {
         display: none;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .worksheet-main-area {
+        grid-template-columns: 1fr;
+      }
+      
+      .worksheet-charts-sidebar {
+        position: static;
       }
       
       .summary-cards {
@@ -786,197 +982,118 @@
         </div>
       </div>
       
-      <!-- Cash Flow Section (Two Column) -->
-      <div class="section-two-column">
-        <div class="section-card">
-          <div class="section-header">
-            <span class="section-title">Cash Flow (Year 1) - Yearly</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
-              <path d="M18 15l-6-6-6 6"/>
-            </svg>
+      <!-- Cash Flow Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Cash Flow (Year 1) - Yearly</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="subsection-header income">Income</div>
+          <div class="data-row">
+            <div class="data-label"><span>Gross Rent</span></div>
+            <div class="value-group">
+              <span class="value-primary">$8,081</span>
+              <span class="value-secondary">$96,972/yr</span>
+            </div>
           </div>
-          <div class="section-content">
-            <div class="subsection-header income">Income</div>
-            <div class="data-row">
-              <div class="data-label"><span>Gross Rent</span></div>
-              <div class="value-group">
-                <span class="value-primary">$8,081</span>
-                <span class="value-secondary">$96,972/yr</span>
-              </div>
+          <div class="data-row">
+            <div class="data-label"><span>Vacancy</span></div>
+            <div class="value-group">
+              <span class="value-primary">8.0%</span>
+              <span class="value-secondary value-negative">-$7,758</span>
             </div>
-            <div class="data-row">
-              <div class="data-label"><span>Vacancy</span></div>
-              <div class="value-group">
-                <span class="value-primary">8.0%</span>
-                <span class="value-secondary value-negative">-$7,758</span>
-              </div>
+          </div>
+          <div class="data-row total">
+            <div class="data-label"><span>Operating Income</span></div>
+            <div class="value-primary">$89,214</div>
+          </div>
+          
+          <div class="subsection-header expenses">Operating Expenses</div>
+          <div class="data-row">
+            <div class="data-label"><span>Property Taxes</span></div>
+            <div class="value-primary">$6,471</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Insurance</span></div>
+            <div class="value-primary">$2,894</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Property Management</span></div>
+            <div class="value-group">
+              <span class="value-primary">8.0%</span>
+              <span class="value-secondary">$7,137</span>
             </div>
-            <div class="data-row total">
-              <div class="data-label"><span>Operating Income</span></div>
-              <div class="value-primary">$89,214</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Maintenance</span></div>
+            <div class="value-group">
+              <span class="value-primary">5.0%</span>
+              <span class="value-secondary">$4,461</span>
             </div>
-            
-            <div class="subsection-header expenses">Operating Expenses</div>
-            <div class="data-row">
-              <div class="data-label"><span>Property Taxes</span></div>
-              <div class="value-primary">$6,471</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Capital Expenditures</span></div>
+            <div class="value-group">
+              <span class="value-primary">5.0%</span>
+              <span class="value-secondary">$4,461</span>
             </div>
-            <div class="data-row">
-              <div class="data-label"><span>Insurance</span></div>
-              <div class="value-primary">$2,894</div>
-            </div>
-            <div class="data-row">
-              <div class="data-label"><span>Property Management</span></div>
-              <div class="value-group">
-                <span class="value-primary">8.0%</span>
-                <span class="value-secondary">$7,137</span>
-              </div>
-            </div>
-            <div class="data-row">
-              <div class="data-label"><span>Maintenance</span></div>
-              <div class="value-group">
-                <span class="value-primary">5.0%</span>
-                <span class="value-secondary">$4,461</span>
-              </div>
-            </div>
-            <div class="data-row">
-              <div class="data-label"><span>Capital Expenditures</span></div>
-              <div class="value-group">
-                <span class="value-primary">5.0%</span>
-                <span class="value-secondary">$4,461</span>
-              </div>
-            </div>
-            <div class="data-row">
-              <div class="data-label"><span>HOA Fees</span></div>
-              <div class="value-primary">$0</div>
-            </div>
-            <div class="data-row total">
-              <div class="data-label"><span>Operating Expenses</span></div>
-              <div class="value-primary">$25,424</div>
-            </div>
-            
-            <div class="subsection-header neutral">Net Operating Income</div>
-            <div class="data-row highlight">
-              <div class="data-label"><span>Net Operating Income</span></div>
-              <div class="value-primary value-positive">$63,791</div>
-            </div>
-            <div class="data-row">
-              <div class="data-label"><span>Loan Payments</span></div>
-              <div class="value-primary value-negative">-$46,216</div>
-            </div>
-            <div class="data-row total">
-              <div class="data-label"><span>Cash Flow</span></div>
-              <div class="value-primary value-positive">$17,575</div>
-            </div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>HOA Fees</span></div>
+            <div class="value-primary">$0</div>
+          </div>
+          <div class="data-row total">
+            <div class="data-label"><span>Operating Expenses</span></div>
+            <div class="value-primary">$25,424</div>
+          </div>
+          
+          <div class="subsection-header neutral">Net Operating Income</div>
+          <div class="data-row highlight">
+            <div class="data-label"><span>Net Operating Income</span></div>
+            <div class="value-primary value-positive">$63,791</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Loan Payments</span></div>
+            <div class="value-primary value-negative">-$46,216</div>
+          </div>
+          <div class="data-row total">
+            <div class="data-label"><span>Cash Flow</span></div>
+            <div class="value-primary value-positive">$17,575</div>
           </div>
         </div>
-        
-        <!-- Pie Chart -->
-        <div class="pie-chart-card">
-          <div class="pie-chart-title">Income vs Expenses</div>
-          <div class="pie-chart-placeholder"></div>
-          <div class="legend-item">
-            <span class="legend-dot" style="background: #dc2626;"></span>
-            <span>Property Taxes</span>
-            <span style="margin-left: auto; font-weight: 500;">$6,471</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot" style="background: #f97316;"></span>
-            <span>Insurance</span>
-            <span style="margin-left: auto; font-weight: 500;">$2,894</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot" style="background: #eab308;"></span>
-            <span>Management</span>
-            <span style="margin-left: auto; font-weight: 500;">$7,137</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot" style="background: #007ea7;"></span>
-            <span>Maintenance</span>
-            <span style="margin-left: auto; font-weight: 500;">$4,461</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot" style="background: #007ea7;"></span>
-            <span>Loan Payment</span>
-            <span style="margin-left: auto; font-weight: 500;">$46,216</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot" style="background: #64748b;"></span>
-            <span>Cash Flow</span>
-            <span style="margin-left: auto; font-weight: 500; color: #007ea7;">$17,575</span>
-          </div>
+      </div>
+      
+      <!-- Valuation Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Valuation</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
         </div>
-        
-        <!-- Returns Bar Chart -->
-        <div class="returns-chart-card">
-          <div class="returns-chart-title">Investment Returns</div>
-          
-          <!-- Cap Rate -->
-          <div class="returns-bar-item">
-            <div class="returns-bar-header">
-              <span class="returns-bar-label">Cap Rate</span>
-              <span class="returns-bar-value">8.8%</span>
-            </div>
-            <div class="returns-bar-track">
-              <div class="returns-bar-fill" style="width: 58.7%;"></div>
-              <div class="returns-bar-target" style="left: 53.3%;"></div>
-            </div>
-            <div class="returns-bar-benchmark">
-              <span>0%</span>
-              <span>Good: 8%+</span>
-              <span>15%</span>
-            </div>
+        <div class="section-content">
+          <div class="data-row">
+            <div class="data-label"><span>After Repair Value</span></div>
+            <div class="value-primary">$795,960</div>
           </div>
-          
-          <!-- Cash on Cash Return -->
-          <div class="returns-bar-item">
-            <div class="returns-bar-header">
-              <span class="returns-bar-label">Cash on Cash Return</span>
-              <span class="returns-bar-value">10.6%</span>
-            </div>
-            <div class="returns-bar-track">
-              <div class="returns-bar-fill" style="width: 53%;"></div>
-              <div class="returns-bar-target" style="left: 50%;"></div>
-            </div>
-            <div class="returns-bar-benchmark">
-              <span>0%</span>
-              <span>Target: 10%</span>
-              <span>20%</span>
-            </div>
+          <div class="data-row">
+            <div class="data-label"><span>ARV Per Square Foot</span></div>
+            <div class="value-primary">$251</div>
           </div>
-          
-          <!-- DSCR -->
-          <div class="returns-bar-item">
-            <div class="returns-bar-header">
-              <span class="returns-bar-label">Debt Service Coverage</span>
-              <span class="returns-bar-value">1.38x</span>
-            </div>
-            <div class="returns-bar-track">
-              <div class="returns-bar-fill" style="width: 69%;"></div>
-              <div class="returns-bar-target" style="left: 60%;"></div>
-            </div>
-            <div class="returns-bar-benchmark">
-              <span>0x</span>
-              <span>Min: 1.2x</span>
-              <span>2x</span>
-            </div>
+          <div class="data-row">
+            <div class="data-label"><span>Price Per Square Foot</span></div>
+            <div class="value-primary">$228</div>
           </div>
-          
-          <!-- Rent to Value -->
-          <div class="returns-bar-item">
-            <div class="returns-bar-header">
-              <span class="returns-bar-label">Rent to Value (1% Rule)</span>
-              <span class="returns-bar-value">1.12%</span>
-            </div>
-            <div class="returns-bar-track">
-              <div class="returns-bar-fill" style="width: 74.7%;"></div>
-              <div class="returns-bar-target" style="left: 66.7%;"></div>
-            </div>
-            <div class="returns-bar-benchmark">
-              <span>0%</span>
-              <span>Target: 1%</span>
-              <span>1.5%</span>
-            </div>
+          <div class="data-row">
+            <div class="data-label"><span>Rehab Per Square Foot</span></div>
+            <div class="value-primary">$0</div>
+          </div>
+          <div class="data-row highlight">
+            <div class="data-label"><span>Equity at Purchase</span></div>
+            <div class="value-primary value-positive">$72,360</div>
           </div>
         </div>
       </div>
@@ -1017,7 +1134,182 @@
         </div>
       </div>
       
+      <!-- Financial Ratios Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Financial Ratios (At Purchase)</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row">
+            <div class="data-label"><span>Rent to Value</span></div>
+            <div class="value-primary value-positive">1.12%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Gross Rent Multiplier</span></div>
+            <div class="value-primary value-positive">7.46x</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Equity Multiple</span></div>
+            <div class="value-primary">31.62x</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Break-Even Ratio</span></div>
+            <div class="value-primary value-positive">73.88%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Debt Coverage Ratio</span></div>
+            <div class="value-primary value-positive">1.38x</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Debt Yield</span></div>
+            <div class="value-primary">11.02%</div>
+          </div>
+        </div>
+      </div>
+      
     </main>
+    
+    <!-- Charts Sidebar -->
+    <aside class="worksheet-charts-sidebar">
+      <!-- Deal Score Gauge -->
+      <div class="chart-card">
+        <div class="chart-card-title">Deal Score</div>
+        <div class="gauge-container">
+          <svg class="gauge-svg" viewBox="0 0 140 80">
+            <!-- Background arc -->
+            <path d="M 15 70 A 55 55 0 0 1 125 70" fill="none" stroke="#e2e8f0" stroke-width="12" stroke-linecap="round"/>
+            <!-- Score arc (85% = good deal) -->
+            <path d="M 15 70 A 55 55 0 0 1 110 35" fill="none" stroke="url(#gaugeGradient)" stroke-width="12" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#007ea7"/>
+                <stop offset="100%" style="stop-color:#33a5c4"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="gauge-value">85</div>
+          <div class="gauge-label">Good Investment</div>
+        </div>
+      </div>
+      
+      <!-- Key Metrics Mini Cards -->
+      <div class="chart-card">
+        <div class="chart-card-title">Key Metrics</div>
+        <div class="mini-stats-grid">
+          <div class="mini-stat">
+            <div class="mini-stat-value">8.8%</div>
+            <div class="mini-stat-label">Cap Rate</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-value">10.6%</div>
+            <div class="mini-stat-label">CoC Return</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-value">1.38x</div>
+            <div class="mini-stat-label">DSCR</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-value">1.12%</div>
+            <div class="mini-stat-label">Rent/Value</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Cash Flow Breakdown -->
+      <div class="chart-card">
+        <div class="chart-card-title">Cash Flow Breakdown</div>
+        <div class="stacked-bar-container">
+          <div class="stacked-bar">
+            <div class="stacked-bar-segment" style="width: 52%; background: #64748b;">Loan</div>
+            <div class="stacked-bar-segment" style="width: 28%; background: #f97316;">Exp</div>
+            <div class="stacked-bar-segment" style="width: 20%; background: #007ea7;">CF</div>
+          </div>
+          <div class="stacked-legend">
+            <div class="stacked-legend-item">
+              <span class="stacked-legend-dot" style="background: #64748b;"></span>
+              Loan $46k
+            </div>
+            <div class="stacked-legend-item">
+              <span class="stacked-legend-dot" style="background: #f97316;"></span>
+              Expenses $25k
+            </div>
+            <div class="stacked-legend-item">
+              <span class="stacked-legend-dot" style="background: #007ea7;"></span>
+              Cash Flow $18k
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Returns vs Targets -->
+      <div class="chart-card">
+        <div class="chart-card-title">Returns vs Targets</div>
+        
+        <div class="h-bar-item">
+          <div class="h-bar-header">
+            <span class="h-bar-label">Cap Rate</span>
+            <span class="h-bar-value">8.8% / 8%</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" style="width: 110%;"></div>
+          </div>
+        </div>
+        
+        <div class="h-bar-item">
+          <div class="h-bar-header">
+            <span class="h-bar-label">Cash on Cash</span>
+            <span class="h-bar-value">10.6% / 10%</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" style="width: 106%;"></div>
+          </div>
+        </div>
+        
+        <div class="h-bar-item">
+          <div class="h-bar-header">
+            <span class="h-bar-label">DSCR</span>
+            <span class="h-bar-value">1.38x / 1.2x</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" style="width: 115%;"></div>
+          </div>
+        </div>
+        
+        <div class="h-bar-item">
+          <div class="h-bar-header">
+            <span class="h-bar-label">1% Rule</span>
+            <span class="h-bar-value">1.12% / 1%</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" style="width: 112%;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Equity Position -->
+      <div class="chart-card">
+        <div class="chart-card-title">Equity Position</div>
+        <div class="stacked-bar-container">
+          <div class="stacked-bar">
+            <div class="stacked-bar-segment" style="width: 20%; background: #007ea7;">Equity</div>
+            <div class="stacked-bar-segment" style="width: 80%; background: #94a3b8;">Loan</div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 8px;">
+            <div>
+              <div style="font-weight: 600; color: #007ea7;">$144,720</div>
+              <div style="color: #94a3b8; font-size: 10px;">20% Equity</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 600; color: #64748b;">$578,880</div>
+              <div style="color: #94a3b8; font-size: 10px;">80% Financed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
   </div>
 </body>
 </html>
