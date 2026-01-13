@@ -8,9 +8,9 @@
   --iq-navy: #0f172a;
   --iq-navy-light: #1e293b;
   
-  /* Background Colors - Navy #07172e at 10% opacity */
-  --ws-bg: rgba(7, 23, 46, 0.1);
-  --ws-bg-alt: #f1f5f9;
+  /* Background Colors - White */
+  --ws-bg: #ffffff;
+  --ws-bg-alt: #f8fafc;
   --ws-card: #ffffff;
   --ws-card-hover: #fafafa;
   
@@ -55,7 +55,7 @@
 
 .worksheet-container-v2 {
   min-height: 100vh;
-  background: linear-gradient(180deg, rgba(7, 23, 46, 0.1) 0%, #f8fafc 100%);
+  background: #ffffff;
 }
 
 /* Top Bar */
