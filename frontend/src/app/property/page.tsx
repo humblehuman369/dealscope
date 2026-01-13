@@ -218,13 +218,19 @@ function PropertyContent() {
 
   // Handle save property
   const handleSave = useCallback(async () => {
+    console.log('[handleSave] Starting save...', { isAuthenticated, hasProperty: !!property, isSaving, isSaved })
+    
     // Require authentication
     if (!isAuthenticated) {
+      console.log('[handleSave] Not authenticated, showing login modal')
       setShowAuthModal('login')
       return
     }
 
-    if (!property || isSaving) return
+    if (!property || isSaving) {
+      console.log('[handleSave] Skipping - no property or already saving')
+      return
+    }
 
     // If already saved, show message
     if (isSaved) {
@@ -239,59 +245,73 @@ function PropertyContent() {
     try {
       const token = localStorage.getItem('access_token')
       if (!token) {
+        console.log('[handleSave] No token found, showing login modal')
         setShowAuthModal('login')
+        setIsSaving(false)
         return
       }
 
       const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`.trim()
+      
+      const savePayload = {
+        address_street: property.address,
+        address_city: property.city,
+        address_state: property.state,
+        address_zip: property.zipCode,
+        full_address: fullAddress,
+        status: 'watching',
+        property_data_snapshot: {
+          listPrice: property.listPrice,
+          monthlyRent: property.monthlyRent,
+          averageDailyRate: property.averageDailyRate,
+          occupancyRate: property.occupancyRate,
+          propertyTaxes: property.propertyTaxes,
+          insurance: property.insurance,
+          bedrooms: property.bedrooms,
+          bathrooms: property.bathrooms,
+          sqft: property.sqft,
+          arv: property.arv,
+          photos: property.photos,
+        },
+      }
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved`, {
+      console.log('[handleSave] Sending save request:', { 
+        address: fullAddress,
+        hasToken: !!token,
+      })
+
+      const response = await fetch('/api/v1/properties/saved', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          address_street: property.address,
-          address_city: property.city,
-          address_state: property.state,
-          address_zip: property.zipCode,
-          full_address: fullAddress,
-          status: 'watching',
-          property_data_snapshot: {
-            listPrice: property.listPrice,
-            monthlyRent: property.monthlyRent,
-            averageDailyRate: property.averageDailyRate,
-            occupancyRate: property.occupancyRate,
-            propertyTaxes: property.propertyTaxes,
-            insurance: property.insurance,
-            bedrooms: property.bedrooms,
-            bathrooms: property.bathrooms,
-            sqft: property.sqft,
-            arv: property.arv,
-            photos: property.photos,
-          },
-        }),
+        body: JSON.stringify(savePayload),
       })
 
+      console.log('[handleSave] Response:', response.status, response.statusText)
+
       if (response.ok) {
+        const data = await response.json()
+        console.log('[handleSave] Success:', data.id)
         setIsSaved(true)
         setSaveMessage('Property saved!')
         setTimeout(() => setSaveMessage(null), 3000)
       } else if (response.status === 409) {
         // Property already saved
+        console.log('[handleSave] Property already saved (409)')
         setIsSaved(true)
         setSaveMessage('Property already in your portfolio')
         setTimeout(() => setSaveMessage(null), 3000)
       } else {
-        const errorData = await response.json().catch(() => ({}))
-        console.error('Failed to save property:', response.status, errorData)
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
+        console.error('[handleSave] Failed:', response.status, errorData)
         const errorMessage = errorData.detail || `Failed to save (${response.status})`
         setSaveMessage(errorMessage)
         setTimeout(() => setSaveMessage(null), 5000)
       }
     } catch (err) {
-      console.error('Error saving property:', err)
+      console.error('[handleSave] Error:', err)
       const errorMessage = err instanceof Error ? err.message : 'Network error'
       setSaveMessage(`Failed to save: ${errorMessage}`)
       setTimeout(() => setSaveMessage(null), 5000)
