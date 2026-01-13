@@ -209,72 +209,61 @@ export function PropertyPremiumPage({
         </div>
       </header>
 
-      {/* Hero Section */}
-      <div className="premium-hero">
-        <div className="premium-hero-image">
+      {/* Photo Section - Clean, no overlays */}
+      <div className="premium-photo-section">
+        {/* Main Photo */}
+        <div className="premium-photo-main">
           {photos[activePhotoIndex] ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img 
               src={photos[activePhotoIndex]} 
               alt={`Property photo ${activePhotoIndex + 1}`}
               onError={(e) => {
-                // Hide broken image
                 (e.target as HTMLImageElement).style.display = 'none'
               }}
             />
           ) : (
-            <div className="premium-hero-placeholder">
+            <div className="premium-photo-placeholder">
               <Home className="w-16 h-16 opacity-30" />
             </div>
           )}
-        </div>
-        <div className="premium-hero-overlay" />
-
-        {/* Photo Counter */}
-        <div className="premium-image-counter">
-          <Camera className="w-4 h-4" />
-          <span>{activePhotoIndex + 1}/{totalPhotos}</span>
-        </div>
-
-        {/* Hero Content */}
-        <div className="premium-hero-content">
-          <div className="premium-hero-inner">
-            {/* Thumbnails */}
-            <div className="premium-thumbnails">
-              {photos.slice(0, 5).map((photo, idx) => (
-                <button
-                  key={idx}
-                  className={`premium-thumbnail ${idx === activePhotoIndex ? 'active' : ''}`}
-                  onClick={() => setActivePhotoIndex(idx)}
-                  aria-label={`View photo ${idx + 1}`}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={photo} 
-                    alt="" 
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.opacity = '0.3'
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
-
-            {/* Property Info */}
-            <div className="premium-property-info">
-              <div>
-                <h1 className="premium-property-address">{property.address}</h1>
-                <div className="premium-property-details">
-                  <span>{location}</span>
-                  <span className="dot">·</span>
-                  <span>{specs}</span>
-                </div>
-              </div>
-              <div className="premium-property-price">
-                {formatCurrency(property.listPrice)}
-              </div>
-            </div>
+          
+          {/* Photo Counter Badge */}
+          <div className="premium-photo-counter">
+            <Camera className="w-4 h-4" />
+            <span>{activePhotoIndex + 1}/{totalPhotos}</span>
           </div>
+        </div>
+
+        {/* Thumbnail Strip */}
+        <div className="premium-thumb-strip">
+          {photos.slice(0, 6).map((photo, idx) => (
+            <button
+              key={idx}
+              className={`premium-thumb ${idx === activePhotoIndex ? 'active' : ''}`}
+              onClick={() => setActivePhotoIndex(idx)}
+              aria-label={`View photo ${idx + 1}`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photo} alt="" />
+            </button>
+          ))}
+          {totalPhotos > 6 && (
+            <div className="premium-thumb-more">+{totalPhotos - 6}</div>
+          )}
+        </div>
+      </div>
+
+      {/* Property Info Card - Below photo */}
+      <div className="premium-info-card">
+        <div className="premium-info-left">
+          <h1 className="premium-info-address">{property.address}</h1>
+          <p className="premium-info-location">{location}</p>
+          <p className="premium-info-specs">{specs}</p>
+        </div>
+        <div className="premium-info-right">
+          <div className="premium-info-price">{formatCurrency(property.listPrice)}</div>
+          <div className="premium-info-label">List Price</div>
         </div>
       </div>
 
