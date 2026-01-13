@@ -124,8 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Fetch user data
       await fetchCurrentUser(tokens.access_token)
       
-      // Close modal
-      setShowAuthModal(null)
+      // Note: Modal closing is handled by the component after redirect
     } finally {
       setIsLoading(false)
     }
