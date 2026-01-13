@@ -207,7 +207,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
         return
       }
       
-      const response = await fetch(`${API_BASE_URL}/api/v1/saved-properties/${propertyId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved/${propertyId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
