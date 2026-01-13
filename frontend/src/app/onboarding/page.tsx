@@ -139,12 +139,15 @@ export default function OnboardingPage() {
     }))
   }
 
-  const saveProgress = async (step: number, completed: boolean = false) => {
+  const saveProgress = async (step: number, completed: boolean = false): Promise<boolean> => {
     setIsSaving(true)
     setError(null)
 
     try {
       const token = localStorage.getItem('access_token')
+      if (!token) {
+        throw new Error('Not authenticated')
+      }
       
       // Build profile data based on current step
       let profileData: any = {}
@@ -168,7 +171,7 @@ export default function OnboardingPage() {
 
       // Update user name if provided
       if (formData.full_name && formData.full_name !== user?.full_name) {
-        await fetch(`${API_BASE_URL}/api/v1/users/me`, {
+        const nameResponse = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
           method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -176,6 +179,9 @@ export default function OnboardingPage() {
           },
           body: JSON.stringify({ full_name: formData.full_name }),
         })
+        if (!nameResponse.ok) {
+          console.warn('Failed to update name, continuing anyway')
+        }
       }
 
       // Save onboarding progress
@@ -193,7 +199,8 @@ export default function OnboardingPage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to save progress')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.detail || 'Failed to save progress')
       }
 
       if (completed) {
@@ -208,8 +215,12 @@ export default function OnboardingPage() {
         await refreshUser()
         router.push('/dashboard')
       }
+      
+      return true // Success
     } catch (err) {
+      console.error('Onboarding save error:', err)
       setError(err instanceof Error ? err.message : 'Failed to save')
+      return false // Failed
     } finally {
       setIsSaving(false)
     }
@@ -217,8 +228,10 @@ export default function OnboardingPage() {
 
   const nextStep = async () => {
     if (currentStep < totalSteps - 1) {
-      await saveProgress(currentStep)
-      setCurrentStep(prev => prev + 1)
+      const success = await saveProgress(currentStep)
+      if (success) {
+        setCurrentStep(prev => prev + 1)
+      }
     } else {
       await saveProgress(currentStep, true)
     }
@@ -297,11 +310,14 @@ export default function OnboardingPage() {
 
               {/* Name Input */}
               <div className="mb-8">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="full_name" className="block text-sm font-medium text-gray-300 mb-2">
                   What should we call you?
                 </label>
                 <input
                   type="text"
+                  id="full_name"
+                  name="full_name"
+                  autoComplete="name"
                   value={formData.full_name}
                   onChange={(e) => updateFormData('full_name', e.target.value)}
                   placeholder="Your name"
@@ -424,13 +440,15 @@ export default function OnboardingPage() {
               {/* Return Targets */}
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label htmlFor="target_coc" className="block text-sm font-medium text-gray-300 mb-2">
                     <Target className="w-4 h-4 inline mr-1" />
                     Target Cash-on-Cash
                   </label>
                   <div className="relative">
                     <input
                       type="number"
+                      id="target_coc"
+                      name="target_coc"
                       step="1"
                       min="0"
                       max="50"
@@ -442,13 +460,15 @@ export default function OnboardingPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label htmlFor="target_cap" className="block text-sm font-medium text-gray-300 mb-2">
                     <TrendingUp className="w-4 h-4 inline mr-1" />
                     Target Cap Rate
                   </label>
                   <div className="relative">
                     <input
                       type="number"
+                      id="target_cap"
+                      name="target_cap"
                       step="1"
                       min="0"
                       max="20"
