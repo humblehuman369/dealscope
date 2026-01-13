@@ -869,19 +869,46 @@
       }
     }
     
-    /* Summary Cards */
+    /* Summary Cards - Full Width */
+    .summary-cards-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: white;
+      border-bottom: 1px solid var(--ws-border);
+      padding: 16px 24px;
+    }
+    
     .summary-cards {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
       gap: clamp(6px, 1vw, 12px);
-      margin-bottom: 24px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    
+    /* Purchase Section with Pricing Ladder */
+    .purchase-with-ladder {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+    
+    @media (max-width: 900px) {
+      .purchase-with-ladder {
+        grid-template-columns: 1fr;
+      }
+      
+      .purchase-ladder-panel {
+        order: -1; /* Move ladder above on mobile */
+      }
+    }
+    
+    .purchase-ladder-panel {
       position: sticky;
-      top: 0;
-      z-index: 10;
-      background: white;
-      padding: 16px 0;
-      margin: -16px 0 24px 0;
-      border-bottom: 1px solid var(--ws-border);
+      top: 120px; /* Below summary cards */
+      height: fit-content;
     }
     
     .summary-card {
@@ -1332,6 +1359,46 @@
       color: var(--ws-negative);
     }
     
+    .pricing-ladder-hint {
+      display: block;
+      font-size: 10px;
+      color: var(--ws-text-muted);
+      font-weight: 400;
+    }
+    
+    /* Pricing Discount Indicator */
+    .pricing-discount-indicator {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--ws-border-light);
+    }
+    
+    .pricing-discount-bar {
+      height: 8px;
+      background: var(--ws-border-light);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .pricing-discount-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--iq-teal), var(--iq-teal-light));
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    .pricing-discount-label {
+      font-size: 12px;
+      color: var(--ws-text-secondary);
+      text-align: center;
+    }
+    
+    .pricing-discount-label span {
+      font-weight: 600;
+      color: var(--iq-teal);
+    }
+    
     /* Pricing ladder summary */
     .pricing-summary {
       display: grid;
@@ -1444,6 +1511,39 @@
     </div>
   </nav>
   
+  <!-- Summary Cards - Full Width -->
+  <div class="summary-cards-wrapper">
+    <div class="summary-cards">
+      <div class="summary-card target-price">
+        <div class="summary-card-label">Target Price</div>
+        <div class="summary-card-value" id="target-price-value" style="color: var(--iq-teal);">$680,000</div>
+        <div class="summary-card-subtitle">Breakeven Price</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">Cash Needed</div>
+        <div class="summary-card-value" id="summary-cash-needed">$166,428</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">Cash Flow</div>
+        <div class="summary-card-value positive" id="summary-cash-flow">$17,575/yr</div>
+        <div class="summary-card-subtitle" id="summary-cash-flow-mo">$1,465/mo</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">Cap Rate</div>
+        <div class="summary-card-value" id="summary-cap-rate">8.8%</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">CoC Return</div>
+        <div class="summary-card-value positive" id="summary-coc-return">10.6%</div>
+      </div>
+      <div class="summary-card" style="background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, white 100%); border-color: var(--iq-teal-light);">
+        <div class="summary-card-label">Deal Score</div>
+        <div class="summary-card-value" id="summary-deal-score" style="color: var(--iq-teal);">85</div>
+        <div class="summary-card-subtitle">Good Investment</div>
+      </div>
+    </div>
+  </div>
+  
   <!-- Main Content -->
   <div class="worksheet-main-area">
     <!-- Help Panel -->
@@ -1494,38 +1594,10 @@
     
     <!-- Content Area -->
     <main class="worksheet-content-area">
-      <!-- Summary Cards -->
-      <div class="summary-cards">
-        <div class="summary-card target-price">
-          <div class="summary-card-label">Target Price</div>
-          <div class="summary-card-value" id="target-price-value" style="color: var(--iq-teal);">$680,000</div>
-          <div class="summary-card-subtitle">Breakeven Price</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-card-label">Cash Needed</div>
-          <div class="summary-card-value">$166,428</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-card-label">Cash Flow</div>
-          <div class="summary-card-value positive">$17,575/yr</div>
-          <div class="summary-card-subtitle">$1,465/mo</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-card-label">Cap Rate</div>
-          <div class="summary-card-value">8.8%</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-card-label">CoC Return</div>
-          <div class="summary-card-value positive">10.6%</div>
-        </div>
-        <div class="summary-card" style="background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, white 100%); border-color: var(--iq-teal-light);">
-          <div class="summary-card-label">Deal Score</div>
-          <div class="summary-card-value" id="summary-deal-score" style="color: var(--iq-teal);">85</div>
-          <div class="summary-card-subtitle">Good Investment</div>
-        </div>
-      </div>
-      
-      <!-- Purchase & Rehab Section -->
+      <!-- Purchase & Rehab with Pricing Ladder -->
+      <div class="purchase-with-ladder">
+        <div class="purchase-section">
+          <!-- Purchase & Rehab Section -->
       <div class="section-card">
         <div class="section-header">
           <span class="section-title">Purchase & Rehab</span>
@@ -1601,7 +1673,74 @@
           <!-- Total Cash Needed - Calculated -->
           <div class="data-row total">
             <div class="data-label"><span>Total Cash Needed</span></div>
-            <div class="value-primary">$166,428</div>
+            <div class="value-primary" id="total-cash-needed">$166,428</div>
+          </div>
+        </div>
+      </div>
+        </div>
+        
+        <!-- Pricing Ladder - Right of Purchase & Rehab -->
+        <div class="purchase-ladder-panel">
+          <div class="chart-card">
+            <div class="chart-card-title">Pricing Ladder</div>
+            <div class="pricing-ladder">
+              <div class="pricing-ladder-track"></div>
+              
+              <!-- List Price -->
+              <div class="pricing-ladder-item">
+                <div class="pricing-ladder-label">List Price</div>
+                <div class="pricing-ladder-marker list"></div>
+                <div class="pricing-ladder-value list" id="ladder-list-price">$750,000</div>
+              </div>
+              
+              <!-- Your Offer (Current Purchase Price) -->
+              <div class="pricing-ladder-item highlight">
+                <div class="pricing-ladder-label">Your Offer</div>
+                <div class="pricing-ladder-marker current">
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="var(--iq-teal)">
+                    <circle cx="4" cy="4" r="4"/>
+                  </svg>
+                </div>
+                <div class="pricing-ladder-value current" id="ladder-current-price">$723,600</div>
+              </div>
+              
+              <!-- Breakeven -->
+              <div class="pricing-ladder-item">
+                <div class="pricing-ladder-label">Breakeven</div>
+                <div class="pricing-ladder-marker target"></div>
+                <div class="pricing-ladder-value target" id="ladder-target-price">$680,000
+                  <span class="pricing-ladder-hint">0% CoC</span>
+                </div>
+              </div>
+              
+              <!-- 10% CoC Price -->
+              <div class="pricing-ladder-item">
+                <div class="pricing-ladder-label">10% CoC</div>
+                <div class="pricing-ladder-marker coc"></div>
+                <div class="pricing-ladder-value coc" id="ladder-10-coc">$650,000
+                  <span class="pricing-ladder-hint">Target</span>
+                </div>
+              </div>
+              
+              <!-- MAO (70% of ARV) -->
+              <div class="pricing-ladder-item">
+                <div class="pricing-ladder-label">MAO</div>
+                <div class="pricing-ladder-marker mao"></div>
+                <div class="pricing-ladder-value mao" id="ladder-mao">$630,000
+                  <span class="pricing-ladder-hint">70% ARV</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Discount Indicator -->
+            <div class="pricing-discount-indicator">
+              <div class="pricing-discount-bar">
+                <div class="pricing-discount-fill" id="discount-fill" style="width: 35%;"></div>
+              </div>
+              <div class="pricing-discount-label">
+                <span id="discount-percent">3.5%</span> below list
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1951,65 +2090,6 @@
     
     <!-- Charts Sidebar - Dynamic Visualizations -->
     <aside class="worksheet-charts-sidebar">
-      <!-- Pricing Ladder -->
-      <div class="chart-card">
-        <div class="chart-card-title">Pricing Ladder</div>
-        <div class="pricing-ladder">
-          <div class="pricing-ladder-track"></div>
-          
-          <!-- List Price -->
-          <div class="pricing-ladder-item">
-            <div class="pricing-ladder-label">List Price</div>
-            <div class="pricing-ladder-marker list"></div>
-            <div class="pricing-ladder-value">$795,000</div>
-          </div>
-          
-          <!-- Current Offer -->
-          <div class="pricing-ladder-item">
-            <div class="pricing-ladder-label">Your Offer</div>
-            <div class="pricing-ladder-marker active"></div>
-            <div class="pricing-ladder-value current" id="ladder-current-price">$723,600
-              <span class="pricing-ladder-diff negative">-9%</span>
-            </div>
-          </div>
-          
-          <!-- Breakeven Price -->
-          <div class="pricing-ladder-item">
-            <div class="pricing-ladder-label">Breakeven</div>
-            <div class="pricing-ladder-marker target"></div>
-            <div class="pricing-ladder-value target" id="ladder-target-price">$680,000
-              <span class="pricing-ladder-diff positive">-14%</span>
-            </div>
-          </div>
-          
-          <!-- 10% CoC Price -->
-          <div class="pricing-ladder-item">
-            <div class="pricing-ladder-label">10% CoC</div>
-            <div class="pricing-ladder-marker breakeven"></div>
-            <div class="pricing-ladder-value" id="ladder-10-coc">$650,000</div>
-          </div>
-          
-          <!-- MAO (Maximum Allowable Offer) -->
-          <div class="pricing-ladder-item">
-            <div class="pricing-ladder-label">MAO (70%)</div>
-            <div class="pricing-ladder-marker"></div>
-            <div class="pricing-ladder-value" id="ladder-mao">$556,500</div>
-          </div>
-        </div>
-        
-        <!-- Pricing Summary -->
-        <div class="pricing-summary">
-          <div class="pricing-summary-item">
-            <div class="pricing-summary-value negative" id="discount-from-list">-$71,400</div>
-            <div class="pricing-summary-label">vs List Price</div>
-          </div>
-          <div class="pricing-summary-item">
-            <div class="pricing-summary-value positive" id="above-target">+$43,600</div>
-            <div class="pricing-summary-label">vs Target</div>
-          </div>
-        </div>
-      </div>
-      
       <!-- Cash Breakdown Donut - Dynamic -->
       <div class="chart-card">
         <div class="chart-card-title">Cash Breakdown</div>
@@ -2507,51 +2587,43 @@
       updateElement('target-price-value', formatCurrency(targetPrice));
       
       // Update Pricing Ladder
+      updateElement('ladder-list-price', formatCurrency(listPrice));
       updateElement('ladder-current-price', formatCurrency(purchasePrice));
-      updateElement('ladder-target-price', formatCurrency(targetPrice));
       updateElement('ladder-10-coc', formatCurrency(tenPercentCoCPrice));
       updateElement('ladder-mao', formatCurrency(mao));
       
-      // Update discount/premium indicators
-      const discountFromList = purchasePrice - listPrice;
-      const aboveTarget = purchasePrice - targetPrice;
-      
-      const discountEl = document.getElementById('discount-from-list');
-      if (discountEl) {
-        if (discountFromList <= 0) {
-          discountEl.textContent = formatCurrency(discountFromList);
-          discountEl.className = 'pricing-summary-value positive';
-        } else {
-          discountEl.textContent = '+' + formatCurrency(discountFromList);
-          discountEl.className = 'pricing-summary-value negative';
-        }
-      }
-      
-      const aboveTargetEl = document.getElementById('above-target');
-      if (aboveTargetEl) {
-        if (aboveTarget <= 0) {
-          aboveTargetEl.textContent = formatCurrency(aboveTarget);
-          aboveTargetEl.className = 'pricing-summary-value positive';
-        } else {
-          aboveTargetEl.textContent = '+' + formatCurrency(aboveTarget);
-          aboveTargetEl.className = 'pricing-summary-value negative';
-        }
-      }
-      
-      // Update percentage badges
-      const listPct = ((purchasePrice - listPrice) / listPrice * 100).toFixed(0);
-      const targetPct = ((targetPrice - listPrice) / listPrice * 100).toFixed(0);
-      
-      const currentPriceEl = document.getElementById('ladder-current-price');
-      if (currentPriceEl) {
-        currentPriceEl.innerHTML = formatCurrency(purchasePrice) + 
-          ` <span class="pricing-ladder-diff ${listPct <= 0 ? 'positive' : 'negative'}">${listPct}%</span>`;
-      }
-      
+      // Update target price with hint
       const targetPriceEl = document.getElementById('ladder-target-price');
       if (targetPriceEl) {
         targetPriceEl.innerHTML = formatCurrency(targetPrice) + 
-          ` <span class="pricing-ladder-diff positive">${targetPct}%</span>`;
+          `<span class="pricing-ladder-hint">0% CoC</span>`;
+      }
+      
+      // Update 10% CoC with hint
+      const cocPriceEl = document.getElementById('ladder-10-coc');
+      if (cocPriceEl) {
+        cocPriceEl.innerHTML = formatCurrency(tenPercentCoCPrice) + 
+          `<span class="pricing-ladder-hint">Target</span>`;
+      }
+      
+      // Update MAO with hint
+      const maoEl = document.getElementById('ladder-mao');
+      if (maoEl) {
+        maoEl.innerHTML = formatCurrency(mao) + 
+          `<span class="pricing-ladder-hint">70% ARV</span>`;
+      }
+      
+      // Update discount indicator
+      const discountPct = ((listPrice - purchasePrice) / listPrice * 100).toFixed(1);
+      const discountFill = document.getElementById('discount-fill');
+      const discountPercent = document.getElementById('discount-percent');
+      
+      if (discountFill) {
+        const fillWidth = Math.max(0, Math.min(100, parseFloat(discountPct) * 3)); // Scale for visual
+        discountFill.style.width = fillWidth + '%';
+      }
+      if (discountPercent) {
+        discountPercent.textContent = discountPct + '%';
       }
     }
     
