@@ -283,14 +283,23 @@ async def logout(
     response_model=UserResponse,
     summary="Get current user info"
 )
-async def get_me(current_user: CurrentUser):
+async def get_me(current_user: CurrentUser, db: DbSession):
     """
     Get the currently authenticated user's information.
     
     Requires valid access token in Authorization header.
     """
-    # Note: Avoid lazy loading profile relationship - check if profile_id exists instead
-    has_profile = hasattr(current_user, 'profile_id') and current_user.profile_id is not None
+    # Fetch profile to get onboarding status
+    from app.services.user_service import user_service
+    profile = await user_service.get_profile(db, str(current_user.id))
+    
+    has_profile = profile is not None
+    onboarding_completed = profile.onboarding_completed if profile else False
+    
+    # #region agent log
+    logger.info(f"[DEBUG-G] /auth/me returning onboarding_completed={onboarding_completed} for user {current_user.email}")
+    # #endregion
+    
     return UserResponse(
         id=str(current_user.id),
         email=current_user.email,
@@ -302,7 +311,7 @@ async def get_me(current_user: CurrentUser):
         created_at=current_user.created_at,
         last_login=current_user.last_login,
         has_profile=has_profile,
-        onboarding_completed=False  # Fetch profile separately if needed
+        onboarding_completed=onboarding_completed
     )
 
 
