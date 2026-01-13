@@ -1560,13 +1560,13 @@
       });
     });
     
-    // Strategy Dropdown
-    function toggleStrategyDropdown() {
+    // Strategy Dropdown - Global functions for onclick handlers
+    window.toggleStrategyDropdown = function() {
       const dropdown = document.getElementById('strategy-dropdown');
       dropdown.classList.toggle('open');
     }
     
-    function selectStrategy(strategy, name, url) {
+    window.selectStrategy = function(strategy, name, url) {
       document.getElementById('current-strategy-name').textContent = name;
       document.querySelectorAll('.strategy-option').forEach(opt => {
         opt.classList.remove('active');
@@ -1579,9 +1579,13 @@
       }
     }
     
+    // Close dropdown when clicking outside
     document.addEventListener('click', function(event) {
       const dropdown = document.getElementById('strategy-dropdown');
-      if (!dropdown.contains(event.target)) {
+      const trigger = document.querySelector('.strategy-dropdown-trigger');
+      
+      // Only close if clicking outside the dropdown AND not on the trigger
+      if (dropdown && !dropdown.contains(event.target)) {
         dropdown.classList.remove('open');
       }
     });
