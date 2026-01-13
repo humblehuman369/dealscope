@@ -1,15 +1,15 @@
 /* Property Worksheet - InvestIQ Brand Design */
 
 :root {
-  /* InvestIQ Brand Colors */
-  --iq-teal: #14b8a6;
-  --iq-teal-dark: #0d9488;
-  --iq-teal-light: #5eead4;
+  /* InvestIQ Brand Colors - Pacific Teal */
+  --iq-teal: #007ea7;
+  --iq-teal-dark: #006080;
+  --iq-teal-light: #33a5c4;
   --iq-navy: #0f172a;
   --iq-navy-light: #1e293b;
   
-  /* Background Colors */
-  --ws-bg: #f8fafc;
+  /* Background Colors - Pacific Teal 15% opacity */
+  --ws-bg: #e6f3f7;
   --ws-bg-alt: #f1f5f9;
   --ws-card: #ffffff;
   --ws-card-hover: #fafafa;
@@ -28,19 +28,19 @@
   /* Brand Colors */
   --ws-accent: var(--iq-teal);
   --ws-accent-hover: var(--iq-teal-dark);
-  --ws-accent-light: #ccfbf1;
-  --ws-accent-bg: #f0fdfa;
+  --ws-accent-light: rgba(0, 126, 167, 0.2);
+  --ws-accent-bg: rgba(0, 126, 167, 0.15);
   
-  /* Status Colors */
-  --ws-positive: #16a34a;
-  --ws-positive-light: #dcfce7;
+  /* Status Colors - Pacific Teal for positive */
+  --ws-positive: #007ea7;
+  --ws-positive-light: rgba(0, 126, 167, 0.15);
   --ws-negative: #dc2626;
   --ws-negative-light: #fee2e2;
   --ws-warning: #d97706;
   --ws-warning-light: #fef3c7;
   
   /* Section Colors */
-  --ws-section-header: linear-gradient(135deg, #f0fdfa 0%, #f1f5f9 100%);
+  --ws-section-header: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, #f1f5f9 100%);
   --ws-section-header-text: #334155;
   
   /* Shadows */
@@ -55,7 +55,7 @@
 
 .worksheet-container-v2 {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f0fdfa 0%, #f8fafc 100%);
+  background: linear-gradient(180deg, rgba(0, 126, 167, 0.15) 0%, #f8fafc 100%);
 }
 
 /* Top Bar */
@@ -363,7 +363,7 @@
 }
 
 .section-header:hover {
-  background: linear-gradient(135deg, #e6fffa 0%, #e8eef3 100%);
+  background: linear-gradient(135deg, rgba(0, 126, 167, 0.12) 0%, #e8eef3 100%);
 }
 
 .section-title {
@@ -398,7 +398,7 @@
 }
 
 .data-row.total {
-  background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+  background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, #e0f2fe 100%);
   font-weight: 600;
   padding: 12px 20px;
 }
@@ -618,7 +618,7 @@
   text-align: right;
   font-weight: 600;
   color: var(--ws-text-primary);
-  background: linear-gradient(135deg, #f0fdfa 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, #f1f5f9 100%);
   border-bottom: 2px solid var(--ws-border);
   position: sticky;
   top: 0;
@@ -652,13 +652,13 @@
 }
 
 .projections-table tr.section-row td {
-  background: linear-gradient(135deg, #f0fdfa 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, #f1f5f9 100%);
   font-weight: 600;
   color: var(--iq-teal-dark);
 }
 
 .projections-table tr.total-row td {
-  background: linear-gradient(135deg, #ccfbf1 0%, #e0f2fe 100%);
+  background: linear-gradient(135deg, rgba(0, 126, 167, 0.2) 0%, #e0f2fe 100%);
   font-weight: 600;
   color: var(--iq-teal-dark);
 }

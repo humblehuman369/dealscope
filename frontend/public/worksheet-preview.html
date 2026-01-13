@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InvestIQ - Property Worksheet Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      /* InvestIQ Brand Colors - Pacific Teal */
+      --iq-teal: #007ea7;
+      --iq-teal-dark: #006080;
+      --iq-teal-light: #33a5c4;
+      
+      /* Background Colors - Pacific Teal 15% opacity */
+      --ws-bg: #e6f3f7;
+      --ws-bg-alt: #f1f5f9;
+      --ws-card: #ffffff;
+      
+      /* Border Colors */
+      --ws-border: #e2e8f0;
+      --ws-border-light: #f1f5f9;
+      
+      /* Text Colors */
+      --ws-text-primary: #1e293b;
+      --ws-text-secondary: #64748b;
+      --ws-text-muted: #94a3b8;
+      --ws-text-label: #475569;
+      
+      /* Brand Colors */
+      --ws-accent: var(--iq-teal);
+      --ws-accent-bg: rgba(0, 126, 167, 0.15);
+      
+      /* Status Colors - Pacific Teal for positive */
+      --ws-positive: #007ea7;
+      --ws-positive-light: rgba(0, 126, 167, 0.15);
+      --ws-negative: #dc2626;
+      --ws-negative-light: #fee2e2;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(180deg, rgba(0, 126, 167, 0.15) 0%, #f8fafc 100%);
+      min-height: 100vh;
+      color: var(--ws-text-primary);
+    }
+    
+    /* Top Bar */
+    .worksheet-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: white;
+      border-bottom: 1px solid var(--ws-border);
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    }
+    
+    .worksheet-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .worksheet-back-link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      color: var(--ws-text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    
+    .worksheet-back-link:hover {
+      background: var(--ws-bg-alt);
+      color: var(--ws-text-primary);
+    }
+    
+    .worksheet-property-info {
+      border-left: 1px solid var(--ws-border);
+      padding-left: 16px;
+    }
+    
+    .worksheet-property-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    .worksheet-property-subtitle {
+      font-size: 13px;
+      color: var(--ws-text-secondary);
+    }
+    
+    .worksheet-price-badge {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--iq-teal);
+      padding: 8px 16px;
+      background: var(--ws-accent-bg);
+      border-radius: 8px;
+      border: 1px solid var(--iq-teal-light);
+    }
+    
+    /* Tab Navigation */
+    .worksheet-tab-nav {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-bottom: 2px solid var(--ws-border);
+      padding: 0 24px;
+    }
+    
+    .worksheet-tabs-scroll {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      flex: 1;
+    }
+    
+    .worksheet-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ws-text-secondary);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    
+    .worksheet-tab:hover {
+      color: var(--ws-text-primary);
+      background: var(--ws-bg-alt);
+    }
+    
+    .worksheet-tab.active {
+      color: var(--iq-teal);
+      border-bottom-color: var(--iq-teal);
+      background: var(--ws-accent-bg);
+    }
+    
+    .worksheet-tab.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .tab-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      background: var(--ws-bg-alt);
+      border-radius: 4px;
+      color: var(--ws-text-muted);
+    }
+    
+    /* Main Content Area */
+    .worksheet-main-area {
+      display: flex;
+      gap: 24px;
+      padding: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    /* Help Panel */
+    .worksheet-help-panel {
+      width: 260px;
+      flex-shrink: 0;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--ws-border);
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      height: fit-content;
+      position: sticky;
+      top: 24px;
+    }
+    
+    .worksheet-help-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      background: linear-gradient(135deg, #fef3c7 0%, #fff7ed 100%);
+      border-bottom: 1px solid #fde68a;
+      border-radius: 12px 12px 0 0;
+      font-weight: 600;
+      font-size: 14px;
+      color: #92400e;
+    }
+    
+    .worksheet-help-list {
+      padding: 16px;
+      list-style: none;
+    }
+    
+    .worksheet-help-item {
+      display: flex;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--ws-text-secondary);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    
+    .help-icon {
+      color: var(--iq-teal);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    
+    /* Content Area */
+    .worksheet-content-area {
+      flex: 1;
+      min-width: 0;
+      max-width: 880px;
+    }
+    
+    /* Summary Cards */
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .summary-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+    
+    .summary-card-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ws-text-muted);
+      margin-bottom: 8px;
+    }
+    
+    .summary-card-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ws-text-primary);
+      line-height: 1.2;
+    }
+    
+    .summary-card-value.positive {
+      color: var(--ws-positive);
+    }
+    
+    .summary-card-subtitle {
+      font-size: 12px;
+      color: var(--ws-text-secondary);
+      margin-top: 4px;
+    }
+    
+    /* Section Cards */
+    .section-card {
+      background-color: var(--ws-card);
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      margin-bottom: 16px;
+    }
+    
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #f0fdfa 0%, #f1f5f9 100%);
+      border-bottom: 1px solid var(--ws-border);
+    }
+    
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--iq-teal-dark);
+    }
+    
+    /* Data Rows */
+    .data-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 16px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--ws-border-light);
+      font-size: 14px;
+    }
+    
+    .data-row:last-child {
+      border-bottom: none;
+    }
+    
+    .data-row:hover {
+      background-color: var(--ws-accent-bg);
+    }
+    
+    .data-row.total {
+      background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+      font-weight: 600;
+    }
+    
+    .data-row.highlight {
+      background-color: var(--ws-accent-bg);
+      border-left: 3px solid var(--iq-teal);
+    }
+    
+    .data-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ws-text-label);
+    }
+    
+    .data-label .icon {
+      color: var(--iq-teal);
+    }
+    
+    /* Value column - all values align to same right edge */
+    .data-row > div:last-child {
+      min-width: 120px;
+      text-align: right;
+    }
+    
+    /* Multi-value rows - stack vertically for alignment */
+    .value-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    
+    .value-primary {
+      font-weight: 500;
+      color: var(--ws-text-primary);
+      white-space: nowrap;
+    }
+    
+    .value-secondary {
+      font-size: 12px;
+      color: var(--ws-text-muted);
+      white-space: nowrap;
+    }
+    
+    .value-negative {
+      color: var(--ws-negative);
+    }
+    
+    .value-positive {
+      color: var(--ws-positive);
+    }
+    
+    /* Subsection Headers */
+    .subsection-header {
+      padding: 8px 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .subsection-header.income {
+      background: var(--ws-accent-bg);
+      color: var(--iq-teal);
+    }
+    
+    .subsection-header.expenses {
+      background: var(--ws-negative-light);
+      color: var(--ws-negative);
+    }
+    
+    .subsection-header.neutral {
+      background: var(--ws-bg-alt);
+      color: var(--ws-text-primary);
+    }
+    
+    /* Two Column Layout */
+    .section-two-column {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+    }
+    
+    /* Pie Chart Placeholder */
+    .pie-chart-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+    
+    .pie-chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--iq-teal-dark);
+      margin-bottom: 16px;
+    }
+    
+    .pie-chart-placeholder {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--ws-negative) 0deg 60deg,
+        #f97316 60deg 100deg,
+        #eab308 100deg 140deg,
+        #007ea7 140deg 180deg,
+        #007ea7 180deg 240deg,
+        #64748b 240deg 360deg
+      );
+      margin: 0 auto 16px;
+      position: relative;
+    }
+    
+    .pie-chart-placeholder::after {
+      content: '$17,575';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #007ea7;
+      font-size: 14px;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--ws-text-secondary);
+      margin-bottom: 6px;
+    }
+    
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+    
+    /* Returns Bar Chart */
+    .returns-chart-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      margin-top: 16px;
+    }
+    
+    .returns-chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--iq-teal-dark);
+      margin-bottom: 20px;
+    }
+    
+    .returns-bar-item {
+      margin-bottom: 16px;
+    }
+    
+    .returns-bar-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .returns-bar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    
+    .returns-bar-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ws-text-label);
+    }
+    
+    .returns-bar-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--iq-teal);
+    }
+    
+    .returns-bar-track {
+      height: 8px;
+      background: var(--ws-bg-alt);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .returns-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--iq-teal) 0%, var(--iq-teal-light) 100%);
+      transition: width 0.5s ease;
+    }
+    
+    .returns-bar-target {
+      position: absolute;
+      top: -4px;
+      width: 2px;
+      height: 16px;
+      background: #ef4444;
+      border-radius: 1px;
+    }
+    
+    .returns-bar-target::after {
+      content: 'Target';
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      color: #ef4444;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .returns-bar-benchmark {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--ws-text-muted);
+    }
+    
+    @media (max-width: 900px) {
+      .worksheet-help-panel {
+        display: none;
+      }
+      
+      .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .section-two-column {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="worksheet-topbar">
+    <div class="worksheet-topbar-left">
+      <a href="#" class="worksheet-back-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        <span>Back</span>
+      </a>
+      <div class="worksheet-property-info">
+        <h1 class="worksheet-property-title">3742 Old Lighthouse Cir</h1>
+        <p class="worksheet-property-subtitle">Wellington, FL 33414 • 5 BR • 3 BA • 3,172 Sq.Ft.</p>
+      </div>
+    </div>
+    <div class="worksheet-price-badge">$723,600</div>
+  </header>
+  
+  <!-- Tab Navigation -->
+  <nav class="worksheet-tab-nav">
+    <div class="worksheet-tabs-scroll">
+      <button class="worksheet-tab active">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 3v18h18"/>
+          <path d="M18 17V9"/>
+          <path d="M13 17V5"/>
+          <path d="M8 17v-3"/>
+        </svg>
+        Analysis
+      </button>
+      <button class="worksheet-tab">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+        </svg>
+        Projections
+      </button>
+      <button class="worksheet-tab disabled">Comps <span class="tab-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">Rentals <span class="tab-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">Records <span class="tab-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">Offer <span class="tab-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">Reports <span class="tab-badge">Soon</span></button>
+    </div>
+  </nav>
+  
+  <!-- Main Content -->
+  <div class="worksheet-main-area">
+    <!-- Help Panel -->
+    <aside class="worksheet-help-panel">
+      <div class="worksheet-help-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+          <path d="M9 18h6"/>
+          <path d="M10 22h4"/>
+          <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+        </svg>
+        Property Analysis Tips
+      </div>
+      <ul class="worksheet-help-list">
+        <li class="worksheet-help-item">
+          <svg class="help-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4"/>
+            <path d="M12 8h.01"/>
+          </svg>
+          <span>Adjust the purchase price to see how it affects your returns</span>
+        </li>
+        <li class="worksheet-help-item">
+          <svg class="help-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4"/>
+            <path d="M12 8h.01"/>
+          </svg>
+          <span>A 20-25% down payment is typical for investment properties</span>
+        </li>
+        <li class="worksheet-help-item">
+          <svg class="help-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4"/>
+            <path d="M12 8h.01"/>
+          </svg>
+          <span>Cap rates above 8% are generally considered good investments</span>
+        </li>
+        <li class="worksheet-help-item">
+          <svg class="help-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4"/>
+            <path d="M12 8h.01"/>
+          </svg>
+          <span>Cash-on-cash return of 10%+ is a strong target for rental properties</span>
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- Content Area -->
+    <main class="worksheet-content-area">
+      <!-- Summary Cards -->
+      <div class="summary-cards">
+        <div class="summary-card">
+          <div class="summary-card-label">Cash Needed</div>
+          <div class="summary-card-value">$166,428</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-card-label">Cash Flow</div>
+          <div class="summary-card-value positive">$17,575/yr</div>
+          <div class="summary-card-subtitle">$1,465/mo</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-card-label">Cap Rate</div>
+          <div class="summary-card-value">8.8%</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-card-label">CoC Return</div>
+          <div class="summary-card-value positive">10.6%</div>
+        </div>
+      </div>
+      
+      <!-- Purchase & Rehab Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Purchase & Rehab</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row">
+            <div class="data-label">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              </svg>
+              <span>Purchase Price</span>
+            </div>
+            <div class="value-primary">$723,600</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Amount Financed</span></div>
+            <div class="value-primary">$578,880</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              <span>Down Payment</span>
+            </div>
+            <div class="value-group">
+              <span class="value-primary">20.0%</span>
+              <span class="value-secondary">$144,720</span>
+            </div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Purchase Costs</span></div>
+            <div class="value-primary">$21,708</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Rehab Costs</span></div>
+            <div class="value-primary">$0</div>
+          </div>
+          <div class="data-row total">
+            <div class="data-label"><span>Total Cash Needed</span></div>
+            <div class="value-primary">$166,428</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Financing Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Financing (Purchase)</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row">
+            <div class="data-label"><span>Loan Amount</span></div>
+            <div class="value-primary">$578,880</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Loan to Cost</span></div>
+            <div class="value-primary">80%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Loan to Value</span></div>
+            <div class="value-primary">80%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Financing Of</span></div>
+            <div class="value-primary">Price (80%)</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Loan Type</span></div>
+            <div class="value-primary">Amortizing, 30 Year</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Interest Rate</span></div>
+            <div class="value-primary">7.0%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Loan Term</span></div>
+            <div class="value-primary">30 years</div>
+          </div>
+          <div class="data-row highlight">
+            <div class="data-label"><span>Monthly Payment</span></div>
+            <div class="value-primary">$3,851</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Cash Flow Section (Two Column) -->
+      <div class="section-two-column">
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-title">Cash Flow (Year 1) - Yearly</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+              <path d="M18 15l-6-6-6 6"/>
+            </svg>
+          </div>
+          <div class="section-content">
+            <div class="subsection-header income">Income</div>
+            <div class="data-row">
+              <div class="data-label"><span>Gross Rent</span></div>
+              <div class="value-group">
+                <span class="value-primary">$8,081</span>
+                <span class="value-secondary">$96,972/yr</span>
+              </div>
+            </div>
+            <div class="data-row">
+              <div class="data-label"><span>Vacancy</span></div>
+              <div class="value-group">
+                <span class="value-primary">8.0%</span>
+                <span class="value-secondary value-negative">-$7,758</span>
+              </div>
+            </div>
+            <div class="data-row total">
+              <div class="data-label"><span>Operating Income</span></div>
+              <div class="value-primary">$89,214</div>
+            </div>
+            
+            <div class="subsection-header expenses">Operating Expenses</div>
+            <div class="data-row">
+              <div class="data-label"><span>Property Taxes</span></div>
+              <div class="value-primary">$6,471</div>
+            </div>
+            <div class="data-row">
+              <div class="data-label"><span>Insurance</span></div>
+              <div class="value-primary">$2,894</div>
+            </div>
+            <div class="data-row">
+              <div class="data-label"><span>Property Management</span></div>
+              <div class="value-group">
+                <span class="value-primary">8.0%</span>
+                <span class="value-secondary">$7,137</span>
+              </div>
+            </div>
+            <div class="data-row">
+              <div class="data-label"><span>Maintenance</span></div>
+              <div class="value-group">
+                <span class="value-primary">5.0%</span>
+                <span class="value-secondary">$4,461</span>
+              </div>
+            </div>
+            <div class="data-row">
+              <div class="data-label"><span>Capital Expenditures</span></div>
+              <div class="value-group">
+                <span class="value-primary">5.0%</span>
+                <span class="value-secondary">$4,461</span>
+              </div>
+            </div>
+            <div class="data-row">
+              <div class="data-label"><span>HOA Fees</span></div>
+              <div class="value-primary">$0</div>
+            </div>
+            <div class="data-row total">
+              <div class="data-label"><span>Operating Expenses</span></div>
+              <div class="value-primary">$25,424</div>
+            </div>
+            
+            <div class="subsection-header neutral">Net Operating Income</div>
+            <div class="data-row highlight">
+              <div class="data-label"><span>Net Operating Income</span></div>
+              <div class="value-primary value-positive">$63,791</div>
+            </div>
+            <div class="data-row">
+              <div class="data-label"><span>Loan Payments</span></div>
+              <div class="value-primary value-negative">-$46,216</div>
+            </div>
+            <div class="data-row total">
+              <div class="data-label"><span>Cash Flow</span></div>
+              <div class="value-primary value-positive">$17,575</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Pie Chart -->
+        <div class="pie-chart-card">
+          <div class="pie-chart-title">Income vs Expenses</div>
+          <div class="pie-chart-placeholder"></div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background: #dc2626;"></span>
+            <span>Property Taxes</span>
+            <span style="margin-left: auto; font-weight: 500;">$6,471</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background: #f97316;"></span>
+            <span>Insurance</span>
+            <span style="margin-left: auto; font-weight: 500;">$2,894</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background: #eab308;"></span>
+            <span>Management</span>
+            <span style="margin-left: auto; font-weight: 500;">$7,137</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background: #007ea7;"></span>
+            <span>Maintenance</span>
+            <span style="margin-left: auto; font-weight: 500;">$4,461</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background: #007ea7;"></span>
+            <span>Loan Payment</span>
+            <span style="margin-left: auto; font-weight: 500;">$46,216</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background: #64748b;"></span>
+            <span>Cash Flow</span>
+            <span style="margin-left: auto; font-weight: 500; color: #007ea7;">$17,575</span>
+          </div>
+        </div>
+        
+        <!-- Returns Bar Chart -->
+        <div class="returns-chart-card">
+          <div class="returns-chart-title">Investment Returns</div>
+          
+          <!-- Cap Rate -->
+          <div class="returns-bar-item">
+            <div class="returns-bar-header">
+              <span class="returns-bar-label">Cap Rate</span>
+              <span class="returns-bar-value">8.8%</span>
+            </div>
+            <div class="returns-bar-track">
+              <div class="returns-bar-fill" style="width: 58.7%;"></div>
+              <div class="returns-bar-target" style="left: 53.3%;"></div>
+            </div>
+            <div class="returns-bar-benchmark">
+              <span>0%</span>
+              <span>Good: 8%+</span>
+              <span>15%</span>
+            </div>
+          </div>
+          
+          <!-- Cash on Cash Return -->
+          <div class="returns-bar-item">
+            <div class="returns-bar-header">
+              <span class="returns-bar-label">Cash on Cash Return</span>
+              <span class="returns-bar-value">10.6%</span>
+            </div>
+            <div class="returns-bar-track">
+              <div class="returns-bar-fill" style="width: 53%;"></div>
+              <div class="returns-bar-target" style="left: 50%;"></div>
+            </div>
+            <div class="returns-bar-benchmark">
+              <span>0%</span>
+              <span>Target: 10%</span>
+              <span>20%</span>
+            </div>
+          </div>
+          
+          <!-- DSCR -->
+          <div class="returns-bar-item">
+            <div class="returns-bar-header">
+              <span class="returns-bar-label">Debt Service Coverage</span>
+              <span class="returns-bar-value">1.38x</span>
+            </div>
+            <div class="returns-bar-track">
+              <div class="returns-bar-fill" style="width: 69%;"></div>
+              <div class="returns-bar-target" style="left: 60%;"></div>
+            </div>
+            <div class="returns-bar-benchmark">
+              <span>0x</span>
+              <span>Min: 1.2x</span>
+              <span>2x</span>
+            </div>
+          </div>
+          
+          <!-- Rent to Value -->
+          <div class="returns-bar-item">
+            <div class="returns-bar-header">
+              <span class="returns-bar-label">Rent to Value (1% Rule)</span>
+              <span class="returns-bar-value">1.12%</span>
+            </div>
+            <div class="returns-bar-track">
+              <div class="returns-bar-fill" style="width: 74.7%;"></div>
+              <div class="returns-bar-target" style="left: 66.7%;"></div>
+            </div>
+            <div class="returns-bar-benchmark">
+              <span>0%</span>
+              <span>Target: 1%</span>
+              <span>1.5%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Investment Returns Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Investment Returns (Year 1)</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row">
+            <div class="data-label"><span>Cap Rate (Purchase Price)</span></div>
+            <div class="value-primary value-positive">8.816%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Cap Rate (Market Value)</span></div>
+            <div class="value-primary value-positive">8.014%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Cash on Cash Return</span></div>
+            <div class="value-primary value-positive">10.56%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Return on Equity</span></div>
+            <div class="value-primary">8.096%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Return on Investment</span></div>
+            <div class="value-primary value-positive">54.038%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Internal Rate of Return</span></div>
+            <div class="value-primary value-positive">83.747%</div>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+  </div>
+</body>
+</html>
+
