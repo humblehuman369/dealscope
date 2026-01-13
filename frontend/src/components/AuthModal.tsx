@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { X, Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
@@ -9,6 +9,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-produ
 
 export default function AuthModal() {
   const router = useRouter()
+  const pathname = usePathname()
   const { showAuthModal, setShowAuthModal, login, register, isLoading } = useAuth()
   const [isLogin, setIsLogin] = useState(true)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
@@ -113,16 +114,18 @@ export default function AuthModal() {
       if (isLogin) {
         await login(email, password)
         setSuccess('Login successful!')
-        // Redirect to dashboard first, then close modal
-        router.push('/dashboard')
-        setShowAuthModal(null)
       } else {
         await register(email, password, fullName)
         setSuccess('Account created successfully!')
-        // Redirect to dashboard first, then close modal
-        router.push('/dashboard')
-        setShowAuthModal(null)
       }
+      
+      // Only redirect to dashboard if user is on homepage or login-related pages
+      // If user is on a property page or other app pages, stay there so they can complete their action
+      const shouldRedirect = pathname === '/' || pathname === '/login' || pathname === '/register'
+      if (shouldRedirect) {
+        router.push('/dashboard')
+      }
+      setShowAuthModal(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     }
