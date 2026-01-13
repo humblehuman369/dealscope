@@ -433,6 +433,47 @@
   min-width: 100px;
 }
 
+/* Multi-value rows - primary value + secondary annotation */
+.data-row .value-group {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.data-row .value-primary {
+  font-weight: 500;
+  color: var(--ws-text-primary);
+  white-space: nowrap;
+  min-width: 70px;
+  text-align: right;
+}
+
+.data-row .value-secondary {
+  font-size: 12px;
+  color: var(--ws-text-muted);
+  white-space: nowrap;
+  min-width: 70px;
+  text-align: right;
+}
+
+/* For rows with percentage + calculated value */
+.data-row .value-with-calc {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.data-row .value-with-calc .value-primary {
+  font-weight: 500;
+}
+
+.data-row .value-with-calc .value-secondary {
+  font-size: 11px;
+  color: var(--ws-text-muted);
+}
+
 .data-value.positive {
   color: var(--ws-positive);
 }
