@@ -172,10 +172,10 @@
     /* Main Content Area */
     .worksheet-main-area {
       display: grid;
-      grid-template-columns: 220px 1fr 320px;
+      grid-template-columns: 200px 1fr 300px;
       gap: 20px;
       padding: 24px;
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
     }
     
@@ -391,11 +391,10 @@
       margin-top: 2px;
     }
     
-    /* Ledger Content Area - Narrow */
+    /* Ledger Content Area - Expanded */
     .worksheet-content-area {
       flex: 1;
       min-width: 0;
-      max-width: 520px;
     }
     
     /* Compact section cards for ledger */
@@ -405,6 +404,469 @@
     
     .section-card .section-header {
       padding: 12px 16px;
+    }
+    
+    /* ===== SLIDER STYLES ===== */
+    .data-row.has-slider {
+      grid-template-columns: 140px 1fr auto;
+      gap: 12px;
+    }
+    
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    
+    .slider-wrapper {
+      flex: 1;
+      position: relative;
+      height: 24px;
+      display: flex;
+      align-items: center;
+    }
+    
+    /* Custom Range Slider */
+    .slider-input {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: linear-gradient(to right, var(--iq-teal) 0%, var(--iq-teal) var(--slider-progress, 50%), #e2e8f0 var(--slider-progress, 50%), #e2e8f0 100%);
+      outline: none;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid var(--iq-teal);
+      box-shadow: 0 2px 6px rgba(0, 126, 167, 0.3);
+      cursor: grab;
+      transition: all 0.15s ease;
+    }
+    
+    .slider-input::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 3px 10px rgba(0, 126, 167, 0.4);
+    }
+    
+    .slider-input::-webkit-slider-thumb:active {
+      cursor: grabbing;
+      transform: scale(1.15);
+      background: var(--iq-teal);
+      border-color: var(--iq-teal);
+    }
+    
+    .slider-input::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid var(--iq-teal);
+      box-shadow: 0 2px 6px rgba(0, 126, 167, 0.3);
+      cursor: grab;
+    }
+    
+    .slider-input::-moz-range-track {
+      height: 6px;
+      border-radius: 3px;
+      background: #e2e8f0;
+    }
+    
+    .slider-input::-moz-range-progress {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--iq-teal);
+    }
+    
+    /* Slider Value Display */
+    .slider-value {
+      min-width: 90px;
+      padding: 6px 10px;
+      background: var(--ws-bg-alt);
+      border: 1px solid var(--ws-border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+      text-align: right;
+      transition: all 0.15s ease;
+    }
+    
+    .slider-value:hover {
+      border-color: var(--iq-teal);
+      background: white;
+    }
+    
+    .slider-value:focus {
+      outline: none;
+      border-color: var(--iq-teal);
+      box-shadow: 0 0 0 3px rgba(0, 126, 167, 0.15);
+      background: white;
+    }
+    
+    /* Secondary value below slider */
+    .slider-secondary {
+      font-size: 11px;
+      color: var(--ws-text-muted);
+      text-align: right;
+      margin-top: 2px;
+    }
+    
+    /* Slider with percentage + dollar display */
+    .slider-dual-value {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    
+    /* Dropdown Select Styling */
+    .select-input {
+      padding: 8px 32px 8px 12px;
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ws-text-primary);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      transition: all 0.15s ease;
+    }
+    
+    .select-input:hover {
+      border-color: var(--iq-teal);
+    }
+    
+    .select-input:focus {
+      outline: none;
+      border-color: var(--iq-teal);
+      box-shadow: 0 0 0 3px rgba(0, 126, 167, 0.15);
+    }
+    
+    /* Calculated field styling (non-editable) */
+    .data-row.calculated {
+      background: var(--ws-bg-alt);
+    }
+    
+    .data-row.calculated .value-primary {
+      color: var(--ws-text-secondary);
+    }
+    
+    /* ===== SECTION WITH INLINE VISUALIZATION ===== */
+    .section-with-viz {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 0;
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      margin-bottom: 16px;
+    }
+    
+    .section-with-viz .section-card {
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      margin-bottom: 0;
+    }
+    
+    .section-viz-panel {
+      background: linear-gradient(180deg, rgba(0, 126, 167, 0.03) 0%, rgba(0, 126, 167, 0.08) 100%);
+      border-left: 1px solid var(--ws-border);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .viz-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--iq-teal-dark);
+      margin-bottom: 8px;
+    }
+    
+    /* Mini Donut Chart */
+    .mini-donut {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      position: relative;
+      margin: 0 auto;
+    }
+    
+    .mini-donut-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .mini-donut-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--iq-teal);
+    }
+    
+    .mini-donut-label {
+      font-size: 8px;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+    }
+    
+    /* Horizontal Bar Metric */
+    .viz-metric {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid var(--ws-border-light);
+    }
+    
+    .viz-metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .viz-metric-label {
+      font-size: 11px;
+      color: var(--ws-text-secondary);
+    }
+    
+    .viz-metric-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--iq-teal);
+    }
+    
+    .viz-bar {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .viz-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--iq-teal) 0%, var(--iq-teal-light) 100%);
+      transition: width 0.3s ease;
+    }
+    
+    /* Stacked Comparison Bar */
+    .viz-compare-bar {
+      display: flex;
+      height: 32px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .viz-compare-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: white;
+      transition: width 0.3s ease;
+    }
+    
+    .viz-compare-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+    }
+    
+    .viz-compare-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--ws-text-secondary);
+    }
+    
+    .viz-compare-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+    
+    /* Gauge Meter */
+    .viz-gauge {
+      text-align: center;
+      padding: 8px 0;
+    }
+    
+    .viz-gauge svg {
+      width: 120px;
+      height: 70px;
+    }
+    
+    .viz-gauge-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--iq-teal);
+      margin-top: 4px;
+    }
+    
+    .viz-gauge-label {
+      font-size: 10px;
+      color: var(--ws-text-muted);
+    }
+    
+    /* Waterfall Chart */
+    .viz-waterfall {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 100px;
+      padding: 8px 0;
+      gap: 8px;
+    }
+    
+    .waterfall-bar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .waterfall-bar-fill {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s ease;
+    }
+    
+    .waterfall-bar-label {
+      font-size: 9px;
+      color: var(--ws-text-muted);
+      text-align: center;
+    }
+    
+    .waterfall-bar-value {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    /* Key Metrics Grid */
+    .viz-metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    
+    .viz-metric-card {
+      background: white;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      border: 1px solid var(--ws-border-light);
+    }
+    
+    .viz-metric-card-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--iq-teal);
+    }
+    
+    .viz-metric-card-label {
+      font-size: 9px;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    
+    /* Payment Breakdown Arc */
+    .payment-breakdown {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .payment-arc {
+      width: 80px;
+      height: 80px;
+      position: relative;
+    }
+    
+    .payment-arc svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    
+    .payment-arc-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    
+    .payment-arc-value {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ws-text-primary);
+    }
+    
+    .payment-arc-label {
+      font-size: 8px;
+      color: var(--ws-text-muted);
+    }
+    
+    .payment-details {
+      flex: 1;
+    }
+    
+    .payment-detail-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--ws-border-light);
+    }
+    
+    .payment-detail-row:last-child {
+      border-bottom: none;
+    }
+    
+    @media (max-width: 1000px) {
+      .section-with-viz {
+        grid-template-columns: 1fr;
+      }
+      
+      .section-viz-panel {
+        border-left: none;
+        border-top: 1px solid var(--ws-border);
+      }
     }
     
     /* Summary Cards */
@@ -897,20 +1359,30 @@
           </svg>
         </div>
         <div class="section-content">
-          <div class="data-row">
+          <!-- Purchase Price with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label">
               <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
               </svg>
               <span>Purchase Price</span>
             </div>
-            <div class="value-primary">$723,600</div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="500000" max="900000" value="723600" style="--slider-progress: 56%;">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$723,600">
           </div>
-          <div class="data-row">
+          
+          <!-- Amount Financed - Calculated -->
+          <div class="data-row calculated">
             <div class="data-label"><span>Amount Financed</span></div>
             <div class="value-primary">$578,880</div>
           </div>
-          <div class="data-row">
+          
+          <!-- Down Payment with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label">
               <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="1" x2="12" y2="23"/>
@@ -918,19 +1390,40 @@
               </svg>
               <span>Down Payment</span>
             </div>
-            <div class="value-group">
-              <span class="value-primary">20.0%</span>
-              <span class="value-secondary">$144,720</span>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="5" max="100" value="20" style="--slider-progress: 16%;">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value" value="20.0%" style="min-width: 70px;">
+              <span class="slider-secondary">$144,720</span>
             </div>
           </div>
-          <div class="data-row">
+          
+          <!-- Purchase Costs with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>Purchase Costs</span></div>
-            <div class="value-primary">$21,708</div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="50000" value="21708" style="--slider-progress: 43%;">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$21,708">
           </div>
-          <div class="data-row">
+          
+          <!-- Rehab Costs with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>Rehab Costs</span></div>
-            <div class="value-primary">$0</div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="100000" value="0" style="--slider-progress: 0%;">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$0">
           </div>
+          
+          <!-- Total Cash Needed - Calculated -->
           <div class="data-row total">
             <div class="data-label"><span>Total Cash Needed</span></div>
             <div class="value-primary">$166,428</div>
@@ -947,35 +1440,64 @@
           </svg>
         </div>
         <div class="section-content">
-          <div class="data-row">
+          <!-- Loan Amount - Calculated -->
+          <div class="data-row calculated">
             <div class="data-label"><span>Loan Amount</span></div>
             <div class="value-primary">$578,880</div>
           </div>
-          <div class="data-row">
-            <div class="data-label"><span>Loan to Cost</span></div>
-            <div class="value-primary">80%</div>
-          </div>
-          <div class="data-row">
-            <div class="data-label"><span>Loan to Value</span></div>
-            <div class="value-primary">80%</div>
-          </div>
-          <div class="data-row">
+          
+          <!-- Financing Of - Dropdown -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>Financing Of</span></div>
-            <div class="value-primary">Price (80%)</div>
+            <div class="slider-container">
+              <select class="select-input">
+                <option value="price" selected>Purchase Price</option>
+                <option value="cost">Total Cost (Price + Rehab)</option>
+                <option value="arv">After Repair Value</option>
+              </select>
+            </div>
+            <span class="value-primary" style="min-width: 60px;">80%</span>
           </div>
-          <div class="data-row">
+          
+          <!-- Loan Type - Dropdown -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>Loan Type</span></div>
-            <div class="value-primary">Amortizing, 30 Year</div>
+            <div class="slider-container">
+              <select class="select-input">
+                <option value="amortizing-30" selected>Amortizing, 30 Year</option>
+                <option value="amortizing-15">Amortizing, 15 Year</option>
+                <option value="interest-only">Interest Only</option>
+                <option value="arm-5-1">ARM 5/1</option>
+                <option value="arm-7-1">ARM 7/1</option>
+              </select>
+            </div>
+            <span style="width: 60px;"></span>
           </div>
-          <div class="data-row">
+          
+          <!-- Interest Rate with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>Interest Rate</span></div>
-            <div class="value-primary">7.0%</div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="3" max="12" value="7" step="0.125" style="--slider-progress: 44%;">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="7.0%" style="min-width: 70px;">
           </div>
-          <div class="data-row">
+          
+          <!-- Loan Term with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>Loan Term</span></div>
-            <div class="value-primary">30 years</div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="5" max="30" value="30" step="5" style="--slider-progress: 100%;">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="30 years" style="min-width: 80px;">
           </div>
-          <div class="data-row highlight">
+          
+          <!-- Monthly Payment - Calculated (Highlighted) -->
+          <div class="data-row total">
             <div class="data-label"><span>Monthly Payment</span></div>
             <div class="value-primary">$3,851</div>
           </div>
@@ -992,73 +1514,139 @@
         </div>
         <div class="section-content">
           <div class="subsection-header income">Income</div>
-          <div class="data-row">
+          
+          <!-- Gross Rent with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>Gross Rent</span></div>
-            <div class="value-group">
-              <span class="value-primary">$8,081</span>
-              <span class="value-secondary">$96,972/yr</span>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="4000" max="12000" value="8081" style="--slider-progress: 51%;">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value" value="$8,081" style="min-width: 80px;">
+              <span class="slider-secondary">$96,972/yr</span>
             </div>
           </div>
-          <div class="data-row">
+          
+          <!-- Vacancy with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>Vacancy</span></div>
-            <div class="value-group">
-              <span class="value-primary">8.0%</span>
-              <span class="value-secondary value-negative">-$7,758</span>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="20" value="8" style="--slider-progress: 40%;">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value" value="8.0%" style="min-width: 60px;">
+              <span class="slider-secondary value-negative">-$7,758</span>
             </div>
           </div>
+          
+          <!-- Operating Income - Calculated -->
           <div class="data-row total">
             <div class="data-label"><span>Operating Income</span></div>
             <div class="value-primary">$89,214</div>
           </div>
           
           <div class="subsection-header expenses">Operating Expenses</div>
-          <div class="data-row">
+          
+          <!-- Property Taxes with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>Property Taxes</span></div>
-            <div class="value-primary">$6,471</div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="15000" value="6471" style="--slider-progress: 43%;">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$6,471">
           </div>
-          <div class="data-row">
+          
+          <!-- Insurance with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>Insurance</span></div>
-            <div class="value-primary">$2,894</div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="8000" value="2894" style="--slider-progress: 36%;">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$2,894">
           </div>
-          <div class="data-row">
-            <div class="data-label"><span>Property Management</span></div>
-            <div class="value-group">
-              <span class="value-primary">8.0%</span>
-              <span class="value-secondary">$7,137</span>
+          
+          <!-- Property Management with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Property Mgmt</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="15" value="8" style="--slider-progress: 53%;">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value" value="8.0%" style="min-width: 60px;">
+              <span class="slider-secondary">$7,137</span>
             </div>
           </div>
-          <div class="data-row">
+          
+          <!-- Maintenance with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>Maintenance</span></div>
-            <div class="value-group">
-              <span class="value-primary">5.0%</span>
-              <span class="value-secondary">$4,461</span>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="15" value="5" style="--slider-progress: 33%;">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value" value="5.0%" style="min-width: 60px;">
+              <span class="slider-secondary">$4,461</span>
             </div>
           </div>
-          <div class="data-row">
-            <div class="data-label"><span>Capital Expenditures</span></div>
-            <div class="value-group">
-              <span class="value-primary">5.0%</span>
-              <span class="value-secondary">$4,461</span>
+          
+          <!-- Capital Expenditures with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>CapEx</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="15" value="5" style="--slider-progress: 33%;">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value" value="5.0%" style="min-width: 60px;">
+              <span class="slider-secondary">$4,461</span>
             </div>
           </div>
-          <div class="data-row">
+          
+          <!-- HOA Fees with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>HOA Fees</span></div>
-            <div class="value-primary">$0</div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="500" value="0" style="--slider-progress: 0%;">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$0">
           </div>
+          
+          <!-- Operating Expenses - Calculated -->
           <div class="data-row total">
             <div class="data-label"><span>Operating Expenses</span></div>
             <div class="value-primary">$25,424</div>
           </div>
           
           <div class="subsection-header neutral">Net Operating Income</div>
+          
+          <!-- NOI - Calculated -->
           <div class="data-row highlight">
             <div class="data-label"><span>Net Operating Income</span></div>
             <div class="value-primary value-positive">$63,791</div>
           </div>
-          <div class="data-row">
+          
+          <!-- Loan Payments - Calculated -->
+          <div class="data-row calculated">
             <div class="data-label"><span>Loan Payments</span></div>
             <div class="value-primary value-negative">-$46,216</div>
           </div>
+          
+          <!-- Cash Flow - Calculated (Key Metric) -->
           <div class="data-row total">
             <div class="data-label"><span>Cash Flow</span></div>
             <div class="value-primary value-positive">$17,575</div>
@@ -1075,23 +1663,37 @@
           </svg>
         </div>
         <div class="section-content">
-          <div class="data-row">
+          <!-- After Repair Value with Slider -->
+          <div class="data-row has-slider">
             <div class="data-label"><span>After Repair Value</span></div>
-            <div class="value-primary">$795,960</div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="600000" max="1000000" value="795960" style="--slider-progress: 49%;">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$795,960">
           </div>
-          <div class="data-row">
+          
+          <!-- ARV Per Sq Ft - Calculated -->
+          <div class="data-row calculated">
             <div class="data-label"><span>ARV Per Square Foot</span></div>
             <div class="value-primary">$251</div>
           </div>
-          <div class="data-row">
+          
+          <!-- Price Per Sq Ft - Calculated -->
+          <div class="data-row calculated">
             <div class="data-label"><span>Price Per Square Foot</span></div>
             <div class="value-primary">$228</div>
           </div>
-          <div class="data-row">
+          
+          <!-- Rehab Per Sq Ft - Calculated -->
+          <div class="data-row calculated">
             <div class="data-label"><span>Rehab Per Square Foot</span></div>
             <div class="value-primary">$0</div>
           </div>
-          <div class="data-row highlight">
+          
+          <!-- Equity at Purchase - Calculated (Key Metric) -->
+          <div class="data-row total">
             <div class="data-label"><span>Equity at Purchase</span></div>
             <div class="value-primary value-positive">$72,360</div>
           </div>
@@ -1172,7 +1774,7 @@
       
     </main>
     
-    <!-- Charts Sidebar -->
+    <!-- Charts Sidebar - Dynamic Visualizations -->
     <aside class="worksheet-charts-sidebar">
       <!-- Deal Score Gauge -->
       <div class="chart-card">
@@ -1190,39 +1792,79 @@
               </linearGradient>
             </defs>
           </svg>
-          <div class="gauge-value">85</div>
+          <div class="gauge-value" id="deal-score">85</div>
           <div class="gauge-label">Good Investment</div>
         </div>
       </div>
       
-      <!-- Key Metrics Mini Cards -->
+      <!-- Key Metrics 2x2 Grid - Dynamic -->
       <div class="chart-card">
         <div class="chart-card-title">Key Metrics</div>
         <div class="mini-stats-grid">
           <div class="mini-stat">
-            <div class="mini-stat-value">8.8%</div>
+            <div class="mini-stat-value" id="metric-cap-rate">8.8%</div>
             <div class="mini-stat-label">Cap Rate</div>
           </div>
           <div class="mini-stat">
-            <div class="mini-stat-value">10.6%</div>
+            <div class="mini-stat-value" id="metric-coc-return">10.6%</div>
             <div class="mini-stat-label">CoC Return</div>
           </div>
           <div class="mini-stat">
-            <div class="mini-stat-value">1.38x</div>
+            <div class="mini-stat-value" id="metric-dscr">1.38x</div>
             <div class="mini-stat-label">DSCR</div>
           </div>
           <div class="mini-stat">
-            <div class="mini-stat-value">1.12%</div>
+            <div class="mini-stat-value" id="metric-rent-value">1.12%</div>
             <div class="mini-stat-label">Rent/Value</div>
           </div>
         </div>
       </div>
       
-      <!-- Cash Flow Breakdown -->
+      <!-- Cash Breakdown Donut - Dynamic -->
+      <div class="chart-card">
+        <div class="chart-card-title">Cash Breakdown</div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div class="mini-donut" id="cash-donut" style="background: conic-gradient(var(--iq-teal) 0deg 260deg, #f97316 260deg 310deg, #64748b 310deg 360deg); width: 100px; height: 100px; flex-shrink: 0;">
+            <div class="mini-donut-center">
+              <span class="mini-donut-value" id="total-cash">$166K</span>
+              <span class="mini-donut-label">Total Cash</span>
+            </div>
+          </div>
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+              <span style="width: 10px; height: 10px; background: var(--iq-teal); border-radius: 2px;"></span>
+              <span style="font-size: 12px; color: var(--ws-text-secondary);">Down Payment</span>
+              <span style="font-size: 12px; font-weight: 600; margin-left: auto;" id="cash-down">$145K</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+              <span style="width: 10px; height: 10px; background: #f97316; border-radius: 2px;"></span>
+              <span style="font-size: 12px; color: var(--ws-text-secondary);">Closing Costs</span>
+              <span style="font-size: 12px; font-weight: 600; margin-left: auto;" id="cash-costs">$22K</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="width: 10px; height: 10px; background: #64748b; border-radius: 2px;"></span>
+              <span style="font-size: 12px; color: var(--ws-text-secondary);">Rehab</span>
+              <span style="font-size: 12px; font-weight: 600; margin-left: auto;" id="cash-rehab">$0</span>
+            </div>
+          </div>
+        </div>
+        <!-- LTV Bar -->
+        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--ws-border-light);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <span style="font-size: 11px; color: var(--ws-text-muted);">Loan to Value</span>
+            <span style="font-size: 12px; font-weight: 600; color: var(--iq-teal);" id="ltv-value">80%</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" id="ltv-bar" style="width: 80%;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Cash Flow Breakdown - Dynamic -->
       <div class="chart-card">
         <div class="chart-card-title">Cash Flow Breakdown</div>
         <div class="stacked-bar-container">
-          <div class="stacked-bar">
+          <div class="stacked-bar" id="cf-breakdown-bar">
             <div class="stacked-bar-segment" style="width: 52%; background: #64748b;">Loan</div>
             <div class="stacked-bar-segment" style="width: 28%; background: #f97316;">Exp</div>
             <div class="stacked-bar-segment" style="width: 20%; background: #007ea7;">CF</div>
@@ -1230,87 +1872,432 @@
           <div class="stacked-legend">
             <div class="stacked-legend-item">
               <span class="stacked-legend-dot" style="background: #64748b;"></span>
-              Loan $46k
+              <span id="cf-loan">Loan $46k</span>
             </div>
             <div class="stacked-legend-item">
               <span class="stacked-legend-dot" style="background: #f97316;"></span>
-              Expenses $25k
+              <span id="cf-expenses">Expenses $25k</span>
             </div>
             <div class="stacked-legend-item">
               <span class="stacked-legend-dot" style="background: #007ea7;"></span>
-              Cash Flow $18k
+              <span id="cf-cashflow">Cash Flow $18k</span>
             </div>
           </div>
         </div>
       </div>
       
-      <!-- Returns vs Targets -->
+      <!-- Returns vs Targets - Dynamic -->
       <div class="chart-card">
         <div class="chart-card-title">Returns vs Targets</div>
         
         <div class="h-bar-item">
           <div class="h-bar-header">
             <span class="h-bar-label">Cap Rate</span>
-            <span class="h-bar-value">8.8% / 8%</span>
+            <span class="h-bar-value" id="target-cap-rate">8.8% / 8%</span>
           </div>
           <div class="h-bar-track">
-            <div class="h-bar-fill" style="width: 110%;"></div>
+            <div class="h-bar-fill" id="bar-cap-rate" style="width: 110%;"></div>
           </div>
         </div>
         
         <div class="h-bar-item">
           <div class="h-bar-header">
             <span class="h-bar-label">Cash on Cash</span>
-            <span class="h-bar-value">10.6% / 10%</span>
+            <span class="h-bar-value" id="target-coc">10.6% / 10%</span>
           </div>
           <div class="h-bar-track">
-            <div class="h-bar-fill" style="width: 106%;"></div>
+            <div class="h-bar-fill" id="bar-coc" style="width: 106%;"></div>
           </div>
         </div>
         
         <div class="h-bar-item">
           <div class="h-bar-header">
             <span class="h-bar-label">DSCR</span>
-            <span class="h-bar-value">1.38x / 1.2x</span>
+            <span class="h-bar-value" id="target-dscr">1.38x / 1.2x</span>
           </div>
           <div class="h-bar-track">
-            <div class="h-bar-fill" style="width: 115%;"></div>
+            <div class="h-bar-fill" id="bar-dscr" style="width: 115%;"></div>
           </div>
         </div>
         
         <div class="h-bar-item">
           <div class="h-bar-header">
             <span class="h-bar-label">1% Rule</span>
-            <span class="h-bar-value">1.12% / 1%</span>
+            <span class="h-bar-value" id="target-1pct">1.12% / 1%</span>
           </div>
           <div class="h-bar-track">
-            <div class="h-bar-fill" style="width: 112%;"></div>
+            <div class="h-bar-fill" id="bar-1pct" style="width: 112%;"></div>
           </div>
         </div>
       </div>
       
-      <!-- Equity Position -->
+      <!-- Equity Position - Dynamic -->
       <div class="chart-card">
         <div class="chart-card-title">Equity Position</div>
         <div class="stacked-bar-container">
-          <div class="stacked-bar">
+          <div class="stacked-bar" id="equity-bar">
             <div class="stacked-bar-segment" style="width: 20%; background: #007ea7;">Equity</div>
             <div class="stacked-bar-segment" style="width: 80%; background: #94a3b8;">Loan</div>
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 8px;">
             <div>
-              <div style="font-weight: 600; color: #007ea7;">$144,720</div>
-              <div style="color: #94a3b8; font-size: 10px;">20% Equity</div>
+              <div style="font-weight: 600; color: #007ea7;" id="equity-amount">$144,720</div>
+              <div style="color: #94a3b8; font-size: 10px;" id="equity-pct">20% Equity</div>
             </div>
             <div style="text-align: right;">
-              <div style="font-weight: 600; color: #64748b;">$578,880</div>
-              <div style="color: #94a3b8; font-size: 10px;">80% Financed</div>
+              <div style="font-weight: 600; color: #64748b;" id="loan-amount">$578,880</div>
+              <div style="color: #94a3b8; font-size: 10px;" id="loan-pct">80% Financed</div>
             </div>
           </div>
         </div>
       </div>
     </aside>
   </div>
+  
+  <script>
+    // ===== UTILITY FUNCTIONS =====
+    
+    // Format number as currency
+    function formatCurrency(value) {
+      return '$' + Math.round(value).toLocaleString('en-US');
+    }
+    
+    // Format number as percentage
+    function formatPercent(value, decimals = 1) {
+      return value.toFixed(decimals) + '%';
+    }
+    
+    // Format number as years
+    function formatYears(value) {
+      return Math.round(value) + ' years';
+    }
+    
+    // Parse currency string to number
+    function parseCurrency(str) {
+      return parseFloat(str.replace(/[$,]/g, '')) || 0;
+    }
+    
+    // Parse percentage string to number
+    function parsePercent(str) {
+      return parseFloat(str.replace('%', '')) || 0;
+    }
+    
+    // Parse years string to number
+    function parseYears(str) {
+      return parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
+    }
+    
+    // Update slider progress bar
+    function updateSliderProgress(slider) {
+      const min = parseFloat(slider.min);
+      const max = parseFloat(slider.max);
+      const value = parseFloat(slider.value);
+      const progress = ((value - min) / (max - min)) * 100;
+      slider.style.background = `linear-gradient(to right, #007ea7 0%, #007ea7 ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+    }
+    
+    // ===== BIDIRECTIONAL SLIDER-INPUT BINDING =====
+    
+    document.querySelectorAll('.data-row.has-slider').forEach(row => {
+      const slider = row.querySelector('.slider-input');
+      const input = row.querySelector('.slider-value');
+      const secondarySpan = row.querySelector('.slider-secondary');
+      
+      if (!slider || !input) return;
+      
+      // Determine the format type based on initial value
+      const initialValue = input.value;
+      let formatType = 'currency';
+      if (initialValue.includes('%')) {
+        formatType = 'percent';
+      } else if (initialValue.includes('year')) {
+        formatType = 'years';
+      }
+      
+      // SLIDER → INPUT: When slider moves, update input
+      slider.addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        
+        // Update the input value based on format type
+        if (formatType === 'currency') {
+          input.value = formatCurrency(value);
+        } else if (formatType === 'percent') {
+          input.value = formatPercent(value);
+        } else if (formatType === 'years') {
+          input.value = formatYears(value);
+        }
+        
+        // Update secondary value if exists (e.g., yearly amount)
+        if (secondarySpan) {
+          updateSecondaryValue(row, value, formatType);
+        }
+        
+        // Update slider progress bar
+        updateSliderProgress(this);
+        
+        // Trigger recalculation (will be enhanced in React)
+        recalculateAll();
+      });
+      
+      // INPUT → SLIDER: When input changes, update slider
+      input.addEventListener('change', function() {
+        let value;
+        
+        // Parse based on format type
+        if (formatType === 'currency') {
+          value = parseCurrency(this.value);
+          this.value = formatCurrency(value); // Re-format
+        } else if (formatType === 'percent') {
+          value = parsePercent(this.value);
+          this.value = formatPercent(value); // Re-format
+        } else if (formatType === 'years') {
+          value = parseYears(this.value);
+          this.value = formatYears(value); // Re-format
+        }
+        
+        // Clamp to slider min/max
+        const min = parseFloat(slider.min);
+        const max = parseFloat(slider.max);
+        value = Math.max(min, Math.min(max, value));
+        
+        // Update slider
+        slider.value = value;
+        updateSliderProgress(slider);
+        
+        // Update secondary value if exists
+        if (secondarySpan) {
+          updateSecondaryValue(row, value, formatType);
+        }
+        
+        // Trigger recalculation
+        recalculateAll();
+      });
+      
+      // Allow Enter key to trigger change
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          this.blur();
+        }
+      });
+      
+      // Initialize slider progress
+      updateSliderProgress(slider);
+    });
+    
+    // Update secondary values (like yearly amounts for monthly inputs)
+    function updateSecondaryValue(row, value, formatType) {
+      const label = row.querySelector('.data-label span')?.textContent || '';
+      const secondarySpan = row.querySelector('.slider-secondary');
+      
+      if (!secondarySpan) return;
+      
+      // Examples of secondary calculations
+      if (label.includes('Gross Rent')) {
+        secondarySpan.textContent = formatCurrency(value * 12) + '/yr';
+      } else if (label.includes('Down Payment')) {
+        const purchasePrice = parseCurrency(document.querySelector('[data-field="purchase-price"]')?.value || '723600');
+        secondarySpan.textContent = formatCurrency(purchasePrice * (value / 100));
+      } else if (label.includes('Vacancy')) {
+        const grossRent = parseCurrency(document.querySelector('[data-field="gross-rent"]')?.value || '8081') * 12;
+        secondarySpan.textContent = '-' + formatCurrency(grossRent * (value / 100));
+        secondarySpan.classList.add('value-negative');
+      } else if (label.includes('Mgmt') || label.includes('Maintenance') || label.includes('CapEx')) {
+        const grossRent = parseCurrency(document.querySelector('[data-field="gross-rent"]')?.value || '8081') * 12;
+        secondarySpan.textContent = formatCurrency(grossRent * (value / 100));
+      }
+    }
+    
+    // ===== RECALCULATION ENGINE (Simplified for Demo) =====
+    
+    function recalculateAll() {
+      // This would connect to your Zustand store in React
+      // For the HTML demo, we'll update the sidebar values
+      
+      // Get key inputs
+      const purchasePrice = getSliderValue('Purchase Price', 723600);
+      const downPaymentPct = getSliderValue('Down Payment', 20);
+      const interestRate = getSliderValue('Interest Rate', 7);
+      const loanTerm = getSliderValue('Loan Term', 30);
+      const grossRentMonthly = getSliderValue('Gross Rent', 8081);
+      const vacancyPct = getSliderValue('Vacancy', 8);
+      const propertyTaxes = getSliderValue('Property Taxes', 6471);
+      const insurance = getSliderValue('Insurance', 2894);
+      const mgmtPct = getSliderValue('Property Mgmt', 8);
+      const maintPct = getSliderValue('Maintenance', 5);
+      const capexPct = getSliderValue('CapEx', 5);
+      const hoaFees = getSliderValue('HOA Fees', 0);
+      const arv = getSliderValue('After Repair Value', 795960);
+      const purchaseCosts = getSliderValue('Purchase Costs', 21708);
+      const rehabCosts = getSliderValue('Rehab Costs', 0);
+      
+      // Calculate derived values
+      const downPaymentAmt = purchasePrice * (downPaymentPct / 100);
+      const loanAmount = purchasePrice - downPaymentAmt;
+      const grossRentAnnual = grossRentMonthly * 12;
+      const vacancyLoss = grossRentAnnual * (vacancyPct / 100);
+      const effectiveIncome = grossRentAnnual - vacancyLoss;
+      
+      // Operating expenses
+      const mgmtExpense = effectiveIncome * (mgmtPct / 100);
+      const maintExpense = effectiveIncome * (maintPct / 100);
+      const capexExpense = effectiveIncome * (capexPct / 100);
+      const totalOpEx = propertyTaxes + insurance + mgmtExpense + maintExpense + capexExpense + (hoaFees * 12);
+      
+      // NOI and Cash Flow
+      const noi = effectiveIncome - totalOpEx;
+      const monthlyRate = (interestRate / 100) / 12;
+      const numPayments = loanTerm * 12;
+      const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+      const annualDebtService = monthlyPayment * 12;
+      const cashFlow = noi - annualDebtService;
+      
+      // Key metrics
+      const capRate = (noi / purchasePrice) * 100;
+      const totalCashNeeded = downPaymentAmt + purchaseCosts + rehabCosts;
+      const cocReturn = (cashFlow / totalCashNeeded) * 100;
+      const dscr = noi / annualDebtService;
+      const rentToValue = (grossRentMonthly / purchasePrice) * 100;
+      const ltv = (loanAmount / purchasePrice) * 100;
+      const equity = arv - purchasePrice;
+      
+      // Deal Score (simplified algorithm)
+      let dealScore = 50;
+      if (capRate >= 8) dealScore += 15;
+      else if (capRate >= 6) dealScore += 10;
+      if (cocReturn >= 10) dealScore += 15;
+      else if (cocReturn >= 8) dealScore += 10;
+      if (dscr >= 1.25) dealScore += 10;
+      if (rentToValue >= 1) dealScore += 10;
+      if (equity > 0) dealScore += Math.min(10, (equity / purchasePrice) * 100);
+      dealScore = Math.min(100, Math.max(0, Math.round(dealScore)));
+      
+      // Update sidebar displays
+      updateSidebar({
+        dealScore,
+        capRate,
+        cocReturn,
+        dscr,
+        rentToValue,
+        totalCashNeeded,
+        downPaymentAmt,
+        purchaseCosts,
+        rehabCosts,
+        ltv,
+        cashFlow,
+        annualDebtService,
+        totalOpEx,
+        equity,
+        loanAmount
+      });
+    }
+    
+    // Get slider value by label text
+    function getSliderValue(labelText, defaultValue) {
+      const rows = document.querySelectorAll('.data-row.has-slider');
+      for (const row of rows) {
+        const label = row.querySelector('.data-label span')?.textContent || '';
+        if (label.includes(labelText)) {
+          const slider = row.querySelector('.slider-input');
+          if (slider) return parseFloat(slider.value);
+        }
+      }
+      return defaultValue;
+    }
+    
+    // Update sidebar with calculated values
+    function updateSidebar(data) {
+      // Deal Score
+      const scoreEl = document.getElementById('deal-score');
+      if (scoreEl) {
+        scoreEl.textContent = data.dealScore;
+        // Update gauge arc (simplified)
+        const gaugeLabel = document.querySelector('.gauge-label');
+        if (gaugeLabel) {
+          if (data.dealScore >= 80) gaugeLabel.textContent = 'Great Investment';
+          else if (data.dealScore >= 60) gaugeLabel.textContent = 'Good Investment';
+          else if (data.dealScore >= 40) gaugeLabel.textContent = 'Fair Investment';
+          else gaugeLabel.textContent = 'Poor Investment';
+        }
+      }
+      
+      // Key Metrics
+      updateElement('metric-cap-rate', data.capRate.toFixed(1) + '%');
+      updateElement('metric-coc-return', data.cocReturn.toFixed(1) + '%');
+      updateElement('metric-dscr', data.dscr.toFixed(2) + 'x');
+      updateElement('metric-rent-value', data.rentToValue.toFixed(2) + '%');
+      
+      // Cash Breakdown
+      updateElement('total-cash', '$' + Math.round(data.totalCashNeeded / 1000) + 'K');
+      updateElement('cash-down', '$' + Math.round(data.downPaymentAmt / 1000) + 'K');
+      updateElement('cash-costs', '$' + Math.round(data.purchaseCosts / 1000) + 'K');
+      updateElement('cash-rehab', '$' + Math.round(data.rehabCosts / 1000) + 'K');
+      updateElement('ltv-value', data.ltv.toFixed(0) + '%');
+      
+      // LTV Bar
+      const ltvBar = document.getElementById('ltv-bar');
+      if (ltvBar) ltvBar.style.width = Math.min(100, data.ltv) + '%';
+      
+      // Cash Flow Breakdown
+      const totalIncome = data.cashFlow + data.annualDebtService + data.totalOpEx;
+      const loanPct = (data.annualDebtService / totalIncome) * 100;
+      const expPct = (data.totalOpEx / totalIncome) * 100;
+      const cfPct = Math.max(0, (data.cashFlow / totalIncome) * 100);
+      
+      updateElement('cf-loan', 'Loan $' + Math.round(data.annualDebtService / 1000) + 'k');
+      updateElement('cf-expenses', 'Expenses $' + Math.round(data.totalOpEx / 1000) + 'k');
+      updateElement('cf-cashflow', 'Cash Flow $' + Math.round(data.cashFlow / 1000) + 'k');
+      
+      // Returns vs Targets
+      updateElement('target-cap-rate', data.capRate.toFixed(1) + '% / 8%');
+      updateElement('target-coc', data.cocReturn.toFixed(1) + '% / 10%');
+      updateElement('target-dscr', data.dscr.toFixed(2) + 'x / 1.2x');
+      updateElement('target-1pct', data.rentToValue.toFixed(2) + '% / 1%');
+      
+      // Update target bars
+      updateBar('bar-cap-rate', (data.capRate / 8) * 100);
+      updateBar('bar-coc', (data.cocReturn / 10) * 100);
+      updateBar('bar-dscr', (data.dscr / 1.2) * 100);
+      updateBar('bar-1pct', (data.rentToValue / 1) * 100);
+      
+      // Equity Position
+      const equityPct = 100 - data.ltv;
+      updateElement('equity-amount', formatCurrency(data.downPaymentAmt));
+      updateElement('equity-pct', equityPct.toFixed(0) + '% Equity');
+      updateElement('loan-amount', formatCurrency(data.loanAmount));
+      updateElement('loan-pct', data.ltv.toFixed(0) + '% Financed');
+    }
+    
+    function updateElement(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+    
+    function updateBar(id, percent) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.width = Math.min(150, Math.max(0, percent)) + '%';
+        // Change color if exceeds target
+        if (percent >= 100) {
+          el.style.background = 'linear-gradient(90deg, #007ea7 0%, #10b981 100%)';
+        } else {
+          el.style.background = 'linear-gradient(90deg, #f97316 0%, #eab308 100%)';
+        }
+      }
+    }
+    
+    // Add hover effect to slider rows
+    document.querySelectorAll('.data-row.has-slider').forEach(row => {
+      row.addEventListener('mouseenter', function() {
+        this.style.backgroundColor = 'rgba(0, 126, 167, 0.04)';
+      });
+      row.addEventListener('mouseleave', function() {
+        this.style.backgroundColor = '';
+      });
+    });
+    
+    // Initial calculation
+    recalculateAll();
+  </script>
 </body>
 </html>
 
