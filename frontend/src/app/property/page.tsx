@@ -282,14 +282,16 @@ function PropertyContent() {
         setTimeout(() => setSaveMessage(null), 3000)
       } else {
         const errorData = await response.json().catch(() => ({}))
-        console.error('Failed to save property:', errorData)
-        setSaveMessage('Failed to save. Please try again.')
-        setTimeout(() => setSaveMessage(null), 3000)
+        console.error('Failed to save property:', response.status, errorData)
+        const errorMessage = errorData.detail || `Failed to save (${response.status})`
+        setSaveMessage(errorMessage)
+        setTimeout(() => setSaveMessage(null), 5000)
       }
     } catch (err) {
       console.error('Error saving property:', err)
-      setSaveMessage('Failed to save. Please try again.')
-      setTimeout(() => setSaveMessage(null), 3000)
+      const errorMessage = err instanceof Error ? err.message : 'Network error'
+      setSaveMessage(`Failed to save: ${errorMessage}`)
+      setTimeout(() => setSaveMessage(null), 5000)
     } finally {
       setIsSaving(false)
     }

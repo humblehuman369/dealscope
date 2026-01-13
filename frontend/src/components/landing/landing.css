@@ -853,10 +853,12 @@
   height: 24px;
 }
 
-/* Stats Section - Accent Banner */
+/* Stats Section - Light Accent Banner */
 .landing-page .stats-section {
   padding: 60px 0;
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(180deg, #ecfeff 0%, #cffafe 100%);
+  border-top: 1px solid rgba(8, 145, 178, 0.1);
+  border-bottom: 1px solid rgba(8, 145, 178, 0.1);
 }
 
 .landing-page .stats-grid {
@@ -882,14 +884,14 @@
 .landing-page .stat-value {
   font-size: clamp(2.5rem, 5vw, 3.5rem);
   font-weight: 800;
-  color: #22d3ee;
+  color: #0891b2;
   margin-bottom: 8px;
   letter-spacing: -1px;
 }
 
 .landing-page .stat-label {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: #0f172a;
   font-weight: 500;
 }
 
