@@ -209,7 +209,7 @@ export default function OnboardingPage() {
 
       if (completed) {
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'onboarding/page.tsx:210',message:'Starting completion flow',data:{step,completed},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+        console.log('[DEBUG-B] Starting completion flow', { step, completed });
         // #endregion
         
         // Mark as complete
@@ -221,7 +221,7 @@ export default function OnboardingPage() {
         })
         
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'onboarding/page.tsx:220',message:'Complete API response',data:{ok:completeResponse.ok,status:completeResponse.status},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+        console.log('[DEBUG-B] Complete API response', { ok: completeResponse.ok, status: completeResponse.status });
         // #endregion
         
         if (!completeResponse.ok) {
@@ -229,14 +229,17 @@ export default function OnboardingPage() {
         }
         
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'onboarding/page.tsx:227',message:'About to call router.push',data:{destination:'/dashboard'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+        console.log('[DEBUG-A] Refreshing user BEFORE navigation');
         // #endregion
         
-        // Navigate FIRST, then refresh user data in background
-        router.push('/dashboard')
+        // AWAIT refreshUser so dashboard has updated user data
+        await refreshUser()
         
-        // Refresh user data after navigation starts (don't await)
-        refreshUser().catch(console.error)
+        // #region agent log
+        console.log('[DEBUG-A] User refreshed, now navigating to dashboard');
+        // #endregion
+        
+        router.push('/dashboard')
         
         return true
       }
