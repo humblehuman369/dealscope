@@ -651,14 +651,14 @@ html.dark .text-brand-solid {
 
 /* Glass Card */
 .property-hero-card {
-  margin: -40px 12px 0;
+  margin: -20px 12px 0;
   position: relative;
   z-index: 10;
   background: rgba(11, 20, 38, 0.9);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(77, 208, 225, 0.2);
-  border-radius: 20px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 14px 18px;
 }
 
 .property-hero-card-content {
