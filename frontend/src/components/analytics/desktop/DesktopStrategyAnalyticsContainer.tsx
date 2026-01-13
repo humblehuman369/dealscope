@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { DesktopHeader } from './DesktopHeader'
 import { DesktopBottomNav } from './DesktopBottomNav'
 import { DesktopPropertyMiniCard } from './DesktopPropertyMiniCard'
 import { DesktopIQTargetHero } from './DesktopIQTargetHero'
@@ -247,9 +246,8 @@ export function DesktopStrategyAnalyticsContainer({
 
   return (
     <div className="desktop-analytics-container">
-      {/* Desktop Header */}
-      <DesktopHeader onBack={handleBack} showBackButton={true} />
-
+      {/* Note: Using main app Header from layout instead of DesktopHeader to avoid double header */}
+      
       {/* Main Content */}
       <main className="desktop-app-content">
         {/* Property Mini Card */}

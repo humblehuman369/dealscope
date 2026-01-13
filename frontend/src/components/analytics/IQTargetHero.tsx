@@ -91,7 +91,7 @@ export function IQTargetHero({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl p-5 md:p-6 mb-4 border-2 border-teal/40 dark:border-accent-500/40 bg-white/[0.02] dark:bg-white/[0.02]">
+    <div className="relative overflow-hidden rounded-2xl p-5 md:p-6 mb-4 border-2 border-teal/40 dark:border-accent-500/40 bg-white dark:bg-white/[0.02]">
       {/* Two-column layout on larger screens */}
       <div className="flex flex-col md:flex-row gap-6 items-start">
         
@@ -99,40 +99,40 @@ export function IQTargetHero({
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Title Row */}
           <div className="flex items-center gap-2 mb-1">
-            <Target className="w-[18px] h-[18px] text-[#00D4FF]" />
-            <span className="text-sm font-semibold text-[#00D4FF]">
+            <Target className="w-[18px] h-[18px] text-teal" />
+            <span className="text-sm font-semibold text-teal">
               {badgeText}
             </span>
           </div>
           
           {/* Subtitle */}
-          <div className="text-[13px] text-white/50 mb-4">
+          <div className="text-[13px] text-slate-500 dark:text-white/50 mb-4">
             {labelText}
           </div>
 
           {/* Target Price */}
-          <div className="text-[44px] font-extrabold text-white leading-none mb-2 tracking-[-2px]">
+          <div className="text-[44px] font-extrabold text-slate-900 dark:text-white leading-none mb-2 tracking-[-2px]">
             {formatCurrency(targetPrice)}
           </div>
 
           {/* Discount Info */}
-          <div className="text-sm font-semibold text-[#00D4AA] mb-4">
+          <div className="text-sm font-semibold text-emerald-600 dark:text-[#00D4AA] mb-4">
             ↓ {formatCompact(discountAmount)} below list ({Math.round(discountPercent)}%)
           </div>
 
           {/* Rationale / Insight Text */}
-          <p className="text-[13px] text-white/50 leading-relaxed mt-auto">
+          <p className="text-[13px] text-slate-500 dark:text-white/50 leading-relaxed mt-auto">
             {rationale}
             {highlightedMetric && (
               <>
                 {' '}
-                <strong className="text-[#00D4FF] font-semibold">{highlightedMetric}</strong>
+                <strong className="text-teal font-semibold">{highlightedMetric}</strong>
               </>
             )}
             {secondaryMetric && (
               <>
                 {' with '}
-                <strong className="text-[#00D4FF] font-semibold">{secondaryMetric}</strong>
+                <strong className="text-teal font-semibold">{secondaryMetric}</strong>
                 {' return'}
               </>
             )}
@@ -140,9 +140,9 @@ export function IQTargetHero({
         </div>
 
         {/* Right Side - Assumptions Card */}
-        <div className={`w-full md:w-auto md:min-w-[200px] md:max-w-[280px] flex-shrink-0 bg-white/[0.03] dark:bg-white/[0.03] border border-white/[0.08] rounded-xl p-4 transition-all duration-300 ${isEditing ? 'md:min-w-[260px]' : ''}`}>
+        <div className={`w-full md:w-auto md:min-w-[200px] md:max-w-[280px] flex-shrink-0 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 transition-all duration-300 ${isEditing ? 'md:min-w-[260px]' : ''}`}>
           {/* Header */}
-          <div className="text-[11px] font-medium text-white/40 mb-3.5 pb-2.5 border-b border-white/[0.06]">
+          <div className="text-[11px] font-medium text-slate-500 dark:text-white/40 mb-3.5 pb-2.5 border-b border-slate-200 dark:border-white/[0.06]">
             Target Price based on these values
           </div>
 
@@ -151,23 +151,23 @@ export function IQTargetHero({
             <>
               <div className="flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/50">Monthly Rent</span>
-                  <span className="text-sm font-semibold text-[#00D4FF]">{formatCurrency(monthlyRent)}</span>
+                  <span className="text-xs text-slate-500 dark:text-white/50">Monthly Rent</span>
+                  <span className="text-sm font-semibold text-teal">{formatCurrency(monthlyRent)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/50">Down Payment</span>
-                  <span className="text-sm font-semibold text-[#00D4FF]">{Math.round(downPaymentPct * 100)}%</span>
+                  <span className="text-xs text-slate-500 dark:text-white/50">Down Payment</span>
+                  <span className="text-sm font-semibold text-teal">{Math.round(downPaymentPct * 100)}%</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/50">Interest Rate</span>
-                  <span className="text-sm font-semibold text-[#00D4FF]">{(interestRate * 100).toFixed(2)}%</span>
+                  <span className="text-xs text-slate-500 dark:text-white/50">Interest Rate</span>
+                  <span className="text-sm font-semibold text-teal">{(interestRate * 100).toFixed(2)}%</span>
                 </div>
               </div>
 
               {/* Edit Button */}
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center justify-center gap-1.5 w-full mt-3.5 py-2.5 px-4 bg-[rgba(0,212,255,0.1)] border border-[rgba(0,212,255,0.25)] rounded-lg text-[#00D4FF] text-[13px] font-semibold transition-all hover:bg-[rgba(0,212,255,0.18)] hover:border-[rgba(0,212,255,0.4)]"
+                className="flex items-center justify-center gap-1.5 w-full mt-3.5 py-2.5 px-4 bg-teal/10 border border-teal/25 rounded-lg text-teal text-[13px] font-semibold transition-all hover:bg-teal/20 hover:border-teal/40"
               >
                 <Pencil className="w-3.5 h-3.5" />
                 Edit
@@ -180,7 +180,7 @@ export function IQTargetHero({
             <div className="flex flex-col gap-3">
               {/* Monthly Rent Input */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium text-white/40">Monthly Rent</label>
+                <label className="text-[11px] font-medium text-slate-500 dark:text-white/40">Monthly Rent</label>
                 <input
                   type="text"
                   value={`$${editedRent.toLocaleString()}`}
@@ -188,13 +188,13 @@ export function IQTargetHero({
                     const val = e.target.value.replace(/[^0-9]/g, '')
                     setEditedRent(Number(val) || 0)
                   }}
-                  className="bg-white/[0.05] border border-white/[0.12] rounded-lg py-2.5 px-3 text-sm font-semibold text-white focus:outline-none focus:border-[rgba(0,212,255,0.5)] focus:bg-[rgba(0,212,255,0.05)] transition-all"
+                  className="bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.12] rounded-lg py-2.5 px-3 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-teal focus:bg-teal/5 transition-all"
                 />
               </div>
 
               {/* Down Payment Input */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium text-white/40">Down Payment</label>
+                <label className="text-[11px] font-medium text-slate-500 dark:text-white/40">Down Payment</label>
                 <input
                   type="text"
                   value={`${editedDownPayment}%`}
@@ -202,13 +202,13 @@ export function IQTargetHero({
                     const val = e.target.value.replace(/[^0-9.]/g, '')
                     setEditedDownPayment(Number(val) || 0)
                   }}
-                  className="bg-white/[0.05] border border-white/[0.12] rounded-lg py-2.5 px-3 text-sm font-semibold text-white focus:outline-none focus:border-[rgba(0,212,255,0.5)] focus:bg-[rgba(0,212,255,0.05)] transition-all"
+                  className="bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.12] rounded-lg py-2.5 px-3 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-teal focus:bg-teal/5 transition-all"
                 />
               </div>
 
               {/* Interest Rate Input */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-medium text-white/40">Interest Rate</label>
+                <label className="text-[11px] font-medium text-slate-500 dark:text-white/40">Interest Rate</label>
                 <input
                   type="text"
                   value={`${editedInterestRate.toFixed(2)}%`}
@@ -216,7 +216,7 @@ export function IQTargetHero({
                     const val = e.target.value.replace(/[^0-9.]/g, '')
                     setEditedInterestRate(Number(val) || 0)
                   }}
-                  className="bg-white/[0.05] border border-white/[0.12] rounded-lg py-2.5 px-3 text-sm font-semibold text-white focus:outline-none focus:border-[rgba(0,212,255,0.5)] focus:bg-[rgba(0,212,255,0.05)] transition-all"
+                  className="bg-white dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.12] rounded-lg py-2.5 px-3 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-teal focus:bg-teal/5 transition-all"
                 />
               </div>
 
@@ -224,13 +224,13 @@ export function IQTargetHero({
               <div className="flex gap-2 mt-1">
                 <button
                   onClick={handleCancel}
-                  className="flex-1 py-2.5 bg-transparent border border-white/[0.12] rounded-lg text-white/60 text-[13px] font-semibold transition-all hover:bg-white/[0.05] hover:text-white"
+                  className="flex-1 py-2.5 bg-transparent border border-slate-200 dark:border-white/[0.12] rounded-lg text-slate-500 dark:text-white/60 text-[13px] font-semibold transition-all hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-700 dark:hover:text-white"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex-1 py-2.5 bg-[#00D4FF] border-none rounded-lg text-[#0A1628] text-[13px] font-bold transition-all hover:bg-[#00c4ec]"
+                  className="flex-1 py-2.5 bg-teal border-none rounded-lg text-white text-[13px] font-bold transition-all hover:bg-teal/90"
                 >
                   Save
                 </button>
