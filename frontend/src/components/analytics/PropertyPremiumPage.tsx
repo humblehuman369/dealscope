@@ -116,6 +116,9 @@ interface PropertyPremiumPageProps {
   onShare?: () => void
   onGenerateLOI?: () => void
   onTryItNow?: () => void
+  isSaved?: boolean
+  isSaving?: boolean
+  saveMessage?: string | null
 }
 
 /**
@@ -134,7 +137,10 @@ export function PropertyPremiumPage({
   onSave,
   onShare,
   onGenerateLOI,
-  onTryItNow
+  onTryItNow,
+  isSaved = false,
+  isSaving = false,
+  saveMessage = null
 }: PropertyPremiumPageProps) {
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
@@ -310,11 +316,23 @@ export function PropertyPremiumPage({
         </div>
       </div>
 
+      {/* Save Message Toast */}
+      {saveMessage && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-navy-800 dark:bg-white text-white dark:text-navy-900 rounded-lg shadow-lg font-medium text-sm animate-fade-in">
+          {saveMessage}
+        </div>
+      )}
+
       {/* Bottom Action Bar */}
       <div className="premium-action-bar">
-        <button className="premium-action-btn" onClick={onSave} aria-label="Save property">
-          <Bookmark className="w-6 h-6" />
-          <span>Save</span>
+        <button 
+          className={`premium-action-btn ${isSaved ? 'premium-action-btn-saved' : ''}`}
+          onClick={onSave} 
+          disabled={isSaving}
+          aria-label={isSaved ? 'Property saved' : 'Save property'}
+        >
+          <Bookmark className={`w-6 h-6 ${isSaved ? 'fill-current' : ''}`} />
+          <span>{isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save'}</span>
         </button>
 
         <button className="premium-primary-btn" onClick={onGenerateLOI}>

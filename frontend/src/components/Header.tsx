@@ -1,260 +1,340 @@
 'use client'
 
-import { Bell, Settings, ScanLine, Search, Sun, Moon, User, LogOut, ChevronDown, LayoutDashboard, BarChart3 } from 'lucide-react'
+import { 
+  Bell, Settings, ScanLine, Search, Sun, Moon, User, LogOut, 
+  ChevronDown, LayoutDashboard, BarChart3, Image, History, 
+  GitCompare, FileSpreadsheet, Menu, X, CreditCard, Briefcase
+} from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
 import { usePropertyStore } from '@/stores'
-import { useViewMode } from '@/hooks/useDeviceType'
 
 export default function Header() {
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
   const { user, isAuthenticated, logout, setShowAuthModal } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const viewMode = useViewMode(1024)
+  const [showToolsMenu, setShowToolsMenu] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
+  const toolsMenuRef = useRef<HTMLDivElement>(null)
   
-  // Get the last viewed property from the store
   const { currentProperty, recentSearches } = usePropertyStore()
   
-  // Get the property analytics URL - use last viewed property if available
   const propertyAnalyticsUrl = useMemo(() => {
-    // First check currentProperty
     if (currentProperty?.address) {
       return `/property?address=${encodeURIComponent(currentProperty.address)}`
     }
-    // Fall back to most recent search
     if (recentSearches.length > 0) {
       return `/property?address=${encodeURIComponent(recentSearches[0].address)}`
     }
-    // Default to base property page
     return '/property'
   }, [currentProperty, recentSearches])
 
-  // Close menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false)
       }
+      if (toolsMenuRef.current && !toolsMenuRef.current.contains(event.target as Node)) {
+        setShowToolsMenu(false)
+      }
     }
-
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
   
-  // Hide header on home page (scanner), landing pages, search page, and strategy pages since they have their own headers
-  // Also hide on property/analytics pages when on DESKTOP (they use DesktopHeader instead)
-  // NOTE: This must be AFTER all hooks to follow React Rules of Hooks
+  // Hide header on certain pages
   if (pathname === '/' || pathname === '/landing' || pathname === '/landing2' || pathname === '/search' || pathname?.startsWith('/strategies')) {
     return null
   }
   
-  // Hide main header on desktop for property analytics pages (they have their own DesktopHeader)
-  // TEMPORARILY: Always hide on these pages for desktop testing
   const isPropertyPage = pathname?.startsWith('/property') || pathname === '/analytics-demo'
   if (isPropertyPage) {
-    return null  // Force hide for desktop testing
+    return null
   }
 
+  const isActive = (path: string) => pathname === path
+  const isActivePrefix = (prefix: string) => pathname?.startsWith(prefix)
+
+  const navLinkClass = (active: boolean) => `
+    text-sm font-medium transition-colors flex items-center gap-1.5 px-3 py-2 rounded-lg
+    ${active 
+      ? 'text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-500/10' 
+      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-navy-800'
+    }
+  `
+
+  const toolsItems = [
+    { href: propertyAnalyticsUrl, icon: BarChart3, label: 'Property Analytics', active: isActivePrefix('/property') },
+    { href: '/photos', icon: Image, label: 'Photos', active: isActive('/photos') },
+    { href: '/compare', icon: GitCompare, label: 'Compare', active: isActive('/compare') },
+    { href: '/search-history', icon: History, label: 'Search History', active: isActive('/search-history') },
+  ]
+
   return (
-    <header className="bg-navy-50 dark:bg-navy-900 border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-50 transition-colors duration-300">
-      <div className="container-brand">
-        <div className="flex justify-between items-center h-16">
-          {/* Left side - Logo & Nav */}
-          <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center">
+    <header className="bg-white dark:bg-navy-900 border-b border-neutral-200 dark:border-neutral-700/50 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-14">
+          
+          {/* Left: Logo & Primary Nav */}
+          <div className="flex items-center gap-1">
+            <Link href="/" className="flex items-center mr-6">
               <img 
                 src={theme === 'dark' ? "/images/InvestIQ Logo 3D (Dark View).png" : "/images/InvestIQ Logo 3D (Light View).png"}
                 alt="InvestIQ" 
-                className="h-10 object-contain"
+                className="h-8 object-contain"
               />
             </Link>
-            <nav className="hidden md:flex items-center space-x-5">
-              <Link 
-                href="/" 
-                className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  pathname === '/' ? 'text-brand-500 dark:text-brand-400' : 'text-neutral-600 dark:text-neutral-400 hover:text-navy-900 dark:hover:text-white'
-                }`}
-              >
-                <ScanLine className="w-4 h-4" />
-                Scan
-              </Link>
-              <Link 
-                href="/search" 
-                className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  pathname === '/search' ? 'text-brand-500 dark:text-brand-400' : 'text-neutral-600 dark:text-neutral-400 hover:text-navy-900 dark:hover:text-white'
-                }`}
-              >
-                <Search className="w-4 h-4" />
-                Search
-              </Link>
-              <Link 
-                href={propertyAnalyticsUrl} 
-                className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  pathname?.startsWith('/property') ? 'text-brand-500 dark:text-brand-400' : 'text-neutral-600 dark:text-neutral-400 hover:text-navy-900 dark:hover:text-white'
-                }`}
-                title={currentProperty?.address || recentSearches[0]?.address || 'Property Analytics'}
-              >
-                <BarChart3 className="w-4 h-4" />
-                Property Analytics
-              </Link>
-              <Link 
-                href="/photos" 
-                className={`text-sm font-medium transition-colors ${
-                  pathname === '/photos' ? 'text-brand-500 dark:text-brand-400' : 'text-neutral-600 dark:text-neutral-400 hover:text-navy-900 dark:hover:text-white'
-                }`}
-              >
-                Photos
-              </Link>
+            
+            {/* Desktop Nav */}
+            <nav className="hidden md:flex items-center gap-1">
               {isAuthenticated && (
-                <Link 
-                  href="/dashboard" 
-                  className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                    pathname === '/dashboard' ? 'text-brand-500 dark:text-brand-400' : 'text-neutral-600 dark:text-neutral-400 hover:text-navy-900 dark:hover:text-white'
-                  }`}
-                >
+                <Link href="/dashboard" className={navLinkClass(isActive('/dashboard'))}>
                   <LayoutDashboard className="w-4 h-4" />
                   Dashboard
                 </Link>
               )}
+              
+              <Link href="/search" className={navLinkClass(isActive('/search'))}>
+                <Search className="w-4 h-4" />
+                Search
+              </Link>
+              
+              <Link href="/" className={navLinkClass(isActive('/scan'))}>
+                <ScanLine className="w-4 h-4" />
+                Scan
+              </Link>
+
+              {/* Tools Dropdown */}
+              <div className="relative" ref={toolsMenuRef}>
+                <button
+                  onClick={() => setShowToolsMenu(!showToolsMenu)}
+                  className={`
+                    text-sm font-medium transition-colors flex items-center gap-1.5 px-3 py-2 rounded-lg
+                    ${showToolsMenu 
+                      ? 'text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-500/10' 
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-navy-800'
+                    }
+                  `}
+                >
+                  <Briefcase className="w-4 h-4" />
+                  Tools
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showToolsMenu ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {showToolsMenu && (
+                  <div className="absolute left-0 mt-1 w-52 bg-white dark:bg-navy-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 z-50">
+                    {toolsItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setShowToolsMenu(false)}
+                        className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                          item.active 
+                            ? 'text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-500/10' 
+                            : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-navy-700'
+                        }`}
+                      >
+                        <item.icon className="w-4 h-4" />
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </nav>
           </div>
 
-          {/* Right side - Actions */}
-          <div className="flex items-center space-x-2">
-            {/* Context-aware navigation buttons */}
-            {isAuthenticated && pathname === '/dashboard' && (
-              <Link
-                href="/search"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600 transition-all shadow-brand"
-              >
-                <Search className="w-4 h-4" />
-                <span className="hidden sm:inline">Search</span>
-              </Link>
-            )}
-            {isAuthenticated && pathname === '/search' && (
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600 transition-all shadow-brand"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                <span className="hidden sm:inline">Dashboard</span>
-              </Link>
-            )}
-            
-            {/* Theme Toggle Switch */}
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2">
+            {/* Theme Toggle - Minimal */}
             <button
               onClick={toggleTheme}
-              className="relative inline-flex items-center justify-center p-2 rounded-lg bg-neutral-100 dark:bg-navy-800 hover:bg-neutral-200 dark:hover:bg-navy-700 transition-colors duration-200"
+              className="p-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-navy-800 transition-colors"
               aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
-              <div className="relative w-12 h-6 rounded-full bg-neutral-300 dark:bg-neutral-600 transition-colors duration-300">
-                <div 
-                  className={`absolute top-0.5 w-5 h-5 rounded-full bg-white dark:bg-navy-900 shadow-md transition-all duration-300 flex items-center justify-center ${
-                    theme === 'dark' ? 'left-[26px]' : 'left-0.5'
-                  }`}
-                >
-                  {theme === 'light' ? (
-                    <Sun className="w-3 h-3 text-warning-500" />
-                  ) : (
-                    <Moon className="w-3 h-3 text-brand-400" />
-                  )}
-                </div>
-              </div>
+              {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
             </button>
             
-            <button 
-              className="relative p-2 text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-              aria-label="Notifications"
-            >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-danger-500 rounded-full" />
-            </button>
-            <button 
-              className="p-2 text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-              aria-label="Settings"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
+            {/* Notifications */}
+            {isAuthenticated && (
+              <button 
+                className="relative p-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-navy-800 transition-colors"
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger-500 rounded-full" />
+              </button>
+            )}
             
-            {/* Auth Buttons / User Menu */}
+            {/* User Menu / Auth */}
             {isAuthenticated && user ? (
-              /* User Menu */
-              <div className="relative ml-2" ref={menuRef}>
+              <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-navy-800 transition-colors"
+                  className="flex items-center gap-2 p-1.5 pr-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-navy-800 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-semibold text-sm">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-cyan-500 flex items-center justify-center text-white font-semibold text-sm">
                     {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                   </div>
-                  <span className="hidden sm:block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <span className="hidden sm:block text-sm font-medium text-neutral-700 dark:text-neutral-300 max-w-[100px] truncate">
                     {user.full_name?.split(' ')[0] || 'User'}
                   </span>
-                  <ChevronDown className="w-4 h-4 text-neutral-400" />
+                  <ChevronDown className={`w-4 h-4 text-neutral-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
                 </button>
                 
-                {/* Dropdown Menu */}
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-navy-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 z-50">
-                    <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
-                      <p className="text-sm font-medium text-navy-900 dark:text-white">{user.full_name}</p>
+                  <div className="absolute right-0 mt-1 w-56 bg-white dark:bg-navy-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 z-50">
+                    <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-700">
+                      <p className="text-sm font-semibold text-neutral-900 dark:text-white truncate">{user.full_name}</p>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{user.email}</p>
                     </div>
-                    <Link
-                      href="/dashboard"
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-navy-700"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <LayoutDashboard className="w-4 h-4" />
-                      Dashboard
-                    </Link>
-                    <Link
-                      href="/profile"
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-navy-700"
-                      onClick={() => {
-                        setShowUserMenu(false)
-                      }}
-                    >
-                      <User className="w-4 h-4" />
-                      Your Profile
-                    </Link>
-                    <button
-                      onClick={() => {
-                        logout()
-                        setShowUserMenu(false)
-                      }}
-                      className="flex items-center gap-2 w-full px-4 py-2 text-sm text-danger-600 dark:text-danger-400 hover:bg-neutral-100 dark:hover:bg-navy-700"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
+                    
+                    <div className="py-1">
+                      <Link
+                        href="/profile"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-navy-700"
+                      >
+                        <User className="w-4 h-4" />
+                        Profile
+                      </Link>
+                      <Link
+                        href="/billing"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-navy-700"
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        Billing
+                      </Link>
+                      <button
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-navy-700"
+                      >
+                        <Settings className="w-4 h-4" />
+                        Settings
+                      </button>
+                    </div>
+                    
+                    <div className="border-t border-neutral-100 dark:border-neutral-700 py-1">
+                      <button
+                        onClick={() => {
+                          logout()
+                          setShowUserMenu(false)
+                        }}
+                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-danger-600 dark:text-danger-400 hover:bg-neutral-100 dark:hover:bg-navy-700"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             ) : (
-              /* Sign In / Get Started Buttons */
-              <div className="hidden sm:flex items-center space-x-2 ml-2">
+              <div className="hidden sm:flex items-center gap-2">
                 <button 
                   onClick={() => setShowAuthModal('login')}
-                  className="btn-ghost btn-sm"
+                  className="px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors"
                 >
                   Sign In
                 </button>
                 <button 
                   onClick={() => setShowAuthModal('register')}
-                  className="btn-primary btn-sm"
+                  className="px-4 py-1.5 text-sm font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-lg transition-colors"
                 >
                   Get Started
                 </button>
               </div>
             )}
+            
+            {/* Mobile Menu Button */}
+            <button 
+              className="md:hidden p-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-navy-800"
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+            >
+              {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+        
+        {/* Mobile Menu */}
+        {showMobileMenu && (
+          <div className="md:hidden border-t border-neutral-200 dark:border-neutral-700 py-3">
+            <nav className="flex flex-col gap-1">
+              {isAuthenticated && (
+                <Link 
+                  href="/dashboard" 
+                  onClick={() => setShowMobileMenu(false)}
+                  className={navLinkClass(isActive('/dashboard'))}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </Link>
+              )}
+              <Link 
+                href="/search" 
+                onClick={() => setShowMobileMenu(false)}
+                className={navLinkClass(isActive('/search'))}
+              >
+                <Search className="w-4 h-4" />
+                Search
+              </Link>
+              <Link 
+                href="/" 
+                onClick={() => setShowMobileMenu(false)}
+                className={navLinkClass(false)}
+              >
+                <ScanLine className="w-4 h-4" />
+                Scan
+              </Link>
+              
+              <div className="border-t border-neutral-200 dark:border-neutral-700 my-2" />
+              <p className="px-3 py-1 text-xs font-semibold text-neutral-400 uppercase tracking-wider">Tools</p>
+              
+              {toolsItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setShowMobileMenu(false)}
+                  className={navLinkClass(item.active)}
+                >
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </Link>
+              ))}
+              
+              {!isAuthenticated && (
+                <>
+                  <div className="border-t border-neutral-200 dark:border-neutral-700 my-2" />
+                  <button 
+                    onClick={() => {
+                      setShowAuthModal('login')
+                      setShowMobileMenu(false)
+                    }}
+                    className="text-sm font-medium text-neutral-600 dark:text-neutral-300 px-3 py-2 text-left"
+                  >
+                    Sign In
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowAuthModal('register')
+                      setShowMobileMenu(false)
+                    }}
+                    className="mx-3 px-4 py-2 text-sm font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-lg"
+                  >
+                    Get Started
+                  </button>
+                </>
+              )}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   )
