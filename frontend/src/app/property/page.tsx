@@ -244,7 +244,7 @@ function PropertyContent() {
 
       const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`.trim()
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/saved-properties/`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

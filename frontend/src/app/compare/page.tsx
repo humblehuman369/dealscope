@@ -469,7 +469,7 @@ function ComparePageContent() {
       const token = localStorage.getItem('access_token')
       if (!token) return
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/saved-properties?limit=20`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved?limit=20`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

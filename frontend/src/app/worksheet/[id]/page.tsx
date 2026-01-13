@@ -58,7 +58,7 @@ export default function PropertyWorksheetPage() {
       setIsLoading(true)
       try {
         const token = localStorage.getItem('access_token')
-        const response = await fetch(`${API_BASE_URL}/api/v1/saved-properties/${propertyId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved/${propertyId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },

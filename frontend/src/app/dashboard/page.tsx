@@ -337,7 +337,7 @@ function PortfolioStatsSection() {
         if (!token) return
 
         // Fetch saved properties stats
-        const response = await fetch(`${API_BASE_URL}/api/v1/saved-properties/stats`, {
+        const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved/stats`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -603,10 +603,10 @@ function SavedPropertiesSection() {
         if (!token) return
 
         const [propertiesRes, statsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/v1/saved-properties?limit=10`, {
+          fetch(`${API_BASE_URL}/api/v1/properties/saved?limit=10`, {
             headers: { 'Authorization': `Bearer ${token}` },
           }),
-          fetch(`${API_BASE_URL}/api/v1/saved-properties/stats`, {
+          fetch(`${API_BASE_URL}/api/v1/properties/saved/stats`, {
             headers: { 'Authorization': `Bearer ${token}` },
           })
         ])
@@ -635,7 +635,7 @@ function SavedPropertiesSection() {
 
     try {
       const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_BASE_URL}/api/v1/saved-properties/${propertyId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved/${propertyId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       })
