@@ -156,7 +156,12 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     
     // Calculate 30-year projections
     const projections = calculate10YearProjections(assumptions)
-    const summary = calculateProjectionSummary(projections, assumptions)
+    
+    // Calculate total cash invested (down payment + closing costs + rehab)
+    const downPayment = assumptions.purchasePrice * (assumptions.downPaymentPct / 100)
+    const totalCashInvested = downPayment + assumptions.closingCosts + assumptions.rehabCosts
+    
+    const summary = calculateProjectionSummary(projections, totalCashInvested)
     
     set({ projections, summary })
   },

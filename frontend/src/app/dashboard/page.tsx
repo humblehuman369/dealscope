@@ -776,7 +776,7 @@ function SavedPropertiesSection() {
 
                   <div className="flex items-center gap-2 mt-3">
                     <Link
-                      href={`/property/${property.id}/worksheet`}
+                      href={`/worksheet/${property.id}`}
                       className="text-xs text-brand-500 hover:text-brand-600 font-medium flex items-center gap-1"
                     >
                       <FileText className="w-3 h-3" />
