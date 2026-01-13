@@ -23,8 +23,8 @@ export function CashFlowSection() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <div className="lg:col-span-2">
+    <div className="section-two-column">
+      <div>
         <SectionCard title={`Cash Flow (Year 1) - ${viewMode === 'monthly' ? 'Monthly' : 'Yearly'}`}>
           {/* Income Section */}
           <div className="bg-[var(--ws-accent-bg)] px-4 py-2 text-xs font-semibold uppercase text-[var(--ws-accent)]">
@@ -173,7 +173,7 @@ export function CashFlowSection() {
       </div>
       
       {/* Pie Chart */}
-      <div className="lg:col-span-1">
+      <div>
         <IncomeExpensesPie />
       </div>
     </div>
