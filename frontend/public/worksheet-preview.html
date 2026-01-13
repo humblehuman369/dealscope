@@ -887,29 +887,6 @@
       margin: 0 auto;
     }
     
-    /* Purchase Section with Pricing Ladder */
-    .purchase-with-ladder {
-      display: grid;
-      grid-template-columns: 1fr 300px;
-      gap: 20px;
-      margin-bottom: 16px;
-    }
-    
-    @media (max-width: 900px) {
-      .purchase-with-ladder {
-        grid-template-columns: 1fr;
-      }
-      
-      .purchase-ladder-panel {
-        order: -1; /* Move ladder above on mobile */
-      }
-    }
-    
-    .purchase-ladder-panel {
-      position: sticky;
-      top: 120px; /* Below summary cards */
-      height: fit-content;
-    }
     
     .summary-card {
       background: white;
@@ -1594,10 +1571,7 @@
     
     <!-- Content Area -->
     <main class="worksheet-content-area">
-      <!-- Purchase & Rehab with Pricing Ladder -->
-      <div class="purchase-with-ladder">
-        <div class="purchase-section">
-          <!-- Purchase & Rehab Section -->
+      <!-- Purchase & Rehab Section -->
       <div class="section-card">
         <div class="section-header">
           <span class="section-title">Purchase & Rehab</span>
@@ -1674,73 +1648,6 @@
           <div class="data-row total">
             <div class="data-label"><span>Total Cash Needed</span></div>
             <div class="value-primary" id="total-cash-needed">$166,428</div>
-          </div>
-        </div>
-      </div>
-        </div>
-        
-        <!-- Pricing Ladder - Right of Purchase & Rehab -->
-        <div class="purchase-ladder-panel">
-          <div class="chart-card">
-            <div class="chart-card-title">Pricing Ladder</div>
-            <div class="pricing-ladder">
-              <div class="pricing-ladder-track"></div>
-              
-              <!-- List Price -->
-              <div class="pricing-ladder-item">
-                <div class="pricing-ladder-label">List Price</div>
-                <div class="pricing-ladder-marker list"></div>
-                <div class="pricing-ladder-value list" id="ladder-list-price">$750,000</div>
-              </div>
-              
-              <!-- Your Offer (Current Purchase Price) -->
-              <div class="pricing-ladder-item highlight">
-                <div class="pricing-ladder-label">Your Offer</div>
-                <div class="pricing-ladder-marker current">
-                  <svg width="8" height="8" viewBox="0 0 8 8" fill="var(--iq-teal)">
-                    <circle cx="4" cy="4" r="4"/>
-                  </svg>
-                </div>
-                <div class="pricing-ladder-value current" id="ladder-current-price">$723,600</div>
-              </div>
-              
-              <!-- Breakeven -->
-              <div class="pricing-ladder-item">
-                <div class="pricing-ladder-label">Breakeven</div>
-                <div class="pricing-ladder-marker target"></div>
-                <div class="pricing-ladder-value target" id="ladder-target-price">$680,000
-                  <span class="pricing-ladder-hint">0% CoC</span>
-                </div>
-              </div>
-              
-              <!-- 10% CoC Price -->
-              <div class="pricing-ladder-item">
-                <div class="pricing-ladder-label">10% CoC</div>
-                <div class="pricing-ladder-marker coc"></div>
-                <div class="pricing-ladder-value coc" id="ladder-10-coc">$650,000
-                  <span class="pricing-ladder-hint">Target</span>
-                </div>
-              </div>
-              
-              <!-- MAO (70% of ARV) -->
-              <div class="pricing-ladder-item">
-                <div class="pricing-ladder-label">MAO</div>
-                <div class="pricing-ladder-marker mao"></div>
-                <div class="pricing-ladder-value mao" id="ladder-mao">$630,000
-                  <span class="pricing-ladder-hint">70% ARV</span>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Discount Indicator -->
-            <div class="pricing-discount-indicator">
-              <div class="pricing-discount-bar">
-                <div class="pricing-discount-fill" id="discount-fill" style="width: 35%;"></div>
-              </div>
-              <div class="pricing-discount-label">
-                <span id="discount-percent">3.5%</span> below list
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -2090,6 +1997,69 @@
     
     <!-- Charts Sidebar - Dynamic Visualizations -->
     <aside class="worksheet-charts-sidebar">
+      <!-- Pricing Ladder -->
+      <div class="chart-card">
+        <div class="chart-card-title">Pricing Ladder</div>
+        <div class="pricing-ladder">
+          <div class="pricing-ladder-track"></div>
+          
+          <!-- List Price -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">List Price</div>
+            <div class="pricing-ladder-marker list"></div>
+            <div class="pricing-ladder-value list" id="ladder-list-price">$795,000</div>
+          </div>
+          
+          <!-- Your Offer (Current Purchase Price) -->
+          <div class="pricing-ladder-item highlight">
+            <div class="pricing-ladder-label">Your Offer</div>
+            <div class="pricing-ladder-marker current">
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="var(--iq-teal)">
+                <circle cx="4" cy="4" r="4"/>
+              </svg>
+            </div>
+            <div class="pricing-ladder-value current" id="ladder-current-price">$723,600</div>
+          </div>
+          
+          <!-- Breakeven -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">Breakeven</div>
+            <div class="pricing-ladder-marker target"></div>
+            <div class="pricing-ladder-value target" id="ladder-target-price">$899,000
+              <span class="pricing-ladder-hint">0% CoC</span>
+            </div>
+          </div>
+          
+          <!-- 10% CoC Price -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">10% CoC</div>
+            <div class="pricing-ladder-marker coc"></div>
+            <div class="pricing-ladder-value coc" id="ladder-10-coc">$651,240
+              <span class="pricing-ladder-hint">Target</span>
+            </div>
+          </div>
+          
+          <!-- MAO (70% of ARV) -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">MAO</div>
+            <div class="pricing-ladder-marker mao"></div>
+            <div class="pricing-ladder-value mao" id="ladder-mao">$557,172
+              <span class="pricing-ladder-hint">70% ARV</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Discount Indicator -->
+        <div class="pricing-discount-indicator">
+          <div class="pricing-discount-bar">
+            <div class="pricing-discount-fill" id="discount-fill" style="width: 90%;"></div>
+          </div>
+          <div class="pricing-discount-label">
+            <span id="discount-percent">9.0%</span> below list
+          </div>
+        </div>
+      </div>
+      
       <!-- Cash Breakdown Donut - Dynamic -->
       <div class="chart-card">
         <div class="chart-card-title">Cash Breakdown</div>
