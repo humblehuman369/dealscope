@@ -208,6 +208,10 @@ export default function OnboardingPage() {
       }
 
       if (completed) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'onboarding/page.tsx:210',message:'Starting completion flow',data:{step,completed},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+        // #endregion
+        
         // Mark as complete
         const completeResponse = await fetch(`${API_BASE_URL}/api/v1/users/me/onboarding/complete`, {
           method: 'POST',
@@ -216,9 +220,17 @@ export default function OnboardingPage() {
           },
         })
         
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'onboarding/page.tsx:220',message:'Complete API response',data:{ok:completeResponse.ok,status:completeResponse.status},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+        // #endregion
+        
         if (!completeResponse.ok) {
           throw new Error('Failed to complete onboarding')
         }
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'onboarding/page.tsx:227',message:'About to call router.push',data:{destination:'/dashboard'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
         
         // Navigate FIRST, then refresh user data in background
         router.push('/dashboard')
