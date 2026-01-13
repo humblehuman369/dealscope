@@ -40,7 +40,7 @@ export function TuneSection({
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className="border-2 border-teal dark:border-accent-500 rounded-2xl mb-3 overflow-hidden">
+    <div className="border-2 border-teal dark:border-accent-500 rounded-2xl mb-3 overflow-hidden bg-white dark:bg-transparent">
       {/* Collapsible Header */}
       <button
         onClick={() => setIsOpen(!isOpen)}

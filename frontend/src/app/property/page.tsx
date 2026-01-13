@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft, Sun, Moon } from 'lucide-react'
 import { 
   ResponsiveAnalyticsContainer,
   AnalyticsPageSkeleton,
@@ -11,7 +9,6 @@ import {
   PropertyPremiumPage,
   StrategyId
 } from '@/components/analytics'
-import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
@@ -66,7 +63,6 @@ function PropertyContent() {
   const searchParams = useSearchParams()
   const addressParam = searchParams.get('address')
   const strategyParam = searchParams.get('strategy') as StrategyId | null
-  const { theme, toggleTheme } = useTheme()
   const { isAuthenticated, setShowAuthModal } = useAuth()
   const viewMode = useAnalyticsViewMode()
   
@@ -405,39 +401,9 @@ function PropertyContent() {
     )
   }
 
-  // Mobile view with separate header
+  // Mobile view - uses main Header from layout, no duplicate header needed
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-[#0b1426] overflow-safe transition-colors">
-      {/* Mobile Header */}
-      <div className="header-blur sticky top-0 z-50">
-        <div className="bg-white/95 dark:bg-[#07172e]/95 backdrop-blur-md border-b border-neutral-200 dark:border-white/5 px-4 py-3 safe-area-pt transition-colors">
-          <div className="max-w-lg mx-auto flex items-center justify-between">
-            <button
-              onClick={handleBackFromStrategy}
-              className="flex items-center gap-2 text-neutral-600 dark:text-gray-400 hover:text-navy-900 dark:hover:text-white transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="text-sm font-medium">Back</span>
-            </button>
-            <Link href="/" className="text-lg font-bold text-navy-900 dark:text-white">
-              Invest<span className="text-brand-500 dark:text-[#4dd0e1]">IQ</span>
-            </Link>
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg bg-neutral-100 dark:bg-white/5 hover:bg-neutral-200 dark:hover:bg-white/10 transition-colors"
-              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            >
-              {theme === 'light' ? (
-                <Moon className="w-5 h-5 text-neutral-600" />
-              ) : (
-                <Sun className="w-5 h-5 text-yellow-400" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Responsive Analytics Container */}
       <ResponsiveAnalyticsContainer
         property={property}

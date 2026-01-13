@@ -52,7 +52,7 @@ export function PriceLadder({ title = 'Price Position Ladder', rungs }: PriceLad
     }).format(value)
 
   return (
-    <div className="border-2 border-teal dark:border-accent-500 rounded-2xl p-4 mb-4">
+    <div className="border-2 border-teal dark:border-accent-500 rounded-2xl p-4 mb-4 bg-white dark:bg-transparent">
       {/* Header */}
       <h4 className="text-[1.1rem] font-bold text-navy-900 dark:text-white uppercase tracking-wide mb-3.5">
         {title}

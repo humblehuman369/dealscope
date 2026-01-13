@@ -29,7 +29,7 @@ export function ReturnsGrid({
   data
 }: ReturnsGridProps) {
   return (
-    <div className="border-2 border-teal dark:border-accent-500 rounded-2xl p-4 mb-4">
+    <div className="border-2 border-teal dark:border-accent-500 rounded-2xl p-4 mb-4 bg-white dark:bg-transparent">
       {/* Header */}
       <div className="flex items-center justify-between mb-3.5">
         <div className="text-[1.1rem] font-bold text-navy-900 dark:text-white flex items-center gap-1.5">
@@ -256,7 +256,7 @@ interface ReturnsGridCompactProps {
 
 export function ReturnsGridCompact({ metrics }: ReturnsGridCompactProps) {
   return (
-    <div className="flex items-center justify-between border-2 border-teal dark:border-accent-500 rounded-xl p-2.5">
+    <div className="flex items-center justify-between border-2 border-teal dark:border-accent-500 rounded-xl p-2.5 bg-white dark:bg-transparent">
       {metrics.slice(0, 4).map((metric, index) => (
         <React.Fragment key={index}>
           <div className="text-center px-2">
