@@ -79,6 +79,7 @@ export default function OnboardingPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
   const [isSaving, setIsSaving] = useState(false)
+  const [isCompleting, setIsCompleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
   const [formData, setFormData] = useState<OnboardingData>({
@@ -141,6 +142,9 @@ export default function OnboardingPage() {
 
   const saveProgress = async (step: number, completed: boolean = false): Promise<boolean> => {
     setIsSaving(true)
+    if (completed) {
+      setIsCompleting(true)
+    }
     setError(null)
 
     try {
@@ -205,15 +209,24 @@ export default function OnboardingPage() {
 
       if (completed) {
         // Mark as complete
-        await fetch(`${API_BASE_URL}/api/v1/users/me/onboarding/complete`, {
+        const completeResponse = await fetch(`${API_BASE_URL}/api/v1/users/me/onboarding/complete`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
           },
         })
         
-        await refreshUser()
+        if (!completeResponse.ok) {
+          throw new Error('Failed to complete onboarding')
+        }
+        
+        // Navigate FIRST, then refresh user data in background
         router.push('/dashboard')
+        
+        // Refresh user data after navigation starts (don't await)
+        refreshUser().catch(console.error)
+        
+        return true
       }
       
       return true // Success
@@ -251,6 +264,22 @@ export default function OnboardingPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500"></div>
+      </div>
+    )
+  }
+
+  // Show completion screen while redirecting
+  if (isCompleting) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-green-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Setup Complete!</h2>
+          <p className="text-gray-400">Taking you to your dashboard...</p>
+          <div className="mt-4 animate-spin rounded-full h-6 w-6 border-b-2 border-brand-500 mx-auto"></div>
+        </div>
       </div>
     )
   }
