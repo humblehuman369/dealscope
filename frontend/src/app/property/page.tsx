@@ -208,7 +208,41 @@ function PropertyContent() {
   // Handle strategy selection - navigate directly to worksheet
   const handleSelectStrategy = (strategyId: StrategyId) => {
     const worksheetUrl = WORKSHEET_URLS[strategyId]
-    if (worksheetUrl) {
+    if (worksheetUrl && property) {
+      // Store property data in localStorage for worksheet to use
+      const worksheetData = {
+        // Property identification
+        address: property.address,
+        city: property.city,
+        state: property.state,
+        zipCode: property.zipCode,
+        fullAddress: `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`,
+        
+        // Property details
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        sqft: property.sqft,
+        thumbnailUrl: property.thumbnailUrl,
+        photos: property.photos,
+        
+        // Financial data
+        listPrice: property.listPrice,
+        monthlyRent: property.monthlyRent,
+        arv: property.arv || property.listPrice,
+        propertyTaxes: property.propertyTaxes,
+        insurance: property.insurance,
+        
+        // STR-specific
+        averageDailyRate: property.averageDailyRate,
+        occupancyRate: property.occupancyRate,
+        
+        // Metadata
+        strategy: strategyId,
+        timestamp: Date.now(),
+      }
+      
+      localStorage.setItem('worksheetProperty', JSON.stringify(worksheetData))
+      
       // Navigate to the worksheet HTML file
       window.location.href = worksheetUrl
     } else {

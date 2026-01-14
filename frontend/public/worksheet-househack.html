@@ -372,11 +372,11 @@
         Back
       </a>
       <div class="worksheet-property-info">
-        <div class="worksheet-property-title">742 Maple Street - Duplex</div>
-        <div class="worksheet-property-subtitle">Denver, CO 80220 • 4 BR • 2 BA • 2,400 Sq.Ft. • 2 Units</div>
+        <div class="worksheet-property-title" id="property-title">742 Maple Street - Duplex</div>
+        <div class="worksheet-property-subtitle" id="property-subtitle">Denver, CO 80220 • 4 BR • 2 BA • 2,400 Sq.Ft. • 2 Units</div>
       </div>
     </div>
-    <div class="worksheet-price-badge">$425,000</div>
+    <div class="worksheet-price-badge" id="property-price-badge">$425,000</div>
   </header>
   
   <nav class="worksheet-tab-nav">
@@ -1034,6 +1034,58 @@
       return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
     }
     
+    // ===== LOAD PROPERTY DATA FROM LOCALSTORAGE =====
+    function loadPropertyData() {
+      try {
+        const storedData = localStorage.getItem('worksheetProperty');
+        if (!storedData) return;
+        
+        const property = JSON.parse(storedData);
+        console.log('[House Hack Worksheet] Loaded property:', property);
+        
+        const titleEl = document.getElementById('property-title');
+        const subtitleEl = document.getElementById('property-subtitle');
+        const priceEl = document.getElementById('property-price-badge');
+        
+        if (titleEl && property.address) titleEl.textContent = property.address;
+        
+        if (subtitleEl) {
+          const location = `${property.city || ''}, ${property.state || ''} ${property.zipCode || ''}`;
+          const specs = `${property.bedrooms || 0} BR • ${property.bathrooms || 0} BA • ${(property.sqft || 0).toLocaleString()} Sq.Ft.`;
+          subtitleEl.textContent = `${location} • ${specs}`;
+        }
+        
+        if (priceEl && property.listPrice) priceEl.textContent = formatCurrency(property.listPrice);
+        
+        updateSliderByLabel('Purchase Price', property.listPrice);
+        if (property.monthlyRent) updateSliderByLabel('Unit 2 Rent', property.monthlyRent);
+        
+      } catch (error) {
+        console.error('[House Hack Worksheet] Error loading property data:', error);
+      }
+    }
+    
+    function updateSliderByLabel(labelText, value) {
+      if (!value) return;
+      const rows = document.querySelectorAll('.data-row.has-slider');
+      for (const row of rows) {
+        const label = row.querySelector('.data-label span')?.textContent || '';
+        if (label.includes(labelText)) {
+          const slider = row.querySelector('.slider-input');
+          const input = row.querySelector('.slider-value');
+          if (slider) {
+            slider.value = value;
+            const min = parseFloat(slider.min), max = parseFloat(slider.max);
+            const progress = ((value - min) / (max - min)) * 100;
+            slider.style.background = `linear-gradient(to right, #059669 0%, #059669 ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+          }
+          if (input) input.value = formatCurrency(value);
+          break;
+        }
+      }
+    }
+    
+    loadPropertyData();
     recalculateAll();
     
     (function() {

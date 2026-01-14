@@ -1610,11 +1610,11 @@
         <span>Back</span>
       </a>
       <div class="worksheet-property-info">
-        <h1 class="worksheet-property-title">3742 Old Lighthouse Cir</h1>
-        <p class="worksheet-property-subtitle">Wellington, FL 33414 • 5 BR • 3 BA • 3,172 Sq.Ft.</p>
+        <h1 class="worksheet-property-title" id="property-title">3742 Old Lighthouse Cir</h1>
+        <p class="worksheet-property-subtitle" id="property-subtitle">Wellington, FL 33414 • 5 BR • 3 BA • 3,172 Sq.Ft.</p>
       </div>
     </div>
-    <div class="worksheet-price-badge">$723,600</div>
+    <div class="worksheet-price-badge" id="property-price-badge">$723,600</div>
   </header>
   
   <!-- Tab Navigation -->
@@ -2924,7 +2924,87 @@
       if (dropdown) dropdown.classList.toggle('open');
     }
     
-    // Initial calculation
+    // ===== LOAD PROPERTY DATA FROM LOCALSTORAGE =====
+    function loadPropertyData() {
+      try {
+        const storedData = localStorage.getItem('worksheetProperty');
+        if (!storedData) return;
+        
+        const property = JSON.parse(storedData);
+        console.log('[Worksheet] Loaded property:', property);
+        
+        // Update header
+        const titleEl = document.getElementById('property-title');
+        const subtitleEl = document.getElementById('property-subtitle');
+        const priceEl = document.getElementById('property-price-badge');
+        
+        if (titleEl && property.address) {
+          titleEl.textContent = property.address;
+        }
+        
+        if (subtitleEl) {
+          const location = `${property.city || ''}, ${property.state || ''} ${property.zipCode || ''}`;
+          const specs = `${property.bedrooms || 0} BR • ${property.bathrooms || 0} BA • ${(property.sqft || 0).toLocaleString()} Sq.Ft.`;
+          subtitleEl.textContent = `${location} • ${specs}`;
+        }
+        
+        if (priceEl && property.listPrice) {
+          priceEl.textContent = formatCurrency(property.listPrice);
+        }
+        
+        // Update slider values based on property data
+        updateSliderByLabel('Purchase Price', property.listPrice);
+        updateSliderByLabel('Gross Rent', property.monthlyRent);
+        updateSliderByLabel('Property Taxes', Math.round((property.propertyTaxes || 4248) / 12));
+        updateSliderByLabel('Insurance', Math.round((property.insurance || 2100) / 12));
+        
+        // Update ARV for pricing ladder
+        if (property.arv) {
+          // Store ARV for calculations
+          window.propertyARV = property.arv;
+        }
+        
+      } catch (error) {
+        console.error('[Worksheet] Error loading property data:', error);
+      }
+    }
+    
+    function updateSliderByLabel(labelText, value) {
+      if (!value) return;
+      
+      const rows = document.querySelectorAll('.data-row.has-slider');
+      for (const row of rows) {
+        const label = row.querySelector('.data-label span')?.textContent || '';
+        if (label.includes(labelText)) {
+          const slider = row.querySelector('.slider-input');
+          const input = row.querySelector('.slider-value');
+          
+          if (slider) {
+            slider.value = value;
+            // Update slider visual
+            const min = parseFloat(slider.min);
+            const max = parseFloat(slider.max);
+            const progress = ((value - min) / (max - min)) * 100;
+            slider.style.background = `linear-gradient(to right, var(--iq-teal) 0%, var(--iq-teal) ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+          }
+          
+          if (input) {
+            if (label.includes('Rate') || label.includes('%')) {
+              input.value = value + '%';
+            } else if (label.includes('Term') || label.includes('years')) {
+              input.value = value + ' years';
+            } else {
+              input.value = formatCurrency(value);
+            }
+          }
+          
+          break;
+        }
+      }
+    }
+    
+    // Load property data first, then calculate
+    loadPropertyData();
     recalculateAll();
   </script>
 </body>

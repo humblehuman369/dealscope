@@ -1051,7 +1051,7 @@
       </a>
       <div class="worksheet-property-info">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <h1 class="worksheet-property-title">2847 Oak Street Drive</h1>
+          <h1 class="worksheet-property-title" id="property-title">2847 Oak Street Drive</h1>
           <span class="strategy-badge">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
@@ -1059,10 +1059,10 @@
             BRRRR
           </span>
         </div>
-        <p class="worksheet-property-subtitle">Austin, TX 78745 • 3 BR • 2 BA • 1,450 Sq.Ft.</p>
+        <p class="worksheet-property-subtitle" id="property-subtitle">Austin, TX 78745 • 3 BR • 2 BA • 1,450 Sq.Ft.</p>
       </div>
     </div>
-    <div class="worksheet-price-badge">$285,000</div>
+    <div class="worksheet-price-badge" id="property-price-badge">$285,000</div>
   </header>
   
   <!-- Tab Navigation -->
@@ -2199,7 +2199,79 @@
       updateElement('metric-cash-flow', formatCurrency(monthlyCashFlow) + '/mo');
     }
     
-    // Initial calculation
+    // ===== LOAD PROPERTY DATA FROM LOCALSTORAGE =====
+    function loadPropertyData() {
+      try {
+        const storedData = localStorage.getItem('worksheetProperty');
+        if (!storedData) return;
+        
+        const property = JSON.parse(storedData);
+        console.log('[BRRRR Worksheet] Loaded property:', property);
+        
+        // Update header
+        const titleEl = document.getElementById('property-title');
+        const subtitleEl = document.getElementById('property-subtitle');
+        const priceEl = document.getElementById('property-price-badge');
+        
+        if (titleEl && property.address) {
+          titleEl.textContent = property.address;
+        }
+        
+        if (subtitleEl) {
+          const location = `${property.city || ''}, ${property.state || ''} ${property.zipCode || ''}`;
+          const specs = `${property.bedrooms || 0} BR • ${property.bathrooms || 0} BA • ${(property.sqft || 0).toLocaleString()} Sq.Ft.`;
+          subtitleEl.textContent = `${location} • ${specs}`;
+        }
+        
+        if (priceEl && property.listPrice) {
+          priceEl.textContent = formatCurrency(property.listPrice);
+        }
+        
+        // Update slider values based on property data
+        updateSliderByLabel('Purchase Price', property.listPrice);
+        if (property.arv) {
+          updateSliderByLabel('After Repair Value', property.arv);
+        }
+        
+      } catch (error) {
+        console.error('[BRRRR Worksheet] Error loading property data:', error);
+      }
+    }
+    
+    function updateSliderByLabel(labelText, value) {
+      if (!value) return;
+      
+      const rows = document.querySelectorAll('.data-row.has-slider');
+      for (const row of rows) {
+        const label = row.querySelector('.data-label span')?.textContent || '';
+        if (label.includes(labelText)) {
+          const slider = row.querySelector('.slider-input');
+          const input = row.querySelector('.slider-value');
+          
+          if (slider) {
+            slider.value = value;
+            const min = parseFloat(slider.min);
+            const max = parseFloat(slider.max);
+            const progress = ((value - min) / (max - min)) * 100;
+            slider.style.background = `linear-gradient(to right, #7c3aed 0%, #7c3aed ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+          }
+          
+          if (input) {
+            if (label.includes('Rate') || label.includes('%')) {
+              input.value = value + '%';
+            } else if (label.includes('Term') || label.includes('years') || label.includes('Months')) {
+              input.value = value + (label.includes('Months') ? ' months' : ' years');
+            } else {
+              input.value = formatCurrency(value);
+            }
+          }
+          break;
+        }
+      }
+    }
+    
+    // Load property data first, then calculate
+    loadPropertyData();
     recalculateAll();
     
     // ===== STRATEGY DROPDOWN =====
