@@ -1087,30 +1087,30 @@
     <div class="summary-cards">
       <div class="summary-card highlight">
         <div class="summary-card-label">Assignment Fee</div>
-        <div class="summary-card-value accent">$12,000</div>
+        <div class="summary-card-value accent" id="summary-assignment-fee">$12,000</div>
         <div class="summary-card-subtitle">Your profit</div>
       </div>
       <div class="summary-card">
         <div class="summary-card-label">Your Contract</div>
-        <div class="summary-card-value">$12,000</div>
+        <div class="summary-card-value" id="summary-contract">$12,000</div>
       </div>
       <div class="summary-card">
         <div class="summary-card-label">Investor Pays</div>
-        <div class="summary-card-value">$24,000</div>
+        <div class="summary-card-value" id="summary-investor-pays">$24,000</div>
       </div>
       <div class="summary-card">
         <div class="summary-card-label">Cash Needed</div>
-        <div class="summary-card-value">$1,800</div>
+        <div class="summary-card-value" id="summary-cash-needed">$1,800</div>
         <div class="summary-card-subtitle">Earnest money</div>
       </div>
       <div class="summary-card">
         <div class="summary-card-label">Investor ROI</div>
-        <div class="summary-card-value positive">170.7%</div>
+        <div class="summary-card-value positive" id="summary-investor-roi">170.7%</div>
       </div>
       <div class="summary-card" style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, white 100%);">
         <div class="summary-card-label">Deal Score</div>
-        <div class="summary-card-value accent">88</div>
-        <div class="summary-card-subtitle">Great Deal</div>
+        <div class="summary-card-value accent" id="summary-deal-score">88</div>
+        <div class="summary-card-subtitle" id="score-label">Great Deal</div>
       </div>
     </div>
   </div>
@@ -1470,7 +1470,22 @@
   </div>
   
   <script>
-    // Initialize sliders with progress
+    // ===== UTILITY FUNCTIONS =====
+    function formatCurrency(value) {
+      return '$' + Math.round(value).toLocaleString('en-US');
+    }
+    
+    function parseCurrency(str) {
+      if (typeof str === 'number') return str;
+      return parseFloat(str.replace(/[$,%]/g, '').replace(/,/g, '')) || 0;
+    }
+    
+    function updateElement(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+    
+    // ===== SLIDER INITIALIZATION =====
     document.querySelectorAll('.slider-input').forEach(slider => {
       function updateProgress() {
         const min = parseFloat(slider.min);
@@ -1481,7 +1496,33 @@
         slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
       }
       updateProgress();
-      slider.addEventListener('input', updateProgress);
+      slider.addEventListener('input', function() {
+        updateProgress();
+        recalculateAll();
+      });
+    });
+    
+    // ===== BIDIRECTIONAL SLIDER-INPUT SYNC =====
+    document.querySelectorAll('.data-row.has-slider').forEach(row => {
+      const slider = row.querySelector('.slider-input');
+      const input = row.querySelector('.slider-value');
+      
+      if (slider && input) {
+        // Slider changes input
+        slider.addEventListener('input', function() {
+          const value = parseFloat(this.value);
+          input.value = formatCurrency(value);
+        });
+        
+        // Input changes slider
+        input.addEventListener('change', function() {
+          const value = parseCurrency(this.value);
+          if (!isNaN(value)) {
+            slider.value = value;
+            slider.dispatchEvent(new Event('input'));
+          }
+        });
+      }
     });
     
     // Add hover effect to slider rows
@@ -1493,6 +1534,125 @@
         this.style.backgroundColor = '';
       });
     });
+    
+    // ===== MAIN CALCULATION ENGINE =====
+    function recalculateAll() {
+      // Get values from sliders
+      const investorPrice = getSliderValue('Investor Purchase', 24000);
+      const contractPrice = getSliderValue('Contract Price', 12000);
+      const rehabCosts = getSliderValue('Rehab Costs', 18865);
+      const arv = getSliderValue('After Repair Value', 75000);
+      
+      // Calculate assignment fee
+      const assignmentFee = investorPrice - contractPrice;
+      const closingCosts = contractPrice * 0.015; // ~1.5% closing costs
+      const earnestMoney = contractPrice * 0.01; // 1% earnest money
+      
+      // Investor calculations
+      const investorAllIn = investorPrice + rehabCosts;
+      const investorProfit = arv - investorAllIn - (arv * 0.08); // After selling costs
+      const investorROI = (investorProfit / investorAllIn) * 100;
+      
+      // MAO for investor (70% rule)
+      const mao = (arv * 0.70) - rehabCosts;
+      
+      // Calculate Deal Score (0-100)
+      let dealScore = 50;
+      if (assignmentFee > 5000) dealScore += 15;
+      if (assignmentFee > 10000) dealScore += 10;
+      if (investorROI > 20) dealScore += 15;
+      if (investorPrice < mao) dealScore += 10;
+      dealScore = Math.min(100, Math.max(0, Math.round(dealScore)));
+      
+      // Update Summary Cards
+      updateElement('summary-assignment-fee', formatCurrency(assignmentFee));
+      updateElement('summary-contract', formatCurrency(contractPrice));
+      updateElement('summary-investor-pays', formatCurrency(investorPrice));
+      updateElement('summary-cash-needed', formatCurrency(earnestMoney));
+      updateElement('summary-investor-roi', investorROI.toFixed(1) + '%');
+      updateElement('summary-deal-score', dealScore);
+      
+      // Update deal score label
+      const scoreLabel = document.getElementById('score-label');
+      if (scoreLabel) {
+        if (dealScore >= 90) scoreLabel.textContent = 'Excellent Deal';
+        else if (dealScore >= 75) scoreLabel.textContent = 'Great Deal';
+        else if (dealScore >= 60) scoreLabel.textContent = 'Good Deal';
+        else if (dealScore >= 40) scoreLabel.textContent = 'Fair Deal';
+        else scoreLabel.textContent = 'Poor Deal';
+      }
+      
+      // Update Assignment Fee Display
+      updateElement('display-assignment-fee', formatCurrency(assignmentFee));
+      updateElement('display-closing-costs', formatCurrency(closingCosts));
+      updateElement('display-net-profit', formatCurrency(assignmentFee - closingCosts));
+      
+      // Update Pricing Ladder
+      updatePricingLadder(arv, investorAllIn, investorPrice, contractPrice, mao, assignmentFee);
+      
+      // Update Deal Flow
+      updateDealFlow(contractPrice, investorPrice, assignmentFee);
+      
+      // Update Investor Analysis
+      updateElement('investor-purchase', formatCurrency(investorPrice));
+      updateElement('investor-rehab', formatCurrency(rehabCosts));
+      updateElement('investor-all-in', formatCurrency(investorAllIn));
+      updateElement('investor-arv', formatCurrency(arv));
+      updateElement('investor-profit', formatCurrency(investorProfit));
+      updateElement('investor-roi', investorROI.toFixed(1) + '%');
+    }
+    
+    function getSliderValue(labelText, defaultValue) {
+      const rows = document.querySelectorAll('.data-row.has-slider');
+      for (const row of rows) {
+        const label = row.querySelector('.data-label span')?.textContent || '';
+        if (label.includes(labelText)) {
+          const slider = row.querySelector('.slider-input');
+          if (slider) return parseFloat(slider.value);
+        }
+      }
+      return defaultValue;
+    }
+    
+    function updatePricingLadder(arv, investorAllIn, investorPrice, contractPrice, mao, assignmentFee) {
+      updateElement('ladder-arv', formatCurrency(arv));
+      
+      const investorAllInEl = document.getElementById('ladder-investor-all-in');
+      if (investorAllInEl) {
+        investorAllInEl.innerHTML = formatCurrency(investorAllIn) + '<span class="pricing-ladder-hint">Purchase + Rehab</span>';
+      }
+      
+      updateElement('ladder-investor-price', formatCurrency(investorPrice));
+      updateElement('ladder-contract', formatCurrency(contractPrice));
+      
+      const maoEl = document.getElementById('ladder-mao');
+      if (maoEl) {
+        maoEl.innerHTML = formatCurrency(mao) + '<span class="pricing-ladder-hint">70% Rule</span>';
+      }
+      
+      // Update assignment fee indicator
+      const maxFee = 20000; // Scale for visual
+      const fillPct = Math.min(100, (assignmentFee / maxFee) * 100);
+      const assignmentFill = document.getElementById('assignment-fill');
+      const assignmentPercent = document.getElementById('assignment-percent');
+      
+      if (assignmentFill) {
+        assignmentFill.style.width = fillPct + '%';
+      }
+      if (assignmentPercent) {
+        assignmentPercent.textContent = formatCurrency(assignmentFee);
+      }
+    }
+    
+    function updateDealFlow(contractPrice, investorPrice, assignmentFee) {
+      const steps = document.querySelectorAll('.deal-flow-step .deal-flow-value');
+      if (steps[0]) steps[0].textContent = formatCurrency(contractPrice);
+      if (steps[1]) steps[1].textContent = formatCurrency(investorPrice);
+      if (steps[2]) steps[2].textContent = formatCurrency(assignmentFee);
+    }
+    
+    // Initial calculation
+    recalculateAll();
     
     // ===== STRATEGY DROPDOWN =====
     (function() {
