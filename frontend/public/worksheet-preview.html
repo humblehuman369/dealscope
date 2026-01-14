@@ -895,6 +895,7 @@
       padding: clamp(8px, 1.5vw, 16px) clamp(8px, 1.5vw, 20px);
       box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
       min-width: 0; /* Allow shrinking */
+      text-align: center;
     }
     
     .summary-card.target-price {
@@ -1799,7 +1800,7 @@
       <!-- Purchase & Rehab Section -->
       <div class="section-card">
         <div class="section-header">
-          <span class="section-title">Purchase & Rehab</span>
+          <span class="section-title">Purchase</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
             <path d="M18 15l-6-6-6 6"/>
           </svg>
@@ -1856,17 +1857,6 @@
               </div>
             </div>
             <input type="text" class="slider-value" value="$21,708">
-          </div>
-          
-          <!-- Rehab Costs with Slider -->
-          <div class="data-row has-slider">
-            <div class="data-label"><span>Rehab Costs</span></div>
-            <div class="slider-container">
-              <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="100000" value="0" style="--slider-progress: 0%;">
-              </div>
-            </div>
-            <input type="text" class="slider-value" value="$0">
           </div>
           
           <!-- Total Cash Needed - Calculated -->
@@ -2115,12 +2105,23 @@
       <!-- Valuation Section -->
       <div class="section-card">
         <div class="section-header">
-          <span class="section-title">Valuation</span>
+          <span class="section-title">Rehab & Valuation</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
             <path d="M18 15l-6-6-6 6"/>
           </svg>
         </div>
         <div class="section-content">
+          <!-- Rehab Costs with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Rehab Costs</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="150000" value="0" style="--slider-progress: 0%;">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$0">
+          </div>
+          
           <!-- After Repair Value with Slider -->
           <div class="data-row has-slider">
             <div class="data-label"><span>After Repair Value</span></div>
@@ -2836,27 +2837,63 @@
     function updatePricingLadder(purchasePrice, grossRentMonthly, totalOpEx, annualDebtService) {
       // Get dynamic values from sliders
       const arv = getSliderValue('After Repair Value', 795960);
-      const listPrice = purchasePrice * 1.05; // List price is typically 5% above offer price
+      const downPaymentPct = getSliderValue('Down Payment', 20);
+      const interestRate = getSliderValue('Interest Rate', 7);
+      const loanTerm = getSliderValue('Loan Term', 30);
+      const purchaseCosts = getSliderValue('Purchase Costs', 21708);
+      const rehabCosts = getSliderValue('Rehab Costs', 0);
       
-      // Calculate breakeven price (where cash flow = 0)
-      // At breakeven: NOI = Debt Service
-      // We need to find the price where this is true
+      // Get stored list price from property data, or estimate from purchase price
+      const listPrice = window.propertyListPrice || (purchasePrice * 1.05);
+      
+      // Calculate NOI
       const grossRentAnnual = grossRentMonthly * 12;
-      const effectiveIncome = grossRentAnnual * 0.92; // 8% vacancy
+      const vacancyPct = getSliderValue('Vacancy', 8);
+      const effectiveIncome = grossRentAnnual * (1 - vacancyPct / 100);
       const noi = effectiveIncome - totalOpEx;
       
-      // For a rough breakeven calculation:
-      // Breakeven is where cash flow = 0, meaning we can pay more for the property
-      // Lower price = lower mortgage = positive cash flow
-      // We calculate what price gives us 0 cash flow at current terms
-      const breakeven = purchasePrice - (annualDebtService - noi) / 0.08 * 0.8; // Rough approximation
-      const targetPrice = Math.round(breakeven / 1000) * 1000; // Round to nearest $1000
+      // Calculate breakeven price (where cash flow = 0)
+      // At breakeven: NOI = Annual Debt Service
+      // We need to find the price where mortgage payment equals NOI
+      const monthlyNoi = noi / 12;
+      const monthlyRate = (interestRate / 100) / 12;
+      const numPayments = loanTerm * 12;
+      
+      // Max loan where monthly payment = monthly NOI
+      // Payment = Loan * [r(1+r)^n] / [(1+r)^n - 1]
+      // Solving for Loan: Loan = Payment * [(1+r)^n - 1] / [r(1+r)^n]
+      let breakevenPrice = 0;
+      if (monthlyRate > 0 && monthlyNoi > 0) {
+        const factor = Math.pow(1 + monthlyRate, numPayments);
+        const maxLoan = monthlyNoi * (factor - 1) / (monthlyRate * factor);
+        // Price = Loan / (1 - downPaymentPct)
+        const ltvPct = (100 - downPaymentPct) / 100;
+        breakevenPrice = ltvPct > 0 ? maxLoan / ltvPct : 0;
+      }
+      const targetPrice = Math.round(breakevenPrice / 1000) * 1000;
       
       // Calculate price for 10% CoC return
-      const tenPercentCoCPrice = purchasePrice * 0.9; // Simplified
+      // CoC = Cash Flow / Cash Invested
+      // 10% = (NOI - Debt Service) / (Down Payment + Closing Costs + Rehab)
+      // Solving for price that gives 10% CoC
+      const targetCocReturn = 0.10;
+      let tenPercentCoCPrice = purchasePrice * 0.85; // Default fallback
+      if (monthlyRate > 0 && noi > 0) {
+        // Iterative approach - find price where CoC = 10%
+        // For simplicity, estimate: price where cash flow = 10% of cash invested
+        const estimatedCashInvested = purchasePrice * (downPaymentPct / 100) + purchaseCosts + rehabCosts;
+        const requiredCashFlow = estimatedCashInvested * targetCocReturn;
+        const requiredMonthlyPayment = (noi - requiredCashFlow) / 12;
+        if (requiredMonthlyPayment > 0) {
+          const factor = Math.pow(1 + monthlyRate, numPayments);
+          const loan10 = requiredMonthlyPayment * (factor - 1) / (monthlyRate * factor);
+          const ltvPct = (100 - downPaymentPct) / 100;
+          tenPercentCoCPrice = ltvPct > 0 ? loan10 / ltvPct : purchasePrice * 0.85;
+        }
+      }
       
-      // MAO (Maximum Allowable Offer) - 70% of ARV
-      const mao = arv * 0.7;
+      // MAO (Maximum Allowable Offer) - 70% of ARV minus rehab
+      const mao = (arv * 0.7) - rehabCosts;
       
       // Update Target Price summary card
       updateElement('target-price-value', formatCurrency(targetPrice));
@@ -3011,6 +3048,9 @@
         
         // Store sqft for per square foot calculations
         window.propertySqft = property.sqft || 3172; // Default to sample property sqft
+        
+        // Store list price for pricing ladder
+        window.propertyListPrice = property.listPrice || 723600;
         
       } catch (error) {
         console.error('[Worksheet] Error loading property data:', error);
