@@ -1321,7 +1321,7 @@
     /* ===== PRICING LADDER ===== */
     .pricing-ladder {
       position: relative;
-      padding: 20px 0 40px;
+      padding: 24px 0 32px;
       min-height: 400px;
     }
     
@@ -1329,16 +1329,21 @@
       position: absolute;
       left: 50%;
       top: 40px;
-      bottom: 60px;
-      width: 4px;
-      background: linear-gradient(180deg, #dc2626 0%, #f97316 25%, #eab308 50%, #10b981 75%, var(--iq-teal) 100%);
-      border-radius: 2px;
+      bottom: 40px;
+      width: 6px;
+      background: linear-gradient(180deg, 
+        #dc2626 0%, 
+        #f97316 20%, 
+        #eab308 40%, 
+        #10b981 60%, 
+        var(--iq-teal) 100%);
+      border-radius: 3px;
       transform: translateX(-50%);
       z-index: 0;
     }
     
-    /* Purchase Price Indicator (Dynamic) */
-    .pricing-ladder-indicator {
+    /* Your Offer Indicator (Dynamic Slider) */
+    .pricing-ladder-offer-indicator {
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
@@ -1347,31 +1352,38 @@
       flex-direction: column;
       align-items: center;
       pointer-events: none;
+      transition: top 0.3s ease;
     }
     
-    .pricing-ladder-indicator-line {
-      width: 2px;
-      height: 60px;
+    .pricing-ladder-offer-line {
+      width: 3px;
+      height: 50px;
       background: var(--iq-teal);
-      opacity: 0.6;
-      margin-bottom: 4px;
+      opacity: 0.8;
+      margin-bottom: 6px;
     }
     
-    .pricing-ladder-indicator-label {
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--iq-teal);
+    .pricing-ladder-offer-badge {
+      background: var(--iq-teal);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 2px;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0, 126, 167, 0.3);
+      border: 2px solid white;
     }
     
-    .pricing-ladder-indicator-value {
-      font-size: 14px;
+    .pricing-ladder-offer-value {
+      margin-top: 4px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--iq-teal);
       background: white;
-      padding: 4px 8px;
+      padding: 4px 10px;
       border-radius: 6px;
       border: 2px solid var(--iq-teal);
       box-shadow: 0 2px 8px rgba(0, 126, 167, 0.2);
@@ -1380,7 +1392,7 @@
     .pricing-ladder-item {
       display: flex;
       align-items: center;
-      padding: 10px 0;
+      padding: 12px 0;
       position: relative;
       z-index: 1;
     }
@@ -1388,21 +1400,24 @@
     .pricing-ladder-label {
       flex: 1;
       text-align: right;
-      padding-right: 20px;
+      padding-right: 24px;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
       color: var(--ws-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     
     .pricing-ladder-marker {
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       background: white;
-      border: 3px solid var(--ws-border);
+      border: 4px solid;
       z-index: 2;
       flex-shrink: 0;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      position: relative;
     }
     
     .pricing-ladder-marker.list {
@@ -1427,13 +1442,13 @@
     
     .pricing-ladder-value {
       flex: 1;
-      padding-left: 20px;
+      padding-left: 24px;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--ws-text-primary);
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
     }
     
     .pricing-ladder-value.list {
@@ -1452,47 +1467,28 @@
       color: var(--iq-teal);
     }
     
-    .pricing-ladder-diff {
-      font-size: 10px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 12px;
-      margin-left: 8px;
-      white-space: nowrap;
-    }
-    
-    .pricing-ladder-diff.positive {
-      background: rgba(16, 185, 129, 0.1);
-      color: #10b981;
-    }
-    
-    .pricing-ladder-diff.negative {
-      background: rgba(220, 38, 38, 0.1);
-      color: #dc2626;
-    }
-    
     .pricing-ladder-hint {
       display: block;
       font-size: 10px;
       color: var(--ws-text-muted);
-      font-weight: 400;
+      font-weight: 500;
       margin-top: 2px;
     }
     
     .pricing-ladder-summary {
-      margin-top: 20px;
+      margin-top: 24px;
       padding-top: 16px;
       border-top: 2px solid var(--ws-border-light);
       text-align: center;
     }
     
-    .pricing-ladder-summary #pricing-summary-text {
+    .pricing-ladder-summary-text {
       font-size: 13px;
       font-weight: 600;
       color: var(--ws-text-secondary);
     }
     
-    .pricing-ladder-summary #pricing-summary-text .highlight {
+    .pricing-ladder-summary-text .highlight {
       color: var(--iq-teal);
       font-weight: 700;
     }
@@ -2412,40 +2408,37 @@
         <div class="chart-card-title">Pricing Ladder</div>
         <div class="pricing-ladder">
           <div class="pricing-ladder-track">
-            <!-- Dynamic Purchase Price Indicator -->
-            <div class="pricing-ladder-indicator" id="purchase-price-indicator">
-              <div class="pricing-ladder-indicator-line"></div>
-              <div class="pricing-ladder-indicator-label">Your Offer</div>
-              <div class="pricing-ladder-indicator-value" id="purchase-price-display">$723,600</div>
+            <!-- Dynamic Your Offer Indicator -->
+            <div class="pricing-ladder-offer-indicator" id="offer-indicator">
+              <div class="pricing-ladder-offer-line"></div>
+              <div class="pricing-ladder-offer-badge">Your Offer</div>
+              <div class="pricing-ladder-offer-value" id="offer-indicator-value">$723,600</div>
             </div>
           </div>
           
-          <!-- List Price -->
+          <!-- List Price (Top) -->
           <div class="pricing-ladder-item" id="ladder-list">
             <div class="pricing-ladder-label">List Price</div>
             <div class="pricing-ladder-marker list"></div>
             <div class="pricing-ladder-value list" id="ladder-list-price">$795,000</div>
-            <div class="pricing-ladder-diff" id="ladder-list-diff"></div>
           </div>
           
-          <!-- Breakeven (Capped at List Price) -->
-          <div class="pricing-ladder-item" id="ladder-breakeven">
+          <!-- Breakeven (Only show if below List Price) -->
+          <div class="pricing-ladder-item" id="ladder-breakeven" style="display: none;">
             <div class="pricing-ladder-label">Breakeven</div>
             <div class="pricing-ladder-marker breakeven"></div>
             <div class="pricing-ladder-value breakeven" id="ladder-breakeven-price">$680,000
               <span class="pricing-ladder-hint">0% CoC</span>
             </div>
-            <div class="pricing-ladder-diff" id="ladder-breakeven-diff"></div>
           </div>
           
           <!-- 10% CoC Target Price -->
           <div class="pricing-ladder-item" id="ladder-10coc">
-            <div class="pricing-ladder-label">10% CoC Target</div>
+            <div class="pricing-ladder-label">10% CoC</div>
             <div class="pricing-ladder-marker coc"></div>
             <div class="pricing-ladder-value coc" id="ladder-10coc-price">$651,240
               <span class="pricing-ladder-hint">Target Return</span>
             </div>
-            <div class="pricing-ladder-diff" id="ladder-10coc-diff"></div>
           </div>
           
           <!-- MAO (Maximum Allowable Offer) -->
@@ -2455,12 +2448,13 @@
             <div class="pricing-ladder-value mao" id="ladder-mao-price">$557,172
               <span class="pricing-ladder-hint">70% ARV - Rehab</span>
             </div>
-            <div class="pricing-ladder-diff" id="ladder-mao-diff"></div>
           </div>
           
           <!-- Summary Text -->
-          <div class="pricing-ladder-summary" id="pricing-ladder-summary">
-            <span id="pricing-summary-text">9.0% below list</span>
+          <div class="pricing-ladder-summary">
+            <div class="pricing-ladder-summary-text" id="pricing-summary-text">
+              <span class="highlight" id="pricing-discount">9.0%</span> below list price
+            </div>
           </div>
         </div>
         
@@ -3011,38 +3005,98 @@
     
     // Update pricing ladder using backend-calculated values
     function updatePricingLadderFromBackend(purchasePrice, grossRentMonthly, result) {
-      const listPrice = window.propertyListPrice || purchasePrice;
+      const listPrice = window.propertyListPrice || purchasePrice || purchasePrice;
       const mao = result.mao;
       
       // Calculate 10% CoC price (approximation - backend can provide this too)
       const tenPctCocPrice = calculateTargetCoCPrice(purchasePrice, grossRentMonthly, 0.10);
       
       // Calculate breakeven price (where cash flow = 0)
-      const breakevenPrice = calculateBreakevenPrice(purchasePrice, grossRentMonthly);
+      let breakevenPrice = calculateBreakevenPrice(purchasePrice, grossRentMonthly);
       
-      const prices = [listPrice, purchasePrice, breakevenPrice, tenPctCocPrice, mao];
-      const maxPrice = Math.max(...prices.filter(p => p > 0));
-      const minPrice = Math.min(...prices.filter(p => p > 0));
-      const range = maxPrice - minPrice;
-      
-      function getPosition(price) {
-        if (range === 0) return 50;
-        return 100 - ((price - minPrice) / range * 100);
+      // Fix: Breakeven should never exceed list price
+      if (breakevenPrice > listPrice) {
+        breakevenPrice = listPrice * 0.98; // Set to slightly below list if calculation exceeds it
       }
       
-      // Update DOM elements
-      ['list', 'offer', 'breakeven', 'tenpct', 'mao'].forEach((id, idx) => {
-        const el = document.getElementById(`ladder-${id}`);
-        if (el) {
-          const price = [listPrice, purchasePrice, breakevenPrice, tenPctCocPrice, mao][idx];
-          el.style.top = getPosition(price) + '%';
-          const priceEl = el.querySelector('.pricing-ladder-price');
-          if (priceEl) priceEl.textContent = formatCurrency(price);
+      // Collect all price points
+      const pricePoints = [
+        { id: 'list', price: listPrice, label: 'List Price', marker: 'list', valueClass: 'list' },
+        { id: 'breakeven', price: breakevenPrice, label: 'Breakeven', marker: 'breakeven', valueClass: 'breakeven', hint: '0% CoC' },
+        { id: '10coc', price: tenPctCocPrice, label: '10% CoC', marker: 'coc', valueClass: 'coc', hint: 'Target Return' },
+        { id: 'mao', price: mao, label: 'MAO', marker: 'mao', valueClass: 'mao', hint: '70% ARV - Rehab' }
+      ];
+      
+      // Sort prices from highest to lowest
+      pricePoints.sort((a, b) => b.price - a.price);
+      
+      // Calculate position range
+      const maxPrice = Math.max(listPrice, breakevenPrice, tenPctCocPrice, mao, purchasePrice);
+      const minPrice = Math.min(listPrice, breakevenPrice, tenPctCocPrice, mao, purchasePrice);
+      const range = maxPrice - minPrice;
+      
+      // Helper to calculate vertical position (0% = top, 100% = bottom)
+      function getPosition(price) {
+        if (range === 0) return 50;
+        // Higher prices at top (0%), lower prices at bottom (100%)
+        return ((maxPrice - price) / range) * 100;
+      }
+      
+      // Update each price point's position and value
+      pricePoints.forEach((point, index) => {
+        const itemEl = document.getElementById(`ladder-${point.id}`);
+        if (itemEl) {
+          const position = getPosition(point.price);
+          itemEl.style.top = `${position}%`;
+          
+          // Update price value
+          const valueEl = document.getElementById(`ladder-${point.id}-price`);
+          if (valueEl) {
+            let html = formatCurrency(point.price);
+            if (point.hint) {
+              html += `<span class="pricing-ladder-hint">${point.hint}</span>`;
+            }
+            valueEl.innerHTML = html;
+          }
+          
+          // Show/hide breakeven if it's above list price
+          if (point.id === 'breakeven') {
+            if (breakevenPrice >= listPrice) {
+              itemEl.style.display = 'none';
+            } else {
+              itemEl.style.display = 'flex';
+            }
+          }
         }
       });
       
+      // Position "Your Offer" indicator dynamically
+      const offerIndicator = document.getElementById('offer-indicator');
+      const offerValue = document.getElementById('offer-indicator-value');
+      if (offerIndicator && offerValue) {
+        const offerPosition = getPosition(purchasePrice);
+        offerIndicator.style.top = `${offerPosition}%`;
+        offerValue.textContent = formatCurrency(purchasePrice);
+      }
+      
+      // Update summary text
+      const discountPct = ((listPrice - purchasePrice) / listPrice * 100).toFixed(1);
+      const summaryText = document.getElementById('pricing-summary-text');
+      const discountEl = document.getElementById('pricing-discount');
+      if (summaryText && discountEl) {
+        if (purchasePrice < listPrice) {
+          discountEl.textContent = `${discountPct}%`;
+          summaryText.innerHTML = `<span class="highlight">${discountPct}%</span> below list price`;
+        } else if (purchasePrice > listPrice) {
+          const premiumPct = ((purchasePrice - listPrice) / listPrice * 100).toFixed(1);
+          summaryText.innerHTML = `<span class="highlight">${premiumPct}%</span> above list price`;
+        } else {
+          summaryText.innerHTML = `At <span class="highlight">list price</span>`;
+        }
+      }
+      
       // Update summary card for MAO/Target Price
-      updateElement('summary-mao', formatCurrency(mao));
+      updateElement('target-price-value', formatCurrency(mao));
     }
     
     // Helper: Calculate price for 10% CoC return (local fallback)
