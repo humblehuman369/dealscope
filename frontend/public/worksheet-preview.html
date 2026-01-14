@@ -1940,10 +1940,67 @@
         </div>
       </div>
       
+      <!-- Rehab & Valuation Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Rehab & Valuation</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <!-- Rehab Costs with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Rehab Costs</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="150000" value="0" style="--slider-progress: 0%;">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$0">
+          </div>
+          
+          <!-- After Repair Value with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>After Repair Value</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="500000" max="1200000" value="795960" style="--slider-progress: 42%;">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$795,960">
+          </div>
+          
+          <!-- ARV Per Sq Ft - Calculated -->
+          <div class="data-row calculated">
+            <div class="data-label"><span>ARV Per Square Foot</span></div>
+            <div class="value-primary" id="calc-arv-psf">$251</div>
+          </div>
+          
+          <!-- Price Per Sq Ft - Calculated -->
+          <div class="data-row calculated">
+            <div class="data-label"><span>Price Per Square Foot</span></div>
+            <div class="value-primary" id="calc-price-psf">$228</div>
+          </div>
+          
+          <!-- Rehab Per Sq Ft - Calculated -->
+          <div class="data-row calculated">
+            <div class="data-label"><span>Rehab Per Square Foot</span></div>
+            <div class="value-primary" id="calc-rehab-psf">$0</div>
+          </div>
+          
+          <!-- Equity at Purchase - Calculated (Key Metric) -->
+          <div class="data-row total">
+            <div class="data-label"><span>Equity at Purchase</span></div>
+            <div class="value-primary value-positive" id="calc-equity">$72,360</div>
+          </div>
+        </div>
+      </div>
+      
       <!-- Cash Flow Section -->
       <div class="section-card">
         <div class="section-header">
-          <span class="section-title">Cash Flow (Year 1)</span>
+          <span class="section-title">Cash Flow</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
             <path d="M18 15l-6-6-6 6"/>
           </svg>
@@ -2098,63 +2155,6 @@
           <div class="data-row total">
             <div class="data-label"><span>Annual Cash Flow</span></div>
             <div class="value-primary value-positive" id="calc-annual-cf">$17,575</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Valuation Section -->
-      <div class="section-card">
-        <div class="section-header">
-          <span class="section-title">Rehab & Valuation</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
-            <path d="M18 15l-6-6-6 6"/>
-          </svg>
-        </div>
-        <div class="section-content">
-          <!-- Rehab Costs with Slider -->
-          <div class="data-row has-slider">
-            <div class="data-label"><span>Rehab Costs</span></div>
-            <div class="slider-container">
-              <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="150000" value="0" style="--slider-progress: 0%;">
-              </div>
-            </div>
-            <input type="text" class="slider-value" value="$0">
-          </div>
-          
-          <!-- After Repair Value with Slider -->
-          <div class="data-row has-slider">
-            <div class="data-label"><span>After Repair Value</span></div>
-            <div class="slider-container">
-              <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="500000" max="1200000" value="795960" style="--slider-progress: 42%;">
-              </div>
-            </div>
-            <input type="text" class="slider-value" value="$795,960">
-          </div>
-          
-          <!-- ARV Per Sq Ft - Calculated -->
-          <div class="data-row calculated">
-            <div class="data-label"><span>ARV Per Square Foot</span></div>
-            <div class="value-primary" id="calc-arv-psf">$251</div>
-          </div>
-          
-          <!-- Price Per Sq Ft - Calculated -->
-          <div class="data-row calculated">
-            <div class="data-label"><span>Price Per Square Foot</span></div>
-            <div class="value-primary" id="calc-price-psf">$228</div>
-          </div>
-          
-          <!-- Rehab Per Sq Ft - Calculated -->
-          <div class="data-row calculated">
-            <div class="data-label"><span>Rehab Per Square Foot</span></div>
-            <div class="value-primary" id="calc-rehab-psf">$0</div>
-          </div>
-          
-          <!-- Equity at Purchase - Calculated (Key Metric) -->
-          <div class="data-row total">
-            <div class="data-label"><span>Equity at Purchase</span></div>
-            <div class="value-primary value-positive" id="calc-equity">$72,360</div>
           </div>
         </div>
       </div>
