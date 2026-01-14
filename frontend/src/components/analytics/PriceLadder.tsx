@@ -7,120 +7,105 @@ import { PriceRung, PriceRungType } from './types'
 /**
  * PriceLadder Component
  * 
- * Displays a visual "ladder" of price points from List Price down to Opening Offer.
- * Highlights the IQ Target Price as the recommended entry point.
- * 
- * Price rungs typically include:
- * - List Price (100%)
- * - 90% of List (common investor threshold)
- * - Breakeven (strategy-specific)
- * - IQ Target (highlighted - profitable entry)
- * - Opening Offer (negotiation starting point)
+ * A visual "ladder" showing the price spectrum from List Price (high/red) 
+ * down to IQ Target (low/green) with a gradient arrow visualization.
+ * Designed to fit in narrow card containers.
  */
 
 interface PriceLadderProps {
-  /** Title for the ladder section */
   title?: string
-  /** Array of price rungs to display */
   rungs: PriceRung[]
 }
 
-// Color mappings for different rung types
-const rungMarkerColors: Record<PriceRungType, string> = {
-  list: 'bg-red-500',
-  ninety: 'bg-orange-500',
-  breakeven: 'bg-yellow-500',
-  target: 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]',
-  offer: 'bg-teal'
-}
+const formatCurrency = (value: number) => 
+  new Intl.NumberFormat('en-US', { 
+    style: 'currency', 
+    currency: 'USD', 
+    minimumFractionDigits: 0, 
+    maximumFractionDigits: 0 
+  }).format(value)
 
-const rungValueColors: Record<PriceRungType, string> = {
-  list: 'text-red-500',
-  ninety: 'text-orange-500',
-  breakeven: 'text-gray-800 dark:text-white',
-  target: 'text-green-500',
-  offer: 'text-gray-800 dark:text-white'
-}
-
-export function PriceLadder({ title = 'Price Position Ladder', rungs }: PriceLadderProps) {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
+export function PriceLadder({ title = 'PRICING SCALE', rungs }: PriceLadderProps) {
+  const listRung = rungs.find(r => r.type === 'list')
+  const breakevenRung = rungs.find(r => r.type === 'breakeven')
+  const targetRung = rungs.find(r => r.type === 'target')
 
   return (
-    <div className="border-2 border-teal dark:border-accent-500 rounded-2xl p-4 mb-4 bg-white dark:bg-transparent">
+    <div className="border-2 border-teal dark:border-accent-500 rounded-2xl p-3 mb-4 bg-white dark:bg-slate-900/50">
       {/* Header */}
-      <h4 className="text-[1.1rem] font-bold text-navy-900 dark:text-white uppercase tracking-wide mb-3.5">
+      <h4 className="text-sm font-bold text-slate-700 dark:text-white uppercase tracking-wide mb-3">
         {title}
       </h4>
 
-      {/* Rungs */}
-      <div className="space-y-0">
-        {rungs.map((rung, index) => (
-          <PriceRungRow 
-            key={rung.type} 
-            rung={rung}
-            isLast={index === rungs.length - 1}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-interface PriceRungRowProps {
-  rung: PriceRung
-  isLast: boolean
-}
-
-function PriceRungRow({ rung, isLast }: PriceRungRowProps) {
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    }).format(value)
-
-  const isTarget = rung.type === 'target'
-  
-  // Wrapper classes for highlighted (target) row
-  const wrapperClasses = isTarget
-    ? 'bg-green-500/[0.08] -mx-4 px-4 rounded-lg'
-    : ''
-
-  return (
-    <div 
-      className={`flex items-center py-2.5 ${!isLast ? 'border-b border-gray-200 dark:border-white/[0.04]' : ''} ${wrapperClasses}`}
-    >
-      {/* Marker Dot */}
-      <div 
-        className={`w-2.5 h-2.5 rounded-full mr-3 flex-shrink-0 ${rungMarkerColors[rung.type]}`}
-      />
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className={`text-[0.75rem] font-semibold flex items-center gap-1.5 ${isTarget ? 'text-green-500' : 'text-gray-800 dark:text-white/90'}`}>
-          {isTarget && <Target className="w-3 h-3" />}
-          {rung.name}
+      {/* Compact Layout */}
+      <div className="flex gap-2">
+        {/* Left: Labels Column */}
+        <div className="flex flex-col justify-between text-[9px] text-slate-400 dark:text-white/40 font-semibold w-12 shrink-0 py-1">
+          <span className="leading-tight">SELLER<br/>PRICING</span>
+          <span className="leading-tight">INVESTOR<br/>OPPORTUNITY</span>
         </div>
-        <div className="text-[0.65rem] text-gray-500 dark:text-white/40">
-          {rung.description}
+
+        {/* Center: Gradient + Markers */}
+        <div className="flex flex-col items-center shrink-0">
+          <div 
+            className="w-8 rounded-t-full relative"
+            style={{ 
+              height: 200,
+              background: `linear-gradient(to bottom,
+                #e53935 0%, #ff5722 15%, #ff9800 30%,
+                #ffc107 40%, #8bc34a 55%, #4caf50 65%,
+                #26a69a 75%, #00acc1 85%, #1e88e5 100%)`
+            }}
+          >
+            {/* List marker - top right */}
+            <div className="absolute w-2.5 h-2.5 rounded-full bg-red-500 top-[5%] right-[-5px]" />
+            {/* Breakeven marker - middle right */}
+            <div className="absolute w-2.5 h-2.5 rounded-full bg-orange-500 top-[30%] right-[-5px]" />
+            {/* Target marker - lower left */}
+            <div className="absolute w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)] top-[55%] left-[-5px]" />
+          </div>
+          {/* Arrow */}
+          <div style={{
+            width: 0, height: 0,
+            borderLeft: '16px solid transparent',
+            borderRight: '16px solid transparent',
+            borderTop: '28px solid #1565c0',
+          }} />
         </div>
-      </div>
 
-      {/* Price */}
-      <div className={`text-[0.85rem] font-bold ${rungValueColors[rung.type]}`}>
-        {formatCurrency(rung.price)}
-      </div>
+        {/* Right: Price Info */}
+        <div className="flex flex-col justify-between min-w-0 flex-1 py-1">
+          {/* Target - Top */}
+          {targetRung && (
+            <div>
+              <div className="flex items-center gap-0.5 text-green-500 font-bold text-xs">
+                <Target className="w-3 h-3 shrink-0" />
+                <span>Target</span>
+              </div>
+              <div className="text-[9px] text-green-500/80 truncate">{targetRung.description}</div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">{formatCurrency(targetRung.price)}</div>
+            </div>
+          )}
 
-      {/* Percentage */}
-      <div className="text-[0.65rem] text-gray-500 dark:text-white/40 ml-2 w-10 text-right">
-        {Math.round(rung.percentOfList)}%
+          {/* Breakeven - Middle */}
+          {breakevenRung && (
+            <div>
+              <div className="text-xs font-bold text-orange-500">Breakeven</div>
+              <div className="text-[9px] text-slate-500 dark:text-white/50">$0 Cash Flow</div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">{formatCurrency(breakevenRung.price)}</div>
+              <div className="text-[9px] text-slate-500 dark:text-white/50">{Math.round(breakevenRung.percentOfList)}%</div>
+            </div>
+          )}
+
+          {/* List Price - Bottom */}
+          {listRung && (
+            <div>
+              <div className="text-xs font-bold text-red-500">List Price</div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">{formatCurrency(listRung.price)}</div>
+              <div className="text-[9px] text-slate-500 dark:text-white/50">{Math.round(listRung.percentOfList)}%</div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -142,56 +127,20 @@ export function generatePriceLadder(
   const ninetyPercent = listPrice * 0.90
   const openingOffer = listPrice * openingOfferPercent
 
-  // Build the rungs array
   const rungs: PriceRung[] = [
-    {
-      type: 'list',
-      name: 'List Price',
-      description: 'Current asking price',
-      price: listPrice,
-      percentOfList: 100
-    },
-    {
-      type: 'ninety',
-      name: '90% of List',
-      description: 'Common investor threshold',
-      price: ninetyPercent,
-      percentOfList: 90
-    },
-    {
-      type: 'breakeven',
-      name: breakevenName,
-      description: breakevenDescription,
-      price: breakevenPrice,
-      percentOfList: (breakevenPrice / listPrice) * 100
-    },
-    {
-      type: 'target',
-      name: `🎯 ${targetName}`,
-      description: targetDescription,
-      price: targetPrice,
-      percentOfList: (targetPrice / listPrice) * 100,
-      isHighlighted: true
-    },
-    {
-      type: 'offer',
-      name: 'Offer',
-      description: 'Initial offer starting point',
-      price: openingOffer,
-      percentOfList: openingOfferPercent * 100
-    }
+    { type: 'list', name: 'List Price', description: 'Current asking price', price: listPrice, percentOfList: 100 },
+    { type: 'ninety', name: '90% of List', description: 'Common investor threshold', price: ninetyPercent, percentOfList: 90 },
+    { type: 'breakeven', name: breakevenName, description: breakevenDescription, price: breakevenPrice, percentOfList: (breakevenPrice / listPrice) * 100 },
+    { type: 'target', name: `🎯 ${targetName}`, description: targetDescription, price: targetPrice, percentOfList: (targetPrice / listPrice) * 100, isHighlighted: true },
+    { type: 'offer', name: 'Offer', description: 'Initial offer starting point', price: openingOffer, percentOfList: openingOfferPercent * 100 }
   ]
   
-  // Sort by price descending (highest to lowest)
   return rungs.sort((a, b) => b.price - a.price)
 }
 
 /**
- * PriceLadderCompact Component
- * 
- * A horizontal compact version showing just key prices.
+ * PriceLadderCompact - Horizontal version
  */
-
 interface PriceLadderCompactProps {
   listPrice: number
   targetPrice: number
@@ -200,11 +149,8 @@ interface PriceLadderCompactProps {
 
 export function PriceLadderCompact({ listPrice, targetPrice, openingOffer }: PriceLadderCompactProps) {
   const formatCompact = (value: number) => 
-    Math.abs(value) >= 1000000
-      ? `$${(value / 1000000).toFixed(1)}M`
-      : Math.abs(value) >= 1000
-        ? `$${Math.round(value / 1000)}K`
-        : `$${value}`
+    Math.abs(value) >= 1000000 ? `$${(value / 1000000).toFixed(1)}M` :
+    Math.abs(value) >= 1000 ? `$${Math.round(value / 1000)}K` : `$${value}`
 
   const targetPercent = Math.round((targetPrice / listPrice) * 100)
 
