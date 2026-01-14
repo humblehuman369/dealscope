@@ -238,8 +238,8 @@
     /* Summary Cards */
     .summary-cards {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 12px;
+      grid-template-columns: repeat(6, 1fr);
+      gap: clamp(6px, 1vw, 12px);
       margin-bottom: 24px;
     }
     
@@ -557,6 +557,118 @@
       color: var(--brrrr-accent);
     }
     
+    /* ===== PRICING LADDER ===== */
+    .pricing-ladder {
+      position: relative;
+      padding: 16px 0;
+    }
+    
+    .pricing-ladder-track {
+      position: absolute;
+      left: 50%;
+      top: 20px;
+      bottom: 20px;
+      width: 4px;
+      background: linear-gradient(180deg, #10b981 0%, var(--brrrr-accent-light) 50%, var(--brrrr-accent) 100%);
+      border-radius: 2px;
+      transform: translateX(-50%);
+    }
+    
+    .pricing-ladder-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      position: relative;
+    }
+    
+    .pricing-ladder-item.highlight {
+      background: var(--brrrr-accent-bg);
+      margin: 0 -16px;
+      padding: 8px 16px;
+      border-radius: 8px;
+    }
+    
+    .pricing-ladder-label {
+      flex: 1;
+      text-align: right;
+      padding-right: 20px;
+      font-size: 11px;
+      color: var(--ws-text-muted);
+    }
+    
+    .pricing-ladder-marker {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--ws-border);
+      z-index: 1;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .pricing-ladder-marker.arv { border-color: #10b981; background: #10b981; }
+    .pricing-ladder-marker.current { border-color: var(--brrrr-accent); background: var(--brrrr-accent); }
+    .pricing-ladder-marker.refi { border-color: var(--brrrr-accent-light); background: white; }
+    .pricing-ladder-marker.target { border-color: #eab308; background: #eab308; }
+    .pricing-ladder-marker.mao { border-color: var(--iq-teal-dark); background: white; }
+    
+    .pricing-ladder-value {
+      flex: 1;
+      padding-left: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    .pricing-ladder-value.current { color: var(--brrrr-accent); }
+    .pricing-ladder-value.arv { color: #10b981; }
+    .pricing-ladder-value.target { color: #eab308; }
+    
+    .pricing-ladder-hint {
+      display: block;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--ws-text-muted);
+    }
+    
+    .pricing-discount-indicator {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--ws-border-light);
+    }
+    
+    .pricing-discount-bar {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .pricing-discount-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    .pricing-discount-fill.brrrr {
+      background: linear-gradient(90deg, var(--brrrr-accent), var(--brrrr-accent-light));
+    }
+    
+    .pricing-discount-label {
+      font-size: 12px;
+      color: var(--ws-text-secondary);
+      text-align: center;
+    }
+    
+    .pricing-discount-label span {
+      font-weight: 600;
+      color: var(--brrrr-accent);
+    }
+
     /* Mini Stats Grid */
     .mini-stats-grid {
       display: grid;
@@ -1141,6 +1253,11 @@
           <div class="summary-card-value positive">∞%</div>
           <div class="summary-card-subtitle">Infinite if $0 left in</div>
         </div>
+        <div class="summary-card" style="background: linear-gradient(135deg, var(--brrrr-accent-bg) 0%, white 100%);">
+          <div class="summary-card-label">Deal Score</div>
+          <div class="summary-card-value" style="color: var(--brrrr-accent);">92</div>
+          <div class="summary-card-subtitle">Excellent Deal</div>
+        </div>
       </div>
       
       <!-- Purchase & Rehab Section -->
@@ -1569,6 +1686,69 @@
     
     <!-- Charts Sidebar -->
     <aside class="worksheet-charts-sidebar">
+      <!-- Pricing Ladder -->
+      <div class="chart-card">
+        <div class="chart-card-title">Pricing Ladder</div>
+        <div class="pricing-ladder">
+          <div class="pricing-ladder-track"></div>
+          
+          <!-- ARV (After Repair Value) -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">ARV</div>
+            <div class="pricing-ladder-marker arv"></div>
+            <div class="pricing-ladder-value arv" id="ladder-arv">$425,000</div>
+          </div>
+          
+          <!-- Refi Loan Amount (75% LTV) -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">Refi Loan</div>
+            <div class="pricing-ladder-marker refi"></div>
+            <div class="pricing-ladder-value refi" id="ladder-refi">$318,750
+              <span class="pricing-ladder-hint">75% LTV</span>
+            </div>
+          </div>
+          
+          <!-- All-In Cost (Current) -->
+          <div class="pricing-ladder-item highlight">
+            <div class="pricing-ladder-label">All-In Cost</div>
+            <div class="pricing-ladder-marker current">
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="var(--brrrr-accent)">
+                <circle cx="4" cy="4" r="4"/>
+              </svg>
+            </div>
+            <div class="pricing-ladder-value current" id="ladder-all-in">$340,000</div>
+          </div>
+          
+          <!-- Breakeven (100% Cash Out) -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">Breakeven</div>
+            <div class="pricing-ladder-marker target"></div>
+            <div class="pricing-ladder-value target" id="ladder-breakeven">$318,750
+              <span class="pricing-ladder-hint">100% out</span>
+            </div>
+          </div>
+          
+          <!-- MAO (70% of ARV) -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">MAO</div>
+            <div class="pricing-ladder-marker mao"></div>
+            <div class="pricing-ladder-value mao" id="ladder-mao">$297,500
+              <span class="pricing-ladder-hint">70% ARV</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Cash Recovery Indicator -->
+        <div class="pricing-discount-indicator">
+          <div class="pricing-discount-bar">
+            <div class="pricing-discount-fill brrrr" id="recovery-fill" style="width: 94%;"></div>
+          </div>
+          <div class="pricing-discount-label">
+            <span id="recovery-percent">93.8%</span> cash recovered
+          </div>
+        </div>
+      </div>
+      
       <!-- BRRRR Score -->
       <div class="chart-card brrrr-highlight">
         <div class="chart-card-title brrrr">BRRRR Score</div>
