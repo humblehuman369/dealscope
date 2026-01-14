@@ -195,12 +195,28 @@ function PropertyContent() {
     fetchProperty()
   }, [addressParam])
 
-  // Handle strategy selection
+  // Map strategy IDs to worksheet HTML files
+  const WORKSHEET_URLS: Record<StrategyId, string> = {
+    ltr: '/worksheet-preview.html',
+    str: '/worksheet-str.html',
+    brrrr: '/worksheet-brrrr.html',
+    flip: '/worksheet-flip.html',
+    house_hack: '/worksheet-househack.html',
+    wholesale: '/worksheet-wholesale.html',
+  }
+
+  // Handle strategy selection - navigate directly to worksheet
   const handleSelectStrategy = (strategyId: StrategyId) => {
-    setSelectedStrategy(strategyId)
-    // Update URL with strategy param
-    if (addressParam) {
-      router.push(`/property?address=${encodeURIComponent(addressParam)}&strategy=${strategyId}`)
+    const worksheetUrl = WORKSHEET_URLS[strategyId]
+    if (worksheetUrl) {
+      // Navigate to the worksheet HTML file
+      window.location.href = worksheetUrl
+    } else {
+      // Fallback to old behavior if no worksheet exists
+      setSelectedStrategy(strategyId)
+      if (addressParam) {
+        router.push(`/property?address=${encodeURIComponent(addressParam)}&strategy=${strategyId}`)
+      }
     }
   }
 
