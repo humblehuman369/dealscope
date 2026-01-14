@@ -1815,7 +1815,7 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="50000" max="2000000" value="723600" style="--slider-progress: 35%;">
+                <input type="range" class="slider-input" min="400000" max="1100000" value="723600" style="--slider-progress: 46%;">
               </div>
             </div>
             <input type="text" class="slider-value" value="$723,600">
@@ -1824,7 +1824,7 @@
           <!-- Amount Financed - Calculated -->
           <div class="data-row calculated">
             <div class="data-label"><span>Amount Financed</span></div>
-            <div class="value-primary">$578,880</div>
+            <div class="value-primary" id="calc-amount-financed">$578,880</div>
           </div>
           
           <!-- Down Payment with Slider -->
@@ -1838,7 +1838,7 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="5" max="100" value="20" style="--slider-progress: 16%;">
+                <input type="range" class="slider-input" min="5" max="40" value="20" style="--slider-progress: 43%;">
               </div>
             </div>
             <div class="slider-dual-value">
@@ -1889,7 +1889,7 @@
           <!-- Loan Amount - Calculated -->
           <div class="data-row calculated">
             <div class="data-label"><span>Loan Amount</span></div>
-            <div class="value-primary">$578,880</div>
+            <div class="value-primary" id="calc-loan-amount">$578,880</div>
           </div>
           
           <!-- Financing Of - Dropdown -->
@@ -1936,7 +1936,7 @@
             <div class="data-label"><span>Loan Term</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="5" max="30" value="30" step="5" style="--slider-progress: 100%;">
+                <input type="range" class="slider-input" min="10" max="30" value="30" step="5" style="--slider-progress: 100%;">
               </div>
             </div>
             <input type="text" class="slider-value" value="30 years" style="min-width: 80px;">
@@ -1945,7 +1945,7 @@
           <!-- Monthly Payment - Calculated (Highlighted) -->
           <div class="data-row total">
             <div class="data-label"><span>Monthly Payment</span></div>
-            <div class="value-primary">$3,851</div>
+            <div class="value-primary" id="calc-monthly-payment">$3,851</div>
           </div>
         </div>
       </div>
@@ -1992,7 +1992,7 @@
           <!-- Operating Income - Calculated -->
           <div class="data-row total">
             <div class="data-label"><span>Operating Income</span></div>
-            <div class="value-primary">$89,214</div>
+            <div class="value-primary" id="calc-operating-income">$89,214</div>
           </div>
           
           <div class="subsection-header expenses">Operating Expenses</div>
@@ -2126,7 +2126,7 @@
             <div class="data-label"><span>After Repair Value</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="50000" max="2500000" value="795960" style="--slider-progress: 30%;">
+                <input type="range" class="slider-input" min="500000" max="1200000" value="795960" style="--slider-progress: 42%;">
               </div>
             </div>
             <input type="text" class="slider-value" value="$795,960">
@@ -2624,17 +2624,26 @@
       const noi = effectiveIncome - totalOpEx;
       const monthlyRate = (interestRate / 100) / 12;
       const numPayments = loanTerm * 12;
-      const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+      
+      // Calculate monthly payment with NaN protection
+      let monthlyPayment = 0;
+      if (loanAmount > 0 && monthlyRate > 0 && numPayments > 0) {
+        const factor = Math.pow(1 + monthlyRate, numPayments);
+        monthlyPayment = loanAmount * (monthlyRate * factor) / (factor - 1);
+        if (isNaN(monthlyPayment) || !isFinite(monthlyPayment)) {
+          monthlyPayment = 0;
+        }
+      }
       const annualDebtService = monthlyPayment * 12;
       const cashFlow = noi - annualDebtService;
       
-      // Key metrics
-      const capRate = (noi / purchasePrice) * 100;
+      // Key metrics with NaN protection
+      const capRate = purchasePrice > 0 ? (noi / purchasePrice) * 100 : 0;
       const totalCashNeeded = downPaymentAmt + purchaseCosts + rehabCosts;
-      const cocReturn = (cashFlow / totalCashNeeded) * 100;
-      const dscr = noi / annualDebtService;
-      const rentToValue = (grossRentMonthly / purchasePrice) * 100;
-      const ltv = (loanAmount / purchasePrice) * 100;
+      const cocReturn = totalCashNeeded > 0 ? (cashFlow / totalCashNeeded) * 100 : 0;
+      const dscr = annualDebtService > 0 ? noi / annualDebtService : 0;
+      const rentToValue = purchasePrice > 0 ? (grossRentMonthly / purchasePrice) * 100 : 0;
+      const ltv = purchasePrice > 0 ? (loanAmount / purchasePrice) * 100 : 0;
       const equity = arv - purchasePrice;
       
       // Deal Score (simplified algorithm)
@@ -2647,6 +2656,13 @@
       if (rentToValue >= 1) dealScore += 10;
       if (equity > 0) dealScore += Math.min(10, (equity / purchasePrice) * 100);
       dealScore = Math.min(100, Math.max(0, Math.round(dealScore)));
+      
+      // Update calculated fields in the worksheet
+      updateElement('calc-amount-financed', formatCurrency(loanAmount));
+      updateElement('calc-loan-amount', formatCurrency(loanAmount));
+      updateElement('total-cash-needed', formatCurrency(totalCashNeeded));
+      updateElement('calc-monthly-payment', formatCurrency(monthlyPayment));
+      updateElement('calc-operating-income', formatCurrency(effectiveIncome));
       
       // Update sidebar displays
       updateSidebar({
@@ -2962,17 +2978,22 @@
           priceEl.textContent = formatCurrency(property.listPrice);
         }
         
-        // Update slider values based on property data
-        updateSliderByLabel('Purchase Price', property.listPrice);
-        updateSliderByLabel('Monthly Gross Rent', property.monthlyRent);
+        // Update slider values based on property data (adjustRange=true to center sliders)
+        updateSliderByLabel('Purchase Price', property.listPrice, true);
+        updateSliderByLabel('Monthly Gross Rent', property.monthlyRent, true);
         // Property taxes and insurance from API are annual - sliders expect annual
-        updateSliderByLabel('Property Taxes', property.propertyTaxes);
-        updateSliderByLabel('Insurance', property.insurance);
+        updateSliderByLabel('Property Taxes', property.propertyTaxes, true);
+        updateSliderByLabel('Insurance', property.insurance, true);
         
         // Update ARV for pricing ladder
         if (property.arv) {
-          updateSliderByLabel('After Repair Value', property.arv);
+          updateSliderByLabel('After Repair Value', property.arv, true);
           window.propertyARV = property.arv;
+        } else if (property.listPrice) {
+          // If no ARV provided, estimate as 105% of list price
+          const estimatedArv = property.listPrice * 1.05;
+          updateSliderByLabel('After Repair Value', estimatedArv, true);
+          window.propertyARV = estimatedArv;
         }
         
         // Store sqft for per square foot calculations
@@ -2983,8 +3004,8 @@
       }
     }
     
-    function updateSliderByLabel(labelText, value) {
-      if (value === undefined || value === null) return;
+    function updateSliderByLabel(labelText, value, adjustRange = false) {
+      if (value === undefined || value === null || isNaN(value)) return;
       
       const rows = document.querySelectorAll('.data-row.has-slider');
       for (const row of rows) {
@@ -2994,6 +3015,16 @@
           const input = row.querySelector('.slider-value');
           
           if (slider) {
+            // For key monetary sliders, dynamically adjust range to center the value
+            if (adjustRange && (labelText.includes('Price') || labelText.includes('Rent') || labelText.includes('Value') || labelText.includes('Taxes') || labelText.includes('Insurance'))) {
+              // Set min to 50% and max to 150% of value to center it
+              const newMin = Math.round(value * 0.5);
+              const newMax = Math.round(value * 1.5);
+              slider.min = newMin;
+              slider.max = newMax;
+              console.log(`[Slider] "${labelText}" range adjusted: ${newMin}-${newMax}`);
+            }
+            
             const min = parseFloat(slider.min);
             const max = parseFloat(slider.max);
             
@@ -3014,7 +3045,7 @@
           if (input) {
             const displayValue = slider ? parseFloat(slider.value) : value;
             if (label.includes('Rate') || label.includes('%') || label.includes('Vacancy') || label.includes('Mgmt') || label.includes('Maintenance') || label.includes('Capital Expense')) {
-              input.value = displayValue + '%';
+              input.value = displayValue.toFixed(1) + '%';
             } else if (label.includes('Term') || label.includes('years')) {
               input.value = displayValue + ' years';
             } else {
