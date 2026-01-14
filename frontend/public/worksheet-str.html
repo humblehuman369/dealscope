@@ -899,11 +899,11 @@
         Back
       </a>
       <div class="worksheet-property-info">
-        <div class="worksheet-property-title">456 Oceanview Drive</div>
-        <div class="worksheet-property-subtitle">Miami Beach, FL 33139 • 3 BR • 2 BA • 1,800 Sq.Ft.</div>
+        <div class="worksheet-property-title" id="property-title">456 Oceanview Drive</div>
+        <div class="worksheet-property-subtitle" id="property-subtitle">Miami Beach, FL 33139 • 3 BR • 2 BA • 1,800 Sq.Ft.</div>
       </div>
     </div>
-    <div class="worksheet-price-badge">$485,000</div>
+    <div class="worksheet-price-badge" id="property-price-badge">$485,000</div>
   </header>
   
   <!-- Tab Navigation -->
@@ -1953,7 +1953,66 @@
       updateElement('season-winter', Math.round(winter) + '%');
     }
     
-    // Initial calculation
+    // ===== LOAD PROPERTY DATA FROM LOCALSTORAGE =====
+    function loadPropertyData() {
+      try {
+        const storedData = localStorage.getItem('worksheetProperty');
+        if (!storedData) return;
+        
+        const property = JSON.parse(storedData);
+        console.log('[STR Worksheet] Loaded property:', property);
+        
+        const titleEl = document.getElementById('property-title');
+        const subtitleEl = document.getElementById('property-subtitle');
+        const priceEl = document.getElementById('property-price-badge');
+        
+        if (titleEl && property.address) titleEl.textContent = property.address;
+        
+        if (subtitleEl) {
+          const location = `${property.city || ''}, ${property.state || ''} ${property.zipCode || ''}`;
+          const specs = `${property.bedrooms || 0} BR • ${property.bathrooms || 0} BA • ${(property.sqft || 0).toLocaleString()} Sq.Ft.`;
+          subtitleEl.textContent = `${location} • ${specs}`;
+        }
+        
+        if (priceEl && property.listPrice) priceEl.textContent = formatCurrency(property.listPrice);
+        
+        // STR-specific data
+        updateSliderByLabel('Purchase Price', property.listPrice);
+        if (property.averageDailyRate) updateSliderByLabel('Average Daily Rate', property.averageDailyRate);
+        if (property.occupancyRate) updateSliderByLabel('Base Occupancy', property.occupancyRate);
+        
+      } catch (error) {
+        console.error('[STR Worksheet] Error loading property data:', error);
+      }
+    }
+    
+    function updateSliderByLabel(labelText, value) {
+      if (!value) return;
+      const rows = document.querySelectorAll('.data-row.has-slider');
+      for (const row of rows) {
+        const label = row.querySelector('.data-label span')?.textContent || '';
+        if (label.includes(labelText)) {
+          const slider = row.querySelector('.slider-input');
+          const input = row.querySelector('.slider-value');
+          if (slider) {
+            slider.value = value;
+            const min = parseFloat(slider.min), max = parseFloat(slider.max);
+            const progress = ((value - min) / (max - min)) * 100;
+            slider.style.background = `linear-gradient(to right, #f97316 0%, #f97316 ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+          }
+          if (input) {
+            if (label.includes('Occupancy') || label.includes('%')) {
+              input.value = value + '%';
+            } else {
+              input.value = formatCurrency(value);
+            }
+          }
+          break;
+        }
+      }
+    }
+    
+    loadPropertyData();
     recalculateAll();
     
     // ===== STRATEGY DROPDOWN =====
