@@ -1766,7 +1766,7 @@
       <div class="summary-card target-price">
         <div class="summary-card-label">Target Price</div>
         <div class="summary-card-value" id="target-price-value" style="color: var(--iq-teal);">$680,000</div>
-        <div class="summary-card-subtitle">Breakeven Price</div>
+        <div class="summary-card-subtitle">Max Allowable Offer</div>
       </div>
       <div class="summary-card">
         <div class="summary-card-label">Cash Needed</div>
@@ -2895,8 +2895,15 @@
       // MAO (Maximum Allowable Offer) - 70% of ARV minus rehab
       const mao = (arv * 0.7) - rehabCosts;
       
-      // Update Target Price summary card
-      updateElement('target-price-value', formatCurrency(targetPrice));
+      // Cap breakeven at list price (if cash flow is positive enough that breakeven > list, cap it)
+      const cappedBreakeven = Math.min(breakevenPrice, listPrice);
+      
+      // Use MAO as the Target Price (more practical for negotiations)
+      // MAO is the maximum you should pay to ensure a profitable deal
+      const displayTargetPrice = mao > 0 ? mao : cappedBreakeven;
+      
+      // Update Target Price summary card with MAO
+      updateElement('target-price-value', formatCurrency(displayTargetPrice));
       
       // Update Pricing Ladder
       updateElement('ladder-list-price', formatCurrency(listPrice));
@@ -2904,11 +2911,17 @@
       updateElement('ladder-10-coc', formatCurrency(tenPercentCoCPrice));
       updateElement('ladder-mao', formatCurrency(mao));
       
-      // Update target price with hint
+      // Update breakeven in pricing ladder (capped at list price)
       const targetPriceEl = document.getElementById('ladder-target-price');
       if (targetPriceEl) {
-        targetPriceEl.innerHTML = formatCurrency(targetPrice) + 
-          `<span class="pricing-ladder-hint">0% CoC</span>`;
+        if (breakevenPrice > listPrice) {
+          // If breakeven exceeds list price, show list price with note
+          targetPriceEl.innerHTML = formatCurrency(listPrice) + 
+            `<span class="pricing-ladder-hint">Max (positive CF)</span>`;
+        } else {
+          targetPriceEl.innerHTML = formatCurrency(cappedBreakeven) + 
+            `<span class="pricing-ladder-hint">0% CoC</span>`;
+        }
       }
       
       // Update 10% CoC with hint
