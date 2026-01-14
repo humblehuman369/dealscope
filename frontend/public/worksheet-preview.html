@@ -1318,185 +1318,161 @@
       color: var(--ws-text-muted);
     }
     
-    /* ===== PRICING LADDER ===== */
-    .pricing-ladder {
+    /* ===== PRICING SCALE (New Design) ===== */
+    .pricing-scale {
+      padding: 20px 0;
+    }
+    
+    .pricing-scale-bar {
       position: relative;
-      padding: 24px 0 32px;
-      min-height: 400px;
+      height: 8px;
+      background: linear-gradient(90deg, 
+        var(--iq-teal) 0%, 
+        #10b981 25%, 
+        #eab308 50%, 
+        #f97316 75%, 
+        #dc2626 100%);
+      border-radius: 4px;
+      margin: 40px 0 60px;
     }
     
-    .pricing-ladder-track {
+    .pricing-scale-marker {
       position: absolute;
-      left: 50%;
-      top: 40px;
-      bottom: 40px;
-      width: 6px;
-      background: linear-gradient(180deg, 
-        #dc2626 0%, 
-        #f97316 20%, 
-        #eab308 40%, 
-        #10b981 60%, 
-        var(--iq-teal) 100%);
-      border-radius: 3px;
-      transform: translateX(-50%);
-      z-index: 0;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 2;
     }
     
-    /* Your Offer Indicator (Dynamic Slider) */
-    .pricing-ladder-offer-indicator {
+    .pricing-scale-marker-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      margin-bottom: 8px;
+    }
+    
+    .pricing-scale-marker-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--ws-text-muted);
+      margin-bottom: 4px;
+      white-space: nowrap;
+    }
+    
+    .pricing-scale-marker-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ws-text-primary);
+      background: white;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 2px solid;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      white-space: nowrap;
+    }
+    
+    .pricing-scale-marker.mao .pricing-scale-marker-dot {
+      background: var(--iq-teal);
+      border-color: var(--iq-teal);
+    }
+    .pricing-scale-marker.mao .pricing-scale-marker-value {
+      border-color: var(--iq-teal);
+      color: var(--iq-teal);
+    }
+    
+    .pricing-scale-marker.coc .pricing-scale-marker-dot {
+      background: #10b981;
+      border-color: #10b981;
+    }
+    .pricing-scale-marker.coc .pricing-scale-marker-value {
+      border-color: #10b981;
+      color: #10b981;
+    }
+    
+    .pricing-scale-marker.breakeven .pricing-scale-marker-dot {
+      background: #eab308;
+      border-color: #eab308;
+    }
+    .pricing-scale-marker.breakeven .pricing-scale-marker-value {
+      border-color: #eab308;
+      color: #eab308;
+    }
+    
+    .pricing-scale-marker.list .pricing-scale-marker-dot {
+      background: #dc2626;
+      border-color: #dc2626;
+    }
+    .pricing-scale-marker.list .pricing-scale-marker-value {
+      border-color: #dc2626;
+      color: #dc2626;
+    }
+    
+    /* Your Offer Indicator */
+    .pricing-scale-offer {
       position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 50%;
+      transform: translate(-50%, -50%);
       z-index: 10;
       display: flex;
       flex-direction: column;
       align-items: center;
-      pointer-events: none;
-      transition: top 0.3s ease;
     }
     
-    .pricing-ladder-offer-line {
+    .pricing-scale-offer-line {
       width: 3px;
-      height: 50px;
+      height: 60px;
       background: var(--iq-teal);
-      opacity: 0.8;
-      margin-bottom: 6px;
+      border-radius: 2px;
+      margin-bottom: 8px;
+      box-shadow: 0 0 8px rgba(0, 126, 167, 0.4);
     }
     
-    .pricing-ladder-offer-badge {
+    .pricing-scale-offer-badge {
       background: var(--iq-teal);
       color: white;
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: 8px;
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(0, 126, 167, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 126, 167, 0.4);
       border: 2px solid white;
     }
     
-    .pricing-ladder-offer-value {
-      margin-top: 4px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--iq-teal);
-      background: white;
-      padding: 4px 10px;
-      border-radius: 6px;
-      border: 2px solid var(--iq-teal);
-      box-shadow: 0 2px 8px rgba(0, 126, 167, 0.2);
-    }
-    
-    .pricing-ladder-item {
-      display: flex;
-      align-items: center;
-      padding: 12px 0;
-      position: absolute;
-      left: 0;
-      right: 0;
-      z-index: 1;
-      transition: top 0.3s ease;
-    }
-    
-    .pricing-ladder-label {
-      flex: 1;
-      text-align: right;
-      padding-right: 24px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--ws-text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    .pricing-ladder-marker {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: white;
-      border: 4px solid;
-      z-index: 2;
-      flex-shrink: 0;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-      position: relative;
-    }
-    
-    .pricing-ladder-marker.list {
-      border-color: #dc2626;
-      background: #dc2626;
-    }
-    
-    .pricing-ladder-marker.breakeven {
-      border-color: #eab308;
-      background: #eab308;
-    }
-    
-    .pricing-ladder-marker.coc {
-      border-color: #10b981;
-      background: #10b981;
-    }
-    
-    .pricing-ladder-marker.mao {
-      border-color: var(--iq-teal);
-      background: var(--iq-teal);
-    }
-    
-    .pricing-ladder-value {
-      flex: 1;
-      padding-left: 24px;
+    .pricing-scale-offer-value {
+      margin-top: 6px;
       font-size: 14px;
       font-weight: 700;
-      color: var(--ws-text-primary);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    
-    .pricing-ladder-value.list {
-      color: #dc2626;
-    }
-    
-    .pricing-ladder-value.breakeven {
-      color: #eab308;
-    }
-    
-    .pricing-ladder-value.coc {
-      color: #10b981;
-    }
-    
-    .pricing-ladder-value.mao {
       color: var(--iq-teal);
+      background: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 2px solid var(--iq-teal);
+      box-shadow: 0 2px 8px rgba(0, 126, 167, 0.3);
     }
     
-    .pricing-ladder-hint {
-      display: block;
-      font-size: 10px;
-      color: var(--ws-text-muted);
-      font-weight: 500;
-      margin-top: 2px;
-    }
-    
-    .pricing-ladder-summary {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+    .pricing-scale-summary {
+      text-align: center;
       padding-top: 16px;
       border-top: 2px solid var(--ws-border-light);
-      text-align: center;
-      background: white;
-      z-index: 2;
+      margin-top: 20px;
     }
     
-    .pricing-ladder-summary-text {
+    .pricing-scale-summary-text {
       font-size: 13px;
       font-weight: 600;
       color: var(--ws-text-secondary);
     }
     
-    .pricing-ladder-summary-text .highlight {
+    .pricing-scale-summary-text .highlight {
       color: var(--iq-teal);
       font-weight: 700;
     }
@@ -2411,56 +2387,51 @@
     
     <!-- Charts Sidebar - Dynamic Visualizations -->
     <aside class="worksheet-charts-sidebar">
-      <!-- Pricing Ladder -->
+      <!-- Pricing Scale (New Design) -->
       <div class="chart-card">
-        <div class="chart-card-title">Pricing Ladder</div>
-        <div class="pricing-ladder">
-          <div class="pricing-ladder-track">
-            <!-- Dynamic Your Offer Indicator -->
-            <div class="pricing-ladder-offer-indicator" id="offer-indicator">
-              <div class="pricing-ladder-offer-line"></div>
-              <div class="pricing-ladder-offer-badge">Your Offer</div>
-              <div class="pricing-ladder-offer-value" id="offer-indicator-value">$723,600</div>
+        <div class="chart-card-title">Pricing Scale</div>
+        <div class="pricing-scale">
+          <!-- Horizontal Price Bar -->
+          <div class="pricing-scale-bar" id="pricing-scale-bar">
+            <!-- Your Offer Indicator (Dynamic) -->
+            <div class="pricing-scale-offer" id="pricing-offer-indicator">
+              <div class="pricing-scale-offer-line"></div>
+              <div class="pricing-scale-offer-badge">Your Offer</div>
+              <div class="pricing-scale-offer-value" id="pricing-offer-value">$723,600</div>
             </div>
-          </div>
-          
-          <!-- List Price (Top) -->
-          <div class="pricing-ladder-item" id="ladder-list">
-            <div class="pricing-ladder-label">List Price</div>
-            <div class="pricing-ladder-marker list"></div>
-            <div class="pricing-ladder-value list" id="ladder-list-price">$795,000</div>
-          </div>
-          
-          <!-- Breakeven (Only show if below List Price) -->
-          <div class="pricing-ladder-item" id="ladder-breakeven" style="display: none;">
-            <div class="pricing-ladder-label">Breakeven</div>
-            <div class="pricing-ladder-marker breakeven"></div>
-            <div class="pricing-ladder-value breakeven" id="ladder-breakeven-price">$680,000
-              <span class="pricing-ladder-hint">0% CoC</span>
+            
+            <!-- MAO Marker -->
+            <div class="pricing-scale-marker mao" id="pricing-marker-mao">
+              <div class="pricing-scale-marker-dot"></div>
+              <div class="pricing-scale-marker-label">MAO</div>
+              <div class="pricing-scale-marker-value" id="pricing-value-mao">$557,172</div>
             </div>
-          </div>
-          
-          <!-- 10% CoC Target Price -->
-          <div class="pricing-ladder-item" id="ladder-10coc">
-            <div class="pricing-ladder-label">10% CoC</div>
-            <div class="pricing-ladder-marker coc"></div>
-            <div class="pricing-ladder-value coc" id="ladder-10coc-price">$651,240
-              <span class="pricing-ladder-hint">Target Return</span>
+            
+            <!-- 10% CoC Marker -->
+            <div class="pricing-scale-marker coc" id="pricing-marker-coc">
+              <div class="pricing-scale-marker-dot"></div>
+              <div class="pricing-scale-marker-label">10% CoC</div>
+              <div class="pricing-scale-marker-value" id="pricing-value-coc">$651,240</div>
             </div>
-          </div>
-          
-          <!-- MAO (Maximum Allowable Offer) -->
-          <div class="pricing-ladder-item" id="ladder-mao">
-            <div class="pricing-ladder-label">MAO</div>
-            <div class="pricing-ladder-marker mao"></div>
-            <div class="pricing-ladder-value mao" id="ladder-mao-price">$557,172
-              <span class="pricing-ladder-hint">70% ARV - Rehab</span>
+            
+            <!-- Breakeven Marker -->
+            <div class="pricing-scale-marker breakeven" id="pricing-marker-breakeven" style="display: none;">
+              <div class="pricing-scale-marker-dot"></div>
+              <div class="pricing-scale-marker-label">Breakeven</div>
+              <div class="pricing-scale-marker-value" id="pricing-value-breakeven">$680,000</div>
+            </div>
+            
+            <!-- List Price Marker -->
+            <div class="pricing-scale-marker list" id="pricing-marker-list">
+              <div class="pricing-scale-marker-dot"></div>
+              <div class="pricing-scale-marker-label">List Price</div>
+              <div class="pricing-scale-marker-value" id="pricing-value-list">$795,000</div>
             </div>
           </div>
           
           <!-- Summary Text -->
-          <div class="pricing-ladder-summary">
-            <div class="pricing-ladder-summary-text" id="pricing-summary-text">
+          <div class="pricing-scale-summary">
+            <div class="pricing-scale-summary-text" id="pricing-summary-text">
               <span class="highlight" id="pricing-discount">9.0%</span> below list price
             </div>
           </div>
@@ -3011,100 +2982,78 @@
       }
     }
     
-    // Update pricing ladder using backend-calculated values
+    // Update pricing scale using backend-calculated values (New Design)
     function updatePricingLadderFromBackend(purchasePrice, grossRentMonthly, result) {
-      const listPrice = window.propertyListPrice || purchasePrice || purchasePrice;
+      const listPrice = window.propertyListPrice || purchasePrice;
       const mao = result.mao;
       
-      // Get financing terms (these affect breakeven calculation)
+      // Get financing terms for breakeven calculation
       const downPaymentPct = getSliderValue('Down Payment', 20) / 100;
       const interestRate = getSliderValue('Interest Rate', 7) / 100;
       const loanTerm = getSliderValue('Loan Term', 30);
       
       // Calculate NOI from income and expenses (does NOT depend on purchase price)
-      const noi = result.noi; // This comes from backend: effectiveIncome - totalOpEx
+      const noi = result.noi;
       
-      // Calculate breakeven price (where cash flow = 0, i.e., NOI = Debt Service)
-      // Breakeven is the price where: NOI = Monthly Payment × 12
-      // We need to solve for purchase price where debt service equals NOI
+      // Calculate breakeven price (where cash flow = 0)
       let breakevenPrice = calculateBreakevenFromNOI(noi, downPaymentPct, interestRate, loanTerm);
       
-      // Calculate 10% CoC price (approximation - backend can provide this too)
+      // Calculate 10% CoC price
       const tenPctCocPrice = calculateTargetCoCPrice(purchasePrice, grossRentMonthly, 0.10);
       
-      // Fix: Breakeven should never exceed list price
-      if (breakevenPrice > listPrice) {
-        breakevenPrice = listPrice * 0.98; // Set to slightly below list if calculation exceeds it
-      }
-      
       // Collect all price points
-      const pricePoints = [
-        { id: 'list', price: listPrice, label: 'List Price', marker: 'list', valueClass: 'list' },
-        { id: 'breakeven', price: breakevenPrice, label: 'Breakeven', marker: 'breakeven', valueClass: 'breakeven', hint: '0% CoC' },
-        { id: '10coc', price: tenPctCocPrice, label: '10% CoC', marker: 'coc', valueClass: 'coc', hint: 'Target Return' },
-        { id: 'mao', price: mao, label: 'MAO', marker: 'mao', valueClass: 'mao', hint: '70% ARV - Rehab' }
-      ];
+      const prices = {
+        mao: mao,
+        coc: tenPctCocPrice,
+        breakeven: breakevenPrice,
+        list: listPrice,
+        offer: purchasePrice
+      };
       
-      // Sort prices from highest to lowest
-      pricePoints.sort((a, b) => b.price - a.price);
-      
-      // Calculate position range
-      const maxPrice = Math.max(listPrice, breakevenPrice, tenPctCocPrice, mao, purchasePrice);
-      const minPrice = Math.min(listPrice, breakevenPrice, tenPctCocPrice, mao, purchasePrice);
+      // Find min and max for scale
+      const allPrices = [mao, tenPctCocPrice, breakevenPrice, listPrice, purchasePrice].filter(p => p > 0);
+      const minPrice = Math.min(...allPrices);
+      const maxPrice = Math.max(...allPrices);
       const range = maxPrice - minPrice;
       
-      // Helper to calculate vertical position (0% = top, 100% = bottom)
+      // Helper to calculate horizontal position (0% = left, 100% = right)
       function getPosition(price) {
         if (range === 0) return 50;
-        // Higher prices at top (0%), lower prices at bottom (100%)
-        return ((maxPrice - price) / range) * 100;
+        return ((price - minPrice) / range) * 100;
       }
       
-      // Update each price point's position and value
-      pricePoints.forEach((point, index) => {
-        const itemEl = document.getElementById(`ladder-${point.id}`);
-        if (itemEl) {
-          const position = getPosition(point.price);
-          itemEl.style.top = `${position}%`;
-          itemEl.style.display = 'flex'; // Ensure visible
-          
-          // Update price value
-          const valueEl = document.getElementById(`ladder-${point.id}-price`);
-          if (valueEl) {
-            let html = formatCurrency(point.price);
-            if (point.hint) {
-              html += `<span class="pricing-ladder-hint">${point.hint}</span>`;
-            }
-            valueEl.innerHTML = html;
-          }
-          
-          // Show/hide breakeven if it's above list price
-          if (point.id === 'breakeven') {
-            if (breakevenPrice >= listPrice) {
-              itemEl.style.display = 'none';
-            } else {
-              itemEl.style.display = 'flex';
-            }
-          }
-        }
-      });
+      // Update MAO marker
+      updatePriceMarker('mao', mao, getPosition(mao));
       
-      // Position "Your Offer" indicator dynamically
-      const offerIndicator = document.getElementById('offer-indicator');
-      const offerValue = document.getElementById('offer-indicator-value');
+      // Update 10% CoC marker
+      updatePriceMarker('coc', tenPctCocPrice, getPosition(tenPctCocPrice));
+      
+      // Update Breakeven marker (only show if below list price)
+      const breakevenEl = document.getElementById('pricing-marker-breakeven');
+      if (breakevenPrice < listPrice && breakevenPrice > 0) {
+        updatePriceMarker('breakeven', breakevenPrice, getPosition(breakevenPrice));
+        if (breakevenEl) breakevenEl.style.display = 'flex';
+      } else {
+        if (breakevenEl) breakevenEl.style.display = 'none';
+      }
+      
+      // Update List Price marker
+      updatePriceMarker('list', listPrice, getPosition(listPrice));
+      
+      // Update Your Offer indicator
+      const offerIndicator = document.getElementById('pricing-offer-indicator');
+      const offerValue = document.getElementById('pricing-offer-value');
       if (offerIndicator && offerValue) {
         const offerPosition = getPosition(purchasePrice);
-        offerIndicator.style.top = `${offerPosition}%`;
+        offerIndicator.style.left = `${offerPosition}%`;
         offerValue.textContent = formatCurrency(purchasePrice);
       }
       
       // Update summary text
       const discountPct = ((listPrice - purchasePrice) / listPrice * 100).toFixed(1);
       const summaryText = document.getElementById('pricing-summary-text');
-      const discountEl = document.getElementById('pricing-discount');
-      if (summaryText && discountEl) {
+      if (summaryText) {
         if (purchasePrice < listPrice) {
-          discountEl.textContent = `${discountPct}%`;
           summaryText.innerHTML = `<span class="highlight">${discountPct}%</span> below list price`;
         } else if (purchasePrice > listPrice) {
           const premiumPct = ((purchasePrice - listPrice) / listPrice * 100).toFixed(1);
@@ -3114,8 +3063,33 @@
         }
       }
       
+      // Update discount indicator if it exists
+      const discountFill = document.getElementById('discount-fill');
+      const discountPercent = document.getElementById('discount-percent');
+      if (discountFill && purchasePrice < listPrice) {
+        const fillWidth = Math.max(0, Math.min(100, parseFloat(discountPct) * 3));
+        discountFill.style.width = fillWidth + '%';
+      }
+      if (discountPercent && purchasePrice < listPrice) {
+        discountPercent.textContent = discountPct + '%';
+      }
+      
       // Update summary card for MAO/Target Price
       updateElement('target-price-value', formatCurrency(mao));
+    }
+    
+    // Helper function to update a price marker
+    function updatePriceMarker(type, price, position) {
+      const markerEl = document.getElementById(`pricing-marker-${type}`);
+      const valueEl = document.getElementById(`pricing-value-${type}`);
+      
+      if (markerEl) {
+        markerEl.style.left = `${position}%`;
+      }
+      
+      if (valueEl) {
+        valueEl.textContent = formatCurrency(price);
+      }
     }
     
     // Helper: Calculate price for 10% CoC return (local fallback)
@@ -3410,123 +3384,6 @@
     }
     
     // ===== PRICING LADDER CALCULATIONS =====
-    function updatePricingLadder(purchasePrice, grossRentMonthly, totalOpEx, annualDebtService) {
-      // Get dynamic values from sliders
-      const arv = getSliderValue('After Repair Value', 795960);
-      const downPaymentPct = getSliderValue('Down Payment', 20);
-      const interestRate = getSliderValue('Interest Rate', 7);
-      const loanTerm = getSliderValue('Loan Term', 30);
-      const purchaseCosts = getSliderValue('Purchase Costs', 21708);
-      const rehabCosts = getSliderValue('Rehab Costs', 0);
-      
-      // Get stored list price from property data, or estimate from purchase price
-      const listPrice = window.propertyListPrice || (purchasePrice * 1.05);
-      
-      // Calculate NOI
-      const grossRentAnnual = grossRentMonthly * 12;
-      const vacancyPct = getSliderValue('Vacancy', 8);
-      const effectiveIncome = grossRentAnnual * (1 - vacancyPct / 100);
-      const noi = effectiveIncome - totalOpEx;
-      
-      // Calculate breakeven price (where cash flow = 0)
-      // At breakeven: NOI = Annual Debt Service
-      // We need to find the price where mortgage payment equals NOI
-      const monthlyNoi = noi / 12;
-      const monthlyRate = (interestRate / 100) / 12;
-      const numPayments = loanTerm * 12;
-      
-      // Max loan where monthly payment = monthly NOI
-      // Payment = Loan * [r(1+r)^n] / [(1+r)^n - 1]
-      // Solving for Loan: Loan = Payment * [(1+r)^n - 1] / [r(1+r)^n]
-      let breakevenPrice = 0;
-      if (monthlyRate > 0 && monthlyNoi > 0) {
-        const factor = Math.pow(1 + monthlyRate, numPayments);
-        const maxLoan = monthlyNoi * (factor - 1) / (monthlyRate * factor);
-        // Price = Loan / (1 - downPaymentPct)
-        const ltvPct = (100 - downPaymentPct) / 100;
-        breakevenPrice = ltvPct > 0 ? maxLoan / ltvPct : 0;
-      }
-      const targetPrice = Math.round(breakevenPrice / 1000) * 1000;
-      
-      // Calculate price for 10% CoC return
-      // CoC = Cash Flow / Cash Invested
-      // 10% = (NOI - Debt Service) / (Down Payment + Closing Costs + Rehab)
-      // Solving for price that gives 10% CoC
-      const targetCocReturn = 0.10;
-      let tenPercentCoCPrice = purchasePrice * 0.85; // Default fallback
-      if (monthlyRate > 0 && noi > 0) {
-        // Iterative approach - find price where CoC = 10%
-        // For simplicity, estimate: price where cash flow = 10% of cash invested
-        const estimatedCashInvested = purchasePrice * (downPaymentPct / 100) + purchaseCosts + rehabCosts;
-        const requiredCashFlow = estimatedCashInvested * targetCocReturn;
-        const requiredMonthlyPayment = (noi - requiredCashFlow) / 12;
-        if (requiredMonthlyPayment > 0) {
-          const factor = Math.pow(1 + monthlyRate, numPayments);
-          const loan10 = requiredMonthlyPayment * (factor - 1) / (monthlyRate * factor);
-          const ltvPct = (100 - downPaymentPct) / 100;
-          tenPercentCoCPrice = ltvPct > 0 ? loan10 / ltvPct : purchasePrice * 0.85;
-        }
-      }
-      
-      // MAO (Maximum Allowable Offer) - 70% of ARV minus rehab
-      const mao = (arv * 0.7) - rehabCosts;
-      
-      // Cap breakeven at list price (if cash flow is positive enough that breakeven > list, cap it)
-      const cappedBreakeven = Math.min(breakevenPrice, listPrice);
-      
-      // Use MAO as the Target Price (more practical for negotiations)
-      // MAO is the maximum you should pay to ensure a profitable deal
-      const displayTargetPrice = mao > 0 ? mao : cappedBreakeven;
-      
-      // Update Target Price summary card with MAO
-      updateElement('target-price-value', formatCurrency(displayTargetPrice));
-      
-      // Update Pricing Ladder
-      updateElement('ladder-list-price', formatCurrency(listPrice));
-      updateElement('ladder-current-price', formatCurrency(purchasePrice));
-      updateElement('ladder-10-coc', formatCurrency(tenPercentCoCPrice));
-      updateElement('ladder-mao', formatCurrency(mao));
-      
-      // Update breakeven in pricing ladder (capped at list price)
-      const targetPriceEl = document.getElementById('ladder-target-price');
-      if (targetPriceEl) {
-        if (breakevenPrice > listPrice) {
-          // If breakeven exceeds list price, show list price with note
-          targetPriceEl.innerHTML = formatCurrency(listPrice) + 
-            `<span class="pricing-ladder-hint">Max (positive CF)</span>`;
-        } else {
-          targetPriceEl.innerHTML = formatCurrency(cappedBreakeven) + 
-            `<span class="pricing-ladder-hint">0% CoC</span>`;
-        }
-      }
-      
-      // Update 10% CoC with hint
-      const cocPriceEl = document.getElementById('ladder-10-coc');
-      if (cocPriceEl) {
-        cocPriceEl.innerHTML = formatCurrency(tenPercentCoCPrice) + 
-          `<span class="pricing-ladder-hint">Target</span>`;
-      }
-      
-      // Update MAO with hint
-      const maoEl = document.getElementById('ladder-mao');
-      if (maoEl) {
-        maoEl.innerHTML = formatCurrency(mao) + 
-          `<span class="pricing-ladder-hint">70% ARV</span>`;
-      }
-      
-      // Update discount indicator
-      const discountPct = ((listPrice - purchasePrice) / listPrice * 100).toFixed(1);
-      const discountFill = document.getElementById('discount-fill');
-      const discountPercent = document.getElementById('discount-percent');
-      
-      if (discountFill) {
-        const fillWidth = Math.max(0, Math.min(100, parseFloat(discountPct) * 3)); // Scale for visual
-        discountFill.style.width = fillWidth + '%';
-      }
-      if (discountPercent) {
-        discountPercent.textContent = discountPct + '%';
-      }
-    }
     
     // Add hover effect to slider rows
     document.querySelectorAll('.data-row.has-slider').forEach(row => {
