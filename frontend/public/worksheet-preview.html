@@ -1902,7 +1902,7 @@
                 <option value="arv">After Repair Value</option>
               </select>
             </div>
-            <span class="value-primary" style="min-width: 60px;">80%</span>
+            <span class="value-primary" id="calc-ltv-pct" style="min-width: 60px;">60%</span>
           </div>
           
           <!-- Loan Type - Dropdown -->
@@ -1953,7 +1953,7 @@
       <!-- Cash Flow Section -->
       <div class="section-card">
         <div class="section-header">
-          <span class="section-title">Cash Flow (Year 1) - Yearly</span>
+          <span class="section-title">Cash Flow (Year 1)</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
             <path d="M18 15l-6-6-6 6"/>
           </svg>
@@ -2568,19 +2568,24 @@
       
       if (!secondarySpan) return;
       
+      // Get actual values from sliders for calculations
+      const purchasePrice = getSliderValue('Purchase Price', 723600);
+      const grossRentMonthly = getSliderValue('Monthly Gross Rent', 8081);
+      const grossRentAnnual = grossRentMonthly * 12;
+      
       // Examples of secondary calculations
       if (label.includes('Gross Rent') || label.includes('Monthly Gross Rent')) {
         secondarySpan.textContent = formatCurrency(value * 12) + '/yr';
       } else if (label.includes('Down Payment')) {
-        const purchasePrice = parseCurrency(document.querySelector('[data-field="purchase-price"]')?.value || '723600');
         secondarySpan.textContent = formatCurrency(purchasePrice * (value / 100));
       } else if (label.includes('Vacancy')) {
-        const grossRent = parseCurrency(document.querySelector('[data-field="gross-rent"]')?.value || '8081') * 12;
-        secondarySpan.textContent = '-' + formatCurrency(grossRent * (value / 100));
+        secondarySpan.textContent = '-' + formatCurrency(grossRentAnnual * (value / 100));
         secondarySpan.classList.add('value-negative');
       } else if (label.includes('Mgmt') || label.includes('Maintenance') || label.includes('Capital Expense')) {
-        const grossRent = parseCurrency(document.querySelector('[data-field="gross-rent"]')?.value || '8081') * 12;
-        secondarySpan.textContent = formatCurrency(grossRent * (value / 100));
+        // These are calculated on effective income (after vacancy), not gross rent
+        const vacancyPct = getSliderValue('Vacancy', 8);
+        const effectiveIncome = grossRentAnnual * (1 - vacancyPct / 100);
+        secondarySpan.textContent = formatCurrency(effectiveIncome * (value / 100));
       }
     }
     
@@ -2663,6 +2668,9 @@
       updateElement('total-cash-needed', formatCurrency(totalCashNeeded));
       updateElement('calc-monthly-payment', formatCurrency(monthlyPayment));
       updateElement('calc-operating-income', formatCurrency(effectiveIncome));
+      
+      // Update LTV percentage in Financing section (LTV = 100% - Down Payment %)
+      updateElement('calc-ltv-pct', ltv.toFixed(0) + '%');
       
       // Update sidebar displays
       updateSidebar({
@@ -2986,14 +2994,19 @@
         updateSliderByLabel('Insurance', property.insurance, true);
         
         // Update ARV for pricing ladder
-        if (property.arv) {
+        // ARV formula: AVM (list price as proxy) + (2 × Rehab Costs)
+        const rehabCosts = getSliderValue('Rehab Costs', 0);
+        const avm = property.listPrice || 723600;
+        const calculatedArv = avm + (2 * rehabCosts);
+        
+        if (property.arv && property.arv > avm) {
+          // Use provided ARV if it's higher than AVM
           updateSliderByLabel('After Repair Value', property.arv, true);
           window.propertyARV = property.arv;
-        } else if (property.listPrice) {
-          // If no ARV provided, estimate as 105% of list price
-          const estimatedArv = property.listPrice * 1.05;
-          updateSliderByLabel('After Repair Value', estimatedArv, true);
-          window.propertyARV = estimatedArv;
+        } else {
+          // Default: ARV = AVM + (2 × Rehab Costs)
+          updateSliderByLabel('After Repair Value', calculatedArv, true);
+          window.propertyARV = calculatedArv;
         }
         
         // Store sqft for per square foot calculations
