@@ -1861,7 +1861,7 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="500000" max="900000" value="723600" style="--slider-progress: 56%;">
+                <input type="range" class="slider-input" min="50000" max="2000000" value="723600" style="--slider-progress: 35%;">
               </div>
             </div>
             <input type="text" class="slider-value" value="$723,600">
@@ -2012,7 +2012,7 @@
             <div class="data-label"><span>Gross Rent</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="4000" max="12000" value="8081" style="--slider-progress: 51%;">
+                <input type="range" class="slider-input" min="500" max="15000" value="8081" style="--slider-progress: 52%;">
               </div>
             </div>
             <div class="slider-dual-value">
@@ -2160,7 +2160,7 @@
             <div class="data-label"><span>After Repair Value</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="600000" max="1000000" value="795960" style="--slider-progress: 49%;">
+                <input type="range" class="slider-input" min="50000" max="2500000" value="795960" style="--slider-progress: 30%;">
               </div>
             </div>
             <input type="text" class="slider-value" value="$795,960">
@@ -2955,12 +2955,13 @@
         // Update slider values based on property data
         updateSliderByLabel('Purchase Price', property.listPrice);
         updateSliderByLabel('Gross Rent', property.monthlyRent);
-        updateSliderByLabel('Property Taxes', Math.round((property.propertyTaxes || 4248) / 12));
-        updateSliderByLabel('Insurance', Math.round((property.insurance || 2100) / 12));
+        // Property taxes and insurance from API are annual - sliders expect annual
+        updateSliderByLabel('Property Taxes', property.propertyTaxes);
+        updateSliderByLabel('Insurance', property.insurance);
         
         // Update ARV for pricing ladder
         if (property.arv) {
-          // Store ARV for calculations
+          updateSliderByLabel('After Repair Value', property.arv);
           window.propertyARV = property.arv;
         }
         
@@ -2970,7 +2971,7 @@
     }
     
     function updateSliderByLabel(labelText, value) {
-      if (!value) return;
+      if (value === undefined || value === null) return;
       
       const rows = document.querySelectorAll('.data-row.has-slider');
       for (const row of rows) {
@@ -2980,21 +2981,31 @@
           const input = row.querySelector('.slider-value');
           
           if (slider) {
-            slider.value = value;
-            // Update slider visual
             const min = parseFloat(slider.min);
             const max = parseFloat(slider.max);
-            const progress = ((value - min) / (max - min)) * 100;
+            
+            // Clamp value to slider range
+            const clampedValue = Math.min(max, Math.max(min, value));
+            slider.value = clampedValue;
+            
+            // Update slider visual with clamped progress
+            const progress = Math.min(100, Math.max(0, ((clampedValue - min) / (max - min)) * 100));
             slider.style.background = `linear-gradient(to right, var(--iq-teal) 0%, var(--iq-teal) ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+            
+            // Log if value was clamped
+            if (clampedValue !== value) {
+              console.warn(`[Slider] "${labelText}" value ${value} clamped to ${clampedValue} (range: ${min}-${max})`);
+            }
           }
           
           if (input) {
-            if (label.includes('Rate') || label.includes('%')) {
-              input.value = value + '%';
+            const displayValue = slider ? parseFloat(slider.value) : value;
+            if (label.includes('Rate') || label.includes('%') || label.includes('Vacancy') || label.includes('Mgmt') || label.includes('Maintenance') || label.includes('CapEx')) {
+              input.value = displayValue + '%';
             } else if (label.includes('Term') || label.includes('years')) {
-              input.value = value + ' years';
+              input.value = displayValue + ' years';
             } else {
-              input.value = formatCurrency(value);
+              input.value = formatCurrency(displayValue);
             }
           }
           

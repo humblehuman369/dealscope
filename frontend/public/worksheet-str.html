@@ -1132,7 +1132,7 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="200000" max="800000" value="485000">
+                <input type="range" class="slider-input" min="50000" max="2000000" value="485000">
               </div>
             </div>
             <input type="text" class="slider-value" value="$485,000">
@@ -1987,7 +1987,7 @@
     }
     
     function updateSliderByLabel(labelText, value) {
-      if (!value) return;
+      if (value === undefined || value === null) return;
       const rows = document.querySelectorAll('.data-row.has-slider');
       for (const row of rows) {
         const label = row.querySelector('.data-label span')?.textContent || '';
@@ -1995,16 +1995,21 @@
           const slider = row.querySelector('.slider-input');
           const input = row.querySelector('.slider-value');
           if (slider) {
-            slider.value = value;
             const min = parseFloat(slider.min), max = parseFloat(slider.max);
-            const progress = ((value - min) / (max - min)) * 100;
+            const clampedValue = Math.min(max, Math.max(min, value));
+            slider.value = clampedValue;
+            const progress = Math.min(100, Math.max(0, ((clampedValue - min) / (max - min)) * 100));
             slider.style.background = `linear-gradient(to right, #f97316 0%, #f97316 ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+            if (clampedValue !== value) {
+              console.warn(`[STR Slider] "${labelText}" value ${value} clamped to ${clampedValue} (range: ${min}-${max})`);
+            }
           }
           if (input) {
-            if (label.includes('Occupancy') || label.includes('%')) {
-              input.value = value + '%';
+            const displayValue = slider ? parseFloat(slider.value) : value;
+            if (label.includes('Occupancy') || label.includes('%') || label.includes('Rate') && !label.includes('Daily')) {
+              input.value = displayValue + '%';
             } else {
-              input.value = formatCurrency(value);
+              input.value = formatCurrency(displayValue);
             }
           }
           break;

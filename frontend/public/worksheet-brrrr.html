@@ -1286,7 +1286,7 @@
             <div class="data-label"><span>Purchase Price</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="150000" max="400000" value="285000">
+                <input type="range" class="slider-input" min="25000" max="1500000" value="285000">
               </div>
             </div>
             <input type="text" class="slider-value" value="$285,000">
@@ -1377,7 +1377,7 @@
             <div class="data-label"><span>After Repair Value</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input brrrr" min="300000" max="500000" value="425000">
+                <input type="range" class="slider-input brrrr" min="50000" max="2000000" value="425000">
               </div>
             </div>
             <input type="text" class="slider-value" value="$425,000">
@@ -1573,7 +1573,7 @@
             <div class="data-label"><span>Monthly Rent</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="1500" max="4000" value="2800">
+                <input type="range" class="slider-input" min="500" max="10000" value="2800">
               </div>
             </div>
             <div class="slider-dual-value">
@@ -2239,7 +2239,7 @@
     }
     
     function updateSliderByLabel(labelText, value) {
-      if (!value) return;
+      if (value === undefined || value === null) return;
       
       const rows = document.querySelectorAll('.data-row.has-slider');
       for (const row of rows) {
@@ -2249,20 +2249,25 @@
           const input = row.querySelector('.slider-value');
           
           if (slider) {
-            slider.value = value;
             const min = parseFloat(slider.min);
             const max = parseFloat(slider.max);
-            const progress = ((value - min) / (max - min)) * 100;
+            const clampedValue = Math.min(max, Math.max(min, value));
+            slider.value = clampedValue;
+            const progress = Math.min(100, Math.max(0, ((clampedValue - min) / (max - min)) * 100));
             slider.style.background = `linear-gradient(to right, #7c3aed 0%, #7c3aed ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+            if (clampedValue !== value) {
+              console.warn(`[BRRRR Slider] "${labelText}" value ${value} clamped to ${clampedValue} (range: ${min}-${max})`);
+            }
           }
           
           if (input) {
-            if (label.includes('Rate') || label.includes('%')) {
-              input.value = value + '%';
+            const displayValue = slider ? parseFloat(slider.value) : value;
+            if (label.includes('Rate') || label.includes('%') || label.includes('LTV') || label.includes('Vacancy')) {
+              input.value = displayValue + '%';
             } else if (label.includes('Term') || label.includes('years') || label.includes('Months')) {
-              input.value = value + (label.includes('Months') ? ' months' : ' years');
+              input.value = displayValue + (label.includes('Months') ? ' months' : ' years');
             } else {
-              input.value = formatCurrency(value);
+              input.value = formatCurrency(displayValue);
             }
           }
           break;
