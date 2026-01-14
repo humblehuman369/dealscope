@@ -1318,146 +1318,78 @@
       color: var(--ws-text-muted);
     }
     
-    /* ===== PRICING SCALE (New Design) ===== */
+    /* ===== PRICING SCALE (Vertical Design) ===== */
     .pricing-scale {
       padding: 20px 0;
+      display: flex;
+      align-items: stretch;
+      gap: 20px;
+      min-height: 400px;
     }
     
-    .pricing-scale-bar {
-      position: relative;
-      height: 8px;
-      background: linear-gradient(90deg, 
-        var(--iq-teal) 0%, 
-        #10b981 25%, 
-        #eab308 50%, 
-        #f97316 75%, 
-        #dc2626 100%);
-      border-radius: 4px;
-      margin: 60px 0 60px; /* Increased top margin for Your Offer above */
-    }
-    
-    /* Regular markers (MAO, CoC, Breakeven, List Price) - BELOW the bar */
-    .pricing-scale-marker {
-      position: absolute;
-      top: 100%; /* Position below the bar */
-      transform: translateX(-50%);
+    /* Left side - Your Offer indicator and zone highlighting */
+    .pricing-scale-offer-section {
+      flex: 0 0 140px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      z-index: 2;
-      margin-top: 12px; /* Space between bar and markers */
-    }
-    
-    .pricing-scale-marker-dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      border: 3px solid white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      margin-bottom: 8px;
-      order: 1; /* Dot first (at top, closest to bar) */
+      justify-content: space-between;
       position: relative;
     }
     
-    /* Add connecting line from bar to dot */
-    .pricing-scale-marker-dot::before {
-      content: '';
+    .pricing-scale-zones {
       position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 12px;
-      background: var(--ws-border);
-      opacity: 0.4;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 0 10px;
     }
     
-    .pricing-scale-marker-label {
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--ws-text-muted);
-      margin-bottom: 4px;
-      white-space: nowrap;
-      order: 2; /* Label second */
+    .pricing-scale-zone {
+      flex: 1;
+      border-radius: 8px;
+      margin: 4px 0;
+      transition: all 0.3s ease;
+      opacity: 0.1;
     }
     
-    .pricing-scale-marker-value {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--ws-text-primary);
-      background: white;
-      padding: 4px 8px;
-      border-radius: 6px;
+    .pricing-scale-zone.active {
+      opacity: 0.25;
       border: 2px solid;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      white-space: nowrap;
-      order: 3; /* Value last */
     }
     
-    .pricing-scale-marker.mao .pricing-scale-marker-dot {
+    .pricing-scale-zone.wholesale {
       background: var(--iq-teal);
       border-color: var(--iq-teal);
     }
-    .pricing-scale-marker.mao .pricing-scale-marker-value {
-      border-color: var(--iq-teal);
-      color: var(--iq-teal);
-    }
     
-    .pricing-scale-marker.coc .pricing-scale-marker-dot {
-      background: #10b981;
-      border-color: #10b981;
-    }
-    .pricing-scale-marker.coc .pricing-scale-marker-value {
-      border-color: #10b981;
-      color: #10b981;
-    }
-    
-    .pricing-scale-marker.breakeven .pricing-scale-marker-dot {
+    .pricing-scale-zone.breakeven {
       background: #eab308;
       border-color: #eab308;
     }
-    .pricing-scale-marker.breakeven .pricing-scale-marker-value {
-      border-color: #eab308;
-      color: #eab308;
-    }
     
-    .pricing-scale-marker.list .pricing-scale-marker-dot {
+    .pricing-scale-zone.list {
       background: #dc2626;
       border-color: #dc2626;
     }
-    .pricing-scale-marker.list .pricing-scale-marker-value {
-      border-color: #dc2626;
-      color: #dc2626;
-    }
     
-    /* Your Offer Indicator - ABOVE the bar */
-    .pricing-scale-offer {
+    .pricing-scale-offer-indicator {
       position: absolute;
-      bottom: 100%; /* Position above the bar */
-      transform: translateX(-50%);
+      left: 50%;
+      transform: translate(-50%, -50%);
       z-index: 10;
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-bottom: 12px; /* Space between indicator and bar */
-    }
-    
-    .pricing-scale-offer-line {
-      width: 3px;
-      height: 12px; /* Line connecting badge/value to bar */
-      background: var(--iq-teal);
-      border-radius: 2px;
-      box-shadow: 0 0 8px rgba(0, 126, 167, 0.4);
-      order: 3; /* Line last (at bottom, connecting to bar) */
-      margin-top: 6px; /* Space between value and line */
     }
     
     .pricing-scale-offer-badge {
       background: var(--iq-teal);
       color: white;
-      padding: 6px 14px;
+      padding: 8px 16px;
       border-radius: 8px;
       font-size: 11px;
       font-weight: 700;
@@ -1466,20 +1398,118 @@
       white-space: nowrap;
       box-shadow: 0 4px 12px rgba(0, 126, 167, 0.4);
       border: 2px solid white;
-      order: 1; /* Badge first (at top) */
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
     
     .pricing-scale-offer-value {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 700;
       color: var(--iq-teal);
       background: white;
-      padding: 6px 12px;
+      padding: 8px 14px;
       border-radius: 8px;
       border: 2px solid var(--iq-teal);
       box-shadow: 0 2px 8px rgba(0, 126, 167, 0.3);
-      order: 2; /* Value second (middle) */
+    }
+    
+    .pricing-scale-offer-line {
+      width: 3px;
+      height: 20px;
+      background: var(--iq-teal);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(0, 126, 167, 0.4);
+      margin-top: 8px;
+    }
+    
+    /* Right side - Vertical bar with thresholds */
+    .pricing-scale-bar-section {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .pricing-scale-bar {
+      position: relative;
+      flex: 1;
+      width: 12px;
+      background: linear-gradient(180deg, 
+        #dc2626 0%,     /* Red at top (List Price) */
+        #f97316 33%,    /* Orange */
+        #eab308 66%,    /* Yellow (Breakeven) */
+        var(--iq-teal) 100%); /* Teal at bottom (Wholesale) */
+      border-radius: 6px;
+      margin: 0 auto;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Threshold markers on the right */
+    .pricing-scale-thresholds {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 140px;
+      padding: 8px 0;
+    }
+    
+    .pricing-scale-threshold {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      position: absolute;
+      right: 0;
+      transform: translateY(-50%);
+    }
+    
+    .pricing-scale-threshold-line {
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 8px;
+      height: 2px;
+      background: currentColor;
+    }
+    
+    .pricing-scale-threshold-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--ws-text-muted);
+      margin-bottom: 4px;
+      margin-left: 4px;
+    }
+    
+    .pricing-scale-threshold-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ws-text-primary);
+      background: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 2px solid;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-left: 4px;
+    }
+    
+    .pricing-scale-threshold.wholesale .pricing-scale-threshold-line,
+    .pricing-scale-threshold.wholesale .pricing-scale-threshold-value {
+      color: var(--iq-teal);
+      border-color: var(--iq-teal);
+    }
+    
+    .pricing-scale-threshold.breakeven .pricing-scale-threshold-line,
+    .pricing-scale-threshold.breakeven .pricing-scale-threshold-value {
+      color: #eab308;
+      border-color: #eab308;
+    }
+    
+    .pricing-scale-threshold.list .pricing-scale-threshold-line,
+    .pricing-scale-threshold.list .pricing-scale-threshold-value {
+      color: #dc2626;
+      border-color: #dc2626;
     }
     
     .pricing-scale-summary {
@@ -2414,48 +2444,44 @@
       <div class="chart-card">
         <div class="chart-card-title">Pricing Scale</div>
         <div class="pricing-scale">
-          <!-- Horizontal Price Bar -->
-          <div class="pricing-scale-bar" id="pricing-scale-bar">
-            <!-- Your Offer Indicator (Dynamic) - ABOVE the bar -->
-            <div class="pricing-scale-offer" id="pricing-offer-indicator">
+          <!-- Left side - Your Offer indicator and zone highlighting -->
+          <div class="pricing-scale-offer-section">
+            <div class="pricing-scale-zones">
+              <div class="pricing-scale-zone wholesale" id="zone-wholesale"></div>
+              <div class="pricing-scale-zone breakeven" id="zone-breakeven"></div>
+              <div class="pricing-scale-zone list" id="zone-list"></div>
+            </div>
+            <div class="pricing-scale-offer-indicator" id="pricing-offer-indicator">
               <div class="pricing-scale-offer-badge">Your Offer</div>
-              <div class="pricing-scale-offer-value" id="pricing-offer-value">$723,600</div>
+              <div class="pricing-scale-offer-value" id="pricing-offer-value">$1,123,400</div>
               <div class="pricing-scale-offer-line"></div>
-            </div>
-            
-            <!-- MAO Marker -->
-            <div class="pricing-scale-marker mao" id="pricing-marker-mao">
-              <div class="pricing-scale-marker-dot"></div>
-              <div class="pricing-scale-marker-label">MAO</div>
-              <div class="pricing-scale-marker-value" id="pricing-value-mao">$557,172</div>
-            </div>
-            
-            <!-- 10% CoC Marker -->
-            <div class="pricing-scale-marker coc" id="pricing-marker-coc">
-              <div class="pricing-scale-marker-dot"></div>
-              <div class="pricing-scale-marker-label">10% CoC</div>
-              <div class="pricing-scale-marker-value" id="pricing-value-coc">$651,240</div>
-            </div>
-            
-            <!-- Breakeven Marker -->
-            <div class="pricing-scale-marker breakeven" id="pricing-marker-breakeven" style="display: none;">
-              <div class="pricing-scale-marker-dot"></div>
-              <div class="pricing-scale-marker-label">Breakeven</div>
-              <div class="pricing-scale-marker-value" id="pricing-value-breakeven">$680,000</div>
-            </div>
-            
-            <!-- List Price Marker -->
-            <div class="pricing-scale-marker list" id="pricing-marker-list">
-              <div class="pricing-scale-marker-dot"></div>
-              <div class="pricing-scale-marker-label">List Price</div>
-              <div class="pricing-scale-marker-value" id="pricing-value-list">$795,000</div>
             </div>
           </div>
           
-          <!-- Summary Text -->
-          <div class="pricing-scale-summary">
-            <div class="pricing-scale-summary-text" id="pricing-summary-text">
-              <span class="highlight" id="pricing-discount">9.0%</span> below list price
+          <!-- Right side - Vertical bar with thresholds -->
+          <div class="pricing-scale-bar-section">
+            <div class="pricing-scale-bar" id="pricing-scale-bar"></div>
+            <div class="pricing-scale-thresholds">
+              <!-- Wholesale (bottom) -->
+              <div class="pricing-scale-threshold wholesale" id="pricing-threshold-wholesale">
+                <div class="pricing-scale-threshold-line"></div>
+                <div class="pricing-scale-threshold-label">Wholesale</div>
+                <div class="pricing-scale-threshold-value" id="pricing-value-wholesale">$557,172</div>
+              </div>
+              
+              <!-- Breakeven (center) -->
+              <div class="pricing-scale-threshold breakeven" id="pricing-threshold-breakeven">
+                <div class="pricing-scale-threshold-line"></div>
+                <div class="pricing-scale-threshold-label">Breakeven</div>
+                <div class="pricing-scale-threshold-value" id="pricing-value-breakeven">$976,346</div>
+              </div>
+              
+              <!-- List Price (top) -->
+              <div class="pricing-scale-threshold list" id="pricing-threshold-list">
+                <div class="pricing-scale-threshold-line"></div>
+                <div class="pricing-scale-threshold-label">List Price</div>
+                <div class="pricing-scale-threshold-value" id="pricing-value-list">$1,484,519</div>
+              </div>
             </div>
           </div>
         </div>
@@ -3007,101 +3033,97 @@
     
     // Update pricing scale using backend-calculated values (New Design)
     function updatePricingLadderFromBackend(purchasePrice, grossRentMonthly, result) {
-      const listPrice = window.propertyListPrice || purchasePrice;
-      const mao = result.mao;
+      // Get threshold prices - using user's specified values or calculating them
+      const wholesalePrice = result.mao || 557172; // MAO = Wholesale threshold
       
-      // Get financing terms for breakeven calculation
-      const downPaymentPct = getSliderValue('Down Payment', 20) / 100;
-      const interestRate = getSliderValue('Interest Rate', 7) / 100;
-      const loanTerm = getSliderValue('Loan Term', 30);
+      // Calculate breakeven if not provided in result
+      let breakevenPrice = result.breakeven_price;
+      if (!breakevenPrice && result.noi) {
+        const downPaymentPct = getSliderValue('Down Payment', 20) / 100;
+        const interestRate = getSliderValue('Interest Rate', 7) / 100;
+        const loanTerm = getSliderValue('Loan Term', 30);
+        breakevenPrice = calculateBreakevenFromNOI(result.noi, downPaymentPct, interestRate, loanTerm);
+      }
+      if (!breakevenPrice) breakevenPrice = 976346; // Fallback
       
-      // Calculate NOI from income and expenses (does NOT depend on purchase price)
-      const noi = result.noi;
+      const listPrice = window.propertyListPrice || result.list_price || 1484519;
       
-      // Calculate breakeven price (where cash flow = 0)
-      let breakevenPrice = calculateBreakevenFromNOI(noi, downPaymentPct, interestRate, loanTerm);
+      // Update threshold values on the right side
+      updateElement('pricing-value-wholesale', formatCurrency(wholesalePrice));
+      updateElement('pricing-value-breakeven', formatCurrency(breakevenPrice));
+      updateElement('pricing-value-list', formatCurrency(listPrice));
       
-      // Calculate 10% CoC price
-      const tenPctCocPrice = calculateTargetCoCPrice(purchasePrice, grossRentMonthly, 0.10);
-      
-      // Collect all price points
-      const prices = {
-        mao: mao,
-        coc: tenPctCocPrice,
-        breakeven: breakevenPrice,
-        list: listPrice,
-        offer: purchasePrice
-      };
-      
-      // Find min and max for scale
-      const allPrices = [mao, tenPctCocPrice, breakevenPrice, listPrice, purchasePrice].filter(p => p > 0);
-      const minPrice = Math.min(...allPrices);
-      const maxPrice = Math.max(...allPrices);
+      // Calculate vertical positions (0% = bottom, 100% = top)
+      const minPrice = wholesalePrice;
+      const maxPrice = listPrice;
       const range = maxPrice - minPrice;
       
-      // Helper to calculate horizontal position (0% = left, 100% = right)
-      function getPosition(price) {
-        if (range === 0) return 50;
-        return ((price - minPrice) / range) * 100;
+      function getVerticalPosition(price) {
+        if (range === 0) return 0;
+        // Invert: higher price = higher position (closer to top)
+        return 100 - ((price - minPrice) / range) * 100;
       }
       
-      // Update MAO marker
-      updatePriceMarker('mao', mao, getPosition(mao));
+      // Position thresholds on the right side (using top for absolute positioning)
+      // getVerticalPosition returns: 0% = bottom, 100% = top
+      // For CSS top: 0% = top of container, 100% = bottom of container
+      // So we need to invert: top = 100% - getVerticalPosition
+      const wholesaleThreshold = document.getElementById('pricing-threshold-wholesale');
+      const breakevenThreshold = document.getElementById('pricing-threshold-breakeven');
+      const listThreshold = document.getElementById('pricing-threshold-list');
       
-      // Update 10% CoC marker
-      updatePriceMarker('coc', tenPctCocPrice, getPosition(tenPctCocPrice));
-      
-      // Update Breakeven marker (only show if below list price)
-      const breakevenEl = document.getElementById('pricing-marker-breakeven');
-      if (breakevenPrice < listPrice && breakevenPrice > 0) {
-        updatePriceMarker('breakeven', breakevenPrice, getPosition(breakevenPrice));
-        if (breakevenEl) breakevenEl.style.display = 'flex';
-      } else {
-        if (breakevenEl) breakevenEl.style.display = 'none';
+      if (wholesaleThreshold) {
+        wholesaleThreshold.style.top = '100%'; // Bottom of container
+      }
+      if (breakevenThreshold) {
+        const breakevenPos = getVerticalPosition(breakevenPrice);
+        breakevenThreshold.style.top = `${100 - breakevenPos}%`;
+      }
+      if (listThreshold) {
+        listThreshold.style.top = '0%'; // Top of container
       }
       
-      // Update List Price marker
-      updatePriceMarker('list', listPrice, getPosition(listPrice));
-      
-      // Update Your Offer indicator
+      // Update Your Offer indicator on the left side
       const offerIndicator = document.getElementById('pricing-offer-indicator');
       const offerValue = document.getElementById('pricing-offer-value');
-      if (offerIndicator && offerValue) {
-        const offerPosition = getPosition(purchasePrice);
-        offerIndicator.style.left = `${offerPosition}%`;
-        offerValue.textContent = formatCurrency(purchasePrice);
-      }
       
-      // Update summary text
-      const discountPct = ((listPrice - purchasePrice) / listPrice * 100).toFixed(1);
-      const summaryText = document.getElementById('pricing-summary-text');
-      if (summaryText) {
-        if (purchasePrice < listPrice) {
-          summaryText.innerHTML = `<span class="highlight">${discountPct}%</span> below list price`;
-        } else if (purchasePrice > listPrice) {
-          const premiumPct = ((purchasePrice - listPrice) / listPrice * 100).toFixed(1);
-          summaryText.innerHTML = `<span class="highlight">${premiumPct}%</span> above list price`;
+      if (offerIndicator && offerValue) {
+        // Position vertically based on offer price
+        // getVerticalPosition returns: 0% = bottom, 100% = top
+        // For CSS top: 0% = top, 100% = bottom, so invert
+        const offerPosition = getVerticalPosition(purchasePrice);
+        offerIndicator.style.top = `${100 - offerPosition}%`;
+        offerIndicator.style.bottom = 'auto';
+        offerValue.textContent = formatCurrency(purchasePrice);
+        
+        // Determine which zone the offer falls into and highlight it
+        const wholesaleZone = document.getElementById('zone-wholesale');
+        const breakevenZone = document.getElementById('zone-breakeven');
+        const listZone = document.getElementById('zone-list');
+        
+        // Remove all active classes
+        [wholesaleZone, breakevenZone, listZone].forEach(zone => {
+          if (zone) zone.classList.remove('active');
+        });
+        
+        // Highlight the active zone
+        if (purchasePrice <= wholesalePrice) {
+          if (wholesaleZone) wholesaleZone.classList.add('active');
+        } else if (purchasePrice <= breakevenPrice) {
+          if (breakevenZone) breakevenZone.classList.add('active');
+        } else if (purchasePrice <= listPrice) {
+          if (listZone) listZone.classList.add('active');
         } else {
-          summaryText.innerHTML = `At <span class="highlight">list price</span>`;
+          // Above list price - highlight list zone
+          if (listZone) listZone.classList.add('active');
         }
       }
       
-      // Update discount indicator if it exists
-      const discountFill = document.getElementById('discount-fill');
-      const discountPercent = document.getElementById('discount-percent');
-      if (discountFill && purchasePrice < listPrice) {
-        const fillWidth = Math.max(0, Math.min(100, parseFloat(discountPct) * 3));
-        discountFill.style.width = fillWidth + '%';
-      }
-      if (discountPercent && purchasePrice < listPrice) {
-        discountPercent.textContent = discountPct + '%';
-      }
-      
       // Update summary card for MAO/Target Price
-      updateElement('target-price-value', formatCurrency(mao));
+      updateElement('target-price-value', formatCurrency(wholesalePrice));
     }
     
-    // Helper function to update a price marker
+    // Helper function to update a price marker (deprecated - keeping for compatibility)
     function updatePriceMarker(type, price, position) {
       const markerEl = document.getElementById(`pricing-marker-${type}`);
       const valueEl = document.getElementById(`pricing-value-${type}`);
