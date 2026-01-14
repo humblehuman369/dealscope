@@ -1393,8 +1393,11 @@
       display: flex;
       align-items: center;
       padding: 12px 0;
-      position: relative;
+      position: absolute;
+      left: 0;
+      right: 0;
       z-index: 1;
+      transition: top 0.3s ease;
     }
     
     .pricing-ladder-label {
@@ -1476,10 +1479,15 @@
     }
     
     .pricing-ladder-summary {
-      margin-top: 24px;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
       padding-top: 16px;
       border-top: 2px solid var(--ws-border-light);
       text-align: center;
+      background: white;
+      z-index: 2;
     }
     
     .pricing-ladder-summary-text {
@@ -3048,6 +3056,7 @@
         if (itemEl) {
           const position = getPosition(point.price);
           itemEl.style.top = `${position}%`;
+          itemEl.style.display = 'flex'; // Ensure visible
           
           // Update price value
           const valueEl = document.getElementById(`ladder-${point.id}-price`);
