@@ -1867,7 +1867,7 @@
       <div class="summary-card" style="background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, white 100%); border-color: var(--iq-teal-light);">
         <div class="summary-card-label">Deal Score</div>
         <div class="summary-card-value" id="summary-deal-score" style="color: var(--iq-teal);">85</div>
-        <div class="summary-card-subtitle">Good Investment</div>
+        <div class="summary-card-subtitle" id="summary-deal-score-subtitle">Good Investment</div>
       </div>
     </div>
   </div>
@@ -2881,6 +2881,53 @@
       
       // Update Pricing Ladder (use MAO from backend)
       updatePricingLadderFromBackend(purchasePrice, grossRentMonthly, result);
+      
+      // Update Summary Cards at the top
+      updateSummaryCards(result, cashFlow, totalCashNeeded, capRate, cocReturn, dealScore);
+    }
+    
+    // Update the 6 summary metric boxes at the top
+    function updateSummaryCards(result, annualCashFlow, totalCashNeeded, capRate, cocReturn, dealScore) {
+      const mao = result.mao;
+      const monthlyCashFlow = result.monthly_cash_flow;
+      
+      // 1. Target Price (MAO)
+      updateElement('target-price-value', formatCurrency(mao));
+      
+      // 2. Cash Needed
+      updateElement('summary-cash-needed', formatCurrency(totalCashNeeded));
+      
+      // 3. Cash Flow (Annual)
+      const cashFlowEl = document.getElementById('summary-cash-flow');
+      if (cashFlowEl) {
+        cashFlowEl.textContent = formatCurrency(annualCashFlow) + '/yr';
+        cashFlowEl.className = 'summary-card-value ' + (annualCashFlow >= 0 ? 'positive' : '');
+      }
+      
+      // 4. Cash Flow (Monthly subtitle)
+      updateElement('summary-cash-flow-mo', formatCurrency(monthlyCashFlow) + '/mo');
+      
+      // 5. Cap Rate
+      updateElement('summary-cap-rate', capRate.toFixed(1) + '%');
+      
+      // 6. CoC Return
+      const cocEl = document.getElementById('summary-coc-return');
+      if (cocEl) {
+        cocEl.textContent = cocReturn.toFixed(1) + '%';
+        cocEl.className = 'summary-card-value ' + (cocReturn >= 0 ? 'positive' : '');
+      }
+      
+      // 7. Deal Score
+      updateElement('summary-deal-score', dealScore);
+      
+      // Update Deal Score subtitle based on score
+      const dealScoreSubtitle = document.getElementById('summary-deal-score-subtitle');
+      if (dealScoreSubtitle) {
+        if (dealScore >= 85) dealScoreSubtitle.textContent = 'Excellent Investment';
+        else if (dealScore >= 70) dealScoreSubtitle.textContent = 'Good Investment';
+        else if (dealScore >= 55) dealScoreSubtitle.textContent = 'Fair Investment';
+        else dealScoreSubtitle.textContent = 'Poor Investment';
+      }
     }
     
     // Update pricing ladder using backend-calculated values
