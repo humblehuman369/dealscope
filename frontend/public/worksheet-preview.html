@@ -3016,11 +3016,21 @@
       const listPrice = window.propertyListPrice || purchasePrice || purchasePrice;
       const mao = result.mao;
       
+      // Get financing terms (these affect breakeven calculation)
+      const downPaymentPct = getSliderValue('Down Payment', 20) / 100;
+      const interestRate = getSliderValue('Interest Rate', 7) / 100;
+      const loanTerm = getSliderValue('Loan Term', 30);
+      
+      // Calculate NOI from income and expenses (does NOT depend on purchase price)
+      const noi = result.noi; // This comes from backend: effectiveIncome - totalOpEx
+      
+      // Calculate breakeven price (where cash flow = 0, i.e., NOI = Debt Service)
+      // Breakeven is the price where: NOI = Monthly Payment × 12
+      // We need to solve for purchase price where debt service equals NOI
+      let breakevenPrice = calculateBreakevenFromNOI(noi, downPaymentPct, interestRate, loanTerm);
+      
       // Calculate 10% CoC price (approximation - backend can provide this too)
       const tenPctCocPrice = calculateTargetCoCPrice(purchasePrice, grossRentMonthly, 0.10);
-      
-      // Calculate breakeven price (where cash flow = 0)
-      let breakevenPrice = calculateBreakevenPrice(purchasePrice, grossRentMonthly);
       
       // Fix: Breakeven should never exceed list price
       if (breakevenPrice > listPrice) {
@@ -3147,22 +3157,45 @@
       return cashNeeded > 0 ? cashFlow / cashNeeded : 0;
     }
     
-    // Helper: Calculate breakeven price (local fallback)
-    function calculateBreakevenPrice(currentPrice, monthlyRent) {
-      let low = currentPrice * 0.5;
-      let high = currentPrice * 1.5;
+    // Calculate breakeven price from NOI and financing terms (NOT purchase price)
+    // Breakeven is where: NOI = Annual Debt Service
+    // Solving: NOI = Purchase Price × (1 - Down Payment %) × Monthly Payment Factor × 12
+    function calculateBreakevenFromNOI(noi, downPaymentPct, interestRate, loanTermYears) {
+      if (noi <= 0) return 0; // Can't have breakeven if NOI is negative
       
-      for (let i = 0; i < 20; i++) {
-        const mid = (low + high) / 2;
-        const cf = estimateCashFlowAtPrice(mid, monthlyRent);
-        if (Math.abs(cf) < 10) return mid;
-        if (cf > 0) low = mid;
-        else high = mid;
+      const monthlyRate = interestRate / 12;
+      const numPayments = loanTermYears * 12;
+      const ltvPct = 1 - downPaymentPct; // Loan-to-value percentage
+      
+      if (monthlyRate === 0) {
+        // Interest-free loan: Monthly Payment = Loan Amount / numPayments
+        // NOI = Loan Amount / numPayments × 12
+        // NOI = Purchase Price × LTV / numPayments × 12
+        // Purchase Price = NOI × numPayments / (LTV × 12)
+        return (noi * numPayments) / (ltvPct * 12);
       }
-      return (low + high) / 2;
+      
+      // Calculate monthly payment factor: [r(1+r)^n] / [(1+r)^n - 1]
+      const factor = Math.pow(1 + monthlyRate, numPayments);
+      const monthlyPaymentFactor = (monthlyRate * factor) / (factor - 1);
+      
+      // Annual Debt Service = Loan Amount × Monthly Payment Factor × 12
+      // At breakeven: NOI = Loan Amount × Monthly Payment Factor × 12
+      // So: Loan Amount = NOI / (Monthly Payment Factor × 12)
+      // And: Purchase Price = Loan Amount / LTV
+      const loanAmount = noi / (monthlyPaymentFactor * 12);
+      const purchasePrice = loanAmount / ltvPct;
+      
+      return purchasePrice;
     }
     
-    // Helper: Estimate cash flow at a given price (local fallback)
+    // Helper: Calculate breakeven price (local fallback - uses income/expenses, not purchase price)
+    function calculateBreakevenPrice(noi, downPaymentPct, interestRate, loanTermYears) {
+      // This function signature is kept for compatibility but now uses NOI-based calculation
+      return calculateBreakevenFromNOI(noi, downPaymentPct, interestRate, loanTermYears);
+    }
+    
+    // Helper: Estimate cash flow at a given price (for 10% CoC calculation)
     function estimateCashFlowAtPrice(price, monthlyRent) {
       const downPct = getSliderValue('Down Payment', 20) / 100;
       const rate = getSliderValue('Interest Rate', 7) / 100;
@@ -3256,6 +3289,7 @@
       const result = {
         gross_income: effectiveIncome,
         gross_expenses: totalOpEx,
+        noi: noi, // Add NOI for breakeven calculation
         loan_amount: loanAmount,
         down_payment: downPaymentAmt,
         closing_costs: purchaseCosts,
