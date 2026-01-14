@@ -104,6 +104,7 @@
     .worksheet-tab-nav {
       display: flex;
       align-items: center;
+      gap: 8px;
       background: white;
       border-bottom: 2px solid var(--ws-border);
       padding: 0 24px;
@@ -114,6 +115,7 @@
       gap: 4px;
       overflow-x: auto;
       flex: 1;
+      min-width: 0;
     }
     
     .worksheet-tab {
@@ -737,6 +739,7 @@
     /* Strategy Dropdown */
     .strategy-dropdown {
       position: relative;
+      flex-shrink: 0;
     }
     
     .strategy-dropdown-trigger {
@@ -970,9 +973,8 @@
   
   <!-- Tab Navigation -->
   <nav class="worksheet-tab-nav">
-    <div class="worksheet-tabs-scroll">
-      <!-- Strategy Dropdown -->
-      <div class="strategy-dropdown" id="strategy-dropdown">
+    <!-- Strategy Dropdown -->
+    <div class="strategy-dropdown" id="strategy-dropdown">
         <button class="strategy-dropdown-trigger" onclick="toggleStrategyDropdown()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M16 3h5v5"/>
@@ -1090,8 +1092,9 @@
             </svg>
           </button>
         </div>
-      </div>
-      
+    </div>
+    
+    <div class="worksheet-tabs-scroll">
       <button class="worksheet-tab">Investor Analysis</button>
       <button class="worksheet-tab disabled">Comps <span class="strategy-badge">Soon</span></button>
       <button class="worksheet-tab disabled">ARV Analysis <span class="strategy-badge">Soon</span></button>
