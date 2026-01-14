@@ -1232,12 +1232,12 @@
       <div class="summary-cards">
         <div class="summary-card">
           <div class="summary-card-label">All-In Cost</div>
-          <div class="summary-card-value">$340,000</div>
+          <div class="summary-card-value" id="summary-all-in">$340,000</div>
           <div class="summary-card-subtitle">Purchase + Rehab</div>
         </div>
         <div class="summary-card">
           <div class="summary-card-label">After Repair Value</div>
-          <div class="summary-card-value positive">$425,000</div>
+          <div class="summary-card-value positive" id="summary-arv">$425,000</div>
         </div>
         <div class="summary-card highlight">
           <div class="summary-card-label">Cash Out at Refi</div>
@@ -1246,17 +1246,17 @@
         </div>
         <div class="summary-card">
           <div class="summary-card-label">Cash Flow</div>
-          <div class="summary-card-value positive">$485/mo</div>
+          <div class="summary-card-value positive" id="summary-cash-flow">$485/mo</div>
         </div>
         <div class="summary-card">
           <div class="summary-card-label">CoC Return</div>
-          <div class="summary-card-value positive">∞%</div>
-          <div class="summary-card-subtitle">Infinite if $0 left in</div>
+          <div class="summary-card-value positive" id="summary-coc">∞%</div>
+          <div class="summary-card-subtitle" id="coc-subtitle">Infinite if $0 left in</div>
         </div>
         <div class="summary-card" style="background: linear-gradient(135deg, var(--brrrr-accent-bg) 0%, white 100%);">
           <div class="summary-card-label">Deal Score</div>
-          <div class="summary-card-value" style="color: var(--brrrr-accent);">92</div>
-          <div class="summary-card-subtitle">Excellent Deal</div>
+          <div class="summary-card-value" style="color: var(--brrrr-accent);" id="summary-deal-score">92</div>
+          <div class="summary-card-subtitle" id="score-label">Excellent Deal</div>
         </div>
       </div>
       
@@ -1897,7 +1897,22 @@
   </div>
   
   <script>
-    // Initialize sliders with progress
+    // ===== UTILITY FUNCTIONS =====
+    function formatCurrency(value) {
+      return '$' + Math.round(value).toLocaleString('en-US');
+    }
+    
+    function parseCurrency(str) {
+      if (typeof str === 'number') return str;
+      return parseFloat(str.replace(/[$,%]/g, '').replace(/,/g, '')) || 0;
+    }
+    
+    function updateElement(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+    
+    // ===== SLIDER INITIALIZATION =====
     document.querySelectorAll('.slider-input').forEach(slider => {
       function updateProgress() {
         const min = parseFloat(slider.min);
@@ -1908,8 +1923,48 @@
         slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
       }
       
-      slider.addEventListener('input', updateProgress);
+      slider.addEventListener('input', function() {
+        updateProgress();
+        recalculateAll();
+      });
       updateProgress();
+    });
+    
+    // ===== BIDIRECTIONAL SLIDER-INPUT SYNC =====
+    document.querySelectorAll('.data-row.has-slider').forEach(row => {
+      const slider = row.querySelector('.slider-input');
+      const input = row.querySelector('.slider-value');
+      
+      if (slider && input) {
+        // Slider changes input
+        slider.addEventListener('input', function() {
+          const value = parseFloat(this.value);
+          const label = row.querySelector('.data-label span')?.textContent || '';
+          
+          if (label.includes('Interest') || label.includes('Vacancy') || label.includes('%') || label.includes('LTV') || label.includes('Loan to')) {
+            input.value = value.toFixed(1) + '%';
+          } else if (label.includes('Points')) {
+            input.value = value.toFixed(1) + ' pts';
+          } else if (label.includes('Holding') && label.includes('Period')) {
+            input.value = value + ' months';
+          } else if (label.includes('Term')) {
+            input.value = value + ' years';
+          } else if (label.includes('/mo')) {
+            input.value = formatCurrency(value) + '/mo';
+          } else {
+            input.value = formatCurrency(value);
+          }
+        });
+        
+        // Input changes slider
+        input.addEventListener('change', function() {
+          const value = parseCurrency(this.value);
+          if (!isNaN(value)) {
+            slider.value = value;
+            slider.dispatchEvent(new Event('input'));
+          }
+        });
+      }
     });
     
     // Hover effects
@@ -1921,6 +1976,215 @@
         this.style.backgroundColor = '';
       });
     });
+    
+    // ===== MAIN CALCULATION ENGINE =====
+    function recalculateAll() {
+      // Get Purchase & Rehab values
+      const purchasePrice = getSliderValue('Purchase Price', 285000);
+      const rehabCosts = getSliderValue('Rehab Costs', 55000);
+      const purchaseCosts = getSliderValue('Purchase Costs', 8550);
+      
+      // Get Purchase Financing values
+      const loanToValuePurchase = getSliderValue('Loan to Cost', 90) / 100;
+      const interestRatePurchase = getSliderValue('Interest Rate', 12) / 100;
+      const pointsPurchase = getSliderValue('Points', 2);
+      
+      // Get Valuation values
+      const arv = getSliderValue('After Repair Value', 425000);
+      
+      // Get Holding values
+      const holdingPeriod = getSliderValue('Holding Period', 4);
+      const holdingMiscMonthly = getSliderValue('Utilities', 475) + getSliderValue('Insurance', 150) + getSliderValue('Taxes', 200);
+      
+      // Get Refinance values
+      const refiLTV = getSliderValue('Refi LTV', 75) / 100;
+      const refiPoints = getSliderValue('Refi Points', 6375);
+      
+      // Get After Refi Financing values
+      const refiInterestRate = getSliderValue('After Refi Interest', 7) / 100;
+      const refiTerm = getSliderValue('Loan Term', 30);
+      
+      // Get Cash Flow values
+      const monthlyRent = getSliderValue('Monthly Rent', 2800);
+      const vacancyRate = getSliderValue('Vacancy', 5) / 100;
+      const propMgmtRate = getSliderValue('Property Mgmt', 8) / 100;
+      const capExRate = getSliderValue('CapEx', 5) / 100;
+      const maintRate = getSliderValue('Maintenance', 5) / 100;
+      
+      // Calculate Purchase Loan
+      const purchaseLoanAmount = purchasePrice * loanToValuePurchase;
+      const purchaseDownPayment = purchasePrice - purchaseLoanAmount;
+      const purchasePointsCost = purchaseLoanAmount * (pointsPurchase / 100);
+      const monthlyInterestPurchase = (purchaseLoanAmount * interestRatePurchase) / 12;
+      
+      // Calculate All-In Cost
+      const totalHoldingCosts = (holdingMiscMonthly + monthlyInterestPurchase) * holdingPeriod;
+      const allInCost = purchasePrice + rehabCosts + purchaseCosts + totalHoldingCosts + purchasePointsCost;
+      
+      // Calculate Refinance
+      const refiLoanAmount = arv * refiLTV;
+      const cashOutAtRefi = refiLoanAmount - purchaseLoanAmount - refiPoints;
+      const cashInvested = purchaseDownPayment + purchaseCosts + rehabCosts + totalHoldingCosts + purchasePointsCost;
+      const cashLeftInDeal = cashInvested - cashOutAtRefi;
+      const cashRecoveryPct = (cashOutAtRefi / cashInvested) * 100;
+      
+      // Calculate Equity
+      const equityCreated = arv - allInCost;
+      const allInPctOfArv = (allInCost / arv) * 100;
+      
+      // Calculate After Refi Cash Flow
+      const monthlyRefiPayment = calculateMortgagePayment(refiLoanAmount, refiInterestRate, refiTerm);
+      const effectiveRent = monthlyRent * (1 - vacancyRate);
+      const propMgmt = effectiveRent * propMgmtRate;
+      const capEx = effectiveRent * capExRate;
+      const maintenance = effectiveRent * maintRate;
+      const monthlyInsurance = 150;
+      const monthlyTaxes = 200;
+      const monthlyOpEx = propMgmt + capEx + maintenance + monthlyInsurance + monthlyTaxes;
+      const monthlyCashFlow = effectiveRent - monthlyOpEx - monthlyRefiPayment;
+      const annualCashFlow = monthlyCashFlow * 12;
+      
+      // Calculate Returns
+      const cocReturn = cashLeftInDeal > 0 ? (annualCashFlow / cashLeftInDeal) * 100 : Infinity;
+      const capRate = ((effectiveRent * 12 - monthlyOpEx * 12) / arv) * 100;
+      
+      // Calculate MAO (70% of ARV minus rehab)
+      const mao = (arv * 0.70) - rehabCosts;
+      
+      // Calculate Deal Score (0-100)
+      let dealScore = 50;
+      if (cashRecoveryPct >= 100) dealScore += 25;
+      else if (cashRecoveryPct >= 80) dealScore += 15;
+      if (monthlyCashFlow > 300) dealScore += 15;
+      if (equityCreated > 50000) dealScore += 10;
+      dealScore = Math.min(100, Math.max(0, Math.round(dealScore)));
+      
+      // Update Summary Cards
+      updateElement('summary-all-in', formatCurrency(allInCost));
+      updateElement('summary-arv', formatCurrency(arv));
+      updateElement('summary-cash-out', formatCurrency(cashOutAtRefi));
+      updateElement('summary-cash-flow', formatCurrency(monthlyCashFlow) + '/mo');
+      updateElement('summary-coc', cashLeftInDeal <= 0 ? '∞%' : cocReturn.toFixed(1) + '%');
+      updateElement('summary-deal-score', dealScore);
+      
+      // Update deal score label
+      const scoreLabel = document.getElementById('score-label');
+      if (scoreLabel) {
+        if (dealScore >= 90) scoreLabel.textContent = 'Excellent Deal';
+        else if (dealScore >= 75) scoreLabel.textContent = 'Great Deal';
+        else if (dealScore >= 60) scoreLabel.textContent = 'Good Deal';
+        else if (dealScore >= 40) scoreLabel.textContent = 'Fair Deal';
+        else scoreLabel.textContent = 'Poor Deal';
+      }
+      
+      // Update CoC subtitle
+      const cocSubtitle = document.getElementById('coc-subtitle');
+      if (cocSubtitle) {
+        cocSubtitle.textContent = cashLeftInDeal <= 0 ? 'Infinite if $0 left in' : 'On ' + formatCurrency(cashLeftInDeal) + ' left in';
+      }
+      
+      // Update calculated fields
+      updateElement('calc-all-in', formatCurrency(allInCost));
+      updateElement('calc-purchase-loan', formatCurrency(purchaseLoanAmount));
+      updateElement('calc-cash-to-close', formatCurrency(cashInvested));
+      updateElement('calc-refi-loan', formatCurrency(refiLoanAmount));
+      updateElement('calc-cash-out', formatCurrency(cashOutAtRefi));
+      updateElement('calc-refi-payment', formatCurrency(monthlyRefiPayment) + '/mo');
+      updateElement('calc-cash-flow', formatCurrency(monthlyCashFlow) + '/mo');
+      updateElement('calc-equity', formatCurrency(equityCreated));
+      updateElement('calc-all-in-pct', allInPctOfArv.toFixed(1) + '%');
+      
+      // Update Pricing Ladder
+      updatePricingLadder(arv, refiLoanAmount, allInCost, mao, cashRecoveryPct);
+      
+      // Update Sidebar Charts
+      updateSidebarCharts(dealScore, cashOutAtRefi, cashInvested, cashRecoveryPct, 
+                          allInPctOfArv, equityCreated, capRate, cocReturn, monthlyCashFlow);
+    }
+    
+    function getSliderValue(labelText, defaultValue) {
+      const rows = document.querySelectorAll('.data-row.has-slider');
+      for (const row of rows) {
+        const label = row.querySelector('.data-label span')?.textContent || '';
+        if (label.includes(labelText)) {
+          const slider = row.querySelector('.slider-input');
+          if (slider) return parseFloat(slider.value);
+        }
+      }
+      return defaultValue;
+    }
+    
+    function calculateMortgagePayment(principal, annualRate, years) {
+      const monthlyRate = annualRate / 12;
+      const numPayments = years * 12;
+      if (monthlyRate === 0) return principal / numPayments;
+      return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+             (Math.pow(1 + monthlyRate, numPayments) - 1);
+    }
+    
+    function updatePricingLadder(arv, refiLoan, allInCost, mao, cashRecoveryPct) {
+      updateElement('ladder-arv', formatCurrency(arv));
+      
+      const refiLoanEl = document.getElementById('ladder-refi');
+      if (refiLoanEl) {
+        refiLoanEl.innerHTML = formatCurrency(refiLoan) + '<span class="pricing-ladder-hint">75% LTV</span>';
+      }
+      
+      updateElement('ladder-all-in', formatCurrency(allInCost));
+      
+      const breakevenEl = document.getElementById('ladder-breakeven');
+      if (breakevenEl) {
+        breakevenEl.innerHTML = formatCurrency(refiLoan) + '<span class="pricing-ladder-hint">100% out</span>';
+      }
+      
+      const maoEl = document.getElementById('ladder-mao');
+      if (maoEl) {
+        maoEl.innerHTML = formatCurrency(mao) + '<span class="pricing-ladder-hint">70% ARV</span>';
+      }
+      
+      // Update recovery indicator
+      const recoveryFill = document.getElementById('recovery-fill');
+      const recoveryPercent = document.getElementById('recovery-percent');
+      
+      if (recoveryFill) {
+        recoveryFill.style.width = Math.min(100, cashRecoveryPct) + '%';
+        recoveryFill.style.background = cashRecoveryPct >= 100 
+          ? 'linear-gradient(90deg, #10b981, #22c55e)' 
+          : 'linear-gradient(90deg, #7c3aed, #a78bfa)';
+      }
+      if (recoveryPercent) {
+        recoveryPercent.textContent = cashRecoveryPct.toFixed(1) + '%';
+      }
+    }
+    
+    function updateSidebarCharts(dealScore, cashOut, cashInvested, cashRecoveryPct, 
+                                  allInPctOfArv, equityCreated, capRate, cocReturn, monthlyCashFlow) {
+      // BRRRR Score
+      updateElement('brrrr-score', dealScore);
+      const scoreLabel = document.getElementById('brrrr-score-label');
+      if (scoreLabel) {
+        if (dealScore >= 80) scoreLabel.textContent = 'Excellent BRRRR Deal';
+        else if (dealScore >= 60) scoreLabel.textContent = 'Good BRRRR Deal';
+        else if (dealScore >= 40) scoreLabel.textContent = 'Fair BRRRR Deal';
+        else scoreLabel.textContent = 'Poor BRRRR Deal';
+      }
+      
+      // Cash Recovery
+      updateElement('sidebar-cash-out', formatCurrency(cashOut));
+      updateElement('sidebar-cash-invested', formatCurrency(cashInvested));
+      updateElement('sidebar-cash-returned', formatCurrency(cashOut));
+      updateElement('sidebar-recovery-pct', cashRecoveryPct.toFixed(1) + '% Recovered');
+      
+      // Key Metrics
+      updateElement('metric-all-in-arv', allInPctOfArv.toFixed(0) + '%');
+      updateElement('metric-equity', formatCurrency(equityCreated));
+      updateElement('metric-cap-rate', capRate.toFixed(1) + '%');
+      updateElement('metric-coc', cocReturn === Infinity ? '∞%' : cocReturn.toFixed(1) + '%');
+      updateElement('metric-cash-flow', formatCurrency(monthlyCashFlow) + '/mo');
+    }
+    
+    // Initial calculation
+    recalculateAll();
     
     // ===== STRATEGY DROPDOWN =====
     (function() {

@@ -1156,7 +1156,7 @@
       </div>
       <div class="summary-card">
         <div class="summary-card-label">Cash Needed</div>
-        <div class="summary-card-value" id="summary-cash">$11,946</div>
+        <div class="summary-card-value" id="summary-cash-needed">$11,946</div>
       </div>
       <div class="summary-card">
         <div class="summary-card-label">ROI</div>
@@ -1172,8 +1172,8 @@
       </div>
       <div class="summary-card" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.1) 0%, white 100%); border-color: var(--flip-primary-light);">
         <div class="summary-card-label">Deal Score</div>
-        <div class="summary-card-value accent" id="summary-score">92</div>
-        <div class="summary-card-subtitle">Excellent</div>
+        <div class="summary-card-value accent" id="summary-deal-score">92</div>
+        <div class="summary-card-subtitle" id="score-label">Excellent</div>
       </div>
     </div>
   </div>
@@ -1592,7 +1592,7 @@
           <div class="roi-label">Total ROI</div>
           <div class="roi-annualized">
             <div class="roi-annualized-value" id="aroi-display">2.4k%</div>
-            <div class="roi-annualized-label">Annualized (3 months)</div>
+            <div class="roi-annualized-label" id="aroi-label">Annualized (3 months)</div>
           </div>
         </div>
       </div>
@@ -1704,7 +1704,22 @@
   </div>
   
   <script>
-    // Initialize sliders with progress
+    // ===== UTILITY FUNCTIONS =====
+    function formatCurrency(value) {
+      return '$' + Math.round(value).toLocaleString('en-US');
+    }
+    
+    function parseCurrency(str) {
+      if (typeof str === 'number') return str;
+      return parseFloat(str.replace(/[$,%]/g, '').replace(/,/g, '')) || 0;
+    }
+    
+    function updateElement(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+    
+    // ===== SLIDER INITIALIZATION =====
     document.querySelectorAll('.slider-input').forEach(slider => {
       function updateProgress() {
         const min = parseFloat(slider.min);
@@ -1714,7 +1729,41 @@
         slider.style.background = `linear-gradient(to right, #d97706 0%, #d97706 ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
       }
       updateProgress();
-      slider.addEventListener('input', updateProgress);
+      slider.addEventListener('input', function() {
+        updateProgress();
+        recalculateAll();
+      });
+    });
+    
+    // ===== BIDIRECTIONAL SLIDER-INPUT SYNC =====
+    document.querySelectorAll('.data-row.has-slider').forEach(row => {
+      const slider = row.querySelector('.slider-input');
+      const input = row.querySelector('.slider-value');
+      
+      if (slider && input) {
+        // Slider changes input
+        slider.addEventListener('input', function() {
+          const value = parseFloat(this.value);
+          const label = row.querySelector('.data-label span')?.textContent || '';
+          
+          if (label.includes('Interest') || label.includes('Down') || label.includes('Commission')) {
+            input.value = value.toFixed(1) + '%';
+          } else if (label.includes('Points')) {
+            input.value = value + ' pts';
+          } else {
+            input.value = formatCurrency(value);
+          }
+        });
+        
+        // Input changes slider
+        input.addEventListener('change', function() {
+          const value = parseCurrency(this.value);
+          if (!isNaN(value)) {
+            slider.value = value;
+            slider.dispatchEvent(new Event('input'));
+          }
+        });
+      }
     });
     
     // Add hover effect to slider rows
@@ -1727,13 +1776,219 @@
       });
     });
     
-    // Holding period buttons
+    // ===== HOLDING PERIOD BUTTONS =====
+    let holdingMonths = 3; // Default
     document.querySelectorAll('.holding-period-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         document.querySelectorAll('.holding-period-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
+        
+        // Parse holding period from button text
+        const text = this.textContent.toLowerCase();
+        if (text.includes('1 month')) holdingMonths = 1;
+        else if (text.includes('6 week')) holdingMonths = 1.5;
+        else if (text.includes('2 month')) holdingMonths = 2;
+        else if (text.includes('3 month')) holdingMonths = 3;
+        
+        recalculateAll();
       });
     });
+    
+    // ===== MAIN CALCULATION ENGINE =====
+    function recalculateAll() {
+      // Get values from sliders
+      const purchasePrice = getSliderValue('Purchase Price', 24000);
+      const rehabCosts = getSliderValue('Rehab Costs', 18865);
+      const downPaymentPct = getSliderValue('Down Payment', 25) / 100;
+      const purchaseCosts = getSliderValue('Purchase Costs', 1225);
+      const interestRate = getSliderValue('Interest Rate', 12) / 100;
+      const points = getSliderValue('Points', 2);
+      const arv = getSliderValue('After Repair Value', 75000);
+      const commissionPct = getSliderValue('Selling Commission', 6) / 100;
+      
+      // Calculate financing
+      const loanToValue = 1 - downPaymentPct;
+      const loanAmount = purchasePrice * loanToValue;
+      const downPayment = purchasePrice * downPaymentPct;
+      const pointsCost = loanAmount * (points / 100);
+      const monthlyInterest = (loanAmount * interestRate) / 12;
+      const totalInterest = monthlyInterest * holdingMonths;
+      
+      // Calculate holding costs
+      const monthlyHoldingBase = 322; // taxes, insurance, utilities
+      const totalHoldingCosts = (monthlyHoldingBase * holdingMonths) + totalInterest;
+      
+      // Calculate selling costs
+      const sellingCommission = arv * commissionPct;
+      const closingCosts = arv * 0.02; // ~2% closing costs
+      const totalSellingCosts = sellingCommission + closingCosts;
+      
+      // Calculate totals
+      const totalCashNeeded = downPayment + purchaseCosts + pointsCost + rehabCosts;
+      const allInCost = purchasePrice + rehabCosts + purchaseCosts + totalHoldingCosts + pointsCost;
+      const totalProfit = arv - allInCost - totalSellingCosts;
+      const roi = (totalProfit / totalCashNeeded) * 100;
+      const annualizedRoi = roi * (12 / holdingMonths);
+      
+      // Calculate pricing ladder values
+      const breakeven = arv - totalSellingCosts; // Price where profit = 0
+      const target15 = arv * 0.85 - rehabCosts - purchaseCosts; // Max all-in for 15% margin
+      const mao = (arv * 0.70) - rehabCosts; // 70% rule
+      
+      // Calculate Deal Score (0-100)
+      let dealScore = 50;
+      if (roi > 0) dealScore += Math.min(25, roi / 4);
+      if (purchasePrice + rehabCosts < arv * 0.75) dealScore += 15;
+      if (totalProfit > 15000) dealScore += 10;
+      dealScore = Math.min(100, Math.max(0, Math.round(dealScore)));
+      
+      // Update Summary Cards
+      updateElement('summary-profit', formatCurrency(totalProfit));
+      updateElement('summary-cash-needed', formatCurrency(totalCashNeeded));
+      updateElement('summary-roi', roi.toFixed(1) + '%');
+      updateElement('summary-aroi', annualizedRoi > 999 ? (annualizedRoi/1000).toFixed(1) + 'k%' : annualizedRoi.toFixed(1) + '%');
+      updateElement('summary-holding', holdingMonths + (holdingMonths === 1 ? ' mo' : ' mo'));
+      updateElement('summary-deal-score', dealScore);
+      
+      // Update deal score label
+      const scoreLabel = document.getElementById('score-label');
+      if (scoreLabel) {
+        if (dealScore >= 90) scoreLabel.textContent = 'Excellent';
+        else if (dealScore >= 75) scoreLabel.textContent = 'Great';
+        else if (dealScore >= 60) scoreLabel.textContent = 'Good';
+        else if (dealScore >= 40) scoreLabel.textContent = 'Fair';
+        else scoreLabel.textContent = 'Poor';
+      }
+      
+      // Update calculated fields
+      updateElement('calc-amount-financed', formatCurrency(loanAmount));
+      updateElement('calc-down-payment-amt', formatCurrency(downPayment));
+      updateElement('calc-total-cash', formatCurrency(totalCashNeeded));
+      updateElement('calc-loan-amount', formatCurrency(loanAmount));
+      updateElement('calc-monthly-payment', formatCurrency(monthlyInterest) + '/mo');
+      updateElement('calc-points-cost', formatCurrency(pointsCost));
+      
+      // Update Pricing Ladder
+      updatePricingLadder(arv, allInCost, breakeven, target15, mao, totalProfit, purchasePrice + rehabCosts);
+      
+      // Update ROI Display
+      updateElement('roi-display', roi.toFixed(0) + '%');
+      updateElement('aroi-display', annualizedRoi > 999 ? (annualizedRoi/1000).toFixed(1) + 'k%' : annualizedRoi.toFixed(0) + '%');
+      const aroiLabel = document.getElementById('aroi-label');
+      if (aroiLabel) aroiLabel.textContent = `Annualized (${holdingMonths} month${holdingMonths !== 1 ? 's' : ''})`;
+      
+      // Update Profit Timeline
+      updateProfitTimeline(arv, purchasePrice, rehabCosts, purchaseCosts, pointsCost, 
+                           monthlyHoldingBase, interestRate, loanAmount, totalSellingCosts);
+      
+      // Update Cash Breakdown
+      updateCashBreakdown(downPayment, purchaseCosts + pointsCost, rehabCosts, totalCashNeeded);
+    }
+    
+    function getSliderValue(labelText, defaultValue) {
+      const rows = document.querySelectorAll('.data-row.has-slider');
+      for (const row of rows) {
+        const label = row.querySelector('.data-label span')?.textContent || '';
+        if (label.includes(labelText)) {
+          const slider = row.querySelector('.slider-input');
+          if (slider) return parseFloat(slider.value);
+        }
+      }
+      return defaultValue;
+    }
+    
+    function updatePricingLadder(arv, allInCost, breakeven, target15, mao, totalProfit, purchaseRehab) {
+      updateElement('ladder-arv', formatCurrency(arv));
+      updateElement('ladder-all-in', formatCurrency(purchaseRehab));
+      
+      // Update elements with hints (preserve the hint span)
+      const breakevenEl = document.getElementById('ladder-breakeven');
+      if (breakevenEl) {
+        breakevenEl.innerHTML = formatCurrency(breakeven) + '<span class="pricing-ladder-hint">0% Profit</span>';
+      }
+      const target15El = document.getElementById('ladder-15-target');
+      if (target15El) {
+        target15El.innerHTML = formatCurrency(target15) + '<span class="pricing-ladder-hint">Max All-In</span>';
+      }
+      const maoEl = document.getElementById('ladder-mao');
+      if (maoEl) {
+        maoEl.innerHTML = formatCurrency(mao) + '<span class="pricing-ladder-hint">70% Rule</span>';
+      }
+      
+      // Update profit margin indicator
+      const profitMargin = (totalProfit / arv) * 100;
+      const marginFill = document.getElementById('profit-margin-fill');
+      const marginPercent = document.getElementById('profit-margin-percent');
+      
+      if (marginFill) {
+        marginFill.style.width = Math.max(0, Math.min(100, profitMargin * 2)) + '%';
+        marginFill.style.background = profitMargin > 0 
+          ? 'linear-gradient(90deg, #22c55e, #10b981)' 
+          : 'linear-gradient(90deg, #ef4444, #dc2626)';
+      }
+      if (marginPercent) {
+        marginPercent.textContent = profitMargin.toFixed(1) + '%';
+        marginPercent.style.color = profitMargin > 0 ? '#10b981' : '#ef4444';
+      }
+      
+      // Update label
+      const marginLabel = document.querySelector('.pricing-discount-label');
+      if (marginLabel) {
+        marginLabel.innerHTML = `<span id="profit-margin-percent" style="color: ${profitMargin > 0 ? '#10b981' : '#ef4444'}">${profitMargin.toFixed(1)}%</span> ${profitMargin > 0 ? 'profit margin' : 'loss'}`;
+      }
+    }
+    
+    function updateProfitTimeline(arv, purchasePrice, rehabCosts, purchaseCosts, pointsCost, 
+                                   monthlyHoldingBase, interestRate, loanAmount, sellingCosts) {
+      const timelineRows = document.querySelectorAll('.timeline-row');
+      const months = [1, 2, 3, 4, 5, 6];
+      let maxProfit = 0;
+      const profits = [];
+      
+      months.forEach(m => {
+        const monthlyInterest = (loanAmount * interestRate) / 12;
+        const holdingCosts = (monthlyHoldingBase * m) + (monthlyInterest * m);
+        const allIn = purchasePrice + rehabCosts + purchaseCosts + holdingCosts + pointsCost;
+        const profit = arv - allIn - sellingCosts;
+        profits.push(profit);
+        if (profit > maxProfit) maxProfit = profit;
+      });
+      
+      timelineRows.forEach((row, idx) => {
+        if (idx < profits.length) {
+          const bar = row.querySelector('.timeline-bar');
+          const value = row.querySelector('.timeline-value');
+          if (bar && maxProfit > 0) {
+            bar.style.width = Math.max(5, (profits[idx] / maxProfit) * 100) + '%';
+            bar.classList.toggle('loss', profits[idx] < 0);
+          }
+          if (value) {
+            value.textContent = formatCurrency(profits[idx]);
+            value.style.color = profits[idx] >= 0 ? '#10b981' : '#ef4444';
+          }
+        }
+      });
+    }
+    
+    function updateCashBreakdown(downPayment, closingCosts, rehabCosts, totalCash) {
+      updateElement('breakdown-down', formatCurrency(downPayment));
+      updateElement('breakdown-closing', formatCurrency(closingCosts));
+      updateElement('breakdown-rehab', formatCurrency(rehabCosts));
+      updateElement('breakdown-total', formatCurrency(totalCash));
+      
+      // Update pie chart segments (simplified)
+      const downPct = (downPayment / totalCash) * 100;
+      const closingPct = (closingCosts / totalCash) * 100;
+      const rehabPct = (rehabCosts / totalCash) * 100;
+      
+      // Update legend percentages
+      updateElement('pct-down', downPct.toFixed(0) + '%');
+      updateElement('pct-closing', closingPct.toFixed(0) + '%');
+      updateElement('pct-rehab', rehabPct.toFixed(0) + '%');
+    }
+    
+    // Initial calculation
+    recalculateAll();
     
     // ===== STRATEGY DROPDOWN =====
     (function() {
