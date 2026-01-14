@@ -2688,78 +2688,127 @@
       }
     }
     
-    // ===== RECALCULATION ENGINE (Simplified for Demo) =====
+    // ===== RECALCULATION ENGINE (Backend API Powered) =====
+    
+    // Debounce timer for API calls
+    let recalculateTimer = null;
+    let lastCalculationPromise = null;
+    
+    // API endpoint for LTR worksheet calculations
+    const WORKSHEET_API_URL = '/api/v1/worksheet/ltr/calculate';
     
     function recalculateAll() {
-      // This would connect to your Zustand store in React
-      // For the HTML demo, we'll update the sidebar values
+      // Debounce: Wait 150ms after last input before calling API
+      if (recalculateTimer) {
+        clearTimeout(recalculateTimer);
+      }
       
-      // Get key inputs
+      recalculateTimer = setTimeout(() => {
+        doRecalculate();
+      }, 150);
+    }
+    
+    async function doRecalculate() {
+      // Get key inputs from sliders
       const purchasePrice = getSliderValue('Purchase Price', 723600);
-      const downPaymentPct = getSliderValue('Down Payment', 20);
-      const interestRate = getSliderValue('Interest Rate', 7);
+      const downPaymentPct = getSliderValue('Down Payment', 20) / 100; // Convert to decimal
+      const interestRate = getSliderValue('Interest Rate', 7) / 100; // Convert to decimal
       const loanTerm = getSliderValue('Loan Term', 30);
       const grossRentMonthly = getSliderValue('Monthly Gross Rent', 8081);
-      const vacancyPct = getSliderValue('Vacancy', 8);
+      const vacancyPct = getSliderValue('Vacancy', 8) / 100; // Convert to decimal
       const propertyTaxes = getSliderValue('Property Taxes', 6471);
       const insurance = getSliderValue('Insurance', 2894);
-      const mgmtPct = getSliderValue('Property Mgmt', 0);
-      const maintPct = getSliderValue('Maintenance', 2);
-      const capexPct = getSliderValue('Capital Expense', 0);
+      const mgmtPct = getSliderValue('Property Mgmt', 0) / 100; // Convert to decimal
+      const maintPct = getSliderValue('Maintenance', 2) / 100; // Convert to decimal
+      const capexPct = getSliderValue('Capital Expense', 0) / 100; // Convert to decimal
       const hoaFees = getSliderValue('HOA Fees', 0);
       const arv = getSliderValue('After Repair Value', 795960);
       const purchaseCosts = getSliderValue('Purchase Costs', 21708);
       const rehabCosts = getSliderValue('Rehab Costs', 0);
       
-      // Calculate derived values
-      const downPaymentAmt = purchasePrice * (downPaymentPct / 100);
-      const loanAmount = purchasePrice - downPaymentAmt;
-      const grossRentAnnual = grossRentMonthly * 12;
-      const vacancyLoss = grossRentAnnual * (vacancyPct / 100);
-      const effectiveIncome = grossRentAnnual - vacancyLoss;
+      // Build request payload for backend API
+      const payload = {
+        purchase_price: purchasePrice,
+        monthly_rent: grossRentMonthly,
+        property_taxes_annual: propertyTaxes,
+        insurance_annual: insurance,
+        down_payment_pct: downPaymentPct,
+        interest_rate: interestRate,
+        loan_term_years: loanTerm,
+        closing_costs: purchaseCosts,
+        rehab_costs: rehabCosts,
+        vacancy_rate: vacancyPct,
+        property_management_pct: mgmtPct,
+        maintenance_pct: maintPct,
+        capex_pct: capexPct,
+        hoa_monthly: hoaFees,
+        arv: arv,
+        sqft: window.propertySqft || 3172
+      };
       
-      // Operating expenses
-      const mgmtExpense = effectiveIncome * (mgmtPct / 100);
-      const maintExpense = effectiveIncome * (maintPct / 100);
-      const capexExpense = effectiveIncome * (capexPct / 100);
-      const totalOpEx = propertyTaxes + insurance + mgmtExpense + maintExpense + capexExpense + (hoaFees * 12);
-      
-      // NOI and Cash Flow
-      const noi = effectiveIncome - totalOpEx;
-      const monthlyRate = (interestRate / 100) / 12;
-      const numPayments = loanTerm * 12;
-      
-      // Calculate monthly payment with NaN protection
-      let monthlyPayment = 0;
-      if (loanAmount > 0 && monthlyRate > 0 && numPayments > 0) {
-        const factor = Math.pow(1 + monthlyRate, numPayments);
-        monthlyPayment = loanAmount * (monthlyRate * factor) / (factor - 1);
-        if (isNaN(monthlyPayment) || !isFinite(monthlyPayment)) {
-          monthlyPayment = 0;
+      try {
+        // Show loading state on summary cards
+        showCalculating(true);
+        
+        // Call backend API
+        const response = await fetch(WORKSHEET_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          throw new Error('API calculation failed');
         }
+        
+        const result = await response.json();
+        console.log('Backend calculation result:', result);
+        
+        // Update UI with backend results
+        updateUIFromBackend(result, purchasePrice, grossRentMonthly);
+        
+      } catch (error) {
+        console.error('Backend API error, falling back to local calculation:', error);
+        // Fallback to local calculation if API fails
+        doLocalRecalculate(payload);
+      } finally {
+        showCalculating(false);
       }
-      const annualDebtService = monthlyPayment * 12;
-      const cashFlow = noi - annualDebtService;
-      
-      // Key metrics with NaN protection
-      const capRate = purchasePrice > 0 ? (noi / purchasePrice) * 100 : 0;
-      const totalCashNeeded = downPaymentAmt + purchaseCosts + rehabCosts;
-      const cocReturn = totalCashNeeded > 0 ? (cashFlow / totalCashNeeded) * 100 : 0;
-      const dscr = annualDebtService > 0 ? noi / annualDebtService : 0;
-      const rentToValue = purchasePrice > 0 ? (grossRentMonthly / purchasePrice) * 100 : 0;
-      const ltv = purchasePrice > 0 ? (loanAmount / purchasePrice) * 100 : 0;
-      const equity = arv - purchasePrice;
-      
-      // Deal Score (simplified algorithm)
-      let dealScore = 50;
-      if (capRate >= 8) dealScore += 15;
-      else if (capRate >= 6) dealScore += 10;
-      if (cocReturn >= 10) dealScore += 15;
-      else if (cocReturn >= 8) dealScore += 10;
-      if (dscr >= 1.25) dealScore += 10;
-      if (rentToValue >= 1) dealScore += 10;
-      if (equity > 0) dealScore += Math.min(10, (equity / purchasePrice) * 100);
-      dealScore = Math.min(100, Math.max(0, Math.round(dealScore)));
+    }
+    
+    function showCalculating(isCalculating) {
+      const summaryCards = document.querySelectorAll('.summary-card-value');
+      summaryCards.forEach(card => {
+        if (isCalculating) {
+          card.style.opacity = '0.5';
+        } else {
+          card.style.opacity = '1';
+        }
+      });
+    }
+    
+    function updateUIFromBackend(result, purchasePrice, grossRentMonthly) {
+      // Calculate local values for display that aren't returned by API
+      const downPaymentAmt = result.down_payment;
+      const loanAmount = result.loan_amount;
+      const monthlyPayment = result.monthly_payment;
+      const effectiveIncome = result.gross_income;
+      const totalOpEx = result.gross_expenses;
+      const cashFlow = result.annual_cash_flow;
+      const annualDebtService = result.annual_debt_service;
+      const totalCashNeeded = result.total_cash_needed;
+      const purchaseCosts = result.closing_costs;
+      const rehabCosts = getSliderValue('Rehab Costs', 0);
+      const ltv = result.ltv;
+      const equity = result.equity;
+      const arv = result.arv;
+      const dealScore = result.deal_score;
+      const capRate = result.cap_rate;
+      const cocReturn = result.cash_on_cash_return;
+      const dscr = result.dscr;
+      const rentToValue = result.one_percent_rule ? (grossRentMonthly / purchasePrice) * 100 : 0;
       
       // Update calculated fields in the worksheet
       updateElement('calc-amount-financed', formatCurrency(loanAmount));
@@ -2768,7 +2817,7 @@
       updateElement('calc-monthly-payment', formatCurrency(monthlyPayment));
       updateElement('calc-operating-income', formatCurrency(effectiveIncome));
       
-      // Update LTV percentage in Financing section (LTV = 100% - Down Payment %)
+      // Update LTV percentage in Financing section
       updateElement('calc-ltv-pct', ltv.toFixed(0) + '%');
       
       // Update sidebar displays
@@ -2777,7 +2826,7 @@
         capRate,
         cocReturn,
         dscr,
-        rentToValue,
+        rentToValue: (grossRentMonthly / purchasePrice) * 100,
         totalCashNeeded,
         downPaymentAmt,
         purchaseCosts,
@@ -2790,19 +2839,18 @@
         loanAmount
       });
       
-      // Update monthly cash flow section
-      const monthlyIncome = effectiveIncome / 12;
-      const monthlyOpEx = totalOpEx / 12;
-      const monthlyCashFlow = cashFlow / 12;
+      // Update Gross Income total
+      updateElement('calc-gross-income', formatCurrency(effectiveIncome));
       
       // Update EXPENSES section total
+      updateElement('calc-gross-expenses', formatCurrency(totalOpEx));
       updateElement('calc-opex-annual', formatCurrency(totalOpEx));
       
       // Update CASH FLOW section
       updateElement('calc-cf-income', formatCurrency(effectiveIncome));
       updateElement('calc-cf-expenses', '-' + formatCurrency(totalOpEx));
       updateElement('calc-cf-loan', '-' + formatCurrency(annualDebtService));
-      updateElement('calc-monthly-cf', formatCurrency(monthlyCashFlow));
+      updateElement('calc-monthly-cf', formatCurrency(result.monthly_cash_flow));
       updateElement('calc-annual-cf', formatCurrency(cashFlow));
       
       // Update color classes for positive/negative in Cash Flow section
@@ -2816,28 +2864,232 @@
       if (cfLoanEl) cfLoanEl.className = 'value-primary value-negative';
       
       const monthlyCfEl = document.getElementById('calc-monthly-cf');
-      if (monthlyCfEl) monthlyCfEl.className = 'value-primary ' + (monthlyCashFlow >= 0 ? 'value-positive' : 'value-negative');
+      if (monthlyCfEl) monthlyCfEl.className = 'value-primary ' + (result.monthly_cash_flow >= 0 ? 'value-positive' : 'value-negative');
       
       const annualCfEl = document.getElementById('calc-annual-cf');
       if (annualCfEl) annualCfEl.className = 'value-primary ' + (cashFlow >= 0 ? 'value-positive' : 'value-negative');
       
       // Update Valuation section per square foot calculations
-      const sqft = window.propertySqft || 3172;
-      const arvPsf = arv / sqft;
-      const pricePsf = purchasePrice / sqft;
-      const rehabPsf = rehabCosts / sqft;
-      
-      updateElement('calc-arv-psf', formatCurrency(arvPsf));
-      updateElement('calc-price-psf', formatCurrency(pricePsf));
-      updateElement('calc-rehab-psf', formatCurrency(rehabPsf));
+      updateElement('calc-arv-psf', formatCurrency(result.arv_psf));
+      updateElement('calc-price-psf', formatCurrency(result.price_psf));
+      updateElement('calc-rehab-psf', formatCurrency(result.rehab_psf));
       updateElement('calc-equity', formatCurrency(equity));
       
       // Update equity color class
       const equityEl = document.getElementById('calc-equity');
       if (equityEl) equityEl.className = 'value-primary ' + (equity >= 0 ? 'value-positive' : 'value-negative');
       
-      // Update Pricing Ladder
-      updatePricingLadder(purchasePrice, grossRentMonthly, totalOpEx, annualDebtService);
+      // Update Pricing Ladder (use MAO from backend)
+      updatePricingLadderFromBackend(purchasePrice, grossRentMonthly, result);
+    }
+    
+    // Update pricing ladder using backend-calculated values
+    function updatePricingLadderFromBackend(purchasePrice, grossRentMonthly, result) {
+      const listPrice = window.propertyListPrice || purchasePrice;
+      const mao = result.mao;
+      
+      // Calculate 10% CoC price (approximation - backend can provide this too)
+      const tenPctCocPrice = calculateTargetCoCPrice(purchasePrice, grossRentMonthly, 0.10);
+      
+      // Calculate breakeven price (where cash flow = 0)
+      const breakevenPrice = calculateBreakevenPrice(purchasePrice, grossRentMonthly);
+      
+      const prices = [listPrice, purchasePrice, breakevenPrice, tenPctCocPrice, mao];
+      const maxPrice = Math.max(...prices.filter(p => p > 0));
+      const minPrice = Math.min(...prices.filter(p => p > 0));
+      const range = maxPrice - minPrice;
+      
+      function getPosition(price) {
+        if (range === 0) return 50;
+        return 100 - ((price - minPrice) / range * 100);
+      }
+      
+      // Update DOM elements
+      ['list', 'offer', 'breakeven', 'tenpct', 'mao'].forEach((id, idx) => {
+        const el = document.getElementById(`ladder-${id}`);
+        if (el) {
+          const price = [listPrice, purchasePrice, breakevenPrice, tenPctCocPrice, mao][idx];
+          el.style.top = getPosition(price) + '%';
+          const priceEl = el.querySelector('.pricing-ladder-price');
+          if (priceEl) priceEl.textContent = formatCurrency(price);
+        }
+      });
+      
+      // Update summary card for MAO/Target Price
+      updateElement('summary-mao', formatCurrency(mao));
+    }
+    
+    // Helper: Calculate price for 10% CoC return (local fallback)
+    function calculateTargetCoCPrice(currentPrice, monthlyRent, targetCoC) {
+      // Simplified binary search for target CoC price
+      let low = currentPrice * 0.5;
+      let high = currentPrice * 1.5;
+      
+      for (let i = 0; i < 20; i++) {
+        const mid = (low + high) / 2;
+        const coc = estimateCoCAtPrice(mid, monthlyRent);
+        if (Math.abs(coc - targetCoC) < 0.001) return mid;
+        if (coc < targetCoC) high = mid;
+        else low = mid;
+      }
+      return (low + high) / 2;
+    }
+    
+    // Helper: Estimate CoC at a given price (local fallback)
+    function estimateCoCAtPrice(price, monthlyRent) {
+      const downPct = getSliderValue('Down Payment', 20) / 100;
+      const rate = getSliderValue('Interest Rate', 7) / 100;
+      const downPayment = price * downPct;
+      const loanAmount = price - downPayment;
+      const closingCosts = getSliderValue('Purchase Costs', 21708);
+      const cashNeeded = downPayment + closingCosts;
+      
+      const monthlyRate = rate / 12;
+      const numPayments = 360;
+      const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+      
+      const annualRent = monthlyRent * 12;
+      const vacancyLoss = annualRent * 0.08;
+      const effectiveIncome = annualRent - vacancyLoss;
+      const opex = getSliderValue('Property Taxes', 6471) + getSliderValue('Insurance', 2894) + effectiveIncome * 0.02;
+      const noi = effectiveIncome - opex;
+      const cashFlow = noi - (monthlyPayment * 12);
+      
+      return cashNeeded > 0 ? cashFlow / cashNeeded : 0;
+    }
+    
+    // Helper: Calculate breakeven price (local fallback)
+    function calculateBreakevenPrice(currentPrice, monthlyRent) {
+      let low = currentPrice * 0.5;
+      let high = currentPrice * 1.5;
+      
+      for (let i = 0; i < 20; i++) {
+        const mid = (low + high) / 2;
+        const cf = estimateCashFlowAtPrice(mid, monthlyRent);
+        if (Math.abs(cf) < 10) return mid;
+        if (cf > 0) low = mid;
+        else high = mid;
+      }
+      return (low + high) / 2;
+    }
+    
+    // Helper: Estimate cash flow at a given price (local fallback)
+    function estimateCashFlowAtPrice(price, monthlyRent) {
+      const downPct = getSliderValue('Down Payment', 20) / 100;
+      const rate = getSliderValue('Interest Rate', 7) / 100;
+      const downPayment = price * downPct;
+      const loanAmount = price - downPayment;
+      
+      const monthlyRate = rate / 12;
+      const numPayments = 360;
+      const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+      
+      const annualRent = monthlyRent * 12;
+      const vacancyLoss = annualRent * 0.08;
+      const effectiveIncome = annualRent - vacancyLoss;
+      const opex = getSliderValue('Property Taxes', 6471) + getSliderValue('Insurance', 2894) + effectiveIncome * 0.02;
+      const noi = effectiveIncome - opex;
+      
+      return noi - (monthlyPayment * 12);
+    }
+    
+    // Fallback: Local calculation if API fails
+    function doLocalRecalculate(payload) {
+      console.log('Using local fallback calculations');
+      
+      const purchasePrice = payload.purchase_price;
+      const downPaymentPct = payload.down_payment_pct;
+      const interestRate = payload.interest_rate;
+      const loanTerm = payload.loan_term_years;
+      const grossRentMonthly = payload.monthly_rent;
+      const vacancyPct = payload.vacancy_rate;
+      const propertyTaxes = payload.property_taxes_annual;
+      const insurance = payload.insurance_annual;
+      const mgmtPct = payload.property_management_pct;
+      const maintPct = payload.maintenance_pct;
+      const capexPct = payload.capex_pct;
+      const hoaFees = payload.hoa_monthly;
+      const arv = payload.arv;
+      const purchaseCosts = payload.closing_costs;
+      const rehabCosts = payload.rehab_costs;
+      
+      // Calculate derived values (same as backend)
+      const downPaymentAmt = purchasePrice * downPaymentPct;
+      const loanAmount = purchasePrice - downPaymentAmt;
+      const grossRentAnnual = grossRentMonthly * 12;
+      const vacancyLoss = grossRentAnnual * vacancyPct;
+      const effectiveIncome = grossRentAnnual - vacancyLoss;
+      
+      // Operating expenses
+      const mgmtExpense = grossRentAnnual * mgmtPct;
+      const maintExpense = grossRentAnnual * maintPct;
+      const capexExpense = grossRentAnnual * capexPct;
+      const totalOpEx = propertyTaxes + insurance + mgmtExpense + maintExpense + capexExpense + (hoaFees * 12);
+      
+      // NOI and Cash Flow
+      const noi = effectiveIncome - totalOpEx;
+      const monthlyRate = interestRate / 12;
+      const numPayments = loanTerm * 12;
+      
+      let monthlyPayment = 0;
+      if (loanAmount > 0 && monthlyRate > 0 && numPayments > 0) {
+        const factor = Math.pow(1 + monthlyRate, numPayments);
+        monthlyPayment = loanAmount * (monthlyRate * factor) / (factor - 1);
+        if (isNaN(monthlyPayment) || !isFinite(monthlyPayment)) {
+          monthlyPayment = 0;
+        }
+      }
+      const annualDebtService = monthlyPayment * 12;
+      const cashFlow = noi - annualDebtService;
+      
+      // Key metrics
+      const capRate = purchasePrice > 0 ? (noi / purchasePrice) * 100 : 0;
+      const totalCashNeeded = downPaymentAmt + purchaseCosts + rehabCosts;
+      const cocReturn = totalCashNeeded > 0 ? (cashFlow / totalCashNeeded) * 100 : 0;
+      const dscr = annualDebtService > 0 ? noi / annualDebtService : 0;
+      const rentToValue = purchasePrice > 0 ? (grossRentMonthly / purchasePrice) * 100 : 0;
+      const ltv = purchasePrice > 0 ? (loanAmount / purchasePrice) * 100 : 0;
+      const equity = arv - purchasePrice;
+      const mao = (arv * 0.70) - rehabCosts;
+      
+      // Deal Score
+      let dealScore = 50;
+      if (capRate >= 8) dealScore += 15;
+      else if (capRate >= 6) dealScore += 10;
+      if (cocReturn >= 10) dealScore += 15;
+      else if (cocReturn >= 8) dealScore += 10;
+      if (dscr >= 1.25) dealScore += 10;
+      if (rentToValue >= 1) dealScore += 10;
+      if (equity > 0) dealScore += Math.min(10, (equity / purchasePrice) * 100);
+      dealScore = Math.min(100, Math.max(0, Math.round(dealScore)));
+      
+      // Create result object matching backend format
+      const result = {
+        gross_income: effectiveIncome,
+        gross_expenses: totalOpEx,
+        loan_amount: loanAmount,
+        down_payment: downPaymentAmt,
+        closing_costs: purchaseCosts,
+        monthly_payment: monthlyPayment,
+        annual_debt_service: annualDebtService,
+        monthly_cash_flow: cashFlow / 12,
+        annual_cash_flow: cashFlow,
+        cap_rate: capRate,
+        cash_on_cash_return: cocReturn,
+        dscr: dscr,
+        total_cash_needed: totalCashNeeded,
+        ltv: ltv,
+        equity: equity,
+        arv: arv,
+        arv_psf: arv / (payload.sqft || 3172),
+        price_psf: purchasePrice / (payload.sqft || 3172),
+        rehab_psf: rehabCosts / (payload.sqft || 3172),
+        mao: mao,
+        deal_score: dealScore,
+        one_percent_rule: rentToValue >= 1
+      };
+      
+      updateUIFromBackend(result, purchasePrice, grossRentMonthly);
     }
     
     // Get slider value by label text

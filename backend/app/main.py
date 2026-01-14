@@ -48,6 +48,10 @@ except Exception as e:
 
 try:
     from app.services.property_service import property_service
+    from app.services.calculators import (
+        calculate_ltr, calculate_str, calculate_brrrr,
+        calculate_flip, calculate_house_hack, calculate_wholesale
+    )
     logger.info("Property service loaded successfully")
 except Exception as e:
     logger.error(f"Failed to load property service: {e}")
@@ -463,6 +467,520 @@ async def quick_analytics(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         logger.error(f"Quick analytics error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
+# WORKSHEET CALCULATION ENDPOINTS
+# ============================================
+
+from pydantic import BaseModel, Field
+
+
+class LTRWorksheetInput(BaseModel):
+    """Input parameters for LTR worksheet calculation."""
+    purchase_price: float = Field(..., description="Property purchase price")
+    monthly_rent: float = Field(..., description="Monthly gross rent")
+    property_taxes_annual: float = Field(6000, description="Annual property taxes")
+    insurance_annual: float = Field(2000, description="Annual insurance")
+    down_payment_pct: float = Field(0.20, description="Down payment percentage (0.20 = 20%)")
+    interest_rate: float = Field(0.07, description="Annual interest rate (0.07 = 7%)")
+    loan_term_years: int = Field(30, description="Loan term in years")
+    closing_costs: float = Field(0, description="Closing costs in dollars")
+    rehab_costs: float = Field(0, description="Rehab/renovation costs")
+    vacancy_rate: float = Field(0.08, description="Vacancy rate (0.08 = 8%)")
+    property_management_pct: float = Field(0.0, description="Property management fee %")
+    maintenance_pct: float = Field(0.02, description="Maintenance reserve %")
+    capex_pct: float = Field(0.0, description="Capital expenditure reserve %")
+    hoa_monthly: float = Field(0, description="Monthly HOA fees")
+    arv: float = Field(None, description="After Repair Value")
+    sqft: float = Field(None, description="Property square footage")
+
+
+@app.post("/api/v1/worksheet/ltr/calculate")
+async def calculate_ltr_worksheet(input_data: LTRWorksheetInput):
+    """
+    Calculate LTR worksheet metrics.
+    
+    Accepts worksheet slider values and returns all calculated metrics
+    for display in the interactive worksheet.
+    """
+    try:
+        # Use the backend calculator
+        result = calculate_ltr(
+            purchase_price=input_data.purchase_price,
+            monthly_rent=input_data.monthly_rent,
+            property_taxes_annual=input_data.property_taxes_annual,
+            hoa_monthly=input_data.hoa_monthly,
+            down_payment_pct=input_data.down_payment_pct,
+            interest_rate=input_data.interest_rate,
+            loan_term_years=input_data.loan_term_years,
+            closing_costs_pct=input_data.closing_costs / input_data.purchase_price if input_data.closing_costs > 0 else 0.03,
+            vacancy_rate=input_data.vacancy_rate,
+            property_management_pct=input_data.property_management_pct,
+            maintenance_pct=input_data.maintenance_pct + input_data.capex_pct,
+            insurance_annual=input_data.insurance_annual,
+        )
+        
+        # Add worksheet-specific calculations
+        arv = input_data.arv or input_data.purchase_price
+        sqft = input_data.sqft or 1
+        
+        # Per square foot metrics
+        arv_psf = arv / sqft if sqft > 0 else 0
+        price_psf = input_data.purchase_price / sqft if sqft > 0 else 0
+        rehab_psf = input_data.rehab_costs / sqft if sqft > 0 else 0
+        
+        # Equity
+        equity = arv - input_data.purchase_price
+        
+        # Total cash needed (including rehab)
+        total_cash_needed = result["total_cash_required"] + input_data.rehab_costs
+        
+        # MAO (70% of ARV minus rehab)
+        mao = (arv * 0.70) - input_data.rehab_costs
+        
+        # Recalculate CoC with rehab costs
+        annual_cash_flow = result["annual_cash_flow"]
+        coc_return = (annual_cash_flow / total_cash_needed * 100) if total_cash_needed > 0 else 0
+        
+        return {
+            # Income
+            "gross_income": result["effective_gross_income"],
+            "annual_gross_rent": result["annual_gross_rent"],
+            "vacancy_loss": result["vacancy_loss"],
+            
+            # Expenses
+            "gross_expenses": result["total_operating_expenses"],
+            "property_taxes": result["property_taxes"],
+            "insurance": result["insurance"],
+            "property_management": result["property_management"],
+            "maintenance": result["maintenance"],
+            "hoa_fees": result["hoa_fees"],
+            
+            # Financing
+            "loan_amount": result["loan_amount"],
+            "down_payment": result["down_payment"],
+            "closing_costs": result["closing_costs"],
+            "monthly_payment": result["monthly_pi"],
+            "annual_debt_service": result["annual_debt_service"],
+            
+            # Cash Flow
+            "noi": result["noi"],
+            "monthly_cash_flow": result["monthly_cash_flow"],
+            "annual_cash_flow": result["annual_cash_flow"],
+            
+            # Key Metrics
+            "cap_rate": result["cap_rate"] * 100,  # Convert to percentage
+            "cash_on_cash_return": coc_return,
+            "dscr": result["dscr"],
+            "grm": result["grm"],
+            "one_percent_rule": result["one_percent_rule"],
+            
+            # Valuation
+            "arv": arv,
+            "arv_psf": arv_psf,
+            "price_psf": price_psf,
+            "rehab_psf": rehab_psf,
+            "equity": equity,
+            "mao": mao,
+            
+            # Investment Summary
+            "total_cash_needed": total_cash_needed,
+            "ltv": (result["loan_amount"] / input_data.purchase_price * 100) if input_data.purchase_price > 0 else 0,
+            
+            # Deal Score (simplified)
+            "deal_score": min(100, max(0, round(
+                50 + 
+                (15 if result["cap_rate"] >= 0.08 else 10 if result["cap_rate"] >= 0.06 else 0) +
+                (15 if coc_return >= 10 else 10 if coc_return >= 8 else 0) +
+                (10 if result["dscr"] >= 1.25 else 0) +
+                (10 if result["one_percent_rule"] else 0)
+            ))),
+        }
+        
+    except Exception as e:
+        logger.error(f"LTR worksheet calculation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class STRWorksheetInput(BaseModel):
+    """Input parameters for STR worksheet calculation."""
+    purchase_price: float
+    average_daily_rate: float
+    occupancy_rate: float = Field(0.75, description="Occupancy rate (0.75 = 75%)")
+    property_taxes_annual: float = 6000
+    insurance_annual: float = 2000
+    down_payment_pct: float = 0.25
+    interest_rate: float = 0.07
+    loan_term_years: int = 30
+    closing_costs: float = 0
+    furnishing_budget: float = 10000
+    platform_fees_pct: float = 0.15
+    property_management_pct: float = 0.20
+    cleaning_cost_per_turn: float = 150
+    cleaning_fee_revenue: float = 100
+    avg_booking_length: int = 4
+    supplies_monthly: float = 100
+    utilities_monthly: float = 200
+    maintenance_pct: float = 0.05
+    capex_pct: float = 0.05
+
+
+@app.post("/api/v1/worksheet/str/calculate")
+async def calculate_str_worksheet(input_data: STRWorksheetInput):
+    """Calculate STR worksheet metrics."""
+    try:
+        result = calculate_str(
+            purchase_price=input_data.purchase_price,
+            average_daily_rate=input_data.average_daily_rate,
+            occupancy_rate=input_data.occupancy_rate,
+            property_taxes_annual=input_data.property_taxes_annual,
+            down_payment_pct=input_data.down_payment_pct,
+            interest_rate=input_data.interest_rate,
+            loan_term_years=input_data.loan_term_years,
+            closing_costs_pct=input_data.closing_costs / input_data.purchase_price if input_data.closing_costs > 0 else 0.03,
+            furniture_setup_cost=input_data.furnishing_budget,
+            platform_fees_pct=input_data.platform_fees_pct,
+            str_management_pct=input_data.property_management_pct,
+            cleaning_cost_per_turnover=input_data.cleaning_cost_per_turn,
+            cleaning_fee_revenue=input_data.cleaning_fee_revenue,
+            avg_length_of_stay_days=input_data.avg_booking_length,
+            supplies_monthly=input_data.supplies_monthly,
+            additional_utilities_monthly=input_data.utilities_monthly,
+            insurance_annual=input_data.insurance_annual,
+            maintenance_annual=input_data.purchase_price * (input_data.maintenance_pct + input_data.capex_pct),
+        )
+        
+        return {
+            # Revenue
+            "gross_revenue": result["total_gross_revenue"],
+            "rental_revenue": result["rental_revenue"],
+            "cleaning_fee_revenue": result["cleaning_fee_revenue"],
+            "nights_occupied": result["nights_occupied"],
+            "num_bookings": result["num_bookings"],
+            "revpar": result["revenue_per_available_night"],
+            
+            # Expenses
+            "gross_expenses": result["total_operating_expenses"],
+            "platform_fees": result["platform_fees"],
+            "str_management": result["str_management"],
+            "cleaning_costs": result["cleaning_costs"],
+            "property_taxes": result["property_taxes"],
+            "insurance": result["insurance"],
+            
+            # Cash Flow
+            "noi": result["noi"],
+            "monthly_cash_flow": result["monthly_cash_flow"],
+            "annual_cash_flow": result["annual_cash_flow"],
+            
+            # Key Metrics
+            "cap_rate": result["cap_rate"] * 100,
+            "cash_on_cash_return": result["cash_on_cash_return"] * 100,
+            "dscr": result["dscr"],
+            "break_even_occupancy": result["break_even_occupancy"] * 100,
+            
+            # Financing
+            "loan_amount": result["loan_amount"],
+            "monthly_payment": result["monthly_pi"],
+            "total_cash_needed": result["total_cash_required"],
+        }
+        
+    except Exception as e:
+        logger.error(f"STR worksheet calculation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class BRRRRWorksheetInput(BaseModel):
+    """Input parameters for BRRRR worksheet calculation."""
+    purchase_price: float
+    rehab_costs: float
+    arv: float
+    monthly_rent: float
+    property_taxes_annual: float = 6000
+    insurance_annual: float = 2000
+    down_payment_pct: float = 0.20
+    interest_rate: float = 0.10
+    points: float = 2
+    holding_months: int = 6
+    refi_ltv: float = 0.75
+    refi_interest_rate: float = 0.07
+    refi_loan_term: int = 30
+    refi_closing_costs: float = 3000
+    vacancy_rate: float = 0.08
+    property_management_pct: float = 0.08
+    maintenance_pct: float = 0.05
+    capex_pct: float = 0.05
+
+
+@app.post("/api/v1/worksheet/brrrr/calculate")
+async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput):
+    """Calculate BRRRR worksheet metrics."""
+    try:
+        result = calculate_brrrr(
+            market_value=input_data.purchase_price,
+            arv=input_data.arv,
+            monthly_rent_post_rehab=input_data.monthly_rent,
+            property_taxes_annual=input_data.property_taxes_annual,
+            purchase_discount_pct=0,  # Already at purchase price
+            down_payment_pct=input_data.down_payment_pct,
+            interest_rate=input_data.interest_rate,
+            loan_term_years=1,  # Hard money is short term
+            closing_costs_pct=input_data.points / 100,
+            renovation_budget=input_data.rehab_costs,
+            holding_period_months=input_data.holding_months,
+            refinance_ltv=input_data.refi_ltv,
+            refinance_interest_rate=input_data.refi_interest_rate,
+            refinance_term_years=input_data.refi_loan_term,
+            refinance_closing_costs=input_data.refi_closing_costs,
+            vacancy_rate=input_data.vacancy_rate,
+            operating_expense_pct=input_data.property_management_pct + input_data.maintenance_pct + input_data.capex_pct,
+        )
+        
+        return {
+            # Purchase
+            "purchase_price": result["purchase_price"],
+            "total_rehab": result["total_rehab"],
+            "holding_costs": result["holding_costs"],
+            "total_cash_invested": result["total_cash_invested"],
+            
+            # Refinance
+            "refinance_loan_amount": result["refinance_loan_amount"],
+            "cash_out": result["cash_out"],
+            "cash_left_in_deal": result["cash_left_in_deal"],
+            
+            # Cash Flow
+            "noi": result["noi"],
+            "monthly_cash_flow": result["monthly_cash_flow_post_refi"],
+            "annual_cash_flow": result["annual_cash_flow_post_refi"],
+            
+            # Key Metrics
+            "cap_rate": result["cap_rate"] * 100,
+            "cash_on_cash_return": result["infinite_coc_return"] * 100 if result["cash_left_in_deal"] > 0 else float('inf'),
+            "equity_position": result["equity_position"],
+            "all_in_pct_arv": result["all_in_pct_arv"] * 100,
+            "infinite_roi_achieved": result["infinite_roi_achieved"],
+        }
+        
+    except Exception as e:
+        logger.error(f"BRRRR worksheet calculation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class FlipWorksheetInput(BaseModel):
+    """Input parameters for Fix & Flip worksheet calculation."""
+    purchase_price: float
+    rehab_costs: float
+    arv: float
+    down_payment_pct: float = 0.10
+    interest_rate: float = 0.12
+    points: float = 2
+    holding_months: int = 6
+    property_taxes_annual: float = 4000
+    insurance_annual: float = 1500
+    utilities_monthly: float = 150
+    selling_costs_pct: float = 0.08
+
+
+@app.post("/api/v1/worksheet/flip/calculate")
+async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
+    """Calculate Fix & Flip worksheet metrics."""
+    try:
+        result = calculate_flip(
+            market_value=input_data.purchase_price,
+            arv=input_data.arv,
+            purchase_discount_pct=0,
+            hard_money_ltv=1 - input_data.down_payment_pct,
+            hard_money_rate=input_data.interest_rate,
+            closing_costs_pct=input_data.points / 100,
+            renovation_budget=input_data.rehab_costs,
+            holding_period_months=input_data.holding_months,
+            property_taxes_annual=input_data.property_taxes_annual,
+            insurance_annual=input_data.insurance_annual,
+            utilities_monthly=input_data.utilities_monthly,
+            selling_costs_pct=input_data.selling_costs_pct,
+        )
+        
+        return {
+            # Costs
+            "purchase_price": result["purchase_price"],
+            "total_renovation": result["total_renovation"],
+            "total_holding_costs": result["total_holding_costs"],
+            "total_project_cost": result["total_project_cost"],
+            "total_cash_required": result["total_cash_required"],
+            
+            # Sale
+            "arv": input_data.arv,
+            "selling_costs": result["total_selling_costs"],
+            "net_sale_proceeds": result["net_sale_proceeds"],
+            
+            # Profit
+            "gross_profit": result["gross_profit"],
+            "net_profit_before_tax": result["net_profit_before_tax"],
+            "net_profit_after_tax": result["net_profit_after_tax"],
+            
+            # Key Metrics
+            "roi": result["roi"] * 100,
+            "annualized_roi": result["annualized_roi"] * 100,
+            "profit_margin": result["profit_margin"] * 100,
+            "meets_70_rule": result["meets_70_rule"],
+            "mao": result["seventy_pct_max_price"],
+        }
+        
+    except Exception as e:
+        logger.error(f"Flip worksheet calculation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class HouseHackWorksheetInput(BaseModel):
+    """Input parameters for House Hack worksheet calculation."""
+    purchase_price: float
+    unit_rents: list = Field(default=[0, 0, 0], description="List of unit rents [unit2, unit3, unit4]")
+    owner_market_rent: float = 1500
+    property_taxes_annual: float = 6000
+    insurance_annual: float = 2000
+    down_payment_pct: float = 0.035
+    interest_rate: float = 0.07
+    loan_term_years: int = 30
+    closing_costs: float = 0
+    pmi_rate: float = 0.005
+    vacancy_rate: float = 0.05
+    maintenance_monthly: float = 200
+    capex_monthly: float = 100
+    utilities_monthly: float = 150
+
+
+@app.post("/api/v1/worksheet/househack/calculate")
+async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
+    """Calculate House Hack worksheet metrics."""
+    try:
+        # Calculate total rental income from other units
+        total_rent = sum(input_data.unit_rents)
+        rooms_rented = sum(1 for r in input_data.unit_rents if r > 0)
+        avg_rent = total_rent / rooms_rented if rooms_rented > 0 else 0
+        
+        result = calculate_house_hack(
+            purchase_price=input_data.purchase_price,
+            monthly_rent_per_room=avg_rent,
+            rooms_rented=rooms_rented,
+            property_taxes_annual=input_data.property_taxes_annual,
+            owner_unit_market_rent=input_data.owner_market_rent,
+            down_payment_pct=input_data.down_payment_pct,
+            interest_rate=input_data.interest_rate,
+            loan_term_years=input_data.loan_term_years,
+            closing_costs_pct=input_data.closing_costs / input_data.purchase_price if input_data.closing_costs > 0 else 0.03,
+            fha_mip_rate=input_data.pmi_rate,
+            insurance_annual=input_data.insurance_annual,
+            utilities_shared_monthly=input_data.utilities_monthly,
+            maintenance_monthly=input_data.maintenance_monthly + input_data.capex_monthly,
+        )
+        
+        # Calculate adjusted metrics for vacancy
+        effective_rental_income = total_rent * (1 - input_data.vacancy_rate)
+        monthly_expenses = result["monthly_piti"] + input_data.utilities_monthly + input_data.maintenance_monthly + input_data.capex_monthly
+        your_housing_cost = monthly_expenses - effective_rental_income
+        savings_vs_renting = input_data.owner_market_rent - your_housing_cost
+        
+        # Move-out scenario (as full rental)
+        full_rental_income = (total_rent + input_data.owner_market_rent) * (1 - input_data.vacancy_rate)
+        full_rental_noi = full_rental_income * 12 - (input_data.property_taxes_annual + input_data.insurance_annual + (input_data.maintenance_monthly + input_data.capex_monthly) * 12)
+        full_rental_cash_flow = full_rental_noi - (result["monthly_pi"] * 12)
+        
+        return {
+            # Housing Cost
+            "your_housing_cost": your_housing_cost,
+            "rental_income": effective_rental_income,
+            "monthly_expenses": monthly_expenses,
+            "savings_vs_renting": savings_vs_renting,
+            
+            # If You Move Out
+            "full_rental_income": full_rental_income,
+            "full_rental_cash_flow": full_rental_cash_flow / 12,
+            "full_rental_annual": full_rental_cash_flow,
+            
+            # Financing
+            "loan_amount": result["loan_amount"],
+            "monthly_payment": result["monthly_pi"],
+            "monthly_piti": result["monthly_piti"],
+            "down_payment": result["down_payment"],
+            "closing_costs": result["closing_costs"],
+            "total_cash_needed": result["total_cash_required"],
+            
+            # Key Metrics
+            "housing_offset": result["housing_cost_offset_pct"] * 100,
+            "coc_return": (full_rental_cash_flow / result["total_cash_required"] * 100) if result["total_cash_required"] > 0 else 0,
+            "deal_score": min(100, max(0, round(
+                50 + 
+                (20 if your_housing_cost <= 0 else 10 if your_housing_cost <= 500 else 0) +
+                (15 if savings_vs_renting >= 1000 else 10 if savings_vs_renting >= 500 else 0) +
+                (15 if full_rental_cash_flow > 0 else 0)
+            ))),
+        }
+        
+    except Exception as e:
+        logger.error(f"House Hack worksheet calculation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class WholesaleWorksheetInput(BaseModel):
+    """Input parameters for Wholesale worksheet calculation."""
+    arv: float
+    contract_price: float
+    investor_price: float
+    rehab_costs: float
+    assignment_fee: float = 15000
+    marketing_costs: float = 500
+    earnest_money: float = 1000
+
+
+@app.post("/api/v1/worksheet/wholesale/calculate")
+async def calculate_wholesale_worksheet(input_data: WholesaleWorksheetInput):
+    """Calculate Wholesale worksheet metrics."""
+    try:
+        # Calculate MAO using 70% rule
+        mao = (input_data.arv * 0.70) - input_data.rehab_costs
+        
+        # Calculate assignment fee from prices
+        assignment_fee = input_data.investor_price - input_data.contract_price
+        
+        result = calculate_wholesale(
+            arv=input_data.arv,
+            estimated_rehab_costs=input_data.rehab_costs,
+            assignment_fee=assignment_fee,
+            marketing_costs=input_data.marketing_costs,
+            earnest_money_deposit=input_data.earnest_money,
+        )
+        
+        # Investor ROI calculation
+        investor_all_in = input_data.investor_price + input_data.rehab_costs
+        investor_profit = input_data.arv - investor_all_in
+        investor_roi = (investor_profit / investor_all_in * 100) if investor_all_in > 0 else 0
+        
+        return {
+            # Deal Structure
+            "contract_price": input_data.contract_price,
+            "investor_price": input_data.investor_price,
+            "assignment_fee": assignment_fee,
+            "mao": mao,
+            
+            # Your Profit
+            "gross_profit": result["gross_profit"],
+            "net_profit": result["net_profit"],
+            "roi": result["roi"] * 100,
+            "total_cash_at_risk": result["total_cash_at_risk"],
+            
+            # Investor Analysis
+            "investor_all_in": investor_all_in,
+            "investor_profit": investor_profit,
+            "investor_roi": investor_roi,
+            
+            # Deal Viability
+            "deal_viability": result["deal_viability"],
+            "spread_available": result["spread_available"],
+        }
+        
+    except Exception as e:
+        logger.error(f"Wholesale worksheet calculation error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
