@@ -172,11 +172,17 @@
     /* Main Content Area */
     .worksheet-main-area {
       display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 20px;
+      grid-template-columns: 1fr 420px;
+      gap: 24px;
       padding: 24px;
       max-width: 1600px;
       margin: 0 auto;
+    }
+    
+    @media (min-width: 1400px) {
+      .worksheet-main-area {
+        grid-template-columns: 1fr 480px;
+      }
     }
     
     /* Help Panel */
@@ -1318,249 +1324,130 @@
       color: var(--ws-text-muted);
     }
     
-    /* ===== PRICING LADDER (Clean Concept Design) ===== */
-    .pricing-scale {
-      padding: 40px 30px;
-      position: relative;
-      min-height: 550px;
+    /* ===== PRICE POSITION - Clean Simple Layout ===== */
+    .price-position-wrapper {
       display: flex;
-      align-items: stretch;
-      gap: 40px;
-      background: transparent;
-    }
-    
-    /* Left side - Labels and IQ Target */
-    .pricing-scale-left {
-      flex: 0 0 200px;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    
-    .pricing-scale-label-top {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--ws-text-primary);
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      position: absolute;
-      left: 0;
-      top: 20px;
-      height: auto;
-    }
-    
-    .pricing-scale-label-bottom {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--ws-text-primary);
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      position: absolute;
-      left: 0;
-      bottom: 20px;
-      height: auto;
-    }
-    
-    /* Scale ticks on left side of bar */
-    .pricing-scale-ticks {
-      position: absolute;
-      left: 60px;
-      top: 40px;
-      bottom: 80px;
-      width: 20px;
-    }
-    
-    .pricing-scale-tick {
-      position: absolute;
-      left: 0;
-      width: 12px;
-      height: 1px;
-      background: var(--ws-border);
-    }
-    
-    /* IQ Target indicator on left */
-    .pricing-iq-target {
-      position: absolute;
-      left: 0;
-      transform: translateY(-50%);
-      z-index: 10;
-      max-width: 160px;
-    }
-    
-    .pricing-iq-target-pointer {
-      width: 16px;
-      height: 16px;
-      background: #10b981;
-      border-radius: 50%;
-      margin-bottom: 10px;
-      border: 2px solid white;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
-    .pricing-iq-target-label {
-      font-size: 13px;
-      font-weight: 700;
-      color: #10b981;
-      margin-bottom: 6px;
-    }
-    
-    .pricing-iq-target-cashflow {
-      font-size: 11px;
-      color: var(--ws-text-secondary);
-      margin-bottom: 4px;
-    }
-    
-    .pricing-iq-target-price {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--ws-text-primary);
-    }
-    
-    /* Center - Vertical gradient bar */
-    .pricing-scale-center {
-      flex: 1;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 450px;
-      padding: 0 20px;
-    }
-    
-    .pricing-scale-bar {
-      position: relative;
-      width: 50px;
-      height: 100%;
-      min-height: 450px;
-      background: linear-gradient(180deg, 
-        #dc2626 0%,        /* Red at top */
-        #f97316 15%,       /* Orange */
-        #eab308 35%,       /* Yellow */
-        #10b981 65%,       /* Green */
-        #007ea7 100%);     /* Blue/Teal at bottom */
-      border-radius: 25px 25px 0 0;
-      margin: 0 auto;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Scale marks on left side of bar */
-    .pricing-scale-bar-marks {
-      position: absolute;
-      left: -25px;
-      top: 0;
-      bottom: 0;
-      width: 20px;
-    }
-    
-    .pricing-scale-bar-mark {
-      position: absolute;
-      left: 0;
-      width: 12px;
-      height: 1px;
-      background: rgba(0, 0, 0, 0.2);
-    }
-    
-    /* Tapered bottom with arrow */
-    .pricing-scale-bar::after {
-      content: '';
-      position: absolute;
-      bottom: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 25px solid transparent;
-      border-right: 25px solid transparent;
-      border-top: 40px solid #007ea7;
-    }
-    
-    /* Right side - Price markers */
-    .pricing-scale-right {
-      flex: 0 0 220px;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .pricing-scale-marker {
-      position: absolute;
-      right: 0;
-      transform: translateY(-50%);
-      display: flex;
-      flex-direction: column;
+      gap: 24px;
+      padding: 16px;
       align-items: flex-start;
     }
     
-    .pricing-scale-marker-triangle {
-      width: 0;
-      height: 0;
-      border-top: 10px solid transparent;
-      border-bottom: 10px solid transparent;
-      border-left: 14px solid;
-      margin-bottom: 10px;
+    /* The gradient bar container */
+    .price-bar-container {
+      position: relative;
+      flex-shrink: 0;
     }
     
-    .pricing-scale-marker-label {
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 6px;
+    .price-bar-svg {
+      display: block;
+      width: 60px;
+      height: 400px;
     }
     
-    .pricing-scale-marker-subtitle {
+    /* Your Price marker arrow */
+    .your-price-arrow {
+      position: absolute;
+      left: 65px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transform: translateY(-50%);
+      transition: top 0.3s ease;
+      white-space: nowrap;
+    }
+    
+    .arrow-icon {
+      color: #007ea7;
+      font-size: 14px;
+    }
+    
+    .arrow-text {
       font-size: 11px;
-      color: var(--ws-text-muted);
-      margin-bottom: 4px;
-    }
-    
-    .pricing-scale-marker-price {
-      font-size: 18px;
       font-weight: 700;
-      color: var(--ws-text-primary);
-      margin-bottom: 4px;
+      color: #007ea7;
+      background: rgba(0, 126, 167, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
     }
     
-    .pricing-scale-marker-percent {
+    /* Price list on the right */
+    .price-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 20px;
+    }
+    
+    .price-line {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--ws-bg-alt);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    
+    .price-line span:first-child {
+      color: var(--ws-text-muted);
+      font-weight: 500;
+    }
+    
+    .price-line span:last-child {
+      color: var(--ws-text-primary);
+      font-weight: 700;
+    }
+    
+    .price-line.active {
+      background: linear-gradient(135deg, rgba(0, 126, 167, 0.15) 0%, rgba(0, 126, 167, 0.05) 100%);
+      border: 1px solid var(--iq-teal);
+    }
+    
+    .price-line.active span:last-child {
+      color: var(--iq-teal);
+    }
+    
+    /* Cash flow result box */
+    .cashflow-result {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+    
+    .cashflow-result span:first-child {
       font-size: 12px;
       color: var(--ws-text-muted);
+      font-weight: 600;
     }
     
-    .pricing-scale-marker.list .pricing-scale-marker-triangle,
-    .pricing-scale-marker.list .pricing-scale-marker-label {
-      color: #dc2626;
-    }
-    
-    .pricing-scale-marker.breakeven .pricing-scale-marker-triangle,
-    .pricing-scale-marker.breakeven .pricing-scale-marker-label {
-      color: #f97316;
-    }
-    
-    /* Investor Opportunity label */
-    .pricing-scale-investor-label {
-      position: absolute;
-      right: 0;
-      bottom: 20px;
-      font-size: 11px;
+    .cashflow-result span:last-child {
+      font-size: 16px;
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--ws-text-primary);
-      line-height: 1.4;
+      color: #10b981;
+    }
+    
+    .cashflow-result.negative {
+      background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(220, 38, 38, 0.05) 100%);
+      border-color: rgba(220, 38, 38, 0.3);
+    }
+    
+    .cashflow-result.negative span:last-child {
+      color: #dc2626;
     }
     
     .pricing-scale-summary {
       text-align: center;
-      padding-top: 16px;
-      border-top: 2px solid var(--ws-border-light);
-      margin-top: 20px;
+      padding-top: 12px;
+      border-top: 1px solid var(--ws-border-light);
+      margin-top: 12px;
     }
     
     .pricing-scale-summary-text {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--ws-text-secondary);
     }
@@ -2484,70 +2371,29 @@
     
     <!-- Charts Sidebar - Dynamic Visualizations -->
     <aside class="worksheet-charts-sidebar">
-      <!-- Pricing Scale (New Design) -->
+      <!-- Price Position -->
       <div class="chart-card">
-        <div class="chart-card-title">Pricing Scale</div>
-        <div class="pricing-scale">
-          <!-- Left side - Labels and IQ Target -->
-          <div class="pricing-scale-left">
-            <div class="pricing-scale-label-top">SELLER PRICING</div>
-            
-            <!-- Scale ticks on left -->
-            <div class="pricing-scale-ticks" id="pricing-scale-ticks"></div>
-            
-            <!-- IQ Target indicator (positioned dynamically) -->
-            <div class="pricing-iq-target" id="pricing-iq-target">
-              <div class="pricing-iq-target-pointer"></div>
-              <div class="pricing-iq-target-label">IQ Target</div>
-              <div class="pricing-iq-target-cashflow" id="iq-target-cashflow">Cash Flow: $357/month</div>
-              <div class="pricing-iq-target-price" id="iq-target-price">$2,682,000</div>
-            </div>
-            
-            <div class="pricing-scale-label-bottom">INVESTOR OPPORTUNITY</div>
-          </div>
-          
-          <!-- Center - Vertical gradient bar -->
-          <div class="pricing-scale-center">
-            <div class="pricing-scale-bar" id="pricing-scale-bar">
-              <!-- Scale marks on left side of bar -->
-              <div class="pricing-scale-bar-marks" id="pricing-bar-marks"></div>
+        <div class="chart-card-title">Price Position</div>
+        <div class="price-position-wrapper">
+          <!-- Gradient bar at native size -->
+          <div class="price-bar-container">
+            <img src="/images/price-ladder-arrow.svg" alt="Price Scale" class="price-bar-svg" />
+            <!-- Single marker for Your Price -->
+            <div class="your-price-arrow" id="your-price-marker" style="top: 42%;">
+              <span class="arrow-icon">▶</span>
+              <span class="arrow-text">Your Price</span>
             </div>
           </div>
-          
-          <!-- Right side - Price markers -->
-          <div class="pricing-scale-right">
-            <!-- List Price (top) -->
-            <div class="pricing-scale-marker list" id="pricing-marker-list">
-              <div class="pricing-scale-marker-triangle"></div>
-              <div class="pricing-scale-marker-label">List Price</div>
-              <div class="pricing-scale-marker-subtitle">Current Asking</div>
-              <div class="pricing-scale-marker-price" id="pricing-value-list">$4,423,900</div>
-              <div class="pricing-scale-marker-percent" id="pricing-percent-list">100%</div>
+          <!-- Price list -->
+          <div class="price-list">
+            <div class="price-line"><span>List Price</span><span id="list-value">$723,600</span></div>
+            <div class="price-line"><span>Breakeven</span><span id="breakeven-value">$650,000</span></div>
+            <div class="price-line active"><span>Your Price</span><span id="purchase-value">$723,600</span></div>
+            <div class="price-line"><span>IQ Target</span><span id="target-value">$557,172</span></div>
+            <div class="cashflow-result" id="cashflow-box">
+              <span>Cash Flow</span>
+              <span id="cashflow-amount">$2,508/mo</span>
             </div>
-            
-            <!-- Breakeven (middle) -->
-            <div class="pricing-scale-marker breakeven" id="pricing-marker-breakeven">
-              <div class="pricing-scale-marker-triangle"></div>
-              <div class="pricing-scale-marker-label">Breakeven</div>
-              <div class="pricing-scale-marker-subtitle">$0 Cash Flow</div>
-              <div class="pricing-scale-marker-price" id="pricing-value-breakeven">$4,424,000</div>
-              <div class="pricing-scale-marker-percent" id="pricing-percent-breakeven">100%</div>
-            </div>
-            
-            <!-- Investor Opportunity label -->
-            <div class="pricing-scale-investor-label">
-              INVESTOR<br/>OPPORTUNITY
-            </div>
-          </div>
-        </div>
-        
-        <!-- Discount Indicator -->
-        <div class="pricing-discount-indicator">
-          <div class="pricing-discount-bar">
-            <div class="pricing-discount-fill" id="discount-fill" style="width: 90%;"></div>
-          </div>
-          <div class="pricing-discount-label">
-            <span id="discount-percent">9.0%</span> below list
           </div>
         </div>
       </div>
@@ -3086,13 +2932,14 @@
       }
     }
     
-    // Update pricing ladder using backend-calculated values (New Concept Design)
+    // Update Price Position visual
     function updatePricingLadderFromBackend(purchasePrice, grossRentMonthly, result) {
-      // Get threshold prices
-      const iqTargetPrice = result.mao || 2682000; // IQ Target = MAO
+      // Get prices
+      const listPrice = window.propertyListPrice || 723600;
+      const iqTargetPrice = result.mao || listPrice * 0.77;
       const monthlyCashFlow = result.monthly_cash_flow || 0;
       
-      // Calculate breakeven if not provided in result
+      // Calculate breakeven from NOI
       let breakevenPrice = result.breakeven_price;
       if (!breakevenPrice && result.noi) {
         const downPaymentPct = getSliderValue('Down Payment', 20) / 100;
@@ -3100,105 +2947,46 @@
         const loanTerm = getSliderValue('Loan Term', 30);
         breakevenPrice = calculateBreakevenFromNOI(result.noi, downPaymentPct, interestRate, loanTerm);
       }
-      if (!breakevenPrice) breakevenPrice = 4424000; // Fallback
+      if (!breakevenPrice || breakevenPrice <= 0) breakevenPrice = listPrice * 0.90;
       
-      const listPrice = window.propertyListPrice || result.list_price || 4423900;
+      // Position "Your Price" marker relative to breakeven
+      // Breakeven line is at 50% (center) of the SVG (200px / 400px)
+      // Above breakeven = LOSS (red zone), Below breakeven = PROFIT (green zone)
+      const breakevenPosition = 50; // Center of the bar where breakeven line is
       
-      // Update IQ Target on left side
-      const iqTarget = document.getElementById('pricing-iq-target');
-      const iqCashFlow = document.getElementById('iq-target-cashflow');
-      const iqPrice = document.getElementById('iq-target-price');
+      // Calculate how far above/below breakeven the purchase price is
+      // If purchase > breakeven, marker goes UP (toward LOSS)
+      // If purchase < breakeven, marker goes DOWN (toward PROFIT)
+      const priceDiff = purchasePrice - breakevenPrice;
+      const priceRange = breakevenPrice * 0.5; // Range for positioning (50% of breakeven)
+      const offset = (priceDiff / priceRange) * 30; // Max 30% movement from center
       
-      if (iqCashFlow) {
-        iqCashFlow.textContent = `Cash Flow: ${formatCurrency(monthlyCashFlow)}/month`;
-      }
-      if (iqPrice) {
-        iqPrice.textContent = formatCurrency(iqTargetPrice);
-      }
+      let markerPosition = breakevenPosition - offset; // Subtract because higher price = higher position (lower %)
+      markerPosition = Math.max(10, Math.min(78, markerPosition)); // Clamp within visible area
       
-      // Update List Price and Breakeven on right side
-      updateElement('pricing-value-list', formatCurrency(listPrice));
-      updateElement('pricing-value-breakeven', formatCurrency(breakevenPrice));
-      
-      // Calculate percentages relative to list price
-      const listPercent = 100;
-      const breakevenPercent = ((breakevenPrice / listPrice) * 100).toFixed(0);
-      updateElement('pricing-percent-list', listPercent + '%');
-      updateElement('pricing-percent-breakeven', breakevenPercent + '%');
-      
-      // Calculate vertical positions (0% = bottom, 100% = top)
-      const minPrice = iqTargetPrice;
-      const maxPrice = listPrice;
-      const range = maxPrice - minPrice;
-      
-      function getVerticalPosition(price) {
-        if (range === 0) return 50;
-        // Higher price = higher position (closer to top)
-        // Position from top of container (0% = top, 100% = bottom)
-        return ((price - minPrice) / range) * 100;
+      // Position the marker
+      const marker = document.getElementById('your-price-marker');
+      if (marker) {
+        marker.style.top = markerPosition + '%';
       }
       
-      // Position IQ Target on left side (accounting for top padding)
-      if (iqTarget) {
-        const iqPosition = getVerticalPosition(iqTargetPrice);
-        // Add offset for top label area (approximately 7% of container)
-        const adjustedPosition = 7 + (iqPosition * 0.86); // Scale to 86% of available space
-        iqTarget.style.top = `${adjustedPosition}%`;
-        iqTarget.style.bottom = 'auto';
+      // Update price values
+      updateElement('list-value', formatCurrency(listPrice));
+      updateElement('breakeven-value', formatCurrency(breakevenPrice));
+      updateElement('purchase-value', formatCurrency(purchasePrice));
+      updateElement('target-value', formatCurrency(iqTargetPrice));
+      
+      // Update cash flow
+      const cashflowEl = document.getElementById('cashflow-amount');
+      const cashflowBox = document.getElementById('cashflow-box');
+      if (cashflowEl) {
+        cashflowEl.textContent = formatCurrency(monthlyCashFlow) + '/mo';
+      }
+      if (cashflowBox) {
+        cashflowBox.className = 'cashflow-result' + (monthlyCashFlow < 0 ? ' negative' : '');
       }
       
-      // Position List Price marker (top)
-      const listMarker = document.getElementById('pricing-marker-list');
-      if (listMarker) {
-        const listPosition = getVerticalPosition(listPrice);
-        // Add offset for top padding
-        const adjustedPosition = 7 + (listPosition * 0.86);
-        listMarker.style.top = `${adjustedPosition}%`;
-        listMarker.style.bottom = 'auto';
-      }
-      
-      // Position Breakeven marker (middle)
-      const breakevenMarker = document.getElementById('pricing-marker-breakeven');
-      if (breakevenMarker) {
-        const breakevenPosition = getVerticalPosition(breakevenPrice);
-        // Add offset for top padding
-        const adjustedPosition = 7 + (breakevenPosition * 0.86);
-        breakevenMarker.style.top = `${adjustedPosition}%`;
-        breakevenMarker.style.bottom = 'auto';
-      }
-      
-      // Generate scale ticks on left side (aligned with bar)
-      const ticksContainer = document.getElementById('pricing-scale-ticks');
-      if (ticksContainer) {
-        ticksContainer.innerHTML = '';
-        const numTicks = 12;
-        // Position ticks to align with bar (accounting for top/bottom padding)
-        const topOffset = 7; // Top padding percentage
-        const bottomOffset = 7; // Bottom padding percentage
-        const availableHeight = 100 - topOffset - bottomOffset;
-        for (let i = 0; i <= numTicks; i++) {
-          const tick = document.createElement('div');
-          tick.className = 'pricing-scale-tick';
-          const position = topOffset + (i / numTicks) * availableHeight;
-          tick.style.top = `${position}%`;
-          ticksContainer.appendChild(tick);
-        }
-      }
-      
-      // Generate scale marks on bar itself
-      const barMarksContainer = document.getElementById('pricing-bar-marks');
-      if (barMarksContainer) {
-        barMarksContainer.innerHTML = '';
-        const numMarks = 12;
-        for (let i = 0; i <= numMarks; i++) {
-          const mark = document.createElement('div');
-          mark.className = 'pricing-scale-bar-mark';
-          mark.style.top = `${(i / numMarks) * 100}%`;
-          barMarksContainer.appendChild(mark);
-        }
-      }
-      
-      // Update summary card for MAO/Target Price
+      // Update summary card
       updateElement('target-price-value', formatCurrency(iqTargetPrice));
     }
     

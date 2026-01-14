@@ -1,106 +1,198 @@
 /**
- * PriceLadder - Visual price position rungs
- * Shows List → 90% → Breakeven → Target → Aggressive
- * Design matches: investiq-property-analytics-complete-redesign (final).html
+ * PriceLadder - Visual gradient arrow price ladder
+ * Shows price spectrum from List Price (red/top) to Offer (blue/bottom)
+ * with a gradient arrow visualization
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { PriceRung } from './types';
-
-// Color mapping for rung types
-const RUNG_COLORS: Record<string, string> = {
-  list: '#ef4444',      // Red
-  ninety: '#f97316',    // Orange
-  breakeven: '#eab308', // Yellow
-  target: '#22c55e',    // Green
-  aggressive: '#4dd0e1', // Cyan
-  opening: '#4dd0e1',   // Cyan
-};
 
 interface PriceLadderProps {
   rungs: PriceRung[];
   isDark?: boolean;
 }
 
-export function PriceLadder({ rungs, isDark = true }: PriceLadderProps) {
-  const formatCurrency = (value: number): string =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+const formatCurrency = (value: number): string =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
 
-  const getMarkerColor = (rungId: string): string => {
-    return RUNG_COLORS[rungId] || '#6b7280';
+export function PriceLadder({ rungs, isDark = true }: PriceLadderProps) {
+  // Sort rungs by price descending to get positions
+  const sortedRungs = useMemo(() => 
+    [...rungs].sort((a, b) => b.price - a.price), 
+    [rungs]
+  );
+
+  // Find specific rungs
+  const listRung = sortedRungs.find(r => r.id === 'list');
+  const breakevenRung = sortedRungs.find(r => r.id === 'breakeven');
+  const targetRung = sortedRungs.find(r => r.id === 'target');
+  const offerRung = sortedRungs.find(r => r.id === 'opening' || r.id === 'offer');
+
+  // Calculate positions (0-100) based on price relative to list and lowest offer
+  const maxPrice = listRung?.price || Math.max(...rungs.map(r => r.price));
+  const minPrice = offerRung?.price || Math.min(...rungs.map(r => r.price));
+  const priceRange = maxPrice - minPrice;
+
+  const getPosition = (price: number) => {
+    if (priceRange === 0) return 50;
+    return ((maxPrice - price) / priceRange) * 100;
   };
 
+  const gradientHeight = 320;
+  const arrowHeight = 50;
+
+  // Dynamic colors based on theme
+  const textColor = isDark ? 'rgba(255,255,255,0.9)' : 'rgba(7,23,46,0.9)';
+  const mutedColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)';
+  const borderColor = isDark ? 'rgba(77,208,225,0.3)' : 'rgba(7,23,46,0.15)';
+  const bgColor = isDark ? 'rgba(255,255,255,0.02)' : '#ffffff';
+  const rulerColor = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(7,23,46,0.2)';
+
   return (
-    <View style={[
-      styles.container,
-      { 
-        backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(7,23,46,0.02)',
-        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,23,46,0.08)',
-      }
-    ]}>
-      <Text style={[styles.title, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)' }]}>
-        PRICE POSITION LADDER
-      </Text>
-      
-      <View style={styles.ladder}>
-        {rungs.map((rung) => {
-          const markerColor = getMarkerColor(rung.id);
-          const isTarget = rung.id === 'target';
-          
-          return (
-            <View 
-              key={rung.id} 
-              style={[
-                styles.rung,
-                isTarget && styles.rungHighlighted,
-              ]}
-            >
-              {/* Colored Dot Marker */}
+    <View style={[styles.container, { backgroundColor: bgColor, borderColor }]}>
+      {/* Header */}
+      <Text style={[styles.title, { color: textColor }]}>PRICE LADDER</Text>
+
+      {/* Main Ladder Container */}
+      <View style={styles.ladderWrapper}>
+        
+        {/* Left Side - Seller Label & IQ Target */}
+        <View style={styles.leftSide}>
+          {/* Seller Pricing Label */}
+          <Text style={[styles.zoneLabel, { color: mutedColor }]}>
+            SELLER{'\n'}PRICING
+          </Text>
+
+          {/* IQ Target - positioned on left side */}
+          {targetRung && (
+            <View style={[styles.targetLeft, { top: getPosition(targetRung.price) * 0.7 + 15 + '%' as any }]}>
+              <View style={styles.targetLabelRow}>
+                <MaterialCommunityIcons name="target" size={16} color="#22c55e" />
+                <Text style={styles.targetLabelText}>IQ Target</Text>
+              </View>
+              <Text style={styles.targetDescription}>
+                {targetRung.description || 'Cash flow positive'}
+              </Text>
+              <Text style={[styles.targetPrice, { color: textColor }]}>
+                {formatCurrency(targetRung.price)}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Ruler Column */}
+        <View style={styles.rulerColumn}>
+          <View style={[styles.rulerLine, { backgroundColor: rulerColor }]}>
+            {/* Top circle */}
+            <View style={[styles.rulerCircle, { borderColor: rulerColor, top: -4 }]} />
+            
+            {/* Tick marks */}
+            {[...Array(10)].map((_, i) => (
+              <View 
+                key={i}
+                style={[
+                  styles.rulerTick, 
+                  { backgroundColor: rulerColor, top: `${(i + 1) * 9}%` }
+                ]}
+              />
+            ))}
+
+            {/* Bottom circle */}
+            <View style={[styles.rulerCircle, { borderColor: rulerColor, bottom: -4 }]} />
+          </View>
+        </View>
+
+        {/* Gradient Arrow */}
+        <View style={styles.arrowContainer}>
+          {/* Gradient Bar */}
+          <View style={[styles.gradientBar, { height: gradientHeight }]}>
+            {/* List Price Marker */}
+            {listRung && (
+              <View 
+                style={[
+                  styles.marker, 
+                  styles.markerRight,
+                  { backgroundColor: '#ef4444', top: `${getPosition(listRung.price) * 0.7 + 5}%` }
+                ]}
+              />
+            )}
+
+            {/* Breakeven Marker */}
+            {breakevenRung && (
               <View 
                 style={[
                   styles.marker,
-                  { backgroundColor: markerColor },
-                  isTarget && styles.markerGlow,
-                ]} 
+                  styles.markerRight,
+                  { backgroundColor: '#f97316', top: `${getPosition(breakevenRung.price) * 0.7 + 5}%` }
+                ]}
               />
-              
-              {/* Rung Info */}
-              <View style={styles.rungInfo}>
-                <Text style={[
-                  styles.rungLabel,
-                  isTarget && styles.rungLabelTarget,
-                  { color: isTarget ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.9)' : 'rgba(7,23,46,0.9)') }
-                ]}>
-                  {rung.label}
-                </Text>
-                {rung.description && (
-                  <Text style={[styles.rungDescription, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(7,23,46,0.4)' }]}>
-                    {rung.description}
-                  </Text>
-                )}
-              </View>
-              
-              {/* Price and Percent */}
-              <View style={styles.rungRight}>
-                <Text style={[
-                  styles.rungPrice,
-                  { color: isTarget ? '#22c55e' : (isDark ? '#fff' : '#07172e') }
-                ]}>
-                  {formatCurrency(rung.price)}
-                </Text>
-                <Text style={[styles.rungPercent, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(7,23,46,0.4)' }]}>
-                  {Math.round(rung.percentOfList * 100)}%
-                </Text>
-              </View>
+            )}
+
+            {/* IQ Target Marker - on left side */}
+            {targetRung && (
+              <View 
+                style={[
+                  styles.marker,
+                  styles.markerLeft,
+                  styles.markerGlow,
+                  { backgroundColor: '#22c55e', top: `${getPosition(targetRung.price) * 0.7 + 5}%` }
+                ]}
+              />
+            )}
+          </View>
+
+          {/* Arrow Point */}
+          <View style={styles.arrowPoint} />
+        </View>
+
+        {/* Right Side - Price Labels */}
+        <View style={styles.rightSide}>
+          {/* List Price */}
+          {listRung && (
+            <View style={[styles.priceLabel, { top: `${getPosition(listRung.price) * 0.7 + 3}%` as any }]}>
+              <Text style={styles.priceLabelTitle}>List Price</Text>
+              <Text style={[styles.priceLabelSub, { color: mutedColor }]}>
+                Current Asking
+              </Text>
+              <Text style={[styles.priceLabelValue, { color: textColor }]}>
+                {formatCurrency(listRung.price)}
+              </Text>
+              <Text style={[styles.priceLabelPercent, { color: mutedColor }]}>
+                {Math.round(listRung.percentOfList * 100)}%
+              </Text>
             </View>
-          );
-        })}
+          )}
+
+          {/* Breakeven */}
+          {breakevenRung && (
+            <View style={[styles.priceLabel, { top: `${getPosition(breakevenRung.price) * 0.7 + 3}%` as any }]}>
+              <Text style={[styles.priceLabelTitle, { color: '#f97316' }]}>Breakeven</Text>
+              <Text style={[styles.priceLabelSub, { color: mutedColor }]}>
+                $0 Cash Flow
+              </Text>
+              <Text style={[styles.priceLabelValue, { color: textColor }]}>
+                {formatCurrency(breakevenRung.price)}
+              </Text>
+              <Text style={[styles.priceLabelPercent, { color: mutedColor }]}>
+                {Math.round(breakevenRung.percentOfList * 100)}%
+              </Text>
+            </View>
+          )}
+
+          {/* Investor Opportunity Label */}
+          <View style={styles.opportunityLabel}>
+            <Text style={[styles.zoneLabel, { color: mutedColor, textAlign: 'right' }]}>
+              INVESTOR{'\n'}OPPORTUNITY
+            </Text>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -172,71 +264,161 @@ export function generatePriceLadder(
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 14,
-    borderWidth: 1,
+    borderRadius: 16,
+    borderWidth: 2,
     padding: 16,
+    marginBottom: 16,
   },
   title: {
-    fontSize: 11,
+    fontSize: 18,
+    fontWeight: '800',
+    textAlign: 'center',
+    letterSpacing: 1.5,
+    marginBottom: 20,
+  },
+  ladderWrapper: {
+    flexDirection: 'row',
+    minHeight: 380,
+    position: 'relative',
+  },
+  leftSide: {
+    width: 100,
+    paddingRight: 8,
+    position: 'relative',
+  },
+  zoneLabel: {
+    fontSize: 10,
     fontWeight: '600',
     letterSpacing: 0.5,
-    marginBottom: 14,
-    textTransform: 'uppercase',
+    lineHeight: 14,
+    marginTop: 20,
   },
-  ladder: {
-    gap: 0,
+  targetLeft: {
+    position: 'absolute',
+    right: 8,
+    alignItems: 'flex-end',
   },
-  rung: {
+  targetLabelRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
+    gap: 4,
   },
-  rungHighlighted: {
-    backgroundColor: 'rgba(34, 197, 94, 0.08)',
-    marginHorizontal: -16,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderBottomWidth: 0,
+  targetLabelText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#22c55e',
+  },
+  targetDescription: {
+    fontSize: 11,
+    color: 'rgba(34,197,94,0.8)',
+    marginTop: 2,
+    textAlign: 'right',
+  },
+  targetPrice: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  rulerColumn: {
+    width: 20,
+    paddingTop: 20,
+    alignItems: 'flex-end',
+  },
+  rulerLine: {
+    width: 2,
+    height: '85%',
+    position: 'relative',
+  },
+  rulerCircle: {
+    position: 'absolute',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    borderWidth: 2,
+    backgroundColor: 'transparent',
+    right: -3,
+  },
+  rulerTick: {
+    position: 'absolute',
+    width: 10,
+    height: 2,
+    right: 0,
+  },
+  arrowContainer: {
+    width: 50,
+    paddingTop: 20,
+  },
+  gradientBar: {
+    width: 40,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    position: 'relative',
+    // Gradient approximation using background color
+    // Note: React Native doesn't support CSS linear-gradient
+    // We use a solid color and markers to indicate positions
+    backgroundColor: '#4CAF50',
+    overflow: 'visible',
   },
   marker: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 12,
+    position: 'absolute',
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  markerRight: {
+    right: -6,
+  },
+  markerLeft: {
+    left: -6,
   },
   markerGlow: {
     shadowColor: '#22c55e',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
+    elevation: 6,
   },
-  rungInfo: {
+  arrowPoint: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 40,
+    borderRightWidth: 40,
+    borderTopWidth: 50,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: '#1565c0',
+    marginLeft: -20,
+  },
+  rightSide: {
     flex: 1,
+    paddingLeft: 16,
+    paddingTop: 20,
+    position: 'relative',
   },
-  rungLabel: {
-    fontSize: 13,
-    fontWeight: '600',
+  priceLabel: {
+    position: 'absolute',
+    left: 16,
   },
-  rungLabelTarget: {
+  priceLabelTitle: {
+    fontSize: 16,
     fontWeight: '700',
+    color: '#ef4444',
   },
-  rungDescription: {
+  priceLabelSub: {
     fontSize: 11,
-    marginTop: 1,
+    marginTop: 2,
   },
-  rungRight: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 8,
-  },
-  rungPrice: {
+  priceLabelValue: {
     fontSize: 14,
     fontWeight: '700',
+    marginTop: 2,
   },
-  rungPercent: {
+  priceLabelPercent: {
     fontSize: 11,
+  },
+  opportunityLabel: {
+    position: 'absolute',
+    right: 0,
+    bottom: 60,
   },
 });
