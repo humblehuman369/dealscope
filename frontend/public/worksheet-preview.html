@@ -1321,54 +1321,93 @@
     /* ===== PRICING LADDER ===== */
     .pricing-ladder {
       position: relative;
-      padding: 16px 0;
+      padding: 20px 0 40px;
+      min-height: 400px;
     }
     
     .pricing-ladder-track {
       position: absolute;
       left: 50%;
-      top: 20px;
-      bottom: 20px;
+      top: 40px;
+      bottom: 60px;
       width: 4px;
       background: linear-gradient(180deg, #dc2626 0%, #f97316 25%, #eab308 50%, #10b981 75%, var(--iq-teal) 100%);
       border-radius: 2px;
       transform: translateX(-50%);
+      z-index: 0;
+    }
+    
+    /* Purchase Price Indicator (Dynamic) */
+    .pricing-ladder-indicator {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+    }
+    
+    .pricing-ladder-indicator-line {
+      width: 2px;
+      height: 60px;
+      background: var(--iq-teal);
+      opacity: 0.6;
+      margin-bottom: 4px;
+    }
+    
+    .pricing-ladder-indicator-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--iq-teal);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+    
+    .pricing-ladder-indicator-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--iq-teal);
+      background: white;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 2px solid var(--iq-teal);
+      box-shadow: 0 2px 8px rgba(0, 126, 167, 0.2);
     }
     
     .pricing-ladder-item {
       display: flex;
       align-items: center;
-      padding: 8px 0;
+      padding: 10px 0;
       position: relative;
+      z-index: 1;
     }
     
     .pricing-ladder-label {
       flex: 1;
       text-align: right;
       padding-right: 20px;
-      font-size: 11px;
-      color: var(--ws-text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ws-text-secondary);
     }
     
     .pricing-ladder-marker {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
       background: white;
       border: 3px solid var(--ws-border);
-      z-index: 1;
+      z-index: 2;
       flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
-    .pricing-ladder-marker.active {
-      border-color: var(--iq-teal);
-      background: var(--iq-teal);
-      box-shadow: 0 0 0 4px rgba(0, 126, 167, 0.2);
-    }
-    
-    .pricing-ladder-marker.target {
-      border-color: #10b981;
-      background: #10b981;
+    .pricing-ladder-marker.list {
+      border-color: #dc2626;
+      background: #dc2626;
     }
     
     .pricing-ladder-marker.breakeven {
@@ -1376,44 +1415,60 @@
       background: #eab308;
     }
     
-    .pricing-ladder-marker.list {
-      border-color: #dc2626;
-      background: white;
+    .pricing-ladder-marker.coc {
+      border-color: #10b981;
+      background: #10b981;
+    }
+    
+    .pricing-ladder-marker.mao {
+      border-color: var(--iq-teal);
+      background: var(--iq-teal);
     }
     
     .pricing-ladder-value {
       flex: 1;
       padding-left: 20px;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       color: var(--ws-text-primary);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
     
-    .pricing-ladder-value.current {
-      color: var(--iq-teal);
-      font-size: 14px;
+    .pricing-ladder-value.list {
+      color: #dc2626;
     }
     
-    .pricing-ladder-value.target {
+    .pricing-ladder-value.breakeven {
+      color: #eab308;
+    }
+    
+    .pricing-ladder-value.coc {
       color: #10b981;
+    }
+    
+    .pricing-ladder-value.mao {
+      color: var(--iq-teal);
     }
     
     .pricing-ladder-diff {
       font-size: 10px;
-      font-weight: 500;
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-left: 6px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: 8px;
+      white-space: nowrap;
     }
     
     .pricing-ladder-diff.positive {
-      background: var(--ws-positive-light);
+      background: rgba(16, 185, 129, 0.1);
       color: #10b981;
     }
     
     .pricing-ladder-diff.negative {
-      background: var(--ws-negative-light);
-      color: var(--ws-negative);
+      background: rgba(220, 38, 38, 0.1);
+      color: #dc2626;
     }
     
     .pricing-ladder-hint {
@@ -1421,6 +1476,25 @@
       font-size: 10px;
       color: var(--ws-text-muted);
       font-weight: 400;
+      margin-top: 2px;
+    }
+    
+    .pricing-ladder-summary {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 2px solid var(--ws-border-light);
+      text-align: center;
+    }
+    
+    .pricing-ladder-summary #pricing-summary-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ws-text-secondary);
+    }
+    
+    .pricing-ladder-summary #pricing-summary-text .highlight {
+      color: var(--iq-teal);
+      font-weight: 700;
     }
     
     /* Pricing Discount Indicator */
@@ -2337,51 +2411,56 @@
       <div class="chart-card">
         <div class="chart-card-title">Pricing Ladder</div>
         <div class="pricing-ladder">
-          <div class="pricing-ladder-track"></div>
+          <div class="pricing-ladder-track">
+            <!-- Dynamic Purchase Price Indicator -->
+            <div class="pricing-ladder-indicator" id="purchase-price-indicator">
+              <div class="pricing-ladder-indicator-line"></div>
+              <div class="pricing-ladder-indicator-label">Your Offer</div>
+              <div class="pricing-ladder-indicator-value" id="purchase-price-display">$723,600</div>
+            </div>
+          </div>
           
           <!-- List Price -->
-          <div class="pricing-ladder-item">
+          <div class="pricing-ladder-item" id="ladder-list">
             <div class="pricing-ladder-label">List Price</div>
             <div class="pricing-ladder-marker list"></div>
             <div class="pricing-ladder-value list" id="ladder-list-price">$795,000</div>
+            <div class="pricing-ladder-diff" id="ladder-list-diff"></div>
           </div>
           
-          <!-- Your Offer (Current Purchase Price) -->
-          <div class="pricing-ladder-item highlight">
-            <div class="pricing-ladder-label">Your Offer</div>
-            <div class="pricing-ladder-marker current">
-              <svg width="8" height="8" viewBox="0 0 8 8" fill="var(--iq-teal)">
-                <circle cx="4" cy="4" r="4"/>
-              </svg>
-            </div>
-            <div class="pricing-ladder-value current" id="ladder-current-price">$723,600</div>
-          </div>
-          
-          <!-- Breakeven -->
-          <div class="pricing-ladder-item">
+          <!-- Breakeven (Capped at List Price) -->
+          <div class="pricing-ladder-item" id="ladder-breakeven">
             <div class="pricing-ladder-label">Breakeven</div>
-            <div class="pricing-ladder-marker target"></div>
-            <div class="pricing-ladder-value target" id="ladder-target-price">$899,000
+            <div class="pricing-ladder-marker breakeven"></div>
+            <div class="pricing-ladder-value breakeven" id="ladder-breakeven-price">$680,000
               <span class="pricing-ladder-hint">0% CoC</span>
             </div>
+            <div class="pricing-ladder-diff" id="ladder-breakeven-diff"></div>
           </div>
           
-          <!-- 10% CoC Price -->
-          <div class="pricing-ladder-item">
-            <div class="pricing-ladder-label">10% CoC</div>
+          <!-- 10% CoC Target Price -->
+          <div class="pricing-ladder-item" id="ladder-10coc">
+            <div class="pricing-ladder-label">10% CoC Target</div>
             <div class="pricing-ladder-marker coc"></div>
-            <div class="pricing-ladder-value coc" id="ladder-10-coc">$651,240
-              <span class="pricing-ladder-hint">Target</span>
+            <div class="pricing-ladder-value coc" id="ladder-10coc-price">$651,240
+              <span class="pricing-ladder-hint">Target Return</span>
             </div>
+            <div class="pricing-ladder-diff" id="ladder-10coc-diff"></div>
           </div>
           
-          <!-- MAO (70% of ARV) -->
-          <div class="pricing-ladder-item">
+          <!-- MAO (Maximum Allowable Offer) -->
+          <div class="pricing-ladder-item" id="ladder-mao">
             <div class="pricing-ladder-label">MAO</div>
             <div class="pricing-ladder-marker mao"></div>
-            <div class="pricing-ladder-value mao" id="ladder-mao">$557,172
-              <span class="pricing-ladder-hint">70% ARV</span>
+            <div class="pricing-ladder-value mao" id="ladder-mao-price">$557,172
+              <span class="pricing-ladder-hint">70% ARV - Rehab</span>
             </div>
+            <div class="pricing-ladder-diff" id="ladder-mao-diff"></div>
+          </div>
+          
+          <!-- Summary Text -->
+          <div class="pricing-ladder-summary" id="pricing-ladder-summary">
+            <span id="pricing-summary-text">9.0% below list</span>
           </div>
         </div>
         
