@@ -525,7 +525,119 @@
       padding-bottom: 8px;
       border-bottom: 1px solid var(--ws-border-light);
     }
+
+    /* ===== PRICING LADDER ===== */
+    .pricing-ladder {
+      position: relative;
+      padding: 16px 0;
+    }
     
+    .pricing-ladder-track {
+      position: absolute;
+      left: 50%;
+      top: 20px;
+      bottom: 20px;
+      width: 4px;
+      background: linear-gradient(180deg, #10b981 0%, #eab308 50%, var(--flip-primary) 100%);
+      border-radius: 2px;
+      transform: translateX(-50%);
+    }
+    
+    .pricing-ladder-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      position: relative;
+    }
+    
+    .pricing-ladder-item.highlight {
+      background: var(--flip-accent-bg);
+      margin: 0 -16px;
+      padding: 8px 16px;
+      border-radius: 8px;
+    }
+    
+    .pricing-ladder-label {
+      flex: 1;
+      text-align: right;
+      padding-right: 20px;
+      font-size: 11px;
+      color: var(--ws-text-muted);
+    }
+    
+    .pricing-ladder-marker {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--ws-border);
+      z-index: 1;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .pricing-ladder-marker.arv { border-color: #10b981; background: #10b981; }
+    .pricing-ladder-marker.current { border-color: var(--flip-primary); background: var(--flip-primary); }
+    .pricing-ladder-marker.target { border-color: #eab308; background: #eab308; }
+    .pricing-ladder-marker.profit-target { border-color: #22c55e; background: white; }
+    .pricing-ladder-marker.mao { border-color: var(--flip-primary-dark); background: white; }
+    
+    .pricing-ladder-value {
+      flex: 1;
+      padding-left: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    .pricing-ladder-value.current { color: var(--flip-primary); }
+    .pricing-ladder-value.arv { color: #10b981; }
+    .pricing-ladder-value.target { color: #eab308; }
+    
+    .pricing-ladder-hint {
+      display: block;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--ws-text-muted);
+    }
+    
+    .pricing-discount-indicator {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--ws-border-light);
+    }
+    
+    .pricing-discount-bar {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .pricing-discount-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    .pricing-discount-fill.profit {
+      background: linear-gradient(90deg, #22c55e, #10b981);
+    }
+    
+    .pricing-discount-label {
+      font-size: 12px;
+      color: var(--ws-text-secondary);
+      text-align: center;
+    }
+    
+    .pricing-discount-label span {
+      font-weight: 600;
+      color: #10b981;
+    }
+
     /* Holding Period Selector */
     .holding-period-selector {
       display: flex;
@@ -1409,6 +1521,69 @@
     
     <!-- Charts Sidebar -->
     <aside class="worksheet-charts-sidebar">
+      <!-- Pricing Ladder -->
+      <div class="chart-card">
+        <div class="chart-card-title">Pricing Ladder</div>
+        <div class="pricing-ladder">
+          <div class="pricing-ladder-track"></div>
+          
+          <!-- ARV (After Repair Value) -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">ARV</div>
+            <div class="pricing-ladder-marker arv"></div>
+            <div class="pricing-ladder-value arv" id="ladder-arv">$75,000</div>
+          </div>
+          
+          <!-- Your All-In (Purchase + Rehab) -->
+          <div class="pricing-ladder-item highlight">
+            <div class="pricing-ladder-label">All-In Cost</div>
+            <div class="pricing-ladder-marker current">
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="var(--flip-primary)">
+                <circle cx="4" cy="4" r="4"/>
+              </svg>
+            </div>
+            <div class="pricing-ladder-value current" id="ladder-all-in">$42,865</div>
+          </div>
+          
+          <!-- Breakeven -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">Breakeven</div>
+            <div class="pricing-ladder-marker target"></div>
+            <div class="pricing-ladder-value target" id="ladder-breakeven">$50,000
+              <span class="pricing-ladder-hint">0% Profit</span>
+            </div>
+          </div>
+          
+          <!-- 15% Profit Target -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">15% Target</div>
+            <div class="pricing-ladder-marker profit-target"></div>
+            <div class="pricing-ladder-value profit-target" id="ladder-15-target">$38,500
+              <span class="pricing-ladder-hint">Max All-In</span>
+            </div>
+          </div>
+          
+          <!-- MAO (70% of ARV minus repairs) -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">MAO</div>
+            <div class="pricing-ladder-marker mao"></div>
+            <div class="pricing-ladder-value mao" id="ladder-mao">$33,635
+              <span class="pricing-ladder-hint">70% Rule</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Profit Margin Indicator -->
+        <div class="pricing-discount-indicator">
+          <div class="pricing-discount-bar">
+            <div class="pricing-discount-fill profit" id="profit-margin-fill" style="width: 75%;"></div>
+          </div>
+          <div class="pricing-discount-label">
+            <span id="profit-margin-percent">42.8%</span> profit margin
+          </div>
+        </div>
+      </div>
+      
       <!-- ROI Display -->
       <div class="chart-card">
         <div class="chart-card-title">Return on Investment</div>
