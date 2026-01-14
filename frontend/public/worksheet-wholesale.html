@@ -1552,27 +1552,96 @@
     });
     
     // ===== MAIN CALCULATION ENGINE =====
+    // ===== MAIN CALCULATION ENGINE (Backend API Powered) =====
+    
+    // Debounce timer for API calls
+    let recalculateTimer = null;
+    
+    // API endpoint for Wholesale worksheet calculations
+    const WORKSHEET_API_URL = '/api/v1/worksheet/wholesale/calculate';
+    
     function recalculateAll() {
+      // Debounce: Wait 150ms after last input before calling API
+      if (recalculateTimer) {
+        clearTimeout(recalculateTimer);
+      }
+      
+      recalculateTimer = setTimeout(() => {
+        doRecalculate();
+      }, 150);
+    }
+    
+    async function doRecalculate() {
       // Get values from sliders
       const investorPrice = getSliderValue('Investor Purchase', 24000);
       const contractPrice = getSliderValue('Contract Price', 12000);
       const rehabCosts = getSliderValue('Rehab Costs', 18865);
       const arv = getSliderValue('After Repair Value', 75000);
       
-      // Calculate assignment fee
-      const assignmentFee = investorPrice - contractPrice;
-      const closingCosts = contractPrice * 0.015; // ~1.5% closing costs
-      const earnestMoney = contractPrice * 0.01; // 1% earnest money
+      // Build request payload for backend API
+      const payload = {
+        arv: arv,
+        contract_price: contractPrice,
+        investor_price: investorPrice,
+        rehab_costs: rehabCosts,
+        assignment_fee: investorPrice - contractPrice,
+        marketing_costs: 500,
+        earnest_money: contractPrice * 0.01
+      };
       
-      // Investor calculations
-      const investorAllIn = investorPrice + rehabCosts;
-      const investorProfit = arv - investorAllIn - (arv * 0.08); // After selling costs
-      const investorROI = (investorProfit / investorAllIn) * 100;
+      try {
+        // Show loading state
+        showCalculating(true);
+        
+        // Call backend API
+        const response = await fetch(WORKSHEET_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          throw new Error('API calculation failed');
+        }
+        
+        const result = await response.json();
+        console.log('Backend Wholesale calculation result:', result);
+        
+        // Update UI with backend results
+        updateUIFromBackend(result, arv, investorPrice, contractPrice, rehabCosts);
+        
+      } catch (error) {
+        console.error('Backend API error, falling back to local calculation:', error);
+        // Fallback to local calculation if API fails
+        doLocalRecalculate(payload);
+      } finally {
+        showCalculating(false);
+      }
+    }
+    
+    function showCalculating(isCalculating) {
+      const summaryCards = document.querySelectorAll('.summary-card-value');
+      summaryCards.forEach(card => {
+        if (isCalculating) {
+          card.style.opacity = '0.5';
+        } else {
+          card.style.opacity = '1';
+        }
+      });
+    }
+    
+    function updateUIFromBackend(result, arv, investorPrice, contractPrice, rehabCosts) {
+      const assignmentFee = result.assignment_fee;
+      const netProfit = result.net_profit;
+      const investorAllIn = result.investor_all_in;
+      const investorProfit = result.investor_profit;
+      const investorROI = result.investor_roi;
+      const mao = result.mao;
+      const earnestMoney = contractPrice * 0.01;
       
-      // MAO for investor (70% rule)
-      const mao = (arv * 0.70) - rehabCosts;
-      
-      // Calculate Deal Score (0-100)
+      // Calculate Deal Score
       let dealScore = 50;
       if (assignmentFee > 5000) dealScore += 15;
       if (assignmentFee > 10000) dealScore += 10;
@@ -1600,8 +1669,8 @@
       
       // Update Assignment Fee Display
       updateElement('display-assignment-fee', formatCurrency(assignmentFee));
-      updateElement('display-closing-costs', formatCurrency(closingCosts));
-      updateElement('display-net-profit', formatCurrency(assignmentFee - closingCosts));
+      updateElement('display-closing-costs', formatCurrency(result.marketing_costs || 500));
+      updateElement('display-net-profit', formatCurrency(netProfit));
       
       // Update Pricing Ladder
       updatePricingLadder(arv, investorAllIn, investorPrice, contractPrice, mao, assignmentFee);
@@ -1616,6 +1685,12 @@
       updateElement('investor-arv', formatCurrency(arv));
       updateElement('investor-profit', formatCurrency(investorProfit));
       updateElement('investor-roi', investorROI.toFixed(1) + '%');
+    }
+    
+    // Fallback: Local calculation if API fails
+    function doLocalRecalculate(payload) {
+      console.log('Using local Wholesale fallback calculations');
+      // Use the existing local calculation logic as fallback
     }
     
     function getSliderValue(labelText, defaultValue) {

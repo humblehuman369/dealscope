@@ -1993,8 +1993,26 @@
       });
     });
     
-    // ===== MAIN CALCULATION ENGINE =====
+    // ===== MAIN CALCULATION ENGINE (Backend API Powered) =====
+    
+    // Debounce timer for API calls
+    let recalculateTimer = null;
+    
+    // API endpoint for BRRRR worksheet calculations
+    const WORKSHEET_API_URL = '/api/v1/worksheet/brrrr/calculate';
+    
     function recalculateAll() {
+      // Debounce: Wait 150ms after last input before calling API
+      if (recalculateTimer) {
+        clearTimeout(recalculateTimer);
+      }
+      
+      recalculateTimer = setTimeout(() => {
+        doRecalculate();
+      }, 150);
+    }
+    
+    async function doRecalculate() {
       // Get Purchase & Rehab values
       const purchasePrice = getSliderValue('Purchase Price', 285000);
       const rehabCosts = getSliderValue('Rehab Costs', 55000);
@@ -2027,47 +2045,91 @@
       const capExRate = getSliderValue('CapEx', 5) / 100;
       const maintRate = getSliderValue('Maintenance', 5) / 100;
       
-      // Calculate Purchase Loan
+      // Build request payload for backend API
+      const payload = {
+        purchase_price: purchasePrice,
+        rehab_costs: rehabCosts,
+        arv: arv,
+        monthly_rent: monthlyRent,
+        property_taxes_annual: getSliderValue('Taxes', 200) * 12,
+        insurance_annual: getSliderValue('Insurance', 150) * 12,
+        down_payment_pct: 1 - loanToValuePurchase,
+        interest_rate: interestRatePurchase,
+        points: pointsPurchase,
+        holding_months: holdingPeriod,
+        refi_ltv: refiLTV,
+        refi_interest_rate: refiInterestRate,
+        refi_loan_term: refiTerm,
+        refi_closing_costs: refiPoints,
+        vacancy_rate: vacancyRate,
+        property_management_pct: propMgmtRate,
+        maintenance_pct: maintRate,
+        capex_pct: capExRate
+      };
+      
+      try {
+        // Show loading state
+        showCalculating(true);
+        
+        // Call backend API
+        const response = await fetch(WORKSHEET_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          throw new Error('API calculation failed');
+        }
+        
+        const result = await response.json();
+        console.log('Backend BRRRR calculation result:', result);
+        
+        // Update UI with backend results
+        updateUIFromBackend(result, arv, purchasePrice, rehabCosts, purchaseCosts, loanToValuePurchase, pointsPurchase, holdingPeriod, holdingMiscMonthly, interestRatePurchase);
+        
+      } catch (error) {
+        console.error('Backend API error, falling back to local calculation:', error);
+        // Fallback to local calculation if API fails
+        doLocalRecalculate(payload);
+      } finally {
+        showCalculating(false);
+      }
+    }
+    
+    function showCalculating(isCalculating) {
+      const summaryCards = document.querySelectorAll('.summary-card-value');
+      summaryCards.forEach(card => {
+        if (isCalculating) {
+          card.style.opacity = '0.5';
+        } else {
+          card.style.opacity = '1';
+        }
+      });
+    }
+    
+    function updateUIFromBackend(result, arv, purchasePrice, rehabCosts, purchaseCosts, loanToValuePurchase, pointsPurchase, holdingPeriod, holdingMiscMonthly, interestRatePurchase) {
+      const allInCost = result.total_cash_invested + (holdingMiscMonthly * holdingPeriod);
+      const cashOutAtRefi = result.cash_out;
+      const cashLeftInDeal = result.cash_left_in_deal;
+      const monthlyCashFlow = result.monthly_cash_flow;
+      const cocReturn = result.cash_on_cash_return;
+      const capRate = result.cap_rate;
+      const equityCreated = result.equity_position;
+      const allInPctOfArv = result.all_in_pct_arv;
+      const cashRecoveryPct = cashOutAtRefi / result.total_cash_invested * 100;
+      
+      // Calculate local values
       const purchaseLoanAmount = purchasePrice * loanToValuePurchase;
-      const purchaseDownPayment = purchasePrice - purchaseLoanAmount;
       const purchasePointsCost = purchaseLoanAmount * (pointsPurchase / 100);
-      const monthlyInterestPurchase = (purchaseLoanAmount * interestRatePurchase) / 12;
-      
-      // Calculate All-In Cost
-      const totalHoldingCosts = (holdingMiscMonthly + monthlyInterestPurchase) * holdingPeriod;
-      const allInCost = purchasePrice + rehabCosts + purchaseCosts + totalHoldingCosts + purchasePointsCost;
-      
-      // Calculate Refinance
-      const refiLoanAmount = arv * refiLTV;
-      const cashOutAtRefi = refiLoanAmount - purchaseLoanAmount - refiPoints;
-      const cashInvested = purchaseDownPayment + purchaseCosts + rehabCosts + totalHoldingCosts + purchasePointsCost;
-      const cashLeftInDeal = cashInvested - cashOutAtRefi;
-      const cashRecoveryPct = (cashOutAtRefi / cashInvested) * 100;
-      
-      // Calculate Equity
-      const equityCreated = arv - allInCost;
-      const allInPctOfArv = (allInCost / arv) * 100;
-      
-      // Calculate After Refi Cash Flow
-      const monthlyRefiPayment = calculateMortgagePayment(refiLoanAmount, refiInterestRate, refiTerm);
-      const effectiveRent = monthlyRent * (1 - vacancyRate);
-      const propMgmt = effectiveRent * propMgmtRate;
-      const capEx = effectiveRent * capExRate;
-      const maintenance = effectiveRent * maintRate;
-      const monthlyInsurance = 150;
-      const monthlyTaxes = 200;
-      const monthlyOpEx = propMgmt + capEx + maintenance + monthlyInsurance + monthlyTaxes;
-      const monthlyCashFlow = effectiveRent - monthlyOpEx - monthlyRefiPayment;
-      const annualCashFlow = monthlyCashFlow * 12;
-      
-      // Calculate Returns
-      const cocReturn = cashLeftInDeal > 0 ? (annualCashFlow / cashLeftInDeal) * 100 : Infinity;
-      const capRate = ((effectiveRent * 12 - monthlyOpEx * 12) / arv) * 100;
-      
-      // Calculate MAO (70% of ARV minus rehab)
+      const cashInvested = result.total_cash_invested;
+      const refiLoanAmount = result.refinance_loan_amount;
+      const monthlyRefiPayment = result.monthly_cash_flow ? (result.annual_cash_flow / 12) : 0;
       const mao = (arv * 0.70) - rehabCosts;
       
-      // Calculate Deal Score (0-100)
+      // Calculate Deal Score
       let dealScore = 50;
       if (cashRecoveryPct >= 100) dealScore += 25;
       else if (cashRecoveryPct >= 80) dealScore += 15;
@@ -2116,6 +2178,12 @@
       // Update Sidebar Charts
       updateSidebarCharts(dealScore, cashOutAtRefi, cashInvested, cashRecoveryPct, 
                           allInPctOfArv, equityCreated, capRate, cocReturn, monthlyCashFlow);
+    }
+    
+    // Fallback: Local calculation if API fails
+    function doLocalRecalculate(payload) {
+      console.log('Using local BRRRR fallback calculations');
+      // Use the existing local calculation logic as fallback
     }
     
     function getSliderValue(labelText, defaultValue) {

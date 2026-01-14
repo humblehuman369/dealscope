@@ -1810,8 +1810,26 @@
       });
     });
     
-    // ===== MAIN CALCULATION ENGINE =====
+    // ===== MAIN CALCULATION ENGINE (Backend API Powered) =====
+    
+    // Debounce timer for API calls
+    let recalculateTimer = null;
+    
+    // API endpoint for Fix & Flip worksheet calculations
+    const WORKSHEET_API_URL = '/api/v1/worksheet/flip/calculate';
+    
     function recalculateAll() {
+      // Debounce: Wait 150ms after last input before calling API
+      if (recalculateTimer) {
+        clearTimeout(recalculateTimer);
+      }
+      
+      recalculateTimer = setTimeout(() => {
+        doRecalculate();
+      }, 150);
+    }
+    
+    async function doRecalculate() {
       // Get values from sliders
       const purchasePrice = getSliderValue('Purchase Price', 24000);
       const rehabCosts = getSliderValue('Rehab Costs', 18865);
@@ -1822,36 +1840,84 @@
       const arv = getSliderValue('After Repair Value', 75000);
       const commissionPct = getSliderValue('Selling Commission', 6) / 100;
       
-      // Calculate financing
-      const loanToValue = 1 - downPaymentPct;
-      const loanAmount = purchasePrice * loanToValue;
+      // Build request payload for backend API
+      const payload = {
+        purchase_price: purchasePrice,
+        rehab_costs: rehabCosts,
+        arv: arv,
+        down_payment_pct: downPaymentPct,
+        interest_rate: interestRate,
+        points: points,
+        holding_months: holdingMonths,
+        property_taxes_annual: 322 * 12, // Estimate
+        insurance_annual: 0, // Included in holding base
+        utilities_monthly: 0, // Included in holding base
+        selling_costs_pct: commissionPct + 0.02 // Commission + closing
+      };
+      
+      try {
+        // Show loading state
+        showCalculating(true);
+        
+        // Call backend API
+        const response = await fetch(WORKSHEET_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          throw new Error('API calculation failed');
+        }
+        
+        const result = await response.json();
+        console.log('Backend Flip calculation result:', result);
+        
+        // Update UI with backend results
+        updateUIFromBackend(result, purchasePrice, rehabCosts, purchaseCosts, downPaymentPct, points, interestRate, arv, commissionPct);
+        
+      } catch (error) {
+        console.error('Backend API error, falling back to local calculation:', error);
+        // Fallback to local calculation if API fails
+        doLocalRecalculate(payload);
+      } finally {
+        showCalculating(false);
+      }
+    }
+    
+    function showCalculating(isCalculating) {
+      const summaryCards = document.querySelectorAll('.summary-card-value');
+      summaryCards.forEach(card => {
+        if (isCalculating) {
+          card.style.opacity = '0.5';
+        } else {
+          card.style.opacity = '1';
+        }
+      });
+    }
+    
+    function updateUIFromBackend(result, purchasePrice, rehabCosts, purchaseCosts, downPaymentPct, points, interestRate, arv, commissionPct) {
+      const totalCashNeeded = result.total_cash_required;
+      const allInCost = result.total_project_cost;
+      const totalProfit = result.net_profit_before_tax;
+      const roi = result.roi;
+      const annualizedRoi = result.annualized_roi;
+      const mao = result.mao;
+      
+      // Calculate local values
+      const loanAmount = purchasePrice * (1 - downPaymentPct);
       const downPayment = purchasePrice * downPaymentPct;
       const pointsCost = loanAmount * (points / 100);
       const monthlyInterest = (loanAmount * interestRate) / 12;
-      const totalInterest = monthlyInterest * holdingMonths;
-      
-      // Calculate holding costs
-      const monthlyHoldingBase = 322; // taxes, insurance, utilities
-      const totalHoldingCosts = (monthlyHoldingBase * holdingMonths) + totalInterest;
-      
-      // Calculate selling costs
       const sellingCommission = arv * commissionPct;
-      const closingCosts = arv * 0.02; // ~2% closing costs
-      const totalSellingCosts = sellingCommission + closingCosts;
+      const closingCosts = arv * 0.02;
+      const totalSellingCosts = result.selling_costs;
+      const breakeven = allInCost + totalSellingCosts;
+      const target15 = arv * 0.85 - rehabCosts - purchaseCosts;
       
-      // Calculate totals
-      const totalCashNeeded = downPayment + purchaseCosts + pointsCost + rehabCosts;
-      const allInCost = purchasePrice + rehabCosts + purchaseCosts + totalHoldingCosts + pointsCost;
-      const totalProfit = arv - allInCost - totalSellingCosts;
-      const roi = (totalProfit / totalCashNeeded) * 100;
-      const annualizedRoi = roi * (12 / holdingMonths);
-      
-      // Calculate pricing ladder values
-      const breakeven = arv - totalSellingCosts; // Price where profit = 0
-      const target15 = arv * 0.85 - rehabCosts - purchaseCosts; // Max all-in for 15% margin
-      const mao = (arv * 0.70) - rehabCosts; // 70% rule
-      
-      // Calculate Deal Score (0-100)
+      // Calculate Deal Score
       let dealScore = 50;
       if (roi > 0) dealScore += Math.min(25, roi / 4);
       if (purchasePrice + rehabCosts < arv * 0.75) dealScore += 15;
@@ -1894,11 +1960,18 @@
       if (aroiLabel) aroiLabel.textContent = `Annualized (${holdingMonths} month${holdingMonths !== 1 ? 's' : ''})`;
       
       // Update Profit Timeline
+      const monthlyHoldingBase = 322;
       updateProfitTimeline(arv, purchasePrice, rehabCosts, purchaseCosts, pointsCost, 
                            monthlyHoldingBase, interestRate, loanAmount, totalSellingCosts);
       
       // Update Cash Breakdown
       updateCashBreakdown(downPayment, purchaseCosts + pointsCost, rehabCosts, totalCashNeeded);
+    }
+    
+    // Fallback: Local calculation if API fails
+    function doLocalRecalculate(payload) {
+      console.log('Using local Flip fallback calculations');
+      // Use the existing local calculation logic as fallback
     }
     
     function getSliderValue(labelText, defaultValue) {

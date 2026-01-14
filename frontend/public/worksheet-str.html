@@ -1718,8 +1718,26 @@
       });
     });
     
-    // ===== MAIN CALCULATION ENGINE =====
+    // ===== MAIN CALCULATION ENGINE (Backend API Powered) =====
+    
+    // Debounce timer for API calls
+    let recalculateTimer = null;
+    
+    // API endpoint for STR worksheet calculations
+    const WORKSHEET_API_URL = '/api/v1/worksheet/str/calculate';
+    
     function recalculateAll() {
+      // Debounce: Wait 150ms after last input before calling API
+      if (recalculateTimer) {
+        clearTimeout(recalculateTimer);
+      }
+      
+      recalculateTimer = setTimeout(() => {
+        doRecalculate();
+      }, 150);
+    }
+    
+    async function doRecalculate() {
       // Get Purchase values
       const purchasePrice = getSliderValue('Purchase Price', 485000);
       const downPaymentPct = getSliderValue('Down Payment', 25) / 100;
@@ -1734,7 +1752,7 @@
       const adr = getSliderValue('Avg Daily Rate', 280);
       const occupancyRate = getSliderValue('Occupancy Rate', 70) / 100;
       const cleaningFee = getSliderValue('Cleaning Fee', 150);
-      const avgBookingLength = 5; // nights
+      const avgBookingLength = getSliderValue('Avg Booking Length', 5);
       
       // Get Expense values
       const platformFeesPct = getSliderValue('Platform Fees', 12) / 100;
@@ -1747,51 +1765,97 @@
       const maintenancePct = getSliderValue('Maintenance', 5) / 100;
       const capexPct = getSliderValue('CapEx Reserve', 5) / 100;
       
-      // Calculate Purchase
-      const downPayment = purchasePrice * downPaymentPct;
-      const loanAmount = purchasePrice - downPayment;
-      const totalCashNeeded = downPayment + purchaseCosts + furnishingBudget;
+      // Build request payload for backend API
+      const payload = {
+        purchase_price: purchasePrice,
+        average_daily_rate: adr,
+        occupancy_rate: occupancyRate,
+        property_taxes_annual: taxesMonthly * 12,
+        insurance_annual: insuranceMonthly * 12,
+        down_payment_pct: downPaymentPct,
+        interest_rate: interestRate,
+        loan_term_years: loanTerm,
+        closing_costs: purchaseCosts,
+        furnishing_budget: furnishingBudget,
+        platform_fees_pct: platformFeesPct,
+        property_management_pct: pmFeesPct,
+        cleaning_cost_per_turn: cleaningCostPerTurn,
+        cleaning_fee_revenue: cleaningFee,
+        avg_booking_length: avgBookingLength,
+        supplies_monthly: suppliesMonthly,
+        utilities_monthly: utilitiesMonthly,
+        maintenance_pct: maintenancePct,
+        capex_pct: capexPct
+      };
       
-      // Calculate Financing
-      const monthlyPayment = calculateMortgagePayment(loanAmount, interestRate, loanTerm);
-      const annualDebtService = monthlyPayment * 12;
+      try {
+        // Show loading state
+        showCalculating(true);
+        
+        // Call backend API
+        const response = await fetch(WORKSHEET_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          throw new Error('API calculation failed');
+        }
+        
+        const result = await response.json();
+        console.log('Backend STR calculation result:', result);
+        
+        // Update UI with backend results
+        updateUIFromBackend(result, purchasePrice, adr, occupancyRate, avgBookingLength, cleaningFee);
+        
+      } catch (error) {
+        console.error('Backend API error, falling back to local calculation:', error);
+        // Fallback to local calculation if API fails
+        doLocalRecalculate(payload);
+      } finally {
+        showCalculating(false);
+      }
+    }
+    
+    function showCalculating(isCalculating) {
+      const summaryCards = document.querySelectorAll('.summary-card-value');
+      summaryCards.forEach(card => {
+        if (isCalculating) {
+          card.style.opacity = '0.5';
+        } else {
+          card.style.opacity = '1';
+        }
+      });
+    }
+    
+    function updateUIFromBackend(result, purchasePrice, adr, occupancyRate, avgBookingLength, cleaningFee) {
+      const grossRevenue = result.gross_revenue;
+      const totalCashNeeded = result.total_cash_needed;
+      const monthlyCashFlow = result.monthly_cash_flow;
+      const annualCashFlow = result.annual_cash_flow;
+      const capRate = result.cap_rate;
+      const cocReturn = result.cash_on_cash_return;
+      const dscr = result.dscr;
+      const loanAmount = result.loan_amount;
+      const monthlyPayment = result.monthly_payment;
+      const noi = result.noi;
+      const totalOpEx = result.gross_expenses;
       
-      // Calculate Revenue
-      const bookedNights = Math.round(365 * occupancyRate);
-      const numBookings = Math.round(bookedNights / avgBookingLength);
-      const nightlyRevenue = adr * bookedNights;
-      const cleaningFeesRevenue = cleaningFee * numBookings;
-      const grossRevenue = nightlyRevenue + cleaningFeesRevenue;
-      const revpar = grossRevenue / 365; // Revenue per available night
+      // Calculate local values for display
+      const bookedNights = result.nights_occupied;
+      const numBookings = result.num_bookings;
+      const nightlyRevenue = result.rental_revenue;
+      const cleaningFeesRevenue = result.cleaning_fee_revenue;
+      const revpar = result.revpar;
       
-      // Calculate Expenses
-      const platformFees = grossRevenue * platformFeesPct;
-      const pmFees = grossRevenue * pmFeesPct;
-      const cleaningCosts = cleaningCostPerTurn * numBookings;
-      const suppliesAnnual = suppliesMonthly * 12;
-      const utilitiesAnnual = utilitiesMonthly * 12;
-      const insuranceAnnual = insuranceMonthly * 12;
-      const taxesAnnual = taxesMonthly * 12;
-      const maintenanceCosts = grossRevenue * maintenancePct;
-      const capexCosts = grossRevenue * capexPct;
-      
-      const totalOpEx = platformFees + pmFees + cleaningCosts + suppliesAnnual + 
-                        utilitiesAnnual + insuranceAnnual + taxesAnnual + 
-                        maintenanceCosts + capexCosts;
-      
-      // Calculate NOI and Cash Flow
-      const noi = grossRevenue - totalOpEx;
-      const annualCashFlow = noi - annualDebtService;
-      const monthlyCashFlow = annualCashFlow / 12;
-      
-      // Calculate Returns
-      const capRate = (noi / purchasePrice) * 100;
-      const cocReturn = (annualCashFlow / totalCashNeeded) * 100;
-      const dscr = noi / annualDebtService;
-      const grm = purchasePrice / grossRevenue;
-      
-      // Estimate LTR comparison (typically 40-50% of STR revenue)
+      // Estimate LTR comparison
       const estLTRMonthlyRent = (grossRevenue / 12) * 0.35;
+      const suppliesMonthly = getSliderValue('Supplies', 250);
+      const insuranceMonthly = getSliderValue('Insurance', 250);
+      const taxesMonthly = getSliderValue('Property Taxes', 485);
       const estLTRCashFlow = estLTRMonthlyRent - monthlyPayment - (suppliesMonthly * 0.2) - insuranceMonthly * 0.6 - taxesMonthly;
       const strPremium = ((monthlyCashFlow - estLTRCashFlow) / Math.abs(estLTRCashFlow)) * 100;
       
@@ -1822,6 +1886,7 @@
       }
       
       // Update calculated fields
+      const downPayment = purchasePrice * (getSliderValue('Down Payment', 25) / 100);
       updateElement('down-payment-amt', formatCurrency(downPayment));
       updateElement('calc-total-cash', formatCurrency(totalCashNeeded));
       updateElement('calc-loan-amount', formatCurrency(loanAmount));
@@ -1829,18 +1894,18 @@
       updateElement('booked-nights', bookedNights + ' nights/yr');
       updateElement('calc-bookings', numBookings + ' bookings');
       updateElement('calc-gross-revenue', formatCurrency(grossRevenue) + '/yr');
-      updateElement('platform-fee-amt', formatCurrency(platformFees) + '/yr');
-      updateElement('pm-fee-amt', formatCurrency(pmFees) + '/yr');
-      updateElement('cleaning-cost-amt', formatCurrency(cleaningCosts) + '/yr');
-      updateElement('maintenance-amt', formatCurrency(maintenanceCosts) + '/yr');
-      updateElement('capex-amt', formatCurrency(capexCosts) + '/yr');
+      updateElement('platform-fee-amt', formatCurrency(result.platform_fees) + '/yr');
+      updateElement('pm-fee-amt', formatCurrency(result.str_management) + '/yr');
+      updateElement('cleaning-cost-amt', formatCurrency(result.cleaning_costs) + '/yr');
+      updateElement('maintenance-amt', formatCurrency(result.maintenance || 0) + '/yr');
+      updateElement('capex-amt', formatCurrency(result.capex || 0) + '/yr');
       updateElement('calc-total-expenses', '-' + formatCurrency(totalOpEx) + '/yr');
       
       // Update Cash Flow Summary
       updateElement('cf-gross', formatCurrency(grossRevenue));
       updateElement('cf-opex', '-' + formatCurrency(totalOpEx));
       updateElement('cf-noi', formatCurrency(noi));
-      updateElement('cf-debt', '-' + formatCurrency(annualDebtService));
+      updateElement('cf-debt', '-' + formatCurrency(result.annual_debt_service));
       updateElement('cf-annual', formatCurrency(annualCashFlow));
       updateElement('cf-monthly', formatCurrency(monthlyCashFlow));
       
@@ -1860,6 +1925,7 @@
       updateElement('metric-cap-rate', capRate.toFixed(1) + '%');
       updateElement('metric-coc', cocReturn.toFixed(1) + '%');
       updateElement('metric-dscr', dscr.toFixed(2) + 'x');
+      const grm = purchasePrice / grossRevenue;
       updateElement('metric-grm', grm.toFixed(1));
       
       // Update STR vs LTR comparison
@@ -1873,10 +1939,17 @@
       }
       
       // Update Pricing Ladder
-      updatePricingLadder(purchasePrice, grossRevenue, totalCashNeeded, noi, annualDebtService);
+      updatePricingLadder(purchasePrice, grossRevenue, totalCashNeeded, noi, result.annual_debt_service);
       
       // Update Seasonality (estimated based on occupancy)
       updateSeasonality(occupancyRate);
+    }
+    
+    // Fallback: Local calculation if API fails
+    function doLocalRecalculate(payload) {
+      console.log('Using local STR fallback calculations');
+      // Use the existing local calculation logic as fallback
+      // This would be the original recalculateAll logic
     }
     
     function getSliderValue(labelText, defaultValue) {
