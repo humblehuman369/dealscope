@@ -1001,6 +1001,85 @@
       font-weight: 600;
     }
     
+    /* Section Total Rows - Polished styling */
+    .data-row.section-total {
+      background: linear-gradient(135deg, rgba(0, 126, 167, 0.12) 0%, rgba(0, 126, 167, 0.06) 100%);
+      font-weight: 700;
+      padding: 14px 20px;
+      margin-top: 8px;
+      border-radius: 6px;
+      border-left: 4px solid var(--iq-teal);
+    }
+    
+    .data-row.section-total .data-label span {
+      font-weight: 700;
+      color: var(--ws-text-primary);
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.03em;
+    }
+    
+    .data-row.section-total .value-primary {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--iq-teal);
+    }
+    
+    /* Income Total - Green accent */
+    .data-row.income-total {
+      border-left-color: #10b981;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%);
+    }
+    .data-row.income-total .value-primary {
+      color: #10b981;
+    }
+    
+    /* Expense Total - Red accent */
+    .data-row.expense-total {
+      border-left-color: #ef4444;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.04) 100%);
+    }
+    .data-row.expense-total .value-primary {
+      color: #ef4444;
+    }
+    
+    /* Cash Flow Total - Teal accent */
+    .data-row.cashflow-total {
+      border-left-color: var(--iq-teal);
+      background: linear-gradient(135deg, rgba(0, 126, 167, 0.15) 0%, rgba(0, 126, 167, 0.06) 100%);
+    }
+    .data-row.cashflow-total .value-primary {
+      color: var(--iq-teal);
+      font-size: 20px;
+    }
+    .data-row.cashflow-total.annual {
+      background: linear-gradient(135deg, rgba(0, 126, 167, 0.2) 0%, rgba(0, 126, 167, 0.08) 100%);
+      border-left-width: 5px;
+    }
+    .data-row.cashflow-total.annual .value-primary {
+      font-size: 22px;
+    }
+    
+    /* Cash Flow Summary Section */
+    .section-card.cashflow-summary {
+      border: 2px solid var(--iq-teal);
+      box-shadow: 0 4px 12px rgba(0, 126, 167, 0.15);
+    }
+    .section-card.cashflow-summary .section-header {
+      background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, rgba(0, 126, 167, 0.05) 100%);
+    }
+    
+    .cashflow-content .data-row.cf-row {
+      padding: 12px 20px;
+    }
+    
+    .cf-divider {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--iq-teal), transparent);
+      margin: 12px 20px;
+      opacity: 0.4;
+    }
+    
     .data-row.highlight {
       background-color: var(--ws-accent-bg);
       border-left: 3px solid var(--iq-teal);
@@ -1997,17 +2076,15 @@
         </div>
       </div>
       
-      <!-- Cash Flow Section -->
+      <!-- INCOME Section -->
       <div class="section-card">
         <div class="section-header">
-          <span class="section-title">Cash Flow</span>
+          <span class="section-title">Income</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
             <path d="M18 15l-6-6-6 6"/>
           </svg>
         </div>
         <div class="section-content">
-          <div class="subsection-header income">Income</div>
-          
           <!-- Monthly Gross Rent with Slider -->
           <div class="data-row has-slider">
             <div class="data-label"><span>Monthly Gross Rent</span></div>
@@ -2036,14 +2113,23 @@
             </div>
           </div>
           
-          <!-- Operating Income - Calculated -->
-          <div class="data-row total">
-            <div class="data-label"><span>Operating Income</span></div>
+          <!-- Gross Income - Section Total -->
+          <div class="data-row section-total income-total">
+            <div class="data-label"><span>Gross Income</span></div>
             <div class="value-primary" id="calc-operating-income">$89,214</div>
           </div>
-          
-          <div class="subsection-header expenses">Operating Expenses</div>
-          
+        </div>
+      </div>
+      
+      <!-- EXPENSES Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Expenses</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
           <!-- Property Taxes with Slider -->
           <div class="data-row has-slider">
             <div class="data-label"><span>Property Taxes</span></div>
@@ -2119,42 +2205,54 @@
             <input type="text" class="slider-value" value="$0">
           </div>
           
-          <!-- Operating Expenses - Calculated -->
-          <div class="data-row total">
-            <div class="data-label"><span>Operating Expenses</span></div>
+          <!-- Gross Expenses - Section Total -->
+          <div class="data-row section-total expense-total">
+            <div class="data-label"><span>Gross Expenses</span></div>
             <div class="value-primary" id="calc-opex-annual">$25,424</div>
           </div>
-          
-          <div class="subsection-header neutral">Monthly Cash Flow</div>
-          
-          <!-- Monthly Rental Income -->
-          <div class="data-row calculated">
-            <div class="data-label"><span>Monthly Rental Income</span></div>
-            <div class="value-primary value-positive" id="calc-monthly-income">$7,435</div>
+        </div>
+      </div>
+      
+      <!-- CASH FLOW Section -->
+      <div class="section-card cashflow-summary">
+        <div class="section-header">
+          <span class="section-title">Cash Flow</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content cashflow-content">
+          <!-- Gross Income -->
+          <div class="data-row cf-row">
+            <div class="data-label"><span>Gross Income</span></div>
+            <div class="value-primary value-positive" id="calc-cf-income">$89,214</div>
           </div>
           
-          <!-- Monthly Operating Expenses -->
-          <div class="data-row calculated">
-            <div class="data-label"><span>Monthly Operating Expenses</span></div>
-            <div class="value-primary value-negative" id="calc-monthly-opex">-$2,119</div>
+          <!-- Gross Expenses -->
+          <div class="data-row cf-row">
+            <div class="data-label"><span>Gross Expenses</span></div>
+            <div class="value-primary value-negative" id="calc-cf-expenses">-$11,149</div>
           </div>
           
-          <!-- Monthly Loan Payments -->
-          <div class="data-row calculated">
-            <div class="data-label"><span>Monthly Loan Payments</span></div>
-            <div class="value-primary value-negative" id="calc-monthly-loan">-$3,851</div>
+          <!-- Loan Payments -->
+          <div class="data-row cf-row">
+            <div class="data-label"><span>Loan Payments</span></div>
+            <div class="value-primary value-negative" id="calc-cf-loan">-$46,212</div>
           </div>
           
-          <!-- Monthly Cash Flow -->
-          <div class="data-row highlight">
+          <!-- Divider -->
+          <div class="cf-divider"></div>
+          
+          <!-- Monthly Cash Flow - Highlight -->
+          <div class="data-row section-total cashflow-total">
             <div class="data-label"><span>Monthly Cash Flow</span></div>
-            <div class="value-primary value-positive" id="calc-monthly-cf">$1,465</div>
+            <div class="value-primary" id="calc-monthly-cf">$2,654</div>
           </div>
           
-          <!-- Annual Cash Flow -->
-          <div class="data-row total">
+          <!-- Annual Cash Flow - Highlight -->
+          <div class="data-row section-total cashflow-total annual">
             <div class="data-label"><span>Annual Cash Flow</span></div>
-            <div class="value-primary value-positive" id="calc-annual-cf">$17,575</div>
+            <div class="value-primary" id="calc-annual-cf">$31,849</div>
           </div>
         </div>
       </div>
@@ -2697,22 +2795,25 @@
       const monthlyOpEx = totalOpEx / 12;
       const monthlyCashFlow = cashFlow / 12;
       
+      // Update EXPENSES section total
       updateElement('calc-opex-annual', formatCurrency(totalOpEx));
-      updateElement('calc-monthly-income', formatCurrency(monthlyIncome));
-      updateElement('calc-monthly-opex', '-' + formatCurrency(monthlyOpEx));
-      updateElement('calc-monthly-loan', '-' + formatCurrency(monthlyPayment));
-      updateElement('calc-monthly-cf', (monthlyCashFlow >= 0 ? '' : '-') + formatCurrency(Math.abs(monthlyCashFlow)));
-      updateElement('calc-annual-cf', (cashFlow >= 0 ? '' : '-') + formatCurrency(Math.abs(cashFlow)));
       
-      // Update color classes for positive/negative
-      const monthlyIncomeEl = document.getElementById('calc-monthly-income');
-      if (monthlyIncomeEl) monthlyIncomeEl.className = 'value-primary value-positive';
+      // Update CASH FLOW section
+      updateElement('calc-cf-income', formatCurrency(effectiveIncome));
+      updateElement('calc-cf-expenses', '-' + formatCurrency(totalOpEx));
+      updateElement('calc-cf-loan', '-' + formatCurrency(annualDebtService));
+      updateElement('calc-monthly-cf', formatCurrency(monthlyCashFlow));
+      updateElement('calc-annual-cf', formatCurrency(cashFlow));
       
-      const monthlyOpExEl = document.getElementById('calc-monthly-opex');
-      if (monthlyOpExEl) monthlyOpExEl.className = 'value-primary value-negative';
+      // Update color classes for positive/negative in Cash Flow section
+      const cfIncomeEl = document.getElementById('calc-cf-income');
+      if (cfIncomeEl) cfIncomeEl.className = 'value-primary value-positive';
       
-      const monthlyLoanEl = document.getElementById('calc-monthly-loan');
-      if (monthlyLoanEl) monthlyLoanEl.className = 'value-primary value-negative';
+      const cfExpensesEl = document.getElementById('calc-cf-expenses');
+      if (cfExpensesEl) cfExpensesEl.className = 'value-primary value-negative';
+      
+      const cfLoanEl = document.getElementById('calc-cf-loan');
+      if (cfLoanEl) cfLoanEl.className = 'value-primary value-negative';
       
       const monthlyCfEl = document.getElementById('calc-monthly-cf');
       if (monthlyCfEl) monthlyCfEl.className = 'value-primary ' + (monthlyCashFlow >= 0 ? 'value-positive' : 'value-negative');
