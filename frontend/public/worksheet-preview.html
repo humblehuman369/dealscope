@@ -1333,17 +1333,19 @@
         #f97316 75%, 
         #dc2626 100%);
       border-radius: 4px;
-      margin: 40px 0 60px;
+      margin: 60px 0 60px; /* Increased top margin for Your Offer above */
     }
     
+    /* Regular markers (MAO, CoC, Breakeven, List Price) - BELOW the bar */
     .pricing-scale-marker {
       position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
+      top: 100%; /* Position below the bar */
+      transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
       z-index: 2;
+      margin-top: 12px; /* Space between bar and markers */
     }
     
     .pricing-scale-marker-dot {
@@ -1353,6 +1355,21 @@
       border: 3px solid white;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       margin-bottom: 8px;
+      order: 1; /* Dot first (at top, closest to bar) */
+      position: relative;
+    }
+    
+    /* Add connecting line from bar to dot */
+    .pricing-scale-marker-dot::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 12px;
+      background: var(--ws-border);
+      opacity: 0.4;
     }
     
     .pricing-scale-marker-label {
@@ -1363,6 +1380,7 @@
       color: var(--ws-text-muted);
       margin-bottom: 4px;
       white-space: nowrap;
+      order: 2; /* Label second */
     }
     
     .pricing-scale-marker-value {
@@ -1375,6 +1393,7 @@
       border: 2px solid;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       white-space: nowrap;
+      order: 3; /* Value last */
     }
     
     .pricing-scale-marker.mao .pricing-scale-marker-dot {
@@ -1413,24 +1432,26 @@
       color: #dc2626;
     }
     
-    /* Your Offer Indicator */
+    /* Your Offer Indicator - ABOVE the bar */
     .pricing-scale-offer {
       position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
+      bottom: 100%; /* Position above the bar */
+      transform: translateX(-50%);
       z-index: 10;
       display: flex;
       flex-direction: column;
       align-items: center;
+      margin-bottom: 12px; /* Space between indicator and bar */
     }
     
     .pricing-scale-offer-line {
       width: 3px;
-      height: 60px;
+      height: 12px; /* Line connecting badge/value to bar */
       background: var(--iq-teal);
       border-radius: 2px;
-      margin-bottom: 8px;
       box-shadow: 0 0 8px rgba(0, 126, 167, 0.4);
+      order: 3; /* Line last (at bottom, connecting to bar) */
+      margin-top: 6px; /* Space between value and line */
     }
     
     .pricing-scale-offer-badge {
@@ -1445,10 +1466,11 @@
       white-space: nowrap;
       box-shadow: 0 4px 12px rgba(0, 126, 167, 0.4);
       border: 2px solid white;
+      order: 1; /* Badge first (at top) */
+      margin-bottom: 6px;
     }
     
     .pricing-scale-offer-value {
-      margin-top: 6px;
       font-size: 14px;
       font-weight: 700;
       color: var(--iq-teal);
@@ -1457,6 +1479,7 @@
       border-radius: 8px;
       border: 2px solid var(--iq-teal);
       box-shadow: 0 2px 8px rgba(0, 126, 167, 0.3);
+      order: 2; /* Value second (middle) */
     }
     
     .pricing-scale-summary {
@@ -2393,11 +2416,11 @@
         <div class="pricing-scale">
           <!-- Horizontal Price Bar -->
           <div class="pricing-scale-bar" id="pricing-scale-bar">
-            <!-- Your Offer Indicator (Dynamic) -->
+            <!-- Your Offer Indicator (Dynamic) - ABOVE the bar -->
             <div class="pricing-scale-offer" id="pricing-offer-indicator">
-              <div class="pricing-scale-offer-line"></div>
               <div class="pricing-scale-offer-badge">Your Offer</div>
               <div class="pricing-scale-offer-value" id="pricing-offer-value">$723,600</div>
+              <div class="pricing-scale-offer-line"></div>
             </div>
             
             <!-- MAO Marker -->
