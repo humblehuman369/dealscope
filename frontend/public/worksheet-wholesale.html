@@ -1153,7 +1153,7 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" id="investor-price" min="15000" max="50000" value="24000">
+                <input type="range" class="slider-input" id="investor-price" min="5000" max="1500000" value="24000">
               </div>
             </div>
             <input type="text" class="slider-value" id="investor-price-val" value="$24,000">
@@ -1168,7 +1168,7 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" id="contract-price" min="5000" max="30000" value="12000">
+                <input type="range" class="slider-input" id="contract-price" min="1000" max="1500000" value="12000">
               </div>
             </div>
             <input type="text" class="slider-value" id="contract-price-val" value="$12,000">
@@ -1266,7 +1266,7 @@
             <div class="data-label"><span>After Repair Value</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input investor" id="arv" min="50000" max="150000" value="75000">
+                <input type="range" class="slider-input investor" id="arv" min="25000" max="2000000" value="75000">
               </div>
             </div>
             <input type="text" class="slider-value" id="arv-val" value="$75,000">
@@ -1698,7 +1698,7 @@
     }
     
     function updateSliderByLabel(labelText, value) {
-      if (!value) return;
+      if (value === undefined || value === null) return;
       const rows = document.querySelectorAll('.data-row.has-slider');
       for (const row of rows) {
         const label = row.querySelector('.data-label span')?.textContent || '';
@@ -1706,12 +1706,23 @@
           const slider = row.querySelector('.slider-input');
           const input = row.querySelector('.slider-value');
           if (slider) {
-            slider.value = value;
             const min = parseFloat(slider.min), max = parseFloat(slider.max);
-            const progress = ((value - min) / (max - min)) * 100;
+            const clampedValue = Math.min(max, Math.max(min, value));
+            slider.value = clampedValue;
+            const progress = Math.min(100, Math.max(0, ((clampedValue - min) / (max - min)) * 100));
             slider.style.background = `linear-gradient(to right, #2563eb 0%, #2563eb ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+            if (clampedValue !== value) {
+              console.warn(`[Wholesale Slider] "${labelText}" value ${value} clamped to ${clampedValue} (range: ${min}-${max})`);
+            }
           }
-          if (input) input.value = formatCurrency(value);
+          if (input) {
+            const displayValue = slider ? parseFloat(slider.value) : value;
+            if (label.includes('%')) {
+              input.value = displayValue + '%';
+            } else {
+              input.value = formatCurrency(displayValue);
+            }
+          }
           break;
         }
       }
