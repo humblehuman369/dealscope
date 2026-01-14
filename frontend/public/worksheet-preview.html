@@ -172,7 +172,7 @@
     /* Main Content Area */
     .worksheet-main-area {
       display: grid;
-      grid-template-columns: 200px 1fr 300px;
+      grid-template-columns: 1fr 320px;
       gap: 20px;
       padding: 24px;
       max-width: 1600px;
@@ -1415,7 +1415,7 @@
 
     @media (max-width: 1200px) {
       .worksheet-main-area {
-        grid-template-columns: 200px 1fr 280px;
+        grid-template-columns: 1fr 300px;
       }
     }
     
@@ -1794,52 +1794,6 @@
   
   <!-- Main Content -->
   <div class="worksheet-main-area">
-    <!-- Help Panel -->
-    <aside class="worksheet-help-panel">
-      <div class="worksheet-help-header">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-          <path d="M9 18h6"/>
-          <path d="M10 22h4"/>
-          <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
-        </svg>
-        Property Analysis Tips
-      </div>
-      <ul class="worksheet-help-list">
-        <li class="worksheet-help-item">
-          <svg class="help-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 16v-4"/>
-            <path d="M12 8h.01"/>
-          </svg>
-          <span>Adjust the purchase price to see how it affects your returns</span>
-        </li>
-        <li class="worksheet-help-item">
-          <svg class="help-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 16v-4"/>
-            <path d="M12 8h.01"/>
-          </svg>
-          <span>A 20-25% down payment is typical for investment properties</span>
-        </li>
-        <li class="worksheet-help-item">
-          <svg class="help-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 16v-4"/>
-            <path d="M12 8h.01"/>
-          </svg>
-          <span>Cap rates above 8% are generally considered good investments</span>
-        </li>
-        <li class="worksheet-help-item">
-          <svg class="help-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 16v-4"/>
-            <path d="M12 8h.01"/>
-          </svg>
-          <span>Cash-on-cash return of 10%+ is a strong target for rental properties</span>
-        </li>
-      </ul>
-    </aside>
-    
     <!-- Content Area -->
     <main class="worksheet-content-area">
       <!-- Purchase & Rehab Section -->
@@ -2007,9 +1961,9 @@
         <div class="section-content">
           <div class="subsection-header income">Income</div>
           
-          <!-- Gross Rent with Slider -->
+          <!-- Monthly Gross Rent with Slider -->
           <div class="data-row has-slider">
-            <div class="data-label"><span>Gross Rent</span></div>
+            <div class="data-label"><span>Monthly Gross Rent</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
                 <input type="range" class="slider-input" min="500" max="15000" value="8081" style="--slider-progress: 52%;">
@@ -2070,12 +2024,12 @@
             <div class="data-label"><span>Property Mgmt</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="15" value="8" style="--slider-progress: 53%;">
+                <input type="range" class="slider-input" min="0" max="15" value="0" style="--slider-progress: 0%;">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="8.0%" style="min-width: 60px;">
-              <span class="slider-secondary">$7,137</span>
+              <input type="text" class="slider-value" value="0%" style="min-width: 60px;">
+              <span class="slider-secondary">$0</span>
             </div>
           </div>
           
@@ -2084,26 +2038,26 @@
             <div class="data-label"><span>Maintenance</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="15" value="5" style="--slider-progress: 33%;">
+                <input type="range" class="slider-input" min="0" max="15" value="2" style="--slider-progress: 13%;">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="5.0%" style="min-width: 60px;">
-              <span class="slider-secondary">$4,461</span>
+              <input type="text" class="slider-value" value="2%" style="min-width: 60px;">
+              <span class="slider-secondary">$1,784</span>
             </div>
           </div>
           
           <!-- Capital Expenditures with Slider -->
           <div class="data-row has-slider">
-            <div class="data-label"><span>CapEx</span></div>
+            <div class="data-label"><span>Capital Expense</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="15" value="5" style="--slider-progress: 33%;">
+                <input type="range" class="slider-input" min="0" max="15" value="0" style="--slider-progress: 0%;">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="5.0%" style="min-width: 60px;">
-              <span class="slider-secondary">$4,461</span>
+              <input type="text" class="slider-value" value="0%" style="min-width: 60px;">
+              <span class="slider-secondary">$0</span>
             </div>
           </div>
           
@@ -2121,27 +2075,39 @@
           <!-- Operating Expenses - Calculated -->
           <div class="data-row total">
             <div class="data-label"><span>Operating Expenses</span></div>
-            <div class="value-primary">$25,424</div>
+            <div class="value-primary" id="calc-opex-annual">$25,424</div>
           </div>
           
-          <div class="subsection-header neutral">Net Operating Income</div>
+          <div class="subsection-header neutral">Monthly Cash Flow</div>
           
-          <!-- NOI - Calculated -->
-          <div class="data-row highlight">
-            <div class="data-label"><span>Net Operating Income</span></div>
-            <div class="value-primary value-positive">$63,791</div>
-          </div>
-          
-          <!-- Loan Payments - Calculated -->
+          <!-- Monthly Rental Income -->
           <div class="data-row calculated">
-            <div class="data-label"><span>Loan Payments</span></div>
-            <div class="value-primary value-negative">-$46,216</div>
+            <div class="data-label"><span>Monthly Rental Income</span></div>
+            <div class="value-primary value-positive" id="calc-monthly-income">$7,435</div>
           </div>
           
-          <!-- Cash Flow - Calculated (Key Metric) -->
+          <!-- Monthly Operating Expenses -->
+          <div class="data-row calculated">
+            <div class="data-label"><span>Monthly Operating Expenses</span></div>
+            <div class="value-primary value-negative" id="calc-monthly-opex">-$2,119</div>
+          </div>
+          
+          <!-- Monthly Loan Payments -->
+          <div class="data-row calculated">
+            <div class="data-label"><span>Monthly Loan Payments</span></div>
+            <div class="value-primary value-negative" id="calc-monthly-loan">-$3,851</div>
+          </div>
+          
+          <!-- Monthly Cash Flow -->
+          <div class="data-row highlight">
+            <div class="data-label"><span>Monthly Cash Flow</span></div>
+            <div class="value-primary value-positive" id="calc-monthly-cf">$1,465</div>
+          </div>
+          
+          <!-- Annual Cash Flow -->
           <div class="data-row total">
-            <div class="data-label"><span>Cash Flow</span></div>
-            <div class="value-primary value-positive">$17,575</div>
+            <div class="data-label"><span>Annual Cash Flow</span></div>
+            <div class="value-primary value-positive" id="calc-annual-cf">$17,575</div>
           </div>
         </div>
       </div>
@@ -2169,25 +2135,25 @@
           <!-- ARV Per Sq Ft - Calculated -->
           <div class="data-row calculated">
             <div class="data-label"><span>ARV Per Square Foot</span></div>
-            <div class="value-primary">$251</div>
+            <div class="value-primary" id="calc-arv-psf">$251</div>
           </div>
           
           <!-- Price Per Sq Ft - Calculated -->
           <div class="data-row calculated">
             <div class="data-label"><span>Price Per Square Foot</span></div>
-            <div class="value-primary">$228</div>
+            <div class="value-primary" id="calc-price-psf">$228</div>
           </div>
           
           <!-- Rehab Per Sq Ft - Calculated -->
           <div class="data-row calculated">
             <div class="data-label"><span>Rehab Per Square Foot</span></div>
-            <div class="value-primary">$0</div>
+            <div class="value-primary" id="calc-rehab-psf">$0</div>
           </div>
           
           <!-- Equity at Purchase - Calculated (Key Metric) -->
           <div class="data-row total">
             <div class="data-label"><span>Equity at Purchase</span></div>
-            <div class="value-primary value-positive">$72,360</div>
+            <div class="value-primary value-positive" id="calc-equity">$72,360</div>
           </div>
         </div>
       </div>
@@ -2603,7 +2569,7 @@
       if (!secondarySpan) return;
       
       // Examples of secondary calculations
-      if (label.includes('Gross Rent')) {
+      if (label.includes('Gross Rent') || label.includes('Monthly Gross Rent')) {
         secondarySpan.textContent = formatCurrency(value * 12) + '/yr';
       } else if (label.includes('Down Payment')) {
         const purchasePrice = parseCurrency(document.querySelector('[data-field="purchase-price"]')?.value || '723600');
@@ -2612,7 +2578,7 @@
         const grossRent = parseCurrency(document.querySelector('[data-field="gross-rent"]')?.value || '8081') * 12;
         secondarySpan.textContent = '-' + formatCurrency(grossRent * (value / 100));
         secondarySpan.classList.add('value-negative');
-      } else if (label.includes('Mgmt') || label.includes('Maintenance') || label.includes('CapEx')) {
+      } else if (label.includes('Mgmt') || label.includes('Maintenance') || label.includes('Capital Expense')) {
         const grossRent = parseCurrency(document.querySelector('[data-field="gross-rent"]')?.value || '8081') * 12;
         secondarySpan.textContent = formatCurrency(grossRent * (value / 100));
       }
@@ -2629,13 +2595,13 @@
       const downPaymentPct = getSliderValue('Down Payment', 20);
       const interestRate = getSliderValue('Interest Rate', 7);
       const loanTerm = getSliderValue('Loan Term', 30);
-      const grossRentMonthly = getSliderValue('Gross Rent', 8081);
+      const grossRentMonthly = getSliderValue('Monthly Gross Rent', 8081);
       const vacancyPct = getSliderValue('Vacancy', 8);
       const propertyTaxes = getSliderValue('Property Taxes', 6471);
       const insurance = getSliderValue('Insurance', 2894);
-      const mgmtPct = getSliderValue('Property Mgmt', 8);
-      const maintPct = getSliderValue('Maintenance', 5);
-      const capexPct = getSliderValue('CapEx', 5);
+      const mgmtPct = getSliderValue('Property Mgmt', 0);
+      const maintPct = getSliderValue('Maintenance', 2);
+      const capexPct = getSliderValue('Capital Expense', 0);
       const hoaFees = getSliderValue('HOA Fees', 0);
       const arv = getSliderValue('After Repair Value', 795960);
       const purchaseCosts = getSliderValue('Purchase Costs', 21708);
@@ -2700,6 +2666,49 @@
         equity,
         loanAmount
       });
+      
+      // Update monthly cash flow section
+      const monthlyIncome = effectiveIncome / 12;
+      const monthlyOpEx = totalOpEx / 12;
+      const monthlyCashFlow = cashFlow / 12;
+      
+      updateElement('calc-opex-annual', formatCurrency(totalOpEx));
+      updateElement('calc-monthly-income', formatCurrency(monthlyIncome));
+      updateElement('calc-monthly-opex', '-' + formatCurrency(monthlyOpEx));
+      updateElement('calc-monthly-loan', '-' + formatCurrency(monthlyPayment));
+      updateElement('calc-monthly-cf', (monthlyCashFlow >= 0 ? '' : '-') + formatCurrency(Math.abs(monthlyCashFlow)));
+      updateElement('calc-annual-cf', (cashFlow >= 0 ? '' : '-') + formatCurrency(Math.abs(cashFlow)));
+      
+      // Update color classes for positive/negative
+      const monthlyIncomeEl = document.getElementById('calc-monthly-income');
+      if (monthlyIncomeEl) monthlyIncomeEl.className = 'value-primary value-positive';
+      
+      const monthlyOpExEl = document.getElementById('calc-monthly-opex');
+      if (monthlyOpExEl) monthlyOpExEl.className = 'value-primary value-negative';
+      
+      const monthlyLoanEl = document.getElementById('calc-monthly-loan');
+      if (monthlyLoanEl) monthlyLoanEl.className = 'value-primary value-negative';
+      
+      const monthlyCfEl = document.getElementById('calc-monthly-cf');
+      if (monthlyCfEl) monthlyCfEl.className = 'value-primary ' + (monthlyCashFlow >= 0 ? 'value-positive' : 'value-negative');
+      
+      const annualCfEl = document.getElementById('calc-annual-cf');
+      if (annualCfEl) annualCfEl.className = 'value-primary ' + (cashFlow >= 0 ? 'value-positive' : 'value-negative');
+      
+      // Update Valuation section per square foot calculations
+      const sqft = window.propertySqft || 3172;
+      const arvPsf = arv / sqft;
+      const pricePsf = purchasePrice / sqft;
+      const rehabPsf = rehabCosts / sqft;
+      
+      updateElement('calc-arv-psf', formatCurrency(arvPsf));
+      updateElement('calc-price-psf', formatCurrency(pricePsf));
+      updateElement('calc-rehab-psf', formatCurrency(rehabPsf));
+      updateElement('calc-equity', formatCurrency(equity));
+      
+      // Update equity color class
+      const equityEl = document.getElementById('calc-equity');
+      if (equityEl) equityEl.className = 'value-primary ' + (equity >= 0 ? 'value-positive' : 'value-negative');
       
       // Update Pricing Ladder
       updatePricingLadder(purchasePrice, grossRentMonthly, totalOpEx, annualDebtService);
@@ -2801,8 +2810,9 @@
     
     // ===== PRICING LADDER CALCULATIONS =====
     function updatePricingLadder(purchasePrice, grossRentMonthly, totalOpEx, annualDebtService) {
-      const listPrice = 795000; // Could be dynamic from property data
-      const arv = 795960; // After Repair Value
+      // Get dynamic values from sliders
+      const arv = getSliderValue('After Repair Value', 795960);
+      const listPrice = purchasePrice * 1.05; // List price is typically 5% above offer price
       
       // Calculate breakeven price (where cash flow = 0)
       // At breakeven: NOI = Debt Service
@@ -2954,7 +2964,7 @@
         
         // Update slider values based on property data
         updateSliderByLabel('Purchase Price', property.listPrice);
-        updateSliderByLabel('Gross Rent', property.monthlyRent);
+        updateSliderByLabel('Monthly Gross Rent', property.monthlyRent);
         // Property taxes and insurance from API are annual - sliders expect annual
         updateSliderByLabel('Property Taxes', property.propertyTaxes);
         updateSliderByLabel('Insurance', property.insurance);
@@ -2964,6 +2974,9 @@
           updateSliderByLabel('After Repair Value', property.arv);
           window.propertyARV = property.arv;
         }
+        
+        // Store sqft for per square foot calculations
+        window.propertySqft = property.sqft || 3172; // Default to sample property sqft
         
       } catch (error) {
         console.error('[Worksheet] Error loading property data:', error);
@@ -3000,7 +3013,7 @@
           
           if (input) {
             const displayValue = slider ? parseFloat(slider.value) : value;
-            if (label.includes('Rate') || label.includes('%') || label.includes('Vacancy') || label.includes('Mgmt') || label.includes('Maintenance') || label.includes('CapEx')) {
+            if (label.includes('Rate') || label.includes('%') || label.includes('Vacancy') || label.includes('Mgmt') || label.includes('Maintenance') || label.includes('Capital Expense')) {
               input.value = displayValue + '%';
             } else if (label.includes('Term') || label.includes('years')) {
               input.value = displayValue + ' years';
