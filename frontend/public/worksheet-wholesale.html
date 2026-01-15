@@ -160,12 +160,13 @@
     }
     
     .summary-cards {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      display: flex;
+      flex-wrap: nowrap;
       gap: clamp(6px, 1vw, 12px);
       max-width: 1600px;
       margin: 0 auto;
     }
+    .summary-cards .summary-card { flex: 1; min-width: 0; }
     
     .summary-card {
       background: white;
@@ -965,15 +966,6 @@
       }
       .worksheet-charts-sidebar {
         position: static;
-      }
-      .summary-cards {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-    
-    @media (max-width: 600px) {
-      .summary-cards {
-        grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
