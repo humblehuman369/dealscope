@@ -784,12 +784,16 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput):
 class BRRRRWorksheetInput(BaseModel):
     """Input parameters for BRRRR worksheet calculation."""
     purchase_price: float
+    purchase_costs: float = 0
     rehab_costs: float
     arv: float
+    sqft: Optional[float] = None
     monthly_rent: float
     property_taxes_annual: float = 6000
     insurance_annual: float = 2000
+    utilities_monthly: float = 0
     down_payment_pct: float = 0.20
+    loan_to_cost_pct: Optional[float] = None
     interest_rate: float = 0.10
     points: float = 2
     holding_months: int = 6
@@ -807,16 +811,25 @@ class BRRRRWorksheetInput(BaseModel):
 async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput):
     """Calculate BRRRR worksheet metrics."""
     try:
+        purchase_costs_pct = (
+            input_data.purchase_costs / input_data.purchase_price
+            if input_data.purchase_costs > 0 else 0.03
+        )
+        down_payment_pct = (
+            1 - (input_data.loan_to_cost_pct / 100)
+            if input_data.loan_to_cost_pct is not None else input_data.down_payment_pct
+        )
+
         result = calculate_brrrr(
             market_value=input_data.purchase_price,
             arv=input_data.arv,
             monthly_rent_post_rehab=input_data.monthly_rent,
             property_taxes_annual=input_data.property_taxes_annual,
             purchase_discount_pct=0,  # Already at purchase price
-            down_payment_pct=input_data.down_payment_pct,
+            down_payment_pct=down_payment_pct,
             interest_rate=input_data.interest_rate,
             loan_term_years=1,  # Hard money is short term
-            closing_costs_pct=input_data.points / 100,
+            closing_costs_pct=purchase_costs_pct,
             renovation_budget=input_data.rehab_costs,
             holding_period_months=input_data.holding_months,
             refinance_ltv=input_data.refi_ltv,
@@ -826,30 +839,133 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput):
             vacancy_rate=input_data.vacancy_rate,
             operating_expense_pct=input_data.property_management_pct + input_data.maintenance_pct + input_data.capex_pct,
         )
+
+        sqft = input_data.sqft or 1
+        total_rehab = result["renovation_budget"] + result["contingency"]
+        all_in_cost = input_data.purchase_price + total_rehab + input_data.purchase_costs
+        all_in_pct_arv = (all_in_cost / input_data.arv * 100) if input_data.arv > 0 else 0
+
+        initial_loan_amount = result["initial_loan_amount"]
+        loan_to_cost = (
+            (initial_loan_amount / (input_data.purchase_price + input_data.rehab_costs)) * 100
+            if (input_data.purchase_price + input_data.rehab_costs) > 0 else 0
+        )
+        loan_to_cost_pct = input_data.loan_to_cost_pct or loan_to_cost
+
+        points_cost = initial_loan_amount * (input_data.points / 100)
+        cash_to_close = result["down_payment"] + input_data.purchase_costs + points_cost
+
+        # Holding cost breakdown (rehab period)
+        annual_interest = initial_loan_amount * input_data.interest_rate
+        holding_interest = annual_interest * (input_data.holding_months / 12)
+        holding_taxes = input_data.property_taxes_annual * (input_data.holding_months / 12)
+        holding_insurance = input_data.insurance_annual * (input_data.holding_months / 12)
+        holding_utilities = input_data.utilities_monthly * input_data.holding_months
+        total_holding_costs = holding_interest + holding_taxes + holding_insurance + holding_utilities
+
+        # Refinance summary
+        cash_out_at_refi = result["cash_out_at_refinance"]
+        total_cash_invested = (
+            result["down_payment"] +
+            input_data.purchase_costs +
+            points_cost +
+            total_rehab +
+            total_holding_costs
+        )
+        cash_left_in_deal = total_cash_invested - cash_out_at_refi
+
+        # Cash flow after refi breakdown
+        annual_gross_rent = result["annual_gross_rent"]
+        vacancy_loss = annual_gross_rent * input_data.vacancy_rate
+        effective_income = annual_gross_rent - vacancy_loss
+        property_management = effective_income * input_data.property_management_pct
+        maintenance = effective_income * input_data.maintenance_pct
+        capex = effective_income * input_data.capex_pct
+        total_expenses = (
+            input_data.property_taxes_annual +
+            input_data.insurance_annual +
+            property_management +
+            maintenance +
+            capex
+        )
+        noi = effective_income - total_expenses
+        annual_debt_service = result["new_monthly_pi"] * 12
+        annual_cash_flow = noi - annual_debt_service
+
+        cap_rate_arv = (noi / input_data.arv * 100) if input_data.arv > 0 else 0
+        cash_on_cash_return = (annual_cash_flow / cash_left_in_deal * 100) if cash_left_in_deal > 0 else float('inf')
+        return_on_equity = (annual_cash_flow / result["equity_position"] * 100) if result["equity_position"] > 0 else 0
+        total_roi_year1 = (
+            (annual_cash_flow + result["equity_position"]) / total_cash_invested * 100
+            if total_cash_invested > 0 else 0
+        )
+
+        deal_score = 50
+        if cash_left_in_deal <= 0:
+            deal_score += 20
+        elif cash_left_in_deal <= total_cash_invested * 0.25:
+            deal_score += 10
+        if annual_cash_flow > 0:
+            deal_score += 15
+        if all_in_pct_arv <= 75:
+            deal_score += 10
+        deal_score = min(100, max(0, round(deal_score)))
         
         return {
             # Purchase
             "purchase_price": result["purchase_price"],
-            "total_rehab": result["total_rehab"],
-            "holding_costs": result["holding_costs"],
-            "total_cash_invested": result["total_cash_invested"],
+            "purchase_costs": input_data.purchase_costs,
+            "total_rehab": total_rehab,
+            "holding_costs": total_holding_costs,
+            "holding_interest": holding_interest,
+            "holding_taxes": holding_taxes,
+            "holding_insurance": holding_insurance,
+            "holding_utilities": holding_utilities,
+            "all_in_cost": all_in_cost,
+            "loan_to_cost_pct": loan_to_cost_pct,
+            "loan_amount": initial_loan_amount,
+            "cash_to_close": cash_to_close,
+            "points_cost": points_cost,
+            "total_cash_invested": total_cash_invested,
             
             # Refinance
             "refinance_loan_amount": result["refinance_loan_amount"],
-            "cash_out": result["cash_out"],
-            "cash_left_in_deal": result["cash_left_in_deal"],
+            "cash_out": cash_out_at_refi,
+            "cash_left_in_deal": cash_left_in_deal,
+            "refinance_costs": result["refinance_costs"],
+            "payoff_old_loan": result["original_loan_payoff"],
             
             # Cash Flow
-            "noi": result["noi"],
-            "monthly_cash_flow": result["monthly_cash_flow_post_refi"],
-            "annual_cash_flow": result["annual_cash_flow_post_refi"],
+            "annual_gross_rent": annual_gross_rent,
+            "vacancy_loss": vacancy_loss,
+            "effective_income": effective_income,
+            "property_taxes": input_data.property_taxes_annual,
+            "insurance": input_data.insurance_annual,
+            "property_management": property_management,
+            "maintenance": maintenance,
+            "capex": capex,
+            "total_expenses": total_expenses,
+            "noi": noi,
+            "monthly_cash_flow": annual_cash_flow / 12,
+            "annual_cash_flow": annual_cash_flow,
+            "annual_debt_service": annual_debt_service,
             
             # Key Metrics
-            "cap_rate": result["cap_rate"] * 100,
-            "cash_on_cash_return": result["infinite_coc_return"] * 100 if result["cash_left_in_deal"] > 0 else float('inf'),
+            "cap_rate_arv": cap_rate_arv,
+            "cash_on_cash_return": cash_on_cash_return,
+            "return_on_equity": return_on_equity,
+            "total_roi_year1": total_roi_year1,
             "equity_position": result["equity_position"],
-            "all_in_pct_arv": result["all_in_pct_arv"] * 100,
-            "infinite_roi_achieved": result["infinite_roi_achieved"],
+            "all_in_pct_arv": all_in_pct_arv,
+            "infinite_roi_achieved": cash_left_in_deal <= 0,
+            "deal_score": deal_score,
+            
+            # Valuation
+            "arv": input_data.arv,
+            "arv_psf": (input_data.arv / sqft) if sqft > 0 else 0,
+            "price_psf": (input_data.purchase_price / sqft) if sqft > 0 else 0,
+            "rehab_psf": (input_data.rehab_costs / sqft) if sqft > 0 else 0,
+            "equity_created": input_data.arv - all_in_cost,
         }
         
     except Exception as e:
@@ -860,61 +976,152 @@ async def calculate_brrrr_worksheet(input_data: BRRRRWorksheetInput):
 class FlipWorksheetInput(BaseModel):
     """Input parameters for Fix & Flip worksheet calculation."""
     purchase_price: float
+    purchase_costs: float = 0
     rehab_costs: float
     arv: float
     down_payment_pct: float = 0.10
     interest_rate: float = 0.12
     points: float = 2
-    holding_months: int = 6
+    holding_months: float = 6
     property_taxes_annual: float = 4000
     insurance_annual: float = 1500
     utilities_monthly: float = 150
+    dumpster_monthly: float = 100
+    inspection_costs: float = 0
+    contingency_pct: float = 0
     selling_costs_pct: float = 0.08
+    capital_gains_rate: float = 0.20
+    loan_type: Optional[str] = "interest_only"
 
 
 @app.post("/api/v1/worksheet/flip/calculate")
 async def calculate_flip_worksheet(input_data: FlipWorksheetInput):
     """Calculate Fix & Flip worksheet metrics."""
     try:
+        purchase_costs_pct = (
+            input_data.purchase_costs / input_data.purchase_price
+            if input_data.purchase_costs > 0 else 0.03
+        )
+
         result = calculate_flip(
             market_value=input_data.purchase_price,
             arv=input_data.arv,
             purchase_discount_pct=0,
             hard_money_ltv=1 - input_data.down_payment_pct,
             hard_money_rate=input_data.interest_rate,
-            closing_costs_pct=input_data.points / 100,
+            closing_costs_pct=purchase_costs_pct,
+            inspection_costs=input_data.inspection_costs,
             renovation_budget=input_data.rehab_costs,
+            contingency_pct=input_data.contingency_pct,
             holding_period_months=input_data.holding_months,
             property_taxes_annual=input_data.property_taxes_annual,
             insurance_annual=input_data.insurance_annual,
             utilities_monthly=input_data.utilities_monthly,
+            security_maintenance_monthly=input_data.dumpster_monthly,
             selling_costs_pct=input_data.selling_costs_pct,
+            capital_gains_rate=input_data.capital_gains_rate,
         )
+
+        loan_amount = result["hard_money_loan"]
+        points_cost = loan_amount * (input_data.points / 100)
+        loan_to_cost_pct = (
+            (loan_amount / (input_data.purchase_price + input_data.rehab_costs)) * 100
+            if (input_data.purchase_price + input_data.rehab_costs) > 0 else 0
+        )
+        if input_data.loan_type == "amortizing":
+            monthly_payment = calculate_monthly_mortgage(
+                loan_amount, input_data.interest_rate, 30
+            )
+        else:
+            monthly_payment = (loan_amount * input_data.interest_rate) / 12
+
+        monthly_taxes = input_data.property_taxes_annual / 12
+        monthly_insurance = input_data.insurance_annual / 12
+        monthly_holding_base = monthly_payment + monthly_taxes + monthly_insurance + input_data.utilities_monthly + input_data.dumpster_monthly
+        total_holding_costs = monthly_holding_base * input_data.holding_months
+
+        total_renovation = result["total_renovation"]
+        all_in_cost = input_data.purchase_price + total_renovation + input_data.purchase_costs
+        purchase_rehab_cost = input_data.purchase_price + input_data.rehab_costs
+        breakeven_price = result["minimum_sale_for_breakeven"]
+        target_fifteen_all_in = (input_data.arv * 0.85) - input_data.rehab_costs - input_data.purchase_costs
+
+        total_cash_required = (
+            result["down_payment"] +
+            input_data.purchase_costs +
+            input_data.inspection_costs +
+            points_cost +
+            total_renovation +
+            total_holding_costs
+        )
+        total_project_cost = (
+            input_data.purchase_price +
+            input_data.purchase_costs +
+            input_data.inspection_costs +
+            total_renovation +
+            total_holding_costs
+        )
+        gross_profit = input_data.arv - total_project_cost
+        net_profit_before_tax = result["net_sale_proceeds"] - loan_amount - total_cash_required
+        capital_gains_tax = max(0, net_profit_before_tax * input_data.capital_gains_rate)
+        net_profit_after_tax = net_profit_before_tax - capital_gains_tax
+
+        roi = net_profit_before_tax / total_cash_required if total_cash_required > 0 else 0
+        annualized_roi = roi * (12 / input_data.holding_months) if input_data.holding_months > 0 else 0
+        profit_margin = net_profit_before_tax / input_data.arv if input_data.arv > 0 else 0
+
+        roi_pct = roi * 100
+        annualized_roi_pct = annualized_roi * 100
+        profit_margin_pct = profit_margin * 100
+
+        deal_score = 50
+        if roi_pct > 0:
+            deal_score += min(25, roi_pct / 4)
+        if purchase_rehab_cost < input_data.arv * 0.75:
+            deal_score += 15
+        if net_profit_before_tax > 15000:
+            deal_score += 10
+        deal_score = min(100, max(0, round(deal_score)))
         
         return {
             # Costs
             "purchase_price": result["purchase_price"],
-            "total_renovation": result["total_renovation"],
-            "total_holding_costs": result["total_holding_costs"],
-            "total_project_cost": result["total_project_cost"],
-            "total_cash_required": result["total_cash_required"],
+            "purchase_costs": input_data.purchase_costs,
+            "inspection_costs": input_data.inspection_costs,
+            "points_cost": points_cost,
+            "total_renovation": total_renovation,
+            "total_holding_costs": total_holding_costs,
+            "total_project_cost": total_project_cost,
+            "total_cash_required": total_cash_required,
+            "loan_amount": loan_amount,
+            "loan_to_cost_pct": loan_to_cost_pct,
+            "monthly_payment": monthly_payment,
+            "holding_months": input_data.holding_months,
             
             # Sale
             "arv": input_data.arv,
             "selling_costs": result["total_selling_costs"],
             "net_sale_proceeds": result["net_sale_proceeds"],
+            "loan_repayment": loan_amount,
             
             # Profit
-            "gross_profit": result["gross_profit"],
-            "net_profit_before_tax": result["net_profit_before_tax"],
-            "net_profit_after_tax": result["net_profit_after_tax"],
+            "gross_profit": gross_profit,
+            "net_profit_before_tax": net_profit_before_tax,
+            "net_profit_after_tax": net_profit_after_tax,
             
             # Key Metrics
-            "roi": result["roi"] * 100,
-            "annualized_roi": result["annualized_roi"] * 100,
-            "profit_margin": result["profit_margin"] * 100,
+            "roi": roi_pct,
+            "annualized_roi": annualized_roi_pct,
+            "profit_margin": profit_margin_pct,
             "meets_70_rule": result["meets_70_rule"],
             "mao": result["seventy_pct_max_price"],
+            "deal_score": deal_score,
+
+            # Pricing ladder
+            "all_in_cost": all_in_cost,
+            "purchase_rehab_cost": purchase_rehab_cost,
+            "breakeven_price": breakeven_price,
+            "target_fifteen_all_in": target_fifteen_all_in,
         }
         
     except Exception as e:
