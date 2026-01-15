@@ -1,0 +1,3619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InvestIQ - Property Worksheet Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      /* InvestIQ Brand Colors - Pacific Teal */
+      --iq-teal: #007ea7;
+      --iq-teal-dark: #006080;
+      --iq-teal-light: #33a5c4;
+      
+      /* Background Colors - White */
+      --ws-bg: #ffffff;
+      --ws-bg-alt: #f8fafc;
+      --ws-card: #ffffff;
+      
+      /* Border Colors */
+      --ws-border: #e2e8f0;
+      --ws-border-light: #f1f5f9;
+      
+      /* Text Colors */
+      --ws-text-primary: #1e293b;
+      --ws-text-secondary: #64748b;
+      --ws-text-muted: #94a3b8;
+      --ws-text-label: #475569;
+      
+      /* Brand Colors */
+      --ws-accent: var(--iq-teal);
+      --ws-accent-bg: rgba(0, 126, 167, 0.15);
+      
+      /* Status Colors - Pacific Teal for positive */
+      --ws-positive: #007ea7;
+      --ws-positive-light: rgba(0, 126, 167, 0.15);
+      --ws-negative: #dc2626;
+      --ws-negative-light: #fee2e2;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #ffffff;
+      min-height: 100vh;
+      color: var(--ws-text-primary);
+    }
+    
+    /* Top Bar */
+    .worksheet-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: white;
+      border-bottom: 1px solid var(--ws-border);
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    }
+    
+    .worksheet-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .worksheet-back-link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      color: var(--ws-text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    
+    .worksheet-back-link:hover {
+      background: var(--ws-bg-alt);
+      color: var(--ws-text-primary);
+    }
+    
+    .worksheet-property-info {
+      border-left: 1px solid var(--ws-border);
+      padding-left: 16px;
+    }
+    
+    .worksheet-property-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    .worksheet-property-subtitle {
+      font-size: 13px;
+      color: var(--ws-text-secondary);
+    }
+    
+    .worksheet-price-badge {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--iq-teal);
+      padding: 8px 16px;
+      background: var(--ws-accent-bg);
+      border-radius: 8px;
+      border: 1px solid var(--iq-teal-light);
+    }
+    
+    /* Tab Navigation */
+    .worksheet-tab-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border-bottom: 2px solid var(--ws-border);
+      padding: 0 24px;
+    }
+    
+    .worksheet-tabs-scroll {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .worksheet-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ws-text-secondary);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    
+    .worksheet-tab:hover {
+      color: var(--ws-text-primary);
+      background: var(--ws-bg-alt);
+    }
+    
+    .worksheet-tab.active {
+      color: var(--iq-teal);
+      border-bottom-color: var(--iq-teal);
+      background: var(--ws-accent-bg);
+    }
+    
+    .worksheet-tab.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .tab-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      background: var(--ws-bg-alt);
+      border-radius: 4px;
+      color: var(--ws-text-muted);
+    }
+    
+    /* Main Content Area */
+    .worksheet-main-area {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 24px;
+      padding: 24px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    
+    @media (min-width: 1400px) {
+      .worksheet-main-area {
+        grid-template-columns: 1fr 480px;
+      }
+    }
+    
+    /* Help Panel */
+    .worksheet-help-panel {
+      width: 100%;
+      flex-shrink: 0;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--ws-border);
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      height: fit-content;
+      position: sticky;
+      top: 24px;
+    }
+    
+    /* Charts Sidebar */
+    .worksheet-charts-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: 24px;
+      height: fit-content;
+    }
+    
+    .chart-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+    
+    .chart-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--iq-teal-dark);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--ws-border-light);
+    }
+    
+    /* Gauge Chart */
+    .gauge-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 0;
+    }
+    
+    .gauge-svg {
+      width: 140px;
+      height: 80px;
+    }
+    
+    .gauge-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--iq-teal);
+      margin-top: 8px;
+    }
+    
+    .gauge-label {
+      font-size: 11px;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    /* Mini Stat Cards */
+    .mini-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .mini-stat {
+      text-align: center;
+      padding: 12px 8px;
+      background: var(--ws-bg-alt);
+      border-radius: 8px;
+    }
+    
+    .mini-stat-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--iq-teal);
+    }
+    
+    .mini-stat-label {
+      font-size: 10px;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-top: 4px;
+    }
+    
+    /* Horizontal Bar Chart */
+    .h-bar-item {
+      margin-bottom: 12px;
+    }
+    
+    .h-bar-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .h-bar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    
+    .h-bar-label {
+      font-size: 11px;
+      color: var(--ws-text-label);
+    }
+    
+    .h-bar-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--iq-teal);
+    }
+    
+    .h-bar-track {
+      height: 6px;
+      background: var(--ws-bg-alt);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .h-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--iq-teal) 0%, var(--iq-teal-light) 100%);
+    }
+    
+    /* Stacked Bar Visualization */
+    .stacked-bar-container {
+      padding: 12px 0;
+    }
+    
+    .stacked-bar {
+      display: flex;
+      height: 24px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    
+    .stacked-bar-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .stacked-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .stacked-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--ws-text-secondary);
+    }
+    
+    .stacked-legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+    
+    .worksheet-help-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      background: linear-gradient(135deg, #fef3c7 0%, #fff7ed 100%);
+      border-bottom: 1px solid #fde68a;
+      border-radius: 12px 12px 0 0;
+      font-weight: 600;
+      font-size: 14px;
+      color: #92400e;
+    }
+    
+    .worksheet-help-list {
+      padding: 16px;
+      list-style: none;
+    }
+    
+    .worksheet-help-item {
+      display: flex;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--ws-text-secondary);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    
+    .help-icon {
+      color: var(--iq-teal);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    
+    /* Ledger Content Area - Expanded */
+    .worksheet-content-area {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    /* Compact section cards for ledger */
+    .section-card .data-row {
+      padding: 10px 16px;
+    }
+    
+    .section-card .section-header {
+      padding: 12px 16px;
+    }
+    
+    /* ===== SLIDER STYLES ===== */
+    .data-row.has-slider {
+      grid-template-columns: 140px 1fr auto;
+      gap: 12px;
+    }
+    
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    
+    .slider-wrapper {
+      flex: 1;
+      position: relative;
+      height: 24px;
+      display: flex;
+      align-items: center;
+    }
+    
+    /* Custom Range Slider */
+    .slider-input {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: linear-gradient(to right, var(--iq-teal) 0%, var(--iq-teal) var(--slider-progress, 50%), #e2e8f0 var(--slider-progress, 50%), #e2e8f0 100%);
+      outline: none;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid var(--iq-teal);
+      box-shadow: 0 2px 6px rgba(0, 126, 167, 0.3);
+      cursor: grab;
+      transition: all 0.15s ease;
+    }
+    
+    .slider-input::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 3px 10px rgba(0, 126, 167, 0.4);
+    }
+    
+    .slider-input::-webkit-slider-thumb:active {
+      cursor: grabbing;
+      transform: scale(1.15);
+      background: var(--iq-teal);
+      border-color: var(--iq-teal);
+    }
+    
+    .slider-input::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid var(--iq-teal);
+      box-shadow: 0 2px 6px rgba(0, 126, 167, 0.3);
+      cursor: grab;
+    }
+    
+    .slider-input::-moz-range-track {
+      height: 6px;
+      border-radius: 3px;
+      background: #e2e8f0;
+    }
+    
+    .slider-input::-moz-range-progress {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--iq-teal);
+    }
+    
+    /* Slider Value Display */
+    .slider-value {
+      width: 85px; /* Default for $ fields - fits 10 digits */
+      min-width: unset;
+      padding: 6px 8px;
+      background: var(--ws-bg-alt);
+      border: 1px solid var(--ws-border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+      text-align: right;
+      transition: all 0.15s ease;
+    }
+    
+    /* Narrower width for % fields - fits 8 digits */
+    .slider-value.pct-field {
+      width: 65px;
+    }
+    
+    .slider-value:hover {
+      border-color: var(--iq-teal);
+      background: white;
+    }
+    
+    .slider-value:focus {
+      outline: none;
+      border-color: var(--iq-teal);
+      box-shadow: 0 0 0 3px rgba(0, 126, 167, 0.15);
+      background: white;
+    }
+    
+    /* Secondary value below slider */
+    .slider-secondary {
+      font-size: 11px;
+      color: var(--ws-text-muted);
+      text-align: right;
+      margin-top: 2px;
+    }
+    
+    /* Slider with percentage + dollar display */
+    .slider-dual-value {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    
+    /* Dropdown Select Styling */
+    .select-input {
+      padding: 8px 32px 8px 12px;
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ws-text-primary);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      transition: all 0.15s ease;
+    }
+    
+    .select-input:hover {
+      border-color: var(--iq-teal);
+    }
+    
+    .select-input:focus {
+      outline: none;
+      border-color: var(--iq-teal);
+      box-shadow: 0 0 0 3px rgba(0, 126, 167, 0.15);
+    }
+    
+    /* Calculated field styling (non-editable) */
+    .data-row.calculated {
+      background: var(--ws-bg-alt);
+    }
+    
+    .data-row.calculated .value-primary {
+      color: var(--ws-text-secondary);
+    }
+    
+    /* ===== SECTION WITH INLINE VISUALIZATION ===== */
+    .section-with-viz {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 0;
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      margin-bottom: 16px;
+    }
+    
+    .section-with-viz .section-card {
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      margin-bottom: 0;
+    }
+    
+    .section-viz-panel {
+      background: linear-gradient(180deg, rgba(0, 126, 167, 0.03) 0%, rgba(0, 126, 167, 0.08) 100%);
+      border-left: 1px solid var(--ws-border);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .viz-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--iq-teal-dark);
+      margin-bottom: 8px;
+    }
+    
+    /* Mini Donut Chart */
+    .mini-donut {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      position: relative;
+      margin: 0 auto;
+    }
+    
+    .mini-donut-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .mini-donut-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--iq-teal);
+    }
+    
+    .mini-donut-label {
+      font-size: 8px;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+    }
+    
+    /* Horizontal Bar Metric */
+    .viz-metric {
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid var(--ws-border-light);
+    }
+    
+    .viz-metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .viz-metric-label {
+      font-size: 11px;
+      color: var(--ws-text-secondary);
+    }
+    
+    .viz-metric-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--iq-teal);
+    }
+    
+    .viz-bar {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .viz-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--iq-teal) 0%, var(--iq-teal-light) 100%);
+      transition: width 0.3s ease;
+    }
+    
+    /* Stacked Comparison Bar */
+    .viz-compare-bar {
+      display: flex;
+      height: 32px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .viz-compare-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: white;
+      transition: width 0.3s ease;
+    }
+    
+    .viz-compare-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+    }
+    
+    .viz-compare-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--ws-text-secondary);
+    }
+    
+    .viz-compare-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+    
+    /* Gauge Meter */
+    .viz-gauge {
+      text-align: center;
+      padding: 8px 0;
+    }
+    
+    .viz-gauge svg {
+      width: 120px;
+      height: 70px;
+    }
+    
+    .viz-gauge-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--iq-teal);
+      margin-top: 4px;
+    }
+    
+    .viz-gauge-label {
+      font-size: 10px;
+      color: var(--ws-text-muted);
+    }
+    
+    /* Waterfall Chart */
+    .viz-waterfall {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 100px;
+      padding: 8px 0;
+      gap: 8px;
+    }
+    
+    .waterfall-bar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .waterfall-bar-fill {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s ease;
+    }
+    
+    .waterfall-bar-label {
+      font-size: 9px;
+      color: var(--ws-text-muted);
+      text-align: center;
+    }
+    
+    .waterfall-bar-value {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    /* Key Metrics Grid */
+    .viz-metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    
+    .viz-metric-card {
+      background: white;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      border: 1px solid var(--ws-border-light);
+    }
+    
+    .viz-metric-card-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--iq-teal);
+    }
+    
+    .viz-metric-card-label {
+      font-size: 9px;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    
+    /* Payment Breakdown Arc */
+    .payment-breakdown {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .payment-arc {
+      width: 80px;
+      height: 80px;
+      position: relative;
+    }
+    
+    .payment-arc svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    
+    .payment-arc-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    
+    .payment-arc-value {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ws-text-primary);
+    }
+    
+    .payment-arc-label {
+      font-size: 8px;
+      color: var(--ws-text-muted);
+    }
+    
+    .payment-details {
+      flex: 1;
+    }
+    
+    .payment-detail-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--ws-border-light);
+    }
+    
+    .payment-detail-row:last-child {
+      border-bottom: none;
+    }
+    
+    @media (max-width: 1000px) {
+      .section-with-viz {
+        grid-template-columns: 1fr;
+      }
+      
+      .section-viz-panel {
+        border-left: none;
+        border-top: 1px solid var(--ws-border);
+      }
+    }
+    
+    /* Summary Cards - Full Width */
+    .summary-cards-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: white;
+      border-bottom: 1px solid var(--ws-border);
+      padding: 16px 24px;
+    }
+    
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: clamp(6px, 1vw, 12px);
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    
+    
+    .summary-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: clamp(8px, 1vw, 12px);
+      padding: clamp(8px, 1.5vw, 16px) clamp(8px, 1.5vw, 20px);
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      min-width: 0; /* Allow shrinking */
+      text-align: center;
+    }
+    
+    .summary-card.target-price {
+      background: linear-gradient(135deg, #f0fdfa 0%, #e0f7fa 100%);
+      border: 2px solid var(--iq-teal);
+      position: relative;
+    }
+    
+    .summary-card.target-price::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: clamp(10px, 2vw, 20px);
+      right: clamp(10px, 2vw, 20px);
+      height: 3px;
+      background: linear-gradient(90deg, var(--iq-teal), var(--iq-teal-light));
+      border-radius: 0 0 3px 3px;
+    }
+    
+    .summary-card-label {
+      font-size: clamp(8px, 1vw, 11px);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ws-text-muted);
+      margin-bottom: clamp(4px, 0.6vw, 8px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .summary-card-value {
+      font-size: clamp(14px, 2vw, 24px);
+      font-weight: 700;
+      color: var(--ws-text-primary);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .summary-card-value.positive {
+      color: var(--ws-positive);
+    }
+    
+    .summary-card-subtitle {
+      font-size: clamp(9px, 1vw, 12px);
+      color: var(--ws-text-secondary);
+      margin-top: clamp(2px, 0.4vw, 4px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    /* Section Cards */
+    .section-card {
+      background-color: var(--ws-card);
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      margin-bottom: 16px;
+    }
+    
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, rgba(0, 126, 167, 0.08) 0%, #f8fafc 100%);
+      border-bottom: 1px solid var(--ws-border);
+    }
+    
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--iq-teal-dark);
+    }
+    
+    /* Data Rows */
+    .data-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 16px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--ws-border-light);
+      font-size: 14px;
+    }
+    
+    .data-row:last-child {
+      border-bottom: none;
+    }
+    
+    .data-row:hover {
+      background-color: var(--ws-accent-bg);
+    }
+    
+    .data-row.total {
+      background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, rgba(0, 126, 167, 0.05) 100%);
+      font-weight: 600;
+    }
+    
+    /* Section Total Rows - Polished styling */
+    .data-row.section-total {
+      background: linear-gradient(135deg, rgba(0, 126, 167, 0.12) 0%, rgba(0, 126, 167, 0.06) 100%);
+      font-weight: 700;
+      padding: 14px 20px;
+      margin-top: 8px;
+      border-radius: 6px;
+      border-left: 4px solid var(--iq-teal);
+    }
+    
+    .data-row.section-total .data-label span {
+      font-weight: 700;
+      color: var(--ws-text-primary);
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.03em;
+    }
+    
+    .data-row.section-total .value-primary {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--iq-teal);
+    }
+    
+    /* Income Total - Green accent */
+    .data-row.income-total {
+      border-left-color: #10b981;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%);
+    }
+    .data-row.income-total .value-primary {
+      color: #10b981;
+    }
+    
+    /* Expense Total - Red accent */
+    .data-row.expense-total {
+      border-left-color: #ef4444;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.04) 100%);
+    }
+    .data-row.expense-total .value-primary {
+      color: #ef4444;
+    }
+    
+    /* Cash Flow Total - Teal accent */
+    .data-row.cashflow-total {
+      border-left-color: var(--iq-teal);
+      background: linear-gradient(135deg, rgba(0, 126, 167, 0.15) 0%, rgba(0, 126, 167, 0.06) 100%);
+    }
+    .data-row.cashflow-total .value-primary {
+      color: var(--iq-teal);
+      font-size: 20px;
+    }
+    .data-row.cashflow-total.annual {
+      background: linear-gradient(135deg, rgba(0, 126, 167, 0.2) 0%, rgba(0, 126, 167, 0.08) 100%);
+      border-left-width: 5px;
+    }
+    .data-row.cashflow-total.annual .value-primary {
+      font-size: 22px;
+    }
+    
+    /* Cash Flow Summary Section */
+    .section-card.cashflow-summary {
+      border: 2px solid var(--iq-teal);
+      box-shadow: 0 4px 12px rgba(0, 126, 167, 0.15);
+    }
+    .section-card.cashflow-summary .section-header {
+      background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, rgba(0, 126, 167, 0.05) 100%);
+    }
+    
+    .cashflow-content .data-row.cf-row {
+      padding: 12px 20px;
+    }
+    
+    .cf-divider {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--iq-teal), transparent);
+      margin: 12px 20px;
+      opacity: 0.4;
+    }
+    
+    .data-row.highlight {
+      background-color: var(--ws-accent-bg);
+      border-left: 3px solid var(--iq-teal);
+    }
+    
+    .data-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ws-text-label);
+    }
+    
+    .data-label .icon {
+      color: var(--iq-teal);
+    }
+    
+    /* Value column - all values align to same right edge */
+    .data-row > div:last-child {
+      min-width: 120px;
+      text-align: right;
+    }
+    
+    /* Multi-value rows - stack vertically for alignment */
+    .value-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    
+    .value-primary {
+      font-weight: 500;
+      color: var(--ws-text-primary);
+      white-space: nowrap;
+    }
+    
+    .value-secondary {
+      font-size: 12px;
+      color: var(--ws-text-muted);
+      white-space: nowrap;
+    }
+    
+    .value-negative {
+      color: var(--ws-negative);
+    }
+    
+    .value-positive {
+      color: var(--ws-positive);
+    }
+    
+    /* Subsection Headers */
+    .subsection-header {
+      padding: 8px 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .subsection-header.income {
+      background: var(--ws-accent-bg);
+      color: var(--iq-teal);
+    }
+    
+    .subsection-header.expenses {
+      background: var(--ws-negative-light);
+      color: var(--ws-negative);
+    }
+    
+    .subsection-header.neutral {
+      background: var(--ws-bg-alt);
+      color: var(--ws-text-primary);
+    }
+    
+    /* Two Column Layout */
+    .section-two-column {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+    }
+    
+    /* Pie Chart Placeholder */
+    .pie-chart-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+    
+    .pie-chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--iq-teal-dark);
+      margin-bottom: 16px;
+    }
+    
+    .pie-chart-placeholder {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--ws-negative) 0deg 60deg,
+        #f97316 60deg 100deg,
+        #eab308 100deg 140deg,
+        #007ea7 140deg 180deg,
+        #007ea7 180deg 240deg,
+        #64748b 240deg 360deg
+      );
+      margin: 0 auto 16px;
+      position: relative;
+    }
+    
+    .pie-chart-placeholder::after {
+      content: '$17,575';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #007ea7;
+      font-size: 14px;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--ws-text-secondary);
+      margin-bottom: 6px;
+    }
+    
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+    
+    /* Returns Bar Chart */
+    .returns-chart-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      margin-top: 16px;
+    }
+    
+    .returns-chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--iq-teal-dark);
+      margin-bottom: 20px;
+    }
+    
+    .returns-bar-item {
+      margin-bottom: 16px;
+    }
+    
+    .returns-bar-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .returns-bar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    
+    .returns-bar-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ws-text-label);
+    }
+    
+    .returns-bar-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--iq-teal);
+    }
+    
+    .returns-bar-track {
+      height: 8px;
+      background: var(--ws-bg-alt);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .returns-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--iq-teal) 0%, var(--iq-teal-light) 100%);
+      transition: width 0.5s ease;
+    }
+    
+    .returns-bar-target {
+      position: absolute;
+      top: -4px;
+      width: 2px;
+      height: 16px;
+      background: #ef4444;
+      border-radius: 1px;
+    }
+    
+    .returns-bar-target::after {
+      content: 'Target';
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      color: #ef4444;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .returns-bar-benchmark {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--ws-text-muted);
+    }
+    
+    /* ===== PROFIT FINDER - Clean Balanced Layout ===== */
+    .price-position-visual {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 12px;
+      min-height: 420px;
+      gap: 8px;
+    }
+    
+    /* Left and Right marker columns - equal width */
+    .marker-column {
+      width: 85px;
+      position: relative;
+      flex-shrink: 0;
+    }
+    
+    /* Simple text markers - centered in column */
+    .simple-marker {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      transform: translateY(-50%);
+      transition: top 0.3s ease;
+    }
+    
+    .marker-column.left .simple-marker {
+      right: 0;
+      left: 0;
+      justify-content: center;
+    }
+    
+    .marker-column.right .simple-marker {
+      right: 0;
+      left: 0;
+      justify-content: center;
+    }
+    
+    /* Stacked label + value - centered */
+    .marker-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      line-height: 1.1;
+    }
+    
+    .marker-name {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    
+    .marker-val {
+      font-size: 11px;
+      font-weight: 700;
+    }
+    
+    .marker-arrow {
+      font-size: 10px;
+    }
+    
+    /* Buy marker - teal */
+    #purchase-price-marker .marker-name,
+    #purchase-price-marker .marker-val,
+    #purchase-price-marker .marker-arrow {
+      color: var(--iq-teal);
+    }
+    
+    /* List marker - red */
+    #list-price-marker .marker-name,
+    #list-price-marker .marker-val,
+    #list-price-marker .marker-arrow {
+      color: #dc2626;
+    }
+    
+    /* Even marker - gray */
+    #breakeven-marker .marker-name,
+    #breakeven-marker .marker-val,
+    #breakeven-marker .marker-arrow {
+      color: #64748b;
+    }
+    
+    /* Center - The gradient bar */
+    .price-scale-bar {
+      width: 60px;
+      flex-shrink: 0;
+    }
+    
+    .price-scale-bar img {
+      display: block;
+      width: 60px;
+      height: 400px;
+    }
+    
+    /* Cash Flow indicator at bottom */
+    .cashflow-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 12px 16px;
+      margin: 0 8px 8px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    
+    .cashflow-indicator.negative {
+      background: linear-gradient(135deg, rgba(220, 38, 38, 0.12) 0%, rgba(220, 38, 38, 0.04) 100%);
+      border-color: rgba(220, 38, 38, 0.25);
+    }
+    
+    .cashflow-indicator .cf-label {
+      font-size: 12px;
+      color: var(--ws-text-muted);
+    }
+    
+    .cashflow-indicator .cf-amount {
+      font-size: 18px;
+      font-weight: 700;
+      color: #10b981;
+    }
+    
+    .cashflow-indicator.negative .cf-amount {
+      color: #dc2626;
+    }
+    
+    .cashflow-indicator .cf-status {
+      font-size: 12px;
+      font-weight: 600;
+      color: #10b981;
+      padding: 2px 8px;
+      background: rgba(16, 185, 129, 0.15);
+      border-radius: 10px;
+    }
+    
+    .cashflow-indicator.negative .cf-status {
+      color: #dc2626;
+      background: rgba(220, 38, 38, 0.15);
+    }
+    
+    .pricing-scale-summary {
+      text-align: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--ws-border-light);
+      margin-top: 12px;
+    }
+    
+    .pricing-scale-summary-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ws-text-secondary);
+    }
+    
+    .pricing-scale-summary-text .highlight {
+      color: var(--iq-teal);
+      font-weight: 700;
+    }
+    
+    /* Pricing Discount Indicator */
+    .pricing-discount-indicator {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--ws-border-light);
+    }
+    
+    .pricing-discount-bar {
+      height: 8px;
+      background: var(--ws-border-light);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .pricing-discount-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--iq-teal), var(--iq-teal-light));
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    .pricing-discount-label {
+      font-size: 12px;
+      color: var(--ws-text-secondary);
+      text-align: center;
+    }
+    
+    .pricing-discount-label span {
+      font-weight: 600;
+      color: var(--iq-teal);
+    }
+    
+    /* Pricing ladder summary */
+    .pricing-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--ws-border-light);
+    }
+    
+    .pricing-summary-item {
+      text-align: center;
+      padding: 8px;
+      background: var(--ws-bg-alt);
+      border-radius: 6px;
+    }
+    
+    .pricing-summary-value {
+      font-size: 14px;
+      font-weight: 700;
+    }
+    
+    .pricing-summary-value.positive {
+      color: #10b981;
+    }
+    
+    .pricing-summary-value.negative {
+      color: var(--ws-negative);
+    }
+    
+    .pricing-summary-label {
+      font-size: 9px;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    @media (max-width: 1200px) {
+      .worksheet-main-area {
+        grid-template-columns: 1fr 300px;
+      }
+    }
+    
+    @media (max-width: 1000px) {
+      .worksheet-main-area {
+        grid-template-columns: 1fr 280px;
+      }
+      
+      .worksheet-help-panel {
+        display: none;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .worksheet-main-area {
+        grid-template-columns: 1fr;
+      }
+      
+      .worksheet-charts-sidebar {
+        position: static;
+      }
+      
+      .section-two-column {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Strategy Dropdown */
+    .strategy-dropdown {
+      position: relative;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+    
+    .strategy-dropdown-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: linear-gradient(135deg, var(--iq-teal) 0%, #005f7f 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0, 126, 167, 0.3);
+      position: relative;
+      z-index: 101;
+    }
+    
+    .strategy-dropdown-trigger:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 126, 167, 0.4);
+    }
+    
+    .strategy-dropdown-trigger .dropdown-arrow {
+      transition: transform 0.2s ease;
+    }
+    
+    .strategy-dropdown.open .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+    
+    .strategy-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 220px;
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      visibility: hidden;
+      z-index: 102;
+      transform: translateY(-10px);
+      transition: all 0.2s ease;
+      z-index: 100;
+      overflow: hidden;
+    }
+    
+    .strategy-dropdown.open .strategy-dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    
+    .strategy-dropdown-header {
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ws-text-muted);
+      background: var(--ws-bg);
+      border-bottom: 1px solid var(--ws-border-light);
+    }
+    
+    .strategy-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    
+    .strategy-option:hover {
+      background: rgba(0, 126, 167, 0.08);
+    }
+    
+    .strategy-option.active {
+      background: rgba(0, 126, 167, 0.12);
+    }
+    
+    .strategy-option-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .strategy-option-icon.ltr {
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+      color: var(--iq-teal);
+    }
+    
+    .strategy-option-icon.brrrr {
+      background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+      color: #7c3aed;
+    }
+    
+    .strategy-option-icon.flip {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      color: #d97706;
+    }
+    
+    .strategy-option-icon.str {
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+      color: #16a34a;
+    }
+    
+    .strategy-option-content {
+      flex: 1;
+    }
+    
+    .strategy-option-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+      margin-bottom: 2px;
+    }
+    
+    .strategy-option-desc {
+      font-size: 12px;
+      color: var(--ws-text-muted);
+    }
+    
+    .strategy-option-check {
+      width: 20px;
+      height: 20px;
+      color: var(--iq-teal);
+      opacity: 0;
+    }
+    
+    .strategy-option.active .strategy-option-check {
+      opacity: 1;
+    }
+    
+    .strategy-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      background: var(--ws-border-light);
+      color: var(--ws-text-muted);
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="worksheet-topbar">
+    <div class="worksheet-topbar-left">
+      <a href="#" class="worksheet-back-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        <span>Back</span>
+      </a>
+      <div class="worksheet-property-info">
+        <h1 class="worksheet-property-title" id="property-title">3742 Old Lighthouse Cir</h1>
+        <p class="worksheet-property-subtitle" id="property-subtitle">Wellington, FL 33414 • 5 BR • 3 BA • 3,172 Sq.Ft.</p>
+      </div>
+    </div>
+    <div class="worksheet-price-badge" id="property-price-badge">$723,600</div>
+  </header>
+  
+  <!-- Tab Navigation -->
+  <nav class="worksheet-tab-nav">
+    <!-- Strategy Dropdown -->
+    <div class="strategy-dropdown" id="strategy-dropdown">
+        <button class="strategy-dropdown-trigger" id="strategy-dropdown-trigger">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <span id="current-strategy-name">LTR Worksheet</span>
+          <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        
+        <!-- Dropdown Menu -->
+        <div class="strategy-dropdown-menu">
+          <div class="strategy-dropdown-header">Select Strategy</div>
+          
+          <!-- LTR Option -->
+          <button class="strategy-option active" data-strategy="ltr" onclick="selectStrategy('ltr', 'LTR Worksheet', 'worksheet-preview.html')">
+            <div class="strategy-option-icon ltr">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">LTR (Long-Term Rental)</div>
+              <div class="strategy-option-desc">Buy & hold for monthly cash flow</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <!-- BRRRR Option -->
+          <button class="strategy-option" data-strategy="brrrr" onclick="selectStrategy('brrrr', 'BRRRR Worksheet', 'worksheet-brrrr.html')">
+            <div class="strategy-option-icon brrrr">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">BRRRR</div>
+              <div class="strategy-option-desc">Buy, Rehab, Rent, Refinance, Repeat</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <!-- Fix & Flip Option -->
+          <button class="strategy-option" data-strategy="flip" onclick="selectStrategy('flip', 'Fix & Flip', 'worksheet-flip.html')">
+            <div class="strategy-option-icon flip">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">Fix & Flip</div>
+              <div class="strategy-option-desc">Buy, renovate, sell for profit</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <!-- Wholesale Option -->
+          <button class="strategy-option" data-strategy="wholesale" onclick="selectStrategy('wholesale', 'Wholesale', 'worksheet-wholesale.html')">
+            <div class="strategy-option-icon" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); color: #2563eb;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 3h5v5"/>
+                <path d="M8 21H3v-5"/>
+                <path d="M21 3l-9 9"/>
+                <path d="M3 21l9-9"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">Wholesale</div>
+              <div class="strategy-option-desc">Assign contracts for quick profit</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <!-- STR Option -->
+          <button class="strategy-option" data-strategy="str" onclick="selectStrategy('str', 'STR Worksheet', 'worksheet-str.html')">
+            <div class="strategy-option-icon str">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">Short-Term Rental</div>
+              <div class="strategy-option-desc">Vacation rentals & Airbnb</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <!-- House Hack Option -->
+          <button class="strategy-option" data-strategy="househack" onclick="selectStrategy('househack', 'House Hack', 'worksheet-househack.html')">
+            <div class="strategy-option-icon househack" style="background: rgba(5, 150, 105, 0.15); color: #059669;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">House Hack</div>
+              <div class="strategy-option-desc">Live in one unit, rent the others</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+        </div>
+    </div>
+    
+    <div class="worksheet-tabs-scroll">
+      <button class="worksheet-tab">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+        </svg>
+        Projections
+      </button>
+      <button class="worksheet-tab disabled">Comps <span class="tab-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">Rentals <span class="tab-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">Records <span class="tab-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">Offer <span class="tab-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">Reports <span class="tab-badge">Soon</span></button>
+    </div>
+  </nav>
+  
+  <!-- Summary Cards - Full Width -->
+  <div class="summary-cards-wrapper">
+    <div class="summary-cards">
+      <div class="summary-card target-price">
+        <div class="summary-card-label">Target Price</div>
+        <div class="summary-card-value" id="target-price-value" style="color: var(--iq-teal);">$680,000</div>
+        <div class="summary-card-subtitle">Max Allowable Offer</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">Cash Needed</div>
+        <div class="summary-card-value" id="summary-cash-needed">$166,428</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">Cash Flow</div>
+        <div class="summary-card-value positive" id="summary-cash-flow">$17,575/yr</div>
+        <div class="summary-card-subtitle" id="summary-cash-flow-mo">$1,465/mo</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">Cap Rate</div>
+        <div class="summary-card-value" id="summary-cap-rate">8.8%</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">CoC Return</div>
+        <div class="summary-card-value positive" id="summary-coc-return">10.6%</div>
+      </div>
+      <div class="summary-card" style="background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, white 100%); border-color: var(--iq-teal-light);">
+        <div class="summary-card-label">Deal Score</div>
+        <div class="summary-card-value" id="summary-deal-score" style="color: var(--iq-teal);">85</div>
+        <div class="summary-card-subtitle" id="summary-deal-score-subtitle">Good Investment</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="worksheet-main-area">
+    <!-- Content Area -->
+    <main class="worksheet-content-area">
+      <!-- Purchase & Rehab Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Purchase</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <!-- Purchase Price with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              </svg>
+              <span>Purchase Price</span>
+            </div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="400000" max="1100000" value="723600" style="--slider-progress: 46%;" aria-label="Purchase price slider">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$723,600" aria-label="Purchase price">
+          </div>
+          
+          <!-- Amount Financed - Calculated -->
+          <div class="data-row calculated">
+            <div class="data-label"><span>Amount Financed</span></div>
+            <div class="value-primary" id="calc-amount-financed">$578,880</div>
+          </div>
+          
+          <!-- Down Payment with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              <span>Down Payment</span>
+            </div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="5" max="40" value="20" style="--slider-progress: 43%;" aria-label="Down payment percent slider">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value pct-field" value="20.0%" aria-label="Down payment percent">
+              <span class="slider-secondary">$144,720</span>
+            </div>
+          </div>
+          
+          <!-- Purchase Costs with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Purchase Costs</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="50000" value="21708" style="--slider-progress: 43%;" aria-label="Purchase costs slider">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$21,708" aria-label="Purchase costs">
+          </div>
+          
+          <!-- Total Cash Needed - Calculated -->
+          <div class="data-row total">
+            <div class="data-label"><span>Total Cash Needed</span></div>
+            <div class="value-primary" id="total-cash-needed">$166,428</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Financing Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Financing (Purchase)</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <!-- Loan Amount - Calculated -->
+          <div class="data-row calculated">
+            <div class="data-label"><span>Loan Amount</span></div>
+            <div class="value-primary" id="calc-loan-amount">$578,880</div>
+          </div>
+          
+          <!-- Financing Of - Dropdown -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Financing Of</span></div>
+            <div class="slider-container">
+              <select class="select-input" aria-label="Financing of">
+                <option value="price" selected>Purchase Price</option>
+                <option value="cost">Total Cost (Price + Rehab)</option>
+                <option value="arv">After Repair Value</option>
+              </select>
+            </div>
+            <span class="value-primary" id="calc-ltv-pct" style="min-width: 60px;">60%</span>
+          </div>
+          
+          <!-- Loan Type - Dropdown -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Loan Type</span></div>
+            <div class="slider-container">
+              <select class="select-input" aria-label="Loan type">
+                <option value="amortizing-30" selected>Amortizing, 30 Year</option>
+                <option value="amortizing-15">Amortizing, 15 Year</option>
+                <option value="interest-only">Interest Only</option>
+                <option value="arm-5-1">ARM 5/1</option>
+                <option value="arm-7-1">ARM 7/1</option>
+              </select>
+            </div>
+            <span style="width: 60px;"></span>
+          </div>
+          
+          <!-- Interest Rate with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Interest Rate</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="3" max="12" value="7" step="0.125" style="--slider-progress: 44%;" aria-label="Interest rate slider">
+              </div>
+            </div>
+            <input type="text" class="slider-value pct-field" value="7.0%" aria-label="Interest rate">
+          </div>
+          
+          <!-- Loan Term with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Loan Term</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="10" max="30" value="30" step="5" style="--slider-progress: 100%;" aria-label="Loan term slider">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="30 years" aria-label="Loan term">
+          </div>
+          
+          <!-- Monthly Payment - Calculated (Highlighted) -->
+          <div class="data-row total">
+            <div class="data-label"><span>Monthly Payment</span></div>
+            <div class="value-primary" id="calc-monthly-payment">$3,851</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Rehab & Valuation Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Rehab & Valuation</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <!-- Rehab Costs with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Rehab Costs</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="150000" value="0" style="--slider-progress: 0%;" aria-label="Rehab costs slider">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$0" aria-label="Rehab costs">
+          </div>
+          
+          <!-- After Repair Value with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>After Repair Value</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="500000" max="1200000" value="795960" style="--slider-progress: 42%;" aria-label="After repair value slider">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$795,960" aria-label="After repair value">
+          </div>
+          
+          <!-- ARV Per Sq Ft - Calculated -->
+          <div class="data-row calculated">
+            <div class="data-label"><span>ARV Per Square Foot</span></div>
+            <div class="value-primary" id="calc-arv-psf">$251</div>
+          </div>
+          
+          <!-- Price Per Sq Ft - Calculated -->
+          <div class="data-row calculated">
+            <div class="data-label"><span>Price Per Square Foot</span></div>
+            <div class="value-primary" id="calc-price-psf">$228</div>
+          </div>
+          
+          <!-- Rehab Per Sq Ft - Calculated -->
+          <div class="data-row calculated">
+            <div class="data-label"><span>Rehab Per Square Foot</span></div>
+            <div class="value-primary" id="calc-rehab-psf">$0</div>
+          </div>
+          
+          <!-- Equity at Purchase - Calculated (Key Metric) -->
+          <div class="data-row total">
+            <div class="data-label"><span>Equity at Purchase</span></div>
+            <div class="value-primary value-positive" id="calc-equity">$72,360</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- INCOME Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Income</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <!-- Monthly Gross Rent with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Monthly Gross Rent</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="500" max="15000" value="8081" style="--slider-progress: 52%;" aria-label="Monthly gross rent slider">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value" value="$8,081" aria-label="Monthly gross rent">
+              <span class="slider-secondary">$96,972/yr</span>
+            </div>
+          </div>
+          
+          <!-- Vacancy with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Vacancy</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="20" value="8" style="--slider-progress: 40%;" aria-label="Vacancy percent slider">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value pct-field" value="8.0%" aria-label="Vacancy percent">
+              <span class="slider-secondary value-negative">-$7,758</span>
+            </div>
+          </div>
+          
+          <!-- Gross Income - Section Total -->
+          <div class="data-row section-total income-total">
+            <div class="data-label"><span>Gross Income</span></div>
+            <div class="value-primary" id="calc-operating-income">$89,214</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- EXPENSES Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Expenses</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <!-- Property Taxes with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Property Taxes</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="15000" value="6471" style="--slider-progress: 43%;" aria-label="Property taxes slider">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$6,471" aria-label="Property taxes">
+          </div>
+          
+          <!-- Insurance with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Insurance</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="8000" value="2894" style="--slider-progress: 36%;" aria-label="Insurance slider">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$2,894" aria-label="Insurance">
+          </div>
+          
+          <!-- Property Management with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Property Mgmt</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="15" value="0" style="--slider-progress: 0%;" aria-label="Property management percent slider">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value pct-field" value="0%" aria-label="Property management percent">
+              <span class="slider-secondary">$0</span>
+            </div>
+          </div>
+          
+          <!-- Maintenance with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Maintenance</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="15" value="2" style="--slider-progress: 13%;" aria-label="Maintenance percent slider">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value pct-field" value="2%" aria-label="Maintenance percent">
+              <span class="slider-secondary">$1,784</span>
+            </div>
+          </div>
+          
+          <!-- Capital Expenditures with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Capital Expense</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="15" value="0" style="--slider-progress: 0%;" aria-label="Capital expense percent slider">
+              </div>
+            </div>
+            <div class="slider-dual-value">
+              <input type="text" class="slider-value pct-field" value="0%" aria-label="Capital expense percent">
+              <span class="slider-secondary">$0</span>
+            </div>
+          </div>
+          
+          <!-- HOA Fees with Slider -->
+          <div class="data-row has-slider">
+            <div class="data-label"><span>HOA Fees</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="500" value="0" style="--slider-progress: 0%;" aria-label="HOA fees slider">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$0" aria-label="HOA fees">
+          </div>
+          
+          <!-- Gross Expenses - Section Total -->
+          <div class="data-row section-total expense-total">
+            <div class="data-label"><span>Gross Expenses</span></div>
+            <div class="value-primary" id="calc-opex-annual">$25,424</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- CASH FLOW Section -->
+      <div class="section-card cashflow-summary">
+        <div class="section-header">
+          <span class="section-title">Cash Flow</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content cashflow-content">
+          <!-- Gross Income -->
+          <div class="data-row cf-row">
+            <div class="data-label"><span>Gross Income</span></div>
+            <div class="value-primary value-positive" id="calc-cf-income">$89,214</div>
+          </div>
+          
+          <!-- Gross Expenses -->
+          <div class="data-row cf-row">
+            <div class="data-label"><span>Gross Expenses</span></div>
+            <div class="value-primary value-negative" id="calc-cf-expenses">-$11,149</div>
+          </div>
+          
+          <!-- Loan Payments -->
+          <div class="data-row cf-row">
+            <div class="data-label"><span>Loan Payments</span></div>
+            <div class="value-primary value-negative" id="calc-cf-loan">-$46,212</div>
+          </div>
+          
+          <!-- Divider -->
+          <div class="cf-divider"></div>
+          
+          <!-- Monthly Cash Flow - Highlight -->
+          <div class="data-row section-total cashflow-total">
+            <div class="data-label"><span>Monthly Cash Flow</span></div>
+            <div class="value-primary" id="calc-monthly-cf">$2,654</div>
+          </div>
+          
+          <!-- Annual Cash Flow - Highlight -->
+          <div class="data-row section-total cashflow-total annual">
+            <div class="data-label"><span>Annual Cash Flow</span></div>
+            <div class="value-primary" id="calc-annual-cf">$31,849</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Investment Returns Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Investment Returns (Year 1)</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row">
+            <div class="data-label"><span>Cap Rate (Purchase Price)</span></div>
+            <div class="value-primary value-positive">8.816%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Cap Rate (Market Value)</span></div>
+            <div class="value-primary value-positive">8.014%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Cash on Cash Return</span></div>
+            <div class="value-primary value-positive">10.56%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Return on Equity</span></div>
+            <div class="value-primary">8.096%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Return on Investment</span></div>
+            <div class="value-primary value-positive">54.038%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Internal Rate of Return</span></div>
+            <div class="value-primary value-positive">83.747%</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Financial Ratios Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Financial Ratios (At Purchase)</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row">
+            <div class="data-label"><span>Rent to Value</span></div>
+            <div class="value-primary value-positive">1.12%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Gross Rent Multiplier</span></div>
+            <div class="value-primary value-positive">7.46x</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Equity Multiple</span></div>
+            <div class="value-primary">31.62x</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Break-Even Ratio</span></div>
+            <div class="value-primary value-positive">73.88%</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Debt Coverage Ratio</span></div>
+            <div class="value-primary value-positive">1.38x</div>
+          </div>
+          <div class="data-row">
+            <div class="data-label"><span>Debt Yield</span></div>
+            <div class="value-primary">11.02%</div>
+          </div>
+        </div>
+      </div>
+      
+    </main>
+    
+    <!-- Charts Sidebar - Dynamic Visualizations -->
+    <aside class="worksheet-charts-sidebar">
+      <!-- Profit Pricer - Visual Price Position Tool -->
+      <div class="chart-card">
+        <div class="chart-card-title">Profit Finder</div>
+        <div class="price-position-visual">
+          <!-- Left side: Buy price (dynamic) -->
+          <div class="marker-column left">
+            <div class="simple-marker" id="purchase-price-marker">
+              <div class="marker-stack">
+                <span class="marker-name">Buy</span>
+                <span class="marker-val" id="purchase-price-display">$723,600</span>
+              </div>
+              <span class="marker-arrow">▶</span>
+            </div>
+          </div>
+          
+          <!-- Center: The gradient bar -->
+          <div class="price-scale-bar">
+            <img src="/images/price-ladder-arrow.svg" alt="Profit Scale" />
+          </div>
+          
+          <!-- Right side: Even & List -->
+          <div class="marker-column right">
+            <div class="simple-marker" id="breakeven-marker">
+              <span class="marker-arrow">◀</span>
+              <div class="marker-stack">
+                <span class="marker-name">Even</span>
+                <span class="marker-val" id="breakeven-value">$1,219,837</span>
+              </div>
+            </div>
+            <div class="simple-marker" id="list-price-marker">
+              <span class="marker-arrow">◀</span>
+              <div class="marker-stack">
+                <span class="marker-name">List</span>
+                <span class="marker-val" id="list-price-display">$723,600</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Cash Flow indicator -->
+        <div class="cashflow-indicator" id="cashflow-indicator">
+          <span class="cf-label">Monthly Cash Flow:</span>
+          <span class="cf-amount" id="cashflow-amount">$1,904</span>
+          <span class="cf-status" id="position-text">Profit Zone</span>
+        </div>
+      </div>
+      
+      <!-- Cash Breakdown Donut - Dynamic -->
+      <div class="chart-card">
+        <div class="chart-card-title">Cash Breakdown</div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div class="mini-donut" id="cash-donut" style="background: conic-gradient(var(--iq-teal) 0deg 260deg, #f97316 260deg 310deg, #64748b 310deg 360deg); width: 100px; height: 100px; flex-shrink: 0;">
+            <div class="mini-donut-center">
+              <span class="mini-donut-value" id="total-cash">$166K</span>
+              <span class="mini-donut-label">Total Cash</span>
+            </div>
+          </div>
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+              <span style="width: 10px; height: 10px; background: var(--iq-teal); border-radius: 2px;"></span>
+              <span style="font-size: 12px; color: var(--ws-text-secondary);">Down Payment</span>
+              <span style="font-size: 12px; font-weight: 600; margin-left: auto;" id="cash-down">$145K</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+              <span style="width: 10px; height: 10px; background: #f97316; border-radius: 2px;"></span>
+              <span style="font-size: 12px; color: var(--ws-text-secondary);">Closing Costs</span>
+              <span style="font-size: 12px; font-weight: 600; margin-left: auto;" id="cash-costs">$22K</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="width: 10px; height: 10px; background: #64748b; border-radius: 2px;"></span>
+              <span style="font-size: 12px; color: var(--ws-text-secondary);">Rehab</span>
+              <span style="font-size: 12px; font-weight: 600; margin-left: auto;" id="cash-rehab">$0</span>
+            </div>
+          </div>
+        </div>
+        <!-- LTV Bar -->
+        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--ws-border-light);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <span style="font-size: 11px; color: var(--ws-text-muted);">Loan to Value</span>
+            <span style="font-size: 12px; font-weight: 600; color: var(--iq-teal);" id="ltv-value">80%</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" id="ltv-bar" style="width: 80%;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Cash Flow Breakdown - Dynamic -->
+      <div class="chart-card">
+        <div class="chart-card-title">Cash Flow Breakdown</div>
+        <div class="stacked-bar-container">
+          <div class="stacked-bar" id="cf-breakdown-bar">
+            <div class="stacked-bar-segment" style="width: 52%; background: #64748b;">Loan</div>
+            <div class="stacked-bar-segment" style="width: 28%; background: #f97316;">Exp</div>
+            <div class="stacked-bar-segment" style="width: 20%; background: #007ea7;">CF</div>
+          </div>
+          <div class="stacked-legend">
+            <div class="stacked-legend-item">
+              <span class="stacked-legend-dot" style="background: #64748b;"></span>
+              <span id="cf-loan">Loan $46k</span>
+            </div>
+            <div class="stacked-legend-item">
+              <span class="stacked-legend-dot" style="background: #f97316;"></span>
+              <span id="cf-expenses">Expenses $25k</span>
+            </div>
+            <div class="stacked-legend-item">
+              <span class="stacked-legend-dot" style="background: #007ea7;"></span>
+              <span id="cf-cashflow">Cash Flow $18k</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Returns vs Targets - Dynamic -->
+      <div class="chart-card">
+        <div class="chart-card-title">Returns vs Targets</div>
+        
+        <div class="h-bar-item">
+          <div class="h-bar-header">
+            <span class="h-bar-label">Cap Rate</span>
+            <span class="h-bar-value" id="target-cap-rate">8.8% / 8%</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" id="bar-cap-rate" style="width: 110%;"></div>
+          </div>
+        </div>
+        
+        <div class="h-bar-item">
+          <div class="h-bar-header">
+            <span class="h-bar-label">Cash on Cash</span>
+            <span class="h-bar-value" id="target-coc">10.6% / 10%</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" id="bar-coc" style="width: 106%;"></div>
+          </div>
+        </div>
+        
+        <div class="h-bar-item">
+          <div class="h-bar-header">
+            <span class="h-bar-label">DSCR</span>
+            <span class="h-bar-value" id="target-dscr">1.38x / 1.2x</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" id="bar-dscr" style="width: 115%;"></div>
+          </div>
+        </div>
+        
+        <div class="h-bar-item">
+          <div class="h-bar-header">
+            <span class="h-bar-label">1% Rule</span>
+            <span class="h-bar-value" id="target-1pct">1.12% / 1%</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" id="bar-1pct" style="width: 112%;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Equity Position - Dynamic -->
+      <div class="chart-card">
+        <div class="chart-card-title">Equity Position</div>
+        <div class="stacked-bar-container">
+          <div class="stacked-bar" id="equity-bar">
+            <div class="stacked-bar-segment" style="width: 20%; background: #007ea7;">Equity</div>
+            <div class="stacked-bar-segment" style="width: 80%; background: #94a3b8;">Loan</div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 8px;">
+            <div>
+              <div style="font-weight: 600; color: #007ea7;" id="equity-amount">$144,720</div>
+              <div style="color: #94a3b8; font-size: 10px;" id="equity-pct">20% Equity</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 600; color: #64748b;" id="loan-amount">$578,880</div>
+              <div style="color: #94a3b8; font-size: 10px;" id="loan-pct">80% Financed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  
+  <script>
+    // ===== UTILITY FUNCTIONS =====
+    
+    // Format number as currency
+    function formatCurrency(value) {
+      return '$' + Math.round(value).toLocaleString('en-US');
+    }
+    
+    // Format number as percentage
+    function formatPercent(value, decimals = 1) {
+      return value.toFixed(decimals) + '%';
+    }
+    
+    // Format number as years
+    function formatYears(value) {
+      return Math.round(value) + ' years';
+    }
+    
+    // Parse currency string to number
+    function parseCurrency(str) {
+      return parseFloat(str.replace(/[$,]/g, '')) || 0;
+    }
+    
+    // Parse percentage string to number
+    function parsePercent(str) {
+      return parseFloat(str.replace('%', '')) || 0;
+    }
+    
+    // Parse years string to number
+    function parseYears(str) {
+      return parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
+    }
+    
+    // Update slider progress bar
+    function updateSliderProgress(slider) {
+      const min = parseFloat(slider.min);
+      const max = parseFloat(slider.max);
+      const value = parseFloat(slider.value);
+      const progress = ((value - min) / (max - min)) * 100;
+      slider.style.background = `linear-gradient(to right, #007ea7 0%, #007ea7 ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+    }
+    
+    // ===== BIDIRECTIONAL SLIDER-INPUT BINDING =====
+    
+    document.querySelectorAll('.data-row.has-slider').forEach(row => {
+      const slider = row.querySelector('.slider-input');
+      const input = row.querySelector('.slider-value');
+      const secondarySpan = row.querySelector('.slider-secondary');
+      
+      if (!slider || !input) return;
+      
+      // Determine the format type based on initial value
+      const initialValue = input.value;
+      let formatType = 'currency';
+      if (initialValue.includes('%')) {
+        formatType = 'percent';
+      } else if (initialValue.includes('year')) {
+        formatType = 'years';
+      }
+      
+      // SLIDER → INPUT: When slider moves, update input
+      slider.addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        
+        // Update the input value based on format type
+        if (formatType === 'currency') {
+          input.value = formatCurrency(value);
+        } else if (formatType === 'percent') {
+          input.value = formatPercent(value);
+        } else if (formatType === 'years') {
+          input.value = formatYears(value);
+        }
+        
+        // Update secondary value if exists (e.g., yearly amount)
+        if (secondarySpan) {
+          updateSecondaryValue(row, value, formatType);
+        }
+        
+        // Update slider progress bar
+        updateSliderProgress(this);
+        
+        // Trigger recalculation (will be enhanced in React)
+        recalculateAll();
+      });
+      
+      // INPUT → SLIDER: When input changes, update slider
+      input.addEventListener('change', function() {
+        let value;
+        
+        // Parse based on format type
+        if (formatType === 'currency') {
+          value = parseCurrency(this.value);
+          this.value = formatCurrency(value); // Re-format
+        } else if (formatType === 'percent') {
+          value = parsePercent(this.value);
+          this.value = formatPercent(value); // Re-format
+        } else if (formatType === 'years') {
+          value = parseYears(this.value);
+          this.value = formatYears(value); // Re-format
+        }
+        
+        // Clamp to slider min/max
+        const min = parseFloat(slider.min);
+        const max = parseFloat(slider.max);
+        value = Math.max(min, Math.min(max, value));
+        
+        // Update slider
+        slider.value = value;
+        updateSliderProgress(slider);
+        
+        // Update secondary value if exists
+        if (secondarySpan) {
+          updateSecondaryValue(row, value, formatType);
+        }
+        
+        // Trigger recalculation
+        recalculateAll();
+      });
+      
+      // Allow Enter key to trigger change
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          this.blur();
+        }
+      });
+      
+      // Initialize slider progress
+      updateSliderProgress(slider);
+    });
+    
+    // Update secondary values (like yearly amounts for monthly inputs)
+    function updateSecondaryValue(row, value, formatType) {
+      const label = row.querySelector('.data-label span')?.textContent || '';
+      const secondarySpan = row.querySelector('.slider-secondary');
+      
+      if (!secondarySpan) return;
+      
+      // Get actual values from sliders for calculations
+      const purchasePrice = getSliderValue('Purchase Price', 723600);
+      const grossRentMonthly = getSliderValue('Monthly Gross Rent', 8081);
+      const grossRentAnnual = grossRentMonthly * 12;
+      
+      // Examples of secondary calculations
+      if (label.includes('Gross Rent') || label.includes('Monthly Gross Rent')) {
+        secondarySpan.textContent = formatCurrency(value * 12) + '/yr';
+      } else if (label.includes('Down Payment')) {
+        secondarySpan.textContent = formatCurrency(purchasePrice * (value / 100));
+      } else if (label.includes('Vacancy')) {
+        secondarySpan.textContent = '-' + formatCurrency(grossRentAnnual * (value / 100));
+        secondarySpan.classList.add('value-negative');
+      } else if (label.includes('Mgmt') || label.includes('Maintenance') || label.includes('Capital Expense')) {
+        // These are calculated on effective income (after vacancy), not gross rent
+        const vacancyPct = getSliderValue('Vacancy', 8);
+        const effectiveIncome = grossRentAnnual * (1 - vacancyPct / 100);
+        secondarySpan.textContent = formatCurrency(effectiveIncome * (value / 100));
+      }
+    }
+    
+    // ===== RECALCULATION ENGINE (Backend API Powered) =====
+    
+    // Debounce timer for API calls
+    let recalculateTimer = null;
+    let lastCalculationPromise = null;
+    
+    // API endpoint for LTR worksheet calculations
+    const WORKSHEET_API_URL = '/api/v1/worksheet/ltr/calculate';
+    
+    function recalculateAll() {
+      // Debounce: Wait 150ms after last input before calling API
+      if (recalculateTimer) {
+        clearTimeout(recalculateTimer);
+      }
+      
+      recalculateTimer = setTimeout(() => {
+        doRecalculate();
+      }, 150);
+    }
+    
+    async function doRecalculate() {
+      // Get key inputs from sliders
+      const purchasePrice = getSliderValue('Purchase Price', 723600);
+      const downPaymentPct = getSliderValue('Down Payment', 20) / 100; // Convert to decimal
+      const interestRate = getSliderValue('Interest Rate', 7) / 100; // Convert to decimal
+      const loanTerm = getSliderValue('Loan Term', 30);
+      const grossRentMonthly = getSliderValue('Monthly Gross Rent', 8081);
+      const vacancyPct = getSliderValue('Vacancy', 8) / 100; // Convert to decimal
+      const propertyTaxes = getSliderValue('Property Taxes', 6471);
+      const insurance = getSliderValue('Insurance', 2894);
+      const mgmtPct = getSliderValue('Property Mgmt', 0) / 100; // Convert to decimal
+      const maintPct = getSliderValue('Maintenance', 2) / 100; // Convert to decimal
+      const capexPct = getSliderValue('Capital Expense', 0) / 100; // Convert to decimal
+      const hoaFees = getSliderValue('HOA Fees', 0);
+      const arv = getSliderValue('After Repair Value', 795960);
+      const purchaseCosts = getSliderValue('Purchase Costs', 21708);
+      const rehabCosts = getSliderValue('Rehab Costs', 0);
+      
+      // Build request payload for backend API
+      const payload = {
+        purchase_price: purchasePrice,
+        monthly_rent: grossRentMonthly,
+        property_taxes_annual: propertyTaxes,
+        insurance_annual: insurance,
+        down_payment_pct: downPaymentPct,
+        interest_rate: interestRate,
+        loan_term_years: loanTerm,
+        closing_costs: purchaseCosts,
+        rehab_costs: rehabCosts,
+        vacancy_rate: vacancyPct,
+        property_management_pct: mgmtPct,
+        maintenance_pct: maintPct,
+        capex_pct: capexPct,
+        hoa_monthly: hoaFees,
+        arv: arv,
+        sqft: window.propertySqft || 3172
+      };
+      
+      try {
+        // Show loading state on summary cards
+        showCalculating(true);
+        
+        // Call backend API
+        const response = await fetch(WORKSHEET_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          throw new Error('API calculation failed');
+        }
+        
+        const result = await response.json();
+        console.log('Backend calculation result:', result);
+        
+        // Update UI with backend results
+        updateUIFromBackend(result, purchasePrice, grossRentMonthly);
+        
+      } catch (error) {
+        console.error('Backend API error, falling back to local calculation:', error);
+        // Fallback to local calculation if API fails
+        doLocalRecalculate(payload);
+      } finally {
+        showCalculating(false);
+      }
+    }
+    
+    function showCalculating(isCalculating) {
+      const summaryCards = document.querySelectorAll('.summary-card-value');
+      summaryCards.forEach(card => {
+        if (isCalculating) {
+          card.style.opacity = '0.5';
+        } else {
+          card.style.opacity = '1';
+        }
+      });
+    }
+    
+    function updateUIFromBackend(result, purchasePrice, grossRentMonthly) {
+      // Calculate local values for display that aren't returned by API
+      const downPaymentAmt = result.down_payment;
+      const loanAmount = result.loan_amount;
+      const monthlyPayment = result.monthly_payment;
+      const effectiveIncome = result.gross_income;
+      const totalOpEx = result.gross_expenses;
+      const cashFlow = result.annual_cash_flow;
+      const annualDebtService = result.annual_debt_service;
+      const totalCashNeeded = result.total_cash_needed;
+      const purchaseCosts = result.closing_costs;
+      const rehabCosts = getSliderValue('Rehab Costs', 0);
+      const ltv = result.ltv;
+      const equity = result.equity;
+      const arv = result.arv;
+      const dealScore = result.deal_score;
+      const capRate = result.cap_rate;
+      const cocReturn = result.cash_on_cash_return;
+      const dscr = result.dscr;
+      const rentToValue = result.one_percent_rule ? (grossRentMonthly / purchasePrice) * 100 : 0;
+      
+      // Update calculated fields in the worksheet
+      updateElement('calc-amount-financed', formatCurrency(loanAmount));
+      updateElement('calc-loan-amount', formatCurrency(loanAmount));
+      updateElement('total-cash-needed', formatCurrency(totalCashNeeded));
+      updateElement('calc-monthly-payment', formatCurrency(monthlyPayment));
+      updateElement('calc-operating-income', formatCurrency(effectiveIncome));
+      
+      // Update LTV percentage in Financing section
+      updateElement('calc-ltv-pct', ltv.toFixed(0) + '%');
+      
+      // Update sidebar displays
+      updateSidebar({
+        dealScore,
+        capRate,
+        cocReturn,
+        dscr,
+        rentToValue: (grossRentMonthly / purchasePrice) * 100,
+        totalCashNeeded,
+        downPaymentAmt,
+        purchaseCosts,
+        rehabCosts,
+        ltv,
+        cashFlow,
+        annualDebtService,
+        totalOpEx,
+        equity,
+        loanAmount
+      });
+      
+      // Update Gross Income total
+      updateElement('calc-gross-income', formatCurrency(effectiveIncome));
+      
+      // Update EXPENSES section total
+      updateElement('calc-gross-expenses', formatCurrency(totalOpEx));
+      updateElement('calc-opex-annual', formatCurrency(totalOpEx));
+      
+      // Update CASH FLOW section
+      updateElement('calc-cf-income', formatCurrency(effectiveIncome));
+      updateElement('calc-cf-expenses', '-' + formatCurrency(totalOpEx));
+      updateElement('calc-cf-loan', '-' + formatCurrency(annualDebtService));
+      updateElement('calc-monthly-cf', formatCurrency(result.monthly_cash_flow));
+      updateElement('calc-annual-cf', formatCurrency(cashFlow));
+      
+      // Update color classes for positive/negative in Cash Flow section
+      const cfIncomeEl = document.getElementById('calc-cf-income');
+      if (cfIncomeEl) cfIncomeEl.className = 'value-primary value-positive';
+      
+      const cfExpensesEl = document.getElementById('calc-cf-expenses');
+      if (cfExpensesEl) cfExpensesEl.className = 'value-primary value-negative';
+      
+      const cfLoanEl = document.getElementById('calc-cf-loan');
+      if (cfLoanEl) cfLoanEl.className = 'value-primary value-negative';
+      
+      const monthlyCfEl = document.getElementById('calc-monthly-cf');
+      if (monthlyCfEl) monthlyCfEl.className = 'value-primary ' + (result.monthly_cash_flow >= 0 ? 'value-positive' : 'value-negative');
+      
+      const annualCfEl = document.getElementById('calc-annual-cf');
+      if (annualCfEl) annualCfEl.className = 'value-primary ' + (cashFlow >= 0 ? 'value-positive' : 'value-negative');
+      
+      // Update Valuation section per square foot calculations
+      updateElement('calc-arv-psf', formatCurrency(result.arv_psf));
+      updateElement('calc-price-psf', formatCurrency(result.price_psf));
+      updateElement('calc-rehab-psf', formatCurrency(result.rehab_psf));
+      updateElement('calc-equity', formatCurrency(equity));
+      
+      // Update equity color class
+      const equityEl = document.getElementById('calc-equity');
+      if (equityEl) equityEl.className = 'value-primary ' + (equity >= 0 ? 'value-positive' : 'value-negative');
+      
+      // Update Pricing Ladder (use MAO from backend)
+      updatePricingLadderFromBackend(purchasePrice, grossRentMonthly, result);
+      
+      // Update Summary Cards at the top
+      updateSummaryCards(result, cashFlow, totalCashNeeded, capRate, cocReturn, dealScore);
+    }
+    
+    // Update the 6 summary metric boxes at the top
+    function updateSummaryCards(result, annualCashFlow, totalCashNeeded, capRate, cocReturn, dealScore) {
+      const mao = result.mao;
+      const monthlyCashFlow = result.monthly_cash_flow;
+      
+      // 1. Target Price (MAO)
+      updateElement('target-price-value', formatCurrency(mao));
+      
+      // 2. Cash Needed
+      updateElement('summary-cash-needed', formatCurrency(totalCashNeeded));
+      
+      // 3. Cash Flow (Annual)
+      const cashFlowEl = document.getElementById('summary-cash-flow');
+      if (cashFlowEl) {
+        cashFlowEl.textContent = formatCurrency(annualCashFlow) + '/yr';
+        cashFlowEl.className = 'summary-card-value ' + (annualCashFlow >= 0 ? 'positive' : '');
+      }
+      
+      // 4. Cash Flow (Monthly subtitle)
+      updateElement('summary-cash-flow-mo', formatCurrency(monthlyCashFlow) + '/mo');
+      
+      // 5. Cap Rate
+      updateElement('summary-cap-rate', capRate.toFixed(1) + '%');
+      
+      // 6. CoC Return
+      const cocEl = document.getElementById('summary-coc-return');
+      if (cocEl) {
+        cocEl.textContent = cocReturn.toFixed(1) + '%';
+        cocEl.className = 'summary-card-value ' + (cocReturn >= 0 ? 'positive' : '');
+      }
+      
+      // 7. Deal Score
+      updateElement('summary-deal-score', dealScore);
+      
+      // Update Deal Score subtitle based on score
+      const dealScoreSubtitle = document.getElementById('summary-deal-score-subtitle');
+      if (dealScoreSubtitle) {
+        if (dealScore >= 85) dealScoreSubtitle.textContent = 'Excellent Investment';
+        else if (dealScore >= 70) dealScoreSubtitle.textContent = 'Good Investment';
+        else if (dealScore >= 55) dealScoreSubtitle.textContent = 'Fair Investment';
+        else dealScoreSubtitle.textContent = 'Poor Investment';
+      }
+    }
+    
+    // Update Price Position visual - Left: Your Price, Right: List & Breakeven
+    function updatePricingLadderFromBackend(purchasePrice, grossRentMonthly, result) {
+      // Get prices
+      const listPrice = window.propertyListPrice || 723600;
+      const monthlyCashFlow = result.monthly_cash_flow || 0;
+      
+      // Calculate breakeven from NOI
+      let breakevenPrice = result.breakeven_price;
+      
+      // Calculate NOI if not directly provided
+      let noi = result.noi;
+      if (!noi && result.gross_income && result.gross_expenses) {
+        noi = result.gross_income - result.gross_expenses;
+      }
+      
+      // Calculate breakeven if we have NOI
+      if (!breakevenPrice && noi && noi > 0) {
+        const downPaymentPct = getSliderValue('Down Payment', 20) / 100;
+        const interestRate = getSliderValue('Interest Rate', 7) / 100;
+        const loanTerm = getSliderValue('Loan Term', 30);
+        breakevenPrice = calculateBreakevenFromNOI(noi, downPaymentPct, interestRate, loanTerm);
+      }
+      
+      // Fallback if still no breakeven
+      if (!breakevenPrice || breakevenPrice <= 0 || !isFinite(breakevenPrice)) {
+        breakevenPrice = listPrice * 0.90;
+      }
+      
+      // Breakeven line is at 50% (center of the 400px bar)
+      // Higher price = toward top (LOSS/red)
+      // Lower price = toward bottom (PROFIT/green)
+      const breakevenCenter = 50;
+      
+      // Convert price to vertical position (%)
+      function priceToPosition(price) {
+        const diffFromBreakeven = price - breakevenPrice;
+        const rangePercent = breakevenPrice * 0.5; // 50% of breakeven = full range
+        const offset = (diffFromBreakeven / rangePercent) * 42;
+        let position = breakevenCenter - offset;
+        return Math.max(8, Math.min(90, position));
+      }
+      
+      // Position Your Price marker (left side)
+      const purchaseMarker = document.getElementById('purchase-price-marker');
+      if (purchaseMarker) {
+        purchaseMarker.style.top = priceToPosition(purchasePrice) + '%';
+      }
+      
+      // Position List Price marker (right side)
+      const listMarker = document.getElementById('list-price-marker');
+      if (listMarker) {
+        listMarker.style.top = priceToPosition(listPrice) + '%';
+      }
+      
+      // Position Breakeven marker (right side, at center)
+      const breakevenMarker = document.getElementById('breakeven-marker');
+      if (breakevenMarker) {
+        breakevenMarker.style.top = '50%'; // Always at center
+      }
+      
+      // Update displayed values
+      updateElement('purchase-price-display', formatCurrency(purchasePrice));
+      updateElement('list-price-display', formatCurrency(listPrice));
+      updateElement('breakeven-value', formatCurrency(breakevenPrice));
+      updateElement('cashflow-amount', formatCurrency(monthlyCashFlow));
+      
+      // Update cash flow indicator styling
+      const cashflowIndicator = document.getElementById('cashflow-indicator');
+      const positionText = document.getElementById('position-text');
+      
+      if (cashflowIndicator) {
+        if (monthlyCashFlow < 0) {
+          cashflowIndicator.className = 'cashflow-indicator negative';
+        } else {
+          cashflowIndicator.className = 'cashflow-indicator';
+        }
+      }
+      
+      if (positionText) {
+        if (purchasePrice > breakevenPrice) {
+          positionText.textContent = 'Loss Zone';
+        } else {
+          positionText.textContent = 'Profit Zone';
+        }
+      }
+      
+      // Update summary card
+      updateElement('target-price-value', formatCurrency(result.mao || listPrice * 0.77));
+    }
+    
+    // Helper function to update a price marker (deprecated - keeping for compatibility)
+    function updatePriceMarker(type, price, position) {
+      const markerEl = document.getElementById(`pricing-marker-${type}`);
+      const valueEl = document.getElementById(`pricing-value-${type}`);
+      
+      if (markerEl) {
+        markerEl.style.left = `${position}%`;
+      }
+      
+      if (valueEl) {
+        valueEl.textContent = formatCurrency(price);
+      }
+    }
+    
+    // Helper: Calculate price for 10% CoC return (local fallback)
+    function calculateTargetCoCPrice(currentPrice, monthlyRent, targetCoC) {
+      // Simplified binary search for target CoC price
+      let low = currentPrice * 0.5;
+      let high = currentPrice * 1.5;
+      
+      for (let i = 0; i < 20; i++) {
+        const mid = (low + high) / 2;
+        const coc = estimateCoCAtPrice(mid, monthlyRent);
+        if (Math.abs(coc - targetCoC) < 0.001) return mid;
+        if (coc < targetCoC) high = mid;
+        else low = mid;
+      }
+      return (low + high) / 2;
+    }
+    
+    // Helper: Estimate CoC at a given price (local fallback)
+    function estimateCoCAtPrice(price, monthlyRent) {
+      const downPct = getSliderValue('Down Payment', 20) / 100;
+      const rate = getSliderValue('Interest Rate', 7) / 100;
+      const downPayment = price * downPct;
+      const loanAmount = price - downPayment;
+      const closingCosts = getSliderValue('Purchase Costs', 21708);
+      const cashNeeded = downPayment + closingCosts;
+      
+      const monthlyRate = rate / 12;
+      const numPayments = 360;
+      const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+      
+      const annualRent = monthlyRent * 12;
+      const vacancyLoss = annualRent * 0.08;
+      const effectiveIncome = annualRent - vacancyLoss;
+      const opex = getSliderValue('Property Taxes', 6471) + getSliderValue('Insurance', 2894) + effectiveIncome * 0.02;
+      const noi = effectiveIncome - opex;
+      const cashFlow = noi - (monthlyPayment * 12);
+      
+      return cashNeeded > 0 ? cashFlow / cashNeeded : 0;
+    }
+    
+    // Calculate breakeven price from NOI and financing terms (NOT purchase price)
+    // Breakeven is where: NOI = Annual Debt Service
+    // Solving: NOI = Purchase Price × (1 - Down Payment %) × Monthly Payment Factor × 12
+    function calculateBreakevenFromNOI(noi, downPaymentPct, interestRate, loanTermYears) {
+      if (noi <= 0) return 0; // Can't have breakeven if NOI is negative
+      
+      const monthlyRate = interestRate / 12;
+      const numPayments = loanTermYears * 12;
+      const ltvPct = 1 - downPaymentPct; // Loan-to-value percentage
+      
+      if (monthlyRate === 0) {
+        // Interest-free loan: Monthly Payment = Loan Amount / numPayments
+        // NOI = Loan Amount / numPayments × 12
+        // NOI = Purchase Price × LTV / numPayments × 12
+        // Purchase Price = NOI × numPayments / (LTV × 12)
+        return (noi * numPayments) / (ltvPct * 12);
+      }
+      
+      // Calculate monthly payment factor: [r(1+r)^n] / [(1+r)^n - 1]
+      const factor = Math.pow(1 + monthlyRate, numPayments);
+      const monthlyPaymentFactor = (monthlyRate * factor) / (factor - 1);
+      
+      // Annual Debt Service = Loan Amount × Monthly Payment Factor × 12
+      // At breakeven: NOI = Loan Amount × Monthly Payment Factor × 12
+      // So: Loan Amount = NOI / (Monthly Payment Factor × 12)
+      // And: Purchase Price = Loan Amount / LTV
+      const loanAmount = noi / (monthlyPaymentFactor * 12);
+      const purchasePrice = loanAmount / ltvPct;
+      
+      return purchasePrice;
+    }
+    
+    // Helper: Calculate breakeven price (local fallback - uses income/expenses, not purchase price)
+    function calculateBreakevenPrice(noi, downPaymentPct, interestRate, loanTermYears) {
+      // This function signature is kept for compatibility but now uses NOI-based calculation
+      return calculateBreakevenFromNOI(noi, downPaymentPct, interestRate, loanTermYears);
+    }
+    
+    // Helper: Estimate cash flow at a given price (for 10% CoC calculation)
+    function estimateCashFlowAtPrice(price, monthlyRent) {
+      const downPct = getSliderValue('Down Payment', 20) / 100;
+      const rate = getSliderValue('Interest Rate', 7) / 100;
+      const downPayment = price * downPct;
+      const loanAmount = price - downPayment;
+      
+      const monthlyRate = rate / 12;
+      const numPayments = 360;
+      const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+      
+      const annualRent = monthlyRent * 12;
+      const vacancyLoss = annualRent * 0.08;
+      const effectiveIncome = annualRent - vacancyLoss;
+      const opex = getSliderValue('Property Taxes', 6471) + getSliderValue('Insurance', 2894) + effectiveIncome * 0.02;
+      const noi = effectiveIncome - opex;
+      
+      return noi - (monthlyPayment * 12);
+    }
+    
+    // Fallback: Local calculation if API fails
+    function doLocalRecalculate(payload) {
+      console.log('Using local fallback calculations');
+      
+      const purchasePrice = payload.purchase_price;
+      const downPaymentPct = payload.down_payment_pct;
+      const interestRate = payload.interest_rate;
+      const loanTerm = payload.loan_term_years;
+      const grossRentMonthly = payload.monthly_rent;
+      const vacancyPct = payload.vacancy_rate;
+      const propertyTaxes = payload.property_taxes_annual;
+      const insurance = payload.insurance_annual;
+      const mgmtPct = payload.property_management_pct;
+      const maintPct = payload.maintenance_pct;
+      const capexPct = payload.capex_pct;
+      const hoaFees = payload.hoa_monthly;
+      const arv = payload.arv;
+      const purchaseCosts = payload.closing_costs;
+      const rehabCosts = payload.rehab_costs;
+      
+      // Calculate derived values (same as backend)
+      const downPaymentAmt = purchasePrice * downPaymentPct;
+      const loanAmount = purchasePrice - downPaymentAmt;
+      const grossRentAnnual = grossRentMonthly * 12;
+      const vacancyLoss = grossRentAnnual * vacancyPct;
+      const effectiveIncome = grossRentAnnual - vacancyLoss;
+      
+      // Operating expenses
+      const mgmtExpense = grossRentAnnual * mgmtPct;
+      const maintExpense = grossRentAnnual * maintPct;
+      const capexExpense = grossRentAnnual * capexPct;
+      const totalOpEx = propertyTaxes + insurance + mgmtExpense + maintExpense + capexExpense + (hoaFees * 12);
+      
+      // NOI and Cash Flow
+      const noi = effectiveIncome - totalOpEx;
+      const monthlyRate = interestRate / 12;
+      const numPayments = loanTerm * 12;
+      
+      let monthlyPayment = 0;
+      if (loanAmount > 0 && monthlyRate > 0 && numPayments > 0) {
+        const factor = Math.pow(1 + monthlyRate, numPayments);
+        monthlyPayment = loanAmount * (monthlyRate * factor) / (factor - 1);
+        if (isNaN(monthlyPayment) || !isFinite(monthlyPayment)) {
+          monthlyPayment = 0;
+        }
+      }
+      const annualDebtService = monthlyPayment * 12;
+      const cashFlow = noi - annualDebtService;
+      
+      // Key metrics
+      const capRate = purchasePrice > 0 ? (noi / purchasePrice) * 100 : 0;
+      const totalCashNeeded = downPaymentAmt + purchaseCosts + rehabCosts;
+      const cocReturn = totalCashNeeded > 0 ? (cashFlow / totalCashNeeded) * 100 : 0;
+      const dscr = annualDebtService > 0 ? noi / annualDebtService : 0;
+      const rentToValue = purchasePrice > 0 ? (grossRentMonthly / purchasePrice) * 100 : 0;
+      const ltv = purchasePrice > 0 ? (loanAmount / purchasePrice) * 100 : 0;
+      const equity = arv - purchasePrice;
+      const mao = (arv * 0.70) - rehabCosts;
+      
+      // Deal Score
+      let dealScore = 50;
+      if (capRate >= 8) dealScore += 15;
+      else if (capRate >= 6) dealScore += 10;
+      if (cocReturn >= 10) dealScore += 15;
+      else if (cocReturn >= 8) dealScore += 10;
+      if (dscr >= 1.25) dealScore += 10;
+      if (rentToValue >= 1) dealScore += 10;
+      if (equity > 0) dealScore += Math.min(10, (equity / purchasePrice) * 100);
+      dealScore = Math.min(100, Math.max(0, Math.round(dealScore)));
+      
+      // Create result object matching backend format
+      const result = {
+        gross_income: effectiveIncome,
+        gross_expenses: totalOpEx,
+        noi: noi, // Add NOI for breakeven calculation
+        loan_amount: loanAmount,
+        down_payment: downPaymentAmt,
+        closing_costs: purchaseCosts,
+        monthly_payment: monthlyPayment,
+        annual_debt_service: annualDebtService,
+        monthly_cash_flow: cashFlow / 12,
+        annual_cash_flow: cashFlow,
+        cap_rate: capRate,
+        cash_on_cash_return: cocReturn,
+        dscr: dscr,
+        total_cash_needed: totalCashNeeded,
+        ltv: ltv,
+        equity: equity,
+        arv: arv,
+        arv_psf: arv / (payload.sqft || 3172),
+        price_psf: purchasePrice / (payload.sqft || 3172),
+        rehab_psf: rehabCosts / (payload.sqft || 3172),
+        mao: mao,
+        deal_score: dealScore,
+        one_percent_rule: rentToValue >= 1
+      };
+      
+      updateUIFromBackend(result, purchasePrice, grossRentMonthly);
+    }
+    
+    // Get slider value by label text
+    function getSliderValue(labelText, defaultValue) {
+      const rows = document.querySelectorAll('.data-row.has-slider');
+      for (const row of rows) {
+        const label = row.querySelector('.data-label span')?.textContent || '';
+        if (label.includes(labelText)) {
+          const slider = row.querySelector('.slider-input');
+          if (slider) return parseFloat(slider.value);
+        }
+      }
+      return defaultValue;
+    }
+    
+    // Update sidebar with calculated values
+    function updateSidebar(data) {
+      // Deal Score
+      const scoreEl = document.getElementById('deal-score');
+      if (scoreEl) {
+        scoreEl.textContent = data.dealScore;
+        // Update gauge arc (simplified)
+        const gaugeLabel = document.querySelector('.gauge-label');
+        if (gaugeLabel) {
+          if (data.dealScore >= 80) gaugeLabel.textContent = 'Great Investment';
+          else if (data.dealScore >= 60) gaugeLabel.textContent = 'Good Investment';
+          else if (data.dealScore >= 40) gaugeLabel.textContent = 'Fair Investment';
+          else gaugeLabel.textContent = 'Poor Investment';
+        }
+      }
+      
+      // Key Metrics
+      updateElement('metric-cap-rate', data.capRate.toFixed(1) + '%');
+      updateElement('metric-coc-return', data.cocReturn.toFixed(1) + '%');
+      updateElement('metric-dscr', data.dscr.toFixed(2) + 'x');
+      updateElement('metric-rent-value', data.rentToValue.toFixed(2) + '%');
+      
+      // Cash Breakdown
+      updateElement('total-cash', '$' + Math.round(data.totalCashNeeded / 1000) + 'K');
+      updateElement('cash-down', '$' + Math.round(data.downPaymentAmt / 1000) + 'K');
+      updateElement('cash-costs', '$' + Math.round(data.purchaseCosts / 1000) + 'K');
+      updateElement('cash-rehab', '$' + Math.round(data.rehabCosts / 1000) + 'K');
+      updateElement('ltv-value', data.ltv.toFixed(0) + '%');
+      
+      // LTV Bar
+      const ltvBar = document.getElementById('ltv-bar');
+      if (ltvBar) ltvBar.style.width = Math.min(100, data.ltv) + '%';
+      
+      // Cash Flow Breakdown
+      const totalIncome = data.cashFlow + data.annualDebtService + data.totalOpEx;
+      const loanPct = (data.annualDebtService / totalIncome) * 100;
+      const expPct = (data.totalOpEx / totalIncome) * 100;
+      const cfPct = Math.max(0, (data.cashFlow / totalIncome) * 100);
+      
+      updateElement('cf-loan', 'Loan $' + Math.round(data.annualDebtService / 1000) + 'k');
+      updateElement('cf-expenses', 'Expenses $' + Math.round(data.totalOpEx / 1000) + 'k');
+      updateElement('cf-cashflow', 'Cash Flow $' + Math.round(data.cashFlow / 1000) + 'k');
+      
+      // Returns vs Targets
+      updateElement('target-cap-rate', data.capRate.toFixed(1) + '% / 8%');
+      updateElement('target-coc', data.cocReturn.toFixed(1) + '% / 10%');
+      updateElement('target-dscr', data.dscr.toFixed(2) + 'x / 1.2x');
+      updateElement('target-1pct', data.rentToValue.toFixed(2) + '% / 1%');
+      
+      // Update target bars
+      updateBar('bar-cap-rate', (data.capRate / 8) * 100);
+      updateBar('bar-coc', (data.cocReturn / 10) * 100);
+      updateBar('bar-dscr', (data.dscr / 1.2) * 100);
+      updateBar('bar-1pct', (data.rentToValue / 1) * 100);
+      
+      // Equity Position
+      const equityPct = 100 - data.ltv;
+      updateElement('equity-amount', formatCurrency(data.downPaymentAmt));
+      updateElement('equity-pct', equityPct.toFixed(0) + '% Equity');
+      updateElement('loan-amount', formatCurrency(data.loanAmount));
+      updateElement('loan-pct', data.ltv.toFixed(0) + '% Financed');
+    }
+    
+    function updateElement(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+    
+    function updateBar(id, percent) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.width = Math.min(150, Math.max(0, percent)) + '%';
+        // Change color if exceeds target
+        if (percent >= 100) {
+          el.style.background = 'linear-gradient(90deg, #007ea7 0%, #10b981 100%)';
+        } else {
+          el.style.background = 'linear-gradient(90deg, #f97316 0%, #eab308 100%)';
+        }
+      }
+    }
+    
+    // ===== PRICING LADDER CALCULATIONS =====
+    
+    // Add hover effect to slider rows
+    document.querySelectorAll('.data-row.has-slider').forEach(row => {
+      row.addEventListener('mouseenter', function() {
+        this.style.backgroundColor = 'rgba(0, 126, 167, 0.04)';
+      });
+      row.addEventListener('mouseleave', function() {
+        this.style.backgroundColor = '';
+      });
+    });
+    
+    // ===== STRATEGY DROPDOWN =====
+    function initStrategyDropdown() {
+      const dropdown = document.getElementById('strategy-dropdown');
+      const trigger = document.getElementById('strategy-dropdown-trigger');
+      
+      if (!dropdown || !trigger) {
+        console.warn('Strategy dropdown elements not found');
+        return;
+      }
+      
+      // Toggle dropdown on trigger click
+      trigger.addEventListener('click', function(event) {
+        event.stopPropagation();
+        event.preventDefault();
+        dropdown.classList.toggle('open');
+      });
+      
+      // Add event listeners to strategy options (backup to onclick handlers)
+      // The onclick handlers will also fire, but this ensures it works even if onclick fails
+      const strategyOptions = dropdown.querySelectorAll('.strategy-option');
+      strategyOptions.forEach(option => {
+        option.addEventListener('click', function(event) {
+          // Don't prevent default - let onclick handler work
+          // Just ensure event doesn't bubble to document click handler
+          event.stopPropagation();
+        });
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(event) {
+        if (dropdown && !dropdown.contains(event.target)) {
+          dropdown.classList.remove('open');
+        }
+      });
+      
+      // Prevent dropdown menu clicks from closing dropdown
+      const dropdownMenu = dropdown.querySelector('.strategy-dropdown-menu');
+      if (dropdownMenu) {
+        dropdownMenu.addEventListener('click', function(event) {
+          event.stopPropagation();
+        });
+      }
+    }
+    
+    // Helper function to get strategy URL
+    function getStrategyUrl(strategy) {
+      const urls = {
+        'ltr': 'worksheet-preview.html',
+        'brrrr': 'worksheet-brrrr.html',
+        'flip': 'worksheet-flip.html',
+        'wholesale': 'worksheet-wholesale.html',
+        'str': 'worksheet-str.html',
+        'househack': 'worksheet-househack.html'
+      };
+      return urls[strategy] || '#';
+    }
+    
+    // Initialize dropdown when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initStrategyDropdown);
+    } else {
+      initStrategyDropdown();
+    }
+    
+    window.selectStrategy = function(strategy, name, url) {
+      try {
+        // Update the button text
+        const nameEl = document.getElementById('current-strategy-name');
+        if (nameEl) nameEl.textContent = name;
+        
+        // Update active state
+        document.querySelectorAll('.strategy-option').forEach(opt => {
+          opt.classList.remove('active');
+        });
+        const activeOption = document.querySelector(`[data-strategy="${strategy}"]`);
+        if (activeOption) activeOption.classList.add('active');
+        
+        // Close dropdown
+        const dropdown = document.getElementById('strategy-dropdown');
+        if (dropdown) dropdown.classList.remove('open');
+        
+        // Navigate to the new worksheet (if not current page and not #)
+        if (url && url !== '#' && !window.location.href.includes(url)) {
+          window.location.href = url;
+        }
+      } catch (error) {
+        console.error('Error in selectStrategy:', error);
+      }
+    }
+    
+    // Keep window.toggleStrategyDropdown for backwards compatibility
+    window.toggleStrategyDropdown = function() {
+      const dropdown = document.getElementById('strategy-dropdown');
+      if (dropdown) {
+        dropdown.classList.toggle('open');
+      }
+    }
+    
+    // ===== LOAD PROPERTY DATA FROM LOCALSTORAGE =====
+    function loadPropertyData() {
+      try {
+        const storedData = localStorage.getItem('worksheetProperty');
+        if (!storedData) return;
+        
+        const property = JSON.parse(storedData);
+        console.log('[Worksheet] Loaded property:', property);
+        
+        // Update header
+        const titleEl = document.getElementById('property-title');
+        const subtitleEl = document.getElementById('property-subtitle');
+        const priceEl = document.getElementById('property-price-badge');
+        
+        if (titleEl && property.address) {
+          titleEl.textContent = property.address;
+        }
+        
+        if (subtitleEl) {
+          const location = `${property.city || ''}, ${property.state || ''} ${property.zipCode || ''}`;
+          const specs = `${property.bedrooms || 0} BR • ${property.bathrooms || 0} BA • ${(property.sqft || 0).toLocaleString()} Sq.Ft.`;
+          subtitleEl.textContent = `${location} • ${specs}`;
+        }
+        
+        if (priceEl && property.listPrice) {
+          priceEl.textContent = formatCurrency(property.listPrice);
+        }
+        
+        // Update slider values based on property data (adjustRange=true to center sliders)
+        updateSliderByLabel('Purchase Price', property.listPrice, true);
+        updateSliderByLabel('Monthly Gross Rent', property.monthlyRent, true);
+        // Property taxes and insurance from API are annual - sliders expect annual
+        updateSliderByLabel('Property Taxes', property.propertyTaxes, true);
+        updateSliderByLabel('Insurance', property.insurance, true);
+        
+        // Update ARV for pricing ladder
+        // ARV formula: AVM (list price as proxy) + (2 × Rehab Costs)
+        const rehabCosts = getSliderValue('Rehab Costs', 0);
+        const avm = property.listPrice || 723600;
+        const calculatedArv = avm + (2 * rehabCosts);
+        
+        if (property.arv && property.arv > avm) {
+          // Use provided ARV if it's higher than AVM
+          updateSliderByLabel('After Repair Value', property.arv, true);
+          window.propertyARV = property.arv;
+        } else {
+          // Default: ARV = AVM + (2 × Rehab Costs)
+          updateSliderByLabel('After Repair Value', calculatedArv, true);
+          window.propertyARV = calculatedArv;
+        }
+        
+        // Store sqft for per square foot calculations
+        window.propertySqft = property.sqft || 3172; // Default to sample property sqft
+        
+        // Store list price for pricing ladder
+        window.propertyListPrice = property.listPrice || 723600;
+        
+      } catch (error) {
+        console.error('[Worksheet] Error loading property data:', error);
+      }
+    }
+    
+    function updateSliderByLabel(labelText, value, adjustRange = false) {
+      if (value === undefined || value === null || isNaN(value)) return;
+      
+      const rows = document.querySelectorAll('.data-row.has-slider');
+      for (const row of rows) {
+        const label = row.querySelector('.data-label span')?.textContent || '';
+        if (label.includes(labelText)) {
+          const slider = row.querySelector('.slider-input');
+          const input = row.querySelector('.slider-value');
+          
+          if (slider) {
+            // For key monetary sliders, dynamically adjust range to center the value
+            if (adjustRange && (labelText.includes('Price') || labelText.includes('Rent') || labelText.includes('Value') || labelText.includes('Taxes') || labelText.includes('Insurance'))) {
+              // Set min to 50% and max to 150% of value to center it
+              const newMin = Math.round(value * 0.5);
+              const newMax = Math.round(value * 1.5);
+              slider.min = newMin;
+              slider.max = newMax;
+              console.log(`[Slider] "${labelText}" range adjusted: ${newMin}-${newMax}`);
+            }
+            
+            const min = parseFloat(slider.min);
+            const max = parseFloat(slider.max);
+            
+            // Clamp value to slider range
+            const clampedValue = Math.min(max, Math.max(min, value));
+            slider.value = clampedValue;
+            
+            // Update slider visual with clamped progress
+            const progress = Math.min(100, Math.max(0, ((clampedValue - min) / (max - min)) * 100));
+            slider.style.background = `linear-gradient(to right, var(--iq-teal) 0%, var(--iq-teal) ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+            
+            // Log if value was clamped
+            if (clampedValue !== value) {
+              console.warn(`[Slider] "${labelText}" value ${value} clamped to ${clampedValue} (range: ${min}-${max})`);
+            }
+          }
+          
+          if (input) {
+            const displayValue = slider ? parseFloat(slider.value) : value;
+            if (label.includes('Rate') || label.includes('%') || label.includes('Vacancy') || label.includes('Mgmt') || label.includes('Maintenance') || label.includes('Capital Expense')) {
+              input.value = displayValue.toFixed(1) + '%';
+            } else if (label.includes('Term') || label.includes('years')) {
+              input.value = displayValue + ' years';
+            } else {
+              input.value = formatCurrency(displayValue);
+            }
+          }
+          
+          break;
+        }
+      }
+    }
+    
+    // Load property data first, then calculate
+    loadPropertyData();
+    recalculateAll();
+  </script>
+</body>
+</html>
+

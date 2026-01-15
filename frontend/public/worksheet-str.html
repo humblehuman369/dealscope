@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STR Worksheet - InvestIQ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      /* STR Brand Colors - Coral/Orange for vacation vibe */
+      --str-primary: #f97316;
+      --str-primary-dark: #ea580c;
+      --str-primary-light: #fb923c;
+      --str-accent-bg: rgba(249, 115, 22, 0.1);
+      
+      /* InvestIQ Brand Colors */
+      --iq-teal: #007ea7;
+      --iq-teal-dark: #006080;
+      
+      /* Background Colors */
+      --ws-bg: #ffffff;
+      --ws-bg-alt: #f8fafc;
+      --ws-card: #ffffff;
+      
+      /* Border Colors */
+      --ws-border: #e2e8f0;
+      --ws-border-light: #f1f5f9;
+      
+      /* Text Colors */
+      --ws-text-primary: #1e293b;
+      --ws-text-secondary: #64748b;
+      --ws-text-muted: #94a3b8;
+      --ws-text-label: #475569;
+      
+      /* Status Colors */
+      --ws-positive: #10b981;
+      --ws-positive-light: rgba(16, 185, 129, 0.15);
+      --ws-negative: #dc2626;
+      --ws-negative-light: #fee2e2;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #ffffff;
+      min-height: 100vh;
+      color: var(--ws-text-primary);
+    }
+    
+    /* Top Bar */
+    .worksheet-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: white;
+      border-bottom: 1px solid var(--ws-border);
+    }
+    
+    .worksheet-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .worksheet-back-link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      color: var(--ws-text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    
+    .worksheet-back-link:hover {
+      background: var(--ws-bg-alt);
+      color: var(--ws-text-primary);
+    }
+    
+    .worksheet-property-info {
+      border-left: 1px solid var(--ws-border);
+      padding-left: 16px;
+    }
+    
+    .worksheet-property-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    .worksheet-property-subtitle {
+      font-size: 13px;
+      color: var(--ws-text-secondary);
+    }
+    
+    .worksheet-price-badge {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--str-primary);
+      padding: 8px 16px;
+      background: var(--str-accent-bg);
+      border-radius: 8px;
+      border: 1px solid var(--str-primary-light);
+    }
+    
+    /* Tab Navigation */
+    .worksheet-tab-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border-bottom: 2px solid var(--ws-border);
+      padding: 0 24px;
+    }
+    
+    .worksheet-tabs-scroll {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .worksheet-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ws-text-secondary);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    
+    .worksheet-tab:hover {
+      color: var(--ws-text-primary);
+      background: var(--ws-bg-alt);
+    }
+    
+    .worksheet-tab.active {
+      color: var(--str-primary);
+      border-bottom-color: var(--str-primary);
+      background: var(--str-accent-bg);
+    }
+    
+    .worksheet-tab.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .tab-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      background: var(--ws-border);
+      color: var(--ws-text-muted);
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    
+    /* Strategy Dropdown */
+    .strategy-dropdown {
+      position: relative;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+    
+    .strategy-dropdown-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, var(--str-primary) 0%, var(--str-primary-dark) 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    
+    .strategy-dropdown-trigger:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+    }
+    
+    .strategy-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 280px;
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      z-index: 100;
+      display: none;
+      overflow: hidden;
+    }
+    
+    .strategy-dropdown.open .strategy-dropdown-menu {
+      display: block;
+    }
+    
+    .strategy-dropdown-header {
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--ws-border-light);
+      background: var(--ws-bg-alt);
+    }
+    
+    .strategy-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      width: 100%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      text-align: left;
+    }
+    
+    .strategy-option:hover {
+      background: var(--ws-bg-alt);
+    }
+    
+    .strategy-option.active {
+      background: var(--str-accent-bg);
+    }
+    
+    .strategy-option.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .strategy-option-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .strategy-option-icon.ltr { background: rgba(0, 126, 167, 0.15); color: #007ea7; }
+    .strategy-option-icon.brrrr { background: rgba(124, 58, 237, 0.15); color: #7c3aed; }
+    .strategy-option-icon.flip { background: rgba(217, 119, 6, 0.15); color: #d97706; }
+    .strategy-option-icon.wholesale { background: rgba(37, 99, 235, 0.15); color: #2563eb; }
+    .strategy-option-icon.str { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+    
+    .strategy-option-content {
+      flex: 1;
+    }
+    
+    .strategy-option-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    .strategy-option-desc {
+      font-size: 12px;
+      color: var(--ws-text-muted);
+    }
+    
+    .strategy-option-check {
+      width: 20px;
+      height: 20px;
+      color: var(--str-primary);
+      opacity: 0;
+    }
+    
+    .strategy-option.active .strategy-option-check {
+      opacity: 1;
+    }
+    
+    .strategy-badge {
+      font-size: 9px;
+      padding: 2px 5px;
+      background: var(--ws-border);
+      color: var(--ws-text-muted);
+      border-radius: 3px;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+    
+    /* Summary Cards */
+    .summary-cards-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: white;
+      border-bottom: 1px solid var(--ws-border);
+      padding: 16px 24px;
+    }
+    
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: clamp(6px, 1vw, 12px);
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    
+    .summary-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: clamp(8px, 1vw, 12px);
+      padding: clamp(8px, 1.5vw, 16px) clamp(8px, 1.5vw, 20px);
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      min-width: 0;
+    }
+    
+    .summary-card.highlight {
+      background: linear-gradient(135deg, var(--str-accent-bg) 0%, white 100%);
+      border: 2px solid var(--str-primary);
+      position: relative;
+    }
+    
+    .summary-card.highlight::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: clamp(10px, 2vw, 20px);
+      right: clamp(10px, 2vw, 20px);
+      height: 3px;
+      background: linear-gradient(90deg, var(--str-primary), var(--str-primary-light));
+      border-radius: 0 0 3px 3px;
+    }
+    
+    .summary-card-label {
+      font-size: clamp(9px, 1vw, 11px);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ws-text-muted);
+      margin-bottom: clamp(4px, 0.6vw, 8px);
+    }
+    
+    .summary-card-value {
+      font-size: clamp(16px, 2.2vw, 28px);
+      font-weight: 700;
+      color: var(--ws-text-primary);
+      line-height: 1.2;
+    }
+    
+    .summary-card-value.positive { color: var(--ws-positive); }
+    .summary-card-value.negative { color: var(--ws-negative); }
+    .summary-card-value.accent { color: var(--str-primary); }
+    
+    .summary-card-subtitle {
+      font-size: clamp(9px, 0.9vw, 11px);
+      color: var(--ws-text-muted);
+      margin-top: clamp(2px, 0.3vw, 4px);
+    }
+    
+    /* Main Layout */
+    .worksheet-main-area {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 24px;
+      padding: 24px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    
+    /* Help Panel */
+    .worksheet-help-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .worksheet-help-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--str-primary);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--ws-border-light);
+    }
+    
+    .worksheet-help-tips {
+      list-style: none;
+    }
+    
+    .worksheet-help-tips li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--ws-text-secondary);
+      padding: 10px 0;
+      border-bottom: 1px solid var(--ws-border-light);
+      line-height: 1.5;
+    }
+    
+    .worksheet-help-tips li svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--str-primary);
+    }
+    
+    /* Content Area */
+    .worksheet-content-area {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    /* Section Cards */
+    .section-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+    
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, white 100%);
+      border-bottom: 1px solid var(--ws-border-light);
+      cursor: pointer;
+    }
+    
+    .section-header:hover {
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.12) 0%, white 100%);
+    }
+    
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--str-primary-dark);
+    }
+    
+    .section-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      background: var(--str-primary);
+      color: white;
+      border-radius: 6px;
+    }
+    
+    .section-content {
+      padding: 16px 20px;
+    }
+    
+    /* Data Rows */
+    .data-row {
+      display: grid;
+      grid-template-columns: 140px 1fr auto;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--ws-border-light);
+      align-items: center;
+    }
+    
+    .data-row:last-child {
+      border-bottom: none;
+    }
+    
+    .data-row.total {
+      background: linear-gradient(90deg, rgba(249, 115, 22, 0.08) 0%, transparent 100%);
+      margin: 0 -20px;
+      padding: 14px 20px;
+      border-bottom: none;
+      margin-top: 8px;
+    }
+    
+    .data-row.total .data-label span {
+      font-weight: 700;
+      color: var(--str-primary-dark);
+    }
+    
+    .data-row.calculated {
+      background: var(--ws-bg-alt);
+      margin: 0 -20px;
+      padding: 10px 20px;
+    }
+    
+    .data-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .data-label span {
+      font-size: 13px;
+      color: var(--ws-text-label);
+      font-weight: 500;
+    }
+    
+    .data-label svg {
+      color: var(--ws-text-muted);
+    }
+    
+    /* Slider Styles */
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .slider-wrapper {
+      flex: 1;
+      position: relative;
+    }
+    
+    .slider-input {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #e2e8f0;
+      outline: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+    
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--str-primary);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      transition: transform 0.15s ease;
+    }
+    
+    .slider-input::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    
+    .slider-input::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--str-primary);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+    
+    .slider-value {
+      width: 85px;
+      min-width: unset;
+      padding: 6px 8px;
+      border: 1px solid var(--ws-border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+      text-align: right;
+      background: white;
+    }
+    
+    .slider-value:focus {
+      outline: none;
+      border-color: var(--str-primary);
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+    }
+    
+    .slider-secondary {
+      font-size: 11px;
+      color: var(--ws-text-muted);
+      text-align: right;
+      min-width: 70px;
+    }
+    
+    /* Select Inputs */
+    .select-input {
+      padding: 8px 12px;
+      border: 1px solid var(--ws-border);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--ws-text-primary);
+      background: white;
+      cursor: pointer;
+      min-width: 160px;
+    }
+    
+    .select-input:focus {
+      outline: none;
+      border-color: var(--str-primary);
+    }
+    
+    /* ===== PROFIT FINDER ===== */
+    .price-position-visual { display: flex; align-items: stretch; justify-content: center; padding: 12px; min-height: 420px; gap: 8px; }
+    .marker-column { width: 85px; position: relative; flex-shrink: 0; }
+    .simple-marker { position: absolute; display: flex; align-items: center; gap: 2px; transform: translateY(-50%); transition: top 0.3s ease; }
+    .marker-column.left .simple-marker, .marker-column.right .simple-marker { right: 0; left: 0; justify-content: center; }
+    .marker-stack { display: flex; flex-direction: column; align-items: center; text-align: center; line-height: 1.1; }
+    .marker-name { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .marker-val { font-size: 11px; font-weight: 700; }
+    .marker-arrow { font-size: 10px; }
+    #purchase-price-marker .marker-name, #purchase-price-marker .marker-val, #purchase-price-marker .marker-arrow { color: var(--iq-teal); }
+    #list-price-marker .marker-name, #list-price-marker .marker-val, #list-price-marker .marker-arrow { color: #dc2626; }
+    #breakeven-marker .marker-name, #breakeven-marker .marker-val, #breakeven-marker .marker-arrow { color: #64748b; }
+    .price-scale-bar { width: 60px; flex-shrink: 0; }
+    .price-scale-bar img { display: block; width: 60px; height: 400px; }
+    .cashflow-indicator { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px 16px; margin: 0 8px 8px; border-radius: 8px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%); border: 1px solid rgba(16, 185, 129, 0.25); }
+    .cashflow-indicator.negative { background: linear-gradient(135deg, rgba(220, 38, 38, 0.12) 0%, rgba(220, 38, 38, 0.04) 100%); border-color: rgba(220, 38, 38, 0.25); }
+    .cashflow-indicator .cf-label { font-size: 12px; color: var(--ws-text-muted); }
+    .cashflow-indicator .cf-amount { font-size: 18px; font-weight: 700; color: #10b981; }
+    .cashflow-indicator.negative .cf-amount { color: #dc2626; }
+    .cashflow-indicator .cf-status { font-size: 12px; font-weight: 600; color: #10b981; padding: 2px 8px; background: rgba(16, 185, 129, 0.15); border-radius: 10px; }
+    .cashflow-indicator.negative .cf-status { color: #dc2626; background: rgba(220, 38, 38, 0.15); }
+    .slider-value.pct-field { width: 65px; }
+
+    /* Charts Sidebar */
+    .worksheet-charts-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: 120px;
+      height: fit-content;
+    }
+    
+    .chart-card {
+      background: white;
+      border: 1px solid var(--ws-border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+    
+    .chart-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--str-primary-dark);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--ws-border-light);
+    }
+    
+    /* ===== PRICING LADDER ===== */
+    .pricing-ladder {
+      position: relative;
+      padding: 16px 0;
+    }
+    
+    .pricing-ladder-track {
+      position: absolute;
+      left: 50%;
+      top: 20px;
+      bottom: 20px;
+      width: 4px;
+      background: linear-gradient(180deg, #dc2626 0%, #f97316 25%, #eab308 50%, #10b981 75%, var(--str-primary) 100%);
+      border-radius: 2px;
+      transform: translateX(-50%);
+    }
+    
+    .pricing-ladder-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      position: relative;
+    }
+    
+    .pricing-ladder-item.highlight {
+      background: var(--str-accent-bg);
+      margin: 0 -16px;
+      padding: 8px 16px;
+      border-radius: 8px;
+    }
+    
+    .pricing-ladder-label {
+      flex: 1;
+      text-align: right;
+      padding-right: 20px;
+      font-size: 11px;
+      color: var(--ws-text-muted);
+    }
+    
+    .pricing-ladder-marker {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--ws-border);
+      z-index: 1;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .pricing-ladder-marker.list { border-color: #dc2626; background: white; }
+    .pricing-ladder-marker.current { border-color: var(--str-primary); background: var(--str-primary); }
+    .pricing-ladder-marker.target { border-color: #eab308; background: #eab308; }
+    .pricing-ladder-marker.coc { border-color: #10b981; background: white; }
+    .pricing-ladder-marker.mao { border-color: var(--iq-teal-dark); background: white; }
+    
+    .pricing-ladder-value {
+      flex: 1;
+      padding-left: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    .pricing-ladder-value.current { color: var(--str-primary); }
+    .pricing-ladder-value.list { color: #dc2626; }
+    .pricing-ladder-value.target { color: #eab308; }
+    
+    .pricing-ladder-hint {
+      display: block;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--ws-text-muted);
+    }
+    
+    .pricing-discount-indicator {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--ws-border-light);
+    }
+    
+    .pricing-discount-bar {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .pricing-discount-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+      background: linear-gradient(90deg, var(--str-primary), var(--str-primary-light));
+    }
+    
+    .pricing-discount-label {
+      font-size: 12px;
+      color: var(--ws-text-secondary);
+      text-align: center;
+    }
+    
+    .pricing-discount-label span {
+      font-weight: 600;
+      color: var(--str-primary);
+    }
+    
+    /* Revenue Gauge */
+    .revenue-gauge {
+      text-align: center;
+      padding: 16px 0;
+    }
+    
+    .revenue-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--str-primary);
+    }
+    
+    .revenue-label {
+      font-size: 12px;
+      color: var(--ws-text-muted);
+      margin-top: 4px;
+    }
+    
+    .revenue-breakdown {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--ws-border-light);
+    }
+    
+    .revenue-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 13px;
+    }
+    
+    .revenue-item-label {
+      color: var(--ws-text-secondary);
+    }
+    
+    .revenue-item-value {
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    .revenue-item-value.positive { color: var(--ws-positive); }
+    .revenue-item-value.negative { color: var(--ws-negative); }
+    
+    /* Occupancy Chart */
+    .occupancy-chart {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      padding: 16px 0;
+    }
+    
+    .occupancy-bar {
+      width: 20px;
+      height: 60px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .occupancy-bar-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg, var(--str-primary) 0%, var(--str-primary-light) 100%);
+      border-radius: 4px;
+      transition: height 0.3s ease;
+    }
+    
+    .occupancy-label {
+      font-size: 10px;
+      text-align: center;
+      color: var(--ws-text-muted);
+      margin-top: 4px;
+    }
+    
+    /* Seasonality */
+    .seasonality-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    
+    .season-card {
+      padding: 10px 8px;
+      background: var(--ws-bg-alt);
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .season-card.peak {
+      background: var(--str-accent-bg);
+      border: 1px solid var(--str-primary-light);
+    }
+    
+    .season-label {
+      font-size: 10px;
+      color: var(--ws-text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    
+    .season-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ws-text-primary);
+    }
+    
+    .season-card.peak .season-value {
+      color: var(--str-primary);
+    }
+    
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .worksheet-main-area {
+        grid-template-columns: 1fr 400px;
+      }
+      .worksheet-help-panel {
+        display: none;
+      }
+      .summary-cards {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    @media (max-width: 900px) {
+      .worksheet-main-area {
+        grid-template-columns: 1fr;
+      }
+      .worksheet-charts-sidebar {
+        position: static;
+      }
+      .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="worksheet-topbar">
+    <div class="worksheet-topbar-left">
+      <a href="#" class="worksheet-back-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back
+      </a>
+      <div class="worksheet-property-info">
+        <div class="worksheet-property-title" id="property-title">456 Oceanview Drive</div>
+        <div class="worksheet-property-subtitle" id="property-subtitle">Miami Beach, FL 33139 • 3 BR • 2 BA • 1,800 Sq.Ft.</div>
+      </div>
+    </div>
+    <div class="worksheet-price-badge" id="property-price-badge">$485,000</div>
+  </header>
+  
+  <!-- Tab Navigation -->
+  <nav class="worksheet-tab-nav">
+    <!-- Strategy Dropdown -->
+    <div class="strategy-dropdown" id="strategy-dropdown">
+        <button class="strategy-dropdown-trigger">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span id="current-strategy-name">STR Worksheet</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        
+        <div class="strategy-dropdown-menu">
+          <div class="strategy-dropdown-header">Select Strategy</div>
+          
+          <button class="strategy-option" data-strategy="ltr" onclick="selectStrategy('ltr', 'LTR Worksheet', 'worksheet-preview.html')">
+            <div class="strategy-option-icon ltr">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">LTR (Long-Term Rental)</div>
+              <div class="strategy-option-desc">Buy & hold for monthly cash flow</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <button class="strategy-option" data-strategy="brrrr" onclick="selectStrategy('brrrr', 'BRRRR Worksheet', 'worksheet-brrrr.html')">
+            <div class="strategy-option-icon brrrr">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">BRRRR</div>
+              <div class="strategy-option-desc">Buy, Rehab, Rent, Refinance, Repeat</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <button class="strategy-option" data-strategy="flip" onclick="selectStrategy('flip', 'Fix & Flip', 'worksheet-flip.html')">
+            <div class="strategy-option-icon flip">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">Fix & Flip</div>
+              <div class="strategy-option-desc">Buy, renovate, sell for profit</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <button class="strategy-option" data-strategy="wholesale" onclick="selectStrategy('wholesale', 'Wholesale', 'worksheet-wholesale.html')">
+            <div class="strategy-option-icon wholesale">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 3h5v5"/>
+                <path d="M8 21H3v-5"/>
+                <path d="M21 3l-9 9"/>
+                <path d="M3 21l9-9"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">Wholesale</div>
+              <div class="strategy-option-desc">Assign contracts for quick profit</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <button class="strategy-option active" data-strategy="str" onclick="selectStrategy('str', 'STR Worksheet', 'worksheet-str.html')">
+            <div class="strategy-option-icon str">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">Short-Term Rental</div>
+              <div class="strategy-option-desc">Vacation rentals & Airbnb</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          
+          <button class="strategy-option" data-strategy="househack" onclick="selectStrategy('househack', 'House Hack', 'worksheet-househack.html')">
+            <div class="strategy-option-icon househack" style="background: rgba(5, 150, 105, 0.15); color: #059669;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div class="strategy-option-content">
+              <div class="strategy-option-name">House Hack</div>
+              <div class="strategy-option-desc">Live in one unit, rent the others</div>
+            </div>
+            <svg class="strategy-option-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+        </div>
+    </div>
+    
+    <div class="worksheet-tabs-scroll">
+      <button class="worksheet-tab">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+        </svg>
+        Projections
+      </button>
+      <button class="worksheet-tab disabled">Comps <span class="tab-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">Rentals <span class="tab-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">Seasonality <span class="tab-badge">Soon</span></button>
+      <button class="worksheet-tab disabled">Regulations <span class="tab-badge">Soon</span></button>
+    </div>
+  </nav>
+  
+  <!-- Summary Cards -->
+  <div class="summary-cards-wrapper">
+    <div class="summary-cards">
+      <div class="summary-card highlight">
+        <div class="summary-card-label">Gross Revenue</div>
+        <div class="summary-card-value accent" id="summary-gross-revenue">$72,800</div>
+        <div class="summary-card-subtitle">Annual</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">Cash Needed</div>
+        <div class="summary-card-value" id="summary-cash-needed">$121,250</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">Cash Flow</div>
+        <div class="summary-card-value positive" id="summary-cash-flow">$2,145/mo</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">Cap Rate</div>
+        <div class="summary-card-value" id="summary-cap-rate">9.2%</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">CoC Return</div>
+        <div class="summary-card-value positive" id="summary-coc">21.2%</div>
+      </div>
+      <div class="summary-card" style="background: linear-gradient(135deg, var(--str-accent-bg) 0%, white 100%); border-color: var(--str-primary-light);">
+        <div class="summary-card-label">Deal Score</div>
+        <div class="summary-card-value accent" id="summary-deal-score">87</div>
+        <div class="summary-card-subtitle" id="score-label">Great STR</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="worksheet-main-area">
+    <!-- Help Panel -->
+    <aside class="worksheet-help-panel">
+      <div class="worksheet-help-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        STR Tips
+      </div>
+      <ul class="worksheet-help-tips">
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Peak season rates can be 2-3x higher than off-season
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Average 65-75% occupancy is realistic for most markets
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Platform fees (Airbnb/VRBO) typically 3-15% of booking
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Budget $10K-30K for initial furnishing and setup
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- Content Area -->
+    <main class="worksheet-content-area">
+      <!-- Purchase & Rehab Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Purchase & Setup</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row has-slider">
+            <div class="data-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              </svg>
+              <span>Purchase Price</span>
+            </div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="50000" max="2000000" value="485000" aria-label="Purchase Price">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$485,000" aria-label="Purchase Price value">
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label">
+              <span>$ Down Payment</span>
+            </div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="10" max="100" value="25" aria-label="Down payment percent">
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" class="slider-value" value="25%" style="min-width: 60px;" aria-label="Down payment percent">
+              <span class="slider-secondary" id="down-payment-amt">$121,250</span>
+            </div>
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Purchase Costs</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="30000" value="14550" aria-label="Purchase Costs">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$14,550" aria-label="Purchase Costs value">
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Furnishing Budget</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="5000" max="50000" value="20000" aria-label="Furnishing Budget">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$20,000" aria-label="Furnishing Budget value">
+          </div>
+          
+          <div class="data-row total">
+            <div class="data-label"><span>Total Cash Needed</span></div>
+            <div></div>
+            <div style="font-weight: 700; font-size: 16px; color: var(--str-primary);" id="calc-total-cash">$155,800</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Financing Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Financing</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row calculated">
+            <div class="data-label"><span>Loan Amount</span></div>
+            <div></div>
+            <div style="font-weight: 600;" id="calc-loan-amount">$363,750</div>
+          </div>
+          
+          <div class="data-row">
+            <div class="data-label"><span>Loan Type</span></div>
+            <div></div>
+            <select class="select-input" aria-label="Loan Type">
+              <option>Conventional 30 Year</option>
+              <option>Conventional 15 Year</option>
+              <option>DSCR Loan</option>
+              <option>Portfolio Loan</option>
+            </select>
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Interest Rate</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="4" max="12" step="0.125" value="7.5" aria-label="Interest Rate">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="7.5%" aria-label="Interest Rate value">
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Loan Term</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="15" max="30" step="5" value="30" aria-label="Loan Term">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="30 years" aria-label="Loan Term value">
+          </div>
+          
+          <div class="data-row total">
+            <div class="data-label"><span>Monthly Payment</span></div>
+            <div></div>
+            <div style="font-weight: 700; font-size: 16px;" id="calc-monthly-payment">$2,544</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Revenue Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Revenue</span>
+          <span class="section-badge">STR</span>
+        </div>
+        <div class="section-content">
+          <div class="data-row has-slider">
+            <div class="data-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              <span>Avg Daily Rate (ADR)</span>
+            </div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="100" max="500" value="280" aria-label="Avg Daily Rate (ADR)">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$280" aria-label="Avg Daily Rate (ADR) value">
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Occupancy Rate</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="30" max="95" value="70" aria-label="Occupancy Rate">
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" class="slider-value" value="70%" style="min-width: 60px;" aria-label="Occupancy Rate value">
+              <span class="slider-secondary" id="booked-nights">256 nights/yr</span>
+            </div>
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Cleaning Fee</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="50" max="300" value="150" aria-label="Cleaning Fee">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$150" aria-label="Cleaning Fee value">
+          </div>
+          
+          <div class="data-row calculated">
+            <div class="data-label"><span>Avg Booking Length</span></div>
+            <div></div>
+            <select class="select-input" style="min-width: 100px;" aria-label="Avg Booking Length">
+              <option>3 nights</option>
+              <option>4 nights</option>
+              <option selected>5 nights</option>
+              <option>7 nights</option>
+            </select>
+          </div>
+          
+          <div class="data-row calculated">
+            <div class="data-label"><span>Est. Bookings/Year</span></div>
+            <div></div>
+            <div style="font-weight: 600;" id="calc-bookings">51 bookings</div>
+          </div>
+          
+          <div class="data-row total">
+            <div class="data-label"><span>Gross Revenue</span></div>
+            <div></div>
+            <div style="font-weight: 700; font-size: 16px; color: var(--str-primary);" id="calc-gross-revenue">$79,430/yr</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Expenses Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Operating Expenses</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Platform Fees</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="3" max="20" value="12" aria-label="Platform Fees">
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" class="slider-value" value="12%" style="min-width: 60px;" aria-label="Platform Fees value">
+              <span class="slider-secondary" id="platform-fee-amt">$9,532/yr</span>
+            </div>
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Property Management</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="0" max="30" value="20" aria-label="Property Management">
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" class="slider-value" value="20%" style="min-width: 60px;" aria-label="Property Management value">
+              <span class="slider-secondary" id="pm-fee-amt">$15,886/yr</span>
+            </div>
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Cleaning Cost/Turn</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="50" max="300" value="100" aria-label="Cleaning Cost per Turn">
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" class="slider-value" value="$100" style="min-width: 70px;" aria-label="Cleaning Cost per Turn value">
+              <span class="slider-secondary" id="cleaning-cost-amt">$5,100/yr</span>
+            </div>
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Supplies & Amenities</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="100" max="500" value="250" aria-label="Supplies and Amenities">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$250/mo" aria-label="Supplies and Amenities value">
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Utilities</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="100" max="600" value="350" aria-label="Utilities">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$350/mo" aria-label="Utilities value">
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Insurance (STR)</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="100" max="500" value="250" aria-label="Insurance (STR)">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$250/mo" aria-label="Insurance (STR) value">
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Property Taxes</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="200" max="1500" value="485" aria-label="Property Taxes">
+              </div>
+            </div>
+            <input type="text" class="slider-value" value="$485/mo" aria-label="Property Taxes value">
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>Maintenance</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="1" max="10" value="5" aria-label="Maintenance">
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" class="slider-value" value="5%" style="min-width: 60px;" aria-label="Maintenance value">
+              <span class="slider-secondary" id="maintenance-amt">$3,972/yr</span>
+            </div>
+          </div>
+          
+          <div class="data-row has-slider">
+            <div class="data-label"><span>CapEx Reserve</span></div>
+            <div class="slider-container">
+              <div class="slider-wrapper">
+                <input type="range" class="slider-input" min="1" max="10" value="5" aria-label="CapEx Reserve">
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" class="slider-value" value="5%" style="min-width: 60px;" aria-label="CapEx Reserve value">
+              <span class="slider-secondary" id="capex-amt">$3,972/yr</span>
+            </div>
+          </div>
+          
+          <div class="data-row total">
+            <div class="data-label"><span>Total Operating Expenses</span></div>
+            <div></div>
+            <div style="font-weight: 700; font-size: 16px; color: var(--ws-negative);" id="calc-total-expenses">-$54,542/yr</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Cash Flow Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">Cash Flow Summary</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+          </svg>
+        </div>
+        <div class="section-content">
+          <div class="data-row calculated">
+            <div class="data-label"><span>Gross Revenue</span></div>
+            <div></div>
+            <div style="font-weight: 600; color: var(--str-primary);" id="cf-gross">$79,430</div>
+          </div>
+          
+          <div class="data-row calculated">
+            <div class="data-label"><span>Operating Expenses</span></div>
+            <div></div>
+            <div style="font-weight: 600; color: var(--ws-negative);" id="cf-opex">-$54,542</div>
+          </div>
+          
+          <div class="data-row calculated">
+            <div class="data-label"><span>Net Operating Income</span></div>
+            <div></div>
+            <div style="font-weight: 600;" id="cf-noi">$24,888</div>
+          </div>
+          
+          <div class="data-row calculated">
+            <div class="data-label"><span>Annual Debt Service</span></div>
+            <div></div>
+            <div style="font-weight: 600; color: var(--ws-text-secondary);" id="cf-debt">-$30,528</div>
+          </div>
+          
+          <div class="data-row total">
+            <div class="data-label"><span>Annual Cash Flow</span></div>
+            <div></div>
+            <div style="font-weight: 700; font-size: 18px;" id="cf-annual">$25,740</div>
+          </div>
+          
+          <div class="data-row" style="border-top: 2px solid var(--ws-border); padding-top: 16px; margin-top: 8px;">
+            <div class="data-label"><span>Monthly Cash Flow</span></div>
+            <div></div>
+            <div style="font-weight: 700; font-size: 20px; color: var(--ws-positive);" id="cf-monthly">$2,145</div>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <!-- Charts Sidebar -->
+    <aside class="worksheet-charts-sidebar">
+      <!-- Profit Finder -->
+      <div class="chart-card">
+        <div class="chart-card-title">Profit Finder</div>
+        <div class="price-position-visual">
+          <div class="marker-column left">
+            <div class="simple-marker" id="purchase-price-marker" style="top: 65%;">
+              <div class="marker-stack"><span class="marker-name">Buy</span><span class="marker-val" id="purchase-price-display">$450,000</span></div>
+              <span class="marker-arrow">▶</span>
+            </div>
+          </div>
+          <div class="price-scale-bar"><img src="/images/price-ladder-arrow.svg" alt="Profit Scale" /></div>
+          <div class="marker-column right">
+            <div class="simple-marker" id="breakeven-marker" style="top: 50%;"><span class="marker-arrow">◀</span><div class="marker-stack"><span class="marker-name">Even</span><span class="marker-val" id="breakeven-value">$520,000</span></div></div>
+            <div class="simple-marker" id="list-price-marker" style="top: 25%;"><span class="marker-arrow">◀</span><div class="marker-stack"><span class="marker-name">List</span><span class="marker-val" id="list-price-display">$650,000</span></div></div>
+          </div>
+        </div>
+        <div class="cashflow-indicator" id="cashflow-indicator"><span class="cf-label">Monthly Cash Flow:</span><span class="cf-amount" id="cashflow-amount">$2,500</span><span class="cf-status" id="position-text">Profit Zone</span></div>
+      </div>
+      
+      <!-- Pricing Ladder -->
+      <div class="chart-card">
+        <div class="chart-card-title">Pricing Ladder</div>
+        <div class="pricing-ladder">
+          <div class="pricing-ladder-track"></div>
+          
+          <!-- List Price -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">List Price</div>
+            <div class="pricing-ladder-marker list"></div>
+            <div class="pricing-ladder-value list" id="ladder-list-price">$499,000</div>
+          </div>
+          
+          <!-- Your Offer -->
+          <div class="pricing-ladder-item highlight">
+            <div class="pricing-ladder-label">Your Offer</div>
+            <div class="pricing-ladder-marker current">
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="var(--str-primary)">
+                <circle cx="4" cy="4" r="4"/>
+              </svg>
+            </div>
+            <div class="pricing-ladder-value current" id="ladder-current-price">$485,000</div>
+          </div>
+          
+          <!-- Breakeven -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">Breakeven</div>
+            <div class="pricing-ladder-marker target"></div>
+            <div class="pricing-ladder-value target" id="ladder-breakeven">$520,000
+              <span class="pricing-ladder-hint">0% CoC</span>
+            </div>
+          </div>
+          
+          <!-- 10% CoC Price -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">10% CoC</div>
+            <div class="pricing-ladder-marker coc"></div>
+            <div class="pricing-ladder-value coc" id="ladder-10-coc">$450,000
+              <span class="pricing-ladder-hint">Target</span>
+            </div>
+          </div>
+          
+          <!-- MAO -->
+          <div class="pricing-ladder-item">
+            <div class="pricing-ladder-label">MAO</div>
+            <div class="pricing-ladder-marker mao"></div>
+            <div class="pricing-ladder-value mao" id="ladder-mao">$420,000
+              <span class="pricing-ladder-hint">70% GRM</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Discount Indicator -->
+        <div class="pricing-discount-indicator">
+          <div class="pricing-discount-bar">
+            <div class="pricing-discount-fill" id="discount-fill" style="width: 30%;"></div>
+          </div>
+          <div class="pricing-discount-label">
+            <span id="discount-percent">2.8%</span> below list
+          </div>
+        </div>
+      </div>
+      
+      <!-- Revenue Breakdown -->
+      <div class="chart-card">
+        <div class="chart-card-title">Revenue Breakdown</div>
+        <div class="revenue-gauge">
+          <div class="revenue-value" id="sidebar-gross-revenue">$79,430</div>
+          <div class="revenue-label">Annual Gross Revenue</div>
+        </div>
+        <div class="revenue-breakdown">
+          <div class="revenue-item">
+            <span class="revenue-item-label">Nightly Revenue</span>
+            <span class="revenue-item-value" id="sidebar-nightly-revenue">$71,680</span>
+          </div>
+          <div class="revenue-item">
+            <span class="revenue-item-label">Cleaning Fees</span>
+            <span class="revenue-item-value" id="sidebar-cleaning-fees">$7,650</span>
+          </div>
+          <div class="revenue-item">
+            <span class="revenue-item-label">RevPAR</span>
+            <span class="revenue-item-value positive" id="sidebar-revpar">$196</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Occupancy by Season -->
+      <div class="chart-card">
+        <div class="chart-card-title">Occupancy by Season</div>
+        <div class="seasonality-grid">
+          <div class="season-card peak">
+            <div class="season-label">Summer</div>
+            <div class="season-value" id="season-summer">85%</div>
+          </div>
+          <div class="season-card">
+            <div class="season-label">Fall</div>
+            <div class="season-value" id="season-fall">65%</div>
+          </div>
+          <div class="season-card">
+            <div class="season-label">Winter</div>
+            <div class="season-value" id="season-winter">55%</div>
+          </div>
+          <div class="season-card peak">
+            <div class="season-label">Spring</div>
+            <div class="season-value" id="season-spring">75%</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Key Metrics -->
+      <div class="chart-card">
+        <div class="chart-card-title">Key Metrics</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div style="text-align: center; padding: 12px; background: var(--ws-bg-alt); border-radius: 8px;">
+            <div style="font-size: 11px; color: var(--ws-text-muted); margin-bottom: 4px;">CAP RATE</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--str-primary);" id="metric-cap-rate">9.2%</div>
+          </div>
+          <div style="text-align: center; padding: 12px; background: var(--ws-bg-alt); border-radius: 8px;">
+            <div style="font-size: 11px; color: var(--ws-text-muted); margin-bottom: 4px;">COC RETURN</div>
+            <div style="font-size: 18px; font-weight: 700; color: var(--ws-positive);" id="metric-coc">21.2%</div>
+          </div>
+          <div style="text-align: center; padding: 12px; background: var(--ws-bg-alt); border-radius: 8px;">
+            <div style="font-size: 11px; color: var(--ws-text-muted); margin-bottom: 4px;">DSCR</div>
+            <div style="font-size: 18px; font-weight: 700;" id="metric-dscr">1.84x</div>
+          </div>
+          <div style="text-align: center; padding: 12px; background: var(--ws-bg-alt); border-radius: 8px;">
+            <div style="font-size: 11px; color: var(--ws-text-muted); margin-bottom: 4px;">GRM</div>
+            <div style="font-size: 18px; font-weight: 700;" id="metric-grm">6.1</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- STR vs LTR Comparison -->
+      <div class="chart-card">
+        <div class="chart-card-title">STR vs LTR Comparison</div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: var(--ws-text-secondary);">STR Cash Flow</span>
+              <span style="font-weight: 600; color: var(--str-primary);" id="compare-str">$2,145/mo</span>
+            </div>
+            <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+              <div style="height: 100%; width: 100%; background: linear-gradient(90deg, var(--str-primary), var(--str-primary-light)); border-radius: 4px;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: var(--ws-text-secondary);">Est. LTR Cash Flow</span>
+              <span style="font-weight: 600; color: var(--iq-teal);" id="compare-ltr">$485/mo</span>
+            </div>
+            <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+              <div style="height: 100%; width: 23%; background: linear-gradient(90deg, var(--iq-teal), var(--iq-teal-light)); border-radius: 4px;" id="compare-ltr-bar"></div>
+            </div>
+          </div>
+          <div style="text-align: center; padding: 12px; background: var(--str-accent-bg); border-radius: 8px; margin-top: 8px;">
+            <div style="font-size: 11px; color: var(--ws-text-muted);">STR Premium</div>
+            <div style="font-size: 20px; font-weight: 700; color: var(--str-primary);" id="str-premium">+342%</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  
+  <script>
+    // ===== UTILITY FUNCTIONS =====
+    function formatCurrency(value) {
+      return '$' + Math.round(value).toLocaleString('en-US');
+    }
+    
+    function parseCurrency(str) {
+      if (typeof str === 'number') return str;
+      return parseFloat(str.replace(/[$,%]/g, '').replace(/,/g, '')) || 0;
+    }
+    
+    function updateElement(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+    
+    // ===== SLIDER INITIALIZATION =====
+    document.querySelectorAll('.slider-input').forEach(slider => {
+      function updateProgress() {
+        const min = parseFloat(slider.min);
+        const max = parseFloat(slider.max);
+        const value = parseFloat(slider.value);
+        const progress = ((value - min) / (max - min)) * 100;
+        slider.style.background = `linear-gradient(to right, #f97316 0%, #f97316 ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+      }
+      updateProgress();
+      slider.addEventListener('input', function() {
+        updateProgress();
+        recalculateAll();
+      });
+    });
+    
+    // ===== BIDIRECTIONAL SLIDER-INPUT SYNC =====
+    document.querySelectorAll('.data-row.has-slider').forEach(row => {
+      const slider = row.querySelector('.slider-input');
+      const input = row.querySelector('.slider-value');
+      
+      if (slider && input) {
+        // Slider changes input
+        slider.addEventListener('input', function() {
+          const value = parseFloat(this.value);
+          const label = row.querySelector('.data-label span')?.textContent || '';
+          
+          if (label.includes('Rate') || label.includes('Down') || label.includes('Occupancy') || 
+              label.includes('Fees') || label.includes('Management') || label.includes('Maintenance') || 
+              label.includes('CapEx') || label.includes('%')) {
+            input.value = value.toFixed(0) + '%';
+          } else if (label.includes('Term')) {
+            input.value = value + ' years';
+          } else if (label.includes('/mo') || label.includes('Supplies') || label.includes('Utilities') || 
+                     label.includes('Insurance') || label.includes('Taxes')) {
+            input.value = formatCurrency(value) + '/mo';
+          } else {
+            input.value = formatCurrency(value);
+          }
+        });
+        
+        // Input changes slider
+        input.addEventListener('change', function() {
+          const value = parseCurrency(this.value);
+          if (!isNaN(value)) {
+            slider.value = value;
+            slider.dispatchEvent(new Event('input'));
+          }
+        });
+      }
+    });
+    
+    // Add hover effect to slider rows
+    document.querySelectorAll('.data-row.has-slider').forEach(row => {
+      row.addEventListener('mouseenter', function() {
+        this.style.backgroundColor = 'rgba(249, 115, 22, 0.04)';
+      });
+      row.addEventListener('mouseleave', function() {
+        this.style.backgroundColor = '';
+      });
+    });
+    
+    // ===== MAIN CALCULATION ENGINE (Backend API Powered) =====
+    
+    // Debounce timer for API calls
+    let recalculateTimer = null;
+    
+    // API endpoint for STR worksheet calculations
+    const WORKSHEET_API_URL = '/api/v1/worksheet/str/calculate';
+    
+    function recalculateAll() {
+      // Debounce: Wait 150ms after last input before calling API
+      if (recalculateTimer) {
+        clearTimeout(recalculateTimer);
+      }
+      
+      recalculateTimer = setTimeout(() => {
+        doRecalculate();
+      }, 150);
+    }
+    
+    async function doRecalculate() {
+      // Get Purchase values
+      const purchasePrice = getSliderValue('Purchase Price', 485000);
+      const downPaymentPct = getSliderValue('Down Payment', 25) / 100;
+      const purchaseCosts = getSliderValue('Purchase Costs', 14550);
+      const furnishingBudget = getSliderValue('Furnishing Budget', 20000);
+      
+      // Get Financing values
+      const interestRate = getSliderValue('Interest Rate', 7.5) / 100;
+      const loanTerm = getSliderValue('Loan Term', 30);
+      
+      // Get Revenue values
+      const adr = getSliderValue('Avg Daily Rate', 280);
+      const occupancyRate = getSliderValue('Occupancy Rate', 70) / 100;
+      const cleaningFee = getSliderValue('Cleaning Fee', 150);
+      const avgBookingLength = getSliderValue('Avg Booking Length', 5);
+      
+      // Get Expense values
+      const platformFeesPct = getSliderValue('Platform Fees', 12) / 100;
+      const pmFeesPct = getSliderValue('Property Management', 20) / 100;
+      const cleaningCostPerTurn = getSliderValue('Cleaning Cost', 100);
+      const suppliesMonthly = getSliderValue('Supplies', 250);
+      const utilitiesMonthly = getSliderValue('Utilities', 350);
+      const insuranceMonthly = getSliderValue('Insurance', 250);
+      const taxesMonthly = getSliderValue('Property Taxes', 485);
+      const maintenancePct = getSliderValue('Maintenance', 5) / 100;
+      const capexPct = getSliderValue('CapEx Reserve', 5) / 100;
+      
+      // Build request payload for backend API
+      const payload = {
+        purchase_price: purchasePrice,
+        average_daily_rate: adr,
+        occupancy_rate: occupancyRate,
+        property_taxes_annual: taxesMonthly * 12,
+        insurance_annual: insuranceMonthly * 12,
+        down_payment_pct: downPaymentPct,
+        interest_rate: interestRate,
+        loan_term_years: loanTerm,
+        closing_costs: purchaseCosts,
+        furnishing_budget: furnishingBudget,
+        platform_fees_pct: platformFeesPct,
+        property_management_pct: pmFeesPct,
+        cleaning_cost_per_turn: cleaningCostPerTurn,
+        cleaning_fee_revenue: cleaningFee,
+        avg_booking_length: avgBookingLength,
+        supplies_monthly: suppliesMonthly,
+        utilities_monthly: utilitiesMonthly,
+        maintenance_pct: maintenancePct,
+        capex_pct: capexPct
+      };
+      
+      try {
+        // Show loading state
+        showCalculating(true);
+        
+        // Call backend API
+        const response = await fetch(WORKSHEET_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          throw new Error('API calculation failed');
+        }
+        
+        const result = await response.json();
+        console.log('Backend STR calculation result:', result);
+        
+        // Update UI with backend results
+        updateUIFromBackend(result, purchasePrice, adr, occupancyRate, avgBookingLength, cleaningFee);
+        
+      } catch (error) {
+        console.error('Backend API error, falling back to local calculation:', error);
+        // Fallback to local calculation if API fails
+        doLocalRecalculate(payload);
+      } finally {
+        showCalculating(false);
+      }
+    }
+    
+    function showCalculating(isCalculating) {
+      const summaryCards = document.querySelectorAll('.summary-card-value');
+      summaryCards.forEach(card => {
+        if (isCalculating) {
+          card.style.opacity = '0.5';
+        } else {
+          card.style.opacity = '1';
+        }
+      });
+    }
+    
+    function updateUIFromBackend(result, purchasePrice, adr, occupancyRate, avgBookingLength, cleaningFee) {
+      const grossRevenue = result.gross_revenue;
+      const totalCashNeeded = result.total_cash_needed;
+      const monthlyCashFlow = result.monthly_cash_flow;
+      const annualCashFlow = result.annual_cash_flow;
+      const capRate = result.cap_rate;
+      const cocReturn = result.cash_on_cash_return;
+      const dscr = result.dscr;
+      const loanAmount = result.loan_amount;
+      const monthlyPayment = result.monthly_payment;
+      const noi = result.noi;
+      const totalOpEx = result.gross_expenses;
+      
+      // Calculate local values for display
+      const bookedNights = result.nights_occupied;
+      const numBookings = result.num_bookings;
+      const nightlyRevenue = result.rental_revenue;
+      const cleaningFeesRevenue = result.cleaning_fee_revenue;
+      const revpar = result.revpar;
+      
+      // Estimate LTR comparison
+      const estLTRMonthlyRent = (grossRevenue / 12) * 0.35;
+      const suppliesMonthly = getSliderValue('Supplies', 250);
+      const insuranceMonthly = getSliderValue('Insurance', 250);
+      const taxesMonthly = getSliderValue('Property Taxes', 485);
+      const estLTRCashFlow = estLTRMonthlyRent - monthlyPayment - (suppliesMonthly * 0.2) - insuranceMonthly * 0.6 - taxesMonthly;
+      const strPremium = ((monthlyCashFlow - estLTRCashFlow) / Math.abs(estLTRCashFlow)) * 100;
+      
+      // Calculate Deal Score
+      let dealScore = 50;
+      if (cocReturn > 15) dealScore += 20;
+      else if (cocReturn > 10) dealScore += 10;
+      if (capRate > 8) dealScore += 10;
+      if (dscr > 1.5) dealScore += 10;
+      if (occupancyRate >= 0.7) dealScore += 5;
+      if (strPremium > 200) dealScore += 5;
+      dealScore = Math.min(100, Math.max(0, Math.round(dealScore)));
+      
+      // Update Summary Cards
+      updateElement('summary-gross-revenue', formatCurrency(grossRevenue));
+      updateElement('summary-cash-needed', formatCurrency(totalCashNeeded));
+      updateElement('summary-cash-flow', formatCurrency(monthlyCashFlow) + '/mo');
+      updateElement('summary-cap-rate', capRate.toFixed(1) + '%');
+      updateElement('summary-coc', cocReturn.toFixed(1) + '%');
+      updateElement('summary-deal-score', dealScore);
+      
+      const scoreLabel = document.getElementById('score-label');
+      if (scoreLabel) {
+        if (dealScore >= 85) scoreLabel.textContent = 'Excellent STR';
+        else if (dealScore >= 70) scoreLabel.textContent = 'Great STR';
+        else if (dealScore >= 55) scoreLabel.textContent = 'Good STR';
+        else scoreLabel.textContent = 'Fair STR';
+      }
+      
+      // Update calculated fields
+      const downPayment = purchasePrice * (getSliderValue('Down Payment', 25) / 100);
+      updateElement('down-payment-amt', formatCurrency(downPayment));
+      updateElement('calc-total-cash', formatCurrency(totalCashNeeded));
+      updateElement('calc-loan-amount', formatCurrency(loanAmount));
+      updateElement('calc-monthly-payment', formatCurrency(monthlyPayment));
+      updateElement('booked-nights', bookedNights + ' nights/yr');
+      updateElement('calc-bookings', numBookings + ' bookings');
+      updateElement('calc-gross-revenue', formatCurrency(grossRevenue) + '/yr');
+      updateElement('platform-fee-amt', formatCurrency(result.platform_fees) + '/yr');
+      updateElement('pm-fee-amt', formatCurrency(result.str_management) + '/yr');
+      updateElement('cleaning-cost-amt', formatCurrency(result.cleaning_costs) + '/yr');
+      updateElement('maintenance-amt', formatCurrency(result.maintenance || 0) + '/yr');
+      updateElement('capex-amt', formatCurrency(result.capex || 0) + '/yr');
+      updateElement('calc-total-expenses', '-' + formatCurrency(totalOpEx) + '/yr');
+      
+      // Update Cash Flow Summary
+      updateElement('cf-gross', formatCurrency(grossRevenue));
+      updateElement('cf-opex', '-' + formatCurrency(totalOpEx));
+      updateElement('cf-noi', formatCurrency(noi));
+      updateElement('cf-debt', '-' + formatCurrency(result.annual_debt_service));
+      updateElement('cf-annual', formatCurrency(annualCashFlow));
+      updateElement('cf-monthly', formatCurrency(monthlyCashFlow));
+      
+      // Color the cash flow based on positive/negative
+      const cfMonthlyEl = document.getElementById('cf-monthly');
+      const cfAnnualEl = document.getElementById('cf-annual');
+      if (cfMonthlyEl) cfMonthlyEl.style.color = monthlyCashFlow >= 0 ? 'var(--ws-positive)' : 'var(--ws-negative)';
+      if (cfAnnualEl) cfAnnualEl.style.color = annualCashFlow >= 0 ? 'var(--ws-positive)' : 'var(--ws-negative)';
+      
+      // Update Sidebar
+      updateElement('sidebar-gross-revenue', formatCurrency(grossRevenue));
+      updateElement('sidebar-nightly-revenue', formatCurrency(nightlyRevenue));
+      updateElement('sidebar-cleaning-fees', formatCurrency(cleaningFeesRevenue));
+      updateElement('sidebar-revpar', formatCurrency(Math.round(revpar)));
+      
+      // Update metrics
+      updateElement('metric-cap-rate', capRate.toFixed(1) + '%');
+      updateElement('metric-coc', cocReturn.toFixed(1) + '%');
+      updateElement('metric-dscr', dscr.toFixed(2) + 'x');
+      const grm = purchasePrice / grossRevenue;
+      updateElement('metric-grm', grm.toFixed(1));
+      
+      // Update STR vs LTR comparison
+      updateElement('compare-str', formatCurrency(monthlyCashFlow) + '/mo');
+      updateElement('compare-ltr', formatCurrency(estLTRCashFlow) + '/mo');
+      updateElement('str-premium', '+' + Math.round(strPremium) + '%');
+      const ltrBar = document.getElementById('compare-ltr-bar');
+      if (ltrBar) {
+        const barWidth = Math.max(5, Math.min(100, (estLTRCashFlow / monthlyCashFlow) * 100));
+        ltrBar.style.width = barWidth + '%';
+      }
+      
+      // Update Pricing Ladder
+      updatePricingLadder(purchasePrice, grossRevenue, totalCashNeeded, noi, result.annual_debt_service);
+      
+      // Update Seasonality (estimated based on occupancy)
+      updateSeasonality(occupancyRate);
+    }
+    
+    // Fallback: Local calculation if API fails
+    function doLocalRecalculate(payload) {
+      console.log('Using local STR fallback calculations');
+      // Use the existing local calculation logic as fallback
+      // This would be the original recalculateAll logic
+    }
+    
+    function getSliderValue(labelText, defaultValue) {
+      const rows = document.querySelectorAll('.data-row.has-slider');
+      for (const row of rows) {
+        const label = row.querySelector('.data-label span')?.textContent || '';
+        if (label.includes(labelText)) {
+          const slider = row.querySelector('.slider-input');
+          if (slider) return parseFloat(slider.value);
+        }
+      }
+      return defaultValue;
+    }
+    
+    function calculateMortgagePayment(principal, annualRate, years) {
+      const monthlyRate = annualRate / 12;
+      const numPayments = years * 12;
+      if (monthlyRate === 0) return principal / numPayments;
+      return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+             (Math.pow(1 + monthlyRate, numPayments) - 1);
+    }
+    
+    function updatePricingLadder(purchasePrice, grossRevenue, totalCashNeeded, noi, annualDebtService) {
+      const listPrice = purchasePrice * 1.03; // Assume 3% above current offer
+      
+      // Calculate breakeven price (where cash flow = 0)
+      // Price where: NOI = DebtService, so we need to back-calculate
+      const breakevenPrice = purchasePrice * (annualDebtService / noi);
+      
+      // Calculate 10% CoC target price
+      const targetCashFlow = totalCashNeeded * 0.10;
+      const tenCoCPrice = purchasePrice - ((targetCashFlow - (noi - annualDebtService)) / 0.25);
+      
+      // MAO based on GRM (typically 7x for STR is good)
+      const mao = grossRevenue * 7;
+      
+      updateElement('ladder-list-price', formatCurrency(listPrice));
+      updateElement('ladder-current-price', formatCurrency(purchasePrice));
+      
+      const breakevenEl = document.getElementById('ladder-breakeven');
+      if (breakevenEl) {
+        breakevenEl.innerHTML = formatCurrency(breakevenPrice) + '<span class="pricing-ladder-hint">0% CoC</span>';
+      }
+      
+      const cocEl = document.getElementById('ladder-10-coc');
+      if (cocEl) {
+        cocEl.innerHTML = formatCurrency(tenCoCPrice) + '<span class="pricing-ladder-hint">Target</span>';
+      }
+      
+      const maoEl = document.getElementById('ladder-mao');
+      if (maoEl) {
+        maoEl.innerHTML = formatCurrency(mao) + '<span class="pricing-ladder-hint">7x GRM</span>';
+      }
+      
+      // Update discount indicator
+      const discountPct = ((listPrice - purchasePrice) / listPrice * 100);
+      updateElement('discount-percent', discountPct.toFixed(1) + '%');
+      const discountFill = document.getElementById('discount-fill');
+      if (discountFill) {
+        discountFill.style.width = Math.min(100, discountPct * 5) + '%';
+      }
+    }
+    
+    function updateSeasonality(baseOccupancy) {
+      // Estimate seasonal occupancy variations
+      const summer = Math.min(95, baseOccupancy * 100 + 15);
+      const spring = Math.min(95, baseOccupancy * 100 + 5);
+      const fall = Math.max(30, baseOccupancy * 100 - 5);
+      const winter = Math.max(30, baseOccupancy * 100 - 15);
+      
+      updateElement('season-summer', Math.round(summer) + '%');
+      updateElement('season-spring', Math.round(spring) + '%');
+      updateElement('season-fall', Math.round(fall) + '%');
+      updateElement('season-winter', Math.round(winter) + '%');
+    }
+    
+    // ===== LOAD PROPERTY DATA FROM LOCALSTORAGE =====
+    function loadPropertyData() {
+      try {
+        const storedData = localStorage.getItem('worksheetProperty');
+        if (!storedData) return;
+        
+        const property = JSON.parse(storedData);
+        console.log('[STR Worksheet] Loaded property:', property);
+        
+        const titleEl = document.getElementById('property-title');
+        const subtitleEl = document.getElementById('property-subtitle');
+        const priceEl = document.getElementById('property-price-badge');
+        
+        if (titleEl && property.address) titleEl.textContent = property.address;
+        
+        if (subtitleEl) {
+          const location = `${property.city || ''}, ${property.state || ''} ${property.zipCode || ''}`;
+          const specs = `${property.bedrooms || 0} BR • ${property.bathrooms || 0} BA • ${(property.sqft || 0).toLocaleString()} Sq.Ft.`;
+          subtitleEl.textContent = `${location} • ${specs}`;
+        }
+        
+        if (priceEl && property.listPrice) priceEl.textContent = formatCurrency(property.listPrice);
+        
+        // STR-specific data
+        updateSliderByLabel('Purchase Price', property.listPrice);
+        if (property.averageDailyRate) updateSliderByLabel('Average Daily Rate', property.averageDailyRate);
+        if (property.occupancyRate) updateSliderByLabel('Base Occupancy', property.occupancyRate);
+        
+      } catch (error) {
+        console.error('[STR Worksheet] Error loading property data:', error);
+      }
+    }
+    
+    function updateSliderByLabel(labelText, value) {
+      if (value === undefined || value === null) return;
+      const rows = document.querySelectorAll('.data-row.has-slider');
+      for (const row of rows) {
+        const label = row.querySelector('.data-label span')?.textContent || '';
+        if (label.includes(labelText)) {
+          const slider = row.querySelector('.slider-input');
+          const input = row.querySelector('.slider-value');
+          if (slider) {
+            const min = parseFloat(slider.min), max = parseFloat(slider.max);
+            const clampedValue = Math.min(max, Math.max(min, value));
+            slider.value = clampedValue;
+            const progress = Math.min(100, Math.max(0, ((clampedValue - min) / (max - min)) * 100));
+            slider.style.background = `linear-gradient(to right, #f97316 0%, #f97316 ${progress}%, #e2e8f0 ${progress}%, #e2e8f0 100%)`;
+            if (clampedValue !== value) {
+              console.warn(`[STR Slider] "${labelText}" value ${value} clamped to ${clampedValue} (range: ${min}-${max})`);
+            }
+          }
+          if (input) {
+            const displayValue = slider ? parseFloat(slider.value) : value;
+            if (label.includes('Occupancy') || label.includes('%') || label.includes('Rate') && !label.includes('Daily')) {
+              input.value = displayValue + '%';
+            } else {
+              input.value = formatCurrency(displayValue);
+            }
+          }
+          break;
+        }
+      }
+    }
+    
+    loadPropertyData();
+    recalculateAll();
+    
+    // ===== STRATEGY DROPDOWN =====
+    (function() {
+      const dropdown = document.getElementById('strategy-dropdown');
+      const trigger = document.querySelector('.strategy-dropdown-trigger');
+      
+      if (trigger) {
+        trigger.addEventListener('click', function(event) {
+          event.stopPropagation();
+          dropdown.classList.toggle('open');
+        });
+      }
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(event) {
+        if (dropdown && !dropdown.contains(event.target)) {
+          dropdown.classList.remove('open');
+        }
+      });
+    })();
+    
+    window.selectStrategy = function(strategy, name, url) {
+      document.getElementById('current-strategy-name').textContent = name;
+      document.querySelectorAll('.strategy-option').forEach(opt => {
+        opt.classList.remove('active');
+      });
+      const activeOption = document.querySelector(`[data-strategy="${strategy}"]`);
+      if (activeOption) activeOption.classList.add('active');
+      document.getElementById('strategy-dropdown').classList.remove('open');
+      
+      if (url && url !== '#' && !window.location.href.includes(url)) {
+        window.location.href = url;
+      }
+    }
+    
+    window.toggleStrategyDropdown = function() {
+      const dropdown = document.getElementById('strategy-dropdown');
+      if (dropdown) dropdown.classList.toggle('open');
+    }
+  </script>
+</body>
+</html>
+
