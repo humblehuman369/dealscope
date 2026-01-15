@@ -195,62 +195,87 @@ function PropertyContent() {
     fetchProperty()
   }, [addressParam])
 
-  // Map strategy IDs to worksheet HTML files
-  const WORKSHEET_URLS: Record<StrategyId, string> = {
-    ltr: '/worksheet-preview.html',
-    str: '/worksheet-str.html',
-    brrrr: '/worksheet-brrrr.html',
-    flip: '/worksheet-flip.html',
-    house_hack: '/worksheet-househack.html',
-    wholesale: '/worksheet-wholesale.html',
+  // Map strategy IDs to React worksheet routes
+  const STRATEGY_ROUTE_MAP: Record<StrategyId, string> = {
+    ltr: 'ltr',
+    str: 'str',
+    brrrr: 'brrrr',
+    flip: 'flip',
+    house_hack: 'househack',
+    wholesale: 'wholesale',
   }
 
-  // Handle strategy selection - navigate directly to worksheet
-  const handleSelectStrategy = (strategyId: StrategyId) => {
-    const worksheetUrl = WORKSHEET_URLS[strategyId]
-    if (worksheetUrl && property) {
-      // Store property data in localStorage for worksheet to use
-      const worksheetData = {
-        // Property identification
-        address: property.address,
-        city: property.city,
-        state: property.state,
-        zipCode: property.zipCode,
-        fullAddress: `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`,
-        
-        // Property details
-        bedrooms: property.bedrooms,
-        bathrooms: property.bathrooms,
-        sqft: property.sqft,
-        thumbnailUrl: property.thumbnailUrl,
-        photos: property.photos,
-        
-        // Financial data
-        listPrice: property.listPrice,
-        monthlyRent: property.monthlyRent,
-        arv: property.arv || property.listPrice,
-        propertyTaxes: property.propertyTaxes,
-        insurance: property.insurance,
-        
-        // STR-specific
-        averageDailyRate: property.averageDailyRate,
-        occupancyRate: property.occupancyRate,
-        
-        // Metadata
-        strategy: strategyId,
-        timestamp: Date.now(),
+  // Handle strategy selection - save property and navigate to React worksheet
+  const handleSelectStrategy = async (strategyId: StrategyId) => {
+    if (!property) return
+    
+    // Require authentication for worksheets
+    if (!isAuthenticated) {
+      // Store intended strategy for after login
+      localStorage.setItem('pendingStrategy', strategyId)
+      localStorage.setItem('pendingAddress', addressParam || '')
+      setShowAuthModal('login')
+      return
+    }
+    
+    try {
+      // Save property first to get an ID
+      const token = localStorage.getItem('access_token')
+      const saveResponse = await fetch('/api/v1/properties/saved', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          address: property.address,
+          city: property.city,
+          state: property.state,
+          zip_code: property.zipCode,
+          property_data_snapshot: {
+            listPrice: property.listPrice,
+            monthlyRent: property.monthlyRent,
+            propertyTaxes: property.propertyTaxes,
+            insurance: property.insurance,
+            bedrooms: property.bedrooms,
+            bathrooms: property.bathrooms,
+            sqft: property.sqft,
+            arv: property.arv || property.listPrice,
+            averageDailyRate: property.averageDailyRate,
+            occupancyRate: property.occupancyRate,
+          },
+        }),
+      })
+      
+      let propertyId: string
+      
+      if (saveResponse.ok) {
+        const data = await saveResponse.json()
+        propertyId = data.id
+      } else if (saveResponse.status === 409) {
+        // Property already saved - get the existing ID
+        const existingResponse = await fetch(`/api/v1/properties/saved?address=${encodeURIComponent(property.address)}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        })
+        if (existingResponse.ok) {
+          const existingData = await existingResponse.json()
+          propertyId = existingData.id || existingData[0]?.id
+        } else {
+          throw new Error('Failed to get existing property')
+        }
+      } else {
+        throw new Error('Failed to save property')
       }
       
-      localStorage.setItem('worksheetProperty', JSON.stringify(worksheetData))
-      
-      // Navigate to the worksheet HTML file
-      window.location.href = worksheetUrl
-    } else {
-      // Fallback to old behavior if no worksheet exists
+      if (propertyId) {
+        // Navigate to React worksheet
+        const strategyRoute = STRATEGY_ROUTE_MAP[strategyId]
+        router.push(`/worksheet/${propertyId}/${strategyRoute}`)
+      }
+    } catch (err) {
+      console.error('Error navigating to worksheet:', err)
+      // Fallback: set strategy for display
       setSelectedStrategy(strategyId)
-      if (addressParam) {
-        router.push(`/property?address=${encodeURIComponent(addressParam)}&strategy=${strategyId}`)
-      }
     }
   }
 
