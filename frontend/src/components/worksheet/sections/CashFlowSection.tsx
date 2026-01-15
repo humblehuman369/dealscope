@@ -47,22 +47,22 @@ export function CashFlowSection() {
           </DataRow>
           
           <DataRow label="Vacancy">
-            <div className="value-group">
-              <span className="value-primary">
-                <EditableField
-                  value={assumptions.vacancyRate}
-                  onChange={(val) => updateAssumption('vacancyRate', val)}
-                  format="percent"
-                />
-              </span>
-              <span className="value-secondary">
-                <DisplayField 
-                  value={-derived.vacancy * multiplier} 
-                  format="currency"
-                  isNegative
-                />
-              </span>
-            </div>
+        <div className="value-group inline">
+          <span className="value-secondary">
+            <DisplayField 
+              value={-derived.vacancy * multiplier} 
+              format="currency"
+              isNegative
+            />
+          </span>
+          <span className="value-primary">
+            <EditableField
+              value={assumptions.vacancyRate}
+              onChange={(val) => updateAssumption('vacancyRate', val)}
+              format="percent"
+            />
+          </span>
+        </div>
           </DataRow>
           
           <DataRow label="Operating Income" isTotal>
@@ -91,48 +91,48 @@ export function CashFlowSection() {
           </DataRow>
           
           <DataRow label="Property Management" icon={<Users className="w-4 h-4" />}>
-            <div className="value-group">
-              <span className="value-primary">
-                <EditableField
-                  value={assumptions.managementPct}
-                  onChange={(val) => updateAssumption('managementPct', val)}
-                  format="percent"
-                />
-              </span>
-              <span className="value-secondary">
-                {formatValue(derived.propertyManagement)}
-              </span>
-            </div>
+        <div className="value-group inline">
+          <span className="value-secondary">
+            {formatValue(derived.propertyManagement)}
+          </span>
+          <span className="value-primary">
+            <EditableField
+              value={assumptions.managementPct}
+              onChange={(val) => updateAssumption('managementPct', val)}
+              format="percent"
+            />
+          </span>
+        </div>
           </DataRow>
           
           <DataRow label="Maintenance" icon={<Wrench className="w-4 h-4" />}>
-            <div className="value-group">
-              <span className="value-primary">
-                <EditableField
-                  value={assumptions.maintenancePct}
-                  onChange={(val) => updateAssumption('maintenancePct', val)}
-                  format="percent"
-                />
-              </span>
-              <span className="value-secondary">
-                {formatValue(derived.maintenance)}
-              </span>
-            </div>
+        <div className="value-group inline">
+          <span className="value-secondary">
+            {formatValue(derived.maintenance)}
+          </span>
+          <span className="value-primary">
+            <EditableField
+              value={assumptions.maintenancePct}
+              onChange={(val) => updateAssumption('maintenancePct', val)}
+              format="percent"
+            />
+          </span>
+        </div>
           </DataRow>
           
           <DataRow label="Capital Expenditures" icon={<PiggyBank className="w-4 h-4" />}>
-            <div className="value-group">
-              <span className="value-primary">
-                <EditableField
-                  value={assumptions.capexReservePct}
-                  onChange={(val) => updateAssumption('capexReservePct', val)}
-                  format="percent"
-                />
-              </span>
-              <span className="value-secondary">
-                {formatValue(derived.capex)}
-              </span>
-            </div>
+        <div className="value-group inline">
+          <span className="value-secondary">
+            {formatValue(derived.capex)}
+          </span>
+          <span className="value-primary">
+            <EditableField
+              value={assumptions.capexReservePct}
+              onChange={(val) => updateAssumption('capexReservePct', val)}
+              format="percent"
+            />
+          </span>
+        </div>
           </DataRow>
           
           <DataRow label="HOA Fees">

@@ -24,14 +24,16 @@ export function PurchaseRehabSection() {
       </DataRow>
       
       <DataRow label="Down Payment" icon={<DollarSign className="w-4 h-4" />}>
-        <div className="flex items-center gap-2">
-          <EditableField
-            value={assumptions.downPaymentPct}
-            onChange={(val) => updateAssumption('downPaymentPct', val)}
-            format="percent"
-          />
-          <span className="text-[var(--ws-text-muted)] text-sm">
-            ({new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(derived.downPayment)})
+        <div className="value-group inline">
+          <span className="value-secondary">
+            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(derived.downPayment)}
+          </span>
+          <span className="value-primary">
+            <EditableField
+              value={assumptions.downPaymentPct}
+              onChange={(val) => updateAssumption('downPaymentPct', val)}
+              format="percent"
+            />
           </span>
         </div>
       </DataRow>

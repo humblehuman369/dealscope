@@ -533,6 +533,13 @@
   gap: 2px;
 }
 
+.data-row .value-group.inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .data-row .value-primary {
   font-weight: 500;
   color: var(--ws-text-primary);
@@ -586,6 +593,15 @@
   transition: all 0.15s ease;
   width: auto;
   min-width: 80px;
+}
+
+.worksheet-container-v2.ltr-strategy .data-row > div:last-child {
+  min-width: 96px;
+}
+
+.worksheet-container-v2.ltr-strategy .editable-field input {
+  min-width: 64px;
+  max-width: 120px;
 }
 
 .editable-field input:hover {
