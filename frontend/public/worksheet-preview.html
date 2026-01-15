@@ -1326,18 +1326,57 @@
       color: var(--ws-text-muted);
     }
     
-    /* ===== PRICE POSITION - Profit vs Loss Visual ===== */
+    /* ===== PRICE POSITION - Left/Right Marker Layout ===== */
     .price-position-visual {
       display: flex;
-      gap: 16px;
-      padding: 12px;
+      align-items: stretch;
+      padding: 16px 8px;
+      min-height: 440px;
+      position: relative;
     }
     
-    /* The gradient scale bar */
-    .price-scale-bar {
+    /* Left side - Your Price marker (dynamic) */
+    .price-left-markers {
+      width: 100px;
       position: relative;
       flex-shrink: 0;
-      width: 120px;
+    }
+    
+    .left-marker {
+      position: absolute;
+      right: 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(0, 126, 167, 0.1);
+      border: 1px solid var(--iq-teal);
+      border-radius: 6px;
+      padding: 4px 8px;
+      transform: translateY(-50%);
+      transition: top 0.3s ease;
+    }
+    
+    .left-marker-label {
+      font-size: 10px;
+      color: var(--iq-teal);
+      font-weight: 600;
+    }
+    
+    .left-marker-value {
+      font-size: 11px;
+      color: var(--iq-teal);
+      font-weight: 700;
+    }
+    
+    .left-marker-arrow {
+      color: var(--iq-teal);
+      font-size: 10px;
+    }
+    
+    /* Center - The gradient bar */
+    .price-scale-bar {
+      width: 60px;
+      flex-shrink: 0;
     }
     
     .price-scale-bar img {
@@ -1346,132 +1385,107 @@
       height: 400px;
     }
     
-    /* Scale markers */
-    .scale-marker {
+    /* Right side - List Price & Breakeven markers */
+    .price-right-markers {
+      flex: 1;
+      position: relative;
+      min-width: 120px;
+    }
+    
+    .right-marker {
       position: absolute;
       left: 0;
-      right: 0;
       display: flex;
       align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transform: translateY(-50%);
       transition: top 0.3s ease;
-    }
-    
-    .scale-marker .marker-line {
-      width: 60px;
-      height: 3px;
-      flex-shrink: 0;
-    }
-    
-    .scale-marker .marker-tag {
-      font-size: 10px;
-      font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 4px;
       white-space: nowrap;
-      margin-left: 4px;
     }
     
-    /* List Price marker - red/orange */
-    .list-marker .marker-line {
-      background: #dc2626;
-    }
-    .list-marker .marker-tag {
+    .right-marker.list {
       background: rgba(220, 38, 38, 0.1);
+      border: 1px solid #dc2626;
+    }
+    
+    .right-marker.list .right-marker-arrow,
+    .right-marker.list .right-marker-label,
+    .right-marker.list .right-marker-value {
       color: #dc2626;
     }
     
-    /* Purchase Price marker - teal */
-    .purchase-marker .marker-line {
-      background: var(--iq-teal);
-      box-shadow: 0 0 8px rgba(0, 126, 167, 0.5);
+    .right-marker.breakeven {
+      background: rgba(100, 116, 139, 0.1);
+      border: 1px solid #64748b;
     }
-    .purchase-marker .marker-tag {
-      background: rgba(0, 126, 167, 0.15);
-      color: var(--iq-teal);
+    
+    .right-marker.breakeven .right-marker-arrow,
+    .right-marker.breakeven .right-marker-label,
+    .right-marker.breakeven .right-marker-value {
+      color: #64748b;
+    }
+    
+    .right-marker-arrow {
+      font-size: 10px;
+    }
+    
+    .right-marker-label {
+      font-size: 10px;
+      font-weight: 600;
+    }
+    
+    .right-marker-value {
+      font-size: 11px;
       font-weight: 700;
     }
     
-    /* Info panel on the right */
-    .price-info-panel {
-      flex: 1;
+    /* Cash Flow indicator at bottom */
+    .cashflow-indicator {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding-top: 40px;
-    }
-    
-    .info-row {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 10px 12px;
-      background: var(--ws-bg-alt);
+      justify-content: center;
+      gap: 12px;
+      padding: 12px 16px;
+      margin: 0 8px 8px;
       border-radius: 8px;
-    }
-    
-    .info-row.highlight {
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%);
       border: 1px solid rgba(16, 185, 129, 0.25);
     }
     
-    .info-row.highlight.negative {
+    .cashflow-indicator.negative {
       background: linear-gradient(135deg, rgba(220, 38, 38, 0.12) 0%, rgba(220, 38, 38, 0.04) 100%);
       border-color: rgba(220, 38, 38, 0.25);
     }
     
-    .info-label {
+    .cashflow-indicator .cf-label {
       font-size: 12px;
       color: var(--ws-text-muted);
     }
     
-    .info-value {
-      font-size: 14px;
+    .cashflow-indicator .cf-amount {
+      font-size: 18px;
       font-weight: 700;
-      color: var(--ws-text-primary);
-    }
-    
-    .info-row.highlight .info-value {
-      color: #10b981;
-      font-size: 16px;
-    }
-    
-    .info-row.highlight.negative .info-value {
-      color: #dc2626;
-    }
-    
-    /* Position indicator */
-    .position-indicator {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-    
-    .position-indicator.loss {
-      background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(220, 38, 38, 0.05) 100%);
-      border-color: rgba(220, 38, 38, 0.3);
-    }
-    
-    .indicator-icon {
-      font-size: 16px;
       color: #10b981;
     }
     
-    .position-indicator.loss .indicator-icon {
+    .cashflow-indicator.negative .cf-amount {
       color: #dc2626;
     }
     
-    .indicator-text {
-      font-size: 13px;
+    .cashflow-indicator .cf-status {
+      font-size: 12px;
       font-weight: 600;
       color: #10b981;
+      padding: 2px 8px;
+      background: rgba(16, 185, 129, 0.15);
+      border-radius: 10px;
     }
     
-    .position-indicator.loss .indicator-text {
+    .cashflow-indicator.negative .cf-status {
       color: #dc2626;
+      background: rgba(220, 38, 38, 0.15);
     }
     
     .pricing-scale-summary {
@@ -2411,38 +2425,40 @@
       <div class="chart-card">
         <div class="chart-card-title">Price Position</div>
         <div class="price-position-visual">
-          <!-- The gradient scale -->
-          <div class="price-scale-bar">
-            <img src="/images/price-ladder-arrow.svg" alt="Price Scale" />
-            
-            <!-- List Price Marker -->
-            <div class="scale-marker list-marker" id="list-price-marker">
-              <div class="marker-line"></div>
-              <div class="marker-tag">List: <span id="list-price-display">$723,600</span></div>
-            </div>
-            
-            <!-- Purchase Price Marker (Dynamic) -->
-            <div class="scale-marker purchase-marker" id="purchase-price-marker">
-              <div class="marker-line"></div>
-              <div class="marker-tag">You: <span id="purchase-price-display">$723,600</span></div>
+          <!-- Left side: Your Price (dynamic) -->
+          <div class="price-left-markers">
+            <div class="left-marker" id="purchase-price-marker">
+              <span class="left-marker-label">You:</span>
+              <span class="left-marker-value" id="purchase-price-display">$2,660,746</span>
+              <span class="left-marker-arrow">▶</span>
             </div>
           </div>
           
-          <!-- Info panel -->
-          <div class="price-info-panel">
-            <div class="info-row">
-              <span class="info-label">Breakeven Price</span>
-              <span class="info-value" id="breakeven-value">$650,000</span>
+          <!-- Center: The gradient bar -->
+          <div class="price-scale-bar">
+            <img src="/images/price-ladder-arrow.svg" alt="Price Scale" />
+          </div>
+          
+          <!-- Right side: List Price & Breakeven (static reference) -->
+          <div class="price-right-markers">
+            <div class="right-marker list" id="list-price-marker">
+              <span class="right-marker-arrow">◀</span>
+              <span class="right-marker-label">List:</span>
+              <span class="right-marker-value" id="list-price-display">$4,457,000</span>
             </div>
-            <div class="info-row highlight" id="cashflow-row">
-              <span class="info-label">Monthly Cash Flow</span>
-              <span class="info-value" id="cashflow-amount">$2,508</span>
-            </div>
-            <div class="position-indicator" id="position-indicator">
-              <span class="indicator-icon">●</span>
-              <span class="indicator-text" id="position-text">In Profit Zone</span>
+            <div class="right-marker breakeven" id="breakeven-marker">
+              <span class="right-marker-arrow">◀</span>
+              <span class="right-marker-label">Breakeven:</span>
+              <span class="right-marker-value" id="breakeven-value">$2,998,213</span>
             </div>
           </div>
+        </div>
+        
+        <!-- Cash Flow indicator -->
+        <div class="cashflow-indicator" id="cashflow-indicator">
+          <span class="cf-label">Monthly Cash Flow:</span>
+          <span class="cf-amount" id="cashflow-amount">$1,904</span>
+          <span class="cf-status" id="position-text">In Profit Zone</span>
         </div>
       </div>
       
@@ -2980,7 +2996,7 @@
       }
     }
     
-    // Update Price Position visual - positions markers relative to breakeven (center)
+    // Update Price Position visual - Left: Your Price, Right: List & Breakeven
     function updatePricingLadderFromBackend(purchasePrice, grossRentMonthly, result) {
       // Get prices
       const listPrice = window.propertyListPrice || 723600;
@@ -2996,60 +3012,61 @@
       }
       if (!breakevenPrice || breakevenPrice <= 0) breakevenPrice = listPrice * 0.90;
       
-      // Breakeven is at 50% (center of bar, y=200 in 400px SVG)
-      // Higher price = LOSS zone (top, red)
-      // Lower price = PROFIT zone (bottom, green)
+      // Breakeven line is at 50% (center of the 400px bar)
+      // Higher price = toward top (LOSS/red)
+      // Lower price = toward bottom (PROFIT/green)
       const breakevenCenter = 50;
       
-      // Function to convert price to position on the scale
-      // Uses breakeven as the center reference point
+      // Convert price to vertical position (%)
       function priceToPosition(price) {
-        // Calculate difference from breakeven as percentage
         const diffFromBreakeven = price - breakevenPrice;
-        const rangePercent = breakevenPrice * 0.4; // 40% of breakeven price = full scale range
-        
-        // Convert to position: higher price = lower % (toward top)
-        const offset = (diffFromBreakeven / rangePercent) * 40; // Max 40% movement from center
+        const rangePercent = breakevenPrice * 0.5; // 50% of breakeven = full range
+        const offset = (diffFromBreakeven / rangePercent) * 42;
         let position = breakevenCenter - offset;
-        
-        // Clamp to stay within visible gradient (10% to 90%)
-        return Math.max(10, Math.min(88, position));
+        return Math.max(8, Math.min(90, position));
       }
       
-      // Position List Price marker
-      const listMarker = document.getElementById('list-price-marker');
-      if (listMarker) {
-        listMarker.style.top = priceToPosition(listPrice) + '%';
-      }
-      
-      // Position Purchase Price marker
+      // Position Your Price marker (left side)
       const purchaseMarker = document.getElementById('purchase-price-marker');
       if (purchaseMarker) {
         purchaseMarker.style.top = priceToPosition(purchasePrice) + '%';
       }
       
+      // Position List Price marker (right side)
+      const listMarker = document.getElementById('list-price-marker');
+      if (listMarker) {
+        listMarker.style.top = priceToPosition(listPrice) + '%';
+      }
+      
+      // Position Breakeven marker (right side, at center)
+      const breakevenMarker = document.getElementById('breakeven-marker');
+      if (breakevenMarker) {
+        breakevenMarker.style.top = '50%'; // Always at center
+      }
+      
       // Update displayed values
-      updateElement('list-price-display', formatCurrency(listPrice));
       updateElement('purchase-price-display', formatCurrency(purchasePrice));
+      updateElement('list-price-display', formatCurrency(listPrice));
       updateElement('breakeven-value', formatCurrency(breakevenPrice));
       updateElement('cashflow-amount', formatCurrency(monthlyCashFlow));
       
-      // Update cash flow row styling
-      const cashflowRow = document.getElementById('cashflow-row');
-      if (cashflowRow) {
-        cashflowRow.className = 'info-row highlight' + (monthlyCashFlow < 0 ? ' negative' : '');
+      // Update cash flow indicator styling
+      const cashflowIndicator = document.getElementById('cashflow-indicator');
+      const positionText = document.getElementById('position-text');
+      
+      if (cashflowIndicator) {
+        if (monthlyCashFlow < 0) {
+          cashflowIndicator.className = 'cashflow-indicator negative';
+        } else {
+          cashflowIndicator.className = 'cashflow-indicator';
+        }
       }
       
-      // Update position indicator
-      const positionIndicator = document.getElementById('position-indicator');
-      const positionText = document.getElementById('position-text');
-      if (positionIndicator && positionText) {
+      if (positionText) {
         if (purchasePrice > breakevenPrice) {
-          positionIndicator.className = 'position-indicator loss';
-          positionText.textContent = 'In Loss Zone - Price Too High';
+          positionText.textContent = 'Loss Zone';
         } else {
-          positionIndicator.className = 'position-indicator';
-          positionText.textContent = 'In Profit Zone';
+          positionText.textContent = 'Profit Zone';
         }
       }
       
