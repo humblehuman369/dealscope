@@ -1160,10 +1160,10 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="50000" max="2000000" value="485000">
+                <input type="range" class="slider-input" min="50000" max="2000000" value="485000" aria-label="Purchase Price">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$485,000">
+            <input type="text" class="slider-value" value="$485,000" aria-label="Purchase Price value">
           </div>
           
           <div class="data-row has-slider">
@@ -1172,11 +1172,11 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="10" max="100" value="25">
+                <input type="range" class="slider-input" min="10" max="100" value="25" aria-label="Down payment percent">
               </div>
             </div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="text" class="slider-value" value="25%" style="min-width: 60px;">
+              <input type="text" class="slider-value" value="25%" style="min-width: 60px;" aria-label="Down payment percent">
               <span class="slider-secondary" id="down-payment-amt">$121,250</span>
             </div>
           </div>
@@ -1185,20 +1185,20 @@
             <div class="data-label"><span>Purchase Costs</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="30000" value="14550">
+                <input type="range" class="slider-input" min="0" max="30000" value="14550" aria-label="Purchase Costs">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$14,550">
+            <input type="text" class="slider-value" value="$14,550" aria-label="Purchase Costs value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Furnishing Budget</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="5000" max="50000" value="20000">
+                <input type="range" class="slider-input" min="5000" max="50000" value="20000" aria-label="Furnishing Budget">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$20,000">
+            <input type="text" class="slider-value" value="$20,000" aria-label="Furnishing Budget value">
           </div>
           
           <div class="data-row total">
@@ -1227,7 +1227,7 @@
           <div class="data-row">
             <div class="data-label"><span>Loan Type</span></div>
             <div></div>
-            <select class="select-input">
+            <select class="select-input" aria-label="Loan Type">
               <option>Conventional 30 Year</option>
               <option>Conventional 15 Year</option>
               <option>DSCR Loan</option>
@@ -1239,20 +1239,20 @@
             <div class="data-label"><span>Interest Rate</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="4" max="12" step="0.125" value="7.5">
+                <input type="range" class="slider-input" min="4" max="12" step="0.125" value="7.5" aria-label="Interest Rate">
               </div>
             </div>
-            <input type="text" class="slider-value" value="7.5%">
+            <input type="text" class="slider-value" value="7.5%" aria-label="Interest Rate value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Loan Term</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="15" max="30" step="5" value="30">
+                <input type="range" class="slider-input" min="15" max="30" step="5" value="30" aria-label="Loan Term">
               </div>
             </div>
-            <input type="text" class="slider-value" value="30 years">
+            <input type="text" class="slider-value" value="30 years" aria-label="Loan Term value">
           </div>
           
           <div class="data-row total">
@@ -1279,21 +1279,21 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="100" max="500" value="280">
+                <input type="range" class="slider-input" min="100" max="500" value="280" aria-label="Avg Daily Rate (ADR)">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$280">
+            <input type="text" class="slider-value" value="$280" aria-label="Avg Daily Rate (ADR) value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Occupancy Rate</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="30" max="95" value="70">
+                <input type="range" class="slider-input" min="30" max="95" value="70" aria-label="Occupancy Rate">
               </div>
             </div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="text" class="slider-value" value="70%" style="min-width: 60px;">
+              <input type="text" class="slider-value" value="70%" style="min-width: 60px;" aria-label="Occupancy Rate value">
               <span class="slider-secondary" id="booked-nights">256 nights/yr</span>
             </div>
           </div>
@@ -1302,16 +1302,16 @@
             <div class="data-label"><span>Cleaning Fee</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="50" max="300" value="150">
+                <input type="range" class="slider-input" min="50" max="300" value="150" aria-label="Cleaning Fee">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$150">
+            <input type="text" class="slider-value" value="$150" aria-label="Cleaning Fee value">
           </div>
           
           <div class="data-row calculated">
             <div class="data-label"><span>Avg Booking Length</span></div>
             <div></div>
-            <select class="select-input" style="min-width: 100px;">
+            <select class="select-input" style="min-width: 100px;" aria-label="Avg Booking Length">
               <option>3 nights</option>
               <option>4 nights</option>
               <option selected>5 nights</option>
@@ -1346,11 +1346,11 @@
             <div class="data-label"><span>Platform Fees</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="3" max="20" value="12">
+                <input type="range" class="slider-input" min="3" max="20" value="12" aria-label="Platform Fees">
               </div>
             </div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="text" class="slider-value" value="12%" style="min-width: 60px;">
+              <input type="text" class="slider-value" value="12%" style="min-width: 60px;" aria-label="Platform Fees value">
               <span class="slider-secondary" id="platform-fee-amt">$9,532/yr</span>
             </div>
           </div>
@@ -1359,11 +1359,11 @@
             <div class="data-label"><span>Property Management</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="30" value="20">
+                <input type="range" class="slider-input" min="0" max="30" value="20" aria-label="Property Management">
               </div>
             </div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="text" class="slider-value" value="20%" style="min-width: 60px;">
+              <input type="text" class="slider-value" value="20%" style="min-width: 60px;" aria-label="Property Management value">
               <span class="slider-secondary" id="pm-fee-amt">$15,886/yr</span>
             </div>
           </div>
@@ -1372,11 +1372,11 @@
             <div class="data-label"><span>Cleaning Cost/Turn</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="50" max="300" value="100">
+                <input type="range" class="slider-input" min="50" max="300" value="100" aria-label="Cleaning Cost per Turn">
               </div>
             </div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="text" class="slider-value" value="$100" style="min-width: 70px;">
+              <input type="text" class="slider-value" value="$100" style="min-width: 70px;" aria-label="Cleaning Cost per Turn value">
               <span class="slider-secondary" id="cleaning-cost-amt">$5,100/yr</span>
             </div>
           </div>
@@ -1385,51 +1385,51 @@
             <div class="data-label"><span>Supplies & Amenities</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="100" max="500" value="250">
+                <input type="range" class="slider-input" min="100" max="500" value="250" aria-label="Supplies and Amenities">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$250/mo">
+            <input type="text" class="slider-value" value="$250/mo" aria-label="Supplies and Amenities value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Utilities</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="100" max="600" value="350">
+                <input type="range" class="slider-input" min="100" max="600" value="350" aria-label="Utilities">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$350/mo">
+            <input type="text" class="slider-value" value="$350/mo" aria-label="Utilities value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Insurance (STR)</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="100" max="500" value="250">
+                <input type="range" class="slider-input" min="100" max="500" value="250" aria-label="Insurance (STR)">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$250/mo">
+            <input type="text" class="slider-value" value="$250/mo" aria-label="Insurance (STR) value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Property Taxes</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="200" max="1500" value="485">
+                <input type="range" class="slider-input" min="200" max="1500" value="485" aria-label="Property Taxes">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$485/mo">
+            <input type="text" class="slider-value" value="$485/mo" aria-label="Property Taxes value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Maintenance</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="1" max="10" value="5">
+                <input type="range" class="slider-input" min="1" max="10" value="5" aria-label="Maintenance">
               </div>
             </div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="text" class="slider-value" value="5%" style="min-width: 60px;">
+              <input type="text" class="slider-value" value="5%" style="min-width: 60px;" aria-label="Maintenance value">
               <span class="slider-secondary" id="maintenance-amt">$3,972/yr</span>
             </div>
           </div>
@@ -1438,11 +1438,11 @@
             <div class="data-label"><span>CapEx Reserve</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="1" max="10" value="5">
+                <input type="range" class="slider-input" min="1" max="10" value="5" aria-label="CapEx Reserve">
               </div>
             </div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="text" class="slider-value" value="5%" style="min-width: 60px;">
+              <input type="text" class="slider-value" value="5%" style="min-width: 60px;" aria-label="CapEx Reserve value">
               <span class="slider-secondary" id="capex-amt">$3,972/yr</span>
             </div>
           </div>
