@@ -1,0 +1,137 @@
+.strategy-option-icon.househack {
+  background: rgba(5, 150, 105, 0.15);
+  color: #059669;
+}
+
+.summary-card.deal-score {
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.1) 0%, white 100%);
+  border-color: var(--flip-primary-light);
+}
+
+.slider-value.compact {
+  min-width: 60px;
+}
+
+.spacer-60 {
+  width: 60px;
+}
+
+.value-secondary.emphasis {
+  font-weight: 600;
+  color: var(--flip-primary-dark);
+}
+
+.value-primary.positive {
+  color: var(--ws-positive);
+}
+
+.value-primary.large {
+  font-size: 18px;
+}
+
+.value-primary.metric {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.marker-top-70 {
+  top: 70%;
+}
+
+.marker-top-50 {
+  top: 50%;
+}
+
+.marker-top-30 {
+  top: 30%;
+}
+
+.pricing-discount-fill.fill-75 {
+  width: 75%;
+}
+
+.timeline-bar.width-100 {
+  width: 100%;
+}
+
+.timeline-bar.width-97 {
+  width: 97%;
+}
+
+.timeline-bar.width-94 {
+  width: 94%;
+}
+
+.timeline-bar.width-91 {
+  width: 91%;
+}
+
+.timeline-bar.width-88 {
+  width: 88%;
+}
+
+.timeline-bar.width-85 {
+  width: 85%;
+}
+
+.cash-breakdown {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mini-donut.breakdown {
+  background: conic-gradient(var(--flip-primary) 0deg 270deg, #64748b 270deg 290deg, #94a3b8 290deg 360deg);
+}
+
+.cash-breakdown-details {
+  flex: 1;
+}
+
+.cash-breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.cash-breakdown-row.last {
+  margin-bottom: 0;
+}
+
+.cash-breakdown-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.cash-breakdown-swatch.primary {
+  background: var(--flip-primary);
+}
+
+.cash-breakdown-swatch.neutral {
+  background: #64748b;
+}
+
+.cash-breakdown-swatch.muted {
+  background: #94a3b8;
+}
+
+.cash-breakdown-label {
+  font-size: 12px;
+  color: var(--ws-text-secondary);
+}
+
+.cash-breakdown-value {
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.profit-margin-positive {
+  color: var(--ws-positive);
+}
+
+.profit-margin-negative {
+  color: var(--ws-negative);
+}
