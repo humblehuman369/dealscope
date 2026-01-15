@@ -14,7 +14,10 @@ import { MultiYearProjections } from './sections/MultiYearProjections'
 import { CashFlowChart } from './charts/CashFlowChart'
 import { EquityChart } from './charts/EquityChart'
 import { ProfitFinder } from './charts/ProfitFinder'
-import { IncomeExpensesPie } from './charts/IncomeExpensesPie'
+import { LtrCashBreakdown } from './charts/LtrCashBreakdown'
+import { LtrCashFlowBreakdown } from './charts/LtrCashFlowBreakdown'
+import { ReturnsTargetsBars } from './charts/ReturnsTargetsBars'
+import { EquityPositionBar } from './charts/EquityPositionBar'
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 
 interface WorksheetLayoutProps {
@@ -138,7 +141,39 @@ export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLay
 
             <div className="chart-card">
               <div className="chart-card-title">Cash Breakdown</div>
-              <IncomeExpensesPie />
+              <LtrCashBreakdown
+                downPayment={derived.downPayment}
+                closingCosts={assumptions.closingCosts}
+                rehabCosts={assumptions.rehabCosts}
+                ltvPercent={derived.ltv}
+              />
+            </div>
+
+            <div className="chart-card">
+              <div className="chart-card-title">Cash Flow Breakdown</div>
+              <LtrCashFlowBreakdown
+                annualDebtService={derived.annualDebtService}
+                annualExpenses={derived.totalOperatingExpenses}
+                annualCashFlow={derived.annualCashFlow}
+              />
+            </div>
+
+            <div className="chart-card">
+              <div className="chart-card-title">Returns vs Targets</div>
+              <ReturnsTargetsBars
+                capRate={derived.capRate}
+                cashOnCash={derived.cashOnCash}
+                dscr={derived.dscr}
+                onePercentRule={derived.rentToValue}
+              />
+            </div>
+
+            <div className="chart-card">
+              <div className="chart-card-title">Equity Position</div>
+              <EquityPositionBar
+                equity={assumptions.purchasePrice - derived.loanAmount}
+                loan={derived.loanAmount}
+              />
             </div>
           </aside>
         </div>

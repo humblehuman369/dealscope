@@ -1305,6 +1305,7 @@
 .h-bar-fill.positive { background: var(--ws-positive); }
 .h-bar-fill.negative { background: var(--ws-negative); }
 .h-bar-fill.full { width: 100%; }
+.h-bar-fill.ltr { background: linear-gradient(90deg, var(--iq-teal), var(--iq-teal-light)); }
 
 /* ==========================================
    Key Metrics Grid
@@ -1566,6 +1567,156 @@
 
 .pricing-discount-fill.assignment {
   background: linear-gradient(90deg, var(--strategy-accent, #2563eb), var(--strategy-accent-light, #60a5fa));
+}
+
+/* ==========================================
+   LTR Cash Breakdown
+   ========================================== */
+.cash-breakdown {
+  padding: 16px;
+}
+
+.cash-breakdown-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cash-breakdown-details {
+  flex: 1;
+}
+
+.cash-breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.cash-breakdown-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.cash-breakdown-swatch.down { background: var(--iq-teal); }
+.cash-breakdown-swatch.costs { background: #f97316; }
+.cash-breakdown-swatch.rehab { background: #64748b; }
+
+.cash-breakdown-label {
+  color: var(--ws-text-secondary);
+}
+
+.cash-breakdown-value {
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.cash-breakdown-ltv {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ws-border-light);
+}
+
+.cash-breakdown-ltv-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 11px;
+  color: var(--ws-text-muted);
+}
+
+.cash-breakdown-ltv-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--iq-teal);
+}
+
+/* ==========================================
+   LTR Stacked Bars
+   ========================================== */
+.stacked-bar-container {
+  padding: 16px;
+}
+
+.stacked-bar {
+  display: flex;
+  height: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.stacked-bar-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: white;
+}
+
+.stacked-bar-segment.loan { background: #64748b; }
+.stacked-bar-segment.expenses { background: #f97316; }
+.stacked-bar-segment.cashflow { background: #007ea7; }
+.stacked-bar-segment.equity { background: #007ea7; }
+
+.stacked-legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 12px;
+}
+
+.stacked-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ws-text-secondary);
+}
+
+.stacked-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.stacked-legend-dot.loan { background: #64748b; }
+.stacked-legend-dot.expenses { background: #f97316; }
+.stacked-legend-dot.cashflow { background: #007ea7; }
+
+/* ==========================================
+   LTR Equity Summary
+   ========================================== */
+.equity-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.equity-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.equity-item.right {
+  align-items: flex-end;
+}
+
+.equity-amount {
+  font-weight: 600;
+  color: #007ea7;
+}
+
+.equity-amount.loan {
+  color: #64748b;
+}
+
+.equity-subtext {
+  color: var(--ws-text-muted);
+  font-size: 10px;
 }
 
 /* ==========================================
