@@ -104,6 +104,12 @@
       font-size: 13px;
       color: var(--ws-text-secondary);
     }
+
+    .worksheet-property-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
     
     .strategy-badge {
       display: inline-flex;
@@ -458,6 +464,11 @@
       color: var(--ws-text-primary);
       text-align: right;
     }
+
+    .slider-value.min-width-60 { min-width: 60px; }
+    .slider-value.min-width-70 { min-width: 70px; }
+    .slider-value.min-width-80 { min-width: 80px; }
+    .slider-value.min-width-90 { min-width: 90px; }
     
     .slider-value:focus {
       outline: none;
@@ -727,6 +738,10 @@
       border-radius: 4px;
       transition: width 0.3s ease;
     }
+
+    #recovery-fill {
+      width: 94%;
+    }
     
     .pricing-discount-fill.brrrr {
       background: linear-gradient(90deg, var(--brrrr-accent), var(--brrrr-accent-light));
@@ -836,6 +851,10 @@
       font-weight: 600;
       color: var(--iq-teal);
     }
+
+    .h-bar-value.positive {
+      color: var(--ws-positive);
+    }
     
     .h-bar-track {
       height: 6px;
@@ -848,6 +867,15 @@
       height: 100%;
       border-radius: 3px;
       background: linear-gradient(90deg, var(--iq-teal) 0%, var(--iq-teal-light) 100%);
+    }
+
+    .h-bar-fill.full {
+      width: 100%;
+    }
+
+    .h-bar-fill.positive {
+      width: 8.8%;
+      background: var(--ws-positive);
     }
     
     .h-bar-fill.brrrr {
@@ -862,6 +890,10 @@
       overflow: hidden;
       margin-bottom: 8px;
     }
+
+    .stacked-bar.compact {
+      height: 20px;
+    }
     
     .stacked-bar-segment {
       display: flex;
@@ -871,11 +903,19 @@
       font-weight: 600;
       color: white;
     }
+
+    .stacked-bar-segment.interest { width: 79%; background: var(--ws-negative); }
+    .stacked-bar-segment.tax { width: 12%; background: #f97316; }
+    .stacked-bar-segment.other { width: 9%; background: #64748b; }
     
     .stacked-legend {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+    }
+
+    .stacked-legend.tight {
+      margin-top: 8px;
     }
     
     .stacked-legend-item {
@@ -891,6 +931,9 @@
       height: 8px;
       border-radius: 2px;
     }
+
+    .stacked-legend-dot.interest { background: var(--ws-negative); }
+    .stacked-legend-dot.tax { background: #f97316; }
     
     /* Cash Out Indicator */
     .cash-out-indicator {
@@ -931,6 +974,142 @@
     .cash-out-status.negative {
       background: var(--ws-negative-light);
       color: var(--ws-negative);
+    }
+
+    .brrrr-score-content {
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    .brrrr-score-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--brrrr-accent);
+      margin-top: 4px;
+    }
+
+    .brrrr-score-label {
+      font-size: 11px;
+      color: var(--ws-text-muted);
+    }
+
+    .cash-recovery-bars {
+      margin-top: 16px;
+    }
+
+    .cost-breakdown-layout {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .mini-donut.cost-breakdown {
+      background: conic-gradient(var(--iq-teal) 0deg 240deg, var(--brrrr-accent) 240deg 310deg, #f97316 310deg 360deg);
+      width: 100px;
+      height: 100px;
+      flex-shrink: 0;
+    }
+
+    .cost-breakdown-details {
+      flex: 1;
+    }
+
+    .cost-breakdown-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .cost-breakdown-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .cost-breakdown-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+
+    .cost-breakdown-swatch.purchase { background: var(--iq-teal); }
+    .cost-breakdown-swatch.rehab { background: var(--brrrr-accent); }
+    .cost-breakdown-swatch.costs { background: #f97316; }
+
+    .cost-breakdown-label {
+      font-size: 12px;
+      color: var(--ws-text-secondary);
+    }
+
+    .cost-breakdown-value {
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: auto;
+    }
+
+    .holding-costs-timeline {
+      padding: 8px 0;
+    }
+
+    .holding-costs-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .holding-costs-period {
+      font-size: 11px;
+      color: var(--ws-text-muted);
+    }
+
+    .holding-costs-total {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ws-negative);
+    }
+
+    .loan-comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .loan-comparison-card {
+      padding: 12px;
+      background: var(--ws-bg-alt);
+      border-radius: 8px;
+    }
+
+    .loan-comparison-card.refi {
+      background: var(--brrrr-accent-bg);
+    }
+
+    .loan-comparison-label {
+      font-size: 10px;
+      color: var(--ws-text-muted);
+      margin-bottom: 4px;
+    }
+
+    .loan-comparison-label.refi {
+      color: var(--brrrr-accent);
+    }
+
+    .loan-comparison-value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .loan-comparison-value.refi {
+      color: var(--brrrr-accent);
+    }
+
+    .loan-comparison-subtext {
+      font-size: 11px;
+      color: var(--ws-negative);
+    }
+
+    .loan-comparison-subtext.refi {
+      color: var(--ws-positive);
     }
     
     @media (max-width: 1200px) {
@@ -1077,6 +1256,16 @@
       background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
       color: #16a34a;
     }
+
+    .strategy-option-icon.wholesale {
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      color: #2563eb;
+    }
+
+    .strategy-option-icon.househack {
+      background: rgba(5, 150, 105, 0.15);
+      color: #059669;
+    }
     
     .strategy-option-content {
       flex: 1;
@@ -1113,6 +1302,14 @@
       border-radius: 4px;
       margin-left: 8px;
     }
+
+    .summary-card.deal-score {
+      background: linear-gradient(135deg, var(--brrrr-accent-bg) 0%, white 100%);
+    }
+
+    .summary-card-value.deal-score {
+      color: var(--brrrr-accent);
+    }
   </style>
 </head>
 <body>
@@ -1126,7 +1323,7 @@
         <span>Back</span>
       </a>
       <div class="worksheet-property-info">
-        <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="worksheet-property-header">
           <h1 class="worksheet-property-title" id="property-title">2847 Oak Street Drive</h1>
           <span class="strategy-badge">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1214,7 +1411,7 @@
           
           <!-- Wholesale Option -->
           <button class="strategy-option" data-strategy="wholesale" onclick="selectStrategy('wholesale', 'Wholesale', 'worksheet-wholesale.html')">
-            <div class="strategy-option-icon" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); color: #2563eb;">
+            <div class="strategy-option-icon wholesale">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M16 3h5v5"/>
                 <path d="M8 21H3v-5"/>
@@ -1251,7 +1448,7 @@
           </button>
           
           <button class="strategy-option" data-strategy="househack" onclick="selectStrategy('househack', 'House Hack', 'worksheet-househack.html')">
-            <div class="strategy-option-icon househack" style="background: rgba(5, 150, 105, 0.15); color: #059669;">
+            <div class="strategy-option-icon househack">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
@@ -1345,9 +1542,9 @@
           <div class="summary-card-value positive" id="summary-coc">∞%</div>
           <div class="summary-card-subtitle" id="coc-subtitle">Infinite if $0 left in</div>
         </div>
-        <div class="summary-card" style="background: linear-gradient(135deg, var(--brrrr-accent-bg) 0%, white 100%);">
+        <div class="summary-card deal-score">
           <div class="summary-card-label">Deal Score</div>
-          <div class="summary-card-value" style="color: var(--brrrr-accent);" id="summary-deal-score">92</div>
+          <div class="summary-card-value deal-score" id="summary-deal-score">92</div>
           <div class="summary-card-subtitle" id="score-label">Excellent Deal</div>
         </div>
       </div>
@@ -1362,28 +1559,28 @@
             <div class="data-label"><span>Purchase Price</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="25000" max="1500000" value="285000">
+                <input type="range" class="slider-input" min="25000" max="1500000" value="285000" aria-label="Purchase Price">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$285,000">
+            <input type="text" class="slider-value" value="$285,000" aria-label="Purchase Price">
           </div>
           <div class="data-row has-slider">
             <div class="data-label"><span>Rehab Costs</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input brrrr" min="0" max="100000" value="55000">
+                <input type="range" class="slider-input brrrr" min="0" max="100000" value="55000" aria-label="Rehab Costs">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$55,000">
+            <input type="text" class="slider-value" value="$55,000" aria-label="Rehab Costs">
           </div>
           <div class="data-row has-slider">
             <div class="data-label"><span>Purchase Costs</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="20000" value="8550">
+                <input type="range" class="slider-input" min="0" max="20000" value="8550" aria-label="Purchase Costs">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$8,550">
+            <input type="text" class="slider-value" value="$8,550" aria-label="Purchase Costs">
           </div>
           <div class="data-row total">
             <div class="data-label"><span>Total All-In Cost</span></div>
@@ -1403,11 +1600,11 @@
             <div class="data-label"><span>Loan to Cost</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="50" max="100" value="90">
+                <input type="range" class="slider-input" min="50" max="100" value="90" aria-label="Loan to Cost">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="90%" style="min-width: 60px;">
+              <input type="text" class="slider-value min-width-60" value="90%" aria-label="Loan to Cost">
               <span class="slider-secondary">$306,000</span>
             </div>
           </div>
@@ -1419,20 +1616,20 @@
             <div class="data-label"><span>Interest Rate</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="8" max="18" value="12" step="0.5">
+                <input type="range" class="slider-input" min="8" max="18" value="12" step="0.5" aria-label="Interest Rate (Purchase)">
               </div>
             </div>
-            <input type="text" class="slider-value" value="12.0%" style="min-width: 70px;">
+            <input type="text" class="slider-value min-width-70" value="12.0%" aria-label="Interest Rate (Purchase)">
           </div>
           <div class="data-row has-slider">
             <div class="data-label"><span>Points</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="5" value="2" step="0.5">
+                <input type="range" class="slider-input" min="0" max="5" value="2" step="0.5" aria-label="Points">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="2.0 pts" style="min-width: 70px;">
+              <input type="text" class="slider-value min-width-70" value="2.0 pts" aria-label="Points">
               <span class="slider-secondary">$6,120</span>
             </div>
           </div>
@@ -1453,10 +1650,10 @@
             <div class="data-label"><span>After Repair Value</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input brrrr" min="50000" max="2000000" value="425000">
+                <input type="range" class="slider-input brrrr" min="50000" max="2000000" value="425000" aria-label="After Repair Value">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$425,000">
+            <input type="text" class="slider-value" value="$425,000" aria-label="After Repair Value">
           </div>
           <div class="data-row calculated">
             <div class="data-label"><span>ARV Per Sq Ft</span></div>
@@ -1493,10 +1690,10 @@
             <div class="data-label"><span>Holding Period</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="1" max="12" value="4">
+                <input type="range" class="slider-input" min="1" max="12" value="4" aria-label="Holding Period">
               </div>
             </div>
-            <input type="text" class="slider-value" value="4 months" style="min-width: 90px;">
+            <input type="text" class="slider-value min-width-90" value="4 months" aria-label="Holding Period">
           </div>
           <div class="data-row calculated">
             <div class="data-label"><span>Loan Interest</span></div>
@@ -1506,11 +1703,11 @@
             <div class="data-label"><span>Property Taxes</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="1000" value="475">
+                <input type="range" class="slider-input" min="0" max="1000" value="475" aria-label="Property Taxes (Rehab)">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="$475/mo" style="min-width: 80px;">
+              <input type="text" class="slider-value min-width-80" value="$475/mo" aria-label="Property Taxes (Rehab)">
               <span class="slider-secondary">$1,900</span>
             </div>
           </div>
@@ -1518,11 +1715,11 @@
             <div class="data-label"><span>Insurance</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="500" value="150">
+                <input type="range" class="slider-input" min="0" max="500" value="150" aria-label="Insurance (Rehab)">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="$150/mo" style="min-width: 80px;">
+              <input type="text" class="slider-value min-width-80" value="$150/mo" aria-label="Insurance (Rehab)">
               <span class="slider-secondary">$600</span>
             </div>
           </div>
@@ -1530,11 +1727,11 @@
             <div class="data-label"><span>Utilities</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="500" value="200">
+                <input type="range" class="slider-input" min="0" max="500" value="200" aria-label="Utilities">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="$200/mo" style="min-width: 80px;">
+              <input type="text" class="slider-value min-width-80" value="$200/mo" aria-label="Utilities">
               <span class="slider-secondary">$800</span>
             </div>
           </div>
@@ -1557,11 +1754,11 @@
             <div class="data-label"><span>Loan to Value</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input brrrr" min="50" max="80" value="75">
+                <input type="range" class="slider-input brrrr" min="50" max="80" value="75" aria-label="Loan to Value">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="75%" style="min-width: 60px;">
+              <input type="text" class="slider-value min-width-60" value="75%" aria-label="Loan to Value">
               <span class="slider-secondary">$318,750</span>
             </div>
           </div>
@@ -1573,10 +1770,10 @@
             <div class="data-label"><span>Refinance Costs</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="20000" value="6375">
+                <input type="range" class="slider-input" min="0" max="20000" value="6375" aria-label="Refinance Costs">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$6,375">
+            <input type="text" class="slider-value" value="$6,375" aria-label="Refinance Costs">
           </div>
           <div class="data-row calculated">
             <div class="data-label"><span>Payoff Old Loan</span></div>
@@ -1617,19 +1814,19 @@
             <div class="data-label"><span>Interest Rate</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="5" max="10" value="7" step="0.125">
+                <input type="range" class="slider-input" min="5" max="10" value="7" step="0.125" aria-label="Interest Rate (Refinance)">
               </div>
             </div>
-            <input type="text" class="slider-value" value="7.0%" style="min-width: 70px;">
+            <input type="text" class="slider-value min-width-70" value="7.0%" aria-label="Interest Rate (Refinance)">
           </div>
           <div class="data-row has-slider">
             <div class="data-label"><span>Loan Term</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="15" max="30" value="30" step="5">
+                <input type="range" class="slider-input" min="15" max="30" value="30" step="5" aria-label="Loan Term">
               </div>
             </div>
-            <input type="text" class="slider-value" value="30 years" style="min-width: 80px;">
+            <input type="text" class="slider-value min-width-80" value="30 years" aria-label="Loan Term">
           </div>
           <div class="data-row total">
             <div class="data-label"><span>Monthly Payment</span></div>
@@ -1649,11 +1846,11 @@
             <div class="data-label"><span>Monthly Rent</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="500" max="10000" value="2800">
+                <input type="range" class="slider-input" min="500" max="10000" value="2800" aria-label="Monthly Rent">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="$2,800" style="min-width: 80px;">
+              <input type="text" class="slider-value min-width-80" value="$2,800" aria-label="Monthly Rent">
               <span class="slider-secondary">$33,600/yr</span>
             </div>
           </div>
@@ -1661,11 +1858,11 @@
             <div class="data-label"><span>Vacancy</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="15" value="5">
+                <input type="range" class="slider-input" min="0" max="15" value="5" aria-label="Vacancy">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="5.0%" style="min-width: 60px;">
+              <input type="text" class="slider-value min-width-60" value="5.0%" aria-label="Vacancy">
               <span class="slider-secondary value-negative">-$1,680</span>
             </div>
           </div>
@@ -1679,29 +1876,29 @@
             <div class="data-label"><span>Property Taxes</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="10000" value="5700">
+                <input type="range" class="slider-input" min="0" max="10000" value="5700" aria-label="Property Taxes (Operating)">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$5,700">
+            <input type="text" class="slider-value" value="$5,700" aria-label="Property Taxes (Operating)">
           </div>
           <div class="data-row has-slider">
             <div class="data-label"><span>Insurance</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="5000" value="1800">
+                <input type="range" class="slider-input" min="0" max="5000" value="1800" aria-label="Insurance (Operating)">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$1,800">
+            <input type="text" class="slider-value" value="$1,800" aria-label="Insurance (Operating)">
           </div>
           <div class="data-row has-slider">
             <div class="data-label"><span>Property Mgmt</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="15" value="8">
+                <input type="range" class="slider-input" min="0" max="15" value="8" aria-label="Property Management">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="8.0%" style="min-width: 60px;">
+              <input type="text" class="slider-value min-width-60" value="8.0%" aria-label="Property Management">
               <span class="slider-secondary">$2,554</span>
             </div>
           </div>
@@ -1709,11 +1906,11 @@
             <div class="data-label"><span>Maintenance</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="15" value="5">
+                <input type="range" class="slider-input" min="0" max="15" value="5" aria-label="Maintenance">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="5.0%" style="min-width: 60px;">
+              <input type="text" class="slider-value min-width-60" value="5.0%" aria-label="Maintenance">
               <span class="slider-secondary">$1,596</span>
             </div>
           </div>
@@ -1721,11 +1918,11 @@
             <div class="data-label"><span>CapEx</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="15" value="5">
+                <input type="range" class="slider-input" min="0" max="15" value="5" aria-label="CapEx">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="5.0%" style="min-width: 60px;">
+              <input type="text" class="slider-value min-width-60" value="5.0%" aria-label="CapEx">
               <span class="slider-secondary">$1,596</span>
             </div>
           </div>
@@ -1873,7 +2070,7 @@
         <!-- Cash Recovery Indicator -->
         <div class="pricing-discount-indicator">
           <div class="pricing-discount-bar">
-            <div class="pricing-discount-fill brrrr" id="recovery-fill" style="width: 94%;"></div>
+            <div class="pricing-discount-fill brrrr" id="recovery-fill"></div>
           </div>
           <div class="pricing-discount-label">
             <span id="recovery-percent">93.8%</span> cash recovered
@@ -1884,19 +2081,19 @@
       <!-- BRRRR Score -->
       <div class="chart-card brrrr-highlight">
         <div class="chart-card-title brrrr">BRRRR Score</div>
-        <div style="text-align: center; padding: 8px 0;">
+        <div class="brrrr-score-content">
           <svg width="140" height="80" viewBox="0 0 140 80">
             <path d="M 15 70 A 55 55 0 0 1 125 70" fill="none" stroke="#e2e8f0" stroke-width="12" stroke-linecap="round"/>
             <path d="M 15 70 A 55 55 0 0 1 100 30" fill="none" stroke="url(#brrrrGauge)" stroke-width="12" stroke-linecap="round"/>
             <defs>
               <linearGradient id="brrrrGauge" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" style="stop-color:#7c3aed"/>
-                <stop offset="100%" style="stop-color:#a78bfa"/>
+                <stop offset="0%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#a78bfa"/>
               </linearGradient>
             </defs>
           </svg>
-          <div style="font-size: 28px; font-weight: 700; color: var(--brrrr-accent); margin-top: 4px;">72</div>
-          <div style="font-size: 11px; color: var(--ws-text-muted);">Good BRRRR Deal</div>
+          <div class="brrrr-score-value">72</div>
+          <div class="brrrr-score-label">Good BRRRR Deal</div>
         </div>
       </div>
       
@@ -1908,23 +2105,23 @@
           <div class="cash-out-label">Cash Out at Refinance</div>
           <div class="cash-out-status positive" id="cash-status">8.8% Recovered</div>
         </div>
-        <div style="margin-top: 16px;">
+        <div class="cash-recovery-bars">
           <div class="h-bar-item">
             <div class="h-bar-header">
               <span class="h-bar-label">Cash Invested</span>
               <span class="h-bar-value">$72,210</span>
             </div>
             <div class="h-bar-track">
-              <div class="h-bar-fill brrrr" style="width: 100%;"></div>
+              <div class="h-bar-fill brrrr full"></div>
             </div>
           </div>
           <div class="h-bar-item">
             <div class="h-bar-header">
               <span class="h-bar-label">Cash Returned</span>
-              <span class="h-bar-value" style="color: var(--ws-positive);">$6,375</span>
+              <span class="h-bar-value positive">$6,375</span>
             </div>
             <div class="h-bar-track">
-              <div class="h-bar-fill" style="width: 8.8%; background: var(--ws-positive);"></div>
+              <div class="h-bar-fill positive"></div>
             </div>
           </div>
         </div>
@@ -1956,28 +2153,28 @@
       <!-- Cost Breakdown -->
       <div class="chart-card">
         <div class="chart-card-title">All-In Cost Breakdown</div>
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div class="mini-donut" style="background: conic-gradient(var(--iq-teal) 0deg 240deg, var(--brrrr-accent) 240deg 310deg, #f97316 310deg 360deg); width: 100px; height: 100px; flex-shrink: 0;">
+        <div class="cost-breakdown-layout">
+          <div class="mini-donut cost-breakdown">
             <div class="mini-donut-center">
               <span class="mini-donut-value">$349K</span>
               <span class="mini-donut-label">All-In</span>
             </div>
           </div>
-          <div style="flex: 1;">
-            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
-              <span style="width: 10px; height: 10px; background: var(--iq-teal); border-radius: 2px;"></span>
-              <span style="font-size: 12px; color: var(--ws-text-secondary);">Purchase</span>
-              <span style="font-size: 12px; font-weight: 600; margin-left: auto;">$285K</span>
+          <div class="cost-breakdown-details">
+            <div class="cost-breakdown-row">
+              <span class="cost-breakdown-swatch purchase"></span>
+              <span class="cost-breakdown-label">Purchase</span>
+              <span class="cost-breakdown-value">$285K</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
-              <span style="width: 10px; height: 10px; background: var(--brrrr-accent); border-radius: 2px;"></span>
-              <span style="font-size: 12px; color: var(--ws-text-secondary);">Rehab</span>
-              <span style="font-size: 12px; font-weight: 600; margin-left: auto;">$55K</span>
+            <div class="cost-breakdown-row">
+              <span class="cost-breakdown-swatch rehab"></span>
+              <span class="cost-breakdown-label">Rehab</span>
+              <span class="cost-breakdown-value">$55K</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="width: 10px; height: 10px; background: #f97316; border-radius: 2px;"></span>
-              <span style="font-size: 12px; color: var(--ws-text-secondary);">Costs</span>
-              <span style="font-size: 12px; font-weight: 600; margin-left: auto;">$9K</span>
+            <div class="cost-breakdown-row">
+              <span class="cost-breakdown-swatch costs"></span>
+              <span class="cost-breakdown-label">Costs</span>
+              <span class="cost-breakdown-value">$9K</span>
             </div>
           </div>
         </div>
@@ -1986,23 +2183,23 @@
       <!-- Holding Costs Timeline -->
       <div class="chart-card">
         <div class="chart-card-title">Holding Costs</div>
-        <div style="padding: 8px 0;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-            <span style="font-size: 11px; color: var(--ws-text-muted);">4 Month Rehab Period</span>
-            <span style="font-size: 12px; font-weight: 600; color: var(--ws-negative);">-$15,540</span>
+        <div class="holding-costs-timeline">
+          <div class="holding-costs-header">
+            <span class="holding-costs-period">4 Month Rehab Period</span>
+            <span class="holding-costs-total">-$15,540</span>
           </div>
-          <div class="stacked-bar" style="height: 20px;">
-            <div class="stacked-bar-segment" style="width: 79%; background: var(--ws-negative);">Interest</div>
-            <div class="stacked-bar-segment" style="width: 12%; background: #f97316;">Tax</div>
-            <div class="stacked-bar-segment" style="width: 9%; background: #64748b;">Other</div>
+          <div class="stacked-bar compact">
+            <div class="stacked-bar-segment interest">Interest</div>
+            <div class="stacked-bar-segment tax">Tax</div>
+            <div class="stacked-bar-segment other">Other</div>
           </div>
-          <div class="stacked-legend" style="margin-top: 8px;">
+          <div class="stacked-legend tight">
             <div class="stacked-legend-item">
-              <span class="stacked-legend-dot" style="background: var(--ws-negative);"></span>
+              <span class="stacked-legend-dot interest"></span>
               Interest $12K
             </div>
             <div class="stacked-legend-item">
-              <span class="stacked-legend-dot" style="background: #f97316;"></span>
+              <span class="stacked-legend-dot tax"></span>
               Taxes $1.9K
             </div>
           </div>
@@ -2012,16 +2209,16 @@
       <!-- Refinance Comparison -->
       <div class="chart-card">
         <div class="chart-card-title">Loan Comparison</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: center;">
-          <div style="padding: 12px; background: var(--ws-bg-alt); border-radius: 8px;">
-            <div style="font-size: 10px; color: var(--ws-text-muted); margin-bottom: 4px;">PURCHASE</div>
-            <div style="font-size: 14px; font-weight: 600;">$306K</div>
-            <div style="font-size: 11px; color: var(--ws-negative);">12% / HML</div>
+        <div class="loan-comparison-grid">
+          <div class="loan-comparison-card">
+            <div class="loan-comparison-label">PURCHASE</div>
+            <div class="loan-comparison-value">$306K</div>
+            <div class="loan-comparison-subtext">12% / HML</div>
           </div>
-          <div style="padding: 12px; background: var(--brrrr-accent-bg); border-radius: 8px;">
-            <div style="font-size: 10px; color: var(--brrrr-accent); margin-bottom: 4px;">REFINANCE</div>
-            <div style="font-size: 14px; font-weight: 600; color: var(--brrrr-accent);">$319K</div>
-            <div style="font-size: 11px; color: var(--ws-positive);">7% / Conv</div>
+          <div class="loan-comparison-card refi">
+            <div class="loan-comparison-label refi">REFINANCE</div>
+            <div class="loan-comparison-value refi">$319K</div>
+            <div class="loan-comparison-subtext refi">7% / Conv</div>
           </div>
         </div>
       </div>
