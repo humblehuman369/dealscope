@@ -1,5 +1,6 @@
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
+import { ProfitFinder } from '../charts/ProfitFinder'
 import { useWholesaleWorksheetCalculator } from '@/hooks/useWholesaleWorksheetCalculator'
 import { SavedProperty } from '@/hooks/useWorksheetProperty'
 import { DollarSign, Home, Wrench } from 'lucide-react'
@@ -163,6 +164,23 @@ export function WholesaleWorksheet({ property }: WholesaleWorksheetProps) {
         </div>
 
         <aside className="space-y-4">
+          {/* Profit Finder Visual */}
+          <div className="section-card">
+            <div className="section-header">
+              <h3 className="section-title">Profit Finder</h3>
+            </div>
+            <ProfitFinder
+              purchasePrice={inputs.contract_price}
+              listPrice={inputs.arv}
+              breakevenPrice={result?.mao ?? inputs.arv * 0.7}
+              monthlyCashFlow={result?.assignment_fee ?? 0}
+              buyLabel="Contract"
+              listLabel="ARV"
+              evenLabel="MAO"
+              cashFlowLabel="Assignment Fee:"
+            />
+          </div>
+
           <SectionCard title="Pricing Ladder">
             <DataRow label="ARV">
               <DisplayField value={inputs.arv} format="currency" />

@@ -1,5 +1,6 @@
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
+import { ProfitFinder } from '../charts/ProfitFinder'
 import { useFlipWorksheetCalculator } from '@/hooks/useFlipWorksheetCalculator'
 import { SavedProperty } from '@/hooks/useWorksheetProperty'
 import { DollarSign, Home, Wrench, Percent, Calendar } from 'lucide-react'
@@ -247,6 +248,23 @@ export function FlipWorksheet({ property }: FlipWorksheetProps) {
         </div>
 
         <aside className="space-y-4">
+          {/* Profit Finder Visual */}
+          <div className="section-card">
+            <div className="section-header">
+              <h3 className="section-title">Profit Finder</h3>
+            </div>
+            <ProfitFinder
+              purchasePrice={inputs.purchase_price}
+              listPrice={inputs.arv}
+              breakevenPrice={result?.breakeven_price ?? inputs.purchase_price * 1.15}
+              monthlyCashFlow={result?.net_profit ?? 0}
+              buyLabel="Buy"
+              listLabel="ARV"
+              evenLabel="Break"
+              cashFlowLabel="Net Profit:"
+            />
+          </div>
+
           <SectionCard title="Pricing Ladder">
             <DataRow label="ARV">
               <DisplayField value={result?.arv ?? inputs.arv} format="currency" />

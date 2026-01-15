@@ -1,5 +1,6 @@
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
+import { ProfitFinder } from '../charts/ProfitFinder'
 import { useHouseHackWorksheetCalculator } from '@/hooks/useHouseHackWorksheetCalculator'
 import { SavedProperty } from '@/hooks/useWorksheetProperty'
 import { Home, Percent, DollarSign } from 'lucide-react'
@@ -283,6 +284,23 @@ export function HouseHackWorksheet({ property }: HouseHackWorksheetProps) {
         </div>
 
         <aside className="space-y-4">
+          {/* Profit Finder Visual */}
+          <div className="section-card">
+            <div className="section-header">
+              <h3 className="section-title">Profit Finder</h3>
+            </div>
+            <ProfitFinder
+              purchasePrice={inputs.purchase_price}
+              listPrice={inputs.list_price}
+              breakevenPrice={result?.breakeven_price ?? inputs.purchase_price * 0.95}
+              monthlyCashFlow={result?.net_housing_cost ?? 0}
+              buyLabel="Buy"
+              listLabel="List"
+              evenLabel="Even"
+              cashFlowLabel="Net Housing Cost:"
+            />
+          </div>
+
           <SectionCard title="Pricing Ladder">
             <DataRow label="List Price">
               <EditableField

@@ -1,5 +1,6 @@
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
+import { ProfitFinder } from '../charts/ProfitFinder'
 import { useBrrrrWorksheetCalculator } from '@/hooks/useBrrrrWorksheetCalculator'
 import { SavedProperty } from '@/hooks/useWorksheetProperty'
 import { DollarSign, Home, Wrench, Percent, Landmark } from 'lucide-react'
@@ -263,6 +264,22 @@ export function BrrrrWorksheet({ property }: BrrrrWorksheetProps) {
         </div>
 
         <div className="space-y-4">
+          {/* Profit Finder Visual */}
+          <div className="section-card">
+            <div className="section-header">
+              <h3 className="section-title">Profit Finder</h3>
+            </div>
+            <ProfitFinder
+              purchasePrice={inputs.purchase_price}
+              listPrice={inputs.arv}
+              breakevenPrice={result?.all_in_cost ?? inputs.purchase_price}
+              monthlyCashFlow={result?.monthly_cash_flow ?? 0}
+              buyLabel="Buy"
+              listLabel="ARV"
+              evenLabel="All-In"
+            />
+          </div>
+
           <SectionCard title="Financing (After Refinance)">
             <DataRow label="Loan Amount">
               <DisplayField value={result?.refinance_loan_amount ?? 0} format="currency" />
