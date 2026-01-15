@@ -22,7 +22,8 @@ interface WorksheetHeaderProps {
 }
 
 export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) {
-  const { isDirty, isSaving, lastSaved, viewMode, setViewMode, isCalculating, calculationError } = useWorksheetStore()
+  const { isDirty, isSaving, lastSaved, viewMode, setViewMode, isCalculating, calculationError, worksheetMetrics } =
+    useWorksheetStore()
   const derived = useWorksheetDerived()
 
   const formatLastSaved = () => {
@@ -49,16 +50,23 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
   const monthlyCashFlow = derived.monthlyCashFlow || 0
   const capRate = derived.capRate || 0
   const cocReturn = derived.cashOnCash || 0
+  const mao = worksheetMetrics?.mao ?? 0
+  const dealScore = worksheetMetrics?.deal_score ?? 0
 
   return (
     <div className="worksheet-header-v2">
       {/* Summary Cards Row */}
       <div className="summary-cards">
         <div className="summary-card">
+          <div className="summary-card-label">Target Price</div>
+          <div className="summary-card-value">{formatCurrency(mao)}</div>
+        </div>
+
+        <div className="summary-card">
           <div className="summary-card-label">Cash Needed</div>
           <div className="summary-card-value">{formatCurrency(cashNeeded)}</div>
         </div>
-        
+
         <div className="summary-card">
           <div className="summary-card-label">Cash Flow</div>
           <div className={`summary-card-value ${cashFlow >= 0 ? 'positive' : 'negative'}`}>
@@ -66,17 +74,22 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
           </div>
           <div className="summary-card-subtitle">{formatCurrency(monthlyCashFlow)}/mo</div>
         </div>
-        
+
         <div className="summary-card">
           <div className="summary-card-label">Cap Rate</div>
           <div className="summary-card-value">{capRate.toFixed(1)}%</div>
         </div>
-        
+
         <div className="summary-card">
           <div className="summary-card-label">CoC Return</div>
           <div className={`summary-card-value ${cocReturn >= 10 ? 'positive' : ''}`}>
             {cocReturn.toFixed(1)}%
           </div>
+        </div>
+
+        <div className="summary-card highlight">
+          <div className="summary-card-label">Deal Score</div>
+          <div className="summary-card-value highlight">{Math.round(dealScore)}</div>
         </div>
       </div>
 

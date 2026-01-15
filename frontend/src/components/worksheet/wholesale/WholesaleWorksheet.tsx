@@ -1,6 +1,11 @@
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
 import { ProfitFinder } from '../charts/ProfitFinder'
+import { PricingLadder } from '../charts/PricingLadder'
+import { DealFlow } from '../charts/DealFlow'
+import { ProfitComparison } from '../charts/ProfitComparison'
+import { ClosingCostsBreakdown } from '../charts/ClosingCostsBreakdown'
+import { DealCriteriaList } from '../charts/DealCriteriaList'
 import { useWholesaleWorksheetCalculator } from '@/hooks/useWholesaleWorksheetCalculator'
 import { SavedProperty } from '@/hooks/useWorksheetProperty'
 import { DollarSign, Home, Wrench } from 'lucide-react'
@@ -28,8 +33,15 @@ export function WholesaleWorksheet({ property }: WholesaleWorksheetProps) {
     return 'Poor Deal'
   }
 
+  const assignmentFee = result?.assignment_fee ?? 0
+  const assignmentFeePct = inputs.investor_price > 0 ? (assignmentFee / inputs.investor_price) * 100 : 0
+  const closingCosts = result?.closing_costs ?? 0
+  const titleEscrow = Math.max(0, inputs.marketing_costs)
+  const transferTax = Math.max(0, inputs.earnest_money)
+  const otherClosing = Math.max(0, closingCosts - titleEscrow - transferTax)
+
   return (
-    <div className="space-y-4">
+    <div className="wholesale-strategy space-y-4">
       <div className="summary-cards">
         <div className="summary-card highlight">
           <div className="summary-card-label">Assignment Fee</div>
@@ -80,8 +92,8 @@ export function WholesaleWorksheet({ property }: WholesaleWorksheetProps) {
         </div>
       )}
 
-      <div className="section-two-column">
-        <div className="space-y-4">
+      <div className="worksheet-layout-2col">
+        <div className="worksheet-main-content">
           <SectionCard title="Wholesale Analysis">
             <DataRow label="Investor Purchase Price" icon={<Home className="w-4 h-4" />}>
               <EditableField
@@ -163,17 +175,14 @@ export function WholesaleWorksheet({ property }: WholesaleWorksheetProps) {
           </SectionCard>
         </div>
 
-        <aside className="space-y-4">
-          {/* Profit Finder Visual */}
-          <div className="section-card">
-            <div className="section-header">
-              <h3 className="section-title">Profit Finder</h3>
-            </div>
+        <aside className="worksheet-charts-sidebar">
+          <div className="chart-card">
+            <div className="chart-card-title">Profit Finder</div>
             <ProfitFinder
               purchasePrice={inputs.contract_price}
               listPrice={inputs.arv}
               breakevenPrice={result?.mao ?? inputs.arv * 0.7}
-              monthlyCashFlow={result?.assignment_fee ?? 0}
+              monthlyCashFlow={assignmentFee}
               buyLabel="Contract"
               listLabel="ARV"
               evenLabel="MAO"
@@ -181,44 +190,59 @@ export function WholesaleWorksheet({ property }: WholesaleWorksheetProps) {
             />
           </div>
 
-          <SectionCard title="Pricing Ladder">
-            <DataRow label="ARV">
-              <DisplayField value={inputs.arv} format="currency" />
-            </DataRow>
-            <DataRow label="Investor All-In">
-              <DisplayField value={result?.investor_all_in ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="Investor Pays">
-              <DisplayField value={inputs.investor_price} format="currency" />
-            </DataRow>
-            <DataRow label="Your Contract">
-              <DisplayField value={inputs.contract_price} format="currency" />
-            </DataRow>
-            <DataRow label="MAO (70% Rule)">
-              <DisplayField value={result?.mao ?? 0} format="currency" />
-            </DataRow>
-          </SectionCard>
+          <div className="chart-card">
+            <div className="chart-card-title">Pricing Ladder</div>
+            <PricingLadder
+              items={[
+                { label: 'ARV', value: inputs.arv, type: 'arv' },
+                { label: 'Investor All-In', value: result?.investor_all_in ?? 0, type: 'current', highlight: true },
+                { label: 'Investor Pays', value: inputs.investor_price, type: 'target' },
+                { label: 'Your Contract', value: inputs.contract_price, type: 'coc' },
+                { label: 'MAO', value: result?.mao ?? 0, hint: '70% Rule', type: 'mao' },
+              ]}
+              recoveryPercent={assignmentFeePct}
+              indicatorLabel="assignment fee"
+              indicatorClass="assignment"
+              indicatorValue={formatCurrency(assignmentFee)}
+            />
+          </div>
 
-          <SectionCard title="Deal Flow">
-            <DataRow label="You Contract">
-              <DisplayField value={inputs.contract_price} format="currency" />
-            </DataRow>
-            <DataRow label="Assign to Investor">
-              <DisplayField value={inputs.investor_price} format="currency" />
-            </DataRow>
-            <DataRow label="Your Profit">
-              <DisplayField value={result?.assignment_fee ?? 0} format="currency" isPositive />
-            </DataRow>
-          </SectionCard>
+          <div className="chart-card">
+            <div className="chart-card-title">Deal Flow</div>
+            <DealFlow
+              contractPrice={inputs.contract_price}
+              investorPrice={inputs.investor_price}
+              assignmentFee={assignmentFee}
+            />
+          </div>
 
-          <SectionCard title="Profit Comparison">
-            <DataRow label="Your Profit">
-              <DisplayField value={result?.assignment_fee ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="Investor Profit">
-              <DisplayField value={result?.investor_profit ?? 0} format="currency" />
-            </DataRow>
-          </SectionCard>
+          <div className="chart-card">
+            <div className="chart-card-title">Profit Comparison</div>
+            <ProfitComparison
+              yourProfit={assignmentFee}
+              investorProfit={result?.investor_profit ?? 0}
+            />
+          </div>
+
+          <div className="chart-card">
+            <div className="chart-card-title">Closing Costs</div>
+            <ClosingCostsBreakdown
+              titleEscrow={titleEscrow}
+              transferTax={transferTax}
+              other={otherClosing}
+            />
+          </div>
+
+          <div className="chart-card">
+            <div className="chart-card-title">Deal Criteria</div>
+            <DealCriteriaList
+              items={[
+                { label: 'Assignment Fee > $5,000', passed: assignmentFee > 5000 },
+                { label: 'Investor ROI > 25%', passed: (result?.investor_roi ?? 0) > 25 },
+                { label: 'Investor at ≤ 70% ARV', passed: inputs.investor_price <= inputs.arv * 0.7 },
+              ]}
+            />
+          </div>
         </aside>
       </div>
     </div>

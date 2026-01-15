@@ -1096,6 +1096,15 @@
 }
 
 /* ==========================================
+   LTR Strategy Colors
+   ========================================== */
+.ltr-strategy {
+  --strategy-accent: #007ea7;
+  --strategy-accent-light: #33a5c4;
+  --strategy-accent-bg: rgba(0, 126, 167, 0.1);
+}
+
+/* ==========================================
    STR Strategy Colors
    ========================================== */
 .str-strategy {
@@ -1111,6 +1120,24 @@
   --strategy-accent: #d97706;
   --strategy-accent-light: #fbbf24;
   --strategy-accent-bg: rgba(217, 119, 6, 0.1);
+}
+
+/* ==========================================
+   House Hack Strategy Colors
+   ========================================== */
+.househack-strategy {
+  --strategy-accent: #059669;
+  --strategy-accent-light: #34d399;
+  --strategy-accent-bg: rgba(5, 150, 105, 0.1);
+}
+
+/* ==========================================
+   Wholesale Strategy Colors
+   ========================================== */
+.wholesale-strategy {
+  --strategy-accent: #2563eb;
+  --strategy-accent-light: #60a5fa;
+  --strategy-accent-bg: rgba(37, 99, 235, 0.1);
 }
 
 /* ==========================================
@@ -1149,6 +1176,14 @@
 
 .chart-card-title.flip {
   color: var(--strategy-accent, #d97706);
+}
+
+.chart-card-title.househack {
+  color: var(--strategy-accent, #059669);
+}
+
+.chart-card-title.wholesale {
+  color: var(--strategy-accent, #2563eb);
 }
 
 /* ==========================================
@@ -1417,6 +1452,10 @@
   background: linear-gradient(180deg, #10b981 0%, #eab308 50%, var(--strategy-accent, #d97706) 100%);
 }
 
+.househack-strategy .pricing-ladder-track {
+  background: linear-gradient(180deg, #dc2626 0%, #f59e0b 50%, var(--strategy-accent, #059669) 100%);
+}
+
 .flip-strategy .pricing-ladder-marker.profit-target {
   border-color: #22c55e;
   background: white;
@@ -1519,6 +1558,14 @@
 
 .pricing-discount-fill.flip {
   background: linear-gradient(90deg, var(--strategy-accent, #d97706), var(--strategy-accent-light, #fbbf24));
+}
+
+.pricing-discount-fill.househack {
+  background: linear-gradient(90deg, var(--strategy-accent, #059669), var(--strategy-accent-light, #34d399));
+}
+
+.pricing-discount-fill.assignment {
+  background: linear-gradient(90deg, var(--strategy-accent, #2563eb), var(--strategy-accent-light, #60a5fa));
 }
 
 /* ==========================================
@@ -1776,6 +1823,362 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--ws-text-primary);
+}
+
+/* ==========================================
+   House Hack Housing Cost Gauge
+   ========================================== */
+.housing-cost-gauge {
+  text-align: center;
+  padding: 16px;
+}
+
+.housing-cost-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--strategy-accent, #059669);
+}
+
+.housing-cost-label {
+  font-size: 12px;
+  color: var(--ws-text-muted);
+  margin-top: 4px;
+}
+
+.housing-cost-compare {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ws-border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.comparison-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.comparison-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--ws-text-secondary);
+}
+
+.comparison-bar-value {
+  font-weight: 600;
+  color: var(--ws-text-primary);
+}
+
+.comparison-bar-value.accent {
+  color: var(--strategy-accent, #059669);
+}
+
+.comparison-bar-track {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.comparison-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.comparison-bar-fill.accent {
+  background: linear-gradient(90deg, var(--strategy-accent, #059669), var(--strategy-accent-light, #34d399));
+}
+
+.comparison-bar-fill.neutral {
+  background: linear-gradient(90deg, #94a3b8, #cbd5e1);
+}
+
+.comparison-savings {
+  text-align: center;
+  padding: 12px;
+  background: var(--strategy-accent-bg, rgba(5, 150, 105, 0.1));
+  border-radius: 8px;
+}
+
+.comparison-savings-label {
+  font-size: 11px;
+  color: var(--ws-text-muted);
+}
+
+.comparison-savings-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--strategy-accent, #059669);
+}
+
+/* ==========================================
+   Unit Breakdown
+   ========================================== */
+.unit-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.unit-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--ws-bg-alt);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.unit-item.owner {
+  background: var(--strategy-accent-bg, rgba(5, 150, 105, 0.1));
+  border: 1px solid var(--strategy-accent-light, #34d399);
+}
+
+.unit-item-label {
+  color: var(--ws-text-secondary);
+}
+
+.unit-item-value {
+  font-weight: 600;
+  color: var(--ws-text-primary);
+}
+
+.unit-item-value.accent {
+  color: var(--strategy-accent, #059669);
+}
+
+/* ==========================================
+   Move Out Summary
+   ========================================== */
+.moveout-summary {
+  text-align: center;
+  padding: 16px;
+}
+
+.moveout-header {
+  font-size: 12px;
+  color: var(--ws-text-muted);
+  margin-bottom: 8px;
+}
+
+.moveout-cashflow {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ws-positive);
+}
+
+.moveout-subtitle {
+  font-size: 12px;
+  color: var(--ws-text-muted);
+  margin-top: 4px;
+}
+
+.moveout-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ws-border-light);
+}
+
+.moveout-metric {
+  text-align: center;
+  padding: 10px;
+  background: var(--ws-bg-alt);
+  border-radius: 8px;
+}
+
+.moveout-metric-label {
+  font-size: 10px;
+  color: var(--ws-text-muted);
+}
+
+.moveout-metric-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ws-text-primary);
+}
+
+.moveout-metric-value.positive {
+  color: var(--ws-positive);
+}
+
+/* ==========================================
+   Wholesale Deal Flow
+   ========================================== */
+.deal-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.deal-flow-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--ws-bg-alt);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.deal-flow-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  background: var(--strategy-accent, #2563eb);
+}
+
+.deal-flow-icon.assign {
+  background: var(--ws-positive);
+}
+
+.deal-flow-icon.profit {
+  background: #d97706;
+}
+
+.deal-flow-title {
+  font-size: 12px;
+  color: var(--ws-text-secondary);
+}
+
+.deal-flow-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ws-text-primary);
+}
+
+.deal-flow-value.primary { color: var(--strategy-accent, #2563eb); }
+.deal-flow-value.positive { color: var(--ws-positive); }
+.deal-flow-value.accent { color: #d97706; }
+
+/* ==========================================
+   Wholesale Profit Comparison
+   ========================================== */
+.profit-comparison {
+  padding: 16px;
+}
+
+.quick-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.compare-card {
+  background: var(--ws-bg-alt);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+
+.compare-label {
+  font-size: 11px;
+  color: var(--ws-text-muted);
+  margin-bottom: 6px;
+}
+
+.compare-value {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.compare-value.you { color: var(--strategy-accent, #2563eb); }
+.compare-value.investor { color: var(--ws-positive); }
+
+.compare-footnote {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ws-text-muted);
+}
+
+/* ==========================================
+   Wholesale Closing Costs
+   ========================================== */
+.closing-costs {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+.closing-costs-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.closing-costs-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.closing-costs-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.closing-costs-swatch.accent { background: var(--strategy-accent, #2563eb); }
+.closing-costs-swatch.transfer { background: #64748b; }
+.closing-costs-swatch.other { background: #94a3b8; }
+
+.closing-costs-label {
+  color: var(--ws-text-secondary);
+  flex: 1;
+}
+
+.closing-costs-value {
+  font-weight: 600;
+  color: var(--ws-text-primary);
+}
+
+/* ==========================================
+   Wholesale Deal Criteria
+   ========================================== */
+.deal-criteria-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+
+.deal-criteria-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.deal-criteria-item.passed {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--ws-positive);
+}
+
+.deal-criteria-item.failed {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--ws-negative);
+}
+
+.deal-criteria-icon {
+  font-weight: 700;
 }
 
 .pricing-discount-label {

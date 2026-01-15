@@ -13,7 +13,9 @@ import { FinancialRatios } from './sections/FinancialRatios'
 import { MultiYearProjections } from './sections/MultiYearProjections'
 import { CashFlowChart } from './charts/CashFlowChart'
 import { EquityChart } from './charts/EquityChart'
-import { useWorksheetStore } from '@/stores/worksheetStore'
+import { ProfitFinder } from './charts/ProfitFinder'
+import { IncomeExpensesPie } from './charts/IncomeExpensesPie'
+import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 
 interface WorksheetLayoutProps {
   property: {
@@ -51,8 +53,15 @@ const helpTips: Record<string, { title: string; tips: string[] }> = {
 }
 
 export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLayoutProps) {
-  const { activeSection } = useWorksheetStore()
+  const { activeSection, assumptions, worksheetMetrics, propertyData } = useWorksheetStore()
+  const derived = useWorksheetDerived()
   const currentHelp = helpTips[activeSection] || helpTips.analysis
+
+  const listPrice =
+    propertyData?.property_data_snapshot?.listPrice ??
+    property.property_data_snapshot?.listPrice ??
+    assumptions.purchasePrice
+  const breakevenPrice = worksheetMetrics?.mao ?? assumptions.purchasePrice
 
   const renderActiveSection = () => {
     switch (activeSection) {
@@ -101,14 +110,43 @@ export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLay
       helpTitle={currentHelp.title}
       helpTips={currentHelp.tips}
     >
-      <WorksheetHeader 
+      <WorksheetHeader
         property={property}
         propertyId={propertyId}
       />
-      
-      <div className="worksheet-sections">
-        {renderActiveSection()}
-      </div>
+
+      {activeSection === 'analysis' ? (
+        <div className="worksheet-layout-2col">
+          <div className="worksheet-main-content">
+            <div className="worksheet-sections">
+              {renderActiveSection()}
+            </div>
+          </div>
+          <aside className="worksheet-charts-sidebar">
+            <div className="chart-card">
+              <div className="chart-card-title">Profit Finder</div>
+              <ProfitFinder
+                purchasePrice={assumptions.purchasePrice}
+                listPrice={listPrice}
+                breakevenPrice={breakevenPrice}
+                monthlyCashFlow={derived.monthlyCashFlow}
+                buyLabel="Buy"
+                listLabel="List"
+                evenLabel="Even"
+              />
+            </div>
+
+            <div className="chart-card">
+              <div className="chart-card-title">Cash Breakdown</div>
+              <IncomeExpensesPie />
+            </div>
+          </aside>
+        </div>
+      ) : (
+        <div className="worksheet-sections">
+          {renderActiveSection()}
+        </div>
+      )}
     </WorksheetShell>
   )
 }
