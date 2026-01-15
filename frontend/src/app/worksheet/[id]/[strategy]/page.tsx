@@ -8,6 +8,7 @@ import { WorksheetShell } from '@/components/worksheet/WorksheetShell'
 import { StrWorksheet } from '@/components/worksheet/str/StrWorksheet'
 import { BrrrrWorksheet } from '@/components/worksheet/brrrr/BrrrrWorksheet'
 import { FlipWorksheet } from '@/components/worksheet/flip/FlipWorksheet'
+import { HouseHackWorksheet } from '@/components/worksheet/househack/HouseHackWorksheet'
 import { useWorksheetProperty } from '@/hooks/useWorksheetProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { WORKSHEET_STRATEGIES, WorksheetStrategyId } from '@/constants/worksheetStrategies'
@@ -29,6 +30,12 @@ const FLIP_HELP_TIPS = [
   'Follow the 70% rule: pay no more than 70% of ARV minus repairs.',
   'Shorter holding periods reduce carrying costs and protect margins.',
   'Target at least a 15% profit margin after all selling costs.',
+]
+
+const HOUSE_HACK_HELP_TIPS = [
+  'FHA loans allow 3.5% down on 2-4 unit properties.',
+  'Budget for vacancy even if units are leased.',
+  'Aim for a net housing cost below market rent.',
 ]
 
 export default function StrategyWorksheetPage() {
@@ -137,6 +144,20 @@ export default function StrategyWorksheetPage() {
         helpTips={FLIP_HELP_TIPS}
       >
         <FlipWorksheet property={property} />
+      </WorksheetShell>
+    )
+  }
+
+  if (strategyParam === 'househack') {
+    return (
+      <WorksheetShell
+        property={property}
+        propertyId={propertyId}
+        strategy="househack"
+        helpTitle="House Hack Tips"
+        helpTips={HOUSE_HACK_HELP_TIPS}
+      >
+        <HouseHackWorksheet property={property} />
       </WorksheetShell>
     )
   }

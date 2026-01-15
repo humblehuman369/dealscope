@@ -1134,6 +1134,8 @@ class HouseHackWorksheetInput(BaseModel):
     purchase_price: float
     unit_rents: list = Field(default=[0, 0, 0], description="List of unit rents [unit2, unit3, unit4]")
     owner_market_rent: float = 1500
+    list_price: Optional[float] = None
+    fha_max_price: Optional[float] = None
     property_taxes_annual: float = 6000
     insurance_annual: float = 2000
     down_payment_pct: float = 0.035
@@ -1142,9 +1144,12 @@ class HouseHackWorksheetInput(BaseModel):
     closing_costs: float = 0
     pmi_rate: float = 0.005
     vacancy_rate: float = 0.05
+    maintenance_pct: float = 0.05
+    capex_pct: float = 0.05
     maintenance_monthly: float = 200
     capex_monthly: float = 100
     utilities_monthly: float = 150
+    loan_type: Optional[str] = "conventional"
 
 
 @app.post("/api/v1/worksheet/househack/calculate")
@@ -1172,36 +1177,74 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
             maintenance_monthly=input_data.maintenance_monthly + input_data.capex_monthly,
         )
         
+        maintenance_monthly = (
+            total_rent * input_data.maintenance_pct
+            if input_data.maintenance_monthly == 0 else input_data.maintenance_monthly
+        )
+        capex_monthly = (
+            total_rent * input_data.capex_pct
+            if input_data.capex_monthly == 0 else input_data.capex_monthly
+        )
+        monthly_taxes = input_data.property_taxes_annual / 12
+        monthly_insurance = input_data.insurance_annual / 12
+        monthly_pmi = (result["loan_amount"] * input_data.pmi_rate) / 12
+        monthly_piti = result["monthly_pi"] + monthly_pmi
+
         # Calculate adjusted metrics for vacancy
         effective_rental_income = total_rent * (1 - input_data.vacancy_rate)
-        monthly_expenses = result["monthly_piti"] + input_data.utilities_monthly + input_data.maintenance_monthly + input_data.capex_monthly
-        your_housing_cost = monthly_expenses - effective_rental_income
+        total_monthly_expenses = (
+            monthly_taxes +
+            monthly_insurance +
+            maintenance_monthly +
+            capex_monthly +
+            input_data.utilities_monthly
+        )
+        your_housing_cost = monthly_piti + total_monthly_expenses - effective_rental_income
         savings_vs_renting = input_data.owner_market_rent - your_housing_cost
         
         # Move-out scenario (as full rental)
         full_rental_income = (total_rent + input_data.owner_market_rent) * (1 - input_data.vacancy_rate)
-        full_rental_noi = full_rental_income * 12 - (input_data.property_taxes_annual + input_data.insurance_annual + (input_data.maintenance_monthly + input_data.capex_monthly) * 12)
-        full_rental_cash_flow = full_rental_noi - (result["monthly_pi"] * 12)
+        full_rental_noi = full_rental_income * 12 - (total_monthly_expenses * 12)
+        full_rental_cash_flow = full_rental_noi - (monthly_piti * 12)
+        moveout_cap_rate = (full_rental_noi / input_data.purchase_price * 100) if input_data.purchase_price > 0 else 0
         
+        list_price = input_data.list_price or (input_data.purchase_price * 1.056)
+        breakeven_price = (
+            input_data.purchase_price +
+            ((monthly_piti + total_monthly_expenses - effective_rental_income) * 12 / 0.08)
+        )
+        target_coc_price = input_data.purchase_price * 0.93
+        fha_max_price = input_data.fha_max_price or 472030
+
         return {
             # Housing Cost
             "your_housing_cost": your_housing_cost,
             "rental_income": effective_rental_income,
-            "monthly_expenses": monthly_expenses,
+            "total_monthly_expenses": total_monthly_expenses,
             "savings_vs_renting": savings_vs_renting,
             
             # If You Move Out
             "full_rental_income": full_rental_income,
             "full_rental_cash_flow": full_rental_cash_flow / 12,
             "full_rental_annual": full_rental_cash_flow,
+            "moveout_cap_rate": moveout_cap_rate,
             
             # Financing
             "loan_amount": result["loan_amount"],
             "monthly_payment": result["monthly_pi"],
-            "monthly_piti": result["monthly_piti"],
+            "monthly_pmi": monthly_pmi,
+            "monthly_piti": monthly_piti,
             "down_payment": result["down_payment"],
             "closing_costs": result["closing_costs"],
             "total_cash_needed": result["total_cash_required"],
+
+            # Operating Expenses
+            "monthly_taxes": monthly_taxes,
+            "monthly_insurance": monthly_insurance,
+            "maintenance_monthly": maintenance_monthly,
+            "capex_monthly": capex_monthly,
+            "utilities_monthly": input_data.utilities_monthly,
+            "total_rent": total_rent,
             
             # Key Metrics
             "housing_offset": result["housing_cost_offset_pct"] * 100,
@@ -1212,6 +1255,12 @@ async def calculate_househack_worksheet(input_data: HouseHackWorksheetInput):
                 (15 if savings_vs_renting >= 1000 else 10 if savings_vs_renting >= 500 else 0) +
                 (15 if full_rental_cash_flow > 0 else 0)
             ))),
+
+            # Pricing ladder
+            "list_price": list_price,
+            "breakeven_price": breakeven_price,
+            "target_coc_price": target_coc_price,
+            "fha_max_price": fha_max_price,
         }
         
     except Exception as e:
