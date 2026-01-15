@@ -452,6 +452,50 @@
   background: linear-gradient(135deg, rgba(0, 126, 167, 0.12) 0%, #e8eef3 100%);
 }
 
+.section-header.brrrr-highlight {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, #f1f5f9 100%);
+}
+
+.section-header.brrrr-highlight:hover {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, #e8eef3 100%);
+}
+
+.section-title.brrrr {
+  color: #7c3aed;
+}
+
+.section-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--ws-bg-alt);
+  color: var(--ws-text-muted);
+}
+
+.section-card.highlighted {
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+.data-row.brrrr-total {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+}
+
+.value-highlight {
+  color: #7c3aed !important;
+  font-weight: 700;
+}
+
+.value-positive {
+  color: var(--ws-positive) !important;
+}
+
+.value-negative {
+  color: var(--ws-negative) !important;
+}
+
 .section-title {
   font-size: 13px;
   font-weight: 600;
