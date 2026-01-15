@@ -406,8 +406,9 @@
     }
     
     .slider-value {
-      min-width: 100px;
-      padding: 8px 12px;
+      width: 85px;
+      min-width: unset;
+      padding: 6px 8px;
       border: 1px solid var(--ws-border);
       border-radius: 6px;
       font-size: 14px;
@@ -466,6 +467,29 @@
       margin-top: 4px;
     }
     
+    /* ===== PROFIT FINDER ===== */
+    .price-position-visual { display: flex; align-items: stretch; justify-content: center; padding: 12px; min-height: 420px; gap: 8px; }
+    .marker-column { width: 85px; position: relative; flex-shrink: 0; }
+    .simple-marker { position: absolute; display: flex; align-items: center; gap: 2px; transform: translateY(-50%); transition: top 0.3s ease; }
+    .marker-column.left .simple-marker, .marker-column.right .simple-marker { right: 0; left: 0; justify-content: center; }
+    .marker-stack { display: flex; flex-direction: column; align-items: center; text-align: center; line-height: 1.1; }
+    .marker-name { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .marker-val { font-size: 11px; font-weight: 700; }
+    .marker-arrow { font-size: 10px; }
+    #purchase-price-marker .marker-name, #purchase-price-marker .marker-val, #purchase-price-marker .marker-arrow { color: var(--iq-teal); }
+    #list-price-marker .marker-name, #list-price-marker .marker-val, #list-price-marker .marker-arrow { color: #dc2626; }
+    #breakeven-marker .marker-name, #breakeven-marker .marker-val, #breakeven-marker .marker-arrow { color: #64748b; }
+    .price-scale-bar { width: 60px; flex-shrink: 0; }
+    .price-scale-bar img { display: block; width: 60px; height: 400px; }
+    .cashflow-indicator { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px 16px; margin: 0 8px 8px; border-radius: 8px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%); border: 1px solid rgba(16, 185, 129, 0.25); }
+    .cashflow-indicator.negative { background: linear-gradient(135deg, rgba(220, 38, 38, 0.12) 0%, rgba(220, 38, 38, 0.04) 100%); border-color: rgba(220, 38, 38, 0.25); }
+    .cashflow-indicator .cf-label { font-size: 12px; color: var(--ws-text-muted); }
+    .cashflow-indicator .cf-amount { font-size: 18px; font-weight: 700; color: #10b981; }
+    .cashflow-indicator.negative .cf-amount { color: #dc2626; }
+    .cashflow-indicator .cf-status { font-size: 12px; font-weight: 600; color: #10b981; padding: 2px 8px; background: rgba(16, 185, 129, 0.15); border-radius: 10px; }
+    .cashflow-indicator.negative .cf-status { color: #dc2626; background: rgba(220, 38, 38, 0.15); }
+    .slider-value.pct-field { width: 65px; }
+
     /* Charts Sidebar */
     .worksheet-charts-sidebar {
       display: flex;
@@ -1309,6 +1333,25 @@
     
     <!-- Charts Sidebar -->
     <aside class="worksheet-charts-sidebar">
+      <!-- Profit Finder -->
+      <div class="chart-card">
+        <div class="chart-card-title">Profit Finder</div>
+        <div class="price-position-visual">
+          <div class="marker-column left">
+            <div class="simple-marker" id="purchase-price-marker" style="top: 75%;">
+              <div class="marker-stack"><span class="marker-name">Buy</span><span class="marker-val" id="purchase-price-display">$65,000</span></div>
+              <span class="marker-arrow">▶</span>
+            </div>
+          </div>
+          <div class="price-scale-bar"><img src="/images/price-ladder-arrow.svg" alt="Profit Scale" /></div>
+          <div class="marker-column right">
+            <div class="simple-marker" id="breakeven-marker" style="top: 50%;"><span class="marker-arrow">◀</span><div class="marker-stack"><span class="marker-name">MAO</span><span class="marker-val" id="breakeven-value">$84,000</span></div></div>
+            <div class="simple-marker" id="list-price-marker" style="top: 20%;"><span class="marker-arrow">◀</span><div class="marker-stack"><span class="marker-name">ARV</span><span class="marker-val" id="list-price-display">$140,000</span></div></div>
+          </div>
+        </div>
+        <div class="cashflow-indicator" id="cashflow-indicator"><span class="cf-label">Assignment Fee:</span><span class="cf-amount" id="cashflow-amount">$19,000</span><span class="cf-status" id="position-text">Profit Zone</span></div>
+      </div>
+      
       <!-- Pricing Ladder -->
       <div class="chart-card">
         <div class="chart-card-title">Pricing Ladder</div>
