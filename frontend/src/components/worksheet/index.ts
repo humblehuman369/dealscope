@@ -24,6 +24,7 @@ export { MultiYearProjections } from './sections/MultiYearProjections'
 export { BrrrrWorksheet } from './brrrr/BrrrrWorksheet'
 export { FlipWorksheet } from './flip/FlipWorksheet'
 export { HouseHackWorksheet } from './househack/HouseHackWorksheet'
+export { WholesaleWorksheet } from './wholesale/WholesaleWorksheet'
 
 // Chart Components
 export { CashFlowChart } from './charts/CashFlowChart'

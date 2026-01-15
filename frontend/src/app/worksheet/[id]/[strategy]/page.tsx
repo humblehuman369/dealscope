@@ -9,6 +9,7 @@ import { StrWorksheet } from '@/components/worksheet/str/StrWorksheet'
 import { BrrrrWorksheet } from '@/components/worksheet/brrrr/BrrrrWorksheet'
 import { FlipWorksheet } from '@/components/worksheet/flip/FlipWorksheet'
 import { HouseHackWorksheet } from '@/components/worksheet/househack/HouseHackWorksheet'
+import { WholesaleWorksheet } from '@/components/worksheet/wholesale/WholesaleWorksheet'
 import { useWorksheetProperty } from '@/hooks/useWorksheetProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { WORKSHEET_STRATEGIES, WorksheetStrategyId } from '@/constants/worksheetStrategies'
@@ -36,6 +37,12 @@ const HOUSE_HACK_HELP_TIPS = [
   'FHA loans allow 3.5% down on 2-4 unit properties.',
   'Budget for vacancy even if units are leased.',
   'Aim for a net housing cost below market rent.',
+]
+
+const WHOLESALE_HELP_TIPS = [
+  'Target assignment fees above $5k for strong wholesale deals.',
+  'Investor ROI should exceed 25% to be compelling.',
+  'Keep contracts below 70% of ARV minus rehab.',
 ]
 
 export default function StrategyWorksheetPage() {
@@ -158,6 +165,20 @@ export default function StrategyWorksheetPage() {
         helpTips={HOUSE_HACK_HELP_TIPS}
       >
         <HouseHackWorksheet property={property} />
+      </WorksheetShell>
+    )
+  }
+
+  if (strategyParam === 'wholesale') {
+    return (
+      <WorksheetShell
+        property={property}
+        propertyId={propertyId}
+        strategy="wholesale"
+        helpTitle="Wholesale Tips"
+        helpTips={WHOLESALE_HELP_TIPS}
+      >
+        <WholesaleWorksheet property={property} />
       </WorksheetShell>
     )
   }
