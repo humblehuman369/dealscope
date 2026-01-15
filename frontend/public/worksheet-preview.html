@@ -1356,21 +1356,41 @@
       transition: top 0.3s ease;
     }
     
-    .left-marker-label {
-      font-size: 10px;
-      color: var(--iq-teal);
-      font-weight: 600;
+    .marker-label-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
     }
     
-    .left-marker-value {
+    .left-marker .marker-label-stack {
+      align-items: flex-end;
+    }
+    
+    .right-marker .marker-label-stack {
+      align-items: flex-start;
+    }
+    
+    .marker-title {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    
+    .marker-price {
       font-size: 11px;
-      color: var(--iq-teal);
       font-weight: 700;
+    }
+    
+    .left-marker .marker-title,
+    .left-marker .marker-price {
+      color: var(--iq-teal);
     }
     
     .left-marker-arrow {
       color: var(--iq-teal);
-      font-size: 10px;
+      font-size: 12px;
+      margin-left: 4px;
     }
     
     /* Center - The gradient bar */
@@ -1428,17 +1448,20 @@
     }
     
     .right-marker-arrow {
-      font-size: 10px;
+      font-size: 12px;
+      margin-right: 4px;
     }
     
-    .right-marker-label {
-      font-size: 10px;
-      font-weight: 600;
+    .right-marker.list .marker-title,
+    .right-marker.list .marker-price,
+    .right-marker.list .right-marker-arrow {
+      color: #dc2626;
     }
     
-    .right-marker-value {
-      font-size: 11px;
-      font-weight: 700;
+    .right-marker.breakeven .marker-title,
+    .right-marker.breakeven .marker-price,
+    .right-marker.breakeven .right-marker-arrow {
+      color: #64748b;
     }
     
     /* Cash Flow indicator at bottom */
@@ -2421,35 +2444,41 @@
     
     <!-- Charts Sidebar - Dynamic Visualizations -->
     <aside class="worksheet-charts-sidebar">
-      <!-- Price Position - Profit vs Loss Visual -->
+      <!-- Profit Pricer - Visual Price Position Tool -->
       <div class="chart-card">
-        <div class="chart-card-title">Price Position</div>
+        <div class="chart-card-title">Profit Pricer</div>
         <div class="price-position-visual">
           <!-- Left side: Your Price (dynamic) -->
           <div class="price-left-markers">
             <div class="left-marker" id="purchase-price-marker">
-              <span class="left-marker-label">You:</span>
-              <span class="left-marker-value" id="purchase-price-display">$2,660,746</span>
+              <div class="marker-label-stack">
+                <span class="marker-title">Your Price</span>
+                <span class="marker-price" id="purchase-price-display">$2,660,746</span>
+              </div>
               <span class="left-marker-arrow">▶</span>
             </div>
           </div>
           
           <!-- Center: The gradient bar -->
           <div class="price-scale-bar">
-            <img src="/images/price-ladder-arrow.svg" alt="Price Scale" />
+            <img src="/images/price-ladder-arrow.svg" alt="Profit Scale" />
           </div>
           
-          <!-- Right side: List Price & Breakeven (static reference) -->
+          <!-- Right side: List Price & Breakeven -->
           <div class="price-right-markers">
             <div class="right-marker list" id="list-price-marker">
               <span class="right-marker-arrow">◀</span>
-              <span class="right-marker-label">List:</span>
-              <span class="right-marker-value" id="list-price-display">$4,457,000</span>
+              <div class="marker-label-stack">
+                <span class="marker-title">List Price</span>
+                <span class="marker-price" id="list-price-display">$4,457,000</span>
+              </div>
             </div>
             <div class="right-marker breakeven" id="breakeven-marker">
               <span class="right-marker-arrow">◀</span>
-              <span class="right-marker-label">Breakeven:</span>
-              <span class="right-marker-value" id="breakeven-value">$2,998,213</span>
+              <div class="marker-label-stack">
+                <span class="marker-title">Breakeven</span>
+                <span class="marker-price" id="breakeven-value">$2,998,213</span>
+              </div>
             </div>
           </div>
         </div>
@@ -2458,7 +2487,7 @@
         <div class="cashflow-indicator" id="cashflow-indicator">
           <span class="cf-label">Monthly Cash Flow:</span>
           <span class="cf-amount" id="cashflow-amount">$1,904</span>
-          <span class="cf-status" id="position-text">In Profit Zone</span>
+          <span class="cf-status" id="position-text">Profit Zone</span>
         </div>
       </div>
       
