@@ -78,7 +78,7 @@ export function WorksheetShell({
               </button>
             </div>
             <ul className="worksheet-help-list">
-              {helpTips.map((tip, index) => (
+              {(helpTips ?? []).map((tip, index) => (
                 <li key={index} className="worksheet-help-item">
                   <Info className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
                   <span>{tip}</span>
