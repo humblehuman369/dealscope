@@ -1096,6 +1096,24 @@
 }
 
 /* ==========================================
+   STR Strategy Colors
+   ========================================== */
+.str-strategy {
+  --strategy-accent: #f97316;
+  --strategy-accent-light: #fb923c;
+  --strategy-accent-bg: rgba(249, 115, 22, 0.1);
+}
+
+/* ==========================================
+   Flip Strategy Colors
+   ========================================== */
+.flip-strategy {
+  --strategy-accent: #d97706;
+  --strategy-accent-light: #fbbf24;
+  --strategy-accent-bg: rgba(217, 119, 6, 0.1);
+}
+
+/* ==========================================
    Chart Cards
    ========================================== */
 .chart-card {
@@ -1123,6 +1141,14 @@
 
 .chart-card-title.brrrr {
   color: var(--strategy-accent, #7c3aed);
+}
+
+.chart-card-title.str {
+  color: var(--strategy-accent, #f97316);
+}
+
+.chart-card-title.flip {
+  color: var(--strategy-accent, #d97706);
 }
 
 /* ==========================================
@@ -1276,6 +1302,10 @@
   color: var(--strategy-accent, #7c3aed);
 }
 
+.mini-stat-value.str {
+  color: var(--strategy-accent, #f97316);
+}
+
 .mini-stat-label {
   font-size: 11px;
   color: var(--ws-text-muted);
@@ -1379,6 +1409,24 @@
   border-radius: 2px;
 }
 
+.str-strategy .pricing-ladder-track {
+  background: linear-gradient(180deg, #dc2626 0%, #f97316 25%, #eab308 50%, #10b981 75%, var(--strategy-accent, #f97316) 100%);
+}
+
+.flip-strategy .pricing-ladder-track {
+  background: linear-gradient(180deg, #10b981 0%, #eab308 50%, var(--strategy-accent, #d97706) 100%);
+}
+
+.flip-strategy .pricing-ladder-marker.profit-target {
+  border-color: #22c55e;
+  background: white;
+}
+
+.flip-strategy .pricing-ladder-marker.mao {
+  border-color: #b45309;
+  background: white;
+}
+
 .pricing-ladder-item {
   display: flex;
   align-items: center;
@@ -1418,6 +1466,9 @@
 .pricing-ladder-marker.current { background: var(--strategy-accent, #7c3aed); }
 .pricing-ladder-marker.target { background: #f59e0b; }
 .pricing-ladder-marker.mao { background: var(--ws-negative); }
+.pricing-ladder-marker.list { border-color: #dc2626; background: white; }
+.pricing-ladder-marker.coc { border-color: #10b981; background: white; }
+.pricing-ladder-marker.profit-target { border-color: #10b981; background: white; }
 
 .pricing-ladder-value {
   font-size: 13px;
@@ -1427,6 +1478,10 @@
 
 .pricing-ladder-value.arv { color: var(--ws-positive); }
 .pricing-ladder-value.current { color: var(--strategy-accent, #7c3aed); }
+.pricing-ladder-value.list { color: #dc2626; }
+.pricing-ladder-value.target { color: #f59e0b; }
+.pricing-ladder-value.coc { color: #10b981; }
+.pricing-ladder-value.profit-target { color: #22c55e; }
 
 .pricing-ladder-hint {
   font-size: 11px;
@@ -1456,6 +1511,271 @@
 
 .pricing-discount-fill.brrrr {
   background: linear-gradient(90deg, var(--strategy-accent, #7c3aed), var(--strategy-accent-light, #a78bfa));
+}
+
+.pricing-discount-fill.str {
+  background: linear-gradient(90deg, var(--strategy-accent, #f97316), var(--strategy-accent-light, #fb923c));
+}
+
+.pricing-discount-fill.flip {
+  background: linear-gradient(90deg, var(--strategy-accent, #d97706), var(--strategy-accent-light, #fbbf24));
+}
+
+/* ==========================================
+   STR Revenue Breakdown
+   ========================================== */
+.str-revenue-breakdown {
+  padding: 16px;
+}
+
+.revenue-gauge {
+  text-align: center;
+  padding: 16px 0;
+}
+
+.revenue-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--strategy-accent, #f97316);
+}
+
+.revenue-label {
+  font-size: 12px;
+  color: var(--ws-text-muted);
+  margin-top: 4px;
+}
+
+.revenue-breakdown {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ws-border-light);
+}
+
+.revenue-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.revenue-item-label {
+  color: var(--ws-text-secondary);
+}
+
+.revenue-item-value {
+  font-weight: 600;
+  color: var(--ws-text-primary);
+}
+
+.revenue-item-value.positive { color: var(--ws-positive); }
+.revenue-item-value.negative { color: var(--ws-negative); }
+
+/* ==========================================
+   STR Seasonality Grid
+   ========================================== */
+.seasonality-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 16px;
+}
+
+.season-card {
+  padding: 10px 8px;
+  background: var(--ws-bg-alt);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.season-card.peak {
+  background: var(--strategy-accent-bg, rgba(249, 115, 22, 0.1));
+  border: 1px solid var(--strategy-accent-light, #fb923c);
+}
+
+.season-label {
+  font-size: 10px;
+  color: var(--ws-text-muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.season-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ws-text-primary);
+}
+
+.season-card.peak .season-value {
+  color: var(--strategy-accent, #f97316);
+}
+
+/* ==========================================
+   STR vs LTR Comparison
+   ========================================== */
+.str-vs-ltr {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.comparison-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.comparison-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.comparison-label {
+  color: var(--ws-text-secondary);
+}
+
+.comparison-value {
+  font-weight: 600;
+}
+
+.comparison-value.str {
+  color: var(--strategy-accent, #f97316);
+}
+
+.comparison-value.ltr {
+  color: var(--iq-teal);
+}
+
+.comparison-bar-track {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.comparison-bar {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.comparison-bar.str {
+  background: linear-gradient(90deg, var(--strategy-accent, #f97316), var(--strategy-accent-light, #fb923c));
+}
+
+.comparison-bar.ltr {
+  background: linear-gradient(90deg, var(--iq-teal), var(--iq-teal-light));
+}
+
+.comparison-premium {
+  text-align: center;
+  padding: 12px;
+  background: var(--strategy-accent-bg, rgba(249, 115, 22, 0.1));
+  border-radius: 8px;
+}
+
+.comparison-premium-label {
+  font-size: 11px;
+  color: var(--ws-text-muted);
+}
+
+.comparison-premium-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--strategy-accent, #f97316);
+}
+
+/* ==========================================
+   Flip ROI Gauge
+   ========================================== */
+.flip-roi-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+}
+
+.roi-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--strategy-accent, #d97706);
+}
+
+.roi-label {
+  font-size: 12px;
+  color: var(--ws-text-muted);
+  margin-top: 4px;
+}
+
+.roi-annualized {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ws-border-light);
+  width: 100%;
+  text-align: center;
+}
+
+.roi-annualized-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--strategy-accent, #d97706);
+}
+
+.roi-annualized-label {
+  font-size: 11px;
+  color: var(--ws-text-muted);
+  margin-top: 4px;
+}
+
+/* ==========================================
+   Flip Profit Timeline
+   ========================================== */
+.profit-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.timeline-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timeline-label {
+  width: 40px;
+  font-size: 11px;
+  color: var(--ws-text-muted);
+}
+
+.timeline-bar-container {
+  flex: 1;
+  position: relative;
+  height: 20px;
+  background: var(--ws-bg-alt);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.timeline-bar {
+  height: 100%;
+  border-radius: 10px;
+}
+
+.timeline-bar.profit {
+  background: linear-gradient(90deg, var(--strategy-accent, #d97706), var(--strategy-accent-light, #fbbf24));
+}
+
+.timeline-value {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ws-text-primary);
 }
 
 .pricing-discount-label {
