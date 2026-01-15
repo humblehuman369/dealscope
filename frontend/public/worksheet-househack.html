@@ -534,7 +534,7 @@
           <div class="data-row">
             <div class="data-label"><span>Property Type</span></div>
             <div></div>
-            <select class="select-input" id="property-type">
+            <select class="select-input" id="property-type" aria-label="Property type">
               <option value="2">Duplex (2 Units)</option>
               <option value="3">Triplex (3 Units)</option>
               <option value="4">Fourplex (4 Units)</option>
@@ -545,23 +545,23 @@
           
           <div class="data-row has-slider">
             <div class="data-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Purchase Price</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="50000" max="2000000" value="425000"></div></div>
-            <input type="text" class="slider-value" value="$425,000">
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="50000" max="2000000" value="425000" aria-label="Purchase price"></div></div>
+            <input type="text" class="slider-value" value="$425,000" aria-label="Purchase price value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>$ Down Payment</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="3.5" max="25" step="0.5" value="5"></div></div>
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="3.5" max="25" step="0.5" value="5" aria-label="Down payment percent"></div></div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="text" class="slider-value" value="5%" style="min-width: 60px;">
+              <input type="text" class="slider-value" value="5%" style="min-width: 60px;" aria-label="Down payment percent value">
               <span class="slider-secondary" id="down-payment-amt">$21,250</span>
             </div>
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Closing Costs</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="0" max="25000" value="8625"></div></div>
-            <input type="text" class="slider-value" value="$8,625">
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="0" max="25000" value="8625" aria-label="Closing costs"></div></div>
+            <input type="text" class="slider-value" value="$8,625" aria-label="Closing costs value">
           </div>
           
           <div class="data-row total">
@@ -587,7 +587,7 @@
           <div class="data-row">
             <div class="data-label"><span>Loan Type</span></div>
             <div></div>
-            <select class="select-input" id="loan-type">
+            <select class="select-input" id="loan-type" aria-label="Loan type">
               <option value="fha">FHA (3.5% min)</option>
               <option value="conventional" selected>Conventional (5% min)</option>
               <option value="va">VA (0% down)</option>
@@ -596,21 +596,21 @@
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Interest Rate</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="4" max="10" step="0.125" value="7.25"></div></div>
-            <input type="text" class="slider-value" value="7.25%">
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="4" max="10" step="0.125" value="7.25" aria-label="Interest rate"></div></div>
+            <input type="text" class="slider-value" value="7.25%" aria-label="Interest rate value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Loan Term</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="15" max="30" step="5" value="30"></div></div>
-            <input type="text" class="slider-value" value="30 years">
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="15" max="30" step="5" value="30" aria-label="Loan term in years"></div></div>
+            <input type="text" class="slider-value" value="30 years" aria-label="Loan term value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>PMI Rate</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="0" max="1.5" step="0.1" value="0.8"></div></div>
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="0" max="1.5" step="0.1" value="0.8" aria-label="PMI rate"></div></div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="text" class="slider-value" value="0.8%" style="min-width: 60px;">
+              <input type="text" class="slider-value" value="0.8%" style="min-width: 60px;" aria-label="PMI rate value">
               <span class="slider-secondary" id="pmi-amt">$269/mo</span>
             </div>
           </div>
@@ -636,26 +636,26 @@
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Unit 2 Rent</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="300" max="8000" value="1800"></div></div>
-            <input type="text" class="slider-value" value="$1,800">
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="300" max="8000" value="1800" aria-label="Unit 2 rent"></div></div>
+            <input type="text" class="slider-value" value="$1,800" aria-label="Unit 2 rent value">
           </div>
           
           <div class="data-row has-slider" id="unit3-row" style="display: none;">
             <div class="data-label"><span>Unit 3 Rent</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="300" max="8000" value="1600"></div></div>
-            <input type="text" class="slider-value" value="$1,600">
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="300" max="8000" value="1600" aria-label="Unit 3 rent"></div></div>
+            <input type="text" class="slider-value" value="$1,600" aria-label="Unit 3 rent value">
           </div>
           
           <div class="data-row has-slider" id="unit4-row" style="display: none;">
             <div class="data-label"><span>Unit 4 Rent</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="300" max="8000" value="1500"></div></div>
-            <input type="text" class="slider-value" value="$1,500">
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="300" max="8000" value="1500" aria-label="Unit 4 rent"></div></div>
+            <input type="text" class="slider-value" value="$1,500" aria-label="Unit 4 rent value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Vacancy Rate</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="0" max="15" value="5"></div></div>
-            <input type="text" class="slider-value" value="5%">
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="0" max="15" value="5" aria-label="Vacancy rate"></div></div>
+            <input type="text" class="slider-value" value="5%" aria-label="Vacancy rate value">
           </div>
           
           <div class="data-row total">
@@ -673,38 +673,38 @@
         <div class="section-content">
           <div class="data-row has-slider">
             <div class="data-label"><span>Property Taxes</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="100" max="1000" value="354"></div></div>
-            <input type="text" class="slider-value" value="$354/mo">
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="100" max="1000" value="354" aria-label="Property taxes"></div></div>
+            <input type="text" class="slider-value" value="$354/mo" aria-label="Property taxes value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Insurance</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="50" max="400" value="175"></div></div>
-            <input type="text" class="slider-value" value="$175/mo">
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="50" max="400" value="175" aria-label="Insurance"></div></div>
+            <input type="text" class="slider-value" value="$175/mo" aria-label="Insurance value">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Maintenance</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="1" max="10" value="5"></div></div>
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="1" max="10" value="5" aria-label="Maintenance percent"></div></div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="text" class="slider-value" value="5%" style="min-width: 60px;">
+              <input type="text" class="slider-value" value="5%" style="min-width: 60px;" aria-label="Maintenance percent value">
               <span class="slider-secondary" id="maintenance-amt">$86/mo</span>
             </div>
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>CapEx Reserve</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="1" max="10" value="5"></div></div>
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="1" max="10" value="5" aria-label="CapEx reserve percent"></div></div>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="text" class="slider-value" value="5%" style="min-width: 60px;">
+              <input type="text" class="slider-value" value="5%" style="min-width: 60px;" aria-label="CapEx reserve percent value">
               <span class="slider-secondary" id="capex-amt">$86/mo</span>
             </div>
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Utilities (Your Share)</span></div>
-            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="0" max="400" value="150"></div></div>
-            <input type="text" class="slider-value" value="$150/mo">
+            <div class="slider-container"><div class="slider-wrapper"><input type="range" class="slider-input" min="0" max="400" value="150" aria-label="Utilities share"></div></div>
+            <input type="text" class="slider-value" value="$150/mo" aria-label="Utilities share value">
           </div>
           
           <div class="data-row total">
