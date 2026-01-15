@@ -403,7 +403,11 @@ def calculate_brrrr(
     # Phase 3: Rent
     annual_gross_rent = monthly_rent_post_rehab * 12
     effective_gross_income = annual_gross_rent * (1 - vacancy_rate)
-    operating_expenses = annual_gross_rent * operating_expense_pct
+    operating_expenses = (
+        annual_gross_rent * operating_expense_pct +
+        property_taxes_annual +
+        insurance_annual
+    )
     noi = effective_gross_income - operating_expenses
     estimated_cap_rate = noi / arv
     
@@ -492,7 +496,7 @@ def calculate_flip(
     inspection_costs: float = 1000,
     renovation_budget: float = 60500,
     contingency_pct: float = 0.10,
-    holding_period_months: int = 6,
+    holding_period_months: float = 6,
     property_taxes_annual: float = 4500,
     insurance_annual: float = 1500,
     utilities_monthly: float = 100,
@@ -548,7 +552,7 @@ def calculate_flip(
     
     # Key Metrics
     roi = net_profit_before_tax / total_cash_required if total_cash_required > 0 else 0
-    annualized_roi = roi * (12 / holding_period_months)
+    annualized_roi = roi * (12 / holding_period_months) if holding_period_months > 0 else 0
     profit_margin = net_profit_before_tax / arv if arv > 0 else 0
     
     # 70% Rule Check

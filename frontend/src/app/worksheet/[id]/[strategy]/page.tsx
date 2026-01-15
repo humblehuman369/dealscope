@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react'
 import { WorksheetLayout } from '@/components/worksheet/WorksheetLayout'
 import { WorksheetShell } from '@/components/worksheet/WorksheetShell'
 import { StrWorksheet } from '@/components/worksheet/str/StrWorksheet'
+import { BrrrrWorksheet } from '@/components/worksheet/brrrr/BrrrrWorksheet'
 import { useWorksheetProperty } from '@/hooks/useWorksheetProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { WORKSHEET_STRATEGIES, WorksheetStrategyId } from '@/constants/worksheetStrategies'
@@ -15,6 +16,12 @@ const STR_HELP_TIPS = [
   'Average 65-75% occupancy is realistic for most markets',
   'Platform fees (Airbnb/VRBO) typically 3-15% of booking',
   'Dynamic pricing tools can increase revenue 10-20%',
+]
+
+const BRRRR_HELP_TIPS = [
+  'Target 70-75% all-in vs. ARV to create strong equity at refinance.',
+  'Shorter rehab timelines reduce holding costs and improve returns.',
+  'Aim to recycle 100% of cash invested at refinance when possible.',
 ]
 
 export default function StrategyWorksheetPage() {
@@ -95,6 +102,20 @@ export default function StrategyWorksheetPage() {
         helpTips={STR_HELP_TIPS}
       >
         <StrWorksheet property={property} />
+      </WorksheetShell>
+    )
+  }
+
+  if (strategyParam === 'brrrr') {
+    return (
+      <WorksheetShell
+        property={property}
+        propertyId={propertyId}
+        strategy="brrrr"
+        helpTitle="BRRRR Tips"
+        helpTips={BRRRR_HELP_TIPS}
+      >
+        <BrrrrWorksheet property={property} />
       </WorksheetShell>
     )
   }
