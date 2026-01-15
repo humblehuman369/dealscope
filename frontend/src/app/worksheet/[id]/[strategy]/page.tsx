@@ -7,6 +7,7 @@ import { WorksheetLayout } from '@/components/worksheet/WorksheetLayout'
 import { WorksheetShell } from '@/components/worksheet/WorksheetShell'
 import { StrWorksheet } from '@/components/worksheet/str/StrWorksheet'
 import { BrrrrWorksheet } from '@/components/worksheet/brrrr/BrrrrWorksheet'
+import { FlipWorksheet } from '@/components/worksheet/flip/FlipWorksheet'
 import { useWorksheetProperty } from '@/hooks/useWorksheetProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { WORKSHEET_STRATEGIES, WorksheetStrategyId } from '@/constants/worksheetStrategies'
@@ -22,6 +23,12 @@ const BRRRR_HELP_TIPS = [
   'Target 70-75% all-in vs. ARV to create strong equity at refinance.',
   'Shorter rehab timelines reduce holding costs and improve returns.',
   'Aim to recycle 100% of cash invested at refinance when possible.',
+]
+
+const FLIP_HELP_TIPS = [
+  'Follow the 70% rule: pay no more than 70% of ARV minus repairs.',
+  'Shorter holding periods reduce carrying costs and protect margins.',
+  'Target at least a 15% profit margin after all selling costs.',
 ]
 
 export default function StrategyWorksheetPage() {
@@ -116,6 +123,20 @@ export default function StrategyWorksheetPage() {
         helpTips={BRRRR_HELP_TIPS}
       >
         <BrrrrWorksheet property={property} />
+      </WorksheetShell>
+    )
+  }
+
+  if (strategyParam === 'flip') {
+    return (
+      <WorksheetShell
+        property={property}
+        propertyId={propertyId}
+        strategy="flip"
+        helpTitle="Fix & Flip Tips"
+        helpTips={FLIP_HELP_TIPS}
+      >
+        <FlipWorksheet property={property} />
       </WorksheetShell>
     )
   }
