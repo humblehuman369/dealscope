@@ -20,6 +20,12 @@
   <!-- LOSS text at top -->
   <text x="30" y="28" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">LOSS</text>
   
-  <!-- PROFIT text at bottom -->
-  <text x="30" y="388" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">PROFIT</text>
+  <!-- Minus sign in red zone -->
+  <text x="30" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">−</text>
+  
+  <!-- Plus sign in green zone -->
+  <text x="30" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">+</text>
+  
+  <!-- GAIN text at bottom -->
+  <text x="30" y="388" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">GAIN</text>
 </svg>
