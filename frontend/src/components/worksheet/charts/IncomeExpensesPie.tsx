@@ -3,19 +3,19 @@
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 
 export function IncomeExpensesPie() {
-  const { assumptions, viewMode } = useWorksheetStore()
+  const { assumptions, viewMode, worksheetMetrics } = useWorksheetStore()
   const derived = useWorksheetDerived()
 
   const multiplier = viewMode === 'monthly' ? 1/12 : 1
 
   // Calculate expense breakdown
   const expenseBreakdown = [
-    { label: 'Property Taxes', value: assumptions.propertyTaxes * multiplier, color: '#ef4444' },
-    { label: 'Insurance', value: assumptions.insurance * multiplier, color: '#f97316' },
+    { label: 'Property Taxes', value: (worksheetMetrics?.property_taxes ?? assumptions.propertyTaxes) * multiplier, color: '#ef4444' },
+    { label: 'Insurance', value: (worksheetMetrics?.insurance ?? assumptions.insurance) * multiplier, color: '#f97316' },
     { label: 'Management', value: derived.propertyManagement * multiplier, color: '#eab308' },
     { label: 'Maintenance', value: derived.maintenance * multiplier, color: '#22c55e' },
     { label: 'CapEx', value: derived.capex * multiplier, color: '#06b6d4' },
-    { label: 'HOA', value: assumptions.hoaFees * multiplier, color: '#8b5cf6' },
+    { label: 'HOA', value: (worksheetMetrics?.hoa_fees ?? assumptions.hoaFees) * multiplier, color: '#8b5cf6' },
   ].filter(e => e.value > 0)
 
   const totalExpenses = expenseBreakdown.reduce((sum, e) => sum + e.value, 0)

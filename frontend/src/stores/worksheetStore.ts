@@ -9,10 +9,13 @@ import {
 
 // Use relative paths for API calls to go through Next.js API routes
 const API_BASE_URL = ''
+const WORKSHEET_API_URL = '/api/v1/worksheet/ltr/calculate'
+const CALC_DEBOUNCE_MS = 150
 
 // Debounce helper
 let saveTimeout: NodeJS.Timeout | null = null
 const SAVE_DEBOUNCE_MS = 2000
+let calcTimeout: NodeJS.Timeout | null = null
 
 // Extended assumptions for worksheet
 export interface WorksheetAssumptions extends ProjectionAssumptions {
@@ -37,6 +40,9 @@ export interface WorksheetState {
   assumptions: WorksheetAssumptions
   projections: YearlyProjection[]
   summary: ProjectionSummary | null
+  worksheetMetrics: WorksheetMetrics | null
+  isCalculating: boolean
+  calculationError: string | null
   isDirty: boolean
   isSaving: boolean
   lastSaved: Date | null
@@ -48,12 +54,51 @@ export interface WorksheetState {
   updateAssumption: <K extends keyof WorksheetAssumptions>(key: K, value: WorksheetAssumptions[K]) => void
   updateMultipleAssumptions: (updates: Partial<WorksheetAssumptions>) => void
   recalculate: () => void
+  recalculateProjections: () => void
+  recalculateWorksheetMetrics: () => void
   setActiveSection: (section: string) => void
   setViewMode: (mode: 'monthly' | 'yearly') => void
   markSaved: () => void
   reset: () => void
   saveToBackend: () => Promise<void>
   debouncedSave: () => void
+}
+
+export interface WorksheetMetrics {
+  gross_income: number
+  annual_gross_rent: number
+  vacancy_loss: number
+  gross_expenses: number
+  property_taxes: number
+  insurance: number
+  property_management: number
+  maintenance: number
+  maintenance_only: number
+  capex: number
+  hoa_fees: number
+  loan_amount: number
+  down_payment: number
+  closing_costs: number
+  monthly_payment: number
+  annual_debt_service: number
+  noi: number
+  monthly_cash_flow: number
+  annual_cash_flow: number
+  cap_rate: number
+  cash_on_cash_return: number
+  dscr: number
+  grm: number
+  one_percent_rule: number
+  arv: number
+  arv_psf: number
+  price_psf: number
+  rehab_psf: number
+  equity: number
+  equity_after_rehab: number
+  mao: number
+  total_cash_needed: number
+  ltv: number
+  deal_score: number
 }
 
 const defaultAssumptions: WorksheetAssumptions = {
@@ -102,6 +147,9 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
   assumptions: { ...defaultAssumptions },
   projections: [],
   summary: null,
+  worksheetMetrics: null,
+  isCalculating: false,
+  calculationError: null,
   isDirty: false,
   isSaving: false,
   lastSaved: null,
@@ -139,7 +187,8 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
       assumptions: { ...state.assumptions, [key]: value },
       isDirty: true,
     }))
-    get().recalculate()
+    get().recalculateProjections()
+    get().recalculateWorksheetMetrics()
     get().debouncedSave()
   },
 
@@ -148,11 +197,17 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
       assumptions: { ...state.assumptions, ...updates },
       isDirty: true,
     }))
-    get().recalculate()
+    get().recalculateProjections()
+    get().recalculateWorksheetMetrics()
     get().debouncedSave()
   },
 
   recalculate: () => {
+    get().recalculateProjections()
+    get().recalculateWorksheetMetrics()
+  },
+
+  recalculateProjections: () => {
     const { assumptions } = get()
     
     // Calculate 30-year projections
@@ -165,6 +220,68 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
     const summary = calculateProjectionSummary(projections, totalCashInvested)
     
     set({ projections, summary })
+  },
+
+  recalculateWorksheetMetrics: () => {
+    if (calcTimeout) {
+      clearTimeout(calcTimeout)
+    }
+
+    calcTimeout = setTimeout(async () => {
+      const { assumptions, propertyData } = get()
+      if (!assumptions.purchasePrice) {
+        set({ worksheetMetrics: null })
+        return
+      }
+
+      const sqft = propertyData?.property_data_snapshot?.sqft || undefined
+      const payload = {
+        purchase_price: assumptions.purchasePrice,
+        monthly_rent: assumptions.monthlyRent,
+        property_taxes_annual: assumptions.propertyTaxes,
+        insurance_annual: assumptions.insurance,
+        down_payment_pct: assumptions.downPaymentPct,
+        interest_rate: assumptions.interestRate,
+        loan_term_years: assumptions.loanTermYears,
+        closing_costs: assumptions.closingCosts,
+        rehab_costs: assumptions.rehabCosts,
+        vacancy_rate: assumptions.vacancyRate,
+        property_management_pct: assumptions.managementPct,
+        maintenance_pct: assumptions.maintenancePct,
+        capex_pct: assumptions.capexReservePct,
+        hoa_monthly: assumptions.hoaFees,
+        arv: assumptions.arv,
+        sqft,
+      }
+
+      set({ isCalculating: true, calculationError: null })
+
+      try {
+        const response = await fetch(WORKSHEET_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        })
+
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data?.detail || 'Failed to calculate worksheet metrics')
+        }
+
+        set({
+          worksheetMetrics: data,
+          isCalculating: false,
+        })
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to calculate worksheet metrics'
+        set({
+          calculationError: message,
+          isCalculating: false,
+        })
+      }
+    }, CALC_DEBOUNCE_MS)
   },
 
   setActiveSection: (section) => {
@@ -186,6 +303,9 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
       assumptions: { ...defaultAssumptions },
       projections: [],
       summary: null,
+      worksheetMetrics: null,
+      isCalculating: false,
+      calculationError: null,
       isDirty: false,
       isSaving: false,
       lastSaved: null,
@@ -243,12 +363,15 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
 
 // Derived values / selectors
 export const useWorksheetDerived = () => {
-  const { assumptions, projections } = useWorksheetStore()
+  const { assumptions, projections, worksheetMetrics } = useWorksheetStore()
   
-  // Calculate derived values
-  const loanAmount = assumptions.purchasePrice * (1 - assumptions.downPaymentPct)
-  const downPayment = assumptions.purchasePrice * assumptions.downPaymentPct
-  const totalCashNeeded = downPayment + assumptions.closingCosts + assumptions.rehabCosts
+  const safeNumber = (value?: number | null) => (typeof value === 'number' ? value : 0)
+  const metrics = worksheetMetrics
+  
+  // Worksheet-calculated values (API-driven)
+  const loanAmount = safeNumber(metrics?.loan_amount)
+  const downPayment = safeNumber(metrics?.down_payment)
+  const totalCashNeeded = safeNumber(metrics?.total_cash_needed)
   
   // Year 1 values
   const year1 = projections[0] || {
@@ -260,49 +383,35 @@ export const useWorksheetDerived = () => {
     cashFlow: 0,
   }
   
-  const annualGrossRent = assumptions.monthlyRent * 12
-  const vacancy = annualGrossRent * assumptions.vacancyRate
-  const effectiveGrossIncome = annualGrossRent - vacancy
+  const annualGrossRent = safeNumber(metrics?.annual_gross_rent)
+  const vacancy = safeNumber(metrics?.vacancy_loss)
+  const effectiveGrossIncome = safeNumber(metrics?.gross_income)
   
-  const propertyManagement = effectiveGrossIncome * assumptions.managementPct
-  const maintenance = effectiveGrossIncome * assumptions.maintenancePct
-  const capex = effectiveGrossIncome * assumptions.capexReservePct
+  const propertyManagement = safeNumber(metrics?.property_management)
+  const maintenance = safeNumber(metrics?.maintenance_only)
+  const capex = safeNumber(metrics?.capex)
   
-  const totalOperatingExpenses = 
-    assumptions.propertyTaxes + 
-    assumptions.insurance + 
-    propertyManagement + 
-    maintenance + 
-    capex + 
-    assumptions.hoaFees + 
-    assumptions.utilities + 
-    assumptions.landscaping + 
-    assumptions.miscExpenses
+  const totalOperatingExpenses = safeNumber(metrics?.gross_expenses)
+  const noi = safeNumber(metrics?.noi)
   
-  const noi = effectiveGrossIncome - totalOperatingExpenses
+  const monthlyPayment = safeNumber(metrics?.monthly_payment)
+  const annualDebtService = safeNumber(metrics?.annual_debt_service)
   
-  // Financing calculations
-  const monthlyRate = assumptions.interestRate / 12
-  const numPayments = assumptions.loanTermYears * 12
-  const monthlyPayment = loanAmount > 0 
-    ? (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
-      (Math.pow(1 + monthlyRate, numPayments) - 1)
-    : 0
-  const annualDebtService = monthlyPayment * 12
-  
-  const annualCashFlow = noi - annualDebtService
-  const monthlyCashFlow = annualCashFlow / 12
+  const annualCashFlow = safeNumber(metrics?.annual_cash_flow)
+  const monthlyCashFlow = safeNumber(metrics?.monthly_cash_flow)
   
   // Returns
-  const capRate = assumptions.purchasePrice > 0 ? (noi / assumptions.purchasePrice) * 100 : 0
-  const cashOnCash = totalCashNeeded > 0 ? (annualCashFlow / totalCashNeeded) * 100 : 0
+  const capRate = safeNumber(metrics?.cap_rate)
+  const cashOnCash = safeNumber(metrics?.cash_on_cash_return)
   
   // Ratios
-  const ltv = assumptions.purchasePrice > 0 ? (loanAmount / assumptions.purchasePrice) * 100 : 0
-  const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
-  const rentToValue = assumptions.purchasePrice > 0 ? (assumptions.monthlyRent / assumptions.purchasePrice) * 100 : 0
-  const grm = assumptions.monthlyRent > 0 ? assumptions.purchasePrice / (assumptions.monthlyRent * 12) : 0
-  const breakEvenRatio = annualGrossRent > 0 ? ((totalOperatingExpenses + annualDebtService) / annualGrossRent) * 100 : 0
+  const ltv = safeNumber(metrics?.ltv)
+  const dscr = safeNumber(metrics?.dscr)
+  const rentToValue = safeNumber(metrics?.one_percent_rule) * 100
+  const grm = safeNumber(metrics?.grm)
+  const breakEvenRatio = annualGrossRent > 0
+    ? ((totalOperatingExpenses + annualDebtService) / annualGrossRent) * 100
+    : 0
   
   return {
     // Financing

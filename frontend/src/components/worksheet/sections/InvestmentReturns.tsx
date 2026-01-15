@@ -6,16 +6,17 @@ import { DisplayField } from '../EditableField'
 import { TrendingUp, Percent, DollarSign, Calculator } from 'lucide-react'
 
 export function InvestmentReturns() {
-  const { assumptions, summary } = useWorksheetStore()
+  const { summary, worksheetMetrics } = useWorksheetStore()
   const derived = useWorksheetDerived()
 
   // Return on Investment calculation
+  const equityAfterRehab = worksheetMetrics?.equity_after_rehab ?? 0
   const roi = derived.totalCashNeeded > 0 
-    ? ((derived.annualCashFlow + (assumptions.arv - assumptions.purchasePrice)) / derived.totalCashNeeded) * 100 
+    ? ((derived.annualCashFlow + equityAfterRehab) / derived.totalCashNeeded) * 100 
     : 0
 
   // Return on Equity (simplified - year 1 equity)
-  const equity = derived.downPayment + (assumptions.arv - assumptions.purchasePrice - assumptions.rehabCosts)
+  const equity = derived.downPayment + equityAfterRehab
   const roe = equity > 0 ? (derived.annualCashFlow / equity) * 100 : 0
 
   // IRR from summary (if available)
@@ -30,7 +31,7 @@ export function InvestmentReturns() {
     },
     {
       label: 'Cap Rate (Market Value)',
-      value: assumptions.arv > 0 ? (derived.noi / assumptions.arv) * 100 : 0,
+      value: worksheetMetrics?.arv ? (derived.noi / worksheetMetrics.arv) * 100 : 0,
       threshold: { low: 4, good: 6 },
       icon: Percent,
     },
