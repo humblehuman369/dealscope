@@ -1277,6 +1277,10 @@ class WholesaleWorksheetInput(BaseModel):
     assignment_fee: float = 15000
     marketing_costs: float = 500
     earnest_money: float = 1000
+    selling_costs_pct: float = 0.06
+    investor_down_payment_pct: float = 0.25
+    investor_purchase_costs_pct: float = 0.03
+    tax_rate: float = 0.20
 
 
 @app.post("/api/v1/worksheet/wholesale/calculate")
@@ -1287,7 +1291,8 @@ async def calculate_wholesale_worksheet(input_data: WholesaleWorksheetInput):
         mao = (input_data.arv * 0.70) - input_data.rehab_costs
         
         # Calculate assignment fee from prices
-        assignment_fee = input_data.investor_price - input_data.contract_price
+        assignment_fee = input_data.investor_price - input_data.contract_price - input_data.marketing_costs
+        post_tax_profit = assignment_fee * (1 - input_data.tax_rate)
         
         result = calculate_wholesale(
             arv=input_data.arv,
@@ -1297,32 +1302,60 @@ async def calculate_wholesale_worksheet(input_data: WholesaleWorksheetInput):
             earnest_money_deposit=input_data.earnest_money,
         )
         
-        # Investor ROI calculation
-        investor_all_in = input_data.investor_price + input_data.rehab_costs
-        investor_profit = input_data.arv - investor_all_in
-        investor_roi = (investor_profit / investor_all_in * 100) if investor_all_in > 0 else 0
+        # Investor analysis
+        investor_purchase_costs = input_data.investor_price * input_data.investor_purchase_costs_pct
+        down_payment = input_data.investor_price * input_data.investor_down_payment_pct
+        amount_financed = input_data.investor_price - down_payment
+        total_cash_needed = down_payment + investor_purchase_costs + input_data.rehab_costs
+        selling_costs = input_data.arv * input_data.selling_costs_pct
+        sale_proceeds = input_data.arv - selling_costs
+        investor_all_in = input_data.investor_price + input_data.rehab_costs + investor_purchase_costs
+        investor_profit = sale_proceeds - investor_all_in
+        investor_roi = (investor_profit / total_cash_needed * 100) if total_cash_needed > 0 else 0
+        
+        # Deal score heuristic
+        deal_score = 50
+        if assignment_fee > 5000:
+            deal_score += 15
+        if assignment_fee > 10000:
+            deal_score += 10
+        if investor_roi > 20:
+            deal_score += 15
+        if input_data.investor_price < mao:
+            deal_score += 10
+        deal_score = min(100, max(0, round(deal_score)))
         
         return {
             # Deal Structure
             "contract_price": input_data.contract_price,
             "investor_price": input_data.investor_price,
             "assignment_fee": assignment_fee,
+            "closing_costs": input_data.marketing_costs,
+            "earnest_money": input_data.earnest_money,
             "mao": mao,
             
             # Your Profit
             "gross_profit": result["gross_profit"],
             "net_profit": result["net_profit"],
+            "post_tax_profit": post_tax_profit,
             "roi": result["roi"] * 100,
             "total_cash_at_risk": result["total_cash_at_risk"],
             
             # Investor Analysis
             "investor_all_in": investor_all_in,
+            "investor_purchase_costs": investor_purchase_costs,
+            "down_payment": down_payment,
+            "amount_financed": amount_financed,
+            "total_cash_needed": total_cash_needed,
+            "selling_costs": selling_costs,
+            "sale_proceeds": sale_proceeds,
             "investor_profit": investor_profit,
             "investor_roi": investor_roi,
             
             # Deal Viability
             "deal_viability": result["deal_viability"],
             "spread_available": result["spread_available"],
+            "deal_score": deal_score,
         }
         
     except Exception as e:
