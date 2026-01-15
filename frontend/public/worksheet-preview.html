@@ -1970,7 +1970,7 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="400000" max="1100000" value="723600" style="--slider-progress: 46%;">
+                <input type="range" class="slider-input" min="400000" max="1100000" value="723600" style="--slider-progress: 46%;" aria-label="Purchase price slider">
               </div>
             </div>
             <input type="text" class="slider-value" value="$723,600" aria-label="Purchase price">
@@ -1993,11 +1993,11 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="5" max="40" value="20" style="--slider-progress: 43%;">
+                <input type="range" class="slider-input" min="5" max="40" value="20" style="--slider-progress: 43%;" aria-label="Down payment percent slider">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value pct-field" value="20.0%">
+              <input type="text" class="slider-value pct-field" value="20.0%" aria-label="Down payment percent">
               <span class="slider-secondary">$144,720</span>
             </div>
           </div>
@@ -2007,10 +2007,10 @@
             <div class="data-label"><span>Purchase Costs</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="50000" value="21708" style="--slider-progress: 43%;">
+                <input type="range" class="slider-input" min="0" max="50000" value="21708" style="--slider-progress: 43%;" aria-label="Purchase costs slider">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$21,708">
+            <input type="text" class="slider-value" value="$21,708" aria-label="Purchase costs">
           </div>
           
           <!-- Total Cash Needed - Calculated -->
@@ -2040,7 +2040,7 @@
           <div class="data-row has-slider">
             <div class="data-label"><span>Financing Of</span></div>
             <div class="slider-container">
-              <select class="select-input">
+              <select class="select-input" aria-label="Financing of">
                 <option value="price" selected>Purchase Price</option>
                 <option value="cost">Total Cost (Price + Rehab)</option>
                 <option value="arv">After Repair Value</option>
@@ -2053,7 +2053,7 @@
           <div class="data-row has-slider">
             <div class="data-label"><span>Loan Type</span></div>
             <div class="slider-container">
-              <select class="select-input">
+              <select class="select-input" aria-label="Loan type">
                 <option value="amortizing-30" selected>Amortizing, 30 Year</option>
                 <option value="amortizing-15">Amortizing, 15 Year</option>
                 <option value="interest-only">Interest Only</option>
@@ -2069,10 +2069,10 @@
             <div class="data-label"><span>Interest Rate</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="3" max="12" value="7" step="0.125" style="--slider-progress: 44%;">
+                <input type="range" class="slider-input" min="3" max="12" value="7" step="0.125" style="--slider-progress: 44%;" aria-label="Interest rate slider">
               </div>
             </div>
-            <input type="text" class="slider-value pct-field" value="7.0%">
+            <input type="text" class="slider-value pct-field" value="7.0%" aria-label="Interest rate">
           </div>
           
           <!-- Loan Term with Slider -->
@@ -2080,10 +2080,10 @@
             <div class="data-label"><span>Loan Term</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="10" max="30" value="30" step="5" style="--slider-progress: 100%;">
+                <input type="range" class="slider-input" min="10" max="30" value="30" step="5" style="--slider-progress: 100%;" aria-label="Loan term slider">
               </div>
             </div>
-            <input type="text" class="slider-value" value="30 years">
+            <input type="text" class="slider-value" value="30 years" aria-label="Loan term">
           </div>
           
           <!-- Monthly Payment - Calculated (Highlighted) -->
@@ -2108,10 +2108,10 @@
             <div class="data-label"><span>Rehab Costs</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="150000" value="0" style="--slider-progress: 0%;">
+                <input type="range" class="slider-input" min="0" max="150000" value="0" style="--slider-progress: 0%;" aria-label="Rehab costs slider">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$0">
+            <input type="text" class="slider-value" value="$0" aria-label="Rehab costs">
           </div>
           
           <!-- After Repair Value with Slider -->
@@ -2119,10 +2119,10 @@
             <div class="data-label"><span>After Repair Value</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="500000" max="1200000" value="795960" style="--slider-progress: 42%;">
+                <input type="range" class="slider-input" min="500000" max="1200000" value="795960" style="--slider-progress: 42%;" aria-label="After repair value slider">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$795,960">
+            <input type="text" class="slider-value" value="$795,960" aria-label="After repair value">
           </div>
           
           <!-- ARV Per Sq Ft - Calculated -->
@@ -2165,11 +2165,11 @@
             <div class="data-label"><span>Monthly Gross Rent</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="500" max="15000" value="8081" style="--slider-progress: 52%;">
+                <input type="range" class="slider-input" min="500" max="15000" value="8081" style="--slider-progress: 52%;" aria-label="Monthly gross rent slider">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" value="$8,081">
+              <input type="text" class="slider-value" value="$8,081" aria-label="Monthly gross rent">
               <span class="slider-secondary">$96,972/yr</span>
             </div>
           </div>
@@ -2179,11 +2179,11 @@
             <div class="data-label"><span>Vacancy</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="20" value="8" style="--slider-progress: 40%;">
+                <input type="range" class="slider-input" min="0" max="20" value="8" style="--slider-progress: 40%;" aria-label="Vacancy percent slider">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value pct-field" value="8.0%">
+              <input type="text" class="slider-value pct-field" value="8.0%" aria-label="Vacancy percent">
               <span class="slider-secondary value-negative">-$7,758</span>
             </div>
           </div>
@@ -2210,10 +2210,10 @@
             <div class="data-label"><span>Property Taxes</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="15000" value="6471" style="--slider-progress: 43%;">
+                <input type="range" class="slider-input" min="0" max="15000" value="6471" style="--slider-progress: 43%;" aria-label="Property taxes slider">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$6,471">
+            <input type="text" class="slider-value" value="$6,471" aria-label="Property taxes">
           </div>
           
           <!-- Insurance with Slider -->
@@ -2221,10 +2221,10 @@
             <div class="data-label"><span>Insurance</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="8000" value="2894" style="--slider-progress: 36%;">
+                <input type="range" class="slider-input" min="0" max="8000" value="2894" style="--slider-progress: 36%;" aria-label="Insurance slider">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$2,894">
+            <input type="text" class="slider-value" value="$2,894" aria-label="Insurance">
           </div>
           
           <!-- Property Management with Slider -->
@@ -2232,11 +2232,11 @@
             <div class="data-label"><span>Property Mgmt</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="15" value="0" style="--slider-progress: 0%;">
+                <input type="range" class="slider-input" min="0" max="15" value="0" style="--slider-progress: 0%;" aria-label="Property management percent slider">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value pct-field" value="0%">
+              <input type="text" class="slider-value pct-field" value="0%" aria-label="Property management percent">
               <span class="slider-secondary">$0</span>
             </div>
           </div>
@@ -2246,11 +2246,11 @@
             <div class="data-label"><span>Maintenance</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="15" value="2" style="--slider-progress: 13%;">
+                <input type="range" class="slider-input" min="0" max="15" value="2" style="--slider-progress: 13%;" aria-label="Maintenance percent slider">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value pct-field" value="2%">
+              <input type="text" class="slider-value pct-field" value="2%" aria-label="Maintenance percent">
               <span class="slider-secondary">$1,784</span>
             </div>
           </div>
@@ -2260,11 +2260,11 @@
             <div class="data-label"><span>Capital Expense</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="15" value="0" style="--slider-progress: 0%;">
+                <input type="range" class="slider-input" min="0" max="15" value="0" style="--slider-progress: 0%;" aria-label="Capital expense percent slider">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value pct-field" value="0%">
+              <input type="text" class="slider-value pct-field" value="0%" aria-label="Capital expense percent">
               <span class="slider-secondary">$0</span>
             </div>
           </div>
@@ -2274,10 +2274,10 @@
             <div class="data-label"><span>HOA Fees</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="0" max="500" value="0" style="--slider-progress: 0%;">
+                <input type="range" class="slider-input" min="0" max="500" value="0" style="--slider-progress: 0%;" aria-label="HOA fees slider">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$0">
+            <input type="text" class="slider-value" value="$0" aria-label="HOA fees">
           </div>
           
           <!-- Gross Expenses - Section Total -->
