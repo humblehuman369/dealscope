@@ -1332,18 +1332,19 @@
       color: var(--ws-text-muted);
     }
     
-    /* ===== PRICE POSITION - Left/Right Marker Layout ===== */
+    /* ===== PROFIT FINDER - Centered Layout ===== */
     .price-position-visual {
       display: flex;
       align-items: stretch;
-      padding: 16px 8px;
-      min-height: 440px;
+      justify-content: center;
+      padding: 8px 4px;
+      min-height: 420px;
       position: relative;
     }
     
     /* Left side - Your Price marker (dynamic) */
     .price-left-markers {
-      width: 100px;
+      width: 90px;
       position: relative;
       flex-shrink: 0;
     }
@@ -1354,12 +1355,17 @@
       display: flex;
       align-items: center;
       gap: 4px;
-      background: rgba(0, 126, 167, 0.1);
-      border: 1px solid var(--iq-teal);
+      background: var(--iq-teal);
       border-radius: 6px;
-      padding: 4px 8px;
+      padding: 6px 10px;
       transform: translateY(-50%);
       transition: top 0.3s ease;
+    }
+    
+    .left-marker .marker-title,
+    .left-marker .marker-price,
+    .left-marker-arrow {
+      color: white !important;
     }
     
     .marker-label-stack {
@@ -1389,12 +1395,12 @@
     }
     
     .left-marker .marker-title,
-    .left-marker .marker-price {
-      color: var(--iq-teal);
+    .left-marker .marker-price,
+    .left-marker .left-marker-arrow {
+      color: white;
     }
     
     .left-marker-arrow {
-      color: var(--iq-teal);
       font-size: 12px;
       margin-left: 4px;
     }
@@ -1424,50 +1430,37 @@
       display: flex;
       align-items: center;
       gap: 4px;
-      padding: 4px 8px;
+      padding: 6px 10px;
       border-radius: 6px;
       transform: translateY(-50%);
       transition: top 0.3s ease;
       white-space: nowrap;
     }
     
+    /* List Price - solid red background */
     .right-marker.list {
-      background: rgba(220, 38, 38, 0.1);
-      border: 1px solid #dc2626;
+      background: #dc2626;
     }
     
     .right-marker.list .right-marker-arrow,
-    .right-marker.list .right-marker-label,
-    .right-marker.list .right-marker-value {
-      color: #dc2626;
+    .right-marker.list .marker-title,
+    .right-marker.list .marker-price {
+      color: white;
     }
     
+    /* Breakeven - solid gray background */
     .right-marker.breakeven {
-      background: rgba(100, 116, 139, 0.1);
-      border: 1px solid #64748b;
+      background: #64748b;
     }
     
     .right-marker.breakeven .right-marker-arrow,
-    .right-marker.breakeven .right-marker-label,
-    .right-marker.breakeven .right-marker-value {
-      color: #64748b;
+    .right-marker.breakeven .marker-title,
+    .right-marker.breakeven .marker-price {
+      color: white;
     }
     
     .right-marker-arrow {
-      font-size: 12px;
-      margin-right: 4px;
-    }
-    
-    .right-marker.list .marker-title,
-    .right-marker.list .marker-price,
-    .right-marker.list .right-marker-arrow {
-      color: #dc2626;
-    }
-    
-    .right-marker.breakeven .marker-title,
-    .right-marker.breakeven .marker-price,
-    .right-marker.breakeven .right-marker-arrow {
-      color: #64748b;
+      font-size: 10px;
     }
     
     /* Cash Flow indicator at bottom */
@@ -2452,7 +2445,7 @@
     <aside class="worksheet-charts-sidebar">
       <!-- Profit Pricer - Visual Price Position Tool -->
       <div class="chart-card">
-        <div class="chart-card-title">Profit Pricer</div>
+        <div class="chart-card-title">Profit Finder</div>
         <div class="price-position-visual">
           <!-- Left side: Your Price (dynamic) -->
           <div class="price-left-markers">
@@ -3039,13 +3032,25 @@
       
       // Calculate breakeven from NOI
       let breakevenPrice = result.breakeven_price;
-      if (!breakevenPrice && result.noi) {
+      
+      // Calculate NOI if not directly provided
+      let noi = result.noi;
+      if (!noi && result.gross_income && result.gross_expenses) {
+        noi = result.gross_income - result.gross_expenses;
+      }
+      
+      // Calculate breakeven if we have NOI
+      if (!breakevenPrice && noi && noi > 0) {
         const downPaymentPct = getSliderValue('Down Payment', 20) / 100;
         const interestRate = getSliderValue('Interest Rate', 7) / 100;
         const loanTerm = getSliderValue('Loan Term', 30);
-        breakevenPrice = calculateBreakevenFromNOI(result.noi, downPaymentPct, interestRate, loanTerm);
+        breakevenPrice = calculateBreakevenFromNOI(noi, downPaymentPct, interestRate, loanTerm);
       }
-      if (!breakevenPrice || breakevenPrice <= 0) breakevenPrice = listPrice * 0.90;
+      
+      // Fallback if still no breakeven
+      if (!breakevenPrice || breakevenPrice <= 0 || !isFinite(breakevenPrice)) {
+        breakevenPrice = listPrice * 0.90;
+      }
       
       // Breakeven line is at 50% (center of the 400px bar)
       // Higher price = toward top (LOSS/red)
