@@ -1349,53 +1349,50 @@
       flex-shrink: 0;
     }
     
-    /* Simple text markers - no boxes */
+    /* Simple text markers - centered in column */
     .simple-marker {
       position: absolute;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 2px;
       transform: translateY(-50%);
       transition: top 0.3s ease;
     }
     
     .marker-column.left .simple-marker {
       right: 0;
+      left: 0;
+      justify-content: center;
     }
     
     .marker-column.right .simple-marker {
+      right: 0;
       left: 0;
+      justify-content: center;
     }
     
-    /* Stacked label + value */
+    /* Stacked label + value - centered */
     .marker-stack {
       display: flex;
       flex-direction: column;
       align-items: center;
-      line-height: 1.2;
-    }
-    
-    .marker-column.left .marker-stack {
-      align-items: flex-end;
-    }
-    
-    .marker-column.right .marker-stack {
-      align-items: flex-start;
+      text-align: center;
+      line-height: 1.1;
     }
     
     .marker-name {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
     }
     
     .marker-val {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
     }
     
     .marker-arrow {
-      font-size: 12px;
+      font-size: 10px;
     }
     
     /* Buy marker - teal */
