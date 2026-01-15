@@ -22,7 +22,7 @@ interface WorksheetHeaderProps {
 }
 
 export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) {
-  const { isDirty, isSaving, lastSaved, viewMode, setViewMode } = useWorksheetStore()
+  const { isDirty, isSaving, lastSaved, viewMode, setViewMode, isCalculating, calculationError } = useWorksheetStore()
   const derived = useWorksheetDerived()
 
   const formatLastSaved = () => {
@@ -79,6 +79,17 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
           </div>
         </div>
       </div>
+
+      {calculationError && (
+        <div className="mt-3 text-sm text-[var(--ws-negative)]">
+          Calculation error: {calculationError}
+        </div>
+      )}
+      {isCalculating && !calculationError && (
+        <div className="mt-3 text-sm text-[var(--ws-text-secondary)]">
+          Recalculating worksheet metrics...
+        </div>
+      )}
       
       {/* Actions Row */}
       <div className="flex items-center justify-between">

@@ -1,19 +1,16 @@
 'use client'
 
-import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
+import { useWorksheetStore } from '@/stores/worksheetStore'
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
 import { Home, Ruler } from 'lucide-react'
 
 export function ValuationSection() {
-  const { assumptions, updateAssumption, propertyData } = useWorksheetStore()
-  const derived = useWorksheetDerived()
-  
-  const sqft = propertyData?.property_data_snapshot?.sqft || 1
-
-  const arvPerSqft = assumptions.arv / sqft
-  const pricePerSqft = assumptions.purchasePrice / sqft
-  const rehabPerSqft = assumptions.rehabCosts / sqft
+  const { assumptions, updateAssumption, worksheetMetrics } = useWorksheetStore()
+  const arvPerSqft = worksheetMetrics?.arv_psf ?? 0
+  const pricePerSqft = worksheetMetrics?.price_psf ?? 0
+  const rehabPerSqft = worksheetMetrics?.rehab_psf ?? 0
+  const equityAfterRehab = worksheetMetrics?.equity_after_rehab ?? 0
 
   return (
     <SectionCard title="Valuation">
@@ -39,10 +36,10 @@ export function ValuationSection() {
       
       <DataRow label="Equity at Purchase" isHighlight>
         <DisplayField 
-          value={assumptions.arv - assumptions.purchasePrice - assumptions.rehabCosts} 
+          value={equityAfterRehab}
           format="currency"
-          isPositive={assumptions.arv - assumptions.purchasePrice - assumptions.rehabCosts > 0}
-          isNegative={assumptions.arv - assumptions.purchasePrice - assumptions.rehabCosts < 0}
+          isPositive={equityAfterRehab > 0}
+          isNegative={equityAfterRehab < 0}
         />
       </DataRow>
     </SectionCard>

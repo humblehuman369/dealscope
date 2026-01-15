@@ -525,6 +525,7 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput):
         # Add worksheet-specific calculations
         arv = input_data.arv or input_data.purchase_price
         sqft = input_data.sqft or 1
+        annual_gross_rent = result["annual_gross_rent"]
         
         # Per square foot metrics
         arv_psf = arv / sqft if sqft > 0 else 0
@@ -533,9 +534,14 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput):
         
         # Equity
         equity = arv - input_data.purchase_price
+        equity_after_rehab = equity - input_data.rehab_costs
         
         # Total cash needed (including rehab)
         total_cash_needed = result["total_cash_required"] + input_data.rehab_costs
+        
+        # Expense breakdown for worksheet display
+        maintenance_only = annual_gross_rent * input_data.maintenance_pct
+        capex_reserve = annual_gross_rent * input_data.capex_pct
         
         # MAO (70% of ARV minus rehab)
         mao = (arv * 0.70) - input_data.rehab_costs
@@ -556,6 +562,8 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput):
             "insurance": result["insurance"],
             "property_management": result["property_management"],
             "maintenance": result["maintenance"],
+            "maintenance_only": maintenance_only,
+            "capex": capex_reserve,
             "hoa_fees": result["hoa_fees"],
             
             # Financing
@@ -583,6 +591,7 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput):
             "price_psf": price_psf,
             "rehab_psf": rehab_psf,
             "equity": equity,
+            "equity_after_rehab": equity_after_rehab,
             "mao": mao,
             
             # Investment Summary
