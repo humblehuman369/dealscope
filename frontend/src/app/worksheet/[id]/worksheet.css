@@ -1041,3 +1041,473 @@
   flex: 1;
   min-width: 0;
 }
+
+/* ==========================================
+   BRRRR Strategy Colors
+   ========================================== */
+.brrrr-strategy {
+  --strategy-accent: #7c3aed;
+  --strategy-accent-light: #a78bfa;
+  --strategy-accent-bg: rgba(124, 58, 237, 0.1);
+}
+
+/* ==========================================
+   Chart Cards
+   ========================================== */
+.chart-card {
+  background: white;
+  border: 1px solid var(--ws-border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--ws-shadow);
+}
+
+.chart-card.brrrr-highlight {
+  border-color: var(--strategy-accent-light, #a78bfa);
+  background: linear-gradient(180deg, var(--strategy-accent-bg, rgba(124, 58, 237, 0.1)) 0%, white 100%);
+}
+
+.chart-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ws-text-muted);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ws-border-light);
+}
+
+.chart-card-title.brrrr {
+  color: var(--strategy-accent, #7c3aed);
+}
+
+/* ==========================================
+   BRRRR Score Gauge
+   ========================================== */
+.brrrr-score-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  position: relative;
+}
+
+.brrrr-score-value {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--strategy-accent, #7c3aed);
+  margin-top: -30px;
+}
+
+.brrrr-score-label {
+  font-size: 13px;
+  color: var(--ws-text-secondary);
+  margin-top: 4px;
+}
+
+/* ==========================================
+   Cash Recovery
+   ========================================== */
+.cash-recovery-chart {
+  padding: 16px;
+}
+
+.cash-out-indicator {
+  text-align: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ws-border-light);
+  margin-bottom: 16px;
+}
+
+.cash-out-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--strategy-accent, #7c3aed);
+}
+
+.cash-out-value.positive { color: var(--ws-positive); }
+.cash-out-value.negative { color: var(--ws-negative); }
+
+.cash-out-label {
+  font-size: 12px;
+  color: var(--ws-text-muted);
+  margin-top: 4px;
+}
+
+.cash-out-status {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+.cash-out-status.positive {
+  color: var(--ws-positive);
+  background: var(--ws-positive-light);
+}
+
+.cash-out-status.negative {
+  color: var(--ws-negative);
+  background: var(--ws-negative-light);
+}
+
+.cash-recovery-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.h-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.h-bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.h-bar-label {
+  color: var(--ws-text-secondary);
+}
+
+.h-bar-value {
+  font-weight: 600;
+  color: var(--ws-text-primary);
+}
+
+.h-bar-value.positive { color: var(--ws-positive); }
+.h-bar-value.negative { color: var(--ws-negative); }
+
+.h-bar-track {
+  height: 8px;
+  background: var(--ws-border-light);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.h-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.h-bar-fill.brrrr { background: var(--strategy-accent, #7c3aed); }
+.h-bar-fill.positive { background: var(--ws-positive); }
+.h-bar-fill.negative { background: var(--ws-negative); }
+.h-bar-fill.full { width: 100%; }
+
+/* ==========================================
+   Key Metrics Grid
+   ========================================== */
+.mini-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 16px;
+}
+
+.mini-stat {
+  text-align: center;
+  padding: 12px 8px;
+  border-radius: 8px;
+  background: var(--ws-bg-alt);
+}
+
+.mini-stat.highlight {
+  background: var(--strategy-accent-bg, rgba(124, 58, 237, 0.1));
+}
+
+.mini-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ws-text-primary);
+}
+
+.mini-stat-value.brrrr {
+  color: var(--strategy-accent, #7c3aed);
+}
+
+.mini-stat-label {
+  font-size: 11px;
+  color: var(--ws-text-muted);
+  margin-top: 2px;
+}
+
+/* ==========================================
+   Cost Breakdown Donut
+   ========================================== */
+.cost-breakdown-layout {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px;
+}
+
+.mini-donut {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mini-donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70px;
+  height: 70px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini-donut-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ws-text-primary);
+}
+
+.mini-donut-label {
+  font-size: 10px;
+  color: var(--ws-text-muted);
+}
+
+.cost-breakdown-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cost-breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.cost-breakdown-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.cost-breakdown-label {
+  color: var(--ws-text-secondary);
+  flex: 1;
+}
+
+.cost-breakdown-value {
+  font-weight: 600;
+  color: var(--ws-text-primary);
+}
+
+/* ==========================================
+   Pricing Ladder
+   ========================================== */
+.pricing-ladder-container {
+  padding: 16px;
+}
+
+.pricing-ladder {
+  position: relative;
+  padding-left: 80px;
+}
+
+.pricing-ladder-track {
+  position: absolute;
+  left: 75px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--ws-positive) 0%, #f59e0b 50%, var(--ws-negative) 100%);
+  border-radius: 2px;
+}
+
+.pricing-ladder-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  position: relative;
+}
+
+.pricing-ladder-item.highlight {
+  background: var(--strategy-accent-bg, rgba(124, 58, 237, 0.1));
+  margin: 0 -16px;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+.pricing-ladder-label {
+  width: 70px;
+  font-size: 11px;
+  color: var(--ws-text-secondary);
+  text-align: right;
+  padding-right: 12px;
+}
+
+.pricing-ladder-marker {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px var(--ws-border);
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pricing-ladder-marker.arv { background: var(--ws-positive); }
+.pricing-ladder-marker.refi { background: var(--iq-teal); }
+.pricing-ladder-marker.current { background: var(--strategy-accent, #7c3aed); }
+.pricing-ladder-marker.target { background: #f59e0b; }
+.pricing-ladder-marker.mao { background: var(--ws-negative); }
+
+.pricing-ladder-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ws-text-primary);
+}
+
+.pricing-ladder-value.arv { color: var(--ws-positive); }
+.pricing-ladder-value.current { color: var(--strategy-accent, #7c3aed); }
+
+.pricing-ladder-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ws-text-muted);
+  margin-left: 6px;
+}
+
+.pricing-discount-indicator {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ws-border-light);
+}
+
+.pricing-discount-bar {
+  height: 8px;
+  background: var(--ws-border-light);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.pricing-discount-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.pricing-discount-fill.brrrr {
+  background: linear-gradient(90deg, var(--strategy-accent, #7c3aed), var(--strategy-accent-light, #a78bfa));
+}
+
+.pricing-discount-label {
+  font-size: 12px;
+  color: var(--ws-text-secondary);
+  margin-top: 8px;
+  text-align: center;
+}
+
+.pricing-discount-label span {
+  font-weight: 600;
+  color: var(--strategy-accent, #7c3aed);
+}
+
+/* ==========================================
+   Loan Comparison
+   ========================================== */
+.loan-comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px;
+}
+
+.loan-comparison-card {
+  text-align: center;
+  padding: 16px 12px;
+  border-radius: 8px;
+  background: var(--ws-bg-alt);
+}
+
+.loan-comparison-card.refi {
+  background: var(--strategy-accent-bg, rgba(124, 58, 237, 0.1));
+}
+
+.loan-comparison-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ws-text-muted);
+  margin-bottom: 8px;
+}
+
+.loan-comparison-label.refi {
+  color: var(--strategy-accent, #7c3aed);
+}
+
+.loan-comparison-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ws-text-primary);
+}
+
+.loan-comparison-value.refi {
+  color: var(--strategy-accent, #7c3aed);
+}
+
+.loan-comparison-subtext {
+  font-size: 11px;
+  color: var(--ws-text-muted);
+  margin-top: 4px;
+}
+
+.loan-comparison-subtext.refi {
+  color: var(--strategy-accent-light, #a78bfa);
+}
+
+/* ==========================================
+   Worksheet Layout - 2 Column
+   ========================================== */
+.worksheet-layout-2col {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+}
+
+.worksheet-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.worksheet-charts-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 1200px) {
+  .worksheet-layout-2col {
+    grid-template-columns: 1fr;
+  }
+  
+  .worksheet-charts-sidebar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}

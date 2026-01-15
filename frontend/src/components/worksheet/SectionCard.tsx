@@ -9,6 +9,8 @@ interface SectionCardProps {
   defaultOpen?: boolean
   className?: string
   headerRight?: ReactNode
+  badge?: string
+  isHighlighted?: boolean
 }
 
 export function SectionCard({
@@ -17,17 +19,20 @@ export function SectionCard({
   defaultOpen = true,
   className = '',
   headerRight,
+  badge,
+  isHighlighted = false,
 }: SectionCardProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className={`section-card ${className}`}>
+    <div className={`section-card ${isHighlighted ? 'highlighted' : ''} ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="section-header w-full"
+        className={`section-header w-full ${isHighlighted ? 'brrrr-highlight' : ''}`}
       >
-        <span className="section-title">{title}</span>
+        <span className={`section-title ${isHighlighted ? 'brrrr' : ''}`}>{title}</span>
         <div className="flex items-center gap-2">
+          {badge && <span className="section-badge">{badge}</span>}
           {headerRight}
           {isOpen ? (
             <ChevronUp className="w-4 h-4 text-[var(--ws-text-muted)]" />
