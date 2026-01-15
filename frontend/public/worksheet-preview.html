@@ -1326,118 +1326,151 @@
       color: var(--ws-text-muted);
     }
     
-    /* ===== PRICE POSITION - Clean Simple Layout ===== */
-    .price-position-wrapper {
+    /* ===== PRICE POSITION - Profit vs Loss Visual ===== */
+    .price-position-visual {
       display: flex;
-      gap: 24px;
-      padding: 16px;
-      align-items: flex-start;
+      gap: 16px;
+      padding: 12px;
     }
     
-    /* The gradient bar container */
-    .price-bar-container {
+    /* The gradient scale bar */
+    .price-scale-bar {
       position: relative;
       flex-shrink: 0;
+      width: 120px;
     }
     
-    .price-bar-svg {
+    .price-scale-bar img {
       display: block;
       width: 60px;
       height: 400px;
     }
     
-    /* Your Price marker arrow */
-    .your-price-arrow {
+    /* Scale markers */
+    .scale-marker {
       position: absolute;
-      left: 65px;
+      left: 0;
+      right: 0;
       display: flex;
       align-items: center;
-      gap: 4px;
-      transform: translateY(-50%);
       transition: top 0.3s ease;
-      white-space: nowrap;
     }
     
-    .arrow-icon {
-      color: #007ea7;
-      font-size: 14px;
+    .scale-marker .marker-line {
+      width: 60px;
+      height: 3px;
+      flex-shrink: 0;
     }
     
-    .arrow-text {
-      font-size: 11px;
-      font-weight: 700;
-      color: #007ea7;
-      background: rgba(0, 126, 167, 0.1);
+    .scale-marker .marker-tag {
+      font-size: 10px;
+      font-weight: 600;
       padding: 2px 6px;
       border-radius: 4px;
+      white-space: nowrap;
+      margin-left: 4px;
     }
     
-    /* Price list on the right */
-    .price-list {
+    /* List Price marker - red/orange */
+    .list-marker .marker-line {
+      background: #dc2626;
+    }
+    .list-marker .marker-tag {
+      background: rgba(220, 38, 38, 0.1);
+      color: #dc2626;
+    }
+    
+    /* Purchase Price marker - teal */
+    .purchase-marker .marker-line {
+      background: var(--iq-teal);
+      box-shadow: 0 0 8px rgba(0, 126, 167, 0.5);
+    }
+    .purchase-marker .marker-tag {
+      background: rgba(0, 126, 167, 0.15);
+      color: var(--iq-teal);
+      font-weight: 700;
+    }
+    
+    /* Info panel on the right */
+    .price-info-panel {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      padding-top: 20px;
+      gap: 12px;
+      padding-top: 40px;
     }
     
-    .price-line {
+    .info-row {
       display: flex;
       justify-content: space-between;
-      padding: 8px 12px;
+      align-items: center;
+      padding: 10px 12px;
       background: var(--ws-bg-alt);
-      border-radius: 6px;
-      font-size: 13px;
-    }
-    
-    .price-line span:first-child {
-      color: var(--ws-text-muted);
-      font-weight: 500;
-    }
-    
-    .price-line span:last-child {
-      color: var(--ws-text-primary);
-      font-weight: 700;
-    }
-    
-    .price-line.active {
-      background: linear-gradient(135deg, rgba(0, 126, 167, 0.15) 0%, rgba(0, 126, 167, 0.05) 100%);
-      border: 1px solid var(--iq-teal);
-    }
-    
-    .price-line.active span:last-child {
-      color: var(--iq-teal);
-    }
-    
-    /* Cash flow result box */
-    .cashflow-result {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
-      border: 1px solid rgba(16, 185, 129, 0.3);
       border-radius: 8px;
-      margin-top: 8px;
     }
     
-    .cashflow-result span:first-child {
+    .info-row.highlight {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    
+    .info-row.highlight.negative {
+      background: linear-gradient(135deg, rgba(220, 38, 38, 0.12) 0%, rgba(220, 38, 38, 0.04) 100%);
+      border-color: rgba(220, 38, 38, 0.25);
+    }
+    
+    .info-label {
       font-size: 12px;
       color: var(--ws-text-muted);
-      font-weight: 600;
     }
     
-    .cashflow-result span:last-child {
-      font-size: 16px;
+    .info-value {
+      font-size: 14px;
       font-weight: 700;
-      color: #10b981;
+      color: var(--ws-text-primary);
     }
     
-    .cashflow-result.negative {
+    .info-row.highlight .info-value {
+      color: #10b981;
+      font-size: 16px;
+    }
+    
+    .info-row.highlight.negative .info-value {
+      color: #dc2626;
+    }
+    
+    /* Position indicator */
+    .position-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .position-indicator.loss {
       background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(220, 38, 38, 0.05) 100%);
       border-color: rgba(220, 38, 38, 0.3);
     }
     
-    .cashflow-result.negative span:last-child {
+    .indicator-icon {
+      font-size: 16px;
+      color: #10b981;
+    }
+    
+    .position-indicator.loss .indicator-icon {
+      color: #dc2626;
+    }
+    
+    .indicator-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: #10b981;
+    }
+    
+    .position-indicator.loss .indicator-text {
       color: #dc2626;
     }
     
@@ -2374,28 +2407,40 @@
     
     <!-- Charts Sidebar - Dynamic Visualizations -->
     <aside class="worksheet-charts-sidebar">
-      <!-- Price Position -->
+      <!-- Price Position - Profit vs Loss Visual -->
       <div class="chart-card">
         <div class="chart-card-title">Price Position</div>
-        <div class="price-position-wrapper">
-          <!-- Gradient bar at native size -->
-          <div class="price-bar-container">
-            <img src="/images/price-ladder-arrow.svg" alt="Price Scale" class="price-bar-svg" />
-            <!-- Single marker for Your Price -->
-            <div class="your-price-arrow" id="your-price-marker" style="top: 42%;">
-              <span class="arrow-icon">▶</span>
-              <span class="arrow-text">Your Price</span>
+        <div class="price-position-visual">
+          <!-- The gradient scale -->
+          <div class="price-scale-bar">
+            <img src="/images/price-ladder-arrow.svg" alt="Price Scale" />
+            
+            <!-- List Price Marker -->
+            <div class="scale-marker list-marker" id="list-price-marker">
+              <div class="marker-line"></div>
+              <div class="marker-tag">List: <span id="list-price-display">$723,600</span></div>
+            </div>
+            
+            <!-- Purchase Price Marker (Dynamic) -->
+            <div class="scale-marker purchase-marker" id="purchase-price-marker">
+              <div class="marker-line"></div>
+              <div class="marker-tag">You: <span id="purchase-price-display">$723,600</span></div>
             </div>
           </div>
-          <!-- Price list -->
-          <div class="price-list">
-            <div class="price-line"><span>List Price</span><span id="list-value">$723,600</span></div>
-            <div class="price-line"><span>Breakeven</span><span id="breakeven-value">$650,000</span></div>
-            <div class="price-line active"><span>Your Price</span><span id="purchase-value">$723,600</span></div>
-            <div class="price-line"><span>IQ Target</span><span id="target-value">$557,172</span></div>
-            <div class="cashflow-result" id="cashflow-box">
-              <span>Cash Flow</span>
-              <span id="cashflow-amount">$2,508/mo</span>
+          
+          <!-- Info panel -->
+          <div class="price-info-panel">
+            <div class="info-row">
+              <span class="info-label">Breakeven Price</span>
+              <span class="info-value" id="breakeven-value">$650,000</span>
+            </div>
+            <div class="info-row highlight" id="cashflow-row">
+              <span class="info-label">Monthly Cash Flow</span>
+              <span class="info-value" id="cashflow-amount">$2,508</span>
+            </div>
+            <div class="position-indicator" id="position-indicator">
+              <span class="indicator-icon">●</span>
+              <span class="indicator-text" id="position-text">In Profit Zone</span>
             </div>
           </div>
         </div>
@@ -2935,11 +2980,10 @@
       }
     }
     
-    // Update Price Position visual
+    // Update Price Position visual - positions markers relative to breakeven (center)
     function updatePricingLadderFromBackend(purchasePrice, grossRentMonthly, result) {
       // Get prices
       const listPrice = window.propertyListPrice || 723600;
-      const iqTargetPrice = result.mao || listPrice * 0.77;
       const monthlyCashFlow = result.monthly_cash_flow || 0;
       
       // Calculate breakeven from NOI
@@ -2952,45 +2996,65 @@
       }
       if (!breakevenPrice || breakevenPrice <= 0) breakevenPrice = listPrice * 0.90;
       
-      // Position "Your Price" marker relative to breakeven
-      // Breakeven line is at 50% (center) of the SVG (200px / 400px)
-      // Above breakeven = LOSS (red zone), Below breakeven = PROFIT (green zone)
-      const breakevenPosition = 50; // Center of the bar where breakeven line is
+      // Breakeven is at 50% (center of bar, y=200 in 400px SVG)
+      // Higher price = LOSS zone (top, red)
+      // Lower price = PROFIT zone (bottom, green)
+      const breakevenCenter = 50;
       
-      // Calculate how far above/below breakeven the purchase price is
-      // If purchase > breakeven, marker goes UP (toward LOSS)
-      // If purchase < breakeven, marker goes DOWN (toward PROFIT)
-      const priceDiff = purchasePrice - breakevenPrice;
-      const priceRange = breakevenPrice * 0.5; // Range for positioning (50% of breakeven)
-      const offset = (priceDiff / priceRange) * 30; // Max 30% movement from center
-      
-      let markerPosition = breakevenPosition - offset; // Subtract because higher price = higher position (lower %)
-      markerPosition = Math.max(10, Math.min(78, markerPosition)); // Clamp within visible area
-      
-      // Position the marker
-      const marker = document.getElementById('your-price-marker');
-      if (marker) {
-        marker.style.top = markerPosition + '%';
+      // Function to convert price to position on the scale
+      // Uses breakeven as the center reference point
+      function priceToPosition(price) {
+        // Calculate difference from breakeven as percentage
+        const diffFromBreakeven = price - breakevenPrice;
+        const rangePercent = breakevenPrice * 0.4; // 40% of breakeven price = full scale range
+        
+        // Convert to position: higher price = lower % (toward top)
+        const offset = (diffFromBreakeven / rangePercent) * 40; // Max 40% movement from center
+        let position = breakevenCenter - offset;
+        
+        // Clamp to stay within visible gradient (10% to 90%)
+        return Math.max(10, Math.min(88, position));
       }
       
-      // Update price values
-      updateElement('list-value', formatCurrency(listPrice));
+      // Position List Price marker
+      const listMarker = document.getElementById('list-price-marker');
+      if (listMarker) {
+        listMarker.style.top = priceToPosition(listPrice) + '%';
+      }
+      
+      // Position Purchase Price marker
+      const purchaseMarker = document.getElementById('purchase-price-marker');
+      if (purchaseMarker) {
+        purchaseMarker.style.top = priceToPosition(purchasePrice) + '%';
+      }
+      
+      // Update displayed values
+      updateElement('list-price-display', formatCurrency(listPrice));
+      updateElement('purchase-price-display', formatCurrency(purchasePrice));
       updateElement('breakeven-value', formatCurrency(breakevenPrice));
-      updateElement('purchase-value', formatCurrency(purchasePrice));
-      updateElement('target-value', formatCurrency(iqTargetPrice));
+      updateElement('cashflow-amount', formatCurrency(monthlyCashFlow));
       
-      // Update cash flow
-      const cashflowEl = document.getElementById('cashflow-amount');
-      const cashflowBox = document.getElementById('cashflow-box');
-      if (cashflowEl) {
-        cashflowEl.textContent = formatCurrency(monthlyCashFlow) + '/mo';
+      // Update cash flow row styling
+      const cashflowRow = document.getElementById('cashflow-row');
+      if (cashflowRow) {
+        cashflowRow.className = 'info-row highlight' + (monthlyCashFlow < 0 ? ' negative' : '');
       }
-      if (cashflowBox) {
-        cashflowBox.className = 'cashflow-result' + (monthlyCashFlow < 0 ? ' negative' : '');
+      
+      // Update position indicator
+      const positionIndicator = document.getElementById('position-indicator');
+      const positionText = document.getElementById('position-text');
+      if (positionIndicator && positionText) {
+        if (purchasePrice > breakevenPrice) {
+          positionIndicator.className = 'position-indicator loss';
+          positionText.textContent = 'In Loss Zone - Price Too High';
+        } else {
+          positionIndicator.className = 'position-indicator';
+          positionText.textContent = 'In Profit Zone';
+        }
       }
       
       // Update summary card
-      updateElement('target-price-value', formatCurrency(iqTargetPrice));
+      updateElement('target-price-value', formatCurrency(result.mao || listPrice * 0.77));
     }
     
     // Helper function to update a price marker (deprecated - keeping for compatibility)
