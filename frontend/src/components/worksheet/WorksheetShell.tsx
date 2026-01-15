@@ -33,7 +33,7 @@ export function WorksheetShell({
   const propertyData = property.property_data_snapshot || {}
 
   return (
-    <div className="worksheet-container-v2">
+    <div className={`worksheet-container-v2 ${strategy}-strategy`}>
       {/* Top Navigation Bar */}
       <header className="worksheet-topbar">
         <div className="worksheet-topbar-left">
