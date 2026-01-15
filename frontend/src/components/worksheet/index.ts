@@ -2,9 +2,11 @@
 
 // Layout Components
 export { WorksheetLayout } from './WorksheetLayout'
+export { WorksheetShell } from './WorksheetShell'
 export { WorksheetSidebar } from './WorksheetSidebar'
 export { WorksheetHeader } from './WorksheetHeader'
 export { WorksheetExport } from './WorksheetExport'
+export { StrategyDropdown } from './StrategyDropdown'
 
 // Reusable Components
 export { EditableField, DisplayField } from './EditableField'

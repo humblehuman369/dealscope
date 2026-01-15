@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { WorksheetTabNav } from './WorksheetTabNav'
+import { WorksheetShell } from './WorksheetShell'
+import { WorksheetStrategyId } from '@/constants/worksheetStrategies'
 import { WorksheetHeader } from './WorksheetHeader'
 import { PropertyOverview } from './sections/PropertyOverview'
 import { PurchaseRehabSection } from './sections/PurchaseRehabSection'
@@ -14,8 +14,6 @@ import { MultiYearProjections } from './sections/MultiYearProjections'
 import { CashFlowChart } from './charts/CashFlowChart'
 import { EquityChart } from './charts/EquityChart'
 import { useWorksheetStore } from '@/stores/worksheetStore'
-import { HelpCircle, Lightbulb, Info, ChevronLeft } from 'lucide-react'
-import Link from 'next/link'
 
 interface WorksheetLayoutProps {
   property: {
@@ -27,6 +25,7 @@ interface WorksheetLayoutProps {
     property_data_snapshot: any
   }
   propertyId: string
+  strategy: WorksheetStrategyId
 }
 
 // Help tips for different sections
@@ -51,11 +50,8 @@ const helpTips: Record<string, { title: string; tips: string[] }> = {
   },
 }
 
-export function WorksheetLayout({ property, propertyId }: WorksheetLayoutProps) {
-  const [showHelp, setShowHelp] = useState(true)
+export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLayoutProps) {
   const { activeSection } = useWorksheetStore()
-  
-  const propertyData = property.property_data_snapshot || {}
   const currentHelp = helpTips[activeSection] || helpTips.analysis
 
   const renderActiveSection = () => {
@@ -98,81 +94,21 @@ export function WorksheetLayout({ property, propertyId }: WorksheetLayoutProps) 
   }
 
   return (
-    <div className="worksheet-container-v2">
-      {/* Top Navigation Bar */}
-      <header className="worksheet-topbar">
-        <div className="worksheet-topbar-left">
-          <Link href="/dashboard" className="worksheet-back-link">
-            <ChevronLeft className="w-5 h-5" />
-            <span>Back</span>
-          </Link>
-          <div className="worksheet-property-info">
-            <h1 className="worksheet-property-title">{property.address}</h1>
-            <p className="worksheet-property-subtitle">
-              {property.city}, {property.state} {property.zip_code} • 
-              {propertyData.bedrooms || 0} BR • {propertyData.bathrooms || 0} BA • 
-              {(propertyData.sqft || 0).toLocaleString()} Sq.Ft.
-            </p>
-          </div>
-        </div>
-        <div className="worksheet-topbar-right">
-          <div className="worksheet-price-badge">
-            ${(propertyData.listPrice || 0).toLocaleString()}
-          </div>
-        </div>
-      </header>
+    <WorksheetShell
+      property={property}
+      propertyId={propertyId}
+      strategy={strategy}
+      helpTitle={currentHelp.title}
+      helpTips={currentHelp.tips}
+    >
+      <WorksheetHeader 
+        property={property}
+        propertyId={propertyId}
+      />
       
-      {/* Horizontal Tab Navigation */}
-      <WorksheetTabNav />
-      
-      {/* Main Content Area with Help Panel */}
-      <div className="worksheet-main-area">
-        {/* Help Tips Panel (Left) */}
-        {showHelp && (
-          <aside className="worksheet-help-panel">
-            <div className="worksheet-help-header">
-              <Lightbulb className="w-5 h-5 text-amber-500" />
-              <span>{currentHelp.title}</span>
-              <button 
-                onClick={() => setShowHelp(false)}
-                className="worksheet-help-close"
-              >
-                ×
-              </button>
-            </div>
-            <ul className="worksheet-help-list">
-              {currentHelp.tips.map((tip, index) => (
-                <li key={index} className="worksheet-help-item">
-                  <Info className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                  <span>{tip}</span>
-                </li>
-              ))}
-            </ul>
-          </aside>
-        )}
-        
-        {/* Toggle help button when hidden */}
-        {!showHelp && (
-          <button 
-            onClick={() => setShowHelp(true)}
-            className="worksheet-help-toggle"
-          >
-            <HelpCircle className="w-5 h-5" />
-          </button>
-        )}
-        
-        {/* Main Content */}
-        <main className={`worksheet-content-area ${!showHelp ? 'full-width' : ''}`}>
-          <WorksheetHeader 
-            property={property}
-            propertyId={propertyId}
-          />
-          
-          <div className="worksheet-sections">
-            {renderActiveSection()}
-          </div>
-        </main>
+      <div className="worksheet-sections">
+        {renderActiveSection()}
       </div>
-    </div>
+    </WorksheetShell>
   )
 }

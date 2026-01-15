@@ -1,6 +1,8 @@
 'use client'
 
 import { useWorksheetStore } from '@/stores/worksheetStore'
+import { StrategyDropdown } from './StrategyDropdown'
+import { WorksheetStrategyId } from '@/constants/worksheetStrategies'
 import {
   BarChart3,
   TrendingUp,
@@ -31,11 +33,17 @@ const tabs: TabItem[] = [
   { id: 'reports', label: 'Reports & Sharing', shortLabel: 'Reports', icon: Share2, disabled: true },
 ]
 
-export function WorksheetTabNav() {
+interface WorksheetTabNavProps {
+  propertyId: string
+  strategy: WorksheetStrategyId
+}
+
+export function WorksheetTabNav({ propertyId, strategy }: WorksheetTabNavProps) {
   const { activeSection, setActiveSection } = useWorksheetStore()
+  const isTabsEnabled = strategy === 'ltr'
 
   const handleTabClick = (tab: TabItem) => {
-    if (tab.disabled) return
+    if (!isTabsEnabled || tab.disabled) return
     if (tab.section) {
       setActiveSection(tab.section)
     }
@@ -43,28 +51,32 @@ export function WorksheetTabNav() {
 
   return (
     <div className="worksheet-tab-nav">
+      <StrategyDropdown propertyId={propertyId} activeStrategy={strategy} />
+
       <div className="worksheet-tabs-scroll">
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = tab.section === activeSection
           
+          const isDisabled = tab.disabled || !isTabsEnabled
+
           return (
             <button
               key={tab.id}
               onClick={() => handleTabClick(tab)}
-              disabled={tab.disabled}
-              className={`worksheet-tab ${isActive ? 'active' : ''} ${tab.disabled ? 'disabled' : ''}`}
+              disabled={isDisabled}
+              className={`worksheet-tab ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
             >
               <Icon className="worksheet-tab-icon" />
               <span className="worksheet-tab-label">{tab.shortLabel}</span>
-              {tab.disabled && <span className="worksheet-tab-badge">Soon</span>}
+              {isDisabled && <span className="worksheet-tab-badge">Soon</span>}
             </button>
           )
         })}
       </div>
       
       {/* Help button */}
-      <button className="worksheet-help-btn">
+      <button className="worksheet-help-btn" aria-label="Worksheet help" type="button">
         <HelpCircle className="w-5 h-5" />
       </button>
     </div>

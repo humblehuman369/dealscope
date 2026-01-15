@@ -616,6 +616,7 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput):
 class STRWorksheetInput(BaseModel):
     """Input parameters for STR worksheet calculation."""
     purchase_price: float
+    list_price: Optional[float] = None
     average_daily_rate: float
     occupancy_rate: float = Field(0.75, description="Occupancy rate (0.75 = 75%)")
     property_taxes_annual: float = 6000
@@ -660,10 +661,74 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput):
             insurance_annual=input_data.insurance_annual,
             maintenance_annual=input_data.purchase_price * (input_data.maintenance_pct + input_data.capex_pct),
         )
+
+        # Expense breakdown helpers
+        supplies_annual = input_data.supplies_monthly * 12
+        utilities_annual = input_data.utilities_monthly * 12
+        maintenance_annual = input_data.purchase_price * input_data.maintenance_pct
+        capex_annual = input_data.purchase_price * input_data.capex_pct
+
+        # Pricing ladder and deal score helpers
+        gross_revenue = result["total_gross_revenue"]
+        noi = result["noi"]
+        annual_debt_service = result["annual_debt_service"]
+        total_cash_needed = result["total_cash_required"]
+
+        list_price = input_data.list_price or (input_data.purchase_price * 1.03)
+
+        # Breakeven price where NOI = debt service
+        breakeven_price = (
+            input_data.purchase_price * (annual_debt_service / noi)
+            if noi > 0 else 0
+        )
+
+        # 10% CoC target price (based on HTML worksheet heuristic)
+        target_cash_flow = total_cash_needed * 0.10
+        ten_coc_price = (
+            input_data.purchase_price -
+            ((target_cash_flow - (noi - annual_debt_service)) / 0.25)
+            if total_cash_needed > 0 else 0
+        )
+
+        # MAO based on GRM (7x gross revenue)
+        mao_price = gross_revenue * 7
+
+        # Discount percent from list
+        discount_percent = (
+            ((list_price - input_data.purchase_price) / list_price * 100)
+            if list_price > 0 else 0
+        )
+
+        # Seasonality estimate from base occupancy (percent values)
+        base_occ_pct = input_data.occupancy_rate * 100
+        seasonality = {
+            "summer": min(95, base_occ_pct + 15),
+            "spring": min(95, base_occ_pct + 5),
+            "fall": max(30, base_occ_pct - 5),
+            "winter": max(30, base_occ_pct - 15),
+        }
+
+        # Simple deal score heuristic
+        cap_rate_pct = result["cap_rate"] * 100
+        coc_pct = result["cash_on_cash_return"] * 100
+        deal_score = 50
+        if cap_rate_pct >= 10:
+            deal_score += 15
+        elif cap_rate_pct >= 8:
+            deal_score += 10
+        if coc_pct >= 15:
+            deal_score += 15
+        elif coc_pct >= 10:
+            deal_score += 10
+        if result["dscr"] >= 1.25:
+            deal_score += 10
+        if result["break_even_occupancy"] <= 0.6:
+            deal_score += 10
+        deal_score = min(100, max(0, round(deal_score)))
         
         return {
             # Revenue
-            "gross_revenue": result["total_gross_revenue"],
+            "gross_revenue": gross_revenue,
             "rental_revenue": result["rental_revenue"],
             "cleaning_fee_revenue": result["cleaning_fee_revenue"],
             "nights_occupied": result["nights_occupied"],
@@ -677,6 +742,10 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput):
             "cleaning_costs": result["cleaning_costs"],
             "property_taxes": result["property_taxes"],
             "insurance": result["insurance"],
+            "supplies": supplies_annual,
+            "utilities": utilities_annual,
+            "maintenance": maintenance_annual,
+            "capex": capex_annual,
             
             # Cash Flow
             "noi": result["noi"],
@@ -684,15 +753,27 @@ async def calculate_str_worksheet(input_data: STRWorksheetInput):
             "annual_cash_flow": result["annual_cash_flow"],
             
             # Key Metrics
-            "cap_rate": result["cap_rate"] * 100,
-            "cash_on_cash_return": result["cash_on_cash_return"] * 100,
+            "cap_rate": cap_rate_pct,
+            "cash_on_cash_return": coc_pct,
             "dscr": result["dscr"],
             "break_even_occupancy": result["break_even_occupancy"] * 100,
+            "deal_score": deal_score,
             
             # Financing
             "loan_amount": result["loan_amount"],
             "monthly_payment": result["monthly_pi"],
-            "total_cash_needed": result["total_cash_required"],
+            "annual_debt_service": annual_debt_service,
+            "total_cash_needed": total_cash_needed,
+
+            # Pricing ladder
+            "list_price": list_price,
+            "breakeven_price": breakeven_price,
+            "target_coc_price": ten_coc_price,
+            "mao_price": mao_price,
+            "discount_percent": discount_percent,
+
+            # Seasonality
+            "seasonality": seasonality,
         }
         
     except Exception as e:
