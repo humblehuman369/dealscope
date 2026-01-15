@@ -1,6 +1,9 @@
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
 import { ProfitFinder } from '../charts/ProfitFinder'
+import { PricingLadder } from '../charts/PricingLadder'
+import { FlipRoiGauge } from '../charts/FlipRoiGauge'
+import { ProfitTimeline } from '../charts/ProfitTimeline'
 import { useFlipWorksheetCalculator } from '@/hooks/useFlipWorksheetCalculator'
 import { SavedProperty } from '@/hooks/useWorksheetProperty'
 import { DollarSign, Home, Wrench, Percent, Calendar } from 'lucide-react'
@@ -34,8 +37,11 @@ export function FlipWorksheet({ property }: FlipWorksheetProps) {
     return `${value.toFixed(1)}%`
   }
 
+  const monthlyHoldingCost =
+    inputs.holding_months > 0 ? (result?.total_holding_costs ?? 0) / inputs.holding_months : 0
+
   return (
-    <div className="space-y-4">
+    <div className="flip-strategy space-y-4">
       <div className="summary-cards">
         <div className="summary-card highlight">
           <div className="summary-card-label">Total Profit</div>
@@ -85,8 +91,8 @@ export function FlipWorksheet({ property }: FlipWorksheetProps) {
         </div>
       )}
 
-      <div className="section-two-column">
-        <div className="space-y-4">
+      <div className="worksheet-layout-2col">
+        <div className="worksheet-main-content">
           <SectionCard title="Purchase & Rehab">
             <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />}>
               <EditableField
@@ -247,17 +253,14 @@ export function FlipWorksheet({ property }: FlipWorksheetProps) {
           </SectionCard>
         </div>
 
-        <aside className="space-y-4">
-          {/* Profit Finder Visual */}
-          <div className="section-card">
-            <div className="section-header">
-              <h3 className="section-title">Profit Finder</h3>
-            </div>
+        <aside className="worksheet-charts-sidebar">
+          <div className="chart-card">
+            <div className="chart-card-title">Profit Finder</div>
             <ProfitFinder
               purchasePrice={inputs.purchase_price}
               listPrice={inputs.arv}
-              breakevenPrice={result?.breakeven_price ?? inputs.purchase_price * 1.15}
-              monthlyCashFlow={result?.net_profit ?? 0}
+              breakevenPrice={result?.breakeven_price ?? inputs.purchase_price}
+              monthlyCashFlow={result?.net_profit_before_tax ?? 0}
               buyLabel="Buy"
               listLabel="ARV"
               evenLabel="Break"
@@ -265,38 +268,38 @@ export function FlipWorksheet({ property }: FlipWorksheetProps) {
             />
           </div>
 
-          <SectionCard title="Pricing Ladder">
-            <DataRow label="ARV">
-              <DisplayField value={result?.arv ?? inputs.arv} format="currency" />
-            </DataRow>
-            <DataRow label="All-In Cost">
-              <DisplayField value={result?.purchase_rehab_cost ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="Breakeven">
-              <DisplayField value={result?.breakeven_price ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="15% Target (Max All-In)">
-              <DisplayField value={result?.target_fifteen_all_in ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="MAO (70% Rule)">
-              <DisplayField value={result?.mao ?? 0} format="currency" />
-            </DataRow>
-          </SectionCard>
+          <div className="chart-card">
+            <div className="chart-card-title">Pricing Ladder</div>
+            <PricingLadder
+              items={[
+                { label: 'ARV', value: result?.arv ?? inputs.arv, type: 'arv' },
+                { label: 'All-In Cost', value: result?.purchase_rehab_cost ?? 0, type: 'current', highlight: true },
+                { label: 'Breakeven', value: result?.breakeven_price ?? 0, hint: '0% Profit', type: 'target' },
+                { label: '15% Target', value: result?.target_fifteen_all_in ?? 0, hint: 'Max All-In', type: 'profit-target' },
+                { label: 'MAO', value: result?.mao ?? 0, hint: '70% Rule', type: 'mao' },
+              ]}
+              recoveryPercent={result?.profit_margin ?? 0}
+              indicatorLabel="profit margin"
+              indicatorClass="flip"
+            />
+          </div>
 
-          <SectionCard title="Deal Snapshot">
-            <DataRow label="Deal Score">
-              <DisplayField value={result?.deal_score ?? 0} format="number" />
-            </DataRow>
-            <DataRow label="Total Profit">
-              <DisplayField value={result?.net_profit_before_tax ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="Cash Needed">
-              <DisplayField value={result?.total_cash_required ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="Profit Margin">
-              <DisplayField value={result?.profit_margin ?? 0} format="number" suffix="%" />
-            </DataRow>
-          </SectionCard>
+          <div className="chart-card">
+            <div className="chart-card-title">Return on Investment</div>
+            <FlipRoiGauge
+              totalRoi={result?.roi ?? 0}
+              annualizedRoi={result?.annualized_roi ?? 0}
+              holdingMonths={inputs.holding_months}
+            />
+          </div>
+
+          <div className="chart-card">
+            <div className="chart-card-title">Profit by Holding Period</div>
+            <ProfitTimeline
+              baseProfit={result?.net_profit_before_tax ?? 0}
+              monthlyHoldingCost={monthlyHoldingCost}
+            />
+          </div>
         </aside>
       </div>
     </div>

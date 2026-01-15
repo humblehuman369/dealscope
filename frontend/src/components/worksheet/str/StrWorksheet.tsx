@@ -1,6 +1,11 @@
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
 import { ProfitFinder } from '../charts/ProfitFinder'
+import { PricingLadder } from '../charts/PricingLadder'
+import { StrRevenueBreakdown } from '../charts/StrRevenueBreakdown'
+import { SeasonalityGrid } from '../charts/SeasonalityGrid'
+import { StrVsLtrComparison } from '../charts/StrVsLtrComparison'
+import { KeyMetricsGrid } from '../charts/KeyMetricsGrid'
 import { useStrWorksheetCalculator } from '@/hooks/useStrWorksheetCalculator'
 import { SavedProperty } from '@/hooks/useWorksheetProperty'
 import { Building2, CreditCard, Calendar, Home, Percent, Wrench } from 'lucide-react'
@@ -61,8 +66,17 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
     },
   ]
 
+  const grossRevenue = result?.gross_revenue ?? 0
+  const monthlyPayment = result?.monthly_payment ?? 0
+  const estLTRMonthlyRent = (grossRevenue / 12) * 0.35
+  const insuranceMonthly = inputs.insurance_annual / 12
+  const taxesMonthly = inputs.property_taxes_annual / 12
+  const estLTRCashFlow =
+    estLTRMonthlyRent - monthlyPayment - (inputs.supplies_monthly * 0.2) - insuranceMonthly * 0.6 - taxesMonthly
+  const grm = grossRevenue > 0 ? inputs.purchase_price / grossRevenue : 0
+
   return (
-    <div className="space-y-4">
+    <div className="str-strategy space-y-4">
       <div className="summary-cards">
         {summaryCards.map((card) => (
           <div
@@ -86,8 +100,8 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
         </div>
       )}
 
-      <div className="section-two-column">
-        <div className="space-y-4">
+      <div className="worksheet-layout-2col">
+        <div className="worksheet-main-content">
           <SectionCard title="Purchase & Setup">
             <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />}>
               <EditableField
@@ -287,16 +301,13 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
           </SectionCard>
         </div>
 
-        <aside className="space-y-4">
-          {/* Profit Finder Visual */}
-          <div className="section-card">
-            <div className="section-header">
-              <h3 className="section-title">Profit Finder</h3>
-            </div>
+        <aside className="worksheet-charts-sidebar">
+          <div className="chart-card">
+            <div className="chart-card-title">Profit Finder</div>
             <ProfitFinder
               purchasePrice={inputs.purchase_price}
-              listPrice={inputs.list_price ?? inputs.purchase_price}
-              breakevenPrice={result?.breakeven_price ?? inputs.purchase_price * 0.9}
+              listPrice={result?.list_price ?? inputs.list_price ?? inputs.purchase_price}
+              breakevenPrice={result?.breakeven_price ?? inputs.purchase_price}
               monthlyCashFlow={result?.monthly_cash_flow ?? 0}
               buyLabel="Buy"
               listLabel="List"
@@ -304,71 +315,62 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
             />
           </div>
 
-          <SectionCard title="Pricing Ladder">
-            <DataRow label="List Price">
-              <DisplayField value={result?.list_price ?? inputs.list_price ?? inputs.purchase_price} format="currency" />
-            </DataRow>
-            <DataRow label="Your Offer">
-              <DisplayField value={inputs.purchase_price} format="currency" />
-            </DataRow>
-            <DataRow label="Breakeven (0% CoC)">
-              <DisplayField value={result?.breakeven_price ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="10% CoC Target">
-              <DisplayField value={result?.target_coc_price ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="MAO (7x GRM)">
-              <DisplayField value={result?.mao_price ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="Discount vs List">
-              <DisplayField value={result?.discount_percent ?? 0} format="number" suffix="%" />
-            </DataRow>
-          </SectionCard>
+          <div className="chart-card">
+            <div className="chart-card-title">Pricing Ladder</div>
+            <PricingLadder
+              items={[
+                { label: 'List Price', value: result?.list_price ?? inputs.list_price ?? inputs.purchase_price, type: 'list' },
+                { label: 'Your Offer', value: inputs.purchase_price, type: 'current', highlight: true },
+                { label: 'Breakeven', value: result?.breakeven_price ?? 0, hint: '0% CoC', type: 'target' },
+                { label: '10% CoC', value: result?.target_coc_price ?? 0, hint: 'Target', type: 'coc' },
+                { label: 'MAO', value: result?.mao_price ?? 0, hint: '70% GRM', type: 'mao' },
+              ]}
+              recoveryPercent={result?.discount_percent ?? 0}
+              indicatorLabel="below list"
+              indicatorClass="str"
+            />
+          </div>
 
-          <SectionCard title="Revenue Breakdown">
-            <DataRow label="Annual Gross Revenue">
-              <DisplayField value={result?.gross_revenue ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="Nightly Revenue">
-              <DisplayField value={result?.rental_revenue ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="Cleaning Fees">
-              <DisplayField value={result?.cleaning_fee_revenue ?? 0} format="currency" />
-            </DataRow>
-            <DataRow label="RevPAR">
-              <DisplayField value={result?.revpar ?? 0} format="currency" />
-            </DataRow>
-          </SectionCard>
+          <div className="chart-card">
+            <div className="chart-card-title">Revenue Breakdown</div>
+            <StrRevenueBreakdown
+              grossRevenue={grossRevenue}
+              nightlyRevenue={result?.rental_revenue ?? 0}
+              cleaningFees={result?.cleaning_fee_revenue ?? 0}
+              revpar={result?.revpar ?? 0}
+            />
+          </div>
 
-          <SectionCard title="Occupancy by Season">
-            <DataRow label="Summer">
-              <DisplayField value={result?.seasonality?.summer ?? 0} format="number" suffix="%" />
-            </DataRow>
-            <DataRow label="Spring">
-              <DisplayField value={result?.seasonality?.spring ?? 0} format="number" suffix="%" />
-            </DataRow>
-            <DataRow label="Fall">
-              <DisplayField value={result?.seasonality?.fall ?? 0} format="number" suffix="%" />
-            </DataRow>
-            <DataRow label="Winter">
-              <DisplayField value={result?.seasonality?.winter ?? 0} format="number" suffix="%" />
-            </DataRow>
-          </SectionCard>
+          <div className="chart-card">
+            <div className="chart-card-title">Occupancy by Season</div>
+            <SeasonalityGrid
+              summer={result?.seasonality?.summer ?? 0}
+              fall={result?.seasonality?.fall ?? 0}
+              winter={result?.seasonality?.winter ?? 0}
+              spring={result?.seasonality?.spring ?? 0}
+            />
+          </div>
 
-          <SectionCard title="Key Metrics">
-            <DataRow label="Cap Rate">
-              <DisplayField value={result?.cap_rate ?? 0} format="number" suffix="%" />
-            </DataRow>
-            <DataRow label="CoC Return">
-              <DisplayField value={result?.cash_on_cash_return ?? 0} format="number" suffix="%" />
-            </DataRow>
-            <DataRow label="DSCR">
-              <DisplayField value={result?.dscr ?? 0} format="number" suffix="x" />
-            </DataRow>
-            <DataRow label="Break-Even Occupancy">
-              <DisplayField value={result?.break_even_occupancy ?? 0} format="number" suffix="%" />
-            </DataRow>
-          </SectionCard>
+          <div className="chart-card">
+            <div className="chart-card-title">Key Metrics</div>
+            <KeyMetricsGrid
+              metrics={[
+                { value: `${(result?.cap_rate ?? 0).toFixed(1)}%`, label: 'Cap Rate', highlight: true },
+                { value: `${(result?.cash_on_cash_return ?? 0).toFixed(1)}%`, label: 'CoC Return' },
+                { value: `${(result?.dscr ?? 0).toFixed(2)}x`, label: 'DSCR' },
+                { value: `${grm.toFixed(1)}`, label: 'GRM' },
+              ]}
+              accentClass="str"
+            />
+          </div>
+
+          <div className="chart-card">
+            <div className="chart-card-title">STR vs LTR Comparison</div>
+            <StrVsLtrComparison
+              strCashFlow={result?.monthly_cash_flow ?? 0}
+              ltrCashFlow={estLTRCashFlow}
+            />
+          </div>
         </aside>
       </div>
     </div>
