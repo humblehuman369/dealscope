@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fix & Flip Worksheet - InvestIQ</title>
+  <link rel="stylesheet" href="worksheet-flip.css">
   <style>
     * {
       margin: 0;
@@ -1165,7 +1166,7 @@
           </button>
           
           <button class="strategy-option" data-strategy="househack" onclick="selectStrategy('househack', 'House Hack', 'worksheet-househack.html')">
-            <div class="strategy-option-icon househack" style="background: rgba(5, 150, 105, 0.15); color: #059669;">
+            <div class="strategy-option-icon househack">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
@@ -1214,7 +1215,7 @@
         <div class="summary-card-label">Holding Period</div>
         <div class="summary-card-value" id="summary-holding">3 mo</div>
       </div>
-      <div class="summary-card" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.1) 0%, white 100%); border-color: var(--flip-primary-light);">
+      <div class="summary-card deal-score">
         <div class="summary-card-label">Deal Score</div>
         <div class="summary-card-value accent" id="summary-deal-score">92</div>
         <div class="summary-card-subtitle" id="score-label">Excellent</div>
@@ -1284,10 +1285,10 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" id="purchase-price" min="10000" max="1500000" value="24000">
+                <input type="range" class="slider-input" id="purchase-price" min="10000" max="1500000" value="24000" aria-label="Purchase price slider">
               </div>
             </div>
-            <input type="text" class="slider-value" id="purchase-price-val" value="$24,000">
+            <input type="text" class="slider-value" id="purchase-price-val" value="$24,000" aria-label="Purchase price amount">
           </div>
           
           <div class="data-row has-slider">
@@ -1299,11 +1300,11 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" id="rehab-costs" min="0" max="50000" value="18865">
+                <input type="range" class="slider-input" id="rehab-costs" min="0" max="50000" value="18865" aria-label="Rehab costs slider">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" id="rehab-costs-val" value="$18,865">
+              <input type="text" class="slider-value" id="rehab-costs-val" value="$18,865" aria-label="Rehab costs amount">
               <span class="slider-secondary">$19.78/sqft</span>
             </div>
           </div>
@@ -1323,11 +1324,11 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" id="down-payment" min="0" max="100" value="25">
+                <input type="range" class="slider-input" id="down-payment" min="0" max="100" value="25" aria-label="Down payment percentage slider">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" id="down-payment-val" value="25%" style="min-width: 60px;">
+              <input type="text" class="slider-value compact" id="down-payment-val" value="25%" aria-label="Down payment percentage">
               <span class="slider-secondary" id="down-payment-amt">$10,721</span>
             </div>
           </div>
@@ -1336,10 +1337,10 @@
             <div class="data-label"><span>Purchase Costs</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" id="purchase-costs" min="0" max="5000" value="1225">
+                <input type="range" class="slider-input" id="purchase-costs" min="0" max="5000" value="1225" aria-label="Purchase costs slider">
               </div>
             </div>
-            <input type="text" class="slider-value" id="purchase-costs-val" value="$1,225">
+            <input type="text" class="slider-value" id="purchase-costs-val" value="$1,225" aria-label="Purchase costs amount">
           </div>
           
           <div class="data-row total">
@@ -1371,7 +1372,7 @@
           <div class="data-row has-slider">
             <div class="data-label"><span>Financing Of</span></div>
             <div class="slider-container">
-              <select class="select-input" id="financing-of">
+              <select class="select-input" id="financing-of" aria-label="Financing of selection">
                 <option value="price">Purchase Price</option>
                 <option value="cost" selected>Price + Rehab (75%)</option>
                 <option value="arv">After Repair Value</option>
@@ -1383,33 +1384,33 @@
           <div class="data-row has-slider">
             <div class="data-label"><span>Loan Type</span></div>
             <div class="slider-container">
-              <select class="select-input" id="loan-type">
+              <select class="select-input" id="loan-type" aria-label="Loan type selection">
                 <option value="interest-only" selected>Interest Only</option>
                 <option value="amortizing">Amortizing</option>
               </select>
             </div>
-            <span style="width: 60px;"></span>
+            <span class="spacer-60"></span>
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Interest Rate</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" id="interest-rate" min="8" max="18" value="12" step="0.5">
+                <input type="range" class="slider-input" id="interest-rate" min="8" max="18" value="12" step="0.5" aria-label="Interest rate slider">
               </div>
             </div>
-            <input type="text" class="slider-value" id="interest-rate-val" value="12.0%">
+            <input type="text" class="slider-value" id="interest-rate-val" value="12.0%" aria-label="Interest rate percentage">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Points</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" id="points" min="0" max="5" value="2" step="0.5">
+                <input type="range" class="slider-input" id="points" min="0" max="5" value="2" step="0.5" aria-label="Points slider">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" id="points-val" value="2 pts" style="min-width: 60px;">
+              <input type="text" class="slider-value compact" id="points-val" value="2 pts" aria-label="Points value">
               <span class="slider-secondary">$644</span>
             </div>
           </div>
@@ -1466,7 +1467,7 @@
           <div class="data-row total">
             <div class="data-label"><span>Total Holding Costs</span></div>
             <div class="value-primary" id="total-holding">$643</div>
-            <div class="value-secondary" style="font-weight: 600; color: var(--flip-primary-dark);">$1,929</div>
+            <div class="value-secondary emphasis">$1,929</div>
           </div>
         </div>
       </div>
@@ -1489,28 +1490,28 @@
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" id="arv" min="25000" max="2000000" value="75000">
+                <input type="range" class="slider-input" id="arv" min="25000" max="2000000" value="75000" aria-label="After repair value slider">
               </div>
             </div>
-            <input type="text" class="slider-value" id="arv-val" value="$75,000">
+            <input type="text" class="slider-value" id="arv-val" value="$75,000" aria-label="After repair value amount">
           </div>
           
           <div class="data-row has-slider">
             <div class="data-label"><span>Selling Costs</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" id="selling-costs" min="3" max="10" value="6" step="0.5">
+                <input type="range" class="slider-input" id="selling-costs" min="3" max="10" value="6" step="0.5" aria-label="Selling costs percentage slider">
               </div>
             </div>
             <div class="slider-dual-value">
-              <input type="text" class="slider-value" id="selling-costs-val" value="6%" style="min-width: 60px;">
+              <input type="text" class="slider-value compact" id="selling-costs-val" value="6%" aria-label="Selling costs percentage">
               <span class="slider-secondary">$4,500</span>
             </div>
           </div>
           
           <div class="data-row calculated">
             <div class="data-label"><span>Sale Proceeds</span></div>
-            <div class="value-primary" style="color: var(--ws-positive);">$71,000</div>
+            <div class="value-primary positive">$71,000</div>
           </div>
           
           <div class="data-row">
@@ -1530,7 +1531,7 @@
           
           <div class="data-row total">
             <div class="data-label"><span>Total Profit</span></div>
-            <div class="value-primary" id="total-profit" style="color: var(--ws-positive); font-size: 18px;">$24,976</div>
+            <div class="value-primary positive large" id="total-profit">$24,976</div>
           </div>
           
           <div class="data-row calculated">
@@ -1552,12 +1553,12 @@
         <div class="section-content">
           <div class="data-row">
             <div class="data-label"><span>Return on Investment</span></div>
-            <div class="value-primary" style="color: var(--ws-positive); font-size: 16px; font-weight: 700;">198.4%</div>
+            <div class="value-primary positive metric">198.4%</div>
           </div>
           
           <div class="data-row">
             <div class="data-label"><span>Annualized ROI</span></div>
-            <div class="value-primary" style="color: var(--ws-positive); font-size: 16px; font-weight: 700;">2.4k%</div>
+            <div class="value-primary positive metric">2.4k%</div>
           </div>
         </div>
       </div>
@@ -1570,15 +1571,15 @@
         <div class="chart-card-title">Profit Finder</div>
         <div class="price-position-visual">
           <div class="marker-column left">
-            <div class="simple-marker" id="purchase-price-marker" style="top: 70%;">
+            <div class="simple-marker marker-top-70" id="purchase-price-marker">
               <div class="marker-stack"><span class="marker-name">Buy</span><span class="marker-val" id="purchase-price-display">$24,000</span></div>
               <span class="marker-arrow">▶</span>
             </div>
           </div>
           <div class="price-scale-bar"><img src="/images/price-ladder-arrow.svg" alt="Profit Scale" /></div>
           <div class="marker-column right">
-            <div class="simple-marker" id="breakeven-marker" style="top: 50%;"><span class="marker-arrow">◀</span><div class="marker-stack"><span class="marker-name">Even</span><span class="marker-val" id="breakeven-value">$48,865</span></div></div>
-            <div class="simple-marker" id="list-price-marker" style="top: 30%;"><span class="marker-arrow">◀</span><div class="marker-stack"><span class="marker-name">ARV</span><span class="marker-val" id="list-price-display">$75,000</span></div></div>
+            <div class="simple-marker marker-top-50" id="breakeven-marker"><span class="marker-arrow">◀</span><div class="marker-stack"><span class="marker-name">Even</span><span class="marker-val" id="breakeven-value">$48,865</span></div></div>
+            <div class="simple-marker marker-top-30" id="list-price-marker"><span class="marker-arrow">◀</span><div class="marker-stack"><span class="marker-name">ARV</span><span class="marker-val" id="list-price-display">$75,000</span></div></div>
           </div>
         </div>
         <div class="cashflow-indicator" id="cashflow-indicator"><span class="cf-label">Net Profit:</span><span class="cf-amount" id="cashflow-amount">$20,135</span><span class="cf-status" id="position-text">Profit Zone</span></div>
@@ -1639,10 +1640,10 @@
         <!-- Profit Margin Indicator -->
         <div class="pricing-discount-indicator">
           <div class="pricing-discount-bar">
-            <div class="pricing-discount-fill profit" id="profit-margin-fill" style="width: 75%;"></div>
+            <div class="pricing-discount-fill profit fill-75" id="profit-margin-fill"></div>
           </div>
           <div class="pricing-discount-label">
-            <span id="profit-margin-percent">42.8%</span> profit margin
+            <span id="profit-margin-percent">42.8%</span> <span id="profit-margin-text">profit margin</span>
           </div>
         </div>
       </div>
@@ -1667,42 +1668,42 @@
           <div class="timeline-row">
             <span class="timeline-label">1 mo</span>
             <div class="timeline-bar-container">
-              <div class="timeline-bar profit" style="width: 100%;"></div>
+              <div class="timeline-bar profit width-100"></div>
               <span class="timeline-value">$24,976</span>
             </div>
           </div>
           <div class="timeline-row">
             <span class="timeline-label">2 mo</span>
             <div class="timeline-bar-container">
-              <div class="timeline-bar profit" style="width: 97%;"></div>
+              <div class="timeline-bar profit width-97"></div>
               <span class="timeline-value">$24,654</span>
             </div>
           </div>
           <div class="timeline-row">
             <span class="timeline-label">3 mo</span>
             <div class="timeline-bar-container">
-              <div class="timeline-bar profit" style="width: 94%;"></div>
+              <div class="timeline-bar profit width-94"></div>
               <span class="timeline-value">$24,332</span>
             </div>
           </div>
           <div class="timeline-row">
             <span class="timeline-label">4 mo</span>
             <div class="timeline-bar-container">
-              <div class="timeline-bar profit" style="width: 91%;"></div>
+              <div class="timeline-bar profit width-91"></div>
               <span class="timeline-value">$24,010</span>
             </div>
           </div>
           <div class="timeline-row">
             <span class="timeline-label">5 mo</span>
             <div class="timeline-bar-container">
-              <div class="timeline-bar profit" style="width: 88%;"></div>
+              <div class="timeline-bar profit width-88"></div>
               <span class="timeline-value">$23,688</span>
             </div>
           </div>
           <div class="timeline-row">
             <span class="timeline-label">6 mo</span>
             <div class="timeline-bar-container">
-              <div class="timeline-bar profit" style="width: 85%;"></div>
+              <div class="timeline-bar profit width-85"></div>
               <span class="timeline-value">$23,366</span>
             </div>
           </div>
@@ -1712,28 +1713,28 @@
       <!-- Cash Breakdown -->
       <div class="chart-card">
         <div class="chart-card-title">Cash Breakdown</div>
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <div class="mini-donut" style="background: conic-gradient(var(--flip-primary) 0deg 270deg, #64748b 270deg 290deg, #94a3b8 290deg 360deg);">
+        <div class="cash-breakdown">
+          <div class="mini-donut breakdown">
             <div class="mini-donut-center">
               <span class="mini-donut-value">$12K</span>
               <span class="mini-donut-label">Total</span>
             </div>
           </div>
-          <div style="flex: 1;">
-            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
-              <span style="width: 10px; height: 10px; background: var(--flip-primary); border-radius: 2px;"></span>
-              <span style="font-size: 12px; color: var(--ws-text-secondary);">Down Payment</span>
-              <span style="font-size: 12px; font-weight: 600; margin-left: auto;">$10.7K</span>
+          <div class="cash-breakdown-details">
+            <div class="cash-breakdown-row">
+              <span class="cash-breakdown-swatch primary"></span>
+              <span class="cash-breakdown-label">Down Payment</span>
+              <span class="cash-breakdown-value">$10.7K</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
-              <span style="width: 10px; height: 10px; background: #64748b; border-radius: 2px;"></span>
-              <span style="font-size: 12px; color: var(--ws-text-secondary);">Purchase Costs</span>
-              <span style="font-size: 12px; font-weight: 600; margin-left: auto;">$1.2K</span>
+            <div class="cash-breakdown-row">
+              <span class="cash-breakdown-swatch neutral"></span>
+              <span class="cash-breakdown-label">Purchase Costs</span>
+              <span class="cash-breakdown-value">$1.2K</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="width: 10px; height: 10px; background: #94a3b8; border-radius: 2px;"></span>
-              <span style="font-size: 12px; color: var(--ws-text-secondary);">Points/Fees</span>
-              <span style="font-size: 12px; font-weight: 600; margin-left: auto;">$0.6K</span>
+            <div class="cash-breakdown-row last">
+              <span class="cash-breakdown-swatch muted"></span>
+              <span class="cash-breakdown-label">Points/Fees</span>
+              <span class="cash-breakdown-value">$0.6K</span>
             </div>
           </div>
         </div>
@@ -2055,6 +2056,7 @@
       const profitMargin = (totalProfit / arv) * 100;
       const marginFill = document.getElementById('profit-margin-fill');
       const marginPercent = document.getElementById('profit-margin-percent');
+      const marginLabelText = document.getElementById('profit-margin-text');
       
       if (marginFill) {
         marginFill.style.width = Math.max(0, Math.min(100, profitMargin * 2)) + '%';
@@ -2064,13 +2066,12 @@
       }
       if (marginPercent) {
         marginPercent.textContent = profitMargin.toFixed(1) + '%';
-        marginPercent.style.color = profitMargin > 0 ? '#10b981' : '#ef4444';
+        marginPercent.classList.toggle('profit-margin-positive', profitMargin > 0);
+        marginPercent.classList.toggle('profit-margin-negative', profitMargin <= 0);
       }
       
-      // Update label
-      const marginLabel = document.querySelector('.pricing-discount-label');
-      if (marginLabel) {
-        marginLabel.innerHTML = `<span id="profit-margin-percent" style="color: ${profitMargin > 0 ? '#10b981' : '#ef4444'}">${profitMargin.toFixed(1)}%</span> ${profitMargin > 0 ? 'profit margin' : 'loss'}`;
+      if (marginLabelText) {
+        marginLabelText.textContent = profitMargin > 0 ? 'profit margin' : 'loss';
       }
     }
     
