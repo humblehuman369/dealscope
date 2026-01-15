@@ -1354,35 +1354,48 @@
       position: absolute;
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
       transform: translateY(-50%);
       transition: top 0.3s ease;
-      white-space: nowrap;
     }
     
     .marker-column.left .simple-marker {
       right: 0;
-      text-align: right;
     }
     
     .marker-column.right .simple-marker {
       left: 0;
-      text-align: left;
+    }
+    
+    /* Stacked label + value */
+    .marker-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.2;
+    }
+    
+    .marker-column.left .marker-stack {
+      align-items: flex-end;
+    }
+    
+    .marker-column.right .marker-stack {
+      align-items: flex-start;
     }
     
     .marker-name {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
     }
     
     .marker-val {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 700;
     }
     
     .marker-arrow {
-      font-size: 9px;
+      font-size: 12px;
     }
     
     /* Buy marker - teal */
@@ -2405,8 +2418,10 @@
           <!-- Left side: Buy price (dynamic) -->
           <div class="marker-column left">
             <div class="simple-marker" id="purchase-price-marker">
-              <span class="marker-name">Buy</span>
-              <span class="marker-val" id="purchase-price-display">$723,600</span>
+              <div class="marker-stack">
+                <span class="marker-name">Buy</span>
+                <span class="marker-val" id="purchase-price-display">$723,600</span>
+              </div>
               <span class="marker-arrow">▶</span>
             </div>
           </div>
@@ -2420,13 +2435,17 @@
           <div class="marker-column right">
             <div class="simple-marker" id="breakeven-marker">
               <span class="marker-arrow">◀</span>
-              <span class="marker-name">Even</span>
-              <span class="marker-val" id="breakeven-value">$1,219,837</span>
+              <div class="marker-stack">
+                <span class="marker-name">Even</span>
+                <span class="marker-val" id="breakeven-value">$1,219,837</span>
+              </div>
             </div>
             <div class="simple-marker" id="list-price-marker">
               <span class="marker-arrow">◀</span>
-              <span class="marker-name">List</span>
-              <span class="marker-val" id="list-price-display">$723,600</span>
+              <div class="marker-stack">
+                <span class="marker-name">List</span>
+                <span class="marker-val" id="list-price-display">$723,600</span>
+              </div>
             </div>
           </div>
         </div>
