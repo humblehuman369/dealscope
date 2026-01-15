@@ -205,78 +205,93 @@ function PropertyContent() {
     wholesale: 'wholesale',
   }
 
-  // Handle strategy selection - save property and navigate to React worksheet
+  // Handle strategy selection - navigate to React worksheet
   const handleSelectStrategy = async (strategyId: StrategyId) => {
     if (!property) return
     
-    // Require authentication for worksheets
-    if (!isAuthenticated) {
-      // Store intended strategy for after login
-      localStorage.setItem('pendingStrategy', strategyId)
-      localStorage.setItem('pendingAddress', addressParam || '')
-      setShowAuthModal('login')
-      return
+    // Store property data in localStorage for worksheet to use
+    const worksheetData = {
+      address: property.address,
+      city: property.city,
+      state: property.state,
+      zipCode: property.zipCode,
+      fullAddress: `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`,
+      bedrooms: property.bedrooms,
+      bathrooms: property.bathrooms,
+      sqft: property.sqft,
+      thumbnailUrl: property.thumbnailUrl,
+      photos: property.photos,
+      listPrice: property.listPrice,
+      monthlyRent: property.monthlyRent,
+      arv: property.arv || property.listPrice,
+      propertyTaxes: property.propertyTaxes,
+      insurance: property.insurance,
+      averageDailyRate: property.averageDailyRate,
+      occupancyRate: property.occupancyRate,
+      strategy: strategyId,
+      timestamp: Date.now(),
+    }
+    localStorage.setItem('worksheetProperty', JSON.stringify(worksheetData))
+    
+    // If authenticated, try to save and navigate to saved property worksheet
+    if (isAuthenticated) {
+      try {
+        const token = localStorage.getItem('access_token')
+        const saveResponse = await fetch('/api/v1/properties/saved', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            address: property.address,
+            city: property.city,
+            state: property.state,
+            zip_code: property.zipCode,
+            property_data_snapshot: {
+              listPrice: property.listPrice,
+              monthlyRent: property.monthlyRent,
+              propertyTaxes: property.propertyTaxes,
+              insurance: property.insurance,
+              bedrooms: property.bedrooms,
+              bathrooms: property.bathrooms,
+              sqft: property.sqft,
+              arv: property.arv || property.listPrice,
+              averageDailyRate: property.averageDailyRate,
+              occupancyRate: property.occupancyRate,
+            },
+          }),
+        })
+        
+        if (saveResponse.ok) {
+          const data = await saveResponse.json()
+          const strategyRoute = STRATEGY_ROUTE_MAP[strategyId]
+          router.push(`/worksheet/${data.id}/${strategyRoute}`)
+          return
+        } else if (saveResponse.status === 409) {
+          // Property already saved - try to get existing
+          const listResponse = await fetch('/api/v1/properties/saved', {
+            headers: { 'Authorization': `Bearer ${token}` },
+          })
+          if (listResponse.ok) {
+            const properties = await listResponse.json()
+            const existing = properties.find((p: any) => p.address === property.address)
+            if (existing) {
+              const strategyRoute = STRATEGY_ROUTE_MAP[strategyId]
+              router.push(`/worksheet/${existing.id}/${strategyRoute}`)
+              return
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error saving property:', err)
+      }
     }
     
-    try {
-      // Save property first to get an ID
-      const token = localStorage.getItem('access_token')
-      const saveResponse = await fetch('/api/v1/properties/saved', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          address: property.address,
-          city: property.city,
-          state: property.state,
-          zip_code: property.zipCode,
-          property_data_snapshot: {
-            listPrice: property.listPrice,
-            monthlyRent: property.monthlyRent,
-            propertyTaxes: property.propertyTaxes,
-            insurance: property.insurance,
-            bedrooms: property.bedrooms,
-            bathrooms: property.bathrooms,
-            sqft: property.sqft,
-            arv: property.arv || property.listPrice,
-            averageDailyRate: property.averageDailyRate,
-            occupancyRate: property.occupancyRate,
-          },
-        }),
-      })
-      
-      let propertyId: string
-      
-      if (saveResponse.ok) {
-        const data = await saveResponse.json()
-        propertyId = data.id
-      } else if (saveResponse.status === 409) {
-        // Property already saved - get the existing ID
-        const existingResponse = await fetch(`/api/v1/properties/saved?address=${encodeURIComponent(property.address)}`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        })
-        if (existingResponse.ok) {
-          const existingData = await existingResponse.json()
-          propertyId = existingData.id || existingData[0]?.id
-        } else {
-          throw new Error('Failed to get existing property')
-        }
-      } else {
-        throw new Error('Failed to save property')
-      }
-      
-      if (propertyId) {
-        // Navigate to React worksheet
-        const strategyRoute = STRATEGY_ROUTE_MAP[strategyId]
-        router.push(`/worksheet/${propertyId}/${strategyRoute}`)
-      }
-    } catch (err) {
-      console.error('Error navigating to worksheet:', err)
-      // Fallback: set strategy for display
-      setSelectedStrategy(strategyId)
-    }
+    // Fallback: Use address-based worksheet route
+    const encodedAddress = encodeURIComponent(property.address)
+    const strategyRoute = STRATEGY_ROUTE_MAP[strategyId]
+    router.push(`/worksheet/preview/${strategyRoute}?address=${encodedAddress}`)
   }
 
   // Handle back from strategy view
