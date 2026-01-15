@@ -22,6 +22,7 @@ export { InvestmentReturns } from './sections/InvestmentReturns'
 export { FinancialRatios } from './sections/FinancialRatios'
 export { MultiYearProjections } from './sections/MultiYearProjections'
 export { BrrrrWorksheet } from './brrrr/BrrrrWorksheet'
+export { FlipWorksheet } from './flip/FlipWorksheet'
 
 // Chart Components
 export { CashFlowChart } from './charts/CashFlowChart'
