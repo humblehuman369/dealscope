@@ -13,6 +13,7 @@ interface PricingLadderProps {
   recoveryPercent?: number
   indicatorLabel?: string
   indicatorClass?: string
+  indicatorValue?: string
 }
 
 const formatCurrency = (value: number) =>
@@ -28,6 +29,7 @@ export function PricingLadder({
   recoveryPercent,
   indicatorLabel = 'cash recovered',
   indicatorClass = 'brrrr',
+  indicatorValue,
 }: PricingLadderProps) {
   return (
     <div className="pricing-ladder-container">
@@ -66,7 +68,7 @@ export function PricingLadder({
             ></div>
           </div>
           <div className="pricing-discount-label">
-            <span>{recoveryPercent.toFixed(1)}%</span> {indicatorLabel}
+            <span>{indicatorValue ?? `${recoveryPercent.toFixed(1)}%`}</span> {indicatorLabel}
           </div>
         </div>
       )}
