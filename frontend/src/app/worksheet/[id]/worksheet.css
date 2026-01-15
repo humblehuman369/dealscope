@@ -128,6 +128,7 @@
 .worksheet-tab-nav {
   display: flex;
   align-items: center;
+  gap: 8px;
   background: white;
   border-bottom: 2px solid var(--ws-border);
   padding: 0 24px;
@@ -140,6 +141,7 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   flex: 1;
+  min-width: 0;
 }
 
 .worksheet-tabs-scroll::-webkit-scrollbar {
@@ -197,6 +199,89 @@
   color: var(--ws-text-secondary);
   border-radius: 8px;
   transition: all 0.15s ease;
+}
+
+/* Strategy Dropdown */
+.strategy-dropdown {
+  position: relative;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.strategy-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, var(--iq-teal) 0%, var(--iq-teal-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 126, 167, 0.3);
+}
+
+.strategy-dropdown-trigger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 126, 167, 0.4);
+}
+
+.strategy-dropdown-trigger .dropdown-arrow {
+  transition: transform 0.2s ease;
+}
+
+.strategy-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 220px;
+  background: white;
+  border: 1px solid var(--ws-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  z-index: 110;
+  overflow: hidden;
+}
+
+.strategy-dropdown-header {
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ws-text-muted);
+  background: var(--ws-bg);
+  border-bottom: 1px solid var(--ws-border-light);
+}
+
+.strategy-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.strategy-option:hover {
+  background: rgba(0, 126, 167, 0.08);
+}
+
+.strategy-option.active {
+  background: rgba(0, 126, 167, 0.12);
+}
+
+.strategy-option-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ws-text-primary);
 }
 
 .worksheet-help-btn:hover {
@@ -359,6 +444,7 @@
   background: var(--ws-section-header);
   border-bottom: 1px solid var(--ws-border);
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
 }
 
@@ -515,7 +601,7 @@
 /* Summary Cards */
 .summary-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -527,6 +613,11 @@
   padding: 16px 20px;
   box-shadow: var(--ws-shadow);
   transition: all 0.2s ease;
+}
+
+.summary-card.highlight {
+  background: var(--ws-accent-bg);
+  border-color: var(--iq-teal-light);
 }
 
 .summary-card:hover {

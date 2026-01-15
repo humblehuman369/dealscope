@@ -13,9 +13,9 @@ const WORKSHEET_API_URL = '/api/v1/worksheet/ltr/calculate'
 const CALC_DEBOUNCE_MS = 150
 
 // Debounce helper
-let saveTimeout: NodeJS.Timeout | null = null
+let saveTimeout: ReturnType<typeof setTimeout> | null = null
 const SAVE_DEBOUNCE_MS = 2000
-let calcTimeout: NodeJS.Timeout | null = null
+let calcTimeout: ReturnType<typeof setTimeout> | null = null
 
 // Extended assumptions for worksheet
 export interface WorksheetAssumptions extends ProjectionAssumptions {
