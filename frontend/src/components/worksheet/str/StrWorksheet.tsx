@@ -1,5 +1,6 @@
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
+import { ProfitFinder } from '../charts/ProfitFinder'
 import { useStrWorksheetCalculator } from '@/hooks/useStrWorksheetCalculator'
 import { SavedProperty } from '@/hooks/useWorksheetProperty'
 import { Building2, CreditCard, Calendar, Home, Percent, Wrench } from 'lucide-react'
@@ -287,6 +288,22 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
         </div>
 
         <aside className="space-y-4">
+          {/* Profit Finder Visual */}
+          <div className="section-card">
+            <div className="section-header">
+              <h3 className="section-title">Profit Finder</h3>
+            </div>
+            <ProfitFinder
+              purchasePrice={inputs.purchase_price}
+              listPrice={inputs.list_price ?? inputs.purchase_price}
+              breakevenPrice={result?.breakeven_price ?? inputs.purchase_price * 0.9}
+              monthlyCashFlow={result?.monthly_cash_flow ?? 0}
+              buyLabel="Buy"
+              listLabel="List"
+              evenLabel="Even"
+            />
+          </div>
+
           <SectionCard title="Pricing Ladder">
             <DataRow label="List Price">
               <DisplayField value={result?.list_price ?? inputs.list_price ?? inputs.purchase_price} format="currency" />
