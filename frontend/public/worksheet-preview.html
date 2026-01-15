@@ -1332,77 +1332,78 @@
       color: var(--ws-text-muted);
     }
     
-    /* ===== PROFIT FINDER - Centered Layout ===== */
+    /* ===== PROFIT FINDER - Clean Balanced Layout ===== */
     .price-position-visual {
       display: flex;
       align-items: stretch;
       justify-content: center;
-      padding: 8px 4px;
+      padding: 12px;
       min-height: 420px;
-      position: relative;
+      gap: 8px;
     }
     
-    /* Left side - Your Price marker (dynamic) */
-    .price-left-markers {
-      width: 90px;
+    /* Left and Right marker columns - equal width */
+    .marker-column {
+      width: 85px;
       position: relative;
       flex-shrink: 0;
     }
     
-    .left-marker {
+    /* Simple text markers - no boxes */
+    .simple-marker {
       position: absolute;
-      right: 0;
       display: flex;
       align-items: center;
-      gap: 4px;
-      background: var(--iq-teal);
-      border-radius: 6px;
-      padding: 6px 10px;
+      gap: 3px;
       transform: translateY(-50%);
       transition: top 0.3s ease;
+      white-space: nowrap;
     }
     
-    .left-marker .marker-title,
-    .left-marker .marker-price,
-    .left-marker-arrow {
-      color: white !important;
+    .marker-column.left .simple-marker {
+      right: 0;
+      text-align: right;
     }
     
-    .marker-label-stack {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
+    .marker-column.right .simple-marker {
+      left: 0;
+      text-align: left;
     }
     
-    .left-marker .marker-label-stack {
-      align-items: flex-end;
-    }
-    
-    .right-marker .marker-label-stack {
-      align-items: flex-start;
-    }
-    
-    .marker-title {
+    .marker-name {
       font-size: 9px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.3px;
     }
     
-    .marker-price {
-      font-size: 11px;
+    .marker-val {
+      font-size: 10px;
       font-weight: 700;
     }
     
-    .left-marker .marker-title,
-    .left-marker .marker-price,
-    .left-marker .left-marker-arrow {
-      color: white;
+    .marker-arrow {
+      font-size: 9px;
     }
     
-    .left-marker-arrow {
-      font-size: 12px;
-      margin-left: 4px;
+    /* Buy marker - teal */
+    #purchase-price-marker .marker-name,
+    #purchase-price-marker .marker-val,
+    #purchase-price-marker .marker-arrow {
+      color: var(--iq-teal);
+    }
+    
+    /* List marker - red */
+    #list-price-marker .marker-name,
+    #list-price-marker .marker-val,
+    #list-price-marker .marker-arrow {
+      color: #dc2626;
+    }
+    
+    /* Even marker - gray */
+    #breakeven-marker .marker-name,
+    #breakeven-marker .marker-val,
+    #breakeven-marker .marker-arrow {
+      color: #64748b;
     }
     
     /* Center - The gradient bar */
@@ -1415,52 +1416,6 @@
       display: block;
       width: 60px;
       height: 400px;
-    }
-    
-    /* Right side - List Price & Breakeven markers */
-    .price-right-markers {
-      flex: 1;
-      position: relative;
-      min-width: 120px;
-    }
-    
-    .right-marker {
-      position: absolute;
-      left: 0;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 6px 10px;
-      border-radius: 6px;
-      transform: translateY(-50%);
-      transition: top 0.3s ease;
-      white-space: nowrap;
-    }
-    
-    /* List Price - solid red background */
-    .right-marker.list {
-      background: #dc2626;
-    }
-    
-    .right-marker.list .right-marker-arrow,
-    .right-marker.list .marker-title,
-    .right-marker.list .marker-price {
-      color: white;
-    }
-    
-    /* Breakeven - solid gray background */
-    .right-marker.breakeven {
-      background: #64748b;
-    }
-    
-    .right-marker.breakeven .right-marker-arrow,
-    .right-marker.breakeven .marker-title,
-    .right-marker.breakeven .marker-price {
-      color: white;
-    }
-    
-    .right-marker-arrow {
-      font-size: 10px;
     }
     
     /* Cash Flow indicator at bottom */
@@ -2447,14 +2402,12 @@
       <div class="chart-card">
         <div class="chart-card-title">Profit Finder</div>
         <div class="price-position-visual">
-          <!-- Left side: Your Price (dynamic) -->
-          <div class="price-left-markers">
-            <div class="left-marker" id="purchase-price-marker">
-              <div class="marker-label-stack">
-                <span class="marker-title">Your Price</span>
-                <span class="marker-price" id="purchase-price-display">$2,660,746</span>
-              </div>
-              <span class="left-marker-arrow">▶</span>
+          <!-- Left side: Buy price (dynamic) -->
+          <div class="marker-column left">
+            <div class="simple-marker" id="purchase-price-marker">
+              <span class="marker-name">Buy</span>
+              <span class="marker-val" id="purchase-price-display">$723,600</span>
+              <span class="marker-arrow">▶</span>
             </div>
           </div>
           
@@ -2463,21 +2416,17 @@
             <img src="/images/price-ladder-arrow.svg" alt="Profit Scale" />
           </div>
           
-          <!-- Right side: List Price & Breakeven -->
-          <div class="price-right-markers">
-            <div class="right-marker list" id="list-price-marker">
-              <span class="right-marker-arrow">◀</span>
-              <div class="marker-label-stack">
-                <span class="marker-title">List Price</span>
-                <span class="marker-price" id="list-price-display">$4,457,000</span>
-              </div>
+          <!-- Right side: Even & List -->
+          <div class="marker-column right">
+            <div class="simple-marker" id="breakeven-marker">
+              <span class="marker-arrow">◀</span>
+              <span class="marker-name">Even</span>
+              <span class="marker-val" id="breakeven-value">$1,219,837</span>
             </div>
-            <div class="right-marker breakeven" id="breakeven-marker">
-              <span class="right-marker-arrow">◀</span>
-              <div class="marker-label-stack">
-                <span class="marker-title">Breakeven</span>
-                <span class="marker-price" id="breakeven-value">$2,998,213</span>
-              </div>
+            <div class="simple-marker" id="list-price-marker">
+              <span class="marker-arrow">◀</span>
+              <span class="marker-name">List</span>
+              <span class="marker-val" id="list-price-display">$723,600</span>
             </div>
           </div>
         </div>
