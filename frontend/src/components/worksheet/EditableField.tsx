@@ -94,10 +94,11 @@ export function EditableField({
   const inputRef = useRef<HTMLInputElement>(null)
   const sliderRef = useRef<HTMLInputElement>(null)
 
-  // Calculate slider min/max if not provided
+  // Calculate slider min/max if not provided - use FIXED fallbacks to prevent runaway
   const sliderMin = min
-  const sliderMax = max ?? (format === 'percent' ? 1 : value * 2 || 1000000)
-  const sliderStep = step ?? (format === 'percent' ? 0.005 : (sliderMax - sliderMin) / 100)
+  // IMPORTANT: Don't base max on current value or it creates feedback loop!
+  const sliderMax = max ?? (format === 'percent' ? 1 : format === 'years' ? 30 : 1000000)
+  const sliderStep = step ?? (format === 'percent' ? 0.01 : format === 'years' ? 1 : 1000)
 
   // Calculate fill percentage for slider
   const fillPercent = Math.min(100, Math.max(0, ((value - sliderMin) / (sliderMax - sliderMin)) * 100))

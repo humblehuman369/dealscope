@@ -6,15 +6,19 @@ import { EditableField, DisplayField } from '../EditableField'
 import { Home, Ruler, Wrench } from 'lucide-react'
 
 export function ValuationSection() {
-  const { assumptions, updateAssumption, worksheetMetrics } = useWorksheetStore()
+  const { assumptions, updateAssumption, worksheetMetrics, propertyData } = useWorksheetStore()
   const arvPerSqft = worksheetMetrics?.arv_psf ?? 0
   const pricePerSqft = worksheetMetrics?.price_psf ?? 0
   const rehabPerSqft = worksheetMetrics?.rehab_psf ?? 0
   const equityAfterRehab = worksheetMetrics?.equity_after_rehab ?? 0
 
-  // Calculate dynamic ARV range based on purchase price
-  const arvMin = Math.max(50000, assumptions.purchasePrice * 0.8)
-  const arvMax = assumptions.purchasePrice * 2
+  // Use ORIGINAL list price from property data for stable slider ranges
+  const originalPrice = propertyData?.property_data_snapshot?.listPrice || assumptions.purchasePrice || 500000
+  const originalArv = propertyData?.property_data_snapshot?.arv || originalPrice
+
+  // Fixed ARV range based on original values
+  const arvMin = Math.round(originalArv * 0.7)
+  const arvMax = Math.round(originalArv * 1.5)
 
   return (
     <SectionCard title="Valuation">

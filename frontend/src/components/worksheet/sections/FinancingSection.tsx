@@ -40,8 +40,8 @@ export function FinancingSection() {
           value={assumptions.interestRate}
           onChange={(val) => updateAssumption('interestRate', val)}
           format="percent"
-          min={0.03}
-          max={0.15}
+          min={0.04}
+          max={0.12}
           step={0.00125}
           showSlider={true}
         />
