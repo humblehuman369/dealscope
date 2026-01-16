@@ -98,6 +98,24 @@ function AppContent({
             gestureEnabled: false, // Disable swipe gestures to prevent conflicts with sliders
           }} 
         />
+        {/* IQ Verdict Flow Screens */}
+        <Stack.Screen 
+          name="analyzing/[address]" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'fade',
+            gestureEnabled: false, // Prevent going back during analysis
+          }} 
+        />
+        <Stack.Screen 
+          name="verdict/[address]" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
       </Stack>
       
       {/* Animated Splash Screen with pulsating logo */}
