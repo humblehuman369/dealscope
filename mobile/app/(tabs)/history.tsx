@@ -141,7 +141,8 @@ export default function HistoryScreen() {
   
   const handlePropertyPress = useCallback((property: DisplayProperty) => {
     const fullAddress = `${property.address}, ${property.city}, ${property.state}`;
-    router.push(`/analytics/${encodeURIComponent(fullAddress)}`);
+    // Use new IQ Verdict flow
+    router.push(`/analyzing/${encodeURIComponent(fullAddress)}` as any);
   }, [router]);
   
   const handleToggleFavorite = useCallback(async (id: string) => {

@@ -37,8 +37,8 @@ export default function SearchScreen() {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      // Navigate to the property page with the address
-      router.push(`/analytics/${encodeURIComponent(address.trim())}`);
+      // Use new IQ Verdict flow
+      router.push(`/analyzing/${encodeURIComponent(address.trim())}` as any);
     } catch (err) {
       setError('Unable to search. Please try again.');
     } finally {

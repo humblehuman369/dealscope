@@ -145,7 +145,8 @@ export default function HomeScreen() {
   const handleAnalyze = () => {
     if (!searchAddress.trim()) return;
     setIsSearching(true);
-    router.push(`/analytics/${encodeURIComponent(searchAddress.trim())}`);
+    // Use new IQ Verdict flow
+    router.push(`/analyzing/${encodeURIComponent(searchAddress.trim())}` as any);
   };
 
   const handleScanPress = () => {

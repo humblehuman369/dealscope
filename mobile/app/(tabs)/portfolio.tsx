@@ -80,7 +80,8 @@ export default function PortfolioScreen() {
     const fullAddress = [property.address, property.city, property.state]
       .filter(Boolean)
       .join(', ');
-    router.push(`/analytics/${encodeURIComponent(fullAddress)}`);
+    // Use new IQ Verdict flow
+    router.push(`/analyzing/${encodeURIComponent(fullAddress)}` as any);
   }, [router]);
 
   const portfolioSummary = summary || {
