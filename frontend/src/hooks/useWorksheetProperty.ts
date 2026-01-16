@@ -1,35 +1,12 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { SavedProperty } from '@/types/savedProperty'
+
+// Re-export for backward compatibility
+export type { SavedProperty } from '@/types/savedProperty'
 
 const API_BASE_URL = ''
-
-export interface SavedProperty {
-  id: string
-  address_street: string
-  address_city?: string
-  address_state?: string
-  address_zip?: string
-  full_address?: string
-  property_data_snapshot: {
-    listPrice?: number
-    monthlyRent?: number
-    propertyTaxes?: number
-    insurance?: number
-    bedrooms?: number
-    bathrooms?: number
-    sqft?: number
-    arv?: number
-    averageDailyRate?: number
-    occupancyRate?: number
-    photos?: string[]
-  }
-  last_analytics_result?: any
-  worksheet_assumptions?: any
-  created_at: string
-  saved_at?: string
-  updated_at?: string
-}
 
 interface UseWorksheetPropertyOptions {
   onLoaded?: (property: SavedProperty) => void
@@ -52,53 +29,88 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
   const hasFetchedRef = useRef(false)
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    // Don't do anything while auth is still loading
+    if (authLoading) {
+      console.log('[useWorksheetProperty] Auth still loading, waiting...')
+      return
+    }
+    
+    // Only redirect if auth is done loading AND user is not authenticated
+    if (!isAuthenticated) {
+      console.log('[useWorksheetProperty] Not authenticated, redirecting to home')
       router.push('/')
       return
     }
 
     const fetchProperty = async () => {
-      if (!propertyId || authLoading || hasFetchedRef.current) return
+      if (!propertyId || hasFetchedRef.current) {
+        console.log('[useWorksheetProperty] Skipping fetch:', { propertyId, hasFetched: hasFetchedRef.current })
+        return
+      }
       
       hasFetchedRef.current = true
       setIsLoading(true)
+      setError(null)
+      
+      console.log('[useWorksheetProperty] Fetching property:', propertyId)
       
       try {
         const token = localStorage.getItem('access_token')
+        
+        if (!token) {
+          console.error('[useWorksheetProperty] No access token found')
+          setError('Authentication required')
+          router.push('/')
+          return
+        }
+        
         const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved/${propertyId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
         })
 
+        console.log('[useWorksheetProperty] Response status:', response.status)
+
         if (!response.ok) {
+          if (response.status === 401) {
+            console.error('[useWorksheetProperty] Unauthorized - token may be expired')
+            setError('Session expired. Please log in again.')
+            router.push('/')
+            return
+          }
           if (response.status === 404) {
             setError('Property not found')
           } else {
-            setError('Failed to load property')
+            const errorData = await response.json().catch(() => ({}))
+            console.error('[useWorksheetProperty] API error:', response.status, errorData)
+            setError(errorData.detail || 'Failed to load property')
           }
           return
         }
 
         const data = await response.json()
+        console.log('[useWorksheetProperty] Property loaded:', data.id, data.address_street)
+        
         setProperty(data)
         onLoadedRef.current?.(data)
       } catch (err) {
-        console.error('Error fetching property:', err)
-        setError('Failed to load property')
+        console.error('[useWorksheetProperty] Error fetching property:', err)
+        setError('Failed to load property. Please try again.')
       } finally {
         setIsLoading(false)
       }
     }
 
-    if (isAuthenticated) {
-      fetchProperty()
-    }
+    fetchProperty()
   }, [propertyId, isAuthenticated, authLoading, router])
   
   // Reset fetch flag when propertyId changes
   useEffect(() => {
     hasFetchedRef.current = false
+    setProperty(null)
+    setError(null)
+    setIsLoading(true)
   }, [propertyId])
 
   return {

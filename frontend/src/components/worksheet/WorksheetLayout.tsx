@@ -19,17 +19,10 @@ import { LtrCashFlowBreakdown } from './charts/LtrCashFlowBreakdown'
 import { ReturnsTargetsBars } from './charts/ReturnsTargetsBars'
 import { EquityPositionBar } from './charts/EquityPositionBar'
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
+import { SavedProperty } from '@/types/savedProperty'
 
 interface WorksheetLayoutProps {
-  property: {
-    id: string
-    address_street: string
-    address_city?: string
-    address_state?: string
-    address_zip?: string
-    full_address?: string
-    property_data_snapshot: any
-  }
+  property: SavedProperty
   propertyId: string
   strategy: WorksheetStrategyId
 }

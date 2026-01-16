@@ -8,17 +8,10 @@ import {
   Loader2,
   Check,
 } from 'lucide-react'
+import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 
 interface WorksheetHeaderProps {
-  property: {
-    id: string
-    address_street: string
-    address_city?: string
-    address_state?: string
-    address_zip?: string
-    full_address?: string
-    property_data_snapshot: any
-  }
+  property: SavedProperty
   propertyId: string
 }
 
@@ -154,7 +147,7 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
           {/* Export */}
           <WorksheetExport 
             propertyId={propertyId}
-            propertyAddress={`${property.address_street}, ${property.address_city}, ${property.address_state}`}
+            propertyAddress={getDisplayAddress(property)}
           />
           
           {/* Share */}
