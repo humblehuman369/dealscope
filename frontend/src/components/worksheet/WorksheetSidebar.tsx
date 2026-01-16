@@ -18,17 +18,10 @@ import {
   X,
 } from 'lucide-react'
 import Link from 'next/link'
+import { SavedProperty, getShortAddress, getCityStateZip } from '@/types/savedProperty'
 
 interface WorksheetSidebarProps {
-  property: {
-    id: string
-    address_street: string
-    address_city?: string
-    address_state?: string
-    address_zip?: string
-    full_address?: string
-    property_data_snapshot: any
-  }
+  property: SavedProperty
   isOpen: boolean
   onClose: () => void
 }
@@ -120,10 +113,10 @@ export function WorksheetSidebar({ property, isOpen, onClose }: WorksheetSidebar
           
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-[var(--ws-text-primary)] text-sm truncate">
-              {property.address_street}
+              {getShortAddress(property)}
             </h3>
             <p className="text-xs text-[var(--ws-text-secondary)]">
-              {property.address_city}, {property.address_state} {property.address_zip}
+              {getCityStateZip(property)}
             </p>
             <div className="flex items-center gap-2 mt-1 text-xs text-[var(--ws-text-muted)]">
               <span>{propertyData.bedrooms || 0} BR</span>

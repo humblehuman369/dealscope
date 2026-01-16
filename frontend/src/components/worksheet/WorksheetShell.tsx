@@ -3,17 +3,10 @@ import { HelpCircle, Lightbulb, Info, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { WorksheetTabNav } from './WorksheetTabNav'
 import { WorksheetStrategyId } from '@/constants/worksheetStrategies'
+import { SavedProperty, getShortAddress, getCityStateZip } from '@/types/savedProperty'
 
 interface WorksheetShellProps {
-  property: {
-    id: string
-    address_street: string
-    address_city?: string
-    address_state?: string
-    address_zip?: string
-    full_address?: string
-    property_data_snapshot: any
-  }
+  property: SavedProperty
   propertyId: string
   strategy: WorksheetStrategyId
   helpTitle?: string
@@ -43,9 +36,9 @@ export function WorksheetShell({
             <span>Back</span>
           </Link>
           <div className="worksheet-property-info">
-            <h1 className="worksheet-property-title">{property.address_street}</h1>
+            <h1 className="worksheet-property-title">{getShortAddress(property)}</h1>
             <p className="worksheet-property-subtitle">
-              {property.address_city}, {property.address_state} {property.address_zip} •
+              {getCityStateZip(property)} •
               {propertyData.bedrooms || 0} BR • {propertyData.bathrooms || 0} BA •
               {(propertyData.sqft || 0).toLocaleString()} Sq.Ft.
             </p>
