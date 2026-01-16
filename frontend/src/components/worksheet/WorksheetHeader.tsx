@@ -39,12 +39,13 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
   }
 
   // Calculate key metrics
+  const { assumptions } = useWorksheetStore()
+  const purchasePrice = assumptions.purchasePrice || 0
   const cashNeeded = derived.totalCashNeeded || 0
   const cashFlow = derived.annualCashFlow || 0
   const monthlyCashFlow = derived.monthlyCashFlow || 0
   const capRate = derived.capRate || 0
   const cocReturn = derived.cashOnCash || 0
-  const mao = worksheetMetrics?.mao ?? 0
   const dealScore = worksheetMetrics?.deal_score ?? 0
 
   return (
@@ -52,8 +53,8 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
       {/* Summary Cards Row */}
       <div className="summary-cards">
         <div className="summary-card">
-          <div className="summary-card-label">Target Price</div>
-          <div className="summary-card-value">{formatCurrency(mao)}</div>
+          <div className="summary-card-label">Purchase Price</div>
+          <div className="summary-card-value">{formatCurrency(purchasePrice)}</div>
         </div>
 
         <div className="summary-card">
@@ -64,7 +65,7 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
         <div className="summary-card">
           <div className="summary-card-label">Cash Flow</div>
           <div className={`summary-card-value ${cashFlow >= 0 ? 'positive' : 'negative'}`}>
-            {formatCurrency(cashFlow)}/yr
+            {formatCurrency(cashFlow)}
           </div>
           <div className="summary-card-subtitle">{formatCurrency(monthlyCashFlow)}/mo</div>
         </div>
