@@ -586,27 +586,36 @@
   box-shadow: 0 0 0 2px var(--iq-teal);
 }
 
-/* ===== SLIDER STYLES ===== */
+/* ===== INLINE SLIDER STYLES ===== */
+/* Data row with slider: Label on left, slider in middle, value on right */
 .data-row.has-slider {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
+  grid-template-columns: minmax(120px, 160px) 1fr;
+  gap: 16px;
   align-items: center;
+  padding: 12px 16px;
 }
 
-.editable-field-with-slider {
+/* Inline slider row: slider takes up space, value on right */
+.slider-row-inline {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Slider track container - grows to fill available space */
+.slider-track-container {
+  flex: 1;
+  min-width: 100px;
+}
+
+/* Value display inline - fixed width on right */
+.slider-value-inline {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  min-width: 180px;
-}
-
-.slider-value-section {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
+  align-items: flex-end;
+  min-width: 100px;
 }
 
 .slider-value-display {
@@ -627,6 +636,7 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--ws-text-primary);
+  white-space: nowrap;
 }
 
 .slider-value-input {
@@ -637,8 +647,8 @@
   border: 1px solid var(--ws-border);
   border-radius: 6px;
   background: white;
-  min-width: 100px;
-  max-width: 140px;
+  min-width: 80px;
+  max-width: 120px;
 }
 
 .slider-value-input:focus {
@@ -648,21 +658,13 @@
 }
 
 .slider-secondary {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--ws-text-muted);
+  margin-top: 2px;
 }
 
 .slider-secondary.value-negative {
   color: var(--ws-negative);
-}
-
-.slider-container {
-  width: 100%;
-}
-
-.slider-wrapper {
-  position: relative;
-  width: 100%;
 }
 
 /* Custom Range Slider */
