@@ -35,17 +35,23 @@ interface ScanResultSheetProps {
   result: ScanResult;
   onClose: () => void;
   onViewDetails: () => void;
+  /** Enable the new IQ Verdict flow (Analyze → Verdict → Worksheet) */
+  useIQVerdictFlow?: boolean;
 }
 
 /**
  * Simplified bottom sheet displaying property confirmation after scan.
- * Shows: address, beds, baths, sqft, estimated value, and View Full Analysis CTA.
+ * Shows: address, beds, baths, sqft, estimated value, and Analyze/View Analysis CTA.
  * Includes a Save button that requires authentication.
+ * 
+ * When useIQVerdictFlow is true, the CTA navigates to the IQ Analyzing screen
+ * which then transitions to the IQ Verdict screen with ranked strategies.
  */
 export function ScanResultSheet({ 
   result, 
   onClose, 
-  onViewDetails 
+  onViewDetails,
+  useIQVerdictFlow = true, // Default to new flow
 }: ScanResultSheetProps) {
   const insets = useSafeAreaInsets();
   const translateY = useSharedValue(0);
@@ -254,7 +260,7 @@ export function ScanResultSheet({
               />
             </TouchableOpacity>
 
-            {/* View Full Analysis Button */}
+            {/* Primary CTA Button */}
             <Pressable 
               style={({ pressed }) => [
                 styles.ctaButton,
@@ -262,7 +268,9 @@ export function ScanResultSheet({
               ]}
               onPress={onViewDetails}
             >
-              <Text style={styles.ctaButtonText}>View Full Analysis</Text>
+              <Text style={styles.ctaButtonText}>
+                {useIQVerdictFlow ? 'Analyze This Property' : 'View Full Analysis'}
+              </Text>
               <Ionicons name="arrow-forward" size={20} color="#fff" />
             </Pressable>
           </View>

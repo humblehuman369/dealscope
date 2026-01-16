@@ -167,8 +167,24 @@ export default function ScanScreen() {
 
   const handleViewDetails = useCallback(() => {
     if (result?.property?.address) {
-      // Route to new Property Analytics page (not old /property page)
-      router.push(`/analytics/${encodeURIComponent(result.property.address)}`);
+      const encodedAddress = encodeURIComponent(result.property.address);
+      
+      // Get property details from analytics result
+      const fullAnalytics = result.analytics as any;
+      const propertyDetails = fullAnalytics?.property || result.property;
+      const estimatedValue = fullAnalytics?.pricing?.estimatedValue || 
+                             fullAnalytics?.pricing?.listPrice || 0;
+      
+      // Build query params with property data for the IQ Verdict flow
+      const queryParams = new URLSearchParams({
+        price: estimatedValue.toString(),
+        beds: (propertyDetails.bedrooms || 3).toString(),
+        baths: (propertyDetails.bathrooms || 2).toString(),
+        sqft: (propertyDetails.sqft || 1500).toString(),
+      });
+
+      // Route to IQ Analyzing screen (new IQ Verdict flow)
+      router.push(`/analyzing/${encodedAddress}?${queryParams.toString()}`);
     }
   }, [result, router]);
 
