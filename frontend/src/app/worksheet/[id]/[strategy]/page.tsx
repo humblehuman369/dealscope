@@ -14,37 +14,6 @@ import { useWorksheetProperty } from '@/hooks/useWorksheetProperty'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { WORKSHEET_STRATEGIES, WorksheetStrategyId } from '@/constants/worksheetStrategies'
 
-const STR_HELP_TIPS = [
-  'Peak season rates can be 2-3x higher than off-season',
-  'Average 65-75% occupancy is realistic for most markets',
-  'Platform fees (Airbnb/VRBO) typically 3-15% of booking',
-  'Dynamic pricing tools can increase revenue 10-20%',
-]
-
-const BRRRR_HELP_TIPS = [
-  'Target 70-75% all-in vs. ARV to create strong equity at refinance.',
-  'Shorter rehab timelines reduce holding costs and improve returns.',
-  'Aim to recycle 100% of cash invested at refinance when possible.',
-]
-
-const FLIP_HELP_TIPS = [
-  'Follow the 70% rule: pay no more than 70% of ARV minus repairs.',
-  'Shorter holding periods reduce carrying costs and protect margins.',
-  'Target at least a 15% profit margin after all selling costs.',
-]
-
-const HOUSE_HACK_HELP_TIPS = [
-  'FHA loans allow 3.5% down on 2-4 unit properties.',
-  'Budget for vacancy even if units are leased.',
-  'Aim for a net housing cost below market rent.',
-]
-
-const WHOLESALE_HELP_TIPS = [
-  'Target assignment fees above $5k for strong wholesale deals.',
-  'Investor ROI should exceed 25% to be compelling.',
-  'Keep contracts below 70% of ARV minus rehab.',
-]
-
 export default function StrategyWorksheetPage() {
   const params = useParams()
   const router = useRouter()
@@ -119,8 +88,6 @@ export default function StrategyWorksheetPage() {
         property={property}
         propertyId={propertyId}
         strategy="str"
-        helpTitle="STR Tips"
-        helpTips={STR_HELP_TIPS}
       >
         <StrWorksheet property={property} />
       </WorksheetShell>
@@ -133,8 +100,6 @@ export default function StrategyWorksheetPage() {
         property={property}
         propertyId={propertyId}
         strategy="brrrr"
-        helpTitle="BRRRR Tips"
-        helpTips={BRRRR_HELP_TIPS}
       >
         <BrrrrWorksheet property={property} />
       </WorksheetShell>
@@ -147,8 +112,6 @@ export default function StrategyWorksheetPage() {
         property={property}
         propertyId={propertyId}
         strategy="flip"
-        helpTitle="Fix & Flip Tips"
-        helpTips={FLIP_HELP_TIPS}
       >
         <FlipWorksheet property={property} />
       </WorksheetShell>
@@ -161,8 +124,6 @@ export default function StrategyWorksheetPage() {
         property={property}
         propertyId={propertyId}
         strategy="househack"
-        helpTitle="House Hack Tips"
-        helpTips={HOUSE_HACK_HELP_TIPS}
       >
         <HouseHackWorksheet property={property} />
       </WorksheetShell>
@@ -175,8 +136,6 @@ export default function StrategyWorksheetPage() {
         property={property}
         propertyId={propertyId}
         strategy="wholesale"
-        helpTitle="Wholesale Tips"
-        helpTips={WHOLESALE_HELP_TIPS}
       >
         <WholesaleWorksheet property={property} />
       </WorksheetShell>
@@ -188,8 +147,6 @@ export default function StrategyWorksheetPage() {
       property={property}
       propertyId={propertyId}
       strategy={strategyParam}
-      helpTitle="Worksheet Tips"
-      helpTips={['This strategy is being finalized for production.']}
     >
       <div className="section-card p-6">
         <h2 className="text-lg font-semibold text-[var(--ws-text-primary)]">
