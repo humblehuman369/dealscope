@@ -455,12 +455,12 @@
   padding: 0;
 }
 
-/* Data Rows - Ledger Style with overflow protection */
+/* Data Rows - Ledger Style with proper 2-column layout */
 .data-row {
   display: grid;
-  grid-template-columns: minmax(100px, 180px) 1fr;
+  grid-template-columns: minmax(140px, 200px) 1fr;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   padding: 10px 20px;
   border-bottom: 1px solid var(--ws-border-light);
   font-size: 14px;
@@ -494,6 +494,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 .data-label .icon {
@@ -511,20 +512,19 @@
   justify-content: flex-end;
   gap: 8px;
   text-align: right;
-  min-width: 80px;
-  max-width: 200px;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Value column - all values align to same right edge */
-.data-row > div:last-child {
-  min-width: 80px;
-  max-width: 200px;
+/* Value column - flex to right edge */
+.data-row > div:last-child,
+.data-row > span:last-child {
   text-align: right;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Multi-value rows - stack vertically for alignment */
