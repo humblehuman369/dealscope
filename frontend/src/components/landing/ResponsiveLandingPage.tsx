@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -27,12 +27,11 @@ interface ResponsiveLandingPageProps {
   onPointAndScan?: () => void;
 }
 
-export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageProps) {
-  const { user, isAuthenticated, setShowAuthModal } = useAuth();
-  const [showTryItNowModal, setShowTryItNowModal] = useState(false);
+// Separate component to handle search params (must be wrapped in Suspense)
+function AuthParamHandler() {
+  const { setShowAuthModal } = useAuth();
   const searchParams = useSearchParams();
 
-  // Check for auth query param to open auth modal (e.g., after email verification)
   useEffect(() => {
     const authParam = searchParams.get('auth');
     if (authParam === 'login') {
@@ -41,6 +40,13 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
       setShowAuthModal('register');
     }
   }, [searchParams, setShowAuthModal]);
+
+  return null; // This component only handles the side effect
+}
+
+export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageProps) {
+  const { user, isAuthenticated, setShowAuthModal } = useAuth();
+  const [showTryItNowModal, setShowTryItNowModal] = useState(false);
 
   const handleTryItNow = () => {
     setShowTryItNowModal(true);
@@ -54,6 +60,11 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
 
   return (
     <div className="landing-page">
+      {/* Handle auth query params (e.g., ?auth=login after email verification) */}
+      <Suspense fallback={null}>
+        <AuthParamHandler />
+      </Suspense>
+
       {/* Header */}
       <header className="landing-header">
         <div className="container header-inner">
