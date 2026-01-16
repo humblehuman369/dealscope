@@ -3,9 +3,7 @@
 import React, { useState, useEffect, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { 
-  ResponsiveAnalyticsContainer,
   AnalyticsPageSkeleton,
-  useAnalyticsViewMode,
   PropertyPremiumPage,
   StrategyId
 } from '@/components/analytics'
@@ -18,15 +16,10 @@ const API_BASE_URL = ''
 /**
  * Property Analytics Page
  * 
- * Fetches property data and displays the new analytics interface.
- * Supports both demo mode and real API data.
- * Supports both light and dark themes.
+ * Shows property overview and allows strategy selection.
+ * When a strategy is selected, navigates to the new worksheet pages at /worksheet/[id]/[strategy].
  * 
- * Now supports responsive desktop/mobile views:
- * - Desktop (>=1024px): Full 900px wide layout with enhanced components
- * - Mobile (<1024px): Compact mobile-optimized layout
- * 
- * NEW: Premium property landing page with strategy selection
+ * This page no longer shows the old inline analytics - all strategy analysis is done in worksheets.
  */
 
 interface PropertyData {
@@ -63,19 +56,27 @@ function PropertyContent() {
   const searchParams = useSearchParams()
   const addressParam = searchParams.get('address')
   const strategyParam = searchParams.get('strategy') as StrategyId | null
-  const { isAuthenticated, setShowAuthModal } = useAuth()
-  const viewMode = useAnalyticsViewMode()
+  const { isAuthenticated, isLoading: authLoading, setShowAuthModal } = useAuth()
   
   const [property, setProperty] = useState<PropertyData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedStrategy, setSelectedStrategy] = useState<StrategyId | null>(strategyParam)
+  const [isNavigatingToWorksheet, setIsNavigatingToWorksheet] = useState(false)
   
   // Save property state
   const [isSaved, setIsSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [showSearchModal, setShowSearchModal] = useState(false)
+  
+  // If strategy is in URL and user is authenticated, auto-navigate to worksheet
+  useEffect(() => {
+    if (strategyParam && property && isAuthenticated && !authLoading && !isNavigatingToWorksheet) {
+      setIsNavigatingToWorksheet(true)
+      // Trigger the strategy selection which will save and navigate
+      handleSelectStrategy(strategyParam)
+    }
+  }, [strategyParam, property, isAuthenticated, authLoading])
 
   useEffect(() => {
     async function fetchProperty() {
@@ -320,14 +321,6 @@ function PropertyContent() {
     }
   }
 
-  // Handle back from strategy view
-  const handleBackFromStrategy = () => {
-    setSelectedStrategy(null)
-    if (addressParam) {
-      router.push(`/property?address=${encodeURIComponent(addressParam)}`)
-    }
-  }
-
   // Handle save property
   const handleSave = useCallback(async () => {
     console.log('[handleSave] Starting save...', { isAuthenticated, hasProperty: !!property, isSaving, isSaved })
@@ -484,9 +477,9 @@ function PropertyContent() {
     setShowSearchModal(true)
   }
 
-  // If no strategy is selected, show the premium property landing page
-  if (!selectedStrategy) {
-    return (
+  // Show property overview - strategy selection navigates to worksheet
+  return (
+    <>
       <PropertyPremiumPage
         property={property}
         onBack={() => router.back()}
@@ -499,37 +492,8 @@ function PropertyContent() {
         isSaving={isSaving}
         saveMessage={saveMessage}
       />
-    )
-  }
-
-  // Strategy is selected - show the detailed analytics view
-  // Desktop view uses the integrated header from DesktopStrategyAnalyticsContainer
-  // Mobile view uses the separate header below
-  if (viewMode === 'desktop') {
-    return (
-      <div className="min-h-screen overflow-safe transition-colors">
-        <ResponsiveAnalyticsContainer
-          property={property}
-          onBack={handleBackFromStrategy}
-          initialStrategy={selectedStrategy}
-        />
-      </div>
-    )
-  }
-
-  // Mobile view - uses main Header from layout, no duplicate header needed
-  return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-[#0b1426] overflow-safe transition-colors">
-      {/* Responsive Analytics Container */}
-      <ResponsiveAnalyticsContainer
-        property={property}
-        onBack={handleBackFromStrategy}
-        initialStrategy={selectedStrategy}
-      />
-      
-      {/* Search Property Modal */}
       <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
-    </div>
+    </>
   )
 }
 
