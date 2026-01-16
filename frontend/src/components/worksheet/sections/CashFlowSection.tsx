@@ -10,9 +10,14 @@ export function CashFlowSection() {
   const derived = useWorksheetDerived()
 
   // Use ORIGINAL values from property data for stable slider ranges
-  const originalRent = propertyData?.property_data_snapshot?.monthlyRent || assumptions.monthlyRent || 3000
-  const originalTaxes = propertyData?.property_data_snapshot?.propertyTaxes || assumptions.propertyTaxes || 5000
-  const originalInsurance = propertyData?.property_data_snapshot?.insurance || assumptions.insurance || 2000
+  // CRITICAL: Only use snapshot values if valid - never fall back to assumptions (creates feedback loop)
+  const snapshotRent = propertyData?.property_data_snapshot?.monthlyRent
+  const snapshotTaxes = propertyData?.property_data_snapshot?.propertyTaxes
+  const snapshotInsurance = propertyData?.property_data_snapshot?.insurance
+  
+  const originalRent = (snapshotRent && snapshotRent > 0) ? snapshotRent : 3000
+  const originalTaxes = (snapshotTaxes && snapshotTaxes > 0) ? snapshotTaxes : 5000
+  const originalInsurance = (snapshotInsurance && snapshotInsurance > 0) ? snapshotInsurance : 2000
 
   const multiplier = viewMode === 'monthly' ? 1/12 : 1
   const label = viewMode === 'monthly' ? '/mo' : '/yr'

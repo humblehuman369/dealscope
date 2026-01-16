@@ -13,8 +13,12 @@ export function ValuationSection() {
   const equityAfterRehab = worksheetMetrics?.equity_after_rehab ?? 0
 
   // Use ORIGINAL list price from property data for stable slider ranges
-  const originalPrice = propertyData?.property_data_snapshot?.listPrice || assumptions.purchasePrice || 500000
-  const originalArv = propertyData?.property_data_snapshot?.arv || originalPrice
+  // CRITICAL: Only use snapshot values if valid - never fall back to assumptions (creates feedback loop)
+  const snapshotPrice = propertyData?.property_data_snapshot?.listPrice
+  const snapshotArv = propertyData?.property_data_snapshot?.arv
+  
+  const originalPrice = (snapshotPrice && snapshotPrice > 0) ? snapshotPrice : 500000
+  const originalArv = (snapshotArv && snapshotArv > 0) ? snapshotArv : originalPrice
 
   // Fixed ARV range based on original values
   const arvMin = Math.round(originalArv * 0.7)

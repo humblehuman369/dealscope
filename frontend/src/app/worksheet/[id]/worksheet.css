@@ -289,19 +289,18 @@
   color: var(--iq-teal);
 }
 
-/* Main Content Area with Responsive Sizing */
+/* Main Content Area - Full width, no side padding to align with header */
 .worksheet-main-area {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
+  gap: 20px;
+  padding: 20px 24px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .worksheet-main-area.full-width {
-  max-width: 1600px;
-  padding: 24px 32px;
+  padding: 20px 24px;
 }
 
 /* Content Area */
@@ -317,35 +316,21 @@
 }
 
 /* Responsive main area */
-@media (max-width: 1599px) {
+@media (max-width: 1100px) {
   .worksheet-main-area {
-    max-width: 1200px;
-    padding: 20px;
-  }
-  
-  .worksheet-main-area.full-width {
-    max-width: 1400px;
-    padding: 20px 24px;
+    padding: 16px 20px;
   }
 }
 
-@media (max-width: 1199px) {
+@media (max-width: 768px) {
   .worksheet-main-area {
-    max-width: 900px;
-    padding: 16px;
+    padding: 12px 16px;
   }
 }
 
-@media (max-width: 899px) {
+@media (max-width: 480px) {
   .worksheet-main-area {
-    max-width: 100%;
-    padding: 12px;
-  }
-}
-
-@media (max-width: 639px) {
-  .worksheet-main-area {
-    padding: 8px;
+    padding: 8px 12px;
   }
 }
 
@@ -2616,13 +2601,12 @@
    Worksheet Layout - 2 Column with Responsive Breakpoints
    ========================================== */
 
-/* Widescreen: 1600px+ - Full 2 column layout */
+/* Widescreen: Full 2 column layout - NO side padding, columns fill space */
 .worksheet-layout-2col {
   display: grid;
-  grid-template-columns: minmax(500px, 900px) 380px;
-  gap: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
+  grid-template-columns: 1fr 400px;
+  gap: 20px;
+  width: 100%;
 }
 
 .worksheet-main-content {
@@ -2637,50 +2621,38 @@
   flex-direction: column;
   gap: 16px;
   min-width: 0; /* Prevent overflow */
+  width: 400px;
 }
 
-/* Mid-screen: 1200px - 1599px - Narrower sidebar */
-@media (max-width: 1599px) {
+/* Mid-screen: 1400px and below */
+@media (max-width: 1400px) {
   .worksheet-layout-2col {
-    grid-template-columns: minmax(450px, 1fr) 340px;
-    gap: 20px;
-    max-width: 1200px;
+    grid-template-columns: 1fr 360px;
+    gap: 16px;
+  }
+  
+  .worksheet-charts-sidebar {
+    width: 360px;
   }
 }
 
-/* Small screen: 900px - 1199px - Single column, charts in grid */
-@media (max-width: 1199px) {
+/* Small screen: 1100px and below - Single column */
+@media (max-width: 1100px) {
   .worksheet-layout-2col {
     grid-template-columns: 1fr;
     gap: 16px;
-    max-width: 800px;
   }
   
   .worksheet-charts-sidebar {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
+    width: 100%;
   }
 }
 
-/* Tablet: 640px - 899px */
-@media (max-width: 899px) {
-  .worksheet-layout-2col {
-    max-width: 100%;
-    padding: 0 12px;
-  }
-  
-  .worksheet-charts-sidebar {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Mobile: < 640px - Single column, full width */
-@media (max-width: 639px) {
-  .worksheet-layout-2col {
-    padding: 0 8px;
-  }
-  
+/* Tablet: 768px and below */
+@media (max-width: 768px) {
   .worksheet-charts-sidebar {
     grid-template-columns: 1fr;
   }

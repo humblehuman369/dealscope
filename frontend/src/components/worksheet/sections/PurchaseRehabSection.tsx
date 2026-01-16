@@ -10,7 +10,10 @@ export function PurchaseRehabSection() {
   const derived = useWorksheetDerived()
 
   // Use ORIGINAL list price from property data for stable slider ranges
-  const originalPrice = propertyData?.property_data_snapshot?.listPrice || assumptions.purchasePrice || 500000
+  // CRITICAL: Only use property_data_snapshot.listPrice if it's a valid positive number
+  // Never fall back to assumptions.purchasePrice as that creates a feedback loop
+  const snapshotPrice = propertyData?.property_data_snapshot?.listPrice
+  const originalPrice = (snapshotPrice && snapshotPrice > 0) ? snapshotPrice : 500000
   
   // Fixed ranges based on original price - won't change as slider moves
   const purchasePriceMin = Math.max(50000, Math.round(originalPrice * 0.5))
