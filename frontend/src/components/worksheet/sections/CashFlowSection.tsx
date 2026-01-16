@@ -4,11 +4,16 @@ import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
 import { IncomeExpensesPie } from '../charts/IncomeExpensesPie'
-import { DollarSign, Home, Shield, Users, Wrench, PiggyBank, Building2 } from 'lucide-react'
+import { Home, Shield, Users, Wrench, PiggyBank, Building2 } from 'lucide-react'
 
 export function CashFlowSection() {
-  const { assumptions, updateAssumption, viewMode } = useWorksheetStore()
+  const { assumptions, updateAssumption, viewMode, propertyData } = useWorksheetStore()
   const derived = useWorksheetDerived()
+
+  // Use ORIGINAL values from property data for stable slider ranges
+  const originalRent = propertyData?.property_data_snapshot?.monthlyRent || assumptions.monthlyRent || 3000
+  const originalTaxes = propertyData?.property_data_snapshot?.propertyTaxes || assumptions.propertyTaxes || 5000
+  const originalInsurance = propertyData?.property_data_snapshot?.insurance || assumptions.insurance || 2000
 
   const multiplier = viewMode === 'monthly' ? 1/12 : 1
   const label = viewMode === 'monthly' ? '/mo' : '/yr'
@@ -45,8 +50,8 @@ export function CashFlowSection() {
               value={assumptions.monthlyRent}
               onChange={(val) => updateAssumption('monthlyRent', val)}
               format="currency"
-              min={500}
-              max={20000}
+              min={Math.round(originalRent * 0.5)}
+              max={Math.round(originalRent * 2)}
               step={50}
               showSlider={true}
               secondaryValue={formatValue(derived.annualGrossRent) + label}
@@ -59,7 +64,7 @@ export function CashFlowSection() {
               onChange={(val) => updateAssumption('vacancyRate', val)}
               format="percent"
               min={0}
-              max={0.25}
+              max={0.20}
               step={0.01}
               showSlider={true}
               secondaryValue={formatCurrency(-derived.vacancy * multiplier)}
@@ -81,8 +86,8 @@ export function CashFlowSection() {
               value={assumptions.propertyTaxes}
               onChange={(val) => updateAssumption('propertyTaxes', val)}
               format="currency"
-              min={0}
-              max={30000}
+              min={Math.round(originalTaxes * 0.5)}
+              max={Math.round(originalTaxes * 2)}
               step={100}
               showSlider={true}
             />
@@ -93,8 +98,8 @@ export function CashFlowSection() {
               value={assumptions.insurance}
               onChange={(val) => updateAssumption('insurance', val)}
               format="currency"
-              min={0}
-              max={15000}
+              min={Math.round(originalInsurance * 0.5)}
+              max={Math.round(originalInsurance * 2)}
               step={100}
               showSlider={true}
             />
@@ -106,7 +111,7 @@ export function CashFlowSection() {
               onChange={(val) => updateAssumption('managementPct', val)}
               format="percent"
               min={0}
-              max={0.15}
+              max={0.12}
               step={0.01}
               showSlider={true}
               secondaryValue={formatValue(derived.propertyManagement)}
@@ -119,7 +124,7 @@ export function CashFlowSection() {
               onChange={(val) => updateAssumption('maintenancePct', val)}
               format="percent"
               min={0}
-              max={0.15}
+              max={0.10}
               step={0.01}
               showSlider={true}
               secondaryValue={formatValue(derived.maintenance)}
@@ -132,7 +137,7 @@ export function CashFlowSection() {
               onChange={(val) => updateAssumption('capexReservePct', val)}
               format="percent"
               min={0}
-              max={0.15}
+              max={0.10}
               step={0.01}
               showSlider={true}
               secondaryValue={formatValue(derived.capex)}
@@ -145,7 +150,7 @@ export function CashFlowSection() {
               onChange={(val) => updateAssumption('hoaFees', val)}
               format="currency"
               min={0}
-              max={1000}
+              max={500}
               step={25}
               showSlider={true}
             />
