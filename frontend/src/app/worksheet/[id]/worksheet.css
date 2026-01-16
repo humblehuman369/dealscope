@@ -289,18 +289,19 @@
   color: var(--iq-teal);
 }
 
-/* Main Content Area */
+/* Main Content Area with Responsive Sizing */
 .worksheet-main-area {
   display: flex;
+  flex-direction: column;
   gap: 24px;
   padding: 24px;
-  max-width: 1600px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
 .worksheet-main-area.full-width {
-  max-width: none;
-  padding: 24px 24px 24px 24px;
+  max-width: 1600px;
+  padding: 24px 32px;
 }
 
 /* Content Area */
@@ -313,6 +314,39 @@
 .worksheet-content-area.full-width {
   max-width: 100%;
   margin: 0;
+}
+
+/* Responsive main area */
+@media (max-width: 1599px) {
+  .worksheet-main-area {
+    max-width: 1200px;
+    padding: 20px;
+  }
+  
+  .worksheet-main-area.full-width {
+    max-width: 1400px;
+    padding: 20px 24px;
+  }
+}
+
+@media (max-width: 1199px) {
+  .worksheet-main-area {
+    max-width: 900px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 899px) {
+  .worksheet-main-area {
+    max-width: 100%;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 639px) {
+  .worksheet-main-area {
+    padding: 8px;
+  }
 }
 
 /* Section Layout Options */
@@ -436,15 +470,16 @@
   padding: 0;
 }
 
-/* Data Rows - Ledger Style */
+/* Data Rows - Ledger Style with overflow protection */
 .data-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(100px, 180px) 1fr;
   align-items: center;
   gap: 16px;
   padding: 10px 20px;
   border-bottom: 1px solid var(--ws-border-light);
   font-size: 14px;
+  min-width: 0; /* Allow shrinking */
 }
 
 .data-row:last-child {
@@ -472,12 +507,15 @@
   gap: 10px;
   color: var(--ws-text-label);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .data-label .icon {
   width: 18px;
   height: 18px;
   color: var(--iq-teal);
+  flex-shrink: 0;
 }
 
 .data-value {
@@ -488,13 +526,20 @@
   justify-content: flex-end;
   gap: 8px;
   text-align: right;
-  min-width: 100px;
+  min-width: 80px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Value column - all values align to same right edge */
 .data-row > div:last-child {
-  min-width: 120px;
+  min-width: 80px;
+  max-width: 200px;
   text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Multi-value rows - stack vertically for alignment */
@@ -590,24 +635,27 @@
 /* Data row with slider: Label on left, slider in middle, value on right */
 .data-row.has-slider {
   display: grid;
-  grid-template-columns: minmax(120px, 160px) 1fr;
-  gap: 16px;
+  grid-template-columns: minmax(100px, 160px) 1fr;
+  gap: 12px;
   align-items: center;
   padding: 12px 16px;
+  min-width: 0; /* Allow shrinking */
 }
 
 /* Inline slider row: slider takes up space, value on right */
 .slider-row-inline {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
+  min-width: 0; /* Allow shrinking */
 }
 
 /* Slider track container - grows to fill available space */
 .slider-track-container {
   flex: 1;
-  min-width: 100px;
+  min-width: 80px;
+  max-width: 400px;
 }
 
 /* Value display inline - fixed width on right */
@@ -615,7 +663,52 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  min-width: 100px;
+  min-width: 80px;
+  max-width: 140px;
+  overflow: hidden;
+}
+
+/* Responsive slider adjustments */
+@media (max-width: 899px) {
+  .data-row.has-slider {
+    grid-template-columns: minmax(80px, 120px) 1fr;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+  
+  .slider-row-inline {
+    gap: 10px;
+  }
+  
+  .slider-track-container {
+    min-width: 60px;
+  }
+  
+  .slider-value-inline {
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 639px) {
+  .data-row.has-slider {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .slider-row-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .slider-track-container {
+    max-width: 100%;
+  }
+  
+  .slider-value-inline {
+    flex-direction: row;
+    justify-content: flex-end;
+    max-width: 100%;
+  }
 }
 
 .slider-value-display {
@@ -637,6 +730,9 @@
   font-weight: 600;
   color: var(--ws-text-primary);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
 }
 
 .slider-value-input {
@@ -736,24 +832,20 @@
   min-width: 60px;
 }
 
-/* Summary Cards - 6 boxes in one row */
+/* Summary Cards - 6 boxes in one row with responsive sizing */
 .summary-cards {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: clamp(8px, 1.5vw, 16px);
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
   margin-bottom: 24px;
-}
-
-.summary-cards .summary-card {
-  flex: 1;
-  min-width: 0;
+  max-width: 1400px;
 }
 
 .summary-card {
   background: white;
   border: 1px solid var(--ws-border);
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 12px 10px;
   box-shadow: var(--ws-shadow);
   transition: all 0.2s ease;
   text-align: center;
@@ -761,6 +853,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-width: 0; /* Allow shrinking */
+  overflow: hidden;
 }
 
 .summary-card.highlight {
@@ -780,10 +874,11 @@
   letter-spacing: 0.05em;
   color: var(--ws-text-muted);
   margin-bottom: 6px;
+  white-space: nowrap;
 }
 
 .summary-card-value {
-  font-size: clamp(16px, 2vw, 22px);
+  font-size: clamp(14px, 1.8vw, 20px);
   font-weight: 700;
   color: var(--ws-text-primary);
   line-height: 1.2;
@@ -803,13 +898,40 @@
 
 .summary-card-value.highlight {
   color: var(--iq-teal);
-  font-size: clamp(20px, 2.5vw, 28px);
+  font-size: clamp(16px, 2vw, 24px);
 }
 
 .summary-card-subtitle {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--ws-text-secondary);
   margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Responsive summary cards */
+@media (max-width: 1199px) {
+  .summary-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 639px) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .summary-card {
+    padding: 10px 8px;
+  }
+  
+  .summary-card-label {
+    font-size: 9px;
+  }
 }
 
 /* Toggle Switch */
@@ -2491,33 +2613,75 @@
 }
 
 /* ==========================================
-   Worksheet Layout - 2 Column
+   Worksheet Layout - 2 Column with Responsive Breakpoints
    ========================================== */
+
+/* Widescreen: 1600px+ - Full 2 column layout */
 .worksheet-layout-2col {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 20px;
+  grid-template-columns: minmax(500px, 900px) 380px;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .worksheet-main-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0; /* Prevent overflow */
 }
 
 .worksheet-charts-sidebar {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0; /* Prevent overflow */
 }
 
-@media (max-width: 1200px) {
+/* Mid-screen: 1200px - 1599px - Narrower sidebar */
+@media (max-width: 1599px) {
+  .worksheet-layout-2col {
+    grid-template-columns: minmax(450px, 1fr) 340px;
+    gap: 20px;
+    max-width: 1200px;
+  }
+}
+
+/* Small screen: 900px - 1199px - Single column, charts in grid */
+@media (max-width: 1199px) {
   .worksheet-layout-2col {
     grid-template-columns: 1fr;
+    gap: 16px;
+    max-width: 800px;
   }
   
   .worksheet-charts-sidebar {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+/* Tablet: 640px - 899px */
+@media (max-width: 899px) {
+  .worksheet-layout-2col {
+    max-width: 100%;
+    padding: 0 12px;
+  }
+  
+  .worksheet-charts-sidebar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile: < 640px - Single column, full width */
+@media (max-width: 639px) {
+  .worksheet-layout-2col {
+    padding: 0 8px;
+  }
+  
+  .worksheet-charts-sidebar {
+    grid-template-columns: 1fr;
   }
 }
