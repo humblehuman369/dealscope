@@ -26,8 +26,8 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
     e.preventDefault();
     if (address.trim()) {
       onClose();
-      // Navigate to property analytics with the address
-      router.push(`/property?address=${encodeURIComponent(address.trim())}`);
+      // Navigate to IQ Analyzing screen (new IQ Verdict flow)
+      router.push(`/analyzing?address=${encodeURIComponent(address.trim())}`);
     }
   };
 
