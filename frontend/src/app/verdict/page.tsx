@@ -46,11 +46,10 @@ function VerdictContent() {
 
   const handleViewStrategy = useCallback((strategy: IQStrategy) => {
     const encodedAddress = encodeURIComponent(property.address)
-    const strategyPath = STRATEGY_ROUTE_MAP[strategy.id]
+    const strategyId = STRATEGY_ROUTE_MAP[strategy.id]
     
-    // Navigate to the worksheet for this strategy
-    // Using property query page for now
-    router.push(`/property?address=${encodedAddress}&strategy=${strategy.id}`)
+    // Navigate to the property page with the selected strategy worksheet
+    router.push(`/property?address=${encodedAddress}&strategy=${strategyId}`)
   }, [property, router])
 
   const handleCompareAll = useCallback(() => {
