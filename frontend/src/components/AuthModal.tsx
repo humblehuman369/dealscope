@@ -99,9 +99,13 @@ export default function AuthModal() {
         setError('Password must be at least 8 characters')
         return
       }
-      // Check for uppercase and digit
+      // Check for uppercase, lowercase, and digit (must match backend validation)
       if (!/[A-Z]/.test(password)) {
         setError('Password must contain at least one uppercase letter')
+        return
+      }
+      if (!/[a-z]/.test(password)) {
+        setError('Password must contain at least one lowercase letter')
         return
       }
       if (!/[0-9]/.test(password)) {
@@ -127,7 +131,16 @@ export default function AuthModal() {
       }
       setShowAuthModal(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred'
+      
+      // Handle verification required case - show success message instead of error
+      if (errorMessage.startsWith('VERIFICATION_REQUIRED:')) {
+        setSuccess(errorMessage.replace('VERIFICATION_REQUIRED:', ''))
+        // Don't close modal - let user see the message
+        return
+      }
+      
+      setError(errorMessage)
     }
   }
 
@@ -317,7 +330,7 @@ export default function AuthModal() {
             </div>
             {!isLogin && (
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Min 8 characters with uppercase and number
+                Min 8 characters with uppercase, lowercase, and number
               </p>
             )}
           </div>

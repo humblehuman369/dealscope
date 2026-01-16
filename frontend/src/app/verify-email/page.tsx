@@ -74,16 +74,16 @@ function VerifyEmailContent() {
                 <CheckCircle className="w-8 h-8 text-green-500" />
               </div>
               <h1 className="text-2xl font-bold text-navy-900 dark:text-white mb-2">
-                Email Verified! 🎉
+                Email Verified!
               </h1>
               <p className="text-gray-500 dark:text-gray-400 mb-6">
-                {message}
+                Your email has been verified successfully. You can now sign in to your account.
               </p>
               <Link
-                href="/dashboard"
+                href="/?auth=login"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-semibold transition-colors"
               >
-                Go to Dashboard
+                Sign In
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </>
