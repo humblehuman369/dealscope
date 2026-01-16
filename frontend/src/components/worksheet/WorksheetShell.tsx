@@ -7,10 +7,11 @@ import { WorksheetStrategyId } from '@/constants/worksheetStrategies'
 interface WorksheetShellProps {
   property: {
     id: string
-    address: string
-    city: string
-    state: string
-    zip_code: string
+    address_street: string
+    address_city?: string
+    address_state?: string
+    address_zip?: string
+    full_address?: string
     property_data_snapshot: any
   }
   propertyId: string
@@ -42,9 +43,9 @@ export function WorksheetShell({
             <span>Back</span>
           </Link>
           <div className="worksheet-property-info">
-            <h1 className="worksheet-property-title">{property.address}</h1>
+            <h1 className="worksheet-property-title">{property.address_street}</h1>
             <p className="worksheet-property-subtitle">
-              {property.city}, {property.state} {property.zip_code} •
+              {property.address_city}, {property.address_state} {property.address_zip} •
               {propertyData.bedrooms || 0} BR • {propertyData.bathrooms || 0} BA •
               {(propertyData.sqft || 0).toLocaleString()} Sq.Ft.
             </p>

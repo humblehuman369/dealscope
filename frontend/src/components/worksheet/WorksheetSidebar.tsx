@@ -22,10 +22,11 @@ import Link from 'next/link'
 interface WorksheetSidebarProps {
   property: {
     id: string
-    address: string
-    city: string
-    state: string
-    zip_code: string
+    address_street: string
+    address_city?: string
+    address_state?: string
+    address_zip?: string
+    full_address?: string
     property_data_snapshot: any
   }
   isOpen: boolean
@@ -119,10 +120,10 @@ export function WorksheetSidebar({ property, isOpen, onClose }: WorksheetSidebar
           
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-[var(--ws-text-primary)] text-sm truncate">
-              {property.address}
+              {property.address_street}
             </h3>
             <p className="text-xs text-[var(--ws-text-secondary)]">
-              {property.city}, {property.state} {property.zip_code}
+              {property.address_city}, {property.address_state} {property.address_zip}
             </p>
             <div className="flex items-center gap-2 mt-1 text-xs text-[var(--ws-text-muted)]">
               <span>{propertyData.bedrooms || 0} BR</span>

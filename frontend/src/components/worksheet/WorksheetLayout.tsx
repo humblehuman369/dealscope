@@ -23,10 +23,11 @@ import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 interface WorksheetLayoutProps {
   property: {
     id: string
-    address: string
-    city: string
-    state: string
-    zip_code: string
+    address_street: string
+    address_city?: string
+    address_state?: string
+    address_zip?: string
+    full_address?: string
     property_data_snapshot: any
   }
   propertyId: string
