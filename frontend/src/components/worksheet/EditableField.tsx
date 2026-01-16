@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Pencil } from 'lucide-react'
 
 type FormatType = 'currency' | 'percent' | 'number' | 'years'
@@ -18,6 +18,12 @@ interface EditableFieldProps {
   className?: string
   isPositive?: boolean
   isNegative?: boolean
+  /** Show slider control */
+  showSlider?: boolean
+  /** Secondary display value (e.g., dollar amount for percentage) */
+  secondaryValue?: string
+  /** Whether secondary value is negative */
+  secondaryNegative?: boolean
 }
 
 const formatValue = (value: number, format: FormatType, prefix?: string, suffix?: string): string => {
@@ -72,17 +78,29 @@ export function EditableField({
   format = 'number',
   suffix,
   prefix,
-  min,
+  min = 0,
   max,
   step = 1,
   disabled = false,
   className = '',
   isPositive,
   isNegative,
+  showSlider = true,
+  secondaryValue,
+  secondaryNegative,
 }: EditableFieldProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const sliderRef = useRef<HTMLInputElement>(null)
+
+  // Calculate slider min/max if not provided
+  const sliderMin = min
+  const sliderMax = max ?? (format === 'percent' ? 1 : value * 2 || 1000000)
+  const sliderStep = step ?? (format === 'percent' ? 0.005 : (sliderMax - sliderMin) / 100)
+
+  // Calculate fill percentage for slider
+  const fillPercent = Math.min(100, Math.max(0, ((value - sliderMin) / (sliderMax - sliderMin)) * 100))
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -122,6 +140,11 @@ export function EditableField({
     }
   }
 
+  const handleSliderChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseFloat(e.target.value)
+    onChange(newValue)
+  }, [onChange])
+
   const displayValue = formatValue(value, format, prefix, suffix)
   
   const valueClass = isPositive 
@@ -130,6 +153,64 @@ export function EditableField({
       ? 'text-[var(--ws-negative)]' 
       : 'text-[var(--ws-text-primary)]'
 
+  // Slider-enabled layout
+  if (showSlider && !disabled) {
+    return (
+      <div className={`editable-field-with-slider ${className}`}>
+        {/* Value Input Section */}
+        <div className="slider-value-section">
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onBlur={handleEndEdit}
+              onKeyDown={handleKeyDown}
+              className="slider-value-input"
+            />
+          ) : (
+            <div 
+              className="slider-value-display group"
+              onClick={handleStartEdit}
+            >
+              <span className={`slider-value ${valueClass}`}>
+                {displayValue}
+              </span>
+              <Pencil className="edit-icon opacity-0 group-hover:opacity-100" />
+            </div>
+          )}
+          {secondaryValue && (
+            <span className={`slider-secondary ${secondaryNegative ? 'value-negative' : ''}`}>
+              {secondaryValue}
+            </span>
+          )}
+        </div>
+        
+        {/* Slider Track */}
+        <div className="slider-container">
+          <div className="slider-wrapper">
+            <input
+              ref={sliderRef}
+              type="range"
+              className="slider-input"
+              min={sliderMin}
+              max={sliderMax}
+              step={sliderStep}
+              value={value}
+              onChange={handleSliderChange}
+              style={{
+                background: `linear-gradient(to right, var(--iq-teal, #007ea7) 0%, var(--iq-teal, #007ea7) ${fillPercent}%, #e2e8f0 ${fillPercent}%, #e2e8f0 100%)`
+              }}
+              aria-label={`Adjust value`}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Text-only editing (no slider)
   if (isEditing) {
     return (
       <div className="editable-field">
@@ -195,4 +276,3 @@ export function DisplayField({
     </span>
   )
 }
-

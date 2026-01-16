@@ -35,20 +35,27 @@ export function FinancingSection() {
         </span>
       </DataRow>
       
-      <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />}>
+      <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.interestRate}
           onChange={(val) => updateAssumption('interestRate', val)}
           format="percent"
+          min={0.03}
+          max={0.15}
+          step={0.00125}
+          showSlider={true}
         />
       </DataRow>
       
-      <DataRow label="Loan Term">
+      <DataRow label="Loan Term" hasSlider>
         <EditableField
           value={assumptions.loanTermYears}
-          onChange={(val) => updateAssumption('loanTermYears', val)}
-          format="number"
-          suffix=" years"
+          onChange={(val) => updateAssumption('loanTermYears', Math.round(val))}
+          format="years"
+          min={10}
+          max={30}
+          step={5}
+          showSlider={true}
         />
       </DataRow>
       
@@ -58,4 +65,3 @@ export function FinancingSection() {
     </SectionCard>
   )
 }
-

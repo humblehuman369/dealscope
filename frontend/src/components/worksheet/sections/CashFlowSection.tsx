@@ -22,6 +22,15 @@ export function CashFlowSection() {
     }).format(value * multiplier)
   }
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
+
   return (
     <div className="section-two-column">
       <div>
@@ -31,38 +40,31 @@ export function CashFlowSection() {
             Income
           </div>
           
-          <DataRow label="Gross Rent" icon={<Home className="w-4 h-4" />}>
-            <div className="value-group">
-              <span className="value-primary">
-                <EditableField
-                  value={assumptions.monthlyRent}
-                  onChange={(val) => updateAssumption('monthlyRent', val)}
-                  format="currency"
-                />
-              </span>
-              <span className="value-secondary">
-                {formatValue(derived.annualGrossRent)}{label}
-              </span>
-            </div>
+          <DataRow label="Gross Rent" icon={<Home className="w-4 h-4" />} hasSlider>
+            <EditableField
+              value={assumptions.monthlyRent}
+              onChange={(val) => updateAssumption('monthlyRent', val)}
+              format="currency"
+              min={500}
+              max={20000}
+              step={50}
+              showSlider={true}
+              secondaryValue={formatValue(derived.annualGrossRent) + label}
+            />
           </DataRow>
           
-          <DataRow label="Vacancy">
-        <div className="value-group inline">
-          <span className="value-secondary">
-            <DisplayField 
-              value={-derived.vacancy * multiplier} 
-              format="currency"
-              isNegative
-            />
-          </span>
-          <span className="value-primary">
+          <DataRow label="Vacancy" hasSlider>
             <EditableField
               value={assumptions.vacancyRate}
               onChange={(val) => updateAssumption('vacancyRate', val)}
               format="percent"
+              min={0}
+              max={0.25}
+              step={0.01}
+              showSlider={true}
+              secondaryValue={formatCurrency(-derived.vacancy * multiplier)}
+              secondaryNegative={true}
             />
-          </span>
-        </div>
           </DataRow>
           
           <DataRow label="Operating Income" isTotal>
@@ -74,72 +76,78 @@ export function CashFlowSection() {
             Operating Expenses
           </div>
           
-          <DataRow label="Property Taxes" icon={<Building2 className="w-4 h-4" />}>
+          <DataRow label="Property Taxes" icon={<Building2 className="w-4 h-4" />} hasSlider>
             <EditableField
               value={assumptions.propertyTaxes}
               onChange={(val) => updateAssumption('propertyTaxes', val)}
               format="currency"
+              min={0}
+              max={30000}
+              step={100}
+              showSlider={true}
             />
           </DataRow>
           
-          <DataRow label="Insurance" icon={<Shield className="w-4 h-4" />}>
+          <DataRow label="Insurance" icon={<Shield className="w-4 h-4" />} hasSlider>
             <EditableField
               value={assumptions.insurance}
               onChange={(val) => updateAssumption('insurance', val)}
               format="currency"
+              min={0}
+              max={15000}
+              step={100}
+              showSlider={true}
             />
           </DataRow>
           
-          <DataRow label="Property Management" icon={<Users className="w-4 h-4" />}>
-        <div className="value-group inline">
-          <span className="value-secondary">
-            {formatValue(derived.propertyManagement)}
-          </span>
-          <span className="value-primary">
+          <DataRow label="Property Management" icon={<Users className="w-4 h-4" />} hasSlider>
             <EditableField
               value={assumptions.managementPct}
               onChange={(val) => updateAssumption('managementPct', val)}
               format="percent"
+              min={0}
+              max={0.15}
+              step={0.01}
+              showSlider={true}
+              secondaryValue={formatValue(derived.propertyManagement)}
             />
-          </span>
-        </div>
           </DataRow>
           
-          <DataRow label="Maintenance" icon={<Wrench className="w-4 h-4" />}>
-        <div className="value-group inline">
-          <span className="value-secondary">
-            {formatValue(derived.maintenance)}
-          </span>
-          <span className="value-primary">
+          <DataRow label="Maintenance" icon={<Wrench className="w-4 h-4" />} hasSlider>
             <EditableField
               value={assumptions.maintenancePct}
               onChange={(val) => updateAssumption('maintenancePct', val)}
               format="percent"
+              min={0}
+              max={0.15}
+              step={0.01}
+              showSlider={true}
+              secondaryValue={formatValue(derived.maintenance)}
             />
-          </span>
-        </div>
           </DataRow>
           
-          <DataRow label="Capital Expenditures" icon={<PiggyBank className="w-4 h-4" />}>
-        <div className="value-group inline">
-          <span className="value-secondary">
-            {formatValue(derived.capex)}
-          </span>
-          <span className="value-primary">
+          <DataRow label="Capital Expenditures" icon={<PiggyBank className="w-4 h-4" />} hasSlider>
             <EditableField
               value={assumptions.capexReservePct}
               onChange={(val) => updateAssumption('capexReservePct', val)}
               format="percent"
+              min={0}
+              max={0.15}
+              step={0.01}
+              showSlider={true}
+              secondaryValue={formatValue(derived.capex)}
             />
-          </span>
-        </div>
           </DataRow>
           
-          <DataRow label="HOA Fees">
+          <DataRow label="HOA Fees" hasSlider>
             <EditableField
               value={assumptions.hoaFees}
               onChange={(val) => updateAssumption('hoaFees', val)}
               format="currency"
+              min={0}
+              max={1000}
+              step={25}
+              showSlider={true}
             />
           </DataRow>
           
@@ -191,4 +199,3 @@ export function CashFlowSection() {
     </div>
   )
 }
-
