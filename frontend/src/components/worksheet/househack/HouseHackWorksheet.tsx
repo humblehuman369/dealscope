@@ -25,6 +25,10 @@ export function HouseHackWorksheet({ property }: HouseHackWorksheetProps) {
   const { inputs, updateInput, result, isCalculating, error } = useHouseHackWorksheetCalculator(property)
   const unitsCount = inputs.property_type === 'rooms' ? 2 : Number.parseInt(inputs.property_type, 10)
 
+  // Use ORIGINAL values from property for stable slider ranges
+  const originalPrice = property.property_data_snapshot?.listPrice || inputs.purchase_price || 500000
+  const originalRent = property.property_data_snapshot?.monthlyRent || inputs.unit2_rent || 1500
+
   const dealScoreLabel = (score: number) => {
     if (score >= 85) return 'Excellent'
     if (score >= 70) return 'Great'
@@ -103,25 +107,37 @@ export function HouseHackWorksheet({ property }: HouseHackWorksheetProps) {
                 <option value="rooms">Room Rental</option>
               </select>
             </DataRow>
-            <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />}>
+            <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.purchase_price}
                 onChange={(val) => updateInput('purchase_price', val)}
                 format="currency"
+                min={Math.round(originalPrice * 0.5)}
+                max={Math.round(originalPrice * 1.5)}
+                step={1000}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="$ Down Payment">
+            <DataRow label="Down Payment" hasSlider>
               <EditableField
                 value={inputs.down_payment_pct}
                 onChange={(val) => updateInput('down_payment_pct', val)}
                 format="percent"
+                min={0.035}
+                max={0.25}
+                step={0.005}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Closing Costs">
+            <DataRow label="Closing Costs" hasSlider>
               <EditableField
                 value={inputs.closing_costs}
                 onChange={(val) => updateInput('closing_costs', val)}
                 format="currency"
+                min={0}
+                max={Math.round(originalPrice * 0.05)}
+                step={500}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Total Cash Needed" isTotal>
@@ -145,26 +161,37 @@ export function HouseHackWorksheet({ property }: HouseHackWorksheetProps) {
                 <option value="va">VA (0% down)</option>
               </select>
             </DataRow>
-            <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />}>
+            <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.interest_rate}
                 onChange={(val) => updateInput('interest_rate', val)}
                 format="percent"
+                min={0.04}
+                max={0.10}
+                step={0.00125}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Loan Term">
+            <DataRow label="Loan Term" hasSlider>
               <EditableField
                 value={inputs.loan_term_years}
-                onChange={(val) => updateInput('loan_term_years', val)}
-                format="number"
-                suffix=" years"
+                onChange={(val) => updateInput('loan_term_years', Math.round(val))}
+                format="years"
+                min={15}
+                max={30}
+                step={5}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="PMI Rate">
+            <DataRow label="PMI Rate" hasSlider>
               <EditableField
                 value={inputs.pmi_rate}
                 onChange={(val) => updateInput('pmi_rate', val)}
                 format="percent"
+                min={0}
+                max={0.02}
+                step={0.001}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Total Monthly Payment" isTotal>
@@ -176,36 +203,52 @@ export function HouseHackWorksheet({ property }: HouseHackWorksheetProps) {
             <DataRow label="Your Unit (Owner)">
               <span className="data-value text-[var(--hh-primary)]">You Live Here</span>
             </DataRow>
-            <DataRow label="Unit 2 Rent">
+            <DataRow label="Unit 2 Rent" hasSlider>
               <EditableField
                 value={inputs.unit2_rent}
                 onChange={(val) => updateInput('unit2_rent', val)}
                 format="currency"
+                min={Math.round(originalRent * 0.5)}
+                max={Math.round(originalRent * 2)}
+                step={50}
+                showSlider={true}
               />
             </DataRow>
             {unitsCount >= 3 && (
-              <DataRow label="Unit 3 Rent">
+              <DataRow label="Unit 3 Rent" hasSlider>
                 <EditableField
                   value={inputs.unit3_rent}
                   onChange={(val) => updateInput('unit3_rent', val)}
                   format="currency"
+                  min={Math.round(originalRent * 0.5)}
+                  max={Math.round(originalRent * 2)}
+                  step={50}
+                  showSlider={true}
                 />
               </DataRow>
             )}
             {unitsCount >= 4 && (
-              <DataRow label="Unit 4 Rent">
+              <DataRow label="Unit 4 Rent" hasSlider>
                 <EditableField
                   value={inputs.unit4_rent}
                   onChange={(val) => updateInput('unit4_rent', val)}
                   format="currency"
+                  min={Math.round(originalRent * 0.5)}
+                  max={Math.round(originalRent * 2)}
+                  step={50}
+                  showSlider={true}
                 />
               </DataRow>
             )}
-            <DataRow label="Vacancy Rate">
+            <DataRow label="Vacancy Rate" hasSlider>
               <EditableField
                 value={inputs.vacancy_rate}
                 onChange={(val) => updateInput('vacancy_rate', val)}
                 format="percent"
+                min={0}
+                max={0.15}
+                step={0.01}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Effective Rental Income" isTotal>
@@ -214,39 +257,59 @@ export function HouseHackWorksheet({ property }: HouseHackWorksheetProps) {
           </SectionCard>
 
           <SectionCard title="Operating Expenses">
-            <DataRow label="Property Taxes">
+            <DataRow label="Property Taxes" hasSlider>
               <EditableField
                 value={inputs.property_taxes_monthly}
                 onChange={(val) => updateInput('property_taxes_monthly', val)}
                 format="currency"
+                min={100}
+                max={1500}
+                step={25}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Insurance">
+            <DataRow label="Insurance" hasSlider>
               <EditableField
                 value={inputs.insurance_monthly}
                 onChange={(val) => updateInput('insurance_monthly', val)}
                 format="currency"
+                min={50}
+                max={500}
+                step={25}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Maintenance">
+            <DataRow label="Maintenance" hasSlider>
               <EditableField
                 value={inputs.maintenance_pct}
                 onChange={(val) => updateInput('maintenance_pct', val)}
                 format="percent"
+                min={0}
+                max={0.10}
+                step={0.01}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="CapEx Reserve">
+            <DataRow label="CapEx Reserve" hasSlider>
               <EditableField
                 value={inputs.capex_pct}
                 onChange={(val) => updateInput('capex_pct', val)}
                 format="percent"
+                min={0}
+                max={0.10}
+                step={0.01}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Utilities (Your Share)">
+            <DataRow label="Utilities (Your Share)" hasSlider>
               <EditableField
                 value={inputs.utilities_monthly}
                 onChange={(val) => updateInput('utilities_monthly', val)}
                 format="currency"
+                min={0}
+                max={500}
+                step={25}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Total Monthly Expenses" isTotal>
@@ -269,11 +332,15 @@ export function HouseHackWorksheet({ property }: HouseHackWorksheetProps) {
                 {formatCurrency(result?.your_housing_cost ?? 0)}
               </span>
             </DataRow>
-            <DataRow label="Market Rent Equivalent">
+            <DataRow label="Market Rent Equivalent" hasSlider>
               <EditableField
                 value={inputs.owner_market_rent}
                 onChange={(val) => updateInput('owner_market_rent', val)}
                 format="currency"
+                min={500}
+                max={5000}
+                step={50}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Monthly Savings vs Renting" isHighlight>

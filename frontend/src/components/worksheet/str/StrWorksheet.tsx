@@ -26,6 +26,10 @@ const formatCurrency = (value: number) => {
 export function StrWorksheet({ property }: StrWorksheetProps) {
   const { inputs, updateInput, result, derived, isCalculating, error } = useStrWorksheetCalculator(property)
 
+  // Use ORIGINAL values from property for stable slider ranges
+  const originalPrice = property.property_data_snapshot?.listPrice || inputs.purchase_price || 500000
+  const originalAdr = property.property_data_snapshot?.averageDailyRate || inputs.average_daily_rate || 200
+
   const dealScoreLabel = (score: number) => {
     if (score >= 85) return 'Great STR'
     if (score >= 70) return 'Good STR'
@@ -103,25 +107,37 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
       <div className="worksheet-layout-2col">
         <div className="worksheet-main-content">
           <SectionCard title="Purchase & Setup">
-            <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />}>
+            <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.purchase_price}
                 onChange={(val) => updateInput('purchase_price', val)}
                 format="currency"
+                min={Math.round(originalPrice * 0.5)}
+                max={Math.round(originalPrice * 1.5)}
+                step={1000}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Purchase Costs" icon={<CreditCard className="w-4 h-4" />}>
+            <DataRow label="Purchase Costs" icon={<CreditCard className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.purchase_costs}
                 onChange={(val) => updateInput('purchase_costs', val)}
                 format="currency"
+                min={0}
+                max={Math.round(originalPrice * 0.1)}
+                step={500}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Furnishing Budget">
+            <DataRow label="Furnishing Budget" hasSlider>
               <EditableField
                 value={inputs.furnishing_budget}
                 onChange={(val) => updateInput('furnishing_budget', val)}
                 format="currency"
+                min={0}
+                max={50000}
+                step={500}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Total Cash Needed" isTotal>
@@ -138,19 +154,26 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
                 Amortizing, {inputs.loan_term_years} Year
               </span>
             </DataRow>
-            <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />}>
+            <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.interest_rate}
                 onChange={(val) => updateInput('interest_rate', val)}
                 format="percent"
+                min={0.04}
+                max={0.12}
+                step={0.00125}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Loan Term" icon={<Calendar className="w-4 h-4" />}>
+            <DataRow label="Loan Term" icon={<Calendar className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.loan_term_years}
-                onChange={(val) => updateInput('loan_term_years', val)}
-                format="number"
-                suffix=" years"
+                onChange={(val) => updateInput('loan_term_years', Math.round(val))}
+                format="years"
+                min={10}
+                max={30}
+                step={5}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Monthly Payment" isHighlight>
@@ -159,33 +182,49 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
           </SectionCard>
 
           <SectionCard title="Revenue">
-            <DataRow label="Average Daily Rate">
+            <DataRow label="Average Daily Rate" hasSlider>
               <EditableField
                 value={inputs.average_daily_rate}
                 onChange={(val) => updateInput('average_daily_rate', val)}
                 format="currency"
+                min={Math.round(originalAdr * 0.5)}
+                max={Math.round(originalAdr * 2)}
+                step={5}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Occupancy Rate">
+            <DataRow label="Occupancy Rate" hasSlider>
               <EditableField
                 value={inputs.occupancy_rate}
                 onChange={(val) => updateInput('occupancy_rate', val)}
                 format="percent"
+                min={0.3}
+                max={0.95}
+                step={0.01}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Cleaning Fee">
+            <DataRow label="Cleaning Fee" hasSlider>
               <EditableField
                 value={inputs.cleaning_fee_revenue}
                 onChange={(val) => updateInput('cleaning_fee_revenue', val)}
                 format="currency"
+                min={50}
+                max={500}
+                step={10}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Avg Booking Length">
+            <DataRow label="Avg Booking Length" hasSlider>
               <EditableField
                 value={inputs.avg_booking_length}
                 onChange={(val) => updateInput('avg_booking_length', val)}
                 format="number"
                 suffix=" nights"
+                min={1}
+                max={14}
+                step={0.5}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Est. Bookings/Year">
@@ -197,81 +236,105 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
           </SectionCard>
 
           <SectionCard title="Operating Expenses">
-            <DataRow label="Platform Fees">
-              <div className="value-group">
-                <span className="value-primary">
-                  <EditableField
-                    value={inputs.platform_fees_pct}
-                    onChange={(val) => updateInput('platform_fees_pct', val)}
-                    format="percent"
-                  />
-                </span>
-                <span className="value-secondary">
-                  {formatCurrency(result?.platform_fees ?? 0)}
-                </span>
-              </div>
+            <DataRow label="Platform Fees" hasSlider>
+              <EditableField
+                value={inputs.platform_fees_pct}
+                onChange={(val) => updateInput('platform_fees_pct', val)}
+                format="percent"
+                min={0.03}
+                max={0.20}
+                step={0.01}
+                showSlider={true}
+                secondaryValue={formatCurrency(result?.platform_fees ?? 0)}
+              />
             </DataRow>
-            <DataRow label="Property Management">
-              <div className="value-group">
-                <span className="value-primary">
-                  <EditableField
-                    value={inputs.property_management_pct}
-                    onChange={(val) => updateInput('property_management_pct', val)}
-                    format="percent"
-                  />
-                </span>
-                <span className="value-secondary">
-                  {formatCurrency(result?.str_management ?? 0)}
-                </span>
-              </div>
+            <DataRow label="Property Management" hasSlider>
+              <EditableField
+                value={inputs.property_management_pct}
+                onChange={(val) => updateInput('property_management_pct', val)}
+                format="percent"
+                min={0}
+                max={0.30}
+                step={0.01}
+                showSlider={true}
+                secondaryValue={formatCurrency(result?.str_management ?? 0)}
+              />
             </DataRow>
-            <DataRow label="Cleaning Cost/Turn">
+            <DataRow label="Cleaning Cost/Turn" hasSlider>
               <EditableField
                 value={inputs.cleaning_cost_per_turn}
                 onChange={(val) => updateInput('cleaning_cost_per_turn', val)}
                 format="currency"
+                min={50}
+                max={300}
+                step={10}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Supplies & Amenities">
+            <DataRow label="Supplies & Amenities" hasSlider>
               <EditableField
                 value={inputs.supplies_monthly}
                 onChange={(val) => updateInput('supplies_monthly', val)}
                 format="currency"
+                min={0}
+                max={500}
+                step={25}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Utilities">
+            <DataRow label="Utilities" hasSlider>
               <EditableField
                 value={inputs.utilities_monthly}
                 onChange={(val) => updateInput('utilities_monthly', val)}
                 format="currency"
+                min={0}
+                max={500}
+                step={25}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Insurance (STR)">
+            <DataRow label="Insurance (STR)" hasSlider>
               <EditableField
                 value={inputs.insurance_annual}
                 onChange={(val) => updateInput('insurance_annual', val)}
                 format="currency"
+                min={1000}
+                max={10000}
+                step={100}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Property Taxes">
+            <DataRow label="Property Taxes" hasSlider>
               <EditableField
                 value={inputs.property_taxes_annual}
                 onChange={(val) => updateInput('property_taxes_annual', val)}
                 format="currency"
+                min={1000}
+                max={30000}
+                step={100}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Maintenance">
+            <DataRow label="Maintenance" hasSlider>
               <EditableField
                 value={inputs.maintenance_pct}
                 onChange={(val) => updateInput('maintenance_pct', val)}
                 format="percent"
+                min={0}
+                max={0.10}
+                step={0.01}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="CapEx Reserve" icon={<Wrench className="w-4 h-4" />}>
+            <DataRow label="CapEx Reserve" icon={<Wrench className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.capex_pct}
                 onChange={(val) => updateInput('capex_pct', val)}
                 format="percent"
+                min={0}
+                max={0.10}
+                step={0.01}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Total Operating Expenses" isTotal>
