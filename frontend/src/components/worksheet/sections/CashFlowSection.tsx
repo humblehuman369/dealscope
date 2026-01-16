@@ -3,7 +3,6 @@
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
-import { IncomeExpensesPie } from '../charts/IncomeExpensesPie'
 import { Home, Shield, Users, Wrench, PiggyBank, Building2 } from 'lucide-react'
 
 export function CashFlowSection() {
@@ -37,9 +36,7 @@ export function CashFlowSection() {
   }
 
   return (
-    <div className="section-two-column">
-      <div>
-        <SectionCard title={`Cash Flow (Year 1) - ${viewMode === 'monthly' ? 'Monthly' : 'Yearly'}`}>
+    <SectionCard title={`Cash Flow (Year 1) - ${viewMode === 'monthly' ? 'Monthly' : 'Yearly'}`}>
           {/* Income Section */}
           <div className="bg-[var(--ws-accent-bg)] px-4 py-2 text-xs font-semibold uppercase text-[var(--ws-accent)]">
             Income
@@ -194,13 +191,6 @@ export function CashFlowSection() {
               isNegative={derived.annualCashFlow < 0}
             />
           </DataRow>
-        </SectionCard>
-      </div>
-      
-      {/* Pie Chart */}
-      <div>
-        <IncomeExpensesPie />
-      </div>
-    </div>
+    </SectionCard>
   )
 }
