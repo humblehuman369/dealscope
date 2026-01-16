@@ -221,6 +221,8 @@ function PropertyContent() {
     try {
       // Save property to get an ID for React worksheet
       const token = localStorage.getItem('access_token')
+      const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`.trim()
+      
       const saveResponse = await fetch('/api/v1/properties/saved', {
         method: 'POST',
         headers: {
@@ -228,10 +230,12 @@ function PropertyContent() {
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          address: property.address,
-          city: property.city,
-          state: property.state,
-          zip_code: property.zipCode,
+          address_street: property.address,
+          address_city: property.city,
+          address_state: property.state,
+          address_zip: property.zipCode,
+          full_address: fullAddress,
+          status: 'watching',
           property_data_snapshot: {
             listPrice: property.listPrice,
             monthlyRent: property.monthlyRent,
@@ -243,6 +247,7 @@ function PropertyContent() {
             arv: property.arv || property.listPrice,
             averageDailyRate: property.averageDailyRate,
             occupancyRate: property.occupancyRate,
+            photos: property.photos,
           },
         }),
       })
@@ -259,7 +264,7 @@ function PropertyContent() {
         })
         if (listResponse.ok) {
           const properties = await listResponse.json()
-          const existing = properties.find((p: { address: string }) => p.address === property.address)
+          const existing = properties.find((p: { address_street: string }) => p.address_street === property.address)
           if (existing) {
             propertyId = existing.id
           }
