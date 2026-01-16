@@ -58,6 +58,7 @@ interface DataRowProps {
   icon?: ReactNode
   isTotal?: boolean
   isHighlight?: boolean
+  hasSlider?: boolean
   className?: string
 }
 
@@ -67,10 +68,11 @@ export function DataRow({
   icon,
   isTotal = false,
   isHighlight = false,
+  hasSlider = false,
   className = '',
 }: DataRowProps) {
   return (
-    <div className={`data-row ${isTotal ? 'total' : ''} ${isHighlight ? 'highlight' : ''} ${className}`}>
+    <div className={`data-row ${isTotal ? 'total' : ''} ${isHighlight ? 'highlight' : ''} ${hasSlider ? 'has-slider' : ''} ${className}`}>
       <div className="data-label">
         {icon && <span className="icon">{icon}</span>}
         <span>{label}</span>

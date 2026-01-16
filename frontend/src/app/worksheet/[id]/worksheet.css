@@ -658,6 +658,154 @@
   box-shadow: 0 0 0 2px var(--iq-teal);
 }
 
+/* ===== SLIDER STYLES ===== */
+.data-row.has-slider {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.editable-field-with-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-width: 180px;
+}
+
+.slider-value-section {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.slider-value-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.slider-value-display:hover {
+  background-color: var(--ws-accent-bg);
+}
+
+.slider-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ws-text-primary);
+}
+
+.slider-value-input {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+  padding: 4px 8px;
+  border: 1px solid var(--ws-border);
+  border-radius: 6px;
+  background: white;
+  min-width: 100px;
+  max-width: 140px;
+}
+
+.slider-value-input:focus {
+  outline: none;
+  border-color: var(--iq-teal);
+  box-shadow: 0 0 0 2px rgba(0, 126, 167, 0.2);
+}
+
+.slider-secondary {
+  font-size: 12px;
+  color: var(--ws-text-muted);
+}
+
+.slider-secondary.value-negative {
+  color: var(--ws-negative);
+}
+
+.slider-container {
+  width: 100%;
+}
+
+.slider-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Custom Range Slider */
+.slider-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--iq-teal);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.15s ease;
+}
+
+.slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 126, 167, 0.3);
+}
+
+.slider-input::-webkit-slider-thumb:active {
+  transform: scale(0.95);
+  background: var(--iq-teal);
+  border-color: var(--iq-teal-dark);
+}
+
+.slider-input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--iq-teal);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.slider-input::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: #e2e8f0;
+}
+
+.slider-input::-moz-range-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--iq-teal);
+}
+
+/* Slider with percentage + dollar display */
+.slider-dual-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slider-value.pct-field {
+  min-width: 60px;
+}
+
 /* Summary Cards - 6 boxes in one row */
 .summary-cards {
   display: flex;
