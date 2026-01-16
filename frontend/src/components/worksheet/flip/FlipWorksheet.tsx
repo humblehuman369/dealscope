@@ -23,6 +23,10 @@ const formatCurrency = (value: number) =>
 export function FlipWorksheet({ property }: FlipWorksheetProps) {
   const { inputs, updateInput, result, isCalculating, error } = useFlipWorksheetCalculator(property)
 
+  // Use ORIGINAL values from property for stable slider ranges
+  const originalPrice = property.property_data_snapshot?.listPrice || inputs.purchase_price || 500000
+  const originalArv = property.property_data_snapshot?.arv || inputs.arv || originalPrice * 1.3
+
   const dealScoreLabel = (score: number) => {
     if (score >= 90) return 'Excellent'
     if (score >= 75) return 'Great'
@@ -94,35 +98,51 @@ export function FlipWorksheet({ property }: FlipWorksheetProps) {
       <div className="worksheet-layout-2col">
         <div className="worksheet-main-content">
           <SectionCard title="Purchase & Rehab">
-            <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />}>
+            <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.purchase_price}
                 onChange={(val) => updateInput('purchase_price', val)}
                 format="currency"
+                min={Math.round(originalPrice * 0.5)}
+                max={Math.round(originalPrice * 1.5)}
+                step={1000}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Rehab Costs" icon={<Wrench className="w-4 h-4" />}>
+            <DataRow label="Rehab Costs" icon={<Wrench className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.rehab_costs}
                 onChange={(val) => updateInput('rehab_costs', val)}
                 format="currency"
+                min={0}
+                max={Math.round(originalPrice * 0.5)}
+                step={1000}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Amount Financed">
               <DisplayField value={result?.loan_amount ?? 0} format="currency" />
             </DataRow>
-            <DataRow label="Down Payment">
+            <DataRow label="Down Payment" hasSlider>
               <EditableField
                 value={inputs.down_payment_pct}
                 onChange={(val) => updateInput('down_payment_pct', val)}
                 format="percent"
+                min={0.10}
+                max={0.50}
+                step={0.01}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Purchase Costs" icon={<DollarSign className="w-4 h-4" />}>
+            <DataRow label="Purchase Costs" icon={<DollarSign className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.purchase_costs}
                 onChange={(val) => updateInput('purchase_costs', val)}
                 format="currency"
+                min={0}
+                max={Math.round(originalPrice * 0.1)}
+                step={500}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Total Cash Needed" isTotal>
@@ -137,19 +157,27 @@ export function FlipWorksheet({ property }: FlipWorksheetProps) {
             <DataRow label="Loan to Cost">
               <DisplayField value={result?.loan_to_cost_pct ?? 0} format="number" suffix="%" />
             </DataRow>
-            <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />}>
+            <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.interest_rate}
                 onChange={(val) => updateInput('interest_rate', val)}
                 format="percent"
+                min={0.08}
+                max={0.18}
+                step={0.005}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Points">
+            <DataRow label="Points" hasSlider>
               <EditableField
                 value={inputs.points}
                 onChange={(val) => updateInput('points', val)}
                 format="number"
                 suffix=" pts"
+                min={0}
+                max={5}
+                step={0.5}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Monthly Payment" isTotal>
@@ -158,40 +186,60 @@ export function FlipWorksheet({ property }: FlipWorksheetProps) {
           </SectionCard>
 
           <SectionCard title="Holding Costs">
-            <DataRow label="Holding Period" icon={<Calendar className="w-4 h-4" />}>
+            <DataRow label="Holding Period" icon={<Calendar className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.holding_months}
                 onChange={(val) => updateInput('holding_months', val)}
                 format="number"
                 suffix=" mo"
+                min={1}
+                max={12}
+                step={0.5}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Property Taxes">
+            <DataRow label="Property Taxes" hasSlider>
               <EditableField
                 value={inputs.property_taxes_annual}
                 onChange={(val) => updateInput('property_taxes_annual', val)}
                 format="currency"
+                min={1000}
+                max={30000}
+                step={100}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Insurance">
+            <DataRow label="Insurance" hasSlider>
               <EditableField
                 value={inputs.insurance_annual}
                 onChange={(val) => updateInput('insurance_annual', val)}
                 format="currency"
+                min={500}
+                max={10000}
+                step={100}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Utilities">
+            <DataRow label="Utilities" hasSlider>
               <EditableField
                 value={inputs.utilities_monthly}
                 onChange={(val) => updateInput('utilities_monthly', val)}
                 format="currency"
+                min={0}
+                max={500}
+                step={25}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Dumpster Rental">
+            <DataRow label="Dumpster Rental" hasSlider>
               <EditableField
                 value={inputs.dumpster_monthly}
                 onChange={(val) => updateInput('dumpster_monthly', val)}
                 format="currency"
+                min={0}
+                max={500}
+                step={25}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Total Holding Costs" isTotal>
@@ -200,18 +248,26 @@ export function FlipWorksheet({ property }: FlipWorksheetProps) {
           </SectionCard>
 
           <SectionCard title="Sale & Profit">
-            <DataRow label="After Repair Value">
+            <DataRow label="After Repair Value" hasSlider>
               <EditableField
                 value={inputs.arv}
                 onChange={(val) => updateInput('arv', val)}
                 format="currency"
+                min={Math.round(originalArv * 0.7)}
+                max={Math.round(originalArv * 1.5)}
+                step={1000}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Selling Costs">
+            <DataRow label="Selling Costs" hasSlider>
               <EditableField
                 value={inputs.selling_costs_pct}
                 onChange={(val) => updateInput('selling_costs_pct', val)}
                 format="percent"
+                min={0.04}
+                max={0.10}
+                step={0.005}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Sale Proceeds">

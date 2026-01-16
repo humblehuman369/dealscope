@@ -25,6 +25,10 @@ const formatCurrency = (value: number) =>
 export function WholesaleWorksheet({ property }: WholesaleWorksheetProps) {
   const { inputs, updateInput, result, isCalculating, error } = useWholesaleWorksheetCalculator(property)
 
+  // Use ORIGINAL values from property for stable slider ranges
+  const originalPrice = property.property_data_snapshot?.listPrice || inputs.investor_price || 500000
+  const originalArv = property.property_data_snapshot?.arv || inputs.arv || originalPrice * 1.3
+
   const dealScoreLabel = (score: number) => {
     if (score >= 90) return 'Excellent Deal'
     if (score >= 75) return 'Great Deal'
@@ -95,25 +99,37 @@ export function WholesaleWorksheet({ property }: WholesaleWorksheetProps) {
       <div className="worksheet-layout-2col">
         <div className="worksheet-main-content">
           <SectionCard title="Wholesale Analysis">
-            <DataRow label="Investor Purchase Price" icon={<Home className="w-4 h-4" />}>
+            <DataRow label="Investor Purchase Price" icon={<Home className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.investor_price}
                 onChange={(val) => updateInput('investor_price', val)}
                 format="currency"
+                min={Math.round(originalPrice * 0.5)}
+                max={Math.round(originalPrice * 1.5)}
+                step={1000}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Your Contract Price">
+            <DataRow label="Your Contract Price" hasSlider>
               <EditableField
                 value={inputs.contract_price}
                 onChange={(val) => updateInput('contract_price', val)}
                 format="currency"
+                min={Math.round(originalPrice * 0.3)}
+                max={Math.round(originalPrice * 1.2)}
+                step={1000}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Closing Costs">
+            <DataRow label="Closing Costs" hasSlider>
               <EditableField
                 value={inputs.marketing_costs}
                 onChange={(val) => updateInput('marketing_costs', val)}
                 format="currency"
+                min={0}
+                max={5000}
+                step={100}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Your Assignment Fee" isHighlight>
@@ -128,11 +144,15 @@ export function WholesaleWorksheet({ property }: WholesaleWorksheetProps) {
             <DataRow label="Purchase Price">
               <DisplayField value={inputs.investor_price} format="currency" />
             </DataRow>
-            <DataRow label="Rehab Costs" icon={<Wrench className="w-4 h-4" />}>
+            <DataRow label="Rehab Costs" icon={<Wrench className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.rehab_costs}
                 onChange={(val) => updateInput('rehab_costs', val)}
                 format="currency"
+                min={0}
+                max={Math.round(originalPrice * 0.4)}
+                step={1000}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Amount Financed">
@@ -150,11 +170,15 @@ export function WholesaleWorksheet({ property }: WholesaleWorksheetProps) {
           </SectionCard>
 
           <SectionCard title="Sale & Profit (Investor)">
-            <DataRow label="After Repair Value">
+            <DataRow label="After Repair Value" hasSlider>
               <EditableField
                 value={inputs.arv}
                 onChange={(val) => updateInput('arv', val)}
                 format="currency"
+                min={Math.round(originalArv * 0.7)}
+                max={Math.round(originalArv * 1.5)}
+                step={1000}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Selling Costs">

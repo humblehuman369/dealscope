@@ -34,6 +34,11 @@ const formatCompact = (value: number) => {
 export function BrrrrWorksheet({ property }: BrrrrWorksheetProps) {
   const { inputs, updateInput, result, isCalculating, error } = useBrrrrWorksheetCalculator(property)
 
+  // Use ORIGINAL values from property for stable slider ranges
+  const originalPrice = property.property_data_snapshot?.listPrice || inputs.purchase_price || 500000
+  const originalRent = property.property_data_snapshot?.monthlyRent || inputs.monthly_rent || 2000
+  const originalArv = property.property_data_snapshot?.arv || inputs.arv || originalPrice * 1.3
+
   const renderPercentValue = (value: number) => {
     const display = Number.isFinite(value) ? `${value.toFixed(1)}%` : '∞%'
     return <span className="data-value text-[var(--ws-text-primary)]">{display}</span>
@@ -129,25 +134,37 @@ export function BrrrrWorksheet({ property }: BrrrrWorksheetProps) {
         {/* Left Column - Main Sections */}
         <div className="worksheet-main-content">
           <SectionCard title="Purchase & Rehab">
-            <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />}>
+            <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.purchase_price}
                 onChange={(val) => updateInput('purchase_price', val)}
                 format="currency"
+                min={Math.round(originalPrice * 0.5)}
+                max={Math.round(originalPrice * 1.5)}
+                step={1000}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Rehab Costs" icon={<Wrench className="w-4 h-4" />}>
+            <DataRow label="Rehab Costs" icon={<Wrench className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.rehab_costs}
                 onChange={(val) => updateInput('rehab_costs', val)}
                 format="currency"
+                min={0}
+                max={Math.round(originalPrice * 0.5)}
+                step={1000}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Purchase Costs" icon={<DollarSign className="w-4 h-4" />}>
+            <DataRow label="Purchase Costs" icon={<DollarSign className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.purchase_costs}
                 onChange={(val) => updateInput('purchase_costs', val)}
                 format="currency"
+                min={0}
+                max={Math.round(originalPrice * 0.1)}
+                step={500}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Total All-In Cost" isTotal>
@@ -156,30 +173,42 @@ export function BrrrrWorksheet({ property }: BrrrrWorksheetProps) {
           </SectionCard>
 
           <SectionCard title="Financing (Purchase)" badge="Hard Money">
-            <DataRow label="Loan to Cost">
+            <DataRow label="Loan to Cost" hasSlider>
               <EditableField
                 value={inputs.loan_to_cost_pct}
                 onChange={handleLoanToCostChange}
                 format="number"
                 suffix="%"
+                min={50}
+                max={100}
+                step={1}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Loan Amount" icon={<Landmark className="w-4 h-4" />}>
               <DisplayField value={result?.loan_amount ?? 0} format="currency" />
             </DataRow>
-            <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />}>
+            <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.interest_rate}
                 onChange={(val) => updateInput('interest_rate', val)}
                 format="percent"
+                min={0.08}
+                max={0.18}
+                step={0.005}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Points">
+            <DataRow label="Points" hasSlider>
               <EditableField
                 value={inputs.points}
                 onChange={(val) => updateInput('points', val)}
                 format="number"
                 suffix=" pts"
+                min={0}
+                max={5}
+                step={0.5}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Cash to Close" isTotal>
@@ -188,11 +217,15 @@ export function BrrrrWorksheet({ property }: BrrrrWorksheetProps) {
           </SectionCard>
 
           <SectionCard title="Valuation" isHighlighted>
-            <DataRow label="After Repair Value" icon={<Home className="w-4 h-4" />}>
+            <DataRow label="After Repair Value" icon={<Home className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.arv}
                 onChange={(val) => updateInput('arv', val)}
                 format="currency"
+                min={Math.round(originalArv * 0.7)}
+                max={Math.round(originalArv * 1.5)}
+                step={1000}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="ARV Per Sq Ft">
@@ -218,36 +251,52 @@ export function BrrrrWorksheet({ property }: BrrrrWorksheetProps) {
           </SectionCard>
 
           <SectionCard title="Holding Costs" badge="Rehab Period">
-            <DataRow label="Holding Period">
+            <DataRow label="Holding Period" hasSlider>
               <EditableField
                 value={inputs.holding_months}
-                onChange={(val) => updateInput('holding_months', val)}
+                onChange={(val) => updateInput('holding_months', Math.round(val))}
                 format="number"
                 suffix=" months"
+                min={1}
+                max={12}
+                step={1}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Loan Interest">
               <DisplayField value={result?.holding_interest ?? 0} format="currency" isNegative />
             </DataRow>
-            <DataRow label="Property Taxes">
+            <DataRow label="Property Taxes" hasSlider>
               <EditableField
                 value={inputs.property_taxes_annual}
                 onChange={(val) => updateInput('property_taxes_annual', val)}
                 format="currency"
+                min={1000}
+                max={30000}
+                step={100}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Insurance">
+            <DataRow label="Insurance" hasSlider>
               <EditableField
                 value={inputs.insurance_annual}
                 onChange={(val) => updateInput('insurance_annual', val)}
                 format="currency"
+                min={500}
+                max={10000}
+                step={100}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Utilities">
+            <DataRow label="Utilities" hasSlider>
               <EditableField
                 value={inputs.utilities_monthly}
                 onChange={(val) => updateInput('utilities_monthly', val)}
                 format="currency"
+                min={0}
+                max={500}
+                step={25}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Total Holding Costs" isTotal>
@@ -256,21 +305,29 @@ export function BrrrrWorksheet({ property }: BrrrrWorksheetProps) {
           </SectionCard>
 
           <SectionCard title="Refinance" isHighlighted badge="Cash-Out Refi">
-            <DataRow label="Loan to Value">
+            <DataRow label="Loan to Value" hasSlider>
               <EditableField
                 value={inputs.refi_ltv}
                 onChange={(val) => updateInput('refi_ltv', val)}
                 format="percent"
+                min={0.65}
+                max={0.80}
+                step={0.01}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="New Loan Amount">
               <DisplayField value={result?.refinance_loan_amount ?? 0} format="currency" />
             </DataRow>
-            <DataRow label="Refinance Costs">
+            <DataRow label="Refinance Costs" hasSlider>
               <EditableField
                 value={inputs.refi_closing_costs}
                 onChange={(val) => updateInput('refi_closing_costs', val)}
                 format="currency"
+                min={0}
+                max={20000}
+                step={500}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Payoff Old Loan">
@@ -294,19 +351,26 @@ export function BrrrrWorksheet({ property }: BrrrrWorksheetProps) {
             <DataRow label="Loan Amount">
               <DisplayField value={result?.refinance_loan_amount ?? 0} format="currency" />
             </DataRow>
-            <DataRow label="Interest Rate">
+            <DataRow label="Interest Rate" hasSlider>
               <EditableField
                 value={inputs.refi_interest_rate}
                 onChange={(val) => updateInput('refi_interest_rate', val)}
                 format="percent"
+                min={0.04}
+                max={0.10}
+                step={0.00125}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Loan Term">
+            <DataRow label="Loan Term" hasSlider>
               <EditableField
                 value={inputs.refi_loan_term}
-                onChange={(val) => updateInput('refi_loan_term', val)}
-                format="number"
-                suffix=" years"
+                onChange={(val) => updateInput('refi_loan_term', Math.round(val))}
+                format="years"
+                min={15}
+                max={30}
+                step={5}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Monthly Payment" isTotal>
@@ -315,18 +379,26 @@ export function BrrrrWorksheet({ property }: BrrrrWorksheetProps) {
           </SectionCard>
 
           <SectionCard title="Cash Flow (After Refinance)">
-            <DataRow label="Monthly Rent" icon={<Home className="w-4 h-4" />}>
+            <DataRow label="Monthly Rent" icon={<Home className="w-4 h-4" />} hasSlider>
               <EditableField
                 value={inputs.monthly_rent}
                 onChange={(val) => updateInput('monthly_rent', val)}
                 format="currency"
+                min={Math.round(originalRent * 0.5)}
+                max={Math.round(originalRent * 2)}
+                step={50}
+                showSlider={true}
               />
             </DataRow>
-            <DataRow label="Vacancy">
+            <DataRow label="Vacancy" hasSlider>
               <EditableField
                 value={inputs.vacancy_rate}
                 onChange={(val) => updateInput('vacancy_rate', val)}
                 format="percent"
+                min={0}
+                max={0.15}
+                step={0.01}
+                showSlider={true}
               />
             </DataRow>
             <DataRow label="Effective Income" isTotal>
