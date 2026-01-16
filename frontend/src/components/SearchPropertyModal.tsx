@@ -27,7 +27,8 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
     e.preventDefault();
     if (address.trim()) {
       onClose();
-      router.push(`/property?address=${encodeURIComponent(address.trim())}`);
+      // Navigate to IQ Analyzing screen (new IQ Verdict flow)
+      router.push(`/analyzing?address=${encodeURIComponent(address.trim())}`);
     }
   };
 

@@ -52,14 +52,15 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
   
   const scanner = usePropertyScan();
 
-  // Handle address search
+  // Handle address search - uses new IQ Verdict flow
   const handleAddressSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!addressInput.trim()) return;
     
     setIsSearching(true);
     try {
-      router.push(`/property?address=${encodeURIComponent(addressInput.trim())}`);
+      // Navigate to IQ Analyzing screen (new IQ Verdict flow)
+      router.push(`/analyzing?address=${encodeURIComponent(addressInput.trim())}`);
     } catch (error) {
       console.error('Search error:', error);
       setIsSearching(false);
@@ -94,8 +95,8 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         const result = data.results[0];
         const address = result.formatted_address;
         
-        // Navigate to property page with the address
-        router.push(`/property?address=${encodeURIComponent(address)}`);
+        // Navigate to IQ Analyzing screen (new IQ Verdict flow)
+        router.push(`/analyzing?address=${encodeURIComponent(address)}`);
       } else {
         throw new Error('Could not find an address at your location');
       }
@@ -177,7 +178,8 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
         scanner.result.property.zip
       ].filter(Boolean).join(', ');
       
-      router.push(`/property?address=${encodeURIComponent(address)}`);
+      // Navigate to IQ Analyzing screen (new IQ Verdict flow)
+      router.push(`/analyzing?address=${encodeURIComponent(address)}`);
     }
   };
 
