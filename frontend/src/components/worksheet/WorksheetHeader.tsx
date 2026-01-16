@@ -12,10 +12,11 @@ import {
 interface WorksheetHeaderProps {
   property: {
     id: string
-    address: string
-    city: string
-    state: string
-    zip_code: string
+    address_street: string
+    address_city?: string
+    address_state?: string
+    address_zip?: string
+    full_address?: string
     property_data_snapshot: any
   }
   propertyId: string
@@ -153,7 +154,7 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
           {/* Export */}
           <WorksheetExport 
             propertyId={propertyId}
-            propertyAddress={`${property.address}, ${property.city}, ${property.state}`}
+            propertyAddress={`${property.address_street}, ${property.address_city}, ${property.address_state}`}
           />
           
           {/* Share */}
