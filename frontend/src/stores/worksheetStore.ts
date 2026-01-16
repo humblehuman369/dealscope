@@ -365,7 +365,13 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
 export const useWorksheetDerived = () => {
   const { assumptions, projections, worksheetMetrics } = useWorksheetStore()
   
-  const safeNumber = (value?: number | null) => (typeof value === 'number' ? value : 0)
+  // Safe number function that handles NaN, Infinity, and extremely large values
+  const safeNumber = (value?: number | null, maxAbs: number = 1e12): number => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return 0
+    // Clamp to reasonable bounds to prevent display overflow
+    if (Math.abs(value) > maxAbs) return value > 0 ? maxAbs : -maxAbs
+    return value
+  }
   const metrics = worksheetMetrics
   
   // Worksheet-calculated values (API-driven)

@@ -27,6 +27,17 @@ interface EditableFieldProps {
 }
 
 const formatValue = (value: number, format: FormatType, prefix?: string, suffix?: string): string => {
+  // Guard against invalid numbers
+  if (!Number.isFinite(value)) {
+    return format === 'currency' ? '$0' : '0'
+  }
+  
+  // Clamp extremely large values to prevent display issues
+  const maxValue = 1e12 // 1 trillion max
+  const clampedValue = Math.abs(value) > maxValue 
+    ? (value > 0 ? maxValue : -maxValue) 
+    : value
+  
   let formatted: string
   
   switch (format) {
@@ -36,17 +47,17 @@ const formatValue = (value: number, format: FormatType, prefix?: string, suffix?
         currency: 'USD',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      }).format(value)
+      }).format(clampedValue)
       break
     case 'percent':
-      formatted = `${(value * 100).toFixed(1)}%`
+      formatted = `${(clampedValue * 100).toFixed(1)}%`
       break
     case 'years':
-      formatted = `${value} years`
+      formatted = `${Math.round(clampedValue)} years`
       break
     case 'number':
     default:
-      formatted = value.toLocaleString()
+      formatted = clampedValue.toLocaleString()
   }
   
   if (prefix && format !== 'currency') {

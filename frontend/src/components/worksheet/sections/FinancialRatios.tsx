@@ -86,6 +86,10 @@ export function FinancialRatios() {
   }
 
   const formatRatioValue = (value: number, format: 'percent' | 'number', suffix?: string) => {
+    // Guard against invalid/extreme numbers
+    if (!Number.isFinite(value) || Math.abs(value) > 1e9) {
+      return format === 'percent' ? '0.00%' : `0.00${suffix || ''}`
+    }
     if (format === 'percent') {
       return `${value.toFixed(2)}%`
     }
