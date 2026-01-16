@@ -27,6 +27,15 @@ interface AuthTokens {
   expires_in: number
 }
 
+interface RegisterResponse {
+  id: string
+  email: string
+  full_name: string
+  is_verified: boolean
+  is_active: boolean
+  verification_required?: boolean
+}
+
 interface AuthContextType {
   user: User | null
   isLoading: boolean
@@ -81,14 +90,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth()
   }, [])
 
-  // Fetch current user from API
+  // Refresh access token using refresh token
+  const refreshAccessToken = async (): Promise<string | null> => {
+    const refreshToken = localStorage.getItem('refresh_token')
+    if (!refreshToken) {
+      return null
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      })
+
+      if (!response.ok) {
+        // Refresh token is invalid - clear auth data
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        setUser(null)
+        return null
+      }
+
+      const tokens: AuthTokens = await response.json()
+      localStorage.setItem('access_token', tokens.access_token)
+      localStorage.setItem('refresh_token', tokens.refresh_token)
+      return tokens.access_token
+    } catch (error) {
+      console.error('Token refresh failed:', error)
+      return null
+    }
+  }
+
+  // Fetch current user from API with automatic token refresh on 401
   const fetchCurrentUser = async (token: string) => {
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
+    let response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     })
+
+    // If 401, try to refresh token and retry
+    if (response.status === 401) {
+      const newToken = await refreshAccessToken()
+      if (newToken) {
+        response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${newToken}`,
+            'Content-Type': 'application/json',
+          },
+        })
+      }
+    }
 
     if (!response.ok) {
       throw new Error('Failed to fetch user')
@@ -151,8 +207,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(error.detail || 'Registration failed')
       }
 
-      // Auto-login after registration
-      await login(email, password)
+      const registerData: RegisterResponse = await response.json()
+
+      // Only auto-login if user is already verified (email verification not required)
+      // If user is not verified, they need to verify email first
+      if (registerData.is_verified) {
+        await login(email, password)
+      } else {
+        // User needs to verify email - throw a specific message
+        throw new Error('VERIFICATION_REQUIRED:Please check your email to verify your account before signing in.')
+      }
     } finally {
       setIsLoading(false)
     }

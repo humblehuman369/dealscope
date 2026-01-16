@@ -10,6 +10,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Image,
+  Alert,
 } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -83,9 +84,25 @@ export default function RegisterScreen() {
       
       // Navigate to main app
       router.replace('/(tabs)/scan');
-    } catch (err) {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      // Error is handled by context
+    } catch (err: any) {
+      // Check if this is a verification required message (not really an error)
+      const message = err?.message || '';
+      if (message.includes('verify your email') || message.includes('check your email')) {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert(
+          'Check Your Email',
+          'We sent you a verification email. Please click the link in the email to verify your account before signing in.',
+          [
+            { 
+              text: 'OK', 
+              onPress: () => router.replace('/auth/login')
+            }
+          ]
+        );
+      } else {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        // Error is handled by context
+      }
     }
   }, [fullName, email, password, confirmPassword, register, router, clearError]);
 
@@ -263,7 +280,7 @@ export default function RegisterScreen() {
             )}
             
             <Text style={[styles.passwordHint, dynamicStyles.passwordHint]}>
-              Min 8 characters, one uppercase, one number
+              Min 8 characters, uppercase, lowercase, and number
             </Text>
           </View>
 

@@ -134,10 +134,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      await authRegister(data);
+      const registeredUser = await authRegister(data);
       
-      // After registration, log them in
-      await login({ email: data.email, password: data.password });
+      // Only auto-login if user is already verified (email verification not required)
+      if (registeredUser.is_verified) {
+        await login({ email: data.email, password: data.password });
+      } else {
+        // User needs to verify email first - set loading to false but don't log in
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: null,
+        }));
+        // Throw a specific error so the UI can show the verification message
+        throw new AuthError('Please check your email to verify your account before signing in.');
+      }
     } catch (error) {
       const message = error instanceof AuthError 
         ? error.message 

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { StrategyCard } from './StrategyCard';
 import { FeatureCard } from './FeatureCard';
@@ -29,6 +30,17 @@ interface ResponsiveLandingPageProps {
 export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageProps) {
   const { user, isAuthenticated, setShowAuthModal } = useAuth();
   const [showTryItNowModal, setShowTryItNowModal] = useState(false);
+  const searchParams = useSearchParams();
+
+  // Check for auth query param to open auth modal (e.g., after email verification)
+  useEffect(() => {
+    const authParam = searchParams.get('auth');
+    if (authParam === 'login') {
+      setShowAuthModal('login');
+    } else if (authParam === 'register') {
+      setShowAuthModal('register');
+    }
+  }, [searchParams, setShowAuthModal]);
 
   const handleTryItNow = () => {
     setShowTryItNowModal(true);

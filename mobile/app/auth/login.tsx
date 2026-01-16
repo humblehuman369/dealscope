@@ -20,7 +20,7 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { validateEmail } from '../../services/authService';
+import { validateEmail, forgotPassword } from '../../services/authService';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -74,11 +74,19 @@ export default function LoginScreen() {
     }
   }, [email, password, rememberMe, login, router, clearError]);
 
-  const handleForgotPassword = useCallback(() => {
+  const handleForgotPassword = useCallback(async () => {
     if (!email.trim()) {
       Alert.alert(
         'Enter Email',
         'Please enter your email address first, then tap "Forgot Password".'
+      );
+      return;
+    }
+    
+    if (!validateEmail(email.trim())) {
+      Alert.alert(
+        'Invalid Email',
+        'Please enter a valid email address.'
       );
       return;
     }
@@ -90,9 +98,20 @@ export default function LoginScreen() {
         { text: 'Cancel', style: 'cancel' },
         { 
           text: 'Send Link', 
-          onPress: () => {
-            // TODO: Implement forgot password
-            Alert.alert('Email Sent', 'Check your email for a reset link.');
+          onPress: async () => {
+            try {
+              await forgotPassword(email.trim().toLowerCase());
+              Alert.alert(
+                'Check Your Email',
+                'If an account exists with that email, a password reset link has been sent. Please check your inbox and spam folder.'
+              );
+            } catch (error) {
+              // Always show success to prevent email enumeration
+              Alert.alert(
+                'Check Your Email',
+                'If an account exists with that email, a password reset link has been sent. Please check your inbox and spam folder.'
+              );
+            }
           }
         },
       ]
