@@ -89,9 +89,6 @@ authApi.interceptors.request.use(async (config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H4',location:'authService.ts:authApi.request',message:'Auth request interceptor',data:{url:config.url,hasAccessToken:!!token},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
   return config;
 });
 
@@ -106,9 +103,6 @@ authApi.interceptors.response.use(
       
       try {
         const refreshToken = await getRefreshToken();
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H1',location:'authService.ts:authApi.response',message:'401 received, attempting refresh',data:{url:originalRequest?.url,status:error.response?.status,hasRefreshToken:!!refreshToken,baseUrl:API_BASE_URL},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         if (refreshToken) {
           const tokens = await refreshAccessToken(refreshToken);
           if (tokens) {
@@ -288,22 +282,12 @@ export async function logout(): Promise<void> {
  */
 export async function refreshAccessToken(refreshToken: string): Promise<TokenResponse | null> {
   try {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H2',location:'authService.ts:refreshAccessToken',message:'Refreshing access token',data:{baseUrl:API_BASE_URL,hasRefreshToken:!!refreshToken},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     const response = await axios.post<TokenResponse>(
       `${API_BASE_URL}/api/v1/auth/refresh`,
       { refresh_token: refreshToken }
     );
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H2',location:'authService.ts:refreshAccessToken',message:'Refresh success',data:{expiresIn:response.data?.expires_in,tokenType:response.data?.token_type},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     return response.data;
   } catch (error) {
-    const status = axios.isAxiosError(error) ? error.response?.status : undefined;
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H2',location:'authService.ts:refreshAccessToken',message:'Refresh failed',data:{status},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     console.warn('Token refresh failed:', error);
     return null;
   }
@@ -314,17 +298,10 @@ export async function refreshAccessToken(refreshToken: string): Promise<TokenRes
  */
 export async function getCurrentUser(): Promise<User | null> {
   try {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H3',location:'authService.ts:getCurrentUser',message:'Fetching current user',data:{baseUrl:API_BASE_URL},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     const response = await authApi.get<User>('/api/v1/auth/me');
     await storeUserData(response.data);
     return response.data;
   } catch (error) {
-    const status = axios.isAxiosError(error) ? error.response?.status : undefined;
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H3',location:'authService.ts:getCurrentUser',message:'Failed to fetch current user',data:{status},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     console.warn('Failed to get current user:', error);
     return null;
   }
