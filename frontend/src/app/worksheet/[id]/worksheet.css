@@ -56,6 +56,19 @@
 .worksheet-container-v2 {
   min-height: 100vh;
   background: #ffffff;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Global overflow prevention */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* Top Bar */
@@ -67,6 +80,10 @@
   background: white;
   border-bottom: 1px solid var(--ws-border);
   box-shadow: var(--ws-shadow-sm);
+  width: 100%;
+  max-width: 100%;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .worksheet-topbar-left {
@@ -132,6 +149,9 @@
   background: white;
   border-bottom: 2px solid var(--ws-border);
   padding: 0 24px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .worksheet-tabs-scroll {
@@ -289,7 +309,7 @@
   color: var(--iq-teal);
 }
 
-/* Main Content Area - Full width, no side padding to align with header */
+/* Main Content Area - Full width, responsive padding */
 .worksheet-main-area {
   display: flex;
   flex-direction: column;
@@ -297,6 +317,8 @@
   padding: 20px 24px;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .worksheet-main-area.full-width {
@@ -308,6 +330,7 @@
   flex: 1;
   min-width: 0;
   max-width: 100%;
+  overflow: hidden;
 }
 
 .worksheet-content-area.full-width {
@@ -316,21 +339,21 @@
 }
 
 /* Responsive main area */
-@media (max-width: 1100px) {
+@media (max-width: 1000px) {
   .worksheet-main-area {
-    padding: 16px 20px;
+    padding: 16px 16px;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 700px) {
   .worksheet-main-area {
-    padding: 12px 16px;
+    padding: 12px 12px;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 500px) {
   .worksheet-main-area {
-    padding: 8px 12px;
+    padding: 8px 8px;
   }
 }
 
@@ -377,6 +400,9 @@
   overflow: hidden;
   box-shadow: var(--ws-shadow);
   transition: box-shadow 0.2s ease;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .section-card:hover {
@@ -823,7 +849,8 @@
   grid-template-columns: repeat(6, 1fr);
   gap: 12px;
   margin-bottom: 24px;
-  max-width: 1400px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .summary-card {
@@ -2601,12 +2628,14 @@
    Worksheet Layout - 2 Column with Responsive Breakpoints
    ========================================== */
 
-/* Widescreen: Full 2 column layout - NO side padding, columns fill space */
+/* Widescreen: Full 2 column layout */
 .worksheet-layout-2col {
   display: grid;
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 1fr 380px;
   gap: 20px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .worksheet-main-content {
@@ -2614,6 +2643,8 @@
   flex-direction: column;
   gap: 16px;
   min-width: 0; /* Prevent overflow */
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .worksheet-charts-sidebar {
@@ -2621,23 +2652,20 @@
   flex-direction: column;
   gap: 16px;
   min-width: 0; /* Prevent overflow */
-  width: 400px;
+  max-width: 100%;
+  overflow: hidden;
 }
 
-/* Mid-screen: 1400px and below */
-@media (max-width: 1400px) {
+/* Mid-screen: 1200px and below */
+@media (max-width: 1200px) {
   .worksheet-layout-2col {
-    grid-template-columns: 1fr 360px;
+    grid-template-columns: 1fr 320px;
     gap: 16px;
   }
-  
-  .worksheet-charts-sidebar {
-    width: 360px;
-  }
 }
 
-/* Small screen: 1100px and below - Single column */
-@media (max-width: 1100px) {
+/* Small screen: 1000px and below - Single column */
+@media (max-width: 1000px) {
   .worksheet-layout-2col {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -2647,13 +2675,31 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
-    width: 100%;
   }
 }
 
-/* Tablet: 768px and below */
-@media (max-width: 768px) {
+/* Tablet: 700px and below */
+@media (max-width: 700px) {
   .worksheet-charts-sidebar {
     grid-template-columns: 1fr;
+  }
+  
+  .summary-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Mobile: 500px and below */
+@media (max-width: 500px) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .worksheet-topbar {
+    padding: 10px 12px;
+  }
+  
+  .worksheet-tab-nav {
+    padding: 0 12px;
   }
 }
