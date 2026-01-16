@@ -211,7 +211,8 @@ export default function MapScreen() {
         selectedProperty.city,
         selectedProperty.state,
       ].filter(Boolean).join(', ');
-      router.push(`/analytics/${encodeURIComponent(fullAddress)}`);
+      // Use new IQ Verdict flow
+      router.push(`/analyzing/${encodeURIComponent(fullAddress)}` as any);
     }
   }, [selectedProperty, router]);
 
@@ -227,7 +228,8 @@ export default function MapScreen() {
 
   const handleSearch = useCallback(() => {
     if (searchQuery.trim()) {
-      router.push(`/analytics/${encodeURIComponent(searchQuery.trim())}`);
+      // Use new IQ Verdict flow
+      router.push(`/analyzing/${encodeURIComponent(searchQuery.trim())}` as any);
     }
   }, [searchQuery, router]);
   

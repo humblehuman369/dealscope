@@ -68,24 +68,18 @@ export default function VerdictScreen() {
   const handleViewStrategy = useCallback((strategy: IQStrategy) => {
     const basePath = STRATEGY_SCREEN_MAP[strategy.id];
     const encodedAddress = encodeURIComponent(property.address);
+    const queryParams = `?price=${property.price}&beds=${property.beds}&baths=${property.baths}&sqft=${property.sqft}`;
     
-    // Navigate to the appropriate strategy worksheet
-    // Pass along property details as query params
-    const strategyType = ID_TO_STRATEGY_TYPE[strategy.id];
-    
-    if (strategyType === 'longTermRental') {
-      // Go to main analytics page for LTR
-      router.push(`/analytics/${encodedAddress}?price=${property.price}&beds=${property.beds}&baths=${property.baths}&sqft=${property.sqft}`);
-    } else {
-      // Go to specific strategy page
-      router.push(`${basePath}/${encodedAddress}?price=${property.price}&beds=${property.beds}&baths=${property.baths}&sqft=${property.sqft}`);
-    }
+    // Navigate to the strategy worksheet
+    const route = `${basePath}/${encodedAddress}${queryParams}`;
+    router.push(route as any);
   }, [property, router]);
 
   const handleCompareAll = useCallback(() => {
     // Navigate to analytics page which has strategy comparison
     const encodedAddress = encodeURIComponent(property.address);
-    router.push(`/analytics/${encodedAddress}?price=${property.price}&beds=${property.beds}&baths=${property.baths}&sqft=${property.sqft}&tab=compare`);
+    const route = `/analytics/${encodedAddress}?price=${property.price}&beds=${property.beds}&baths=${property.baths}&sqft=${property.sqft}&tab=compare`;
+    router.push(route as any);
   }, [property, router]);
 
   return (

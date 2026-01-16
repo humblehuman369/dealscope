@@ -151,8 +151,8 @@ class NotificationService {
 
     // Handle deep linking based on notification data
     if (data?.type === 'property' && data?.address) {
-      // Navigate to property detail
-      router.push(`/property/${encodeURIComponent(data.address as string)}`);
+      // Navigate to IQ Analyzing screen (new IQ Verdict flow)
+      router.push(`/analyzing/${encodeURIComponent(data.address as string)}` as any);
     } else if (data?.type === 'scan') {
       // Navigate to scan tab
       router.replace('/(tabs)/scan');
