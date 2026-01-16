@@ -219,6 +219,9 @@ function PropertyContent() {
       return
     }
     
+    // Show loading state immediately
+    setIsNavigatingToWorksheet(true)
+    
     try {
       // Save property to get an ID for React worksheet
       const token = localStorage.getItem('access_token')
@@ -226,6 +229,7 @@ function PropertyContent() {
       if (!token) {
         console.error('[handleSelectStrategy] No token found')
         setShowAuthModal('login')
+        setIsNavigatingToWorksheet(false)
         return
       }
       
@@ -300,6 +304,7 @@ function PropertyContent() {
       } else if (saveResponse.status === 401) {
         console.error('[handleSelectStrategy] Unauthorized - token may be expired')
         setShowAuthModal('login')
+        setIsNavigatingToWorksheet(false)
         return
       } else {
         const errorData = await saveResponse.json().catch(() => ({}))
@@ -317,6 +322,7 @@ function PropertyContent() {
     } catch (err) {
       console.error('[handleSelectStrategy] Error:', err)
       setSaveMessage('Error loading worksheet. Please try again.')
+      setIsNavigatingToWorksheet(false)
       setTimeout(() => setSaveMessage(null), 3000)
     }
   }
@@ -470,6 +476,23 @@ function PropertyContent() {
 
   if (!property) {
     return <AnalyticsPageSkeleton />
+  }
+
+  // Show loading state while navigating to worksheet
+  if (isNavigatingToWorksheet) {
+    return (
+      <div className="min-h-screen bg-neutral-50 dark:bg-[#0b1426] flex flex-col items-center justify-center p-6 transition-colors">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-brand-500 dark:border-[#4dd0e1] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-lg font-medium text-navy-900 dark:text-white mb-2">
+            Loading Worksheet...
+          </p>
+          <p className="text-sm text-neutral-500 dark:text-gray-400">
+            Preparing your investment analysis
+          </p>
+        </div>
+      </div>
+    )
   }
 
   // Handle Try It Now - Open search modal
