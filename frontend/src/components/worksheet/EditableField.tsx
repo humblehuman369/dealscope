@@ -153,12 +153,30 @@ export function EditableField({
       ? 'text-[var(--ws-negative)]' 
       : 'text-[var(--ws-text-primary)]'
 
-  // Slider-enabled layout
+  // Slider-enabled layout - INLINE: slider then value
   if (showSlider && !disabled) {
     return (
-      <div className={`editable-field-with-slider ${className}`}>
-        {/* Value Input Section */}
-        <div className="slider-value-section">
+      <div className={`slider-row-inline ${className}`}>
+        {/* Slider Track - takes most of the space */}
+        <div className="slider-track-container">
+          <input
+            ref={sliderRef}
+            type="range"
+            className="slider-input"
+            min={sliderMin}
+            max={sliderMax}
+            step={sliderStep}
+            value={value}
+            onChange={handleSliderChange}
+            style={{
+              background: `linear-gradient(to right, var(--iq-teal, #007ea7) 0%, var(--iq-teal, #007ea7) ${fillPercent}%, #e2e8f0 ${fillPercent}%, #e2e8f0 100%)`
+            }}
+            aria-label={`Adjust value`}
+          />
+        </div>
+        
+        {/* Value display - right side */}
+        <div className="slider-value-inline">
           {isEditing ? (
             <input
               ref={inputRef}
@@ -185,26 +203,6 @@ export function EditableField({
               {secondaryValue}
             </span>
           )}
-        </div>
-        
-        {/* Slider Track */}
-        <div className="slider-container">
-          <div className="slider-wrapper">
-            <input
-              ref={sliderRef}
-              type="range"
-              className="slider-input"
-              min={sliderMin}
-              max={sliderMax}
-              step={sliderStep}
-              value={value}
-              onChange={handleSliderChange}
-              style={{
-                background: `linear-gradient(to right, var(--iq-teal, #007ea7) 0%, var(--iq-teal, #007ea7) ${fillPercent}%, #e2e8f0 ${fillPercent}%, #e2e8f0 100%)`
-              }}
-              aria-label={`Adjust value`}
-            />
-          </div>
         </div>
       </div>
     )
