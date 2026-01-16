@@ -185,13 +185,14 @@ export const STRATEGY_INFO: Record<IQStrategyId, { name: string; icon: string }>
 // ROUTE PATHS
 // ===================
 
+// Maps IQ strategy IDs to the strategy param used by /property page
 export const STRATEGY_ROUTE_MAP: Record<IQStrategyId, string> = {
-  'long-term-rental': '/strategies/long-term-rental',
-  'short-term-rental': '/strategies/short-term-rental',
-  'brrrr': '/strategies/brrrr',
-  'fix-and-flip': '/strategies/fix-flip',
-  'house-hack': '/strategies/house-hack',
-  'wholesale': '/strategies/wholesale',
+  'long-term-rental': 'ltr',
+  'short-term-rental': 'str',
+  'brrrr': 'brrrr',
+  'fix-and-flip': 'flip',
+  'house-hack': 'househack',
+  'wholesale': 'wholesale',
 };
 
 // ===================
