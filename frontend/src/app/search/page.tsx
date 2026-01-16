@@ -37,7 +37,8 @@ export default function SearchPage() {
     e.preventDefault()
     if (!address.trim()) return
     setIsSearching(true)
-    router.push(`/property?address=${encodeURIComponent(address)}`)
+    // Navigate to IQ Analyzing screen (new IQ Verdict flow)
+    router.push(`/analyzing?address=${encodeURIComponent(address)}`)
   }
 
   return (
