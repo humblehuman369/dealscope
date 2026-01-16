@@ -221,7 +221,16 @@ function PropertyContent() {
     try {
       // Save property to get an ID for React worksheet
       const token = localStorage.getItem('access_token')
+      
+      if (!token) {
+        console.error('[handleSelectStrategy] No token found')
+        setShowAuthModal('login')
+        return
+      }
+      
       const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`.trim()
+      
+      console.log('[handleSelectStrategy] Saving property:', { address: property.address, strategy: strategyId })
       
       const saveResponse = await fetch('/api/v1/properties/saved', {
         method: 'POST',
@@ -252,34 +261,60 @@ function PropertyContent() {
         }),
       })
       
+      console.log('[handleSelectStrategy] Save response:', saveResponse.status)
+      
       let propertyId: string | null = null
       
       if (saveResponse.ok) {
         const data = await saveResponse.json()
         propertyId = data.id
-      } else if (saveResponse.status === 409) {
-        // Property already saved - fetch to get the ID
+        console.log('[handleSelectStrategy] Property saved with ID:', propertyId)
+      } else if (saveResponse.status === 409 || saveResponse.status === 400) {
+        // Property already saved (400 = "already in your saved list", 409 = conflict)
+        console.log('[handleSelectStrategy] Property already exists, fetching list...')
+        
         const listResponse = await fetch('/api/v1/properties/saved', {
           headers: { 'Authorization': `Bearer ${token}` },
         })
+        
         if (listResponse.ok) {
           const properties = await listResponse.json()
-          const existing = properties.find((p: { address_street: string }) => p.address_street === property.address)
+          console.log('[handleSelectStrategy] Found', properties.length, 'saved properties')
+          
+          // Try exact match first, then partial match
+          const existing = properties.find((p: { address_street: string; full_address?: string }) => 
+            p.address_street === property.address || 
+            p.full_address?.includes(property.address)
+          )
+          
           if (existing) {
             propertyId = existing.id
+            console.log('[handleSelectStrategy] Found existing property ID:', propertyId)
+          } else {
+            console.log('[handleSelectStrategy] No matching property found in list')
           }
+        } else {
+          console.error('[handleSelectStrategy] Failed to fetch saved properties:', listResponse.status)
         }
+      } else if (saveResponse.status === 401) {
+        console.error('[handleSelectStrategy] Unauthorized - token may be expired')
+        setShowAuthModal('login')
+        return
+      } else {
+        const errorData = await saveResponse.json().catch(() => ({}))
+        console.error('[handleSelectStrategy] Save failed:', saveResponse.status, errorData)
       }
       
       if (propertyId) {
         // Navigate to React worksheet
         const strategyRoute = STRATEGY_ROUTES[strategyId]
+        console.log('[handleSelectStrategy] Navigating to worksheet:', `/worksheet/${propertyId}/${strategyRoute}`)
         router.push(`/worksheet/${propertyId}/${strategyRoute}`)
       } else {
         throw new Error('Could not get property ID')
       }
     } catch (err) {
-      console.error('Error navigating to worksheet:', err)
+      console.error('[handleSelectStrategy] Error:', err)
       setSaveMessage('Error loading worksheet. Please try again.')
       setTimeout(() => setSaveMessage(null), 3000)
     }
