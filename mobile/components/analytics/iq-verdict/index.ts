@@ -37,4 +37,4 @@ export {
 } from './types';
 
 // Hook to transform existing analysis data
-export { useIQAnalysis } from './useIQAnalysis';
+export { useIQAnalysis, createIQInputsFromProperty } from './useIQAnalysis';

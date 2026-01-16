@@ -30,6 +30,9 @@ export default function AnalyzingScreen() {
 
   const decodedAddress = decodeURIComponent(params.address || '');
 
+  // Debug logging
+  console.log('[IQ Analyzing] Screen mounted with params:', params);
+
   // Build property object from route params
   const property = useMemo((): IQProperty => ({
     address: decodedAddress || 'Unknown Address',
@@ -68,7 +71,8 @@ export default function AnalyzingScreen() {
     }
 
     // Replace current screen with verdict screen (no back to analyzing)
-    router.replace(`/verdict/${encodedAddress}?${queryParams.toString()}`);
+    // Using type assertion to handle new route until types are regenerated
+    router.replace(`/verdict/${encodedAddress}?${queryParams.toString()}` as any);
   }, [property, params.monthlyRent, router]);
 
   return (

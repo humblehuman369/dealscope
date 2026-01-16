@@ -183,8 +183,18 @@ export default function ScanScreen() {
         sqft: (propertyDetails.sqft || 1500).toString(),
       });
 
-      // Route to IQ Analyzing screen (new IQ Verdict flow)
-      router.push(`/analyzing/${encodedAddress}?${queryParams.toString()}`);
+      // Use the new IQ Verdict flow
+      const useNewFlow = true; // Toggle this to switch between old and new flow
+      
+      if (useNewFlow) {
+        const route = `/analyzing/${encodedAddress}?${queryParams.toString()}`;
+        console.log('[IQ Verdict] Navigating to new flow:', route);
+        router.push(route as any);
+      } else {
+        // Fallback to old analytics route
+        console.log('[IQ Verdict] Using old analytics flow');
+        router.push(`/analytics/${encodedAddress}` as any);
+      }
     }
   }, [result, router]);
 
