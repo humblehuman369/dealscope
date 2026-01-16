@@ -18,6 +18,7 @@ import {
   STRATEGY_SCREEN_MAP,
   ID_TO_STRATEGY_TYPE,
 } from '../../components/analytics/iq-verdict';
+import { StrategyId } from '../../components/analytics/redesign/types';
 
 export default function VerdictScreen() {
   const router = useRouter();
@@ -69,9 +70,20 @@ export default function VerdictScreen() {
     const basePath = STRATEGY_SCREEN_MAP[strategy.id];
     const encodedAddress = encodeURIComponent(property.address);
     const queryParams = `?price=${property.price}&beds=${property.beds}&baths=${property.baths}&sqft=${property.sqft}`;
+
+    const redesignStrategyMap: Record<IQStrategy['id'], StrategyId> = {
+      'long-term-rental': 'ltr',
+      'short-term-rental': 'str',
+      'brrrr': 'brrrr',
+      'fix-and-flip': 'flip',
+      'house-hack': 'house_hack',
+      'wholesale': 'wholesale',
+    };
     
     // Navigate to the strategy worksheet
-    const route = `${basePath}/${encodedAddress}${queryParams}`;
+    const redesignStrategy = redesignStrategyMap[strategy.id];
+    const redesignQuery = basePath === '/analytics' ? `${queryParams}&strategy=${redesignStrategy}` : queryParams;
+    const route = `${basePath}/${encodedAddress}${redesignQuery}`;
     router.push(route as any);
   }, [property, router]);
 

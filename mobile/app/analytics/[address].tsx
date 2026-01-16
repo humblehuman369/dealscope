@@ -16,12 +16,13 @@ import { useTheme } from '../../context/ThemeContext';
 
 // NEW: Redesigned analytics components
 import { StrategyAnalyticsView, PropertyData } from '../../components/analytics/redesign';
+import { StrategyId } from '../../components/analytics/redesign/types';
 
 export default function PropertyAnalyticsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark } = useTheme();
-  const { address } = useLocalSearchParams<{ address: string }>();
+  const { address, strategy } = useLocalSearchParams<{ address: string; strategy?: StrategyId }>();
   
   const decodedAddress = decodeURIComponent(address || '');
 
@@ -107,6 +108,7 @@ export default function PropertyAnalyticsScreen() {
           onSave={handleSave}
           onGenerateLOI={handleGenerateLOI}
           onShare={handleShare}
+          initialStrategyId={strategy ?? null}
         />
       </View>
     </>

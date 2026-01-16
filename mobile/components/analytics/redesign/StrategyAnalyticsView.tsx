@@ -3,7 +3,7 @@
  * Integrates all new components into a cohesive view
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -44,6 +44,7 @@ interface StrategyAnalyticsViewProps {
   onSave?: () => void;
   onGenerateLOI?: () => void;
   onShare?: () => void;
+  initialStrategyId?: StrategyId | null;
 }
 
 export function StrategyAnalyticsView({
@@ -53,12 +54,21 @@ export function StrategyAnalyticsView({
   onSave,
   onGenerateLOI,
   onShare,
+  initialStrategyId = null,
 }: StrategyAnalyticsViewProps) {
   // State
-  const [activeStrategy, setActiveStrategy] = useState<StrategyId | null>(null);
+  const [activeStrategy, setActiveStrategy] = useState<StrategyId | null>(initialStrategyId);
   const [activeSubTab, setActiveSubTab] = useState<SubTabId>('metrics');
   const [compareView, setCompareView] = useState<CompareView>('target');
   const [isWelcomeCollapsed, setIsWelcomeCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (!initialStrategyId) return;
+    setActiveStrategy(initialStrategyId);
+    setActiveSubTab('metrics');
+    setCompareView('target');
+    setIsWelcomeCollapsed(true);
+  }, [initialStrategyId]);
   
   // Assumptions state
   const [assumptions, setAssumptions] = useState<TargetAssumptions>({
