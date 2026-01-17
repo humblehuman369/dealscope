@@ -181,8 +181,8 @@ export function EditableField({
           />
         </div>
         
-        {/* Value display - right-aligned */}
-        <div className="flex items-center gap-2 ml-auto text-right flex-shrink-0">
+        {/* Value display - RIGHT-ALIGNED with min-width for consistent alignment */}
+        <div className="flex items-center justify-end gap-2 ml-auto text-right flex-shrink-0 min-w-[90px] md:min-w-[110px]">
           {isEditing ? (
             <input
               ref={inputRef}
@@ -191,15 +191,15 @@ export function EditableField({
               onChange={(e) => setInputValue(e.target.value)}
               onBlur={handleEndEdit}
               onKeyDown={handleKeyDown}
-              className="slider-value-input text-right"
+              className="slider-value-input text-right w-full"
             />
           ) : (
             <div 
-              className="flex items-center gap-2 cursor-pointer group"
+              className="flex items-center justify-end gap-2 cursor-pointer group w-full"
               onClick={handleStartEdit}
             >
-              {/* Primary value (percentage or currency) */}
-              <span className={`text-sm font-semibold whitespace-nowrap ${valueClass}`}>
+              {/* Primary value (percentage or currency) - RIGHT-ALIGNED */}
+              <span className={`text-sm font-semibold whitespace-nowrap text-right ml-auto ${valueClass}`}>
                 {displayValue}
               </span>
               
@@ -272,7 +272,7 @@ export function DisplayField({
       : 'text-[var(--ws-text-primary)]'
 
   return (
-    <span className={`data-value ml-auto text-right ${valueClass} ${className}`}>
+    <span className={`data-value ml-auto text-right min-w-[90px] md:min-w-[110px] flex-shrink-0 font-semibold whitespace-nowrap ${valueClass} ${className}`}>
       {displayValue}
     </span>
   )

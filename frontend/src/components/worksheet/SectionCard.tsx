@@ -88,8 +88,8 @@ export function DataRow({
         {label && <span>{label}</span>}
       </div>
       
-      {/* Value container - right-aligned, takes remaining space */}
-      <div className="data-value-container flex items-center justify-end flex-1 min-w-0">
+      {/* Value container - RIGHT-ALIGNED, takes remaining space */}
+      <div className="data-value-container flex items-center justify-end flex-1 min-w-0 text-right ml-auto">
         {children}
       </div>
     </div>
