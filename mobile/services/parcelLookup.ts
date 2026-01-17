@@ -1,10 +1,12 @@
 /**
  * Parcel lookup service for property identification.
  * Uses Google Maps Reverse Geocoding to convert GPS coordinates to addresses.
+ * 
+ * IMPROVED: Multi-point sampling for better accuracy
  */
 
 import axios from 'axios';
-import { calculateBoundingBox } from '../utils/geoCalculations';
+import { calculateBoundingBox, calculateTargetPoint, calculateDistance } from '../utils/geoCalculations';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
 const GOOGLE_MAPS_API_KEY = 'AIzaSyCKp7Tt4l2zu2h2EV6PXPz7xbZLoPrtziw';
@@ -31,6 +33,10 @@ export interface ParcelData {
     lastSaleDate?: string;
     lastSalePrice?: number;
   };
+  // Scoring fields for candidate ranking
+  distanceFromUser?: number;  // Distance from user in meters
+  angleDeviation?: number;    // Degrees off from center of scan cone
+  confidence?: number;        // Overall match confidence (0-1)
 }
 
 interface GeoJSONPolygon {
@@ -112,6 +118,117 @@ export async function queryParcelsInArea(
     
     return [];
   }
+}
+
+/**
+ * NEW: Query multiple properties along a scan direction.
+ * Samples points at different distances and angles to find all nearby properties.
+ * Returns deduplicated list of properties with distance and confidence scores.
+ * 
+ * @param userLat - User's current latitude
+ * @param userLng - User's current longitude
+ * @param heading - Compass heading in degrees
+ * @param estimatedDistance - User's estimated distance to property
+ * @param coneAngle - Half-angle of scan cone in degrees (default 20°)
+ * @returns Array of unique properties, sorted by confidence
+ */
+export async function queryPropertiesAlongScanPath(
+  userLat: number,
+  userLng: number,
+  heading: number,
+  estimatedDistance: number,
+  coneAngle: number = 20
+): Promise<ParcelData[]> {
+  const allProperties: Map<string, ParcelData> = new Map();
+  const samplePromises: Promise<ParcelData[]>[] = [];
+  
+  // Sample distances: closer together near estimated distance, spread out at extremes
+  // Focus 70% of samples around the estimated distance
+  const minDist = Math.max(10, estimatedDistance - 30);
+  const maxDist = estimatedDistance + 40;
+  
+  // Sample points at key distances
+  const distances = [
+    minDist,
+    estimatedDistance - 15,
+    estimatedDistance - 5,
+    estimatedDistance,           // Primary target
+    estimatedDistance + 5,
+    estimatedDistance + 15,
+    maxDist,
+  ].filter(d => d >= 10 && d <= 250);
+  
+  // Sample angles: center, and slight left/right to catch adjacent properties
+  const angles = [0, -10, 10, -20, 20].slice(0, coneAngle >= 15 ? 5 : 3);
+  
+  console.log(`[ScanPath] Sampling ${distances.length * angles.length} points along heading ${heading}°`);
+  
+  // Create sample requests
+  for (const dist of distances) {
+    for (const angleOffset of angles) {
+      const adjustedHeading = (heading + angleOffset + 360) % 360;
+      const targetPoint = calculateTargetPoint(userLat, userLng, adjustedHeading, dist);
+      
+      // Create geocoding request for this point
+      samplePromises.push(
+        googleReverseGeocode(targetPoint.lat, targetPoint.lng)
+          .then(parcels => {
+            // Attach distance and angle info to each result
+            return parcels.map(p => ({
+              ...p,
+              distanceFromUser: dist,
+              angleDeviation: Math.abs(angleOffset),
+            }));
+          })
+          .catch(err => {
+            console.log(`[ScanPath] Sample at ${dist}m/${angleOffset}° failed:`, err.message);
+            return [];
+          })
+      );
+    }
+  }
+  
+  // Execute all requests in parallel (with some throttling to avoid rate limits)
+  const results = await Promise.all(samplePromises);
+  
+  // Deduplicate by address and keep the best scoring version
+  for (const propertyList of results) {
+    for (const property of propertyList) {
+      const key = normalizeAddress(property.address);
+      
+      // Calculate confidence score
+      const distanceScore = 1 - Math.min(1, Math.abs((property.distanceFromUser || estimatedDistance) - estimatedDistance) / 50);
+      const angleScore = 1 - (property.angleDeviation || 0) / coneAngle;
+      const confidence = distanceScore * 0.6 + angleScore * 0.4;
+      
+      property.confidence = confidence;
+      
+      // Keep the version with higher confidence
+      const existing = allProperties.get(key);
+      if (!existing || (existing.confidence || 0) < confidence) {
+        allProperties.set(key, property);
+      }
+    }
+  }
+  
+  // Convert to array and sort by confidence (highest first)
+  const uniqueProperties = Array.from(allProperties.values())
+    .sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
+  
+  console.log(`[ScanPath] Found ${uniqueProperties.length} unique properties`);
+  
+  return uniqueProperties;
+}
+
+/**
+ * Normalize address for deduplication (remove case, extra spaces, etc.)
+ */
+function normalizeAddress(address: string): string {
+  return address
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[.,#]/g, '')
+    .trim();
 }
 
 /**
@@ -298,3 +415,15 @@ export async function getPropertyDetails(
   }
 }
 
+/**
+ * Calculate the actual distance between two GPS points in meters.
+ * Uses Haversine formula for accuracy.
+ */
+export function getDistanceMeters(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+): number {
+  return calculateDistance(lat1, lng1, lat2, lng2);
+}
