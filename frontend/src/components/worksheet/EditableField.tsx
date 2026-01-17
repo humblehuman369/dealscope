@@ -198,8 +198,8 @@ export function EditableField({
               className="flex items-center justify-end gap-2 cursor-pointer group w-full"
               onClick={handleStartEdit}
             >
-              {/* Primary value (percentage or currency) - RIGHT-ALIGNED */}
-              <span className={`text-sm font-semibold whitespace-nowrap text-right ml-auto ${valueClass}`}>
+              {/* Primary value - RIGHT-ALIGNED with exact required classes */}
+              <span className={`text-right min-w-[100px] flex-shrink-0 font-semibold tabular-nums whitespace-nowrap ${valueClass}`}>
                 {displayValue}
               </span>
               
@@ -233,10 +233,10 @@ export function EditableField({
       className={`editable-field group cursor-pointer ml-auto text-right ${className}`}
       onClick={handleStartEdit}
     >
-      <span className={`data-value ${valueClass}`}>
+      <span className={`text-right min-w-[100px] flex-shrink-0 font-semibold tabular-nums whitespace-nowrap ${valueClass}`}>
         {displayValue}
         {!disabled && (
-          <Pencil className="edit-icon opacity-0 group-hover:opacity-100" />
+          <Pencil className="edit-icon opacity-0 group-hover:opacity-100 ml-2" />
         )}
       </span>
     </div>
@@ -272,7 +272,7 @@ export function DisplayField({
       : 'text-[var(--ws-text-primary)]'
 
   return (
-    <span className={`data-value ml-auto text-right min-w-[90px] md:min-w-[110px] flex-shrink-0 font-semibold whitespace-nowrap ${valueClass} ${className}`}>
+    <span className={`text-right min-w-[100px] flex-shrink-0 font-semibold tabular-nums whitespace-nowrap ${valueClass} ${className}`}>
       {displayValue}
     </span>
   )

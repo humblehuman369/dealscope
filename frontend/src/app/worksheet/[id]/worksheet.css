@@ -1259,16 +1259,16 @@ html, body {
   justify-content: flex-end;
   gap: 6px;
   text-align: right;
-  min-width: 80px;
+  min-width: 100px;
   margin-left: auto;
   flex-shrink: 0;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 @media (min-width: 768px) {
   .data-value {
     gap: 8px;
-    min-width: 100px;
   }
 }
 
