@@ -52,6 +52,7 @@ export function SectionCard({
 }
 
 // Data row component for consistent styling
+// Layout: Label (left) | Slider/Value (right-aligned)
 interface DataRowProps {
   label: string
   children: ReactNode
@@ -73,12 +74,16 @@ export function DataRow({
 }: DataRowProps) {
   return (
     <div className={`data-row ${isTotal ? 'total' : ''} ${isHighlight ? 'highlight' : ''} ${hasSlider ? 'has-slider' : ''} ${className}`}>
-      <div className="data-label">
+      {/* Label - left side, flex-shrink-0 */}
+      <div className="data-label flex-shrink-0">
         {icon && <span className="icon">{icon}</span>}
         <span>{label}</span>
       </div>
-      <div>{children}</div>
+      
+      {/* Value container - right-aligned, takes remaining space */}
+      <div className="data-value-container flex items-center justify-end flex-1 min-w-0">
+        {children}
+      </div>
     </div>
   )
 }
-
