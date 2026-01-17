@@ -24,13 +24,13 @@ export function FinancingSection() {
       </DataRow>
       
       <DataRow label="Financing Of">
-        <span className="text-[var(--ws-text-primary)] font-medium">
+        <span className="text-right min-w-[100px] flex-shrink-0 font-semibold text-[var(--ws-text-primary)]">
           Price ({((1 - assumptions.downPaymentPct) * 100).toFixed(0)}%)
         </span>
       </DataRow>
       
       <DataRow label="Loan Type" icon={<Calendar className="w-4 h-4" />}>
-        <span className="text-[var(--ws-text-primary)] font-medium">
+        <span className="text-right min-w-[100px] flex-shrink-0 font-semibold text-[var(--ws-text-primary)]">
           Amortizing, {assumptions.loanTermYears} Year
         </span>
       </DataRow>

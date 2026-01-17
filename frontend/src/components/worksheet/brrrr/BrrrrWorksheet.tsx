@@ -41,7 +41,7 @@ export function BrrrrWorksheet({ property }: BrrrrWorksheetProps) {
 
   const renderPercentValue = (value: number) => {
     const display = Number.isFinite(value) ? `${value.toFixed(1)}%` : '∞%'
-    return <span className="data-value text-[var(--ws-text-primary)]">{display}</span>
+    return <span className="text-right min-w-[100px] flex-shrink-0 font-semibold text-[var(--ws-text-primary)]">{display}</span>
   }
 
   const cashOnCashDisplay = () => {

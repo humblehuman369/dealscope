@@ -301,7 +301,7 @@ export function FlipWorksheet({ property }: FlipWorksheetProps) {
               <DisplayField value={result?.profit_margin ?? 0} format="number" suffix="%" />
             </DataRow>
             <DataRow label="Meets 70% Rule">
-              <span className="data-value">{result?.meets_70_rule ? 'Yes' : 'No'}</span>
+              <span className="text-right min-w-[100px] flex-shrink-0 font-semibold">{result?.meets_70_rule ? 'Yes' : 'No'}</span>
             </DataRow>
             <DataRow label="MAO">
               <DisplayField value={result?.mao ?? 0} format="currency" />

@@ -201,7 +201,7 @@ export function HouseHackWorksheet({ property }: HouseHackWorksheetProps) {
 
           <SectionCard title="Rental Income">
             <DataRow label="Your Unit (Owner)">
-              <span className="data-value text-[var(--hh-primary)]">You Live Here</span>
+              <span className="text-right min-w-[100px] flex-shrink-0 font-semibold text-[var(--hh-primary)]">You Live Here</span>
             </DataRow>
             <DataRow label="Unit 2 Rent" hasSlider>
               <EditableField
@@ -328,7 +328,7 @@ export function HouseHackWorksheet({ property }: HouseHackWorksheetProps) {
               <DisplayField value={-(result?.rental_income ?? 0)} format="currency" isPositive />
             </DataRow>
             <DataRow label="Your Net Housing Cost" isTotal>
-              <span className={`data-value ${housingCostColor}`}>
+              <span className={`text-right min-w-[100px] flex-shrink-0 font-semibold ${housingCostColor}`}>
                 {formatCurrency(result?.your_housing_cost ?? 0)}
               </span>
             </DataRow>
