@@ -20,10 +20,6 @@ interface EditableFieldProps {
   isNegative?: boolean
   /** Show slider control */
   showSlider?: boolean
-  /** Secondary display value (e.g., dollar amount for percentage) - shown on SAME line */
-  secondaryValue?: string
-  /** Whether secondary value is negative */
-  secondaryNegative?: boolean
 }
 
 const formatValue = (value: number, format: FormatType, prefix?: string, suffix?: string): string => {
@@ -97,8 +93,6 @@ export function EditableField({
   isPositive,
   isNegative,
   showSlider = true,
-  secondaryValue,
-  secondaryNegative,
 }: EditableFieldProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [inputValue, setInputValue] = useState('')
@@ -187,7 +181,7 @@ export function EditableField({
           />
         </div>
         
-        {/* Value display - right-aligned with percentage and dollar on SAME line */}
+        {/* Value display - right-aligned */}
         <div className="flex items-center gap-2 ml-auto text-right flex-shrink-0">
           {isEditing ? (
             <input
@@ -208,13 +202,6 @@ export function EditableField({
               <span className={`text-sm font-semibold whitespace-nowrap ${valueClass}`}>
                 {displayValue}
               </span>
-              
-              {/* Secondary value (dollar amount for percentage) - SAME LINE */}
-              {secondaryValue && (
-                <span className={`text-sm whitespace-nowrap ${secondaryNegative ? 'text-[var(--ws-negative)]' : 'text-[var(--ws-text-muted)]'}`}>
-                  {secondaryValue}
-                </span>
-              )}
               
               <Pencil className="w-3 h-3 text-[var(--iq-teal)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
             </div>

@@ -3,7 +3,7 @@
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
-import { DollarSign, Home, Wrench, FileText } from 'lucide-react'
+import { DollarSign, Home, Wrench, FileText, Percent } from 'lucide-react'
 
 export function PurchaseRehabSection() {
   const { assumptions, updateAssumption, propertyData } = useWorksheetStore()
@@ -21,6 +21,7 @@ export function PurchaseRehabSection() {
 
   return (
     <SectionCard title="Purchase & Rehab">
+      {/* Purchase Price - Editable with slider */}
       <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.purchasePrice}
@@ -33,11 +34,13 @@ export function PurchaseRehabSection() {
         />
       </DataRow>
       
+      {/* Amount Financed - Read-only calculated */}
       <DataRow label="Amount Financed">
         <DisplayField value={derived.loanAmount} format="currency" />
       </DataRow>
       
-      <DataRow label="Down Payment" icon={<DollarSign className="w-4 h-4" />} hasSlider>
+      {/* Down Payment % - Editable percentage with slider */}
+      <DataRow label="Down Payment" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.downPaymentPct}
           onChange={(val) => updateAssumption('downPaymentPct', val)}
@@ -46,10 +49,15 @@ export function PurchaseRehabSection() {
           max={0.5}
           step={0.005}
           showSlider={true}
-          secondaryValue={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(derived.downPayment)}
         />
       </DataRow>
       
+      {/* Down Payment $ - Read-only calculated dollar amount */}
+      <DataRow label="" isCalculated className="calculated-row">
+        <DisplayField value={derived.downPayment} format="currency" />
+      </DataRow>
+      
+      {/* Purchase Costs - Editable with slider */}
       <DataRow label="Purchase Costs" icon={<FileText className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.closingCosts}
@@ -62,6 +70,7 @@ export function PurchaseRehabSection() {
         />
       </DataRow>
       
+      {/* Rehab Costs - Editable with slider */}
       <DataRow label="Rehab Costs" icon={<Wrench className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.rehabCosts}
@@ -74,6 +83,7 @@ export function PurchaseRehabSection() {
         />
       </DataRow>
       
+      {/* Total Cash Needed - Summary total */}
       <DataRow label="Total Cash Needed" isTotal>
         <DisplayField 
           value={derived.totalCashNeeded} 

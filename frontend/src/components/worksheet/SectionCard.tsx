@@ -60,6 +60,8 @@ interface DataRowProps {
   isTotal?: boolean
   isHighlight?: boolean
   hasSlider?: boolean
+  /** Read-only calculated value - lighter styling, no border */
+  isCalculated?: boolean
   className?: string
 }
 
@@ -70,14 +72,24 @@ export function DataRow({
   isTotal = false,
   isHighlight = false,
   hasSlider = false,
+  isCalculated = false,
   className = '',
 }: DataRowProps) {
+  const rowClasses = [
+    'data-row',
+    isTotal ? 'total' : '',
+    isHighlight ? 'highlight' : '',
+    hasSlider ? 'has-slider' : '',
+    isCalculated ? 'calculated' : '',
+    className,
+  ].filter(Boolean).join(' ')
+
   return (
-    <div className={`data-row ${isTotal ? 'total' : ''} ${isHighlight ? 'highlight' : ''} ${hasSlider ? 'has-slider' : ''} ${className}`}>
+    <div className={rowClasses}>
       {/* Label - left side, flex-shrink-0 */}
       <div className="data-label flex-shrink-0">
         {icon && <span className="icon">{icon}</span>}
-        <span>{label}</span>
+        {label && <span>{label}</span>}
       </div>
       
       {/* Value container - right-aligned, takes remaining space */}
