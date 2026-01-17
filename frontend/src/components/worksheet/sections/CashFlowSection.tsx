@@ -3,7 +3,7 @@
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { SectionCard, DataRow } from '../SectionCard'
 import { EditableField, DisplayField } from '../EditableField'
-import { Home, Shield, Users, Wrench, PiggyBank, Building2, Percent } from 'lucide-react'
+import { Home, Shield, Users, Wrench, PiggyBank, Building2, Percent, DollarSign, Calendar } from 'lucide-react'
 
 export function CashFlowSection() {
   const { assumptions, updateAssumption, viewMode, propertyData } = useWorksheetStore()
@@ -20,7 +20,6 @@ export function CashFlowSection() {
   const originalInsurance = (snapshotInsurance && snapshotInsurance > 0) ? snapshotInsurance : 2000
 
   const multiplier = viewMode === 'monthly' ? 1/12 : 1
-  const periodLabel = viewMode === 'monthly' ? '/mo' : '/yr'
 
   return (
     <SectionCard title={`Cash Flow (Year 1) - ${viewMode === 'monthly' ? 'Monthly' : 'Yearly'}`}>
@@ -29,8 +28,8 @@ export function CashFlowSection() {
         Income
       </div>
       
-      {/* Gross Rent - Editable with slider (monthly base) */}
-      <DataRow label="Gross Rent" icon={<Home className="w-4 h-4" />} hasSlider>
+      {/* Monthly Gross Rent - Editable with slider (monthly base) */}
+      <DataRow label="Monthly Gross Rent" icon={<Home className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.monthlyRent}
           onChange={(val) => updateAssumption('monthlyRent', val)}
@@ -41,13 +40,13 @@ export function CashFlowSection() {
           showSlider={true}
         />
       </DataRow>
-      {/* Gross Rent - Calculated period value */}
-      <DataRow label="" isCalculated>
-        <DisplayField value={derived.annualGrossRent * multiplier} format="currency" suffix={periodLabel} />
+      {/* Annual Gross Rent - Calculated */}
+      <DataRow label="Annual Gross Rent" icon={<Calendar className="w-4 h-4" />}>
+        <DisplayField value={derived.annualGrossRent} format="currency" />
       </DataRow>
       
       {/* Vacancy % - Editable with slider */}
-      <DataRow label="Vacancy" icon={<Percent className="w-4 h-4" />} hasSlider>
+      <DataRow label="% Vacancy" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.vacancyRate}
           onChange={(val) => updateAssumption('vacancyRate', val)}
@@ -59,7 +58,7 @@ export function CashFlowSection() {
         />
       </DataRow>
       {/* Vacancy $ - Calculated loss amount */}
-      <DataRow label="" isCalculated>
+      <DataRow label="$ Vacancy" icon={<DollarSign className="w-4 h-4" />}>
         <DisplayField value={-derived.vacancy * multiplier} format="currency" isNegative />
       </DataRow>
       
@@ -97,7 +96,7 @@ export function CashFlowSection() {
       </DataRow>
       
       {/* Property Management % - Editable with slider */}
-      <DataRow label="Property Management" icon={<Users className="w-4 h-4" />} hasSlider>
+      <DataRow label="% Property Mgmt" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.managementPct}
           onChange={(val) => updateAssumption('managementPct', val)}
@@ -109,12 +108,12 @@ export function CashFlowSection() {
         />
       </DataRow>
       {/* Property Management $ - Calculated amount */}
-      <DataRow label="" isCalculated>
+      <DataRow label="$ Property Mgmt" icon={<DollarSign className="w-4 h-4" />}>
         <DisplayField value={derived.propertyManagement * multiplier} format="currency" />
       </DataRow>
       
       {/* Maintenance % - Editable with slider */}
-      <DataRow label="Maintenance" icon={<Wrench className="w-4 h-4" />} hasSlider>
+      <DataRow label="% Maintenance" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.maintenancePct}
           onChange={(val) => updateAssumption('maintenancePct', val)}
@@ -126,12 +125,12 @@ export function CashFlowSection() {
         />
       </DataRow>
       {/* Maintenance $ - Calculated amount */}
-      <DataRow label="" isCalculated>
+      <DataRow label="$ Maintenance" icon={<DollarSign className="w-4 h-4" />}>
         <DisplayField value={derived.maintenance * multiplier} format="currency" />
       </DataRow>
       
       {/* CapEx Reserve % - Editable with slider */}
-      <DataRow label="Capital Expenditures" icon={<PiggyBank className="w-4 h-4" />} hasSlider>
+      <DataRow label="% Capital Maintenance" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.capexReservePct}
           onChange={(val) => updateAssumption('capexReservePct', val)}
@@ -143,7 +142,7 @@ export function CashFlowSection() {
         />
       </DataRow>
       {/* CapEx Reserve $ - Calculated amount */}
-      <DataRow label="" isCalculated>
+      <DataRow label="$ Capital Maintenance" icon={<DollarSign className="w-4 h-4" />}>
         <DisplayField value={derived.capex * multiplier} format="currency" />
       </DataRow>
       

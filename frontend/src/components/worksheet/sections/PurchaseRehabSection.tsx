@@ -40,7 +40,7 @@ export function PurchaseRehabSection() {
       </DataRow>
       
       {/* Down Payment % - Editable percentage with slider */}
-      <DataRow label="Down Payment" icon={<Percent className="w-4 h-4" />} hasSlider>
+      <DataRow label="% Down Payment" icon={<Percent className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.downPaymentPct}
           onChange={(val) => updateAssumption('downPaymentPct', val)}
@@ -53,7 +53,7 @@ export function PurchaseRehabSection() {
       </DataRow>
       
       {/* Down Payment $ - Read-only calculated dollar amount */}
-      <DataRow label="" isCalculated className="calculated-row">
+      <DataRow label="$ Down Payment" icon={<DollarSign className="w-4 h-4" />}>
         <DisplayField value={derived.downPayment} format="currency" />
       </DataRow>
       
