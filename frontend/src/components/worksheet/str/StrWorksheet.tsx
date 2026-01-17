@@ -180,7 +180,7 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
                 <DisplayField value={result?.loan_amount ?? 0} format="currency" />
               </DataRow>
               <DataRow label="Loan Type">
-                <span className="text-[var(--ws-text-primary)] font-medium">
+                <span className="text-right min-w-[100px] flex-shrink-0 font-semibold text-[var(--ws-text-primary)]">
                   Amortizing, {inputs.loan_term_years} Year
                 </span>
               </DataRow>
