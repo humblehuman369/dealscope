@@ -20,7 +20,7 @@ interface EditableFieldProps {
   isNegative?: boolean
   /** Show slider control */
   showSlider?: boolean
-  /** Secondary display value (e.g., dollar amount for percentage) */
+  /** Secondary display value (e.g., dollar amount for percentage) - shown on SAME line */
   secondaryValue?: string
   /** Whether secondary value is negative */
   secondaryNegative?: boolean
@@ -165,16 +165,16 @@ export function EditableField({
       ? 'text-[var(--ws-negative)]' 
       : 'text-[var(--ws-text-primary)]'
 
-  // Slider-enabled layout - INLINE: slider then value
+  // Slider-enabled layout - INLINE: slider then value (right-aligned)
   if (showSlider && !disabled) {
     return (
-      <div className={`slider-row-inline ${className}`}>
+      <div className={`flex items-center gap-3 w-full ${className}`}>
         {/* Slider Track - takes most of the space */}
-        <div className="slider-track-container">
+        <div className="flex-1 min-w-[60px] max-w-[300px]">
           <input
             ref={sliderRef}
             type="range"
-            className="slider-input"
+            className="slider-input w-full"
             min={sliderMin}
             max={sliderMax}
             step={sliderStep}
@@ -187,8 +187,8 @@ export function EditableField({
           />
         </div>
         
-        {/* Value display - right side */}
-        <div className="slider-value-inline">
+        {/* Value display - right-aligned with percentage and dollar on SAME line */}
+        <div className="flex items-center gap-2 ml-auto text-right flex-shrink-0">
           {isEditing ? (
             <input
               ref={inputRef}
@@ -197,23 +197,27 @@ export function EditableField({
               onChange={(e) => setInputValue(e.target.value)}
               onBlur={handleEndEdit}
               onKeyDown={handleKeyDown}
-              className="slider-value-input"
+              className="slider-value-input text-right"
             />
           ) : (
             <div 
-              className="slider-value-display group"
+              className="flex items-center gap-2 cursor-pointer group"
               onClick={handleStartEdit}
             >
-              <span className={`slider-value ${valueClass}`}>
+              {/* Primary value (percentage or currency) */}
+              <span className={`text-sm font-semibold whitespace-nowrap ${valueClass}`}>
                 {displayValue}
               </span>
-              <Pencil className="edit-icon opacity-0 group-hover:opacity-100" />
+              
+              {/* Secondary value (dollar amount for percentage) - SAME LINE */}
+              {secondaryValue && (
+                <span className={`text-sm whitespace-nowrap ${secondaryNegative ? 'text-[var(--ws-negative)]' : 'text-[var(--ws-text-muted)]'}`}>
+                  {secondaryValue}
+                </span>
+              )}
+              
+              <Pencil className="w-3 h-3 text-[var(--iq-teal)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
             </div>
-          )}
-          {secondaryValue && (
-            <span className={`slider-secondary ${secondaryNegative ? 'value-negative' : ''}`}>
-              {secondaryValue}
-            </span>
           )}
         </div>
       </div>
@@ -223,7 +227,7 @@ export function EditableField({
   // Text-only editing (no slider)
   if (isEditing) {
     return (
-      <div className="editable-field">
+      <div className="editable-field ml-auto text-right">
         <input
           ref={inputRef}
           type="text"
@@ -239,7 +243,7 @@ export function EditableField({
 
   return (
     <div 
-      className={`editable-field group cursor-pointer ${className}`}
+      className={`editable-field group cursor-pointer ml-auto text-right ${className}`}
       onClick={handleStartEdit}
     >
       <span className={`data-value ${valueClass}`}>
@@ -281,7 +285,7 @@ export function DisplayField({
       : 'text-[var(--ws-text-primary)]'
 
   return (
-    <span className={`data-value ${valueClass} ${className}`}>
+    <span className={`data-value ml-auto text-right ${valueClass} ${className}`}>
       {displayValue}
     </span>
   )

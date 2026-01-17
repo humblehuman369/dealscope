@@ -1366,27 +1366,33 @@ html, body {
   }
 }
 
+/* Slider value inline - SAME LINE layout for value + secondary */
 .slider-value-inline {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  min-width: 70px;
-  max-width: 120px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 100px;
+  max-width: 200px;
   overflow: hidden;
+  text-align: right;
+  margin-left: auto;
 }
 
 @media (min-width: 768px) {
   .slider-value-inline {
-    min-width: 80px;
-    max-width: 140px;
+    min-width: 120px;
+    max-width: 260px;
+    gap: 10px;
   }
 }
 
 @media (max-width: 479px) {
   .slider-value-inline {
-    flex-direction: row;
-    justify-content: flex-end;
+    min-width: 80px;
     max-width: 100%;
+    gap: 6px;
   }
 }
 
@@ -1410,14 +1416,13 @@ html, body {
   background-color: var(--ws-accent-bg);
 }
 
+/* Primary slider value - right-aligned, semibold */
 .slider-value {
   font-size: 13px;
   font-weight: 600;
   color: var(--ws-text-primary);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100px;
+  text-align: right;
 }
 
 @media (min-width: 768px) {
@@ -1454,15 +1459,17 @@ html, body {
   box-shadow: 0 0 0 2px rgba(0, 126, 167, 0.2);
 }
 
+/* Secondary value - displayed INLINE (same line) with primary value */
 .slider-secondary {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--ws-text-muted);
-  margin-top: 2px;
+  white-space: nowrap;
+  font-weight: 400;
 }
 
 @media (min-width: 768px) {
   .slider-secondary {
-    font-size: 11px;
+    font-size: 13px;
   }
 }
 
