@@ -1,5 +1,11 @@
-/* Property Worksheet - InvestIQ Brand Design */
+/* ==========================================
+   Property Worksheet - InvestIQ Brand Design
+   FULLY RESPONSIVE - Mobile First Approach
+   ========================================== */
 
+/* ==========================================
+   CSS CUSTOM PROPERTIES (Design Tokens)
+   ========================================== */
 :root {
   /* InvestIQ Brand Colors - Pacific Teal */
   --iq-teal: #007ea7;
@@ -47,10 +53,17 @@
   --ws-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --ws-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --ws-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  
+  /* Responsive Spacing */
+  --ws-spacing-xs: 8px;
+  --ws-spacing-sm: 12px;
+  --ws-spacing-md: 16px;
+  --ws-spacing-lg: 24px;
+  --ws-spacing-xl: 32px;
 }
 
 /* ==========================================
-   NEW LAYOUT - Horizontal Tabs
+   GLOBAL STYLES
    ========================================== */
 
 .worksheet-container-v2 {
@@ -71,37 +84,67 @@ html, body {
   max-width: 100vw;
 }
 
-/* Top Bar */
+/* ==========================================
+   TOP BAR - RESPONSIVE HEADER
+   ========================================== */
+
 .worksheet-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
+  padding: var(--ws-spacing-sm) var(--ws-spacing-md);
   background: white;
   border-bottom: 1px solid var(--ws-border);
   box-shadow: var(--ws-shadow-sm);
   width: 100%;
   max-width: 100%;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--ws-spacing-sm);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* Tablet and up: More padding */
+@media (min-width: 768px) {
+  .worksheet-topbar {
+    padding: var(--ws-spacing-sm) var(--ws-spacing-lg);
+    flex-wrap: nowrap;
+  }
 }
 
 .worksheet-topbar-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--ws-spacing-sm);
+  min-width: 0;
+  flex: 1;
+}
+
+/* Tablet: Add gap */
+@media (min-width: 768px) {
+  .worksheet-topbar-left {
+    gap: var(--ws-spacing-md);
+  }
 }
 
 .worksheet-back-link {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 12px;
+  padding: 8px;
   color: var(--ws-text-secondary);
   font-size: 14px;
   font-weight: 500;
   border-radius: 8px;
   transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .worksheet-back-link {
+    padding: 8px 12px;
+  }
 }
 
 .worksheet-back-link:hover {
@@ -110,48 +153,184 @@ html, body {
 }
 
 .worksheet-property-info {
-  border-left: 1px solid var(--ws-border);
-  padding-left: 16px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Tablet: Add border */
+@media (min-width: 768px) {
+  .worksheet-property-info {
+    border-left: 1px solid var(--ws-border);
+    padding-left: var(--ws-spacing-md);
+  }
 }
 
 .worksheet-property-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--ws-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .worksheet-property-title {
+    font-size: 16px;
+  }
 }
 
 .worksheet-property-subtitle {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--ws-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 768px) {
+  .worksheet-property-subtitle {
+    font-size: 13px;
+  }
 }
 
 .worksheet-topbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--ws-spacing-sm);
+  flex-shrink: 0;
 }
 
 .worksheet-price-badge {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--iq-teal);
-  padding: 8px 16px;
+  padding: 6px 12px;
   background: var(--ws-accent-bg);
   border-radius: 8px;
   border: 1px solid var(--iq-teal-light);
+  white-space: nowrap;
 }
 
-/* Horizontal Tab Navigation */
+@media (min-width: 768px) {
+  .worksheet-price-badge {
+    font-size: 18px;
+    padding: 8px 16px;
+  }
+}
+
+/* Mobile Menu Toggle - Only visible on small screens */
+.worksheet-mobile-menu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--ws-bg-alt);
+  color: var(--ws-text-secondary);
+  border: 1px solid var(--ws-border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.worksheet-mobile-menu-toggle:hover {
+  background: var(--ws-border);
+  color: var(--ws-text-primary);
+}
+
+/* Hide mobile toggle on larger screens */
+@media (min-width: 768px) {
+  .worksheet-mobile-menu-toggle {
+    display: none;
+  }
+}
+
+/* ==========================================
+   HORIZONTAL TAB NAVIGATION - RESPONSIVE
+   ========================================== */
+
 .worksheet-tab-nav {
   display: flex;
   align-items: center;
   gap: 8px;
   background: white;
   border-bottom: 2px solid var(--ws-border);
-  padding: 0 24px;
+  padding: 0 var(--ws-spacing-sm);
   width: 100%;
   max-width: 100%;
-  overflow-x: auto;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .worksheet-tab-nav {
+    padding: 0 var(--ws-spacing-lg);
+  }
+}
+
+/* Tabs Wrapper with Fade Indicators */
+.worksheet-tabs-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fade Indicators */
+.worksheet-tabs-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 48px;
+  display: flex;
+  align-items: center;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.worksheet-tabs-fade.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.worksheet-tabs-fade.left {
+  left: 0;
+  background: linear-gradient(to right, white 0%, white 40%, transparent 100%);
+  justify-content: flex-start;
+  padding-left: 4px;
+}
+
+.worksheet-tabs-fade.right {
+  right: 0;
+  background: linear-gradient(to left, white 0%, white 40%, transparent 100%);
+  justify-content: flex-end;
+  padding-right: 4px;
+}
+
+.worksheet-tabs-scroll-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid var(--ws-border);
+  color: var(--ws-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: var(--ws-shadow-sm);
+}
+
+.worksheet-tabs-scroll-btn:hover {
+  background: var(--ws-bg-alt);
+  color: var(--iq-teal);
+  border-color: var(--iq-teal-light);
 }
 
 .worksheet-tabs-scroll {
@@ -162,6 +341,9 @@ html, body {
   -ms-overflow-style: none;
   flex: 1;
   min-width: 0;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
 }
 
 .worksheet-tabs-scroll::-webkit-scrollbar {
@@ -171,9 +353,9 @@ html, body {
 .worksheet-tab {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 14px 16px;
-  font-size: 13px;
+  gap: 6px;
+  padding: 12px 10px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--ws-text-secondary);
   background: transparent;
@@ -183,6 +365,16 @@ html, body {
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .worksheet-tab {
+    padding: 14px 16px;
+    font-size: 13px;
+    gap: 8px;
+  }
 }
 
 .worksheet-tab:hover:not(.disabled) {
@@ -202,26 +394,175 @@ html, body {
 }
 
 .worksheet-tab-icon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
+}
+
+@media (min-width: 768px) {
+  .worksheet-tab-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Hide label on mobile, show icon only */
+.worksheet-tab-label {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .worksheet-tab-label {
+    display: inline;
+  }
 }
 
 .worksheet-tab-badge {
-  font-size: 10px;
-  padding: 2px 6px;
+  font-size: 9px;
+  padding: 2px 5px;
   background: var(--ws-bg-alt);
   border-radius: 4px;
   color: var(--ws-text-muted);
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .worksheet-tab-badge {
+    display: inline;
+    font-size: 10px;
+    padding: 2px 6px;
+  }
 }
 
 .worksheet-help-btn {
-  padding: 10px;
+  padding: 8px;
   color: var(--ws-text-secondary);
   border-radius: 8px;
   transition: all 0.15s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-/* Strategy Dropdown */
+.worksheet-help-btn:hover {
+  background: var(--ws-bg-alt);
+  color: var(--iq-teal);
+}
+
+/* ==========================================
+   MOBILE DROPDOWN MENU
+   ========================================== */
+
+.worksheet-mobile-menu {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+}
+
+/* Show on mobile when open */
+@media (max-width: 767px) {
+  .worksheet-mobile-menu {
+    display: block;
+  }
+}
+
+.worksheet-mobile-menu-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.worksheet-mobile-menu-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  box-shadow: var(--ws-shadow-md);
+  animation: slideDown 0.2s ease-out;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.worksheet-mobile-menu-header {
+  padding: var(--ws-spacing-md);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ws-text-muted);
+  border-bottom: 1px solid var(--ws-border-light);
+}
+
+.worksheet-mobile-menu-strategy {
+  padding: var(--ws-spacing-sm) var(--ws-spacing-md);
+  border-bottom: 1px solid var(--ws-border-light);
+}
+
+.worksheet-mobile-menu-tabs {
+  padding: var(--ws-spacing-sm) 0;
+}
+
+.worksheet-mobile-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--ws-spacing-sm);
+  padding: var(--ws-spacing-sm) var(--ws-spacing-md);
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ws-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.worksheet-mobile-tab:hover:not(.disabled) {
+  background: var(--ws-bg-alt);
+  color: var(--ws-text-primary);
+}
+
+.worksheet-mobile-tab.active {
+  background: var(--ws-accent-bg);
+  color: var(--iq-teal);
+}
+
+.worksheet-mobile-tab.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.worksheet-mobile-tab-label {
+  flex: 1;
+}
+
+/* ==========================================
+   STRATEGY DROPDOWN
+   ========================================== */
+
 .strategy-dropdown {
   position: relative;
   flex-shrink: 0;
@@ -231,17 +572,25 @@ html, body {
 .strategy-dropdown-trigger {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 6px;
+  padding: 8px 12px;
   background: linear-gradient(135deg, var(--iq-teal) 0%, var(--iq-teal-dark) 100%);
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 126, 167, 0.3);
+}
+
+@media (min-width: 768px) {
+  .strategy-dropdown-trigger {
+    padding: 10px 16px;
+    font-size: 13px;
+    gap: 8px;
+  }
 }
 
 .strategy-dropdown-trigger:hover {
@@ -257,13 +606,19 @@ html, body {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  min-width: 220px;
+  min-width: 200px;
   background: white;
   border: 1px solid var(--ws-border);
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   z-index: 110;
   overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .strategy-dropdown-menu {
+    min-width: 220px;
+  }
 }
 
 .strategy-dropdown-header {
@@ -304,28 +659,44 @@ html, body {
   color: var(--ws-text-primary);
 }
 
-.worksheet-help-btn:hover {
-  background: var(--ws-bg-alt);
-  color: var(--iq-teal);
-}
+/* ==========================================
+   MAIN CONTENT AREA - RESPONSIVE
+   ========================================== */
 
-/* Main Content Area - Full width, responsive padding */
 .worksheet-main-area {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 20px 24px;
+  gap: var(--ws-spacing-md);
+  padding: var(--ws-spacing-sm);
   width: 100%;
   max-width: 100%;
   min-width: 0;
   overflow: hidden;
 }
 
-.worksheet-main-area.full-width {
-  padding: 20px 24px;
+@media (min-width: 640px) {
+  .worksheet-main-area {
+    padding: var(--ws-spacing-md);
+  }
 }
 
-/* Content Area */
+@media (min-width: 768px) {
+  .worksheet-main-area {
+    padding: var(--ws-spacing-md) var(--ws-spacing-lg);
+  }
+}
+
+@media (min-width: 1024px) {
+  .worksheet-main-area {
+    padding: var(--ws-spacing-lg);
+    gap: var(--ws-spacing-lg);
+  }
+}
+
+.worksheet-main-area.full-width {
+  max-width: 100%;
+}
+
 .worksheet-content-area {
   flex: 1;
   min-width: 0;
@@ -338,71 +709,404 @@ html, body {
   margin: 0;
 }
 
-/* Responsive main area */
-@media (max-width: 1000px) {
-  .worksheet-main-area {
-    padding: 16px 16px;
+/* ==========================================
+   STR WORKSHEET CONTAINER
+   ========================================== */
+
+.str-worksheet-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ws-spacing-md);
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .str-worksheet-container {
+    gap: var(--ws-spacing-lg);
   }
 }
 
-@media (max-width: 700px) {
-  .worksheet-main-area {
-    padding: 12px 12px;
-  }
+/* Loading/Error Status Message */
+.worksheet-status-message {
+  padding: var(--ws-spacing-sm) var(--ws-spacing-md);
+  border-radius: 8px;
+  font-size: 13px;
+  text-align: center;
 }
 
-@media (max-width: 500px) {
-  .worksheet-main-area {
-    padding: 8px 8px;
-  }
+.worksheet-status-message.loading {
+  background: var(--ws-accent-bg);
+  color: var(--iq-teal);
 }
 
-/* Section Layout Options */
-.section-single-column {
+.worksheet-status-message.error {
+  background: var(--ws-negative-light);
+  color: var(--ws-negative);
+}
+
+/* ==========================================
+   SUMMARY CARDS - RESPONSIVE GRID
+   6 cols desktop | 3 cols tablet | 2 cols mobile
+   ========================================== */
+
+.summary-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--ws-spacing-xs);
   width: 100%;
 }
 
-.section-two-column {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
+/* Tablet: 3 columns */
 @media (min-width: 768px) {
-  .section-two-column {
-    grid-template-columns: 2fr 1fr;
+  .summary-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ws-spacing-sm);
   }
 }
 
-.section-two-column-equal {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 768px) {
-  .section-two-column-equal {
-    grid-template-columns: 1fr 1fr;
+/* Desktop: 6 columns */
+@media (min-width: 1024px) {
+  .summary-cards-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--ws-spacing-sm);
   }
 }
 
-.worksheet-sections {
+.summary-card {
+  background: white;
+  border: 1px solid var(--ws-border);
+  border-radius: 10px;
+  padding: 10px 8px;
+  box-shadow: var(--ws-shadow);
+  transition: all 0.2s ease;
+  text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
 }
 
-/* Section Cards - InvestIQ Style */
+@media (min-width: 768px) {
+  .summary-card {
+    padding: 12px 10px;
+    border-radius: 12px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .summary-card {
+    padding: 14px 12px;
+  }
+}
+
+.summary-card.highlight {
+  background: var(--ws-accent-bg);
+  border-color: var(--iq-teal-light);
+}
+
+.summary-card:hover {
+  border-color: var(--iq-teal-light);
+  box-shadow: 0 4px 12px rgba(0, 126, 167, 0.15);
+}
+
+.summary-card-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ws-text-muted);
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .summary-card-label {
+    font-size: 10px;
+    margin-bottom: 6px;
+  }
+}
+
+.summary-card-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ws-text-primary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .summary-card-value {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .summary-card-value {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .summary-card-value {
+    font-size: 20px;
+  }
+}
+
+.summary-card-value.positive {
+  color: var(--ws-positive);
+}
+
+.summary-card-value.negative {
+  color: var(--ws-negative);
+}
+
+.summary-card-subtitle {
+  font-size: 9px;
+  color: var(--ws-text-secondary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .summary-card-subtitle {
+    font-size: 10px;
+    margin-top: 4px;
+  }
+}
+
+/* Legacy summary-cards class for backwards compatibility */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: var(--ws-spacing-md);
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .summary-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .summary-cards {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: var(--ws-spacing-lg);
+  }
+}
+
+/* ==========================================
+   TWO-COLUMN LAYOUT - RESPONSIVE
+   50-50 split on desktop, single column on mobile/tablet
+   ========================================== */
+
+.worksheet-two-column-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ws-spacing-md);
+  width: 100%;
+  min-width: 0;
+}
+
+/* Desktop: 50-50 split (equal columns) */
+@media (min-width: 1024px) {
+  .worksheet-two-column-layout {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ws-spacing-lg);
+    align-items: start;
+  }
+}
+
+/* Left Column: Input Sections */
+.worksheet-left-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Desktop: Scrollable left column */
+@media (min-width: 1024px) {
+  .worksheet-left-column {
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ws-border) transparent;
+  }
+  
+  .worksheet-left-column::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .worksheet-left-column::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .worksheet-left-column::-webkit-scrollbar-thumb {
+    background: var(--ws-border);
+    border-radius: 3px;
+  }
+  
+  .worksheet-left-column::-webkit-scrollbar-thumb:hover {
+    background: var(--ws-text-muted);
+  }
+}
+
+.worksheet-sections-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ws-spacing-md);
+}
+
+@media (min-width: 1024px) {
+  .worksheet-sections-stack {
+    padding-right: var(--ws-spacing-sm);
+  }
+}
+
+/* Right Column: Charts & Visualizations */
+.worksheet-right-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Desktop: Sticky right column */
+@media (min-width: 1024px) {
+  .worksheet-right-column {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ws-border) transparent;
+  }
+  
+  .worksheet-right-column::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .worksheet-right-column::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .worksheet-right-column::-webkit-scrollbar-thumb {
+    background: var(--ws-border);
+    border-radius: 3px;
+  }
+  
+  .worksheet-right-column::-webkit-scrollbar-thumb:hover {
+    background: var(--ws-text-muted);
+  }
+}
+
+.worksheet-charts-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ws-spacing-md);
+}
+
+/* Mobile/Tablet: Show charts in 2-column grid */
+@media (max-width: 1023px) {
+  .worksheet-charts-stack {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--ws-spacing-sm);
+  }
+}
+
+/* Small mobile: Single column */
+@media (max-width: 639px) {
+  .worksheet-charts-stack {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Legacy layout classes for backwards compatibility */
+.worksheet-layout-2col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ws-spacing-md);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .worksheet-layout-2col {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ws-spacing-lg);
+  }
+}
+
+.worksheet-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ws-spacing-md);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.worksheet-charts-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ws-spacing-md);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+@media (max-width: 1023px) {
+  .worksheet-charts-sidebar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--ws-spacing-sm);
+  }
+}
+
+@media (max-width: 639px) {
+  .worksheet-charts-sidebar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================
+   SECTION CARDS - RESPONSIVE
+   ========================================== */
+
 .section-card {
   background-color: var(--ws-card);
   border: 1px solid var(--ws-border);
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
   box-shadow: var(--ws-shadow);
   transition: box-shadow 0.2s ease;
   width: 100%;
   max-width: 100%;
   min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .section-card {
+    border-radius: 12px;
+  }
 }
 
 .section-card:hover {
@@ -413,7 +1117,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
+  padding: 12px var(--ws-spacing-sm);
   background: var(--ws-section-header);
   border-bottom: 1px solid var(--ws-border);
   cursor: pointer;
@@ -421,20 +1125,32 @@ html, body {
   user-select: none;
 }
 
+@media (min-width: 768px) {
+  .section-header {
+    padding: 14px var(--ws-spacing-md);
+  }
+}
+
 .section-header:hover {
   background: linear-gradient(135deg, rgba(0, 126, 167, 0.12) 0%, #e8eef3 100%);
 }
 
-.section-header.brrrr-highlight {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, #f1f5f9 100%);
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--iq-teal-dark);
 }
 
-.section-header.brrrr-highlight:hover {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, #e8eef3 100%);
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 13px;
+  }
 }
 
-.section-title.brrrr {
-  color: #7c3aed;
+.section-content {
+  padding: 0;
 }
 
 .section-badge {
@@ -448,49 +1164,28 @@ html, body {
   color: var(--ws-text-muted);
 }
 
-.section-card.highlighted {
-  border-color: rgba(124, 58, 237, 0.3);
-}
+/* ==========================================
+   DATA ROWS - RESPONSIVE
+   ========================================== */
 
-.data-row.brrrr-total {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
-}
-
-.value-highlight {
-  color: #7c3aed !important;
-  font-weight: 700;
-}
-
-.value-positive {
-  color: var(--ws-positive) !important;
-}
-
-.value-negative {
-  color: var(--ws-negative) !important;
-}
-
-.section-title {
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--iq-teal-dark);
-}
-
-.section-content {
-  padding: 0;
-}
-
-/* Data Rows - Ledger Style with proper 2-column layout */
 .data-row {
   display: grid;
-  grid-template-columns: minmax(140px, 200px) 1fr;
+  grid-template-columns: minmax(100px, 140px) 1fr;
   align-items: center;
-  gap: 20px;
-  padding: 10px 20px;
+  gap: var(--ws-spacing-sm);
+  padding: 10px var(--ws-spacing-sm);
   border-bottom: 1px solid var(--ws-border-light);
-  font-size: 14px;
-  min-width: 0; /* Allow shrinking */
+  font-size: 13px;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .data-row {
+    grid-template-columns: minmax(140px, 200px) 1fr;
+    gap: var(--ws-spacing-md);
+    padding: 10px var(--ws-spacing-md);
+    font-size: 14px;
+  }
 }
 
 .data-row:last-child {
@@ -504,7 +1199,13 @@ html, body {
 .data-row.total {
   background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, #e0f2fe 100%);
   font-weight: 600;
-  padding: 12px 20px;
+  padding: 12px var(--ws-spacing-sm);
+}
+
+@media (min-width: 768px) {
+  .data-row.total {
+    padding: 12px var(--ws-spacing-md);
+  }
 }
 
 .data-row.highlight {
@@ -515,19 +1216,34 @@ html, body {
 .data-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: var(--ws-text-label);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex-shrink: 0;
+  font-size: 12px;
+}
+
+@media (min-width: 768px) {
+  .data-label {
+    gap: 10px;
+    font-size: 14px;
+  }
 }
 
 .data-label .icon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   color: var(--iq-teal);
   flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .data-label .icon {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .data-value {
@@ -536,7 +1252,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
   text-align: right;
   min-width: 0;
   overflow: hidden;
@@ -544,40 +1260,10 @@ html, body {
   white-space: nowrap;
 }
 
-/* Value column - flex to right edge */
-.data-row > div:last-child,
-.data-row > span:last-child {
-  text-align: right;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Multi-value rows - stack vertically for alignment */
-.data-row .value-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-.data-row .value-group.inline {
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.data-row .value-primary {
-  font-weight: 500;
-  color: var(--ws-text-primary);
-  white-space: nowrap;
-}
-
-.data-row .value-secondary {
-  font-size: 12px;
-  color: var(--ws-text-muted);
-  white-space: nowrap;
+@media (min-width: 768px) {
+  .data-value {
+    gap: 8px;
+  }
 }
 
 .data-value.positive {
@@ -589,132 +1275,114 @@ html, body {
 }
 
 .data-value .edit-icon {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   color: var(--iq-teal);
   opacity: 0;
   cursor: pointer;
   transition: opacity 0.15s ease;
 }
 
+@media (min-width: 768px) {
+  .data-value .edit-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
 .data-row:hover .edit-icon {
   opacity: 1;
 }
 
-/* Editable Field */
-.editable-field {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-
-.editable-field input {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ws-text-primary);
-  background: transparent;
-  border: none;
-  text-align: right;
-  padding: 6px 10px;
-  margin: -6px -10px;
-  border-radius: 6px;
-  transition: all 0.15s ease;
-  width: auto;
-  min-width: 80px;
-}
-
-.worksheet-container-v2.ltr-strategy .data-row > div:last-child {
-  min-width: 96px;
-}
-
-.worksheet-container-v2.ltr-strategy .editable-field input {
-  min-width: 64px;
-  max-width: 120px;
-}
-
-.editable-field input:hover {
-  background-color: var(--ws-accent-bg);
-}
-
-.editable-field input:focus {
-  background-color: white;
-  outline: none;
-  box-shadow: 0 0 0 2px var(--iq-teal);
-}
-
-/* ===== INLINE SLIDER STYLES ===== */
-/* Data row with slider: Label on left, slider in middle, value on right */
+/* Data row with slider - responsive */
 .data-row.has-slider {
   display: grid;
-  grid-template-columns: minmax(100px, 160px) 1fr;
-  gap: 12px;
+  grid-template-columns: minmax(80px, 120px) 1fr;
+  gap: 10px;
   align-items: center;
-  padding: 12px 16px;
-  min-width: 0; /* Allow shrinking */
+  padding: 10px var(--ws-spacing-sm);
+  min-width: 0;
 }
 
-/* Inline slider row: slider takes up space, value on right */
-.slider-row-inline {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-width: 0; /* Allow shrinking */
-}
-
-/* Slider track container - grows to fill available space */
-.slider-track-container {
-  flex: 1;
-  min-width: 80px;
-  max-width: 400px;
-}
-
-/* Value display inline - fixed width on right */
-.slider-value-inline {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  min-width: 80px;
-  max-width: 140px;
-  overflow: hidden;
-}
-
-/* Responsive slider adjustments */
-@media (max-width: 899px) {
+@media (min-width: 768px) {
   .data-row.has-slider {
-    grid-template-columns: minmax(80px, 120px) 1fr;
-    gap: 10px;
-    padding: 10px 12px;
-  }
-  
-  .slider-row-inline {
-    gap: 10px;
-  }
-  
-  .slider-track-container {
-    min-width: 60px;
-  }
-  
-  .slider-value-inline {
-    min-width: 70px;
+    grid-template-columns: minmax(100px, 160px) 1fr;
+    gap: 12px;
+    padding: 12px var(--ws-spacing-md);
   }
 }
 
-@media (max-width: 639px) {
+/* Mobile: Stack label and slider */
+@media (max-width: 479px) {
   .data-row.has-slider {
     grid-template-columns: 1fr;
     gap: 8px;
   }
-  
+}
+
+/* ==========================================
+   INLINE SLIDER STYLES - RESPONSIVE
+   ========================================== */
+
+.slider-row-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .slider-row-inline {
+    gap: 12px;
+  }
+}
+
+/* Mobile: Stack slider and value */
+@media (max-width: 479px) {
   .slider-row-inline {
     flex-direction: column;
     align-items: stretch;
+    gap: 8px;
   }
-  
+}
+
+.slider-track-container {
+  flex: 1;
+  min-width: 60px;
+  max-width: 300px;
+}
+
+@media (min-width: 768px) {
+  .slider-track-container {
+    min-width: 80px;
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 479px) {
   .slider-track-container {
     max-width: 100%;
   }
-  
+}
+
+.slider-value-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 70px;
+  max-width: 120px;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .slider-value-inline {
+    min-width: 80px;
+    max-width: 140px;
+  }
+}
+
+@media (max-width: 479px) {
   .slider-value-inline {
     flex-direction: row;
     justify-content: flex-end;
@@ -727,9 +1395,15 @@ html, body {
   align-items: center;
   gap: 4px;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 4px 6px;
   border-radius: 6px;
   transition: all 0.15s ease;
+}
+
+@media (min-width: 768px) {
+  .slider-value-display {
+    padding: 4px 8px;
+  }
 }
 
 .slider-value-display:hover {
@@ -737,25 +1411,41 @@ html, body {
 }
 
 .slider-value {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ws-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 120px;
+  max-width: 100px;
+}
+
+@media (min-width: 768px) {
+  .slider-value {
+    font-size: 14px;
+    max-width: 120px;
+  }
 }
 
 .slider-value-input {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   text-align: right;
-  padding: 4px 8px;
+  padding: 4px 6px;
   border: 1px solid var(--ws-border);
   border-radius: 6px;
   background: white;
-  min-width: 80px;
-  max-width: 120px;
+  min-width: 70px;
+  max-width: 100px;
+}
+
+@media (min-width: 768px) {
+  .slider-value-input {
+    font-size: 14px;
+    padding: 4px 8px;
+    min-width: 80px;
+    max-width: 120px;
+  }
 }
 
 .slider-value-input:focus {
@@ -765,9 +1455,15 @@ html, body {
 }
 
 .slider-secondary {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--ws-text-muted);
   margin-top: 2px;
+}
+
+@media (min-width: 768px) {
+  .slider-secondary {
+    font-size: 11px;
+  }
 }
 
 .slider-secondary.value-negative {
@@ -789,14 +1485,21 @@ html, body {
 .slider-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: white;
   border: 2px solid var(--iq-teal);
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.15s ease;
+}
+
+@media (min-width: 768px) {
+  .slider-input::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .slider-input::-webkit-slider-thumb:hover {
@@ -811,13 +1514,20 @@ html, body {
 }
 
 .slider-input::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: white;
   border: 2px solid var(--iq-teal);
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 768px) {
+  .slider-input::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .slider-input::-moz-range-track {
@@ -832,310 +1542,84 @@ html, body {
   background: var(--iq-teal);
 }
 
-/* Slider with percentage + dollar display */
-.slider-dual-value {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+/* ==========================================
+   CHART CARDS - RESPONSIVE
+   ========================================== */
 
-.slider-value.pct-field {
-  min-width: 60px;
-}
-
-/* Summary Cards - 6 boxes in one row with responsive sizing */
-.summary-cards {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-  width: 100%;
-  max-width: 100%;
-}
-
-.summary-card {
+.chart-card {
   background: white;
   border: 1px solid var(--ws-border);
-  border-radius: 12px;
-  padding: 12px 10px;
-  box-shadow: var(--ws-shadow);
-  transition: all 0.2s ease;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 0; /* Allow shrinking */
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: var(--ws-shadow);
+  min-width: 0;
 }
 
-.summary-card.highlight {
-  background: var(--ws-accent-bg);
-  border-color: var(--iq-teal-light);
+@media (min-width: 768px) {
+  .chart-card {
+    border-radius: 12px;
+  }
 }
 
-.summary-card:hover {
-  border-color: var(--iq-teal-light);
-  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.15);
-}
-
-.summary-card-label {
-  font-size: 10px;
+.chart-card-title {
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--ws-text-muted);
-  margin-bottom: 6px;
-  white-space: nowrap;
-}
-
-.summary-card-value {
-  font-size: clamp(14px, 1.8vw, 20px);
-  font-weight: 700;
-  color: var(--ws-text-primary);
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.summary-card-value.positive {
-  color: var(--ws-positive);
-}
-
-.summary-card-value.negative {
-  color: var(--ws-negative);
-}
-
-.summary-card-value.highlight {
-  color: var(--iq-teal);
-  font-size: clamp(16px, 2vw, 24px);
-}
-
-.summary-card-subtitle {
-  font-size: 10px;
-  color: var(--ws-text-secondary);
-  margin-top: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-/* Responsive summary cards */
-@media (max-width: 1199px) {
-  .summary-cards {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-}
-
-@media (max-width: 639px) {
-  .summary-cards {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-  
-  .summary-card {
-    padding: 10px 8px;
-  }
-  
-  .summary-card-label {
-    font-size: 9px;
-  }
-}
-
-/* Toggle Switch */
-.toggle-group {
-  display: inline-flex;
-  background: var(--ws-bg-alt);
-  border-radius: 8px;
-  padding: 3px;
-}
-
-.toggle-btn {
-  padding: 8px 18px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ws-text-secondary);
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.toggle-btn.active {
-  background: white;
-  color: var(--iq-teal);
-  box-shadow: var(--ws-shadow);
-}
-
-/* Charts */
-.chart-container {
-  background: white;
-  border: 1px solid var(--ws-border);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: var(--ws-shadow);
-}
-
-.chart-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ws-text-primary);
-  margin-bottom: 16px;
-}
-
-/* Projections Table */
-.projections-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.projections-table th {
-  padding: 12px 14px;
-  text-align: right;
-  font-weight: 600;
-  color: var(--ws-text-primary);
-  background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, #f1f5f9 100%);
-  border-bottom: 2px solid var(--ws-border);
-  position: sticky;
-  top: 0;
-}
-
-.projections-table th:first-child {
-  text-align: left;
-  position: sticky;
-  left: 0;
-  z-index: 10;
-}
-
-.projections-table td {
-  padding: 10px 14px;
-  text-align: right;
-  color: var(--ws-text-primary);
+  padding: 10px var(--ws-spacing-sm);
   border-bottom: 1px solid var(--ws-border-light);
 }
 
-.projections-table td:first-child {
-  text-align: left;
-  position: sticky;
-  left: 0;
-  background: white;
-  font-weight: 500;
-  color: var(--ws-text-label);
-}
-
-.projections-table tr:hover td {
-  background-color: var(--ws-accent-bg);
-}
-
-.projections-table tr.section-row td {
-  background: linear-gradient(135deg, rgba(0, 126, 167, 0.1) 0%, #f1f5f9 100%);
-  font-weight: 600;
-  color: var(--iq-teal-dark);
-}
-
-.projections-table tr.total-row td {
-  background: linear-gradient(135deg, rgba(0, 126, 167, 0.2) 0%, #e0f2fe 100%);
-  font-weight: 600;
-  color: var(--iq-teal-dark);
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-  .worksheet-help-panel {
-    display: none;
-  }
-  
-  .worksheet-content-area {
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 900px) {
-  .worksheet-topbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .worksheet-property-info {
-    border-left: none;
-    padding-left: 0;
-  }
-  
-  .worksheet-main-area {
-    padding: 16px;
-  }
-}
-
-@media (max-width: 640px) {
-  .data-row {
-    padding: 10px 14px;
-    font-size: 13px;
-  }
-  
-  .worksheet-tab-label {
-    display: none;
-  }
-  
-  .worksheet-tab {
-    padding: 12px;
+@media (min-width: 768px) {
+  .chart-card-title {
+    font-size: 12px;
+    padding: 12px var(--ws-spacing-md);
   }
 }
 
 /* ==========================================
-   LEGACY STYLES (keeping for backwards compat)
+   STRATEGY COLORS
    ========================================== */
 
-.worksheet-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: var(--ws-bg);
+.str-strategy {
+  --strategy-accent: #f97316;
+  --strategy-accent-light: #fb923c;
+  --strategy-accent-bg: rgba(249, 115, 22, 0.1);
 }
 
-.worksheet-sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 260px;
-  background-color: white;
-  border-right: 1px solid var(--ws-border);
-  overflow-y: auto;
-  z-index: 40;
-  transform: translateX(-100%);
+.ltr-strategy {
+  --strategy-accent: #007ea7;
+  --strategy-accent-light: #33a5c4;
+  --strategy-accent-bg: rgba(0, 126, 167, 0.1);
 }
 
-.worksheet-sidebar.open {
-  transform: translateX(0);
+.brrrr-strategy {
+  --strategy-accent: #7c3aed;
+  --strategy-accent-light: #a78bfa;
+  --strategy-accent-bg: rgba(124, 58, 237, 0.1);
 }
 
-.worksheet-main {
-  flex: 1;
-  min-height: 100vh;
+.flip-strategy {
+  --strategy-accent: #d97706;
+  --strategy-accent-light: #fbbf24;
+  --strategy-accent-bg: rgba(217, 119, 6, 0.1);
 }
 
-.worksheet-header {
-  position: sticky;
-  top: 0;
-  background-color: var(--ws-card);
-  border-bottom: 1px solid var(--ws-border);
-  z-index: 30;
-  padding: 16px 24px;
+.househack-strategy {
+  --strategy-accent: #059669;
+  --strategy-accent-light: #34d399;
+  --strategy-accent-bg: rgba(5, 150, 105, 0.1);
 }
 
-.worksheet-content {
-  padding: 24px;
-  max-width: 880px;
+.wholesale-strategy {
+  --strategy-accent: #2563eb;
+  --strategy-accent-light: #60a5fa;
+  --strategy-accent-bg: rgba(37, 99, 235, 0.1);
 }
 
 /* ==========================================
-   PROFIT FINDER Component
+   PROFIT FINDER COMPONENT - RESPONSIVE
    ========================================== */
 
 .profit-finder {
@@ -1152,28 +1636,52 @@ html, body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--iq-teal-dark);
-  padding: 14px 16px;
+  padding: 12px var(--ws-spacing-sm);
   background: var(--ws-section-header);
   border-bottom: 1px solid var(--ws-border);
+}
+
+@media (min-width: 768px) {
+  .profit-finder-title {
+    padding: 14px var(--ws-spacing-md);
+  }
 }
 
 .profit-finder-visual {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  padding: 12px;
-  min-height: 420px;
-  gap: 8px;
+  padding: 10px;
+  min-height: 320px;
+  gap: 6px;
 }
 
-/* Left and Right marker columns - equal width */
+@media (min-width: 768px) {
+  .profit-finder-visual {
+    padding: 12px;
+    min-height: 380px;
+    gap: 8px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .profit-finder-visual {
+    min-height: 420px;
+  }
+}
+
 .pf-marker-column {
-  width: 85px;
+  width: 70px;
   position: relative;
   flex-shrink: 0;
 }
 
-/* Markers - positioned absolutely */
+@media (min-width: 768px) {
+  .pf-marker-column {
+    width: 85px;
+  }
+}
+
 .pf-marker {
   position: absolute;
   display: flex;
@@ -1183,19 +1691,13 @@ html, body {
   transition: top 0.3s ease;
 }
 
-.pf-marker-column.left .pf-marker {
-  right: 0;
-  left: 0;
-  justify-content: center;
-}
-
+.pf-marker-column.left .pf-marker,
 .pf-marker-column.right .pf-marker {
   right: 0;
   left: 0;
   justify-content: center;
 }
 
-/* Stacked label + value - centered */
 .pf-marker-stack {
   display: flex;
   flex-direction: column;
@@ -1205,64 +1707,104 @@ html, body {
 }
 
 .pf-marker-name {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
 }
 
+@media (min-width: 768px) {
+  .pf-marker-name {
+    font-size: 10px;
+  }
+}
+
 .pf-marker-val {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
 }
 
-.pf-marker-arrow {
-  font-size: 10px;
+@media (min-width: 768px) {
+  .pf-marker-val {
+    font-size: 11px;
+  }
 }
 
-/* Buy marker - teal */
+.pf-marker-arrow {
+  font-size: 9px;
+}
+
+@media (min-width: 768px) {
+  .pf-marker-arrow {
+    font-size: 10px;
+  }
+}
+
 .pf-marker.buy .pf-marker-name,
 .pf-marker.buy .pf-marker-val,
 .pf-marker.buy .pf-marker-arrow {
   color: var(--iq-teal);
 }
 
-/* List marker - red */
 .pf-marker.list .pf-marker-name,
 .pf-marker.list .pf-marker-val,
 .pf-marker.list .pf-marker-arrow {
   color: #dc2626;
 }
 
-/* Even marker - gray */
 .pf-marker.even .pf-marker-name,
 .pf-marker.even .pf-marker-val,
 .pf-marker.even .pf-marker-arrow {
   color: #64748b;
 }
 
-/* Center - The gradient bar */
 .pf-scale-bar {
-  width: 60px;
+  width: 50px;
   flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .pf-scale-bar {
+    width: 60px;
+  }
 }
 
 .pf-scale-bar img {
   display: block;
-  width: 60px;
-  height: 400px;
+  width: 100%;
+  height: 300px;
 }
 
-/* Cash Flow indicator at bottom */
+@media (min-width: 768px) {
+  .pf-scale-bar img {
+    height: 360px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .pf-scale-bar img {
+    height: 400px;
+  }
+}
+
 .pf-cashflow-indicator {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 12px 16px;
-  margin: 0 8px 8px;
+  gap: 10px;
+  padding: 10px var(--ws-spacing-sm);
+  margin: 0 6px 6px;
   border-radius: 8px;
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%);
   border: 1px solid rgba(16, 185, 129, 0.25);
+  flex-wrap: wrap;
+}
+
+@media (min-width: 768px) {
+  .pf-cashflow-indicator {
+    gap: 12px;
+    padding: 12px var(--ws-spacing-md);
+    margin: 0 8px 8px;
+  }
 }
 
 .pf-cashflow-indicator.negative {
@@ -1271,14 +1813,26 @@ html, body {
 }
 
 .pf-cf-label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--ws-text-muted);
 }
 
+@media (min-width: 768px) {
+  .pf-cf-label {
+    font-size: 12px;
+  }
+}
+
 .pf-cf-amount {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #10b981;
+}
+
+@media (min-width: 768px) {
+  .pf-cf-amount {
+    font-size: 18px;
+  }
 }
 
 .pf-cashflow-indicator.negative .pf-cf-amount {
@@ -1286,7 +1840,7 @@ html, body {
 }
 
 .pf-cf-status {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #10b981;
   padding: 2px 8px;
@@ -1294,437 +1848,120 @@ html, body {
   border-radius: 10px;
 }
 
+@media (min-width: 768px) {
+  .pf-cf-status {
+    font-size: 12px;
+  }
+}
+
 .pf-cashflow-indicator.negative .pf-cf-status {
   color: #dc2626;
   background: rgba(220, 38, 38, 0.15);
 }
 
-/* Summary Cards - Fixed 6 on one row */
-.summary-cards-row {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: clamp(6px, 1vw, 12px);
-  margin-bottom: 24px;
-}
-
-.summary-cards-row .summary-card {
-  flex: 1;
-  min-width: 0;
-}
-
 /* ==========================================
-   BRRRR Strategy Colors
+   PRICING LADDER - RESPONSIVE
    ========================================== */
-.brrrr-strategy {
-  --strategy-accent: #7c3aed;
-  --strategy-accent-light: #a78bfa;
-  --strategy-accent-bg: rgba(124, 58, 237, 0.1);
-}
 
-/* ==========================================
-   LTR Strategy Colors
-   ========================================== */
-.ltr-strategy {
-  --strategy-accent: #007ea7;
-  --strategy-accent-light: #33a5c4;
-  --strategy-accent-bg: rgba(0, 126, 167, 0.1);
-}
-
-/* ==========================================
-   STR Strategy Colors
-   ========================================== */
-.str-strategy {
-  --strategy-accent: #f97316;
-  --strategy-accent-light: #fb923c;
-  --strategy-accent-bg: rgba(249, 115, 22, 0.1);
-}
-
-/* ==========================================
-   Flip Strategy Colors
-   ========================================== */
-.flip-strategy {
-  --strategy-accent: #d97706;
-  --strategy-accent-light: #fbbf24;
-  --strategy-accent-bg: rgba(217, 119, 6, 0.1);
-}
-
-/* ==========================================
-   House Hack Strategy Colors
-   ========================================== */
-.househack-strategy {
-  --strategy-accent: #059669;
-  --strategy-accent-light: #34d399;
-  --strategy-accent-bg: rgba(5, 150, 105, 0.1);
-}
-
-/* ==========================================
-   Wholesale Strategy Colors
-   ========================================== */
-.wholesale-strategy {
-  --strategy-accent: #2563eb;
-  --strategy-accent-light: #60a5fa;
-  --strategy-accent-bg: rgba(37, 99, 235, 0.1);
-}
-
-/* ==========================================
-   Chart Cards
-   ========================================== */
-.chart-card {
-  background: white;
-  border: 1px solid var(--ws-border);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: var(--ws-shadow);
-}
-
-.chart-card.brrrr-highlight {
-  border-color: var(--strategy-accent-light, #a78bfa);
-  background: linear-gradient(180deg, var(--strategy-accent-bg, rgba(124, 58, 237, 0.1)) 0%, white 100%);
-}
-
-.chart-card-title {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--ws-text-muted);
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--ws-border-light);
-}
-
-.chart-card-title.brrrr {
-  color: var(--strategy-accent, #7c3aed);
-}
-
-.chart-card-title.str {
-  color: var(--strategy-accent, #f97316);
-}
-
-.chart-card-title.flip {
-  color: var(--strategy-accent, #d97706);
-}
-
-.chart-card-title.househack {
-  color: var(--strategy-accent, #059669);
-}
-
-.chart-card-title.wholesale {
-  color: var(--strategy-accent, #2563eb);
-}
-
-/* ==========================================
-   BRRRR Score Gauge
-   ========================================== */
-.brrrr-score-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  position: relative;
-}
-
-.brrrr-score-value {
-  font-size: 48px;
-  font-weight: 700;
-  color: var(--strategy-accent, #7c3aed);
-  margin-top: -30px;
-}
-
-.brrrr-score-label {
-  font-size: 13px;
-  color: var(--ws-text-secondary);
-  margin-top: 4px;
-}
-
-/* ==========================================
-   Cash Recovery
-   ========================================== */
-.cash-recovery-chart {
-  padding: 16px;
-}
-
-.cash-out-indicator {
-  text-align: center;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--ws-border-light);
-  margin-bottom: 16px;
-}
-
-.cash-out-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--strategy-accent, #7c3aed);
-}
-
-.cash-out-value.positive { color: var(--ws-positive); }
-.cash-out-value.negative { color: var(--ws-negative); }
-
-.cash-out-label {
-  font-size: 12px;
-  color: var(--ws-text-muted);
-  margin-top: 4px;
-}
-
-.cash-out-status {
-  font-size: 13px;
-  font-weight: 600;
-  margin-top: 8px;
-  padding: 4px 12px;
-  border-radius: 12px;
-  display: inline-block;
-}
-
-.cash-out-status.positive {
-  color: var(--ws-positive);
-  background: var(--ws-positive-light);
-}
-
-.cash-out-status.negative {
-  color: var(--ws-negative);
-  background: var(--ws-negative-light);
-}
-
-.cash-recovery-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.h-bar-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.h-bar-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-}
-
-.h-bar-label {
-  color: var(--ws-text-secondary);
-}
-
-.h-bar-value {
-  font-weight: 600;
-  color: var(--ws-text-primary);
-}
-
-.h-bar-value.positive { color: var(--ws-positive); }
-.h-bar-value.negative { color: var(--ws-negative); }
-
-.h-bar-track {
-  height: 8px;
-  background: var(--ws-border-light);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.h-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.h-bar-fill.brrrr { background: var(--strategy-accent, #7c3aed); }
-.h-bar-fill.positive { background: var(--ws-positive); }
-.h-bar-fill.negative { background: var(--ws-negative); }
-.h-bar-fill.full { width: 100%; }
-.h-bar-fill.ltr { background: linear-gradient(90deg, var(--iq-teal), var(--iq-teal-light)); }
-
-/* ==========================================
-   Key Metrics Grid
-   ========================================== */
-.mini-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  padding: 16px;
-}
-
-.mini-stat {
-  text-align: center;
-  padding: 12px 8px;
-  border-radius: 8px;
-  background: var(--ws-bg-alt);
-}
-
-.mini-stat.highlight {
-  background: var(--strategy-accent-bg, rgba(124, 58, 237, 0.1));
-}
-
-.mini-stat-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--ws-text-primary);
-}
-
-.mini-stat-value.brrrr {
-  color: var(--strategy-accent, #7c3aed);
-}
-
-.mini-stat-value.str {
-  color: var(--strategy-accent, #f97316);
-}
-
-.mini-stat-label {
-  font-size: 11px;
-  color: var(--ws-text-muted);
-  margin-top: 2px;
-}
-
-/* ==========================================
-   Cost Breakdown Donut
-   ========================================== */
-.cost-breakdown-layout {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 16px;
-}
-
-.mini-donut {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.mini-donut-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70px;
-  height: 70px;
-  background: white;
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.mini-donut-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--ws-text-primary);
-}
-
-.mini-donut-label {
-  font-size: 10px;
-  color: var(--ws-text-muted);
-}
-
-.cost-breakdown-details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.cost-breakdown-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-}
-
-.cost-breakdown-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-.cost-breakdown-label {
-  color: var(--ws-text-secondary);
-  flex: 1;
-}
-
-.cost-breakdown-value {
-  font-weight: 600;
-  color: var(--ws-text-primary);
-}
-
-/* ==========================================
-   Pricing Ladder
-   ========================================== */
 .pricing-ladder-container {
-  padding: 16px;
+  padding: var(--ws-spacing-sm);
+}
+
+@media (min-width: 768px) {
+  .pricing-ladder-container {
+    padding: var(--ws-spacing-md);
+  }
 }
 
 .pricing-ladder {
   position: relative;
-  padding-left: 80px;
+  padding-left: 65px;
+}
+
+@media (min-width: 768px) {
+  .pricing-ladder {
+    padding-left: 80px;
+  }
 }
 
 .pricing-ladder-track {
   position: absolute;
-  left: 75px;
+  left: 60px;
   top: 0;
   bottom: 0;
-  width: 4px;
+  width: 3px;
   background: linear-gradient(180deg, var(--ws-positive) 0%, #f59e0b 50%, var(--ws-negative) 100%);
   border-radius: 2px;
 }
 
-.str-strategy .pricing-ladder-track {
-  background: linear-gradient(180deg, #dc2626 0%, #f97316 25%, #eab308 50%, #10b981 75%, var(--strategy-accent, #f97316) 100%);
-}
-
-.flip-strategy .pricing-ladder-track {
-  background: linear-gradient(180deg, #10b981 0%, #eab308 50%, var(--strategy-accent, #d97706) 100%);
-}
-
-.househack-strategy .pricing-ladder-track {
-  background: linear-gradient(180deg, #dc2626 0%, #f59e0b 50%, var(--strategy-accent, #059669) 100%);
-}
-
-.flip-strategy .pricing-ladder-marker.profit-target {
-  border-color: #22c55e;
-  background: white;
-}
-
-.flip-strategy .pricing-ladder-marker.mao {
-  border-color: #b45309;
-  background: white;
+@media (min-width: 768px) {
+  .pricing-ladder-track {
+    left: 75px;
+    width: 4px;
+  }
 }
 
 .pricing-ladder-item {
   display: flex;
   align-items: center;
-  padding: 8px 0;
+  padding: 6px 0;
   position: relative;
+}
+
+@media (min-width: 768px) {
+  .pricing-ladder-item {
+    padding: 8px 0;
+  }
 }
 
 .pricing-ladder-item.highlight {
   background: var(--strategy-accent-bg, rgba(124, 58, 237, 0.1));
-  margin: 0 -16px;
-  padding: 8px 16px;
+  margin: 0 -var(--ws-spacing-sm);
+  padding: 6px var(--ws-spacing-sm);
   border-radius: 6px;
 }
 
+@media (min-width: 768px) {
+  .pricing-ladder-item.highlight {
+    margin: 0 -var(--ws-spacing-md);
+    padding: 8px var(--ws-spacing-md);
+  }
+}
+
 .pricing-ladder-label {
-  width: 70px;
-  font-size: 11px;
+  width: 55px;
+  font-size: 10px;
   color: var(--ws-text-secondary);
   text-align: right;
-  padding-right: 12px;
+  padding-right: 10px;
+}
+
+@media (min-width: 768px) {
+  .pricing-ladder-label {
+    width: 70px;
+    font-size: 11px;
+    padding-right: 12px;
+  }
 }
 
 .pricing-ladder-marker {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   border: 3px solid white;
   box-shadow: 0 0 0 2px var(--ws-border);
-  margin-right: 12px;
+  margin-right: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .pricing-ladder-marker {
+    width: 16px;
+    height: 16px;
+    margin-right: 12px;
+  }
 }
 
 .pricing-ladder-marker.arv { background: var(--ws-positive); }
@@ -1734,253 +1971,170 @@ html, body {
 .pricing-ladder-marker.mao { background: var(--ws-negative); }
 .pricing-ladder-marker.list { border-color: #dc2626; background: white; }
 .pricing-ladder-marker.coc { border-color: #10b981; background: white; }
-.pricing-ladder-marker.profit-target { border-color: #10b981; background: white; }
 
 .pricing-ladder-value {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--ws-text-primary);
 }
 
-.pricing-ladder-value.arv { color: var(--ws-positive); }
-.pricing-ladder-value.current { color: var(--strategy-accent, #7c3aed); }
-.pricing-ladder-value.list { color: #dc2626; }
-.pricing-ladder-value.target { color: #f59e0b; }
-.pricing-ladder-value.coc { color: #10b981; }
-.pricing-ladder-value.profit-target { color: #22c55e; }
+@media (min-width: 768px) {
+  .pricing-ladder-value {
+    font-size: 13px;
+  }
+}
 
 .pricing-ladder-hint {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 400;
   color: var(--ws-text-muted);
-  margin-left: 6px;
+  margin-left: 4px;
+}
+
+@media (min-width: 768px) {
+  .pricing-ladder-hint {
+    font-size: 11px;
+    margin-left: 6px;
+  }
 }
 
 .pricing-discount-indicator {
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid var(--ws-border-light);
 }
 
+@media (min-width: 768px) {
+  .pricing-discount-indicator {
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+}
+
 .pricing-discount-bar {
-  height: 8px;
+  height: 6px;
   background: var(--ws-border-light);
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .pricing-discount-bar {
+    height: 8px;
+    border-radius: 4px;
+  }
 }
 
 .pricing-discount-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 3px;
   transition: width 0.3s ease;
 }
 
-.pricing-discount-fill.brrrr {
-  background: linear-gradient(90deg, var(--strategy-accent, #7c3aed), var(--strategy-accent-light, #a78bfa));
+@media (min-width: 768px) {
+  .pricing-discount-fill {
+    border-radius: 4px;
+  }
 }
 
 .pricing-discount-fill.str {
   background: linear-gradient(90deg, var(--strategy-accent, #f97316), var(--strategy-accent-light, #fb923c));
 }
 
-.pricing-discount-fill.flip {
-  background: linear-gradient(90deg, var(--strategy-accent, #d97706), var(--strategy-accent-light, #fbbf24));
-}
-
-.pricing-discount-fill.househack {
-  background: linear-gradient(90deg, var(--strategy-accent, #059669), var(--strategy-accent-light, #34d399));
-}
-
-.pricing-discount-fill.assignment {
-  background: linear-gradient(90deg, var(--strategy-accent, #2563eb), var(--strategy-accent-light, #60a5fa));
-}
-
-/* ==========================================
-   LTR Cash Breakdown
-   ========================================== */
-.cash-breakdown {
-  padding: 16px;
-}
-
-.cash-breakdown-main {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.cash-breakdown-details {
-  flex: 1;
-}
-
-.cash-breakdown-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
-  font-size: 12px;
-}
-
-.cash-breakdown-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-}
-
-.cash-breakdown-swatch.down { background: var(--iq-teal); }
-.cash-breakdown-swatch.costs { background: #f97316; }
-.cash-breakdown-swatch.rehab { background: #64748b; }
-
-.cash-breakdown-label {
-  color: var(--ws-text-secondary);
-}
-
-.cash-breakdown-value {
-  font-weight: 600;
-  margin-left: auto;
-}
-
-.cash-breakdown-ltv {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--ws-border-light);
-}
-
-.cash-breakdown-ltv-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
+.pricing-discount-label {
   font-size: 11px;
-  color: var(--ws-text-muted);
-}
-
-.cash-breakdown-ltv-value {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--iq-teal);
-}
-
-/* ==========================================
-   LTR Stacked Bars
-   ========================================== */
-.stacked-bar-container {
-  padding: 16px;
-}
-
-.stacked-bar {
-  display: flex;
-  height: 24px;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.stacked-bar-segment {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 600;
-  color: white;
-}
-
-.stacked-bar-segment.loan { background: #64748b; }
-.stacked-bar-segment.expenses { background: #f97316; }
-.stacked-bar-segment.cashflow { background: #007ea7; }
-.stacked-bar-segment.equity { background: #007ea7; }
-
-.stacked-legend {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 12px;
-  font-size: 12px;
-}
-
-.stacked-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   color: var(--ws-text-secondary);
+  margin-top: 6px;
+  text-align: center;
 }
 
-.stacked-legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+@media (min-width: 768px) {
+  .pricing-discount-label {
+    font-size: 12px;
+    margin-top: 8px;
+  }
 }
 
-.stacked-legend-dot.loan { background: #64748b; }
-.stacked-legend-dot.expenses { background: #f97316; }
-.stacked-legend-dot.cashflow { background: #007ea7; }
-
-/* ==========================================
-   LTR Equity Summary
-   ========================================== */
-.equity-summary {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  font-size: 12px;
-}
-
-.equity-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.equity-item.right {
-  align-items: flex-end;
-}
-
-.equity-amount {
+.pricing-discount-label span {
   font-weight: 600;
-  color: #007ea7;
-}
-
-.equity-amount.loan {
-  color: #64748b;
-}
-
-.equity-subtext {
-  color: var(--ws-text-muted);
-  font-size: 10px;
+  color: var(--strategy-accent, #7c3aed);
 }
 
 /* ==========================================
-   STR Revenue Breakdown
+   STR REVENUE BREAKDOWN - RESPONSIVE
    ========================================== */
+
 .str-revenue-breakdown {
-  padding: 16px;
+  padding: var(--ws-spacing-sm);
+}
+
+@media (min-width: 768px) {
+  .str-revenue-breakdown {
+    padding: var(--ws-spacing-md);
+  }
 }
 
 .revenue-gauge {
   text-align: center;
-  padding: 16px 0;
+  padding: var(--ws-spacing-sm) 0;
+}
+
+@media (min-width: 768px) {
+  .revenue-gauge {
+    padding: var(--ws-spacing-md) 0;
+  }
 }
 
 .revenue-value {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--strategy-accent, #f97316);
 }
 
+@media (min-width: 768px) {
+  .revenue-value {
+    font-size: 32px;
+  }
+}
+
 .revenue-label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--ws-text-muted);
   margin-top: 4px;
 }
 
+@media (min-width: 768px) {
+  .revenue-label {
+    font-size: 12px;
+  }
+}
+
 .revenue-breakdown {
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid var(--ws-border-light);
+}
+
+@media (min-width: 768px) {
+  .revenue-breakdown {
+    margin-top: 16px;
+    padding-top: 16px;
+  }
 }
 
 .revenue-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  font-size: 13px;
+  padding: 6px 0;
+  font-size: 12px;
+}
+
+@media (min-width: 768px) {
+  .revenue-item {
+    padding: 8px 0;
+    font-size: 13px;
+  }
 }
 
 .revenue-item-label {
@@ -1996,20 +2150,35 @@ html, body {
 .revenue-item-value.negative { color: var(--ws-negative); }
 
 /* ==========================================
-   STR Seasonality Grid
+   SEASONALITY GRID - RESPONSIVE
    ========================================== */
+
 .seasonality-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  padding: 16px;
+  gap: 6px;
+  padding: var(--ws-spacing-sm);
+}
+
+@media (min-width: 768px) {
+  .seasonality-grid {
+    gap: 8px;
+    padding: var(--ws-spacing-md);
+  }
 }
 
 .season-card {
-  padding: 10px 8px;
+  padding: 8px 6px;
   background: var(--ws-bg-alt);
-  border-radius: 8px;
+  border-radius: 6px;
   text-align: center;
+}
+
+@media (min-width: 768px) {
+  .season-card {
+    padding: 10px 8px;
+    border-radius: 8px;
+  }
 }
 
 .season-card.peak {
@@ -2018,16 +2187,29 @@ html, body {
 }
 
 .season-label {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--ws-text-muted);
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+}
+
+@media (min-width: 768px) {
+  .season-label {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
 }
 
 .season-value {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ws-text-primary);
+}
+
+@media (min-width: 768px) {
+  .season-value {
+    font-size: 14px;
+  }
 }
 
 .season-card.peak .season-value {
@@ -2035,25 +2217,109 @@ html, body {
 }
 
 /* ==========================================
-   STR vs LTR Comparison
+   KEY METRICS GRID - RESPONSIVE
    ========================================== */
+
+.mini-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: var(--ws-spacing-sm);
+}
+
+@media (min-width: 768px) {
+  .mini-stats-grid {
+    gap: 12px;
+    padding: var(--ws-spacing-md);
+  }
+}
+
+.mini-stat {
+  text-align: center;
+  padding: 10px 6px;
+  border-radius: 6px;
+  background: var(--ws-bg-alt);
+}
+
+@media (min-width: 768px) {
+  .mini-stat {
+    padding: 12px 8px;
+    border-radius: 8px;
+  }
+}
+
+.mini-stat.highlight {
+  background: var(--strategy-accent-bg, rgba(124, 58, 237, 0.1));
+}
+
+.mini-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ws-text-primary);
+}
+
+@media (min-width: 768px) {
+  .mini-stat-value {
+    font-size: 18px;
+  }
+}
+
+.mini-stat-value.str {
+  color: var(--strategy-accent, #f97316);
+}
+
+.mini-stat-label {
+  font-size: 10px;
+  color: var(--ws-text-muted);
+  margin-top: 2px;
+}
+
+@media (min-width: 768px) {
+  .mini-stat-label {
+    font-size: 11px;
+  }
+}
+
+/* ==========================================
+   STR VS LTR COMPARISON - RESPONSIVE
+   ========================================== */
+
 .str-vs-ltr {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: var(--ws-spacing-sm);
+}
+
+@media (min-width: 768px) {
+  .str-vs-ltr {
+    gap: 12px;
+    padding: var(--ws-spacing-md);
+  }
 }
 
 .comparison-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+}
+
+@media (min-width: 768px) {
+  .comparison-row {
+    gap: 6px;
+  }
 }
 
 .comparison-header {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 11px;
+}
+
+@media (min-width: 768px) {
+  .comparison-header {
+    font-size: 12px;
+  }
 }
 
 .comparison-label {
@@ -2073,15 +2339,28 @@ html, body {
 }
 
 .comparison-bar-track {
-  height: 8px;
+  height: 6px;
   background: #e2e8f0;
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .comparison-bar-track {
+    height: 8px;
+    border-radius: 4px;
+  }
 }
 
 .comparison-bar {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 3px;
+}
+
+@media (min-width: 768px) {
+  .comparison-bar {
+    border-radius: 4px;
+  }
 }
 
 .comparison-bar.str {
@@ -2094,612 +2373,208 @@ html, body {
 
 .comparison-premium {
   text-align: center;
-  padding: 12px;
+  padding: 10px;
   background: var(--strategy-accent-bg, rgba(249, 115, 22, 0.1));
-  border-radius: 8px;
+  border-radius: 6px;
+}
+
+@media (min-width: 768px) {
+  .comparison-premium {
+    padding: 12px;
+    border-radius: 8px;
+  }
 }
 
 .comparison-premium-label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--ws-text-muted);
 }
 
+@media (min-width: 768px) {
+  .comparison-premium-label {
+    font-size: 11px;
+  }
+}
+
 .comparison-premium-value {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--strategy-accent, #f97316);
 }
 
-/* ==========================================
-   Flip ROI Gauge
-   ========================================== */
-.flip-roi-gauge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px;
-}
-
-.roi-value {
-  font-size: 36px;
-  font-weight: 700;
-  color: var(--strategy-accent, #d97706);
-}
-
-.roi-label {
-  font-size: 12px;
-  color: var(--ws-text-muted);
-  margin-top: 4px;
-}
-
-.roi-annualized {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--ws-border-light);
-  width: 100%;
-  text-align: center;
-}
-
-.roi-annualized-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--strategy-accent, #d97706);
-}
-
-.roi-annualized-label {
-  font-size: 11px;
-  color: var(--ws-text-muted);
-  margin-top: 4px;
+@media (min-width: 768px) {
+  .comparison-premium-value {
+    font-size: 20px;
+  }
 }
 
 /* ==========================================
-   Flip Profit Timeline
+   EDITABLE FIELD - RESPONSIVE
    ========================================== */
-.profit-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 16px;
-}
 
-.timeline-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.timeline-label {
-  width: 40px;
-  font-size: 11px;
-  color: var(--ws-text-muted);
-}
-
-.timeline-bar-container {
-  flex: 1;
+.editable-field {
   position: relative;
-  height: 20px;
-  background: var(--ws-bg-alt);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.timeline-bar {
-  height: 100%;
-  border-radius: 10px;
-}
-
-.timeline-bar.profit {
-  background: linear-gradient(90deg, var(--strategy-accent, #d97706), var(--strategy-accent-light, #fbbf24));
-}
-
-.timeline-value {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ws-text-primary);
-}
-
-/* ==========================================
-   House Hack Housing Cost Gauge
-   ========================================== */
-.housing-cost-gauge {
-  text-align: center;
-  padding: 16px;
-}
-
-.housing-cost-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--strategy-accent, #059669);
-}
-
-.housing-cost-label {
-  font-size: 12px;
-  color: var(--ws-text-muted);
-  margin-top: 4px;
-}
-
-.housing-cost-compare {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--ws-border-light);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.comparison-bar {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.comparison-bar-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--ws-text-secondary);
-}
-
-.comparison-bar-value {
-  font-weight: 600;
-  color: var(--ws-text-primary);
-}
-
-.comparison-bar-value.accent {
-  color: var(--strategy-accent, #059669);
-}
-
-.comparison-bar-track {
-  height: 8px;
-  background: #e2e8f0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.comparison-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-}
-
-.comparison-bar-fill.accent {
-  background: linear-gradient(90deg, var(--strategy-accent, #059669), var(--strategy-accent-light, #34d399));
-}
-
-.comparison-bar-fill.neutral {
-  background: linear-gradient(90deg, #94a3b8, #cbd5e1);
-}
-
-.comparison-savings {
-  text-align: center;
-  padding: 12px;
-  background: var(--strategy-accent-bg, rgba(5, 150, 105, 0.1));
-  border-radius: 8px;
-}
-
-.comparison-savings-label {
-  font-size: 11px;
-  color: var(--ws-text-muted);
-}
-
-.comparison-savings-value {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--strategy-accent, #059669);
-}
-
-/* ==========================================
-   Unit Breakdown
-   ========================================== */
-.unit-breakdown {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 16px;
-}
-
-.unit-item {
-  display: flex;
-  justify-content: space-between;
+  display: inline-flex;
   align-items: center;
-  padding: 10px 12px;
-  background: var(--ws-bg-alt);
-  border-radius: 8px;
+}
+
+.editable-field input {
   font-size: 13px;
-}
-
-.unit-item.owner {
-  background: var(--strategy-accent-bg, rgba(5, 150, 105, 0.1));
-  border: 1px solid var(--strategy-accent-light, #34d399);
-}
-
-.unit-item-label {
-  color: var(--ws-text-secondary);
-}
-
-.unit-item-value {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ws-text-primary);
+  background: transparent;
+  border: none;
+  text-align: right;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  width: auto;
+  min-width: 70px;
 }
 
-.unit-item-value.accent {
-  color: var(--strategy-accent, #059669);
+@media (min-width: 768px) {
+  .editable-field input {
+    font-size: 14px;
+    padding: 6px 10px;
+    margin: -6px -10px;
+    min-width: 80px;
+  }
+}
+
+.editable-field input:hover {
+  background-color: var(--ws-accent-bg);
+}
+
+.editable-field input:focus {
+  background-color: white;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--iq-teal);
 }
 
 /* ==========================================
-   Move Out Summary
+   VALUE CLASSES
    ========================================== */
-.moveout-summary {
-  text-align: center;
-  padding: 16px;
-}
 
-.moveout-header {
-  font-size: 12px;
-  color: var(--ws-text-muted);
-  margin-bottom: 8px;
-}
-
-.moveout-cashflow {
-  font-size: 32px;
+.value-highlight {
+  color: #7c3aed !important;
   font-weight: 700;
-  color: var(--ws-positive);
 }
 
-.moveout-subtitle {
-  font-size: 12px;
-  color: var(--ws-text-muted);
-  margin-top: 4px;
+.value-positive {
+  color: var(--ws-positive) !important;
 }
 
-.moveout-metrics {
+.value-negative {
+  color: var(--ws-negative) !important;
+}
+
+/* ==========================================
+   LEGACY COMPATIBILITY STYLES
+   ========================================== */
+
+.worksheet-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--ws-bg);
+}
+
+.worksheet-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ws-spacing-md);
+}
+
+.section-two-column {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--ws-border-light);
+  grid-template-columns: 1fr;
+  gap: var(--ws-spacing-md);
 }
 
-.moveout-metric {
-  text-align: center;
-  padding: 10px;
-  background: var(--ws-bg-alt);
-  border-radius: 8px;
+@media (min-width: 768px) {
+  .section-two-column {
+    grid-template-columns: 2fr 1fr;
+  }
 }
 
-.moveout-metric-label {
-  font-size: 10px;
-  color: var(--ws-text-muted);
-}
-
-.moveout-metric-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--ws-text-primary);
-}
-
-.moveout-metric-value.positive {
-  color: var(--ws-positive);
-}
-
-/* ==========================================
-   Wholesale Deal Flow
-   ========================================== */
-.deal-flow {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-}
-
-.deal-flow-step {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--ws-bg-alt);
-  border-radius: 10px;
-  padding: 10px 12px;
-}
-
-.deal-flow-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: white;
-  background: var(--strategy-accent, #2563eb);
-}
-
-.deal-flow-icon.assign {
-  background: var(--ws-positive);
-}
-
-.deal-flow-icon.profit {
-  background: #d97706;
-}
-
-.deal-flow-title {
-  font-size: 12px;
-  color: var(--ws-text-secondary);
-}
-
-.deal-flow-value {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ws-text-primary);
-}
-
-.deal-flow-value.primary { color: var(--strategy-accent, #2563eb); }
-.deal-flow-value.positive { color: var(--ws-positive); }
-.deal-flow-value.accent { color: #d97706; }
-
-/* ==========================================
-   Wholesale Profit Comparison
-   ========================================== */
-.profit-comparison {
-  padding: 16px;
-}
-
-.quick-compare {
+.section-two-column-equal {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: 1fr;
+  gap: var(--ws-spacing-md);
 }
 
-.compare-card {
-  background: var(--ws-bg-alt);
-  border-radius: 10px;
-  padding: 12px;
-  text-align: center;
+@media (min-width: 768px) {
+  .section-two-column-equal {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
-.compare-label {
-  font-size: 11px;
-  color: var(--ws-text-muted);
-  margin-bottom: 6px;
+/* BRRRR-specific styles */
+.section-header.brrrr-highlight {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, #f1f5f9 100%);
 }
 
-.compare-value {
-  font-size: 16px;
-  font-weight: 700;
+.section-header.brrrr-highlight:hover {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, #e8eef3 100%);
 }
 
-.compare-value.you { color: var(--strategy-accent, #2563eb); }
-.compare-value.investor { color: var(--ws-positive); }
-
-.compare-footnote {
-  margin-top: 12px;
-  text-align: center;
-  font-size: 12px;
-  color: var(--ws-text-muted);
+.section-title.brrrr {
+  color: #7c3aed;
 }
 
-/* ==========================================
-   Wholesale Closing Costs
-   ========================================== */
-.closing-costs {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
+.section-card.highlighted {
+  border-color: rgba(124, 58, 237, 0.3);
 }
 
-.closing-costs-details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.data-row.brrrr-total {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
 }
 
-.closing-costs-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
+.chart-card.brrrr-highlight {
+  border-color: var(--strategy-accent-light, #a78bfa);
+  background: linear-gradient(180deg, var(--strategy-accent-bg, rgba(124, 58, 237, 0.1)) 0%, white 100%);
 }
 
-.closing-costs-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-}
-
-.closing-costs-swatch.accent { background: var(--strategy-accent, #2563eb); }
-.closing-costs-swatch.transfer { background: #64748b; }
-.closing-costs-swatch.other { background: #94a3b8; }
-
-.closing-costs-label {
-  color: var(--ws-text-secondary);
-  flex: 1;
-}
-
-.closing-costs-value {
-  font-weight: 600;
-  color: var(--ws-text-primary);
-}
-
-/* ==========================================
-   Wholesale Deal Criteria
-   ========================================== */
-.deal-criteria-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px;
-}
-
-.deal-criteria-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-}
-
-.deal-criteria-item.passed {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--ws-positive);
-}
-
-.deal-criteria-item.failed {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--ws-negative);
-}
-
-.deal-criteria-icon {
-  font-weight: 700;
-}
-
-.pricing-discount-label {
-  font-size: 12px;
-  color: var(--ws-text-secondary);
-  margin-top: 8px;
-  text-align: center;
-}
-
-.pricing-discount-label span {
-  font-weight: 600;
+.chart-card-title.brrrr {
   color: var(--strategy-accent, #7c3aed);
 }
 
-/* ==========================================
-   Loan Comparison
-   ========================================== */
-.loan-comparison-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding: 16px;
-}
-
-.loan-comparison-card {
-  text-align: center;
-  padding: 16px 12px;
-  border-radius: 8px;
-  background: var(--ws-bg-alt);
-}
-
-.loan-comparison-card.refi {
-  background: var(--strategy-accent-bg, rgba(124, 58, 237, 0.1));
-}
-
-.loan-comparison-label {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--ws-text-muted);
-  margin-bottom: 8px;
-}
-
-.loan-comparison-label.refi {
-  color: var(--strategy-accent, #7c3aed);
-}
-
-.loan-comparison-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--ws-text-primary);
-}
-
-.loan-comparison-value.refi {
-  color: var(--strategy-accent, #7c3aed);
-}
-
-.loan-comparison-subtext {
-  font-size: 11px;
-  color: var(--ws-text-muted);
-  margin-top: 4px;
-}
-
-.loan-comparison-subtext.refi {
-  color: var(--strategy-accent-light, #a78bfa);
+.chart-card-title.str {
+  color: var(--strategy-accent, #f97316);
 }
 
 /* ==========================================
-   Worksheet Layout - 2 Column with Responsive Breakpoints
+   PRINT STYLES
    ========================================== */
 
-/* Widescreen: Full 2 column layout */
-.worksheet-layout-2col {
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 20px;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-}
-
-.worksheet-main-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0; /* Prevent overflow */
-  max-width: 100%;
-  overflow: hidden;
-}
-
-.worksheet-charts-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0; /* Prevent overflow */
-  max-width: 100%;
-  overflow: hidden;
-}
-
-/* Mid-screen: 1200px and below */
-@media (max-width: 1200px) {
+@media print {
+  .worksheet-topbar,
+  .worksheet-tab-nav,
+  .worksheet-mobile-menu-toggle,
+  .worksheet-help-btn {
+    display: none !important;
+  }
+  
+  .worksheet-two-column-layout,
   .worksheet-layout-2col {
-    grid-template-columns: 1fr 320px;
-    gap: 16px;
-  }
-}
-
-/* Small screen: 1000px and below - Single column */
-@media (max-width: 1000px) {
-  .worksheet-layout-2col {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    display: block;
   }
   
+  .worksheet-left-column,
+  .worksheet-right-column,
+  .worksheet-main-content,
   .worksheet-charts-sidebar {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-}
-
-/* Tablet: 700px and below */
-@media (max-width: 700px) {
-  .worksheet-charts-sidebar {
-    grid-template-columns: 1fr;
+    max-height: none;
+    overflow: visible;
   }
   
-  .summary-cards {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* Mobile: 500px and below */
-@media (max-width: 500px) {
-  .summary-cards {
-    grid-template-columns: repeat(2, 1fr);
+  .section-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   
-  .worksheet-topbar {
-    padding: 10px 12px;
-  }
-  
-  .worksheet-tab-nav {
-    padding: 0 12px;
+  .chart-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
