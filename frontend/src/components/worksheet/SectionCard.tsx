@@ -60,8 +60,6 @@ interface DataRowProps {
   isTotal?: boolean
   isHighlight?: boolean
   hasSlider?: boolean
-  /** Read-only calculated value - lighter styling, no border */
-  isCalculated?: boolean
   className?: string
 }
 
@@ -72,7 +70,6 @@ export function DataRow({
   isTotal = false,
   isHighlight = false,
   hasSlider = false,
-  isCalculated = false,
   className = '',
 }: DataRowProps) {
   const rowClasses = [
@@ -80,7 +77,6 @@ export function DataRow({
     isTotal ? 'total' : '',
     isHighlight ? 'highlight' : '',
     hasSlider ? 'has-slider' : '',
-    isCalculated ? 'calculated' : '',
     className,
   ].filter(Boolean).join(' ')
 

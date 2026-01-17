@@ -269,7 +269,7 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
             {/* Operating Expenses Section */}
             <SectionCard title="Operating Expenses">
               {/* Platform Fees % - Editable with slider */}
-              <DataRow label="Platform Fees" hasSlider>
+              <DataRow label="% Platform Fees" icon={<Percent className="w-4 h-4" />} hasSlider>
                 <EditableField
                   value={inputs.platform_fees_pct}
                   onChange={(val) => updateInput('platform_fees_pct', val)}
@@ -281,12 +281,12 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
                 />
               </DataRow>
               {/* Platform Fees $ - Calculated amount */}
-              <DataRow label="" isCalculated>
+              <DataRow label="$ Platform Fees" icon={<CreditCard className="w-4 h-4" />}>
                 <DisplayField value={result?.platform_fees ?? 0} format="currency" />
               </DataRow>
               
               {/* Property Management % - Editable with slider */}
-              <DataRow label="Property Management" hasSlider>
+              <DataRow label="% Property Mgmt" icon={<Percent className="w-4 h-4" />} hasSlider>
                 <EditableField
                   value={inputs.property_management_pct}
                   onChange={(val) => updateInput('property_management_pct', val)}
@@ -298,7 +298,7 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
                 />
               </DataRow>
               {/* Property Management $ - Calculated amount */}
-              <DataRow label="" isCalculated>
+              <DataRow label="$ Property Mgmt" icon={<CreditCard className="w-4 h-4" />}>
                 <DisplayField value={result?.str_management ?? 0} format="currency" />
               </DataRow>
               
