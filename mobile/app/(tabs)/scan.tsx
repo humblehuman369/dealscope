@@ -22,6 +22,8 @@ import { DistanceSlider } from '../../components/scanner/DistanceSlider';
 import { ScanResultSheet } from '../../components/scanner/ScanResultSheet';
 import { CalibrationPanel } from '../../components/scanner/CalibrationPanel';
 import { ScanHelpTooltip } from '../../components/scanner/ScanHelpTooltip';
+import { PropertyCandidateSheet } from '../../components/scanner/PropertyCandidateSheet';
+import { SignalQualityIndicator } from '../../components/scanner/SignalQualityIndicator';
 import { colors } from '../../theme/colors';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -46,7 +48,20 @@ export default function ScanScreen() {
   const [showCalibration, setShowCalibration] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const { scanner, isScanning, result, error, performScan, clearResult, clearError } = usePropertyScan();
+  const { 
+    scanner, 
+    isScanning, 
+    result, 
+    error, 
+    candidates,
+    showCandidates,
+    signalQuality,
+    performScan, 
+    selectCandidate,
+    clearResult, 
+    clearError,
+    clearCandidates,
+  } = usePropertyScan();
   
   // Animations
   const scanAnimation = useRef(new Animated.Value(1)).current;
@@ -247,6 +262,9 @@ export default function ScanScreen() {
               >
                 <Ionicons name="settings-outline" size={18} color="#fff" />
               </TouchableOpacity>
+              {/* Signal Quality Indicator */}
+              <SignalQualityIndicator quality={signalQuality} />
+              
               {scanner.userLat !== 0 && (
                 <View style={styles.locationBadge}>
                   <Ionicons name="location" size={12} color={colors.primary[600]} />
@@ -357,6 +375,26 @@ export default function ScanScreen() {
             </Animated.View>
           )}
 
+          {/* Signal Quality Message */}
+          {scanner.isLocationReady && (
+            <View style={styles.signalMessageRow}>
+              <Ionicons 
+                name={signalQuality.overall === 'ready' ? 'checkmark-circle' : 
+                      signalQuality.overall === 'marginal' ? 'warning' : 'alert-circle'} 
+                size={14} 
+                color={signalQuality.overall === 'ready' ? colors.profit.main : 
+                       signalQuality.overall === 'marginal' ? '#f59e0b' : colors.loss.main} 
+              />
+              <Text style={[
+                styles.signalMessageText,
+                { color: signalQuality.overall === 'ready' ? colors.profit.main : 
+                         signalQuality.overall === 'marginal' ? '#f59e0b' : colors.loss.main }
+              ]}>
+                {signalQuality.message}
+              </Text>
+            </View>
+          )}
+
           {/* Status Info */}
           <View style={styles.statusRow}>
             <Text style={styles.statusText}>
@@ -433,6 +471,14 @@ export default function ScanScreen() {
       <ScanHelpTooltip
         visible={showHelp}
         onClose={() => setShowHelp(false)}
+      />
+
+      {/* Property Candidate Selection Sheet */}
+      <PropertyCandidateSheet
+        visible={showCandidates}
+        candidates={candidates}
+        onSelect={selectCandidate}
+        onCancel={clearCandidates}
       />
     </View>
   );
@@ -635,10 +681,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     letterSpacing: 1,
   },
+  signalMessageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    gap: 6,
+  },
+  signalMessageText: {
+    fontWeight: '500',
+    fontSize: 12,
+  },
   statusRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 16,
+    marginTop: 8,
   },
   statusText: {
     fontWeight: '400',
