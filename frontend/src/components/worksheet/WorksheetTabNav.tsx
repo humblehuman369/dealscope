@@ -180,7 +180,7 @@ export function WorksheetTabNav({
       {/* Mobile Dropdown Menu - Shows when mobileMenuOpen is true */}
       {mobileMenuOpen && (
         <div className="worksheet-mobile-menu">
-          <div className="worksheet-mobile-menu-overlay" onClick={onMobileMenuClose} />
+          <div className="worksheet-mobile-menu-overlay" onClick={() => onMobileMenuClose?.()} />
           <div className="worksheet-mobile-menu-content">
             <div className="worksheet-mobile-menu-header">
               <span>Navigation</span>

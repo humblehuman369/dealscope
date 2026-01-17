@@ -454,20 +454,13 @@ html, body {
    ========================================== */
 
 .worksheet-mobile-menu {
-  display: none;
+  display: block;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 100;
-}
-
-/* Show on mobile when open */
-@media (max-width: 767px) {
-  .worksheet-mobile-menu {
-    display: block;
-  }
 }
 
 .worksheet-mobile-menu-overlay {

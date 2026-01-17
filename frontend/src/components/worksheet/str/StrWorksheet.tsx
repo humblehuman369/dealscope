@@ -402,7 +402,7 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
                 <DisplayField 
                   value={result?.annual_cash_flow ?? 0} 
                   format="currency" 
-                  isPositive={(result?.annual_cash_flow ?? 0) >= 0}
+                  isPositive={(result?.annual_cash_flow ?? 0) > 0}
                   isNegative={(result?.annual_cash_flow ?? 0) < 0}
                 />
               </DataRow>
@@ -410,7 +410,7 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
                 <DisplayField 
                   value={result?.monthly_cash_flow ?? 0} 
                   format="currency" 
-                  isPositive={(result?.monthly_cash_flow ?? 0) >= 0}
+                  isPositive={(result?.monthly_cash_flow ?? 0) > 0}
                   isNegative={(result?.monthly_cash_flow ?? 0) < 0}
                 />
               </DataRow>
