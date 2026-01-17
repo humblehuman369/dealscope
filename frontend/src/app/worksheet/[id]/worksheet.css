@@ -1223,6 +1223,63 @@ html, body {
   border-left: 3px solid var(--iq-teal);
 }
 
+/* Calculated row - read-only derived value, lighter styling */
+.data-row.calculated {
+  background-color: var(--ws-bg-alt);
+  padding-top: 4px;
+  padding-bottom: 8px;
+  padding-left: var(--ws-spacing-lg);
+  border-bottom: 1px solid var(--ws-border-light);
+  margin-top: -1px; /* Overlap with previous row's border */
+  position: relative;
+}
+
+/* Subtle arrow indicator for calculated rows */
+.data-row.calculated::before {
+  content: "↳";
+  position: absolute;
+  left: var(--ws-spacing-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ws-text-muted);
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.data-row.calculated .data-label {
+  color: var(--ws-text-muted);
+  font-size: 11px;
+}
+
+.data-row.calculated .data-value,
+.data-row.calculated .data-value-container {
+  color: var(--ws-text-secondary);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+@media (min-width: 768px) {
+  .data-row.calculated {
+    padding-top: 6px;
+    padding-bottom: 10px;
+    padding-left: calc(var(--ws-spacing-lg) + 8px);
+  }
+  
+  .data-row.calculated::before {
+    font-size: 14px;
+    left: var(--ws-spacing-md);
+  }
+  
+  .data-row.calculated .data-label {
+    font-size: 12px;
+  }
+  
+  .data-row.calculated .data-value,
+  .data-row.calculated .data-value-container {
+    font-size: 14px;
+  }
+}
+
 .data-label {
   display: flex;
   align-items: center;

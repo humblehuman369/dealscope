@@ -268,6 +268,7 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
 
             {/* Operating Expenses Section */}
             <SectionCard title="Operating Expenses">
+              {/* Platform Fees % - Editable with slider */}
               <DataRow label="Platform Fees" hasSlider>
                 <EditableField
                   value={inputs.platform_fees_pct}
@@ -277,9 +278,14 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
                   max={0.20}
                   step={0.01}
                   showSlider={true}
-                  secondaryValue={formatCurrency(result?.platform_fees ?? 0)}
                 />
               </DataRow>
+              {/* Platform Fees $ - Calculated amount */}
+              <DataRow label="" isCalculated>
+                <DisplayField value={result?.platform_fees ?? 0} format="currency" />
+              </DataRow>
+              
+              {/* Property Management % - Editable with slider */}
               <DataRow label="Property Management" hasSlider>
                 <EditableField
                   value={inputs.property_management_pct}
@@ -289,9 +295,13 @@ export function StrWorksheet({ property }: StrWorksheetProps) {
                   max={0.30}
                   step={0.01}
                   showSlider={true}
-                  secondaryValue={formatCurrency(result?.str_management ?? 0)}
                 />
               </DataRow>
+              {/* Property Management $ - Calculated amount */}
+              <DataRow label="" isCalculated>
+                <DisplayField value={result?.str_management ?? 0} format="currency" />
+              </DataRow>
+              
               <DataRow label="Cleaning Cost/Turn" hasSlider>
                 <EditableField
                   value={inputs.cleaning_cost_per_turn}
