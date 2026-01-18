@@ -31,7 +31,10 @@ import {
   create10YearProjection,
   IQWelcomeModal,
   StrategyGrid,
-  StrategyPrompt
+  StrategyPrompt,
+  ProfitZoneDashboard,
+  generateProfitZoneTips,
+  type ProfitZoneMetrics
 } from './index'
 import {
   STRMetricsContent,
@@ -615,6 +618,35 @@ function LTRMetricsContent({
     }
   ], [assumptions])
 
+  // Calculate profit zone metrics
+  const profitZoneMetrics: ProfitZoneMetrics = useMemo(() => {
+    const downPayment = iqTarget.targetPrice * assumptions.downPaymentPct
+    const closingCosts = iqTarget.targetPrice * assumptions.closingCostsPct
+    const totalCashNeeded = downPayment + closingCosts
+    const m = compareView === 'target' ? metricsAtTarget : metricsAtList
+    
+    return {
+      buyPrice: iqTarget.targetPrice,
+      cashNeeded: totalCashNeeded,
+      monthlyCashFlow: m && 'monthlyCashFlow' in m ? (m as { monthlyCashFlow: number }).monthlyCashFlow : 0,
+      cashOnCash: (m && 'cashOnCash' in m ? (m as { cashOnCash: number }).cashOnCash : 0) * 100,
+      capRate: (m && 'capRate' in m ? (m as { capRate: number }).capRate : 0) * 100,
+      dealScore: 72, // Placeholder - would come from deal score calculation
+    }
+  }, [iqTarget, assumptions, compareView, metricsAtTarget, metricsAtList])
+
+  // Calculate projected profit (10-year estimate)
+  const projectedProfit = useMemo(() => {
+    const m = compareView === 'target' ? metricsAtTarget : metricsAtList
+    const cashFlow = m && 'monthlyCashFlow' in m ? (m as { monthlyCashFlow: number }).monthlyCashFlow : 0
+    const arv = assumptions.arv || iqTarget.targetPrice * 1.2
+    return cashFlow * 12 * 10 + (arv - iqTarget.targetPrice)
+  }, [compareView, metricsAtTarget, metricsAtList, assumptions, iqTarget])
+
+  const profitZoneTips = useMemo(() => {
+    return generateProfitZoneTips(profitZoneMetrics, projectedProfit)
+  }, [profitZoneMetrics, projectedProfit])
+
   return (
     <div className="space-y-4">
       {/* IQ Target Hero */}
@@ -629,6 +661,15 @@ function LTRMetricsContent({
         downPaymentPct={assumptions.downPaymentPct}
         interestRate={assumptions.interestRate}
         onAssumptionsChange={(key, value) => updateAssumption(key as keyof TargetAssumptions, value)}
+      />
+
+      {/* NEW: Profit Zone Dashboard */}
+      <ProfitZoneDashboard
+        metrics={profitZoneMetrics}
+        projectedProfit={projectedProfit}
+        breakevenPrice={iqTarget.breakeven}
+        listPrice={assumptions.listPrice}
+        tips={profitZoneTips}
       />
 
       {/* Price Ladder */}

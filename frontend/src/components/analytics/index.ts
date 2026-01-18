@@ -271,6 +271,15 @@ export {
   WholesaleMetricsContent
 } from './StrategyMetricsContent'
 
+// Profit Zone Dashboard - Three-column profit/loss visualization
+export {
+  ProfitZoneDashboard,
+  generateProfitZoneTips,
+  type ProfitZoneMetrics,
+  type ProfitZoneTip,
+  type ProfitZoneDashboardProps
+} from './ProfitZoneDashboard'
+
 // ============================================
 // DEFAULT EXPORT - All components
 // ============================================
