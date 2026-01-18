@@ -199,19 +199,18 @@ export function LTRWorksheet({
   const formatCurrency = useCallback((value: number) => `$${Math.round(value).toLocaleString()}`, [])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-colors duration-300">
+    <div className="bg-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-colors duration-300">
       
-      {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-none">
+      {/* WORKSHEET HEADER */}
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-6xl mx-auto px-5 py-4">
           
-          {/* Top Row: Logo + Property + Theme Toggle */}
+          {/* Property Info Row */}
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <span className="text-cyan-600 dark:text-cyan-400 font-bold text-xl tracking-tight">InvestIQ</span>
-              <span className="text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">LTR</span>
-              <div className="border-l border-slate-200 dark:border-slate-700 pl-4 ml-2">
-                <div className="text-sm text-slate-900 dark:text-white font-medium">{address}</div>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-bold bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 px-2 py-0.5 rounded uppercase tracking-wider">LTR</span>
+              <div>
+                <div className="text-sm text-slate-900 dark:text-white font-semibold">{address}</div>
                 <div className="text-xs text-slate-500">
                   {city}{city && state ? ', ' : ''}{state} {zip} 
                   {beds > 0 && ` · ${beds} BR`}
