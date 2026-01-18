@@ -314,3 +314,31 @@ export interface TargetAssumptions {
 // ============================================
 
 export type CompareView = 'target' | 'list';
+
+// ============================================
+// PROFIT ZONE DASHBOARD TYPES
+// ============================================
+
+export interface ProfitZoneMetrics {
+  buyPrice: number;
+  cashNeeded: number;
+  monthlyCashFlow: number;
+  cashOnCash: number;
+  capRate: number;
+  dealScore: number;
+}
+
+export interface ProfitZoneTip {
+  type: InsightType | 'action';
+  icon: string;
+  title: string;
+  description?: string;
+}
+
+export interface ProfitZoneDashboardData {
+  metrics: ProfitZoneMetrics;
+  projectedProfit: number;
+  breakevenPrice: number;
+  listPrice: number;
+  tips: ProfitZoneTip[];
+}

@@ -67,5 +67,14 @@ export { FundingTabContent } from './FundingTabContent';
 export { TenYearTabContent } from './TenYearTabContent';
 export { GrowthTabContent } from './GrowthTabContent';
 
+// Profit Zone Dashboard
+export { 
+  ProfitZoneDashboard,
+  generateProfitZoneTips,
+  type ProfitZoneMetrics, 
+  type ProfitZoneTip, 
+  type ProfitZoneDashboardProps 
+} from './ProfitZoneDashboard';
+
 // Main Container View
 export { StrategyAnalyticsView } from './StrategyAnalyticsView';
