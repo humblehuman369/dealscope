@@ -22,8 +22,8 @@ export function SliderInput({
   max, 
   step = 1, 
   format = 'number', 
-  quickAdjust = null, 
-  benchmark = null 
+  quickAdjust, 
+  benchmark 
 }: SliderInputProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [inputValue, setInputValue] = useState('')
@@ -77,7 +77,7 @@ export function SliderInput({
       <div className="flex justify-between items-center">
         <label className="text-sm text-slate-700 dark:text-slate-200 font-medium">{label}</label>
         <div className="flex items-center gap-3">
-          {benchmark !== null && (
+          {benchmark !== undefined && (
             <span className="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">
               Mkt: {formatValue(benchmark)}
             </span>
@@ -108,7 +108,7 @@ export function SliderInput({
           className="absolute h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full transition-all duration-200" 
           style={{ width: `${percentage}%` }} 
         />
-        {benchmark !== null && (
+        {benchmark !== undefined && (
           <div 
             className="absolute top-1/2 -translate-y-1/2 w-1 h-4 bg-slate-400 dark:bg-white/50 rounded" 
             style={{ left: `${((benchmark - min) / (max - min)) * 100}%` }} 
