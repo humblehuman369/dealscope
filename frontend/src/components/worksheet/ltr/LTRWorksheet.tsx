@@ -203,7 +203,7 @@ export function LTRWorksheet({
       
       {/* HEADER */}
       <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-none">
-        <div className="max-w-[1400px] mx-auto px-5 py-4">
+        <div className="max-w-6xl mx-auto px-5 py-4">
           
           {/* Top Row: Logo + Property + Theme Toggle */}
           <div className="flex items-center justify-between mb-4">
@@ -267,7 +267,7 @@ export function LTRWorksheet({
       </header>
       
       {/* WORKSHEET */}
-      <main className="max-w-[1400px] mx-auto px-5 py-6">
+      <main className="max-w-6xl mx-auto px-5 py-6">
         <div className="grid lg:grid-cols-12 gap-5">
           <div className="lg:col-span-8 space-y-5">
             <div className="grid md:grid-cols-2 gap-5">
