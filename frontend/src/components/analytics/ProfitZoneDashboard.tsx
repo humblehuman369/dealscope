@@ -97,14 +97,14 @@ interface MetricBoxProps {
 
 function MetricBox({ label, value, sublabel, valueColorClass = 'text-green-500' }: MetricBoxProps) {
   return (
-    <div className="bg-white/5 dark:bg-white/[0.03] border border-slate-200/20 dark:border-white/[0.08] rounded-xl p-3 text-center">
-      <div className="text-[9px] font-semibold tracking-wide text-slate-500 dark:text-white/50 uppercase mb-1">
+    <div className="bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-lg px-3 py-2 text-center shadow-sm">
+      <div className="text-[8px] font-semibold tracking-wider text-slate-400 dark:text-white/50 uppercase">
         {label}
       </div>
-      <div className={`text-lg font-extrabold ${valueColorClass}`}>
+      <div className={`text-base font-bold ${valueColorClass} leading-tight`}>
         {value}
       </div>
-      <div className="text-[9px] text-slate-400 dark:text-white/40 mt-0.5">
+      <div className="text-[8px] text-slate-400 dark:text-white/40">
         {sublabel}
       </div>
     </div>
@@ -124,60 +124,59 @@ interface ProfitZoneVisualizerProps {
 function ProfitZoneVisualizer({ projectedProfit, breakevenPrice, listPrice }: ProfitZoneVisualizerProps) {
   // Calculate position of the profit indicator (0 = bottom/loss, 100 = top/max profit)
   const maxProfit = listPrice * 0.5
-  const profitPosition = Math.min(Math.max((projectedProfit / maxProfit) * 100, 5), 95)
+  const profitPosition = Math.min(Math.max((projectedProfit / maxProfit) * 100, 15), 85)
   
-  // Breakeven position on the scale
-  const breakevenPosition = Math.min(Math.max((breakevenPrice / listPrice) * 50, 10), 90)
+  // Breakeven position on the scale (closer to bottom)
+  const breakevenPosition = 25
   
   const isProfit = projectedProfit > 0
   
   return (
-    <div className="flex flex-col items-center h-full">
+    <div className="flex flex-col items-center">
       {/* Header */}
-      <div className="text-[10px] font-semibold tracking-wide text-slate-500 dark:text-white/60 mb-1.5">
+      <div className="text-[9px] font-semibold tracking-wider text-slate-400 dark:text-white/60 uppercase mb-1">
         PROJECTED OUTCOME
       </div>
       
       {/* Profit Zone Badge */}
-      <div className="flex items-center gap-1 mb-3">
-        <span className={isProfit ? 'text-green-500' : 'text-red-500'}>
+      <div className="flex items-center gap-1 mb-2">
+        <span className={`text-sm ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
           {isProfit ? '↗' : '↘'}
         </span>
-        <span className={`text-xs font-bold tracking-wide ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
+        <span className={`text-[11px] font-bold tracking-wide ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
           {isProfit ? 'PROFIT ZONE' : 'LOSS ZONE'}
         </span>
       </div>
       
-      {/* Gradient Bar */}
-      <div className="relative flex-1 w-[70%] min-h-[180px] max-h-[220px]">
+      {/* Gradient Bar - Fixed Height */}
+      <div className="relative w-24 h-44 mx-auto">
         <div 
-          className="absolute inset-0 rounded-xl"
+          className="absolute inset-0 rounded-xl shadow-inner"
           style={{
-            background: 'linear-gradient(to bottom, #22c55e 0%, #4ade80 15%, #86efac 30%, #bbf7d0 45%, #dcfce7 60%, #f0fdf4 80%, #ffffff 100%)'
+            background: 'linear-gradient(to bottom, #22c55e 0%, #4ade80 20%, #86efac 40%, #bbf7d0 60%, #dcfce7 80%, #f0fdf4 100%)'
           }}
         >
           {/* Profit Value Badge */}
           <div 
-            className={`absolute left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-lg shadow-lg ${
+            className={`absolute left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-md shadow-md z-10 ${
               isProfit ? 'bg-green-500' : 'bg-red-500'
             }`}
-            style={{ top: `${100 - profitPosition}%` }}
+            style={{ top: `${Math.max(10, 100 - profitPosition)}%`, transform: 'translate(-50%, -50%)' }}
           >
-            <span className="text-white text-sm font-extrabold">
+            <span className="text-white text-xs font-bold whitespace-nowrap">
               {formatCompact(projectedProfit)}
             </span>
           </div>
-          
-          {/* Breakeven Line */}
-          <div 
-            className="absolute left-0 right-0 flex items-center"
-            style={{ top: `${100 - breakevenPosition}%` }}
-          >
-            <div className="flex-1 border-t-2 border-dashed border-slate-400/50" />
-            <span className="ml-2 text-[8px] font-semibold text-slate-500 dark:text-white/60 whitespace-nowrap">
-              BREAKEVEN {formatCompact(breakevenPrice)}
-            </span>
-          </div>
+        </div>
+        
+        {/* Breakeven Line - Below the bar */}
+        <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1">
+          <div className="w-20 border-t-2 border-dashed border-slate-300 dark:border-slate-500" />
+        </div>
+        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+          <span className="text-[8px] font-medium text-slate-400 dark:text-white/50">
+            BREAKEVEN {formatCompact(breakevenPrice)}
+          </span>
         </div>
       </div>
     </div>
@@ -202,26 +201,26 @@ const TIP_COLORS: Record<string, { border: string; text: string }> = {
 
 function TipsSection({ tips }: TipsSectionProps) {
   return (
-    <div className="flex flex-col h-full">
-      <div className="text-[10px] font-semibold tracking-wide text-slate-500 dark:text-white/60 mb-2.5">
+    <div className="flex flex-col">
+      <div className="text-[9px] font-semibold tracking-wider text-slate-400 dark:text-white/60 uppercase mb-2">
         HELPFUL TIPS
       </div>
       
-      <div className="space-y-2 flex-1">
+      <div className="space-y-1.5">
         {tips.slice(0, 3).map((tip, index) => {
           const colors = TIP_COLORS[tip.type] || TIP_COLORS.tip
           return (
             <div 
               key={index} 
-              className={`flex items-start gap-2 p-2.5 rounded-lg bg-white/5 dark:bg-white/[0.03] border-l-[3px] ${colors.border}`}
+              className={`flex items-start gap-2 p-2 rounded-md bg-white dark:bg-white/[0.03] border-l-[3px] shadow-sm ${colors.border}`}
             >
-              <span className="text-sm">{tip.icon}</span>
+              <span className="text-xs">{tip.icon}</span>
               <div className="flex-1 min-w-0">
-                <div className={`text-[11px] font-semibold ${colors.text}`}>
+                <div className={`text-[10px] font-semibold leading-tight ${colors.text}`}>
                   {tip.title}
                 </div>
                 {tip.description && (
-                  <div className="text-[10px] text-slate-500 dark:text-white/60 mt-0.5 leading-tight">
+                  <div className="text-[9px] text-slate-500 dark:text-white/60 leading-snug">
                     {tip.description}
                   </div>
                 )}
@@ -232,11 +231,11 @@ function TipsSection({ tips }: TipsSectionProps) {
       </div>
       
       {/* What's Next Section */}
-      <div className="mt-3 p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
-        <div className="text-[11px] font-bold text-cyan-500 mb-1">
+      <div className="mt-2 p-2 rounded-lg bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20">
+        <div className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 mb-0.5">
           📋 What&apos;s Next
         </div>
-        <div className="text-[10px] text-slate-600 dark:text-white/70 leading-tight">
+        <div className="text-[9px] text-slate-600 dark:text-white/70 leading-snug">
           Review the metrics and adjust assumptions to see how they impact your returns.
         </div>
       </div>
@@ -260,12 +259,12 @@ export function ProfitZoneDashboard({
   const scoreColorClass = getDealScoreColor(dealScore)
   
   return (
-    <div className="bg-white/[0.02] dark:bg-white/[0.02] border border-slate-200/10 dark:border-white/[0.06] rounded-2xl p-4">
+    <div className="bg-slate-50 dark:bg-slate-800/30 border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 shadow-sm">
       {/* Three Column Layout */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-[140px_1fr_200px] gap-4 items-start">
         
         {/* LEFT COLUMN - Metrics Stack */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <MetricBox 
             label="BUY PRICE" 
             value={formatCompact(buyPrice)} 
@@ -303,7 +302,7 @@ export function ProfitZoneDashboard({
         </div>
         
         {/* CENTER COLUMN - Profit Zone Visualizer */}
-        <div className="flex flex-col">
+        <div className="flex justify-center pt-2 pb-8">
           <ProfitZoneVisualizer 
             projectedProfit={projectedProfit}
             breakevenPrice={breakevenPrice}
@@ -312,7 +311,7 @@ export function ProfitZoneDashboard({
         </div>
         
         {/* RIGHT COLUMN - Tips & What's Next */}
-        <div className="flex flex-col">
+        <div>
           <TipsSection tips={tips} />
         </div>
         
