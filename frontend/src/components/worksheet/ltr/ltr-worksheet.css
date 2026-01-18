@@ -1,0 +1,208 @@
+/* ==========================================
+   LTR Worksheet - Dark Mode Support
+   ========================================== */
+
+/* LTR Worksheet Container - Light Mode */
+.ltr-worksheet {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  transition: background-color 0.3s ease;
+}
+
+/* LTR Worksheet Container - Dark Mode */
+html.dark .ltr-worksheet {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+}
+
+/* Header Styles */
+.ltr-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+html.dark .ltr-header {
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom-color: #334155;
+  box-shadow: none;
+}
+
+/* KPI Row Responsive */
+.ltr-kpi-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ltr-kpi-row::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .ltr-kpi-row {
+    overflow-x: visible;
+  }
+}
+
+/* Scale Bar Animation */
+.ltr-scale-marker {
+  transition: left 0.5s ease-out;
+}
+
+/* Section Card Animation */
+.ltr-section-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.ltr-section-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+html.dark .ltr-section-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Slider Input Styling */
+.ltr-slider-track {
+  position: relative;
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+html.dark .ltr-slider-track {
+  background: #475569;
+}
+
+.ltr-slider-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #22d3ee 0%, #4dd0e1 100%);
+  border-radius: 5px;
+  transition: width 0.15s ease;
+}
+
+/* Result Box Variants */
+.ltr-result-box {
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* Profit Scale Animation */
+.ltr-profit-bar {
+  transition: width 0.5s ease-out;
+}
+
+/* IQ Verdict Factor Bars */
+.ltr-factor-bar {
+  transition: width 0.5s ease-out;
+}
+
+/* Quick Adjust Buttons */
+.ltr-quick-btn {
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  transition: all 0.15s ease;
+}
+
+.ltr-quick-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+html.dark .ltr-quick-btn {
+  background: #334155;
+  border-color: transparent;
+  color: #94a3b8;
+}
+
+html.dark .ltr-quick-btn:hover {
+  background: #475569;
+  color: #fff;
+}
+
+/* Segmented Control */
+.ltr-segment {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.ltr-segment.active {
+  background: #22d3ee;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(34, 211, 238, 0.3);
+}
+
+/* Metric Row Indicator */
+.ltr-metric-indicator {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.ltr-metric-indicator.good {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.ltr-metric-indicator.bad {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+html.dark .ltr-metric-indicator.good {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+html.dark .ltr-metric-indicator.bad {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+/* Print Styles */
+@media print {
+  .ltr-header {
+    position: static;
+    box-shadow: none;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  
+  .ltr-section-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
+  .ltr-kpi-row {
+    overflow: visible;
+    flex-wrap: wrap;
+  }
+}

@@ -21,10 +21,32 @@ export { CashFlowSection } from './sections/CashFlowSection'
 export { InvestmentReturns } from './sections/InvestmentReturns'
 export { FinancialRatios } from './sections/FinancialRatios'
 export { MultiYearProjections } from './sections/MultiYearProjections'
+
+// Strategy Worksheets
+export { LTRWorksheet } from './ltr/LTRWorksheet'
 export { BrrrrWorksheet } from './brrrr/BrrrrWorksheet'
 export { FlipWorksheet } from './flip/FlipWorksheet'
 export { HouseHackWorksheet } from './househack/HouseHackWorksheet'
 export { WholesaleWorksheet } from './wholesale/WholesaleWorksheet'
+
+// LTR Worksheet Components
+export {
+  KPIRow,
+  KPIBox,
+  DealScoreBox,
+  ScaleBar,
+  ExportActions,
+  LTRSectionCard,
+  SliderInput,
+  ResultBox,
+  MetricRow,
+  SegmentedControl,
+  ProfitScale,
+  IQVerdictBreakdown,
+  getVerdict,
+  getScoreTextClass,
+  getScoreBgClass,
+} from './ltr'
 
 // Chart Components
 export { CashFlowChart } from './charts/CashFlowChart'
