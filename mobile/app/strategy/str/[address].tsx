@@ -16,6 +16,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/context/ThemeContext';
 import { colors } from '@/theme/colors';
 import { formatCurrency, formatPercent } from '@/components/analytics/formatters';
+
+// Convenience color aliases
+const statusColors = {
+  success: colors.profit.main,
+  error: colors.loss.main,
+  warning: colors.warning.main,
+  primary: colors.primary[500],
+};
 import {
   analyzeSTR,
   DEFAULT_STR_INPUTS,
@@ -33,7 +41,15 @@ export default function STRStrategyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark } = useTheme();
-  const theme = isDark ? colors.dark : colors.light;
+  
+  // Build theme object from colors
+  const theme = {
+    background: isDark ? colors.background.dark : colors.background.primary,
+    surface: isDark ? colors.background.darkAlt : colors.background.secondary,
+    text: isDark ? colors.text.inverse : colors.text.primary,
+    textSecondary: isDark ? colors.text.inverseMuted : colors.text.secondary,
+    border: isDark ? colors.navy[700] : colors.border.light,
+  };
 
   // State for inputs (would come from property data in real app)
   const [inputs, setInputs] = useState<STRInputs>(DEFAULT_STR_INPUTS);
@@ -108,7 +124,7 @@ export default function STRStrategyScreen() {
               <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>
                 Gross Revenue
               </Text>
-              <Text style={[styles.breakdownValue, { color: colors.success }]}>
+              <Text style={[styles.breakdownValue, { color: statusColors.success }]}>
                 {formatCurrency(metrics.monthlyGrossRevenue)}
               </Text>
             </View>
@@ -117,7 +133,7 @@ export default function STRStrategyScreen() {
               <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>
                 Total Expenses
               </Text>
-              <Text style={[styles.breakdownValue, { color: colors.error }]}>
+              <Text style={[styles.breakdownValue, { color: statusColors.error }]}>
                 {formatCurrency(
                   Object.values(metrics.monthlyExpenses).reduce((a, b) => a + b, 0)
                 )}
@@ -130,7 +146,7 @@ export default function STRStrategyScreen() {
               </Text>
               <Text style={[
                 styles.breakdownValue, 
-                { color: metrics.monthlyCashFlow >= 0 ? colors.success : colors.error }
+                { color: metrics.monthlyCashFlow >= 0 ? statusColors.success : statusColors.error }
               ]}>
                 {formatCurrency(metrics.monthlyCashFlow)}
               </Text>
@@ -185,7 +201,7 @@ export default function STRStrategyScreen() {
               <Text style={[styles.totalLabel, { color: theme.text }]}>
                 Total Cash Required
               </Text>
-              <Text style={[styles.totalValue, { color: colors.primary }]}>
+              <Text style={[styles.totalValue, { color: statusColors.primary }]}>
                 {formatCurrency(metrics.totalCashRequired)}
               </Text>
             </View>
@@ -197,24 +213,24 @@ export default function STRStrategyScreen() {
           <Text style={[styles.cardTitle, { color: theme.text }]}>📈 Returns</Text>
           
           <View style={styles.returnsGrid}>
-            <View style={[styles.returnCard, { backgroundColor: `${colors.success}15` }]}>
-              <Text style={[styles.returnValue, { color: colors.success }]}>
+            <View style={[styles.returnCard, { backgroundColor: `${statusColors.success}15` }]}>
+              <Text style={[styles.returnValue, { color: statusColors.success }]}>
                 {formatPercent(metrics.cashOnCash)}
               </Text>
               <Text style={[styles.returnLabel, { color: theme.textSecondary }]}>
                 Cash-on-Cash
               </Text>
             </View>
-            <View style={[styles.returnCard, { backgroundColor: `${colors.primary}15` }]}>
-              <Text style={[styles.returnValue, { color: colors.primary }]}>
+            <View style={[styles.returnCard, { backgroundColor: `${statusColors.primary}15` }]}>
+              <Text style={[styles.returnValue, { color: statusColors.primary }]}>
                 {formatPercent(metrics.capRate)}
               </Text>
               <Text style={[styles.returnLabel, { color: theme.textSecondary }]}>
                 Cap Rate
               </Text>
             </View>
-            <View style={[styles.returnCard, { backgroundColor: `${colors.warning}15` }]}>
-              <Text style={[styles.returnValue, { color: colors.warning }]}>
+            <View style={[styles.returnCard, { backgroundColor: `${statusColors.warning}15` }]}>
+              <Text style={[styles.returnValue, { color: statusColors.warning }]}>
                 {formatCurrency(metrics.annualCashFlow)}
               </Text>
               <Text style={[styles.returnLabel, { color: theme.textSecondary }]}>

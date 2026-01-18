@@ -16,6 +16,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/context/ThemeContext';
 import { colors } from '@/theme/colors';
 import { formatCurrency, formatPercent } from '@/components/analytics/formatters';
+
+// Convenience color aliases
+const statusColors = {
+  success: colors.profit.main,
+  error: colors.loss.main,
+  warning: colors.warning.main,
+  primary: colors.primary[500],
+};
 import {
   analyzeWholesale,
   DEFAULT_WHOLESALE_INPUTS,
@@ -32,7 +40,15 @@ export default function WholesaleStrategyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark } = useTheme();
-  const theme = isDark ? colors.dark : colors.light;
+  
+  // Build theme object from colors
+  const theme = {
+    background: isDark ? colors.background.dark : colors.background.primary,
+    surface: isDark ? colors.background.darkAlt : colors.background.secondary,
+    text: isDark ? colors.text.inverse : colors.text.primary,
+    textSecondary: isDark ? colors.text.inverseMuted : colors.text.secondary,
+    border: isDark ? colors.navy[700] : colors.border.light,
+  };
 
   const [inputs, setInputs] = useState<WholesaleInputs>(DEFAULT_WHOLESALE_INPUTS);
 
@@ -76,8 +92,8 @@ export default function WholesaleStrategyScreen() {
               ? 'rgba(34,197,94,0.1)' 
               : 'rgba(239,68,68,0.1)',
             borderColor: metrics.meetsSeventyPercentRule 
-              ? colors.success 
-              : colors.error,
+              ? statusColors.success 
+              : statusColors.error,
           }
         ]}>
           <View style={styles.ruleHeader}>
@@ -86,7 +102,7 @@ export default function WholesaleStrategyScreen() {
             </Text>
             <Text style={[
               styles.ruleTitle, 
-              { color: metrics.meetsSeventyPercentRule ? colors.success : colors.error }
+              { color: metrics.meetsSeventyPercentRule ? statusColors.success : statusColors.error }
             ]}>
               End Buyer 70% Rule {metrics.meetsSeventyPercentRule ? 'Met' : 'Not Met'}
             </Text>
@@ -102,7 +118,7 @@ export default function WholesaleStrategyScreen() {
               <Text style={[styles.ruleLabel, { color: theme.textSecondary }]}>Buyer All-In</Text>
               <Text style={[
                 styles.ruleValue, 
-                { color: metrics.meetsSeventyPercentRule ? colors.success : colors.error }
+                { color: metrics.meetsSeventyPercentRule ? statusColors.success : statusColors.error }
               ]}>
                 {formatCurrency(metrics.endBuyerAllInPrice)}
               </Text>
@@ -151,7 +167,7 @@ export default function WholesaleStrategyScreen() {
                 <Text style={[styles.flowStepTitle, { color: theme.text }]}>
                   1. Get Under Contract
                 </Text>
-                <Text style={[styles.flowStepValue, { color: colors.primary }]}>
+                <Text style={[styles.flowStepValue, { color: statusColors.primary }]}>
                   {formatCurrency(inputs.contractPrice)}
                 </Text>
                 <Text style={[styles.flowStepSub, { color: theme.textSecondary }]}>
@@ -191,7 +207,7 @@ export default function WholesaleStrategyScreen() {
                 <Text style={[styles.flowStepTitle, { color: theme.text }]}>
                   3. Assign Contract
                 </Text>
-                <Text style={[styles.flowStepValue, { color: colors.success }]}>
+                <Text style={[styles.flowStepValue, { color: statusColors.success }]}>
                   +{formatCurrency(inputs.assignmentFee)}
                 </Text>
                 <Text style={[styles.flowStepSub, { color: theme.textSecondary }]}>
@@ -229,7 +245,7 @@ export default function WholesaleStrategyScreen() {
               <Text style={[styles.numbersLabel, { color: theme.textSecondary }]}>
                 − Estimated Repairs
               </Text>
-              <Text style={[styles.numbersValue, { color: colors.error }]}>
+              <Text style={[styles.numbersValue, { color: statusColors.error }]}>
                 -{formatCurrency(inputs.estimatedRepairs)}
               </Text>
             </View>
@@ -238,7 +254,7 @@ export default function WholesaleStrategyScreen() {
               <Text style={[styles.numbersLabel, { color: theme.text, fontWeight: '600' }]}>
                 = Max Allowable Offer
               </Text>
-              <Text style={[styles.numbersTotalValue, { color: colors.primary }]}>
+              <Text style={[styles.numbersTotalValue, { color: statusColors.primary }]}>
                 {formatCurrency(metrics.maxAllowableOffer)}
               </Text>
             </View>
@@ -254,7 +270,7 @@ export default function WholesaleStrategyScreen() {
               ]}>
                 <Text style={[
                   styles.comparisonText,
-                  { color: metrics.meetsSeventyPercentRule ? colors.success : colors.warning }
+                  { color: metrics.meetsSeventyPercentRule ? statusColors.success : statusColors.warning }
                 ]}>
                   Your contract: {formatCurrency(inputs.contractPrice)}
                   {' '}({metrics.meetsSeventyPercentRule 
@@ -300,10 +316,10 @@ export default function WholesaleStrategyScreen() {
               </Text>
             </View>
             <View style={[styles.buyerItem, { backgroundColor: 'rgba(34,197,94,0.1)', borderRadius: 10 }]}>
-              <Text style={[styles.buyerLabel, { color: colors.success }]}>
+              <Text style={[styles.buyerLabel, { color: statusColors.success }]}>
                 Buyer Profit
               </Text>
-              <Text style={[styles.buyerValue, { color: colors.success }]}>
+              <Text style={[styles.buyerValue, { color: statusColors.success }]}>
                 {formatCurrency(metrics.endBuyerMaxProfit)}
               </Text>
             </View>
@@ -319,7 +335,7 @@ export default function WholesaleStrategyScreen() {
           ]}>
             <Text style={[
               styles.attractivenessText,
-              { color: metrics.endBuyerMaxProfit >= 30000 ? colors.success : colors.warning }
+              { color: metrics.endBuyerMaxProfit >= 30000 ? statusColors.success : statusColors.warning }
             ]}>
               {metrics.endBuyerMaxProfit >= 40000 
                 ? '🔥 Very attractive to cash buyers!'
@@ -339,7 +355,7 @@ export default function WholesaleStrategyScreen() {
               <Text style={[styles.yourNumberLabel, { color: theme.textSecondary }]}>
                 Earnest Money
               </Text>
-              <Text style={[styles.yourNumberValue, { color: colors.error }]}>
+              <Text style={[styles.yourNumberValue, { color: statusColors.error }]}>
                 -{formatCurrency(inputs.earnestMoney)}
               </Text>
             </View>
@@ -347,7 +363,7 @@ export default function WholesaleStrategyScreen() {
               <Text style={[styles.yourNumberLabel, { color: theme.textSecondary }]}>
                 Marketing Costs
               </Text>
-              <Text style={[styles.yourNumberValue, { color: colors.error }]}>
+              <Text style={[styles.yourNumberValue, { color: statusColors.error }]}>
                 -{formatCurrency(inputs.marketingCosts)}
               </Text>
             </View>
@@ -355,7 +371,7 @@ export default function WholesaleStrategyScreen() {
               <Text style={[styles.yourNumberLabel, { color: theme.textSecondary }]}>
                 Closing Costs
               </Text>
-              <Text style={[styles.yourNumberValue, { color: colors.error }]}>
+              <Text style={[styles.yourNumberValue, { color: statusColors.error }]}>
                 -{formatCurrency(inputs.closingCosts)}
               </Text>
             </View>
@@ -363,7 +379,7 @@ export default function WholesaleStrategyScreen() {
               <Text style={[styles.yourNumberLabel, { color: theme.textSecondary }]}>
                 Assignment Fee
               </Text>
-              <Text style={[styles.yourNumberValue, { color: colors.success }]}>
+              <Text style={[styles.yourNumberValue, { color: statusColors.success }]}>
                 +{formatCurrency(inputs.assignmentFee)}
               </Text>
             </View>
@@ -372,14 +388,14 @@ export default function WholesaleStrategyScreen() {
               <Text style={[styles.profitLabel, { color: theme.text }]}>
                 Net Profit
               </Text>
-              <Text style={[styles.profitValue, { color: colors.success }]}>
+              <Text style={[styles.profitValue, { color: statusColors.success }]}>
                 {formatCurrency(metrics.netProfit)}
               </Text>
             </View>
           </View>
 
           <View style={[styles.roiBadge, { backgroundColor: 'rgba(34,197,94,0.15)' }]}>
-            <Text style={[styles.roiText, { color: colors.success }]}>
+            <Text style={[styles.roiText, { color: statusColors.success }]}>
               🚀 {formatPercent(metrics.roi)} ROI on {formatCurrency(metrics.totalCashRequired)} at risk
             </Text>
           </View>

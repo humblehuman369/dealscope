@@ -16,6 +16,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/context/ThemeContext';
 import { colors } from '@/theme/colors';
 import { formatCurrency, formatPercent } from '@/components/analytics/formatters';
+
+// Convenience color aliases
+const statusColors = {
+  success: colors.profit.main,
+  error: colors.loss.main,
+  warning: colors.warning.main,
+  primary: colors.primary[500],
+};
 import {
   analyzeHouseHack,
   DEFAULT_HOUSE_HACK_INPUTS,
@@ -33,7 +41,15 @@ export default function HouseHackStrategyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark } = useTheme();
-  const theme = isDark ? colors.dark : colors.light;
+  
+  // Build theme object from colors
+  const theme = {
+    background: isDark ? colors.background.dark : colors.background.primary,
+    surface: isDark ? colors.background.darkAlt : colors.background.secondary,
+    text: isDark ? colors.text.inverse : colors.text.primary,
+    textSecondary: isDark ? colors.text.inverseMuted : colors.text.secondary,
+    border: isDark ? colors.navy[700] : colors.border.light,
+  };
 
   const [inputs, setInputs] = useState<HouseHackInputs>(DEFAULT_HOUSE_HACK_INPUTS);
 
@@ -84,7 +100,7 @@ export default function HouseHackStrategyScreen() {
               ? 'rgba(34,197,94,0.15)' 
               : 'rgba(139,92,246,0.15)',
             borderColor: metrics.effectiveHousingCost <= 0 
-              ? colors.success 
+              ? statusColors.success 
               : '#8b5cf6',
           }
         ]}>
@@ -123,7 +139,7 @@ export default function HouseHackStrategyScreen() {
               <Text style={[styles.costLabel, { color: theme.textSecondary }]}>
                 Rental Income from {inputs.rentedUnits} unit(s)
               </Text>
-              <Text style={[styles.costValue, { color: colors.success }]}>
+              <Text style={[styles.costValue, { color: statusColors.success }]}>
                 -{formatCurrency(totalRentalIncome)}
               </Text>
             </View>
@@ -132,7 +148,7 @@ export default function HouseHackStrategyScreen() {
               <Text style={[styles.costLabel, { color: theme.textSecondary }]}>
                 Operating Expenses
               </Text>
-              <Text style={[styles.costValue, { color: colors.error }]}>
+              <Text style={[styles.costValue, { color: statusColors.error }]}>
                 +{formatCurrency(metrics.totalMonthlyExpenses - metrics.mortgagePayment)}
               </Text>
             </View>
@@ -143,7 +159,7 @@ export default function HouseHackStrategyScreen() {
               </Text>
               <Text style={[
                 styles.totalValue, 
-                { color: metrics.effectiveHousingCost <= 0 ? colors.success : theme.text }
+                { color: metrics.effectiveHousingCost <= 0 ? statusColors.success : theme.text }
               ]}>
                 {metrics.effectiveHousingCost <= 0 
                   ? '$0' 
@@ -171,10 +187,10 @@ export default function HouseHackStrategyScreen() {
             {inputs.rentPerUnit.map((rent, index) => (
               <View 
                 key={index} 
-                style={[styles.unitCard, { backgroundColor: 'rgba(34,197,94,0.15)', borderColor: colors.success }]}
+                style={[styles.unitCard, { backgroundColor: 'rgba(34,197,94,0.15)', borderColor: statusColors.success }]}
               >
                 <Text style={styles.unitIcon}>💰</Text>
-                <Text style={[styles.unitLabel, { color: colors.success }]}>Unit {index + 2}</Text>
+                <Text style={[styles.unitLabel, { color: statusColors.success }]}>Unit {index + 2}</Text>
                 <Text style={[styles.unitValue, { color: theme.text }]}>
                   {formatCurrency(rent)}/mo
                 </Text>
@@ -236,7 +252,7 @@ export default function HouseHackStrategyScreen() {
               <Text style={[styles.summaryLabel, { color: theme.textSecondary }]}>
                 Cash-on-Cash
               </Text>
-              <Text style={[styles.summaryValue, { color: colors.success }]}>
+              <Text style={[styles.summaryValue, { color: statusColors.success }]}>
                 {formatPercent(metrics.cashOnCash)}
               </Text>
             </View>
@@ -244,7 +260,7 @@ export default function HouseHackStrategyScreen() {
               <Text style={[styles.summaryLabel, { color: theme.textSecondary }]}>
                 Annual Cash Flow
               </Text>
-              <Text style={[styles.summaryValue, { color: colors.success }]}>
+              <Text style={[styles.summaryValue, { color: statusColors.success }]}>
                 {formatCurrency(metrics.annualCashFlow)}
               </Text>
             </View>
@@ -261,7 +277,7 @@ export default function HouseHackStrategyScreen() {
               <Text style={[styles.comparisonCardLabel, { color: theme.textSecondary }]}>
                 Continue Renting
               </Text>
-              <Text style={[styles.comparisonCardValue, { color: colors.error }]}>
+              <Text style={[styles.comparisonCardValue, { color: statusColors.error }]}>
                 -{formatCurrency(inputs.currentHousingPayment)}/mo
               </Text>
               <Text style={[styles.comparisonCardSub, { color: theme.textSecondary }]}>
@@ -274,7 +290,7 @@ export default function HouseHackStrategyScreen() {
               <Text style={[styles.comparisonCardLabel, { color: theme.textSecondary }]}>
                 House Hack
               </Text>
-              <Text style={[styles.comparisonCardValue, { color: colors.success }]}>
+              <Text style={[styles.comparisonCardValue, { color: statusColors.success }]}>
                 {metrics.effectiveHousingCost <= 0 
                   ? 'FREE' 
                   : `-${formatCurrency(metrics.effectiveHousingCost)}/mo`}
@@ -286,7 +302,7 @@ export default function HouseHackStrategyScreen() {
           </View>
 
           <View style={[styles.benefitBadge, { backgroundColor: 'rgba(34,197,94,0.15)' }]}>
-            <Text style={[styles.benefitText, { color: colors.success }]}>
+            <Text style={[styles.benefitText, { color: statusColors.success }]}>
               ✅ {formatCurrency(metrics.rentVsBuyBenefit)}/mo better than renting
             </Text>
           </View>
@@ -304,7 +320,7 @@ export default function HouseHackStrategyScreen() {
                 <Text style={[styles.exitDesc, { color: theme.textSecondary }]}>
                   Move out, rent your unit for {formatCurrency(inputs.rentPerUnit[0] || 1500)}/mo
                 </Text>
-                <Text style={[styles.exitResult, { color: colors.success }]}>
+                <Text style={[styles.exitResult, { color: statusColors.success }]}>
                   Full rental with {formatCurrency(metrics.monthlyCashFlow + (inputs.rentPerUnit[0] || 1500))}/mo cash flow
                 </Text>
               </View>
@@ -317,7 +333,7 @@ export default function HouseHackStrategyScreen() {
                 <Text style={[styles.exitDesc, { color: theme.textSecondary }]}>
                   Buy another property with low down payment
                 </Text>
-                <Text style={[styles.exitResult, { color: colors.primary }]}>
+                <Text style={[styles.exitResult, { color: statusColors.primary }]}>
                   Scale your portfolio faster
                 </Text>
               </View>

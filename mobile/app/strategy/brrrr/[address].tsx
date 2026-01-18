@@ -16,6 +16,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/context/ThemeContext';
 import { colors } from '@/theme/colors';
 import { formatCurrency, formatPercent } from '@/components/analytics/formatters';
+
+// Convenience color aliases
+const statusColors = {
+  success: colors.profit.main,
+  error: colors.loss.main,
+  warning: colors.warning.main,
+  primary: colors.primary[500],
+};
 import {
   analyzeBRRRR,
   DEFAULT_BRRRR_INPUTS,
@@ -34,7 +42,15 @@ export default function BRRRRStrategyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark } = useTheme();
-  const theme = isDark ? colors.dark : colors.light;
+  
+  // Build theme object from colors
+  const theme = {
+    background: isDark ? colors.background.dark : colors.background.primary,
+    surface: isDark ? colors.background.darkAlt : colors.background.secondary,
+    text: isDark ? colors.text.inverse : colors.text.primary,
+    textSecondary: isDark ? colors.text.inverseMuted : colors.text.secondary,
+    border: isDark ? colors.navy[700] : colors.border.light,
+  };
 
   const [inputs, setInputs] = useState<BRRRRInputs>(DEFAULT_BRRRR_INPUTS);
 
@@ -136,7 +152,7 @@ export default function BRRRRStrategyScreen() {
                 <Text style={styles.flowEmoji}>💎</Text>
               </View>
               <Text style={[styles.flowLabel, { color: theme.textSecondary }]}>ARV</Text>
-              <Text style={[styles.flowValue, { color: colors.success }]}>
+              <Text style={[styles.flowValue, { color: statusColors.success }]}>
                 {formatCurrency(inputs.arv)}
               </Text>
             </View>
@@ -206,7 +222,7 @@ export default function BRRRRStrategyScreen() {
               <Text style={[styles.refinanceLabel, { color: theme.textSecondary }]}>
                 Cash Out
               </Text>
-              <Text style={[styles.refinanceValue, { color: colors.success }]}>
+              <Text style={[styles.refinanceValue, { color: statusColors.success }]}>
                 {formatCurrency(metrics.cashOutAmount)}
               </Text>
             </View>
@@ -234,7 +250,7 @@ export default function BRRRRStrategyScreen() {
                   styles.recoveredBar,
                   { 
                     width: `${Math.min(100, metrics.cashRecoupPercent)}%`, 
-                    backgroundColor: colors.success 
+                    backgroundColor: statusColors.success 
                   }
                 ]} 
               />
@@ -243,7 +259,7 @@ export default function BRRRRStrategyScreen() {
               <Text style={[styles.comparisonValue, { color: '#ef4444' }]}>
                 {formatCurrency(metrics.totalInitialInvestment)}
               </Text>
-              <Text style={[styles.comparisonValue, { color: colors.success }]}>
+              <Text style={[styles.comparisonValue, { color: statusColors.success }]}>
                 {formatCurrency(metrics.cashOutAmount)}
               </Text>
             </View>
@@ -254,12 +270,12 @@ export default function BRRRRStrategyScreen() {
             styles.resultBadge, 
             { 
               backgroundColor: metrics.infiniteReturn ? 'rgba(34,197,94,0.15)' : 'rgba(249,115,22,0.15)',
-              borderColor: metrics.infiniteReturn ? colors.success : colors.warning,
+              borderColor: metrics.infiniteReturn ? statusColors.success : statusColors.warning,
             }
           ]}>
             <Text style={[
               styles.resultText, 
-              { color: metrics.infiniteReturn ? colors.success : colors.warning }
+              { color: metrics.infiniteReturn ? statusColors.success : statusColors.warning }
             ]}>
               {metrics.infiniteReturn 
                 ? '🎯 All cash recovered — Infinite ROI achieved!'
@@ -289,7 +305,7 @@ export default function BRRRRStrategyScreen() {
               <Text style={[styles.rentalLabel, { color: theme.textSecondary }]}>Cash Flow</Text>
               <Text style={[
                 styles.rentalValue, 
-                { color: metrics.monthlyCashFlow >= 0 ? colors.success : colors.error }
+                { color: metrics.monthlyCashFlow >= 0 ? statusColors.success : statusColors.error }
               ]}>
                 {formatCurrency(metrics.monthlyCashFlow)}/mo
               </Text>
@@ -298,7 +314,7 @@ export default function BRRRRStrategyScreen() {
               <Text style={[styles.rentalLabel, { color: theme.textSecondary }]}>Annual</Text>
               <Text style={[
                 styles.rentalValue, 
-                { color: metrics.annualCashFlow >= 0 ? colors.success : colors.error }
+                { color: metrics.annualCashFlow >= 0 ? statusColors.success : statusColors.error }
               ]}>
                 {formatCurrency(metrics.annualCashFlow)}/yr
               </Text>

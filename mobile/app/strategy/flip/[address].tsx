@@ -15,6 +15,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/context/ThemeContext';
 import { colors } from '@/theme/colors';
 import { formatCurrency, formatPercent } from '@/components/analytics/formatters';
+
+// Convenience color aliases
+const statusColors = {
+  success: colors.profit.main,
+  error: colors.loss.main,
+  warning: colors.warning.main,
+  primary: colors.primary[500],
+};
 import {
   analyzeFlip,
   DEFAULT_FLIP_INPUTS,
@@ -33,7 +41,15 @@ export default function FlipStrategyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark } = useTheme();
-  const theme = isDark ? colors.dark : colors.light;
+  
+  // Build theme object from colors
+  const theme = {
+    background: isDark ? colors.background.dark : colors.background.primary,
+    surface: isDark ? colors.background.darkAlt : colors.background.secondary,
+    text: isDark ? colors.text.inverse : colors.text.primary,
+    textSecondary: isDark ? colors.text.inverseMuted : colors.text.secondary,
+    border: isDark ? colors.navy[700] : colors.border.light,
+  };
 
   const [inputs, setInputs] = useState<FlipInputs>(DEFAULT_FLIP_INPUTS);
 
@@ -77,8 +93,8 @@ export default function FlipStrategyScreen() {
               ? 'rgba(34,197,94,0.1)' 
               : 'rgba(239,68,68,0.1)',
             borderColor: metrics.meetsSeventyPercentRule 
-              ? colors.success 
-              : colors.error,
+              ? statusColors.success 
+              : statusColors.error,
           }
         ]}>
           <View style={styles.ruleHeader}>
@@ -87,7 +103,7 @@ export default function FlipStrategyScreen() {
             </Text>
             <Text style={[
               styles.ruleTitle, 
-              { color: metrics.meetsSeventyPercentRule ? colors.success : colors.error }
+              { color: metrics.meetsSeventyPercentRule ? statusColors.success : statusColors.error }
             ]}>
               70% Rule {metrics.meetsSeventyPercentRule ? 'Met' : 'Not Met'}
             </Text>
@@ -103,7 +119,7 @@ export default function FlipStrategyScreen() {
               <Text style={[styles.ruleLabel, { color: theme.textSecondary }]}>Your Price</Text>
               <Text style={[
                 styles.ruleValue, 
-                { color: metrics.meetsSeventyPercentRule ? colors.success : colors.error }
+                { color: metrics.meetsSeventyPercentRule ? statusColors.success : statusColors.error }
               ]}>
                 {formatCurrency(inputs.purchasePrice)}
               </Text>
@@ -112,7 +128,7 @@ export default function FlipStrategyScreen() {
               <Text style={[styles.ruleLabel, { color: theme.textSecondary }]}>Difference</Text>
               <Text style={[
                 styles.ruleValue, 
-                { color: metrics.meetsSeventyPercentRule ? colors.success : colors.error }
+                { color: metrics.meetsSeventyPercentRule ? statusColors.success : statusColors.error }
               ]}>
                 {formatCurrency(metrics.maxAllowableOffer - inputs.purchasePrice)}
               </Text>
@@ -191,10 +207,10 @@ export default function FlipStrategyScreen() {
           <View style={styles.analysisFlow}>
             {/* ARV */}
             <View style={styles.analysisItem}>
-              <Text style={[styles.analysisLabel, { color: colors.success }]}>
+              <Text style={[styles.analysisLabel, { color: statusColors.success }]}>
                 After Repair Value
               </Text>
-              <Text style={[styles.analysisValue, { color: colors.success }]}>
+              <Text style={[styles.analysisValue, { color: statusColors.success }]}>
                 {formatCurrency(inputs.arv)}
               </Text>
             </View>
@@ -205,10 +221,10 @@ export default function FlipStrategyScreen() {
             </View>
 
             <View style={styles.analysisItem}>
-              <Text style={[styles.analysisLabel, { color: colors.error }]}>
+              <Text style={[styles.analysisLabel, { color: statusColors.error }]}>
                 Total Costs
               </Text>
-              <Text style={[styles.analysisValue, { color: colors.error }]}>
+              <Text style={[styles.analysisValue, { color: statusColors.error }]}>
                 {formatCurrency(metrics.totalCost)}
               </Text>
             </View>
@@ -224,7 +240,7 @@ export default function FlipStrategyScreen() {
               </Text>
               <Text style={[
                 styles.profitValue, 
-                { color: metrics.netProfit >= 0 ? colors.success : colors.error }
+                { color: metrics.netProfit >= 0 ? statusColors.success : statusColors.error }
               ]}>
                 {formatCurrency(metrics.netProfit)}
               </Text>
@@ -255,7 +271,7 @@ export default function FlipStrategyScreen() {
               <Text style={[styles.scenarioLabel, { color: theme.textSecondary }]}>
                 ARV +10%
               </Text>
-              <Text style={[styles.scenarioValue, { color: colors.success }]}>
+              <Text style={[styles.scenarioValue, { color: statusColors.success }]}>
                 {formatCurrency(metrics.netProfit + inputs.arv * 0.10)}
               </Text>
             </View>
@@ -266,7 +282,7 @@ export default function FlipStrategyScreen() {
               <Text style={[styles.scenarioLabel, { color: theme.textSecondary }]}>
                 Base Case
               </Text>
-              <Text style={[styles.scenarioValue, { color: colors.primary }]}>
+              <Text style={[styles.scenarioValue, { color: statusColors.primary }]}>
                 {formatCurrency(metrics.netProfit)}
               </Text>
             </View>
@@ -279,7 +295,7 @@ export default function FlipStrategyScreen() {
               </Text>
               <Text style={[
                 styles.scenarioValue, 
-                { color: metrics.netProfit - inputs.arv * 0.10 >= 0 ? colors.warning : colors.error }
+                { color: metrics.netProfit - inputs.arv * 0.10 >= 0 ? statusColors.warning : statusColors.error }
               ]}>
                 {formatCurrency(metrics.netProfit - inputs.arv * 0.10)}
               </Text>
