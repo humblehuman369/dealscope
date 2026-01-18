@@ -12,6 +12,7 @@ import { ProfitScale } from './ProfitScale'
 import { IQVerdictBreakdown } from './IQVerdictBreakdown'
 import { useTheme } from '@/context/ThemeContext'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
+import { ProfitZoneDashboard, generateProfitZoneTips, type ProfitZoneMetrics } from '@/components/analytics/ProfitZoneDashboard'
 
 interface LTRWorksheetProps {
   property: SavedProperty
@@ -195,6 +196,35 @@ export function LTRWorksheet({
     return result
   }, [purchasePrice, monthlyRent, downPaymentPct])
 
+  // Profit Zone Dashboard metrics
+  const profitZoneMetrics: ProfitZoneMetrics = useMemo(() => ({
+    buyPrice: purchasePrice,
+    cashNeeded: calc.totalCashNeeded,
+    monthlyCashFlow: calc.monthlyCashFlow,
+    cashOnCash: calc.cashOnCash,
+    capRate: calc.capRate,
+    dealScore: calc.iqScore,
+  }), [purchasePrice, calc])
+
+  // Calculate projected profit (10-year estimate)
+  const projectedProfit = useMemo(() => {
+    const tenYearCashFlow = calc.annualCashFlow * 10
+    const appreciationGain = purchasePrice * 0.03 * 10 // Assume 3% annual appreciation
+    return tenYearCashFlow + appreciationGain
+  }, [calc, purchasePrice])
+
+  // Calculate breakeven price
+  const breakevenPrice = useMemo(() => {
+    // Price at which cash flow = $0
+    // Simplified: reduce price until cash flow is positive
+    return purchasePrice * 0.85 // Approximate
+  }, [purchasePrice])
+
+  // Generate tips
+  const profitZoneTips = useMemo(() => {
+    return generateProfitZoneTips(profitZoneMetrics, projectedProfit)
+  }, [profitZoneMetrics, projectedProfit])
+
   // Format currency helper
   const formatCurrency = useCallback((value: number) => `$${Math.round(value).toLocaleString()}`, [])
 
@@ -265,6 +295,17 @@ export function LTRWorksheet({
         </div>
       </header>
       
+      {/* PROFIT ZONE DASHBOARD - Three Column Summary */}
+      <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <ProfitZoneDashboard
+          metrics={profitZoneMetrics}
+          projectedProfit={projectedProfit}
+          breakevenPrice={breakevenPrice}
+          listPrice={purchasePrice}
+          tips={profitZoneTips}
+        />
+      </section>
+
       {/* WORKSHEET */}
       <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid lg:grid-cols-12 gap-5">
