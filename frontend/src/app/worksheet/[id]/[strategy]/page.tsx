@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { WorksheetLayout } from '@/components/worksheet/WorksheetLayout'
 import { WorksheetShell } from '@/components/worksheet/WorksheetShell'
+import { LTRWorksheet } from '@/components/worksheet/ltr/LTRWorksheet'
 import { StrWorksheet } from '@/components/worksheet/str/StrWorksheet'
 import { BrrrrWorksheet } from '@/components/worksheet/brrrr/BrrrrWorksheet'
 import { FlipWorksheet } from '@/components/worksheet/flip/FlipWorksheet'
@@ -74,10 +75,9 @@ export default function StrategyWorksheetPage() {
 
   if (strategyParam === 'ltr') {
     return (
-      <WorksheetLayout
+      <LTRWorksheet
         property={property}
         propertyId={propertyId}
-        strategy="ltr"
       />
     )
   }
