@@ -36,6 +36,7 @@ import { TenYearTabContent } from './TenYearTabContent';
 import { GrowthTabContent } from './GrowthTabContent';
 import { WelcomeSection } from './WelcomeSection';
 import { StrategyGrid, StrategyPrompt } from './StrategyGrid';
+import { ProfitZoneDashboard, generateProfitZoneTips, ProfitZoneMetrics } from './ProfitZoneDashboard';
 
 interface StrategyAnalyticsViewProps {
   property: PropertyData;
@@ -307,6 +308,28 @@ export function StrategyAnalyticsView({
     return createIQInsight('warning', 'Thin Margins', 'Consider negotiating a lower price or finding ways to increase rental income.');
   }, [iqTarget]);
 
+  // Profit Zone Dashboard data
+  const profitZoneMetrics = useMemo((): ProfitZoneMetrics => {
+    const downPayment = iqTarget.targetPrice * assumptions.downPaymentPct;
+    const closingCosts = iqTarget.targetPrice * assumptions.closingCostsPct;
+    const totalCashNeeded = downPayment + closingCosts;
+    
+    return {
+      buyPrice: iqTarget.targetPrice,
+      cashNeeded: totalCashNeeded,
+      monthlyCashFlow: iqTarget.monthlyCashFlow,
+      cashOnCash: iqTarget.cashOnCash * 100, // Convert to percentage
+      capRate: iqTarget.capRate * 100, // Convert to percentage
+      dealScore: dealScore.score,
+    };
+  }, [iqTarget, assumptions, dealScore]);
+
+  const profitZoneTips = useMemo(() => {
+    // Calculate projected profit (10-year equity gain estimate)
+    const projectedProfit = iqTarget.monthlyCashFlow * 12 * 10 + (assumptions.arv - iqTarget.targetPrice);
+    return generateProfitZoneTips(profitZoneMetrics, projectedProfit);
+  }, [profitZoneMetrics, iqTarget, assumptions]);
+
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#07172e' : '#f8fafc' }]}>
       <ScrollView 
@@ -387,6 +410,18 @@ export function StrategyAnalyticsView({
             {activeSubTab === 'metrics' && (
               <>
                 <IQTargetHero iqTarget={iqTarget} strategy={activeStrategy} isDark={isDark} />
+                
+                {/* NEW: Profit Zone Dashboard */}
+                <View style={styles.section}>
+                  <ProfitZoneDashboard
+                    metrics={profitZoneMetrics}
+                    projectedProfit={iqTarget.monthlyCashFlow * 12 * 10 + (assumptions.arv - iqTarget.targetPrice)}
+                    breakevenPrice={iqTarget.breakeven}
+                    listPrice={assumptions.listPrice}
+                    tips={profitZoneTips}
+                    isDark={isDark}
+                  />
+                </View>
                 
                 <View style={styles.section}>
                   <PriceLadder rungs={priceLadder} isDark={isDark} />
