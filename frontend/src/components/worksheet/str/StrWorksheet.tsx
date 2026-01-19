@@ -422,7 +422,7 @@ export function StrWorksheet({
   // RENDER
   // ============================================
   return (
-    <div className="min-h-screen bg-surface-50">
+    <div className="min-h-screen bg-surface-50 overflow-x-hidden">
       {/* WORKSHEET TAB NAV */}
       <WorksheetTabNav propertyId={propertyId} strategy="str" />
       
@@ -546,8 +546,8 @@ export function StrWorksheet({
       </header>
       
       {/* MAIN CONTENT */}
-      <main className="mx-auto px-4 sm:px-6 py-4 sm:py-6" style={{ maxWidth: '1280px' }}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start">
+      <main className="mx-auto px-4 sm:px-6 py-4 sm:py-6 overflow-x-hidden" style={{ maxWidth: '1280px' }}>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 items-start">
           {/* LEFT COLUMN - Worksheet */}
           <div className="space-y-3">
             {/* Purchase & Setup */}
@@ -777,7 +777,7 @@ export function StrWorksheet({
           </div>
           
           {/* RIGHT COLUMN - Insight Panel */}
-          <div className="lg:sticky lg:top-[280px] space-y-4 lg:max-h-[calc(100vh-300px)] lg:overflow-y-auto">
+          <div className="xl:sticky xl:top-[280px] space-y-4 xl:max-h-[calc(100vh-300px)] xl:overflow-y-auto">
             {/* IQ Verdict Card */}
             <div className="bg-white rounded-xl shadow-card overflow-hidden">
               <div className="p-5" style={{ 
