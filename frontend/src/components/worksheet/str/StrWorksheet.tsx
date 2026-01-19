@@ -503,41 +503,49 @@ export function StrWorksheet({
             })}
           </div>
           
-          {/* KPI strip */}
+          {/* KPI strip - responsive grid with dynamic text sizing */}
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
-            <div className="rounded-lg p-2 sm:p-3 text-center" style={{ background: 'rgba(8, 145, 178, 0.15)' }}>
-              <div className="text-[7px] sm:text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Gross Revenue</div>
-              <div className="text-xs sm:text-sm font-bold text-teal num">{fmt.currencyCompact(calc.grossRevenue)}</div>
+            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0" style={{ background: 'rgba(8, 145, 178, 0.12)' }}>
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Gross Revenue</div>
+              <div className="text-xs sm:text-sm lg:text-base font-bold text-teal num truncate">{fmt.currencyCompact(calc.grossRevenue)}</div>
             </div>
-            <div className="rounded-lg p-2 sm:p-3 text-center" style={{ background: 'rgba(10, 22, 40, 0.08)' }}>
-              <div className="text-[7px] sm:text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Cash Needed</div>
-              <div className="text-xs sm:text-sm font-bold text-navy num">{fmt.currencyCompact(calc.totalCashNeeded)}</div>
+            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0" style={{ background: 'rgba(10, 22, 40, 0.06)' }}>
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Cash Needed</div>
+              <div className="text-xs sm:text-sm lg:text-base font-bold text-navy num truncate">{fmt.currencyCompact(calc.totalCashNeeded)}</div>
             </div>
-            <div className="rounded-lg p-2 sm:p-3 text-center" style={{ background: calc.annualCashFlow >= 0 ? 'rgba(8, 145, 178, 0.15)' : 'rgba(239, 68, 68, 0.12)' }}>
-              <div className="text-[7px] sm:text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Annual Profit</div>
-              <div className={`text-xs sm:text-sm font-bold num ${calc.annualCashFlow >= 0 ? 'text-teal' : 'text-danger'}`}>
-                {calc.annualCashFlow >= 0 ? '+' : ''}{fmt.currencyCompact(calc.annualCashFlow)}
+            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0" style={{ background: isProfit ? 'rgba(8, 145, 178, 0.12)' : 'rgba(239, 68, 68, 0.12)' }}>
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Annual Profit</div>
+              <div className={`text-xs sm:text-sm lg:text-base font-bold num truncate ${isProfit ? 'text-teal' : 'text-danger'}`}>
+                {isProfit ? '+' : ''}{fmt.currencyCompact(calc.annualCashFlow)}
               </div>
             </div>
-            <div className="rounded-lg p-2 sm:p-3 text-center bg-surface-100">
-              <div className="text-[7px] sm:text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Cap Rate</div>
-              <div className="text-xs sm:text-sm font-bold text-navy num">{calc.capRate.toFixed(1)}%</div>
+            <div className="bg-surface-50 border border-surface-200 rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0">
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Cap Rate</div>
+              <div className="text-xs sm:text-sm lg:text-base font-bold text-navy num">{calc.capRate.toFixed(1)}%</div>
             </div>
-            <div className="rounded-lg p-2 sm:p-3 text-center bg-surface-100">
-              <div className="text-[7px] sm:text-[8px] font-semibold text-surface-500 uppercase tracking-wide">CoC Return</div>
-              <div className="text-xs sm:text-sm font-bold text-navy num">{calc.cashOnCash.toFixed(1)}%</div>
+            <div className="bg-surface-50 border border-surface-200 rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0">
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">CoC Return</div>
+              <div className="text-xs sm:text-sm lg:text-base font-bold text-navy num">{calc.cashOnCash.toFixed(1)}%</div>
             </div>
-            <div className="rounded-lg p-2 sm:p-3 text-center" style={{ background: 'rgba(8, 145, 178, 0.15)' }}>
-              <div className="text-[7px] sm:text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Deal Score</div>
-              <div className="text-xs sm:text-sm font-bold text-teal num">{calc.dealScore}</div>
+            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0" style={{ 
+              background: calc.dealScore >= 70 
+                ? 'rgba(8, 145, 178, 0.15)' 
+                : calc.dealScore >= 40 
+                  ? 'rgba(245, 158, 11, 0.12)' 
+                  : 'rgba(239, 68, 68, 0.12)' 
+            }}>
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Deal Score</div>
+              <div className={`text-xs sm:text-sm lg:text-base font-bold num ${
+                calc.dealScore >= 70 ? 'text-teal' : calc.dealScore >= 40 ? 'text-warning' : 'text-danger'
+              }`}>{calc.dealScore}</div>
             </div>
           </div>
         </div>
       </header>
       
       {/* MAIN CONTENT */}
-      <main className="mx-auto px-4 sm:px-6 py-6" style={{ maxWidth: '1280px' }}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      <main className="mx-auto px-4 sm:px-6 py-4 sm:py-6" style={{ maxWidth: '1280px' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start">
           {/* LEFT COLUMN - Worksheet */}
           <div className="space-y-3">
             {/* Purchase & Setup */}
@@ -802,6 +810,72 @@ export function StrWorksheet({
                     </span>
                   </div>
                 ))}
+              </div>
+            </div>
+            
+            {/* Price Position Card */}
+            <div className="bg-white rounded-xl shadow-card p-5">
+              <div className="section-label text-navy mb-4">PRICE POSITION</div>
+              
+              {/* Gauge SVG - Dynamic needle based on deal score */}
+              <div className="flex justify-center mb-4">
+                <div className="relative">
+                  <svg width="160" height="90" viewBox="0 0 160 90">
+                    {/* Background track */}
+                    <path d="M 15 80 A 65 65 0 0 1 145 80" fill="none" stroke="#E2E8F0" strokeWidth="14" strokeLinecap="round" />
+                    {/* Loss zone (left side - red) */}
+                    <path d="M 15 80 A 65 65 0 0 1 80 15" fill="none" stroke="rgba(239, 68, 68, 0.35)" strokeWidth="14" strokeLinecap="round" />
+                    {/* Profit zone (right side - teal) */}
+                    <path d="M 80 15 A 65 65 0 0 1 145 80" fill="none" stroke="rgba(8, 145, 178, 0.35)" strokeWidth="14" strokeLinecap="round" />
+                    {/* Dynamic needle - rotates based on deal score */}
+                    <line 
+                      x1="80" 
+                      y1="80" 
+                      x2={calc.needleX} 
+                      y2={calc.needleY} 
+                      stroke={calc.dealScore >= 50 ? '#0891B2' : '#EF4444'} 
+                      strokeWidth="3" 
+                      strokeLinecap="round"
+                      style={{ transition: 'all 0.3s ease-out' }}
+                    />
+                    {/* Center pivot */}
+                    <circle cx="80" cy="80" r="6" fill="#0A1628" />
+                    <circle cx="80" cy="80" r="3" fill="#fff" />
+                  </svg>
+                  <div className="absolute bottom-0 left-1 text-[9px] font-bold text-danger">LOSS</div>
+                  <div className="absolute bottom-0 right-1 text-[9px] font-bold text-teal">PROFIT</div>
+                </div>
+              </div>
+              
+              {/* Price rows */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center py-2.5 px-3 rounded-lg border border-transparent">
+                  <span className="text-sm text-surface-500">List Price</span>
+                  <span className="text-sm font-semibold text-navy num">{fmt.currency(inputs.purchase_price)}</span>
+                </div>
+                <div className="flex justify-between items-center py-2.5 px-3 rounded-lg border border-transparent">
+                  <span className="text-sm text-surface-500">Breakeven Price</span>
+                  <span className="text-sm font-semibold text-navy num">{fmt.currency(calc.breakevenPrice)}</span>
+                </div>
+                <div className={`flex justify-between items-center py-2.5 px-3 rounded-lg border ${
+                  inputs.purchase_price <= calc.breakevenPrice 
+                    ? 'bg-teal/10 border-teal/20' 
+                    : 'bg-danger/10 border-danger/20'
+                }`}>
+                  <span className={`text-sm font-medium ${inputs.purchase_price <= calc.breakevenPrice ? 'text-teal' : 'text-danger'}`}>
+                    Your Price
+                  </span>
+                  <span className={`text-sm font-bold num ${inputs.purchase_price <= calc.breakevenPrice ? 'text-teal' : 'text-danger'}`}>
+                    {fmt.currency(inputs.purchase_price)}
+                  </span>
+                </div>
+                {inputs.purchase_price > calc.breakevenPrice && (
+                  <div className="mt-2 px-3 py-2 bg-warning/10 border border-warning/20 rounded-lg">
+                    <p className="text-xs text-warning font-medium">
+                      ⚠️ Price is {fmt.currency(inputs.purchase_price - calc.breakevenPrice)} above breakeven
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
             
