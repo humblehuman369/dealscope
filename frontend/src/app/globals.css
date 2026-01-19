@@ -57,6 +57,55 @@ html.dark {
 }
 
 /* ==========================================
+   InvestIQ Slider Styles
+   ========================================== */
+input[type="range"] {
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-track {
+  height: 6px;
+  background: #E2E8F0;
+  border-radius: 3px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #0891B2;
+  margin-top: -5px;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: transform 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.2);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  background: #E2E8F0;
+  border-radius: 3px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #0891B2;
+  border: 2px solid white;
+}
+
+/* ==========================================
    Base Styles
    ========================================== */
 @layer base {
