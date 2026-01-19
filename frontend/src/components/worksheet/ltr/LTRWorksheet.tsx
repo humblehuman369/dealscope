@@ -295,21 +295,11 @@ export function LTRWorksheet({
         </div>
       </header>
       
-      {/* PROFIT ZONE DASHBOARD - Three Column Summary */}
-      <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <ProfitZoneDashboard
-          metrics={profitZoneMetrics}
-          projectedProfit={projectedProfit}
-          breakevenPrice={breakevenPrice}
-          listPrice={purchasePrice}
-          tips={profitZoneTips}
-        />
-      </section>
-
-      {/* WORKSHEET */}
-      <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid lg:grid-cols-12 gap-5">
-          <div className="lg:col-span-8 space-y-5">
+      {/* WORKSHEET - 50/50 Layout */}
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* LEFT COLUMN - Inputs */}
+          <div className="space-y-5">
             <div className="grid md:grid-cols-2 gap-5">
               <LTRSectionCard title="Purchase & Rehab" accentColor="#4dd0e1">
                 <SliderInput 
@@ -559,7 +549,17 @@ export function LTRWorksheet({
             </div>
           </div>
           
-          <div className="lg:col-span-4 space-y-5">
+          {/* RIGHT COLUMN - Charts & Visualizations */}
+          <div className="space-y-5">
+            {/* Profit Zone Dashboard - Three Column Layout */}
+            <ProfitZoneDashboard
+              metrics={profitZoneMetrics}
+              projectedProfit={projectedProfit}
+              breakevenPrice={breakevenPrice}
+              listPrice={purchasePrice}
+              tips={profitZoneTips}
+            />
+            
             <ProfitScale 
               grossRent={monthlyRent} 
               vacancy={calc.vacancyLoss / 12} 

@@ -259,12 +259,12 @@ export function ProfitZoneDashboard({
   const scoreColorClass = getDealScoreColor(dealScore)
   
   return (
-    <div className="bg-slate-50 dark:bg-slate-800/30 border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 shadow-sm">
-      {/* Three Column Layout */}
-      <div className="grid grid-cols-[140px_1fr_200px] gap-4 items-start">
+    <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 shadow-sm">
+      {/* Three Column Horizontal Layout */}
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-start min-h-[280px]">
         
-        {/* LEFT COLUMN - Metrics Stack */}
-        <div className="space-y-1">
+        {/* LEFT COLUMN: Metrics Stack (2x3 grid) */}
+        <div className="grid grid-cols-2 gap-1.5">
           <MetricBox 
             label="BUY PRICE" 
             value={formatCompact(buyPrice)} 
@@ -301,8 +301,8 @@ export function ProfitZoneDashboard({
           />
         </div>
         
-        {/* CENTER COLUMN - Profit Zone Visualizer */}
-        <div className="flex justify-center pt-2 pb-8">
+        {/* CENTER COLUMN: Profit Zone Visualizer */}
+        <div className="flex justify-center">
           <ProfitZoneVisualizer 
             projectedProfit={projectedProfit}
             breakevenPrice={breakevenPrice}
@@ -310,7 +310,7 @@ export function ProfitZoneDashboard({
           />
         </div>
         
-        {/* RIGHT COLUMN - Tips & What's Next */}
+        {/* RIGHT COLUMN: Tips & What's Next */}
         <div>
           <TipsSection tips={tips} />
         </div>
