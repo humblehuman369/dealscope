@@ -212,7 +212,7 @@ export function LTRWorksheet({
       setCurrentSection(null)
     } else {
       setCurrentSection(index)
-      setCompletedSections(prev => new Set([...prev, index]))
+      setCompletedSections(prev => new Set([...Array.from(prev), index]))
     }
   }, [viewMode, currentSection])
 
