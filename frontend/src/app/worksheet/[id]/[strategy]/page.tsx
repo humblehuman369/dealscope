@@ -89,7 +89,7 @@ export default function StrategyWorksheetPage() {
         propertyId={propertyId}
         strategy="str"
       >
-        <StrWorksheet property={property} />
+        <StrWorksheet property={property} propertyId={propertyId} />
       </WorksheetShell>
     )
   }

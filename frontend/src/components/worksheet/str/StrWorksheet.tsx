@@ -189,7 +189,7 @@ export function StrWorksheet({
       rentalRevenue: result?.rental_revenue ?? 0,
       cleaningFeeRevenue: result?.cleaning_fee_revenue ?? 0,
       revpar: result?.revpar ?? 0,
-      bookedNights: result?.booked_nights ?? 0,
+      bookedNights: result?.nights_occupied ?? 0,
     }
   }, [result, derived, inputs.purchase_price])
 
@@ -632,18 +632,18 @@ export function StrWorksheet({
                 subValue={`${Math.round(inputs.occupancy_rate * 365)} nights`}
               />
               <InputRow 
-                label="Cleaning Fee" 
-                value={inputs.cleaning_fee} 
-                onChange={(val) => updateInput('cleaning_fee', val)} 
+                label="Cleaning Fee Revenue" 
+                value={inputs.cleaning_fee_revenue} 
+                onChange={(val) => updateInput('cleaning_fee_revenue', val)} 
                 min={50} 
-                max={300} 
+                max={500} 
                 step={10} 
                 format="currency" 
               />
               <InputRow 
-                label="Avg Stay Length" 
-                value={inputs.avg_stay_length} 
-                onChange={(val) => updateInput('avg_stay_length', val)} 
+                label="Avg Booking Length" 
+                value={inputs.avg_booking_length} 
+                onChange={(val) => updateInput('avg_booking_length', val)} 
                 min={1} 
                 max={14} 
                 step={0.5} 
@@ -658,8 +658,8 @@ export function StrWorksheet({
             <Section index={3} title="Expenses" iconKey="expense">
               <InputRow 
                 label="Platform Fees" 
-                value={inputs.platform_fee_pct} 
-                onChange={(val) => updateInput('platform_fee_pct', val)} 
+                value={inputs.platform_fees_pct} 
+                onChange={(val) => updateInput('platform_fees_pct', val)} 
                 min={0} 
                 max={0.20} 
                 step={0.01} 
