@@ -427,7 +427,7 @@ export function StrWorksheet({
       <WorksheetTabNav propertyId={propertyId} strategy="str" />
       
       {/* PAGE HEADER */}
-      <header className="bg-white border-b border-surface-200 sticky top-[104px] z-50">
+      <header className="bg-white border-b border-surface-200 sticky top-[94px] sm:top-[100px] z-40">
         <div className="mx-auto px-4 sm:px-6 py-4" style={{ maxWidth: '1280px' }}>
           {/* Top row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
@@ -777,7 +777,7 @@ export function StrWorksheet({
           </div>
           
           {/* RIGHT COLUMN - Insight Panel */}
-          <div className="lg:sticky lg:top-[208px] space-y-4" style={{ maxHeight: 'calc(100vh - 228px)', overflowY: 'auto' }}>
+          <div className="lg:sticky lg:top-[280px] space-y-4 lg:max-h-[calc(100vh-300px)] lg:overflow-y-auto">
             {/* IQ Verdict Card */}
             <div className="bg-white rounded-xl shadow-card overflow-hidden">
               <div className="p-5" style={{ 
