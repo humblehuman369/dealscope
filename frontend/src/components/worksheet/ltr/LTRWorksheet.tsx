@@ -121,7 +121,7 @@ export function LTRWorksheet({
   const [interestRate, setInterestRate] = useState(7.0)
   const [loanTerm, setLoanTerm] = useState(30)
   const [rehabCosts, setRehabCosts] = useState(0)
-  const [arv, setArv] = useState(propertyData.arv || propertyData.listPrice * 1.1 || 795960)
+  const [arv, setArv] = useState(propertyData.arv || (propertyData.listPrice || 723600) * 1.1 || 795960)
   const [monthlyRent, setMonthlyRent] = useState(propertyData.monthlyRent || 8081)
   const [vacancyRate, setVacancyRate] = useState(8)
   const [propertyTaxes, setPropertyTaxes] = useState(propertyData.propertyTaxes || 6471)
