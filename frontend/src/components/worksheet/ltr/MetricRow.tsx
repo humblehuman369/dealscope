@@ -11,24 +11,22 @@ interface MetricRowProps {
 
 export function MetricRow({ label, value, good, threshold }: MetricRowProps) {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-slate-100 dark:border-slate-700 last:border-0">
-      <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">{label}</span>
-      <div className="flex items-center gap-3">
-        {threshold && (
-          <span className="text-xs text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">
-            {threshold}
-          </span>
-        )}
-        <span className="font-bold text-slate-900 dark:text-white min-w-[70px] text-right">
+    <div className="flex items-center justify-between py-2.5 border-b border-surface-100 dark:border-surface-700 last:border-0">
+      <span className="text-sm text-surface-500 dark:text-surface-400">{label}</span>
+      <div className="flex items-center gap-2">
+        {/* Value with optional target display (InvestIQ style) */}
+        <span className={`text-sm font-semibold num ${
+          good === true 
+            ? 'text-teal-600 dark:text-teal-400' 
+            : good === false 
+              ? 'text-navy dark:text-white' 
+              : 'text-navy dark:text-white'
+        }`}>
           {value}
         </span>
-        {good !== undefined && (
-          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-            good 
-              ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
-              : 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400'
-          }`}>
-            {good ? '\u2713' : '!'}
+        {threshold && (
+          <span className="text-[10px] text-surface-400">
+            / {threshold}
           </span>
         )}
       </div>

@@ -1,11 +1,12 @@
 /* ==========================================
    INVESTIQ DESIGN SYSTEM - Global Styles
+   Version 1.0 - January 2026
    ========================================== */
 
 /* ==========================================
    CSS Imports (must be at top before @tailwind)
    ========================================== */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import '../components/landing/landing.css';
 
 @tailwind base;
@@ -13,26 +14,46 @@
 @tailwind utilities;
 
 /* ==========================================
-   Theme Color Variables
+   Theme Color Variables - InvestIQ Design System
    ========================================== */
 :root {
-  /* Teal accent color - Light Mode: Pacific Teal */
-  --color-teal: #007ea7;
-  --color-teal-rgb: 0, 126, 167;
+  /* Primary Brand Colors */
+  --color-navy: #0A1628;
+  --color-teal: #0891B2;        /* Pacific Teal - primary accent */
+  --color-teal-light: #06B6D4;  /* Teal Light - hover states */
+  --color-teal-rgb: 8, 145, 178;
+  --color-cyan-electric: #00D4FF;
+  
+  /* Semantic Colors */
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+  --color-success: #10B981;
+  
+  /* Surface Palette (Slate-based) */
+  --surface-50: #F8FAFC;
+  --surface-100: #F1F5F9;
+  --surface-200: #E2E8F0;
+  --surface-300: #CBD5E1;
+  --surface-400: #94A3B8;
+  --surface-500: #64748B;
+  --surface-600: #475569;
+  --surface-700: #334155;
+  --surface-800: #1E293B;
   
   /* Gradient endpoints for light mode */
-  --gradient-teal-start: #007ea7;
-  --gradient-teal-end: #006080;
+  --gradient-teal-start: #0891B2;
+  --gradient-teal-end: #0E7490;
 }
 
 html.dark {
-  /* Teal accent color - Dark Mode: Electric Cyan */
-  --color-teal: #00e5ff;
-  --color-teal-rgb: 0, 229, 255;
+  /* Dark Mode - Use Electric Cyan for accent */
+  --color-teal: #22d3ee;
+  --color-teal-light: #67e8f9;
+  --color-teal-rgb: 34, 211, 238;
   
   /* Gradient endpoints for dark mode */
-  --gradient-teal-start: #00e5ff;
-  --gradient-teal-end: #00c4d9;
+  --gradient-teal-start: #22d3ee;
+  --gradient-teal-end: #06B6D4;
 }
 
 /* ==========================================
@@ -46,19 +67,25 @@ html.dark {
   }
 
   body {
-    @apply bg-neutral-50 text-navy-900 font-sans;
+    @apply bg-surface-50 font-sans;
+    color: var(--color-navy);
     @apply transition-colors duration-300;
   }
 
   /* Dark mode */
   html.dark body {
-    @apply bg-navy-900 text-neutral-100;
+    @apply bg-surface-800 text-white;
   }
 
-  /* Heading styles - default color, can be overridden by utility classes */
+  /* Heading styles - Inter font family */
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold;
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--color-navy);
+  }
+  
+  html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6 {
+    @apply text-white;
   }
 
   /* Link base styles */
@@ -68,7 +95,8 @@ html.dark {
 
   /* Focus styles for accessibility */
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-brand-500;
+    @apply outline-2 outline-offset-2;
+    outline-color: var(--color-teal);
   }
 }
 
@@ -677,6 +705,70 @@ html.dark .header-mobile-signin:hover {
    Utility Classes
    ========================================== */
 @layer utilities {
+  /* ==========================================
+     InvestIQ Typography Utilities
+     ========================================== */
+  
+  /* Tabular numerals for financial data alignment */
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  
+  /* Section labels - InvestIQ style */
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  
+  /* Text color utilities */
+  .text-navy {
+    color: #0A1628;
+  }
+  
+  html.dark .text-navy {
+    color: #F8FAFC;
+  }
+  
+  .text-teal {
+    color: var(--color-teal);
+  }
+  
+  .text-danger {
+    color: #EF4444;
+  }
+  
+  .text-surface-400 {
+    color: #94A3B8;
+  }
+  
+  .text-surface-500 {
+    color: #64748B;
+  }
+  
+  /* Background utilities */
+  .bg-teal {
+    background-color: var(--color-teal);
+  }
+  
+  .bg-surface-50 {
+    background-color: #F8FAFC;
+  }
+  
+  .bg-surface-100 {
+    background-color: #F1F5F9;
+  }
+  
+  /* Border utilities */
+  .border-surface-100 {
+    border-color: #F1F5F9;
+  }
+  
+  .border-surface-200 {
+    border-color: #E2E8F0;
+  }
+
   /* Skeleton loader */
   .skeleton {
     @apply bg-neutral-200 rounded animate-pulse;

@@ -25,21 +25,44 @@ export function KPIRow({
   isDark = false 
 }: KPIRowProps) {
   const formatCurrency = (value: number) => {
-    return `$${value.toLocaleString()}`
+    return `$${Math.round(value).toLocaleString()}`
   }
 
   const formatPercent = (value: number) => {
     return `${value.toFixed(1)}%`
   }
+  
+  const isProfit = cashFlow >= 0
 
   return (
     <div>
-      <div className="flex gap-2">
-        <KPIBox label="Purchase Price" value={formatCurrency(purchasePrice)} />
-        <KPIBox label="Cash Needed" value={formatCurrency(cashNeeded)} />
-        <KPIBox label="Cash Flow" value={formatCurrency(cashFlow)} />
-        <KPIBox label="Cap Rate" value={formatPercent(capRate)} />
-        <KPIBox label="CoC Return" value={formatPercent(cocReturn)} />
+      {/* KPI Strip - 6 metrics in colored pills matching InvestIQ style */}
+      <div className="grid grid-cols-6 gap-3">
+        <KPIBox 
+          label="List Price" 
+          value={formatCurrency(purchasePrice)} 
+          variant="teal" 
+        />
+        <KPIBox 
+          label="Cash Needed" 
+          value={formatCurrency(cashNeeded)} 
+          variant="navy" 
+        />
+        <KPIBox 
+          label="Annual Profit" 
+          value={`${isProfit ? '+' : ''}${formatCurrency(cashFlow)}`} 
+          variant={isProfit ? 'teal' : 'danger'} 
+        />
+        <KPIBox 
+          label="Cap Rate" 
+          value={formatPercent(capRate)} 
+          variant="neutral" 
+        />
+        <KPIBox 
+          label="CoC Return" 
+          value={formatPercent(cocReturn)} 
+          variant="neutral" 
+        />
         <DealScoreBox score={dealScore} />
       </div>
       <ScaleBar score={dealScore} isDark={isDark} />

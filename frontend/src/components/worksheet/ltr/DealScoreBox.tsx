@@ -9,19 +9,23 @@ interface DealScoreBoxProps {
 
 export function DealScoreBox({ score }: DealScoreBoxProps) {
   const verdict = getVerdict(score)
+  const isPositive = score >= 55
   
   return (
-    <div className={`border rounded-lg px-3 py-2 flex-1 min-w-[90px] transition-all duration-500 ${getScoreBgClass(score)}`}>
-      <div className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium">
+    <div className={`rounded-lg p-3 text-center flex-1 min-w-[90px] transition-all duration-300 ${
+      isPositive 
+        ? 'bg-teal-600/[0.15] dark:bg-teal-400/[0.15]' 
+        : 'bg-surface-100 dark:bg-surface-800'
+    }`}>
+      <div className="text-[8px] font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wide">
         Deal Score
       </div>
-      <div className="flex items-baseline gap-1.5">
-        <span className={`text-base font-bold ${getScoreTextClass(score)}`}>
-          {Math.round(score)}
-        </span>
-        <span className={`text-[9px] uppercase tracking-wider font-semibold ${getScoreTextClass(score)}`}>
-          {verdict}
-        </span>
+      <div className={`text-sm font-bold num ${
+        isPositive 
+          ? 'text-teal-600 dark:text-teal-400' 
+          : 'text-navy dark:text-white'
+      }`}>
+        {Math.round(score)}
       </div>
     </div>
   )

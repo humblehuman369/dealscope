@@ -1,5 +1,6 @@
 // ============================================
 // VERDICT LOGIC - Deal Score Assessment
+// InvestIQ Design System - Uses Teal for positive scores
 // ============================================
 
 export type VerdictType = 'STRONG' | 'GOOD' | 'CONSIDER' | 'WEAK' | 'POOR'
@@ -13,46 +14,47 @@ export interface VerdictConfig {
   darkBgClass: string
 }
 
+// InvestIQ uses Teal (#0891B2) for positive values, not green
 const VERDICT_CONFIGS: VerdictConfig[] = [
   {
     label: 'STRONG',
     minScore: 75,
-    lightTextClass: 'text-emerald-600',
-    darkTextClass: 'dark:text-emerald-400',
-    lightBgClass: 'bg-emerald-50 border-emerald-200',
-    darkBgClass: 'dark:bg-emerald-500/15 dark:border-emerald-500/40',
+    lightTextClass: 'text-teal-600',
+    darkTextClass: 'dark:text-teal-400',
+    lightBgClass: 'bg-teal-600/10 border-teal-600/20',
+    darkBgClass: 'dark:bg-teal-400/15 dark:border-teal-400/40',
   },
   {
     label: 'GOOD',
     minScore: 55,
-    lightTextClass: 'text-green-600',
-    darkTextClass: 'dark:text-green-400',
-    lightBgClass: 'bg-green-50 border-green-200',
-    darkBgClass: 'dark:bg-green-500/15 dark:border-green-500/40',
+    lightTextClass: 'text-teal-600',
+    darkTextClass: 'dark:text-teal-400',
+    lightBgClass: 'bg-teal-600/10 border-teal-600/20',
+    darkBgClass: 'dark:bg-teal-400/15 dark:border-teal-400/40',
   },
   {
     label: 'CONSIDER',
     minScore: 40,
-    lightTextClass: 'text-slate-600',
+    lightTextClass: 'text-surface-600',
     darkTextClass: 'dark:text-white',
-    lightBgClass: 'bg-slate-50 border-slate-200',
-    darkBgClass: 'dark:bg-white/8 dark:border-white/25',
+    lightBgClass: 'bg-surface-50 border-surface-200',
+    darkBgClass: 'dark:bg-surface-800 dark:border-surface-700',
   },
   {
     label: 'WEAK',
     minScore: 25,
-    lightTextClass: 'text-orange-500',
-    darkTextClass: 'text-orange-500',
-    lightBgClass: 'bg-orange-50 border-orange-200',
-    darkBgClass: 'dark:bg-orange-500/15 dark:border-orange-500/40',
+    lightTextClass: 'text-amber-600',
+    darkTextClass: 'dark:text-amber-400',
+    lightBgClass: 'bg-amber-500/10 border-amber-500/20',
+    darkBgClass: 'dark:bg-amber-400/15 dark:border-amber-400/40',
   },
   {
     label: 'POOR',
     minScore: 0,
-    lightTextClass: 'text-red-500',
-    darkTextClass: 'text-red-500',
-    lightBgClass: 'bg-red-50 border-red-200',
-    darkBgClass: 'dark:bg-red-500/15 dark:border-red-500/40',
+    lightTextClass: 'text-red-600',
+    darkTextClass: 'dark:text-red-400',
+    lightBgClass: 'bg-red-500/10 border-red-500/20',
+    darkBgClass: 'dark:bg-red-400/15 dark:border-red-400/40',
   },
 ]
 
