@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
+import { WorksheetTabNav } from '../WorksheetTabNav'
 
 // ============================================
 // ICONS (minimal line style matching HTML)
@@ -112,7 +113,8 @@ interface LTRWorksheetProps {
 // MAIN COMPONENT
 // ============================================
 export function LTRWorksheet({ 
-  property, 
+  property,
+  propertyId,
   onExportPDF,
 }: LTRWorksheetProps) {
   // Property data
@@ -476,8 +478,11 @@ export function LTRWorksheet({
   // ============================================
   return (
     <div className="min-h-screen bg-surface-50">
+      {/* WORKSHEET TAB NAV */}
+      <WorksheetTabNav propertyId={propertyId} strategy="ltr" />
+      
       {/* PAGE HEADER */}
-      <header className="bg-white border-b border-surface-200 sticky top-14 z-50">
+      <header className="bg-white border-b border-surface-200 sticky top-[104px] z-50">
         <div className="mx-auto px-4 sm:px-6 py-4" style={{ maxWidth: '1280px' }}>
           {/* Top row - responsive layout */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">

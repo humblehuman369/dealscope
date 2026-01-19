@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { useStrWorksheetCalculator } from '@/hooks/useStrWorksheetCalculator'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
+import { WorksheetTabNav } from '../WorksheetTabNav'
 
 // Chart components (keep these as external imports)
 import { StrRevenueBreakdown } from '../charts/StrRevenueBreakdown'
@@ -111,7 +112,8 @@ interface StrWorksheetProps {
 // MAIN COMPONENT
 // ============================================
 export function StrWorksheet({ 
-  property, 
+  property,
+  propertyId,
   onExportPDF,
 }: StrWorksheetProps) {
   // Property data
@@ -421,8 +423,11 @@ export function StrWorksheet({
   // ============================================
   return (
     <div className="min-h-screen bg-surface-50">
+      {/* WORKSHEET TAB NAV */}
+      <WorksheetTabNav propertyId={propertyId} strategy="str" />
+      
       {/* PAGE HEADER */}
-      <header className="bg-white border-b border-surface-200 sticky top-14 z-50">
+      <header className="bg-white border-b border-surface-200 sticky top-[104px] z-50">
         <div className="mx-auto px-4 sm:px-6 py-4" style={{ maxWidth: '1280px' }}>
           {/* Top row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
