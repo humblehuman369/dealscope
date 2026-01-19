@@ -3,34 +3,24 @@
 import { 
   Bell, Search, Sun, Moon, User, LogOut, 
   ChevronDown, LayoutDashboard, BarChart3, Image, History, 
-  GitCompare, Menu, X, CreditCard, Settings, Home
+  GitCompare, Menu, X, CreditCard, Settings
 } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
 import { usePropertyStore } from '@/stores'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
 /**
- * Universal Header Component
+ * Universal Header Component - Tailwind Version
  * 
- * Compact, refined header that displays across the entire site
- * except for the landing page.
- * 
- * Features:
- * - 48px compact height
- * - Clean logo with hover effect
- * - Streamlined navigation with icon + text
- * - Refined dropdown menus
- * - Responsive mobile menu
- * - Theme toggle
- * - User avatar with dropdown
+ * Uses exact same container classes as page content for perfect alignment:
+ * - max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8
  */
 export default function Header() {
   const pathname = usePathname()
-  const router = useRouter()
   const { theme, toggleTheme } = useTheme()
   const { user, isAuthenticated, logout, setShowAuthModal } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -93,20 +83,22 @@ export default function Header() {
   ]
 
   return (
-    <header className="header-universal">
-      <div className="header-container">
+    <header className="w-full bg-white/95 dark:bg-[#0b1426]/95 backdrop-blur-xl border-b border-gray-200 dark:border-white/[0.08] sticky top-0 z-50 transition-colors duration-200">
+      {/* Container - EXACT same classes as page content */}
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-between gap-6">
+        
         {/* Logo */}
-        <Link href="/" className="header-logo">
+        <Link href="/" className="flex items-center flex-shrink-0 hover:opacity-90 transition-opacity">
           <img 
             src={theme === 'dark' ? "/images/InvestIQ Logo 3D (Dark View).png" : "/images/InvestIQ Logo 3D (Light View).png"}
-            alt="InvestIQ" 
+            alt="InvestIQ"
+            className="h-7 w-auto object-contain"
           />
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="header-nav">
+        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
           {navItems.map((item) => {
-            // Skip auth-required items for non-authenticated users
             if (item.auth && !isAuthenticated) return null
             
             // Special case: Search opens modal
@@ -115,7 +107,7 @@ export default function Header() {
                 <button 
                   key="search"
                   onClick={() => setShowSearchModal(true)}
-                  className="header-nav-link"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-all whitespace-nowrap"
                 >
                   <item.icon className="w-4 h-4" />
                   <span>{item.label}</span>
@@ -133,7 +125,11 @@ export default function Header() {
               <Link 
                 key={item.href}
                 href={item.href} 
-                className={`header-nav-link ${active ? 'active' : ''}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-lg transition-all whitespace-nowrap ${
+                  active 
+                    ? 'text-teal bg-teal/[0.08] dark:text-cyan-400 dark:bg-cyan-400/10' 
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white'
+                }`}
               >
                 <item.icon className="w-4 h-4" />
                 <span>{item.label}</span>
@@ -143,11 +139,11 @@ export default function Header() {
         </nav>
 
         {/* Right Actions */}
-        <div className="header-actions">
+        <div className="flex items-center gap-1">
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="header-icon-btn"
+            className="flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-all"
             aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
           >
             {theme === 'light' ? <Moon className="w-[18px] h-[18px]" /> : <Sun className="w-[18px] h-[18px]" />}
@@ -155,9 +151,12 @@ export default function Header() {
           
           {/* Notifications - Authenticated only */}
           {isAuthenticated && (
-            <button className="header-icon-btn header-notif" aria-label="Notifications">
+            <button 
+              className="relative flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-all" 
+              aria-label="Notifications"
+            >
               <Bell className="w-[18px] h-[18px]" />
-              <span className="header-notif-dot" />
+              <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full border-[1.5px] border-white dark:border-[#0b1426]" />
             </button>
           )}
           
@@ -166,29 +165,29 @@ export default function Header() {
             <div className="relative" ref={userMenuRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="header-user-btn"
+                className="flex items-center gap-1.5 py-1 px-2 pl-1 rounded-[10px] hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
               >
-                <div className="header-avatar">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal to-cyan-400 flex items-center justify-center text-white text-xs font-semibold">
                   {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                 </div>
-                <ChevronDown className={`w-3.5 h-3.5 text-neutral-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
               </button>
               
               {/* User Dropdown */}
               {showUserMenu && (
-                <div className="header-dropdown">
-                  <div className="header-dropdown-header">
-                    <p className="font-medium text-neutral-900 dark:text-white truncate">{user.full_name || 'User'}</p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{user.email}</p>
+                <div className="absolute right-0 top-[calc(100%+8px)] w-[220px] bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-lg dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] overflow-hidden z-[100]">
+                  <div className="px-3.5 py-3 border-b border-slate-100 dark:border-white/[0.06]">
+                    <p className="font-medium text-slate-900 dark:text-white truncate">{user.full_name || 'User'}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
                   </div>
                   
-                  <div className="header-dropdown-section">
+                  <div className="py-1.5">
                     {userMenuItems.map((item) => (
                       <Link
                         key={item.href}
                         href={item.href}
                         onClick={() => setShowUserMenu(false)}
-                        className="header-dropdown-item"
+                        className="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-[13px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors text-left"
                       >
                         <item.icon className="w-4 h-4" />
                         {item.label}
@@ -196,13 +195,13 @@ export default function Header() {
                     ))}
                   </div>
                   
-                  <div className="header-dropdown-section border-t border-neutral-100 dark:border-neutral-700">
+                  <div className="py-1.5 border-t border-slate-100 dark:border-white/[0.06]">
                     <button
                       onClick={() => {
                         logout()
                         setShowUserMenu(false)
                       }}
-                      className="header-dropdown-item text-danger-600 dark:text-danger-400"
+                      className="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-[13px] text-red-600 dark:text-red-400 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors text-left"
                     >
                       <LogOut className="w-4 h-4" />
                       Sign Out
@@ -212,16 +211,16 @@ export default function Header() {
               )}
             </div>
           ) : (
-            <div className="header-auth-btns">
+            <div className="hidden sm:flex items-center gap-2">
               <button 
                 onClick={() => setShowAuthModal('login')}
-                className="header-signin-btn"
+                className="px-3 py-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors"
               >
                 Sign In
               </button>
               <button 
                 onClick={() => setShowAuthModal('register')}
-                className="header-cta-btn"
+                className="px-3.5 py-1.5 text-[13px] font-semibold text-white bg-gradient-to-br from-teal to-teal-600 rounded-lg hover:translate-y-[-1px] hover:shadow-[0_4px_12px_rgba(8,145,178,0.3)] transition-all"
               >
                 Get Started
               </button>
@@ -230,7 +229,7 @@ export default function Header() {
           
           {/* Mobile Menu Toggle */}
           <button 
-            className="header-mobile-toggle"
+            className="flex md:hidden items-center justify-center w-9 h-9 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-all"
             onClick={() => setShowMobileMenu(!showMobileMenu)}
             aria-label="Toggle menu"
           >
@@ -241,8 +240,8 @@ export default function Header() {
       
       {/* Mobile Menu */}
       {showMobileMenu && (
-        <div className="header-mobile-menu">
-          <nav className="header-mobile-nav">
+        <div className="md:hidden border-t border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0b1426]">
+          <nav className="px-4 py-3 flex flex-col gap-1">
             {navItems.map((item) => {
               if (item.auth && !isAuthenticated) return null
               
@@ -256,7 +255,11 @@ export default function Header() {
                 <Link 
                   key={item.href}
                   href={item.href} 
-                  className={`header-mobile-link ${active ? 'active' : ''}`}
+                  className={`flex items-center gap-3 px-3.5 py-3 text-[15px] font-medium rounded-[10px] transition-all ${
+                    active 
+                      ? 'bg-slate-100 dark:bg-white/[0.04] text-teal dark:text-cyan-400' 
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:text-teal dark:hover:text-cyan-400'
+                  }`}
                 >
                   <item.icon className="w-5 h-5" />
                   {item.label}
@@ -265,26 +268,40 @@ export default function Header() {
             })}
             
             {/* Additional mobile links */}
-            <Link href="/photos" className={`header-mobile-link ${isActive('/photos') ? 'active' : ''}`}>
+            <Link 
+              href="/photos" 
+              className={`flex items-center gap-3 px-3.5 py-3 text-[15px] font-medium rounded-[10px] transition-all ${
+                isActive('/photos') 
+                  ? 'bg-slate-100 dark:bg-white/[0.04] text-teal dark:text-cyan-400' 
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:text-teal dark:hover:text-cyan-400'
+              }`}
+            >
               <Image className="w-5 h-5" />
               Photos
             </Link>
-            <Link href="/search-history" className={`header-mobile-link ${isActive('/search-history') ? 'active' : ''}`}>
+            <Link 
+              href="/search-history" 
+              className={`flex items-center gap-3 px-3.5 py-3 text-[15px] font-medium rounded-[10px] transition-all ${
+                isActive('/search-history') 
+                  ? 'bg-slate-100 dark:bg-white/[0.04] text-teal dark:text-cyan-400' 
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:text-teal dark:hover:text-cyan-400'
+              }`}
+            >
               <History className="w-5 h-5" />
               History
             </Link>
             
             {!isAuthenticated && (
-              <div className="header-mobile-auth">
+              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-white/[0.06] flex flex-col gap-2">
                 <button 
                   onClick={() => setShowAuthModal('login')}
-                  className="header-mobile-signin"
+                  className="w-full py-3 text-[15px] font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-[10px] transition-colors"
                 >
                   Sign In
                 </button>
                 <button 
                   onClick={() => setShowAuthModal('register')}
-                  className="header-mobile-cta"
+                  className="w-full py-3 text-[15px] font-semibold text-white bg-gradient-to-br from-teal to-teal-600 rounded-[10px] text-center"
                 >
                   Get Started
                 </button>
