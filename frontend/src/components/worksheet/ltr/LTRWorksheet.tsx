@@ -461,35 +461,38 @@ export function LTRWorksheet({
             </div>
           </div>
           
-          {/* Progress indicator */}
-          <div className="flex items-center gap-2 mb-4 max-w-md">
+          {/* Progress indicator - spans full width */}
+          <div className="flex items-center mb-5">
             {SECTIONS.map((section, i) => {
               const isComplete = completedSections.has(i) && i !== currentSection
               const isActive = i === currentSection
+              const isPast = currentSection !== null && i < currentSection
               
               return (
-                <div key={section.id} className={`flex items-center gap-2 ${i < SECTIONS.length - 1 ? 'flex-1' : ''}`}>
+                <div key={section.id} className="flex items-center flex-1 last:flex-none">
                   <button 
                     onClick={() => toggleSection(i)}
                     className="relative group flex-shrink-0"
                     title={section.title}
                   >
                     {isComplete ? (
-                      <div className="w-5 h-5 rounded-full bg-teal flex items-center justify-center text-white">
-                        {Icons.check}
+                      <div className="w-6 h-6 rounded-full bg-teal flex items-center justify-center text-white shadow-sm">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                        </svg>
                       </div>
                     ) : isActive ? (
-                      <div className="w-5 h-5 rounded-full bg-teal ring-4 ring-teal/20" />
+                      <div className="w-6 h-6 rounded-full bg-teal shadow-sm ring-4 ring-teal/20" />
                     ) : (
-                      <div className="w-5 h-5 rounded-full bg-surface-200" />
+                      <div className="w-6 h-6 rounded-full bg-surface-200 border-2 border-surface-300" />
                     )}
                   </button>
                   {i < SECTIONS.length - 1 && (
-                    <div className={`flex-1 h-0.5 ${
-                      (currentSection !== null && i < currentSection) || completedSections.has(i + 1) 
-                        ? 'bg-teal/50' 
-                        : 'bg-surface-200'
-                    }`} />
+                    <div className={`flex-1 h-0.5 mx-1 ${
+                      isPast || isComplete ? 'bg-teal' : 'bg-surface-200'
+                    }`} style={{ 
+                      backgroundImage: isPast || isComplete ? 'none' : 'repeating-linear-gradient(90deg, #CBD5E1 0, #CBD5E1 4px, transparent 4px, transparent 8px)' 
+                    }} />
                   )}
                 </div>
               )
@@ -498,31 +501,31 @@ export function LTRWorksheet({
           
           {/* KPI strip */}
           <div className="grid grid-cols-6 gap-3">
-            <div className="rounded-lg p-3 text-center" style={{ background: 'rgba(8, 145, 178, 0.15)' }}>
-              <div className="text-[8px] font-semibold text-surface-500 uppercase tracking-wide">List Price</div>
-              <div className="text-sm font-bold text-teal num">{fmt.currency(purchasePrice)}</div>
+            <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(8, 145, 178, 0.12)' }}>
+              <div className="text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-1">List Price</div>
+              <div className="text-base font-bold text-teal num">{fmt.currency(purchasePrice)}</div>
             </div>
-            <div className="rounded-lg p-3 text-center" style={{ background: 'rgba(10, 22, 40, 0.08)' }}>
-              <div className="text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Cash Needed</div>
-              <div className="text-sm font-bold text-navy num">{fmt.currency(calc.totalCashNeeded)}</div>
+            <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(10, 22, 40, 0.06)' }}>
+              <div className="text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-1">Cash Needed</div>
+              <div className="text-base font-bold text-navy num">{fmt.currency(calc.totalCashNeeded)}</div>
             </div>
-            <div className="rounded-lg p-3 text-center" style={{ background: isProfit ? 'rgba(8, 145, 178, 0.15)' : 'rgba(239, 68, 68, 0.15)' }}>
-              <div className="text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Annual Profit</div>
-              <div className={`text-sm font-bold num ${isProfit ? 'text-teal' : 'text-danger'}`}>
+            <div className="rounded-xl p-4 text-center" style={{ background: isProfit ? 'rgba(8, 145, 178, 0.12)' : 'rgba(239, 68, 68, 0.12)' }}>
+              <div className="text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-1">Annual Profit</div>
+              <div className={`text-base font-bold num ${isProfit ? 'text-teal' : 'text-danger'}`}>
                 {isProfit ? '+' : ''}{fmt.currency(calc.annualCashFlow)}
               </div>
             </div>
-            <div className="bg-surface-100 rounded-lg p-3 text-center">
-              <div className="text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Cap Rate</div>
-              <div className="text-sm font-bold text-navy num">{fmt.percent(calc.capRatePurchase)}</div>
+            <div className="bg-surface-50 border border-surface-200 rounded-xl p-4 text-center">
+              <div className="text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-1">Cap Rate</div>
+              <div className="text-base font-bold text-navy num">{fmt.percent(calc.capRatePurchase)}</div>
             </div>
-            <div className="bg-surface-100 rounded-lg p-3 text-center">
-              <div className="text-[8px] font-semibold text-surface-500 uppercase tracking-wide">CoC Return</div>
-              <div className="text-sm font-bold text-navy num">{fmt.percent(calc.cashOnCash)}</div>
+            <div className="bg-surface-50 border border-surface-200 rounded-xl p-4 text-center">
+              <div className="text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-1">CoC Return</div>
+              <div className="text-base font-bold text-navy num">{fmt.percent(calc.cashOnCash)}</div>
             </div>
-            <div className="rounded-lg p-3 text-center" style={{ background: 'rgba(8, 145, 178, 0.15)' }}>
-              <div className="text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Deal Score</div>
-              <div className="text-sm font-bold num text-teal">{calc.dealScore}</div>
+            <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(8, 145, 178, 0.12)' }}>
+              <div className="text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-1">Deal Score</div>
+              <div className="text-base font-bold num text-teal">{calc.dealScore}</div>
             </div>
           </div>
         </div>
