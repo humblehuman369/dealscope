@@ -483,7 +483,7 @@ export function LTRWorksheet({
       
       {/* PAGE HEADER */}
       <header className="bg-white border-b border-surface-200 sticky top-[94px] sm:top-[100px] z-40">
-        <div className="mx-auto px-4 sm:px-6 py-4" style={{ maxWidth: '1280px' }}>
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           {/* Top row - responsive layout */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <div className="flex items-start sm:items-center gap-3 sm:gap-5 min-w-0 flex-1">
@@ -601,7 +601,7 @@ export function LTRWorksheet({
       </header>
       
       {/* MAIN CONTENT */}
-      <main className="mx-auto px-4 sm:px-6 py-4 sm:py-6 overflow-x-hidden" style={{ maxWidth: '1280px' }}>
+      <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 overflow-x-hidden">
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 items-start">
           {/* LEFT COLUMN - Worksheet */}
           <div className="space-y-3">
