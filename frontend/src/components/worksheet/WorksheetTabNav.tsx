@@ -116,66 +116,71 @@ export function WorksheetTabNav({
   return (
     <>
       {/* Desktop/Tablet Tab Navigation */}
-      <div className="worksheet-tab-nav">
-        <StrategyDropdown propertyId={propertyId} activeStrategy={strategy} />
+      {/* FIX: Full-width wrapper with constrained inner content */}
+      <nav className="w-full bg-white border-b border-surface-200 sticky top-0 z-50">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="worksheet-tab-nav">
+            <StrategyDropdown propertyId={propertyId} activeStrategy={strategy} />
 
-        {/* Scroll Container with Fade Indicators */}
-        <div className="worksheet-tabs-wrapper">
-          {/* Left Fade + Scroll Arrow */}
-          <div className={`worksheet-tabs-fade left ${showLeftFade ? 'visible' : ''}`}>
-            <button 
-              className="worksheet-tabs-scroll-btn"
-              onClick={scrollLeft}
-              aria-label="Scroll tabs left"
-              tabIndex={showLeftFade ? 0 : -1}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Scrollable Tabs Container */}
-          <div 
-            ref={scrollContainerRef}
-            className="worksheet-tabs-scroll"
-          >
-            {tabs.map((tab) => {
-              const Icon = tab.icon
-              const isActive = tab.section === activeSection
-              const isDisabled = tab.disabled || !isTabsEnabled
-
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => handleTabClick(tab)}
-                  disabled={isDisabled}
-                  className={`worksheet-tab ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
+            {/* Scroll Container with Fade Indicators */}
+            <div className="worksheet-tabs-wrapper">
+              {/* Left Fade + Scroll Arrow */}
+              <div className={`worksheet-tabs-fade left ${showLeftFade ? 'visible' : ''}`}>
+                <button 
+                  className="worksheet-tabs-scroll-btn"
+                  onClick={scrollLeft}
+                  aria-label="Scroll tabs left"
+                  tabIndex={showLeftFade ? 0 : -1}
                 >
-                  <Icon className="worksheet-tab-icon" />
-                  <span className="worksheet-tab-label">{tab.shortLabel}</span>
-                  {isDisabled && <span className="worksheet-tab-badge">Soon</span>}
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-              )
-            })}
-          </div>
+              </div>
 
-          {/* Right Fade + Scroll Arrow */}
-          <div className={`worksheet-tabs-fade right ${showRightFade ? 'visible' : ''}`}>
-            <button 
-              className="worksheet-tabs-scroll-btn"
-              onClick={scrollRight}
-              aria-label="Scroll tabs right"
-              tabIndex={showRightFade ? 0 : -1}
-            >
-              <ChevronRight className="w-4 h-4" />
+              {/* Scrollable Tabs Container */}
+              <div 
+                ref={scrollContainerRef}
+                className="worksheet-tabs-scroll"
+              >
+                {tabs.map((tab) => {
+                  const Icon = tab.icon
+                  const isActive = tab.section === activeSection
+                  const isDisabled = tab.disabled || !isTabsEnabled
+
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => handleTabClick(tab)}
+                      disabled={isDisabled}
+                      className={`worksheet-tab ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
+                    >
+                      <Icon className="worksheet-tab-icon" />
+                      <span className="worksheet-tab-label">{tab.shortLabel}</span>
+                      {isDisabled && <span className="worksheet-tab-badge">Soon</span>}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Right Fade + Scroll Arrow */}
+              <div className={`worksheet-tabs-fade right ${showRightFade ? 'visible' : ''}`}>
+                <button 
+                  className="worksheet-tabs-scroll-btn"
+                  onClick={scrollRight}
+                  aria-label="Scroll tabs right"
+                  tabIndex={showRightFade ? 0 : -1}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            
+            {/* Help button */}
+            <button className="worksheet-help-btn" aria-label="Worksheet help" type="button">
+              <HelpCircle className="w-5 h-5" />
             </button>
           </div>
         </div>
-        
-        {/* Help button */}
-        <button className="worksheet-help-btn" aria-label="Worksheet help" type="button">
-          <HelpCircle className="w-5 h-5" />
-        </button>
-      </div>
+      </nav>
 
       {/* Mobile Dropdown Menu - Shows when mobileMenuOpen is true */}
       {mobileMenuOpen && (
