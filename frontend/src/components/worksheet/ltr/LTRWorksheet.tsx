@@ -434,7 +434,7 @@ export function LTRWorksheet({
                 <p className="text-sm text-surface-500">
                   {city}{city && state ? ', ' : ''}{state} {zip}
                   {beds > 0 && ` · ${beds} bed`}
-                  {baths > 0 && ` · ${baths} bath`}
+                  {baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}
                   {sqft > 0 && ` · ${sqft.toLocaleString()} sqft`}
                 </p>
               </div>
@@ -462,7 +462,7 @@ export function LTRWorksheet({
           </div>
           
           {/* Progress indicator */}
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-4 max-w-md">
             {SECTIONS.map((section, i) => {
               const isComplete = completedSections.has(i) && i !== currentSection
               const isActive = i === currentSection
@@ -471,7 +471,7 @@ export function LTRWorksheet({
                 <div key={section.id} className={`flex items-center gap-2 ${i < SECTIONS.length - 1 ? 'flex-1' : ''}`}>
                   <button 
                     onClick={() => toggleSection(i)}
-                    className="relative group"
+                    className="relative group flex-shrink-0"
                     title={section.title}
                   >
                     {isComplete ? (
