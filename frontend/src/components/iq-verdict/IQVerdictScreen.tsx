@@ -6,7 +6,6 @@
  */
 
 import React from 'react'
-import Link from 'next/link'
 import {
   IQ_COLORS,
   IQProperty,
@@ -22,7 +21,6 @@ import {
 interface IQVerdictScreenProps {
   property: IQProperty
   analysis: IQAnalysisResult
-  onBack: () => void
   onViewStrategy: (strategy: IQStrategy) => void
   onCompareAll: () => void
 }
@@ -30,7 +28,6 @@ interface IQVerdictScreenProps {
 export function IQVerdictScreen({
   property,
   analysis,
-  onBack,
   onViewStrategy,
   onCompareAll,
 }: IQVerdictScreenProps) {
@@ -38,27 +35,6 @@ export function IQVerdictScreen({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-navy-900">
-      {/* Desktop Header */}
-      <header className="bg-white dark:bg-navy-800 border-b border-gray-200 dark:border-navy-700 px-6 lg:px-10 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            <span className="text-sm font-medium">Back</span>
-          </button>
-          
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            Invest<span style={{ color: IQ_COLORS.pacificTeal }}>IQ</span>
-          </h1>
-          
-          <div className="w-20" /> {/* Spacer for centering */}
-        </div>
-      </header>
-
       {/* Main Content - Two Column Layout */}
       <main className="max-w-7xl mx-auto px-6 lg:px-10 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -68,21 +44,39 @@ export function IQVerdictScreen({
             {/* Property Summary Card */}
             <div className="bg-white dark:bg-navy-800 rounded-xl shadow-sm border border-gray-200 dark:border-navy-700 p-6">
               <div className="flex items-center gap-4">
+                {/* Property Photo or Placeholder */}
                 <div 
-                  className="w-16 h-16 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-navy-700"
+                  className="w-16 h-16 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-navy-700 overflow-hidden flex-shrink-0"
                 >
-                  <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                  </svg>
+                  {property.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img 
+                      src={property.imageUrl} 
+                      alt={property.address}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // On error, hide image and show placeholder
+                        (e.target as HTMLImageElement).style.display = 'none'
+                        const parent = (e.target as HTMLImageElement).parentElement
+                        if (parent) {
+                          parent.innerHTML = '<svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>'
+                        }
+                      }}
+                    />
+                  ) : (
+                    <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                  )}
                 </div>
-                <div className="flex-1">
-                  <h2 className="font-semibold text-gray-900 dark:text-white">{property.address}</h2>
+                <div className="flex-1 min-w-0">
+                  <h2 className="font-semibold text-gray-900 dark:text-white truncate">{property.address}</h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {property.beds} bd · {property.baths} ba · {property.sqft?.toLocaleString() || '—'} sqft
                   </p>
                 </div>
                 <div 
-                  className="text-xl font-bold"
+                  className="text-xl font-bold flex-shrink-0"
                   style={{ color: IQ_COLORS.pacificTeal }}
                 >
                   {formatPrice(property.price)}
@@ -191,7 +185,7 @@ export function IQVerdictScreen({
                     <div className="flex-1 text-left">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-gray-900 dark:text-white">
-                          {strategy.icon} {strategy.name}
+                          {strategy.name}
                         </span>
                         {strategy.badge && badgeColors && (
                           <span
