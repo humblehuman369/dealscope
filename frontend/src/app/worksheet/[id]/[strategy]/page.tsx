@@ -84,13 +84,10 @@ export default function StrategyWorksheetPage() {
 
   if (strategyParam === 'str') {
     return (
-      <WorksheetShell
+      <StrWorksheet
         property={property}
         propertyId={propertyId}
-        strategy="str"
-      >
-        <StrWorksheet property={property} propertyId={propertyId} />
-      </WorksheetShell>
+      />
     )
   }
 

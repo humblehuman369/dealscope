@@ -5,10 +5,7 @@ import { useStrWorksheetCalculator } from '@/hooks/useStrWorksheetCalculator'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 
 // Chart components (keep these as external imports)
-import { ProfitFinder } from '../charts/ProfitFinder'
-import { PricingLadder } from '../charts/PricingLadder'
 import { StrRevenueBreakdown } from '../charts/StrRevenueBreakdown'
-import { SeasonalityGrid } from '../charts/SeasonalityGrid'
 import { KeyMetricsGrid } from '../charts/KeyMetricsGrid'
 import { StrVsLtrComparison } from '../charts/StrVsLtrComparison'
 
@@ -877,20 +874,6 @@ export function StrWorksheet({
                   </div>
                 )}
               </div>
-            </div>
-            
-            {/* Profit Finder */}
-            <div className="bg-white rounded-xl shadow-card p-5">
-              <div className="section-label text-navy mb-4">PROFIT FINDER</div>
-              <ProfitFinder
-                purchasePrice={inputs.purchase_price}
-                listPrice={result?.list_price ?? inputs.list_price ?? inputs.purchase_price}
-                breakevenPrice={calc.breakevenPrice}
-                monthlyCashFlow={calc.monthlyCashFlow}
-                buyLabel="Buy"
-                listLabel="List"
-                evenLabel="Even"
-              />
             </div>
             
             {/* Revenue Breakdown */}
