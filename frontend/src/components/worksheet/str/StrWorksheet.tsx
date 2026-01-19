@@ -1,504 +1,868 @@
 'use client'
 
-import { SectionCard, DataRow } from '../SectionCard'
-import { EditableField, DisplayField } from '../EditableField'
+import React, { useState, useMemo, useCallback } from 'react'
+import { useStrWorksheetCalculator } from '@/hooks/useStrWorksheetCalculator'
+import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
+
+// Chart components (keep these as external imports)
 import { ProfitFinder } from '../charts/ProfitFinder'
 import { PricingLadder } from '../charts/PricingLadder'
 import { StrRevenueBreakdown } from '../charts/StrRevenueBreakdown'
 import { SeasonalityGrid } from '../charts/SeasonalityGrid'
-import { StrVsLtrComparison } from '../charts/StrVsLtrComparison'
 import { KeyMetricsGrid } from '../charts/KeyMetricsGrid'
-import { useStrWorksheetCalculator } from '@/hooks/useStrWorksheetCalculator'
-import { SavedProperty } from '@/hooks/useWorksheetProperty'
-import { Building2, CreditCard, Calendar, Home, Percent, Wrench } from 'lucide-react'
+import { StrVsLtrComparison } from '../charts/StrVsLtrComparison'
 
+// ============================================
+// ICONS (minimal line style matching design system)
+// ============================================
+const Icons = {
+  home: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+    </svg>
+  ),
+  bank: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"/>
+    </svg>
+  ),
+  calendar: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+    </svg>
+  ),
+  income: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
+    </svg>
+  ),
+  expense: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+    </svg>
+  ),
+  cashflow: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+    </svg>
+  ),
+  returns: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>
+    </svg>
+  ),
+  check: (
+    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+    </svg>
+  ),
+  chevron: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
+    </svg>
+  ),
+}
+
+// ============================================
+// SECTION DEFINITIONS
+// ============================================
+const SECTIONS = [
+  { id: 'purchase', title: 'Purchase & Setup', icon: 'home' },
+  { id: 'financing', title: 'Financing', icon: 'bank' },
+  { id: 'revenue', title: 'Revenue', icon: 'calendar' },
+  { id: 'expenses', title: 'Expenses', icon: 'expense' },
+  { id: 'cashflow', title: 'Cash Flow', icon: 'cashflow' },
+  { id: 'returns', title: 'Returns', icon: 'returns' },
+] as const
+
+// ============================================
+// FORMATTERS
+// ============================================
+const fmt = {
+  currency: (v: number) => `$${Math.round(v).toLocaleString()}`,
+  currencyCompact: (v: number) => {
+    const abs = Math.abs(v)
+    const sign = v < 0 ? '-' : ''
+    if (abs >= 1000000) {
+      return `${sign}$${(abs / 1000000).toFixed(abs >= 10000000 ? 1 : 2)}M`
+    } else if (abs >= 100000) {
+      return `${sign}$${(abs / 1000).toFixed(0)}K`
+    } else if (abs >= 10000) {
+      return `${sign}$${(abs / 1000).toFixed(1)}K`
+    }
+    return `${sign}$${Math.round(abs).toLocaleString()}`
+  },
+  percent: (v: number) => `${(v * 100).toFixed(1)}%`,
+  percentRaw: (v: number) => `${v.toFixed(1)}%`,
+  years: (v: number) => `${v} yr`,
+  ratio: (v: number) => `${v.toFixed(2)}x`,
+  nights: (v: number) => `${v.toFixed(0)} nights`,
+}
+
+// ============================================
+// PROPS
+// ============================================
 interface StrWorksheetProps {
   property: SavedProperty
+  propertyId: string
+  onExportExcel?: () => void
+  onExportPDF?: () => void
+  onShare?: () => void
 }
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
-}
+// ============================================
+// MAIN COMPONENT
+// ============================================
+export function StrWorksheet({ 
+  property, 
+  onExportPDF,
+}: StrWorksheetProps) {
+  // Property data
+  const propertyData = property.property_data_snapshot || {}
+  const beds = propertyData.bedrooms || 0
+  const baths = propertyData.bathrooms || 0
+  const sqft = propertyData.sqft || 1
+  const address = getDisplayAddress(property)
+  const city = property.address_city || ''
+  const state = property.address_state || ''
+  const zip = property.address_zip || ''
 
-interface SummaryCardData {
-  label: string
-  value: string
-  subtitle?: string
-  highlight?: boolean
-  positive?: boolean
-  negative?: boolean
-}
+  // Use the STR calculator hook
+  const { inputs, updateInput, result, derived } = useStrWorksheetCalculator(property)
 
-function SummaryCards({ cards }: { cards: SummaryCardData[] }) {
-  return (
-    <div className="summary-cards-grid">
-      {cards.map((card) => (
-        <div
-          key={card.label}
-          className={`summary-card ${card.highlight ? 'highlight' : ''}`}
-        >
-          <div className="summary-card-label">{card.label}</div>
-          <div 
-            className={`summary-card-value ${card.positive ? 'positive' : ''} ${card.negative ? 'negative' : ''}`}
-          >
-            {card.value}
+  // Original values for slider ranges
+  const originalPrice = propertyData.listPrice || inputs.purchase_price || 500000
+  const originalAdr = propertyData.averageDailyRate || inputs.average_daily_rate || 200
+
+  // ============================================
+  // VIEW STATE
+  // ============================================
+  const [viewMode, setViewMode] = useState<'guided' | 'showall'>('guided')
+  const [currentSection, setCurrentSection] = useState<number | null>(0)
+  const [completedSections, setCompletedSections] = useState<Set<number>>(new Set([0]))
+
+  // ============================================
+  // DERIVED CALCULATIONS
+  // ============================================
+  const calc = useMemo(() => {
+    const grossRevenue = result?.gross_revenue ?? 0
+    const grossExpenses = result?.gross_expenses ?? 0
+    const noi = result?.noi ?? 0
+    const annualDebtService = derived.annualDebtService ?? 0
+    const annualCashFlow = result?.annual_cash_flow ?? 0
+    const monthlyCashFlow = result?.monthly_cash_flow ?? 0
+    const totalCashNeeded = result?.total_cash_needed ?? 0
+    const dealScore = result?.deal_score ?? 0
+    const capRate = result?.cap_rate ?? 0
+    const cashOnCash = result?.cash_on_cash_return ?? 0
+    const dscr = result?.dscr ?? 0
+    const grm = grossRevenue > 0 ? inputs.purchase_price / grossRevenue : 0
+    
+    // Calculate breakeven price
+    const breakevenPrice = result?.breakeven_price ?? inputs.purchase_price
+    
+    // Gauge needle calculation
+    const gaugeAngle = 180 - (dealScore * 1.8)
+    const gaugeAngleRad = (gaugeAngle * Math.PI) / 180
+    const needleLength = 35
+    const needleX = 80 + needleLength * Math.cos(gaugeAngleRad)
+    const needleY = 80 - needleLength * Math.sin(gaugeAngleRad)
+
+    return {
+      grossRevenue,
+      grossExpenses,
+      noi,
+      annualDebtService,
+      annualCashFlow,
+      monthlyCashFlow,
+      totalCashNeeded,
+      dealScore,
+      capRate,
+      cashOnCash,
+      dscr,
+      grm,
+      breakevenPrice,
+      needleX,
+      needleY,
+      loanAmount: result?.loan_amount ?? 0,
+      monthlyPayment: result?.monthly_payment ?? 0,
+      rentalRevenue: result?.rental_revenue ?? 0,
+      cleaningFeeRevenue: result?.cleaning_fee_revenue ?? 0,
+      revpar: result?.revpar ?? 0,
+      bookedNights: result?.booked_nights ?? 0,
+    }
+  }, [result, derived, inputs.purchase_price])
+
+  // ============================================
+  // SECTION NAVIGATION
+  // ============================================
+  const toggleSection = useCallback((index: number) => {
+    if (viewMode === 'showall') return
+    
+    if (currentSection === index) {
+      setCurrentSection(null)
+    } else {
+      setCurrentSection(index)
+      setCompletedSections(prev => new Set([...Array.from(prev), index]))
+    }
+  }, [viewMode, currentSection])
+
+  const goToNextSection = useCallback(() => {
+    if (currentSection !== null && currentSection < SECTIONS.length - 1) {
+      toggleSection(currentSection + 1)
+    }
+  }, [currentSection, toggleSection])
+
+  // ============================================
+  // RENDER HELPERS
+  // ============================================
+  const InputRow = ({ label, value, onChange, min, max, step, format, subValue }: {
+    label: string
+    value: number
+    onChange: (v: number) => void
+    min: number
+    max: number
+    step: number
+    format: 'currency' | 'percent' | 'years' | 'nights'
+    subValue?: string
+  }) => {
+    const displayValue = format === 'currency' 
+      ? fmt.currency(value) 
+      : format === 'percent' 
+        ? fmt.percent(value) 
+        : format === 'years'
+          ? fmt.years(value)
+          : fmt.nights(value)
+    const percentage = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100))
+    
+    return (
+      <div className="py-3">
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-sm text-surface-500">{label}</label>
+          <div className="text-right">
+            <span className="text-sm font-semibold text-navy num">{displayValue}</span>
+            {subValue && <span className="text-xs text-surface-400 ml-1.5 num">{subValue}</span>}
           </div>
-          {card.subtitle && (
-            <div className="summary-card-subtitle">{card.subtitle}</div>
-          )}
         </div>
-      ))}
-    </div>
-  )
-}
-
-export function StrWorksheet({ property }: StrWorksheetProps) {
-  const { inputs, updateInput, result, derived, isCalculating, error } = useStrWorksheetCalculator(property)
-
-  // Use ORIGINAL values from property for stable slider ranges
-  const originalPrice = property.property_data_snapshot?.listPrice || inputs.purchase_price || 500000
-  const originalAdr = property.property_data_snapshot?.averageDailyRate || inputs.average_daily_rate || 200
-
-  const dealScoreLabel = (score: number) => {
-    if (score >= 85) return 'Great STR'
-    if (score >= 70) return 'Good STR'
-    if (score >= 55) return 'Fair STR'
-    return 'Risky STR'
+        <div className="relative">
+          <div className="h-1.5 bg-surface-200 rounded-full">
+            <div className="h-full bg-teal rounded-full transition-all duration-100" style={{ width: `${percentage}%` }} />
+          </div>
+          <input 
+            type="range" 
+            min={min} 
+            max={max} 
+            step={step} 
+            value={value}
+            onChange={(e) => onChange(parseFloat(e.target.value))}
+            className="absolute inset-0 w-full h-6 -top-2 opacity-0 cursor-pointer"
+          />
+        </div>
+      </div>
+    )
   }
 
-  const monthlyCashFlow = result?.monthly_cash_flow ?? 0
+  const DisplayRow = ({ label, value, variant = 'default' }: {
+    label: string
+    value: string
+    variant?: 'default' | 'success' | 'danger' | 'muted' | 'teal'
+  }) => {
+    const colors = {
+      default: 'text-navy',
+      success: 'text-teal',
+      danger: 'text-danger',
+      muted: 'text-surface-400',
+      teal: 'text-teal',
+    }
+    return (
+      <div className="flex items-center justify-between py-2.5">
+        <span className="text-sm text-surface-500">{label}</span>
+        <span className={`text-sm font-semibold num ${colors[variant]}`}>{value}</span>
+      </div>
+    )
+  }
 
-  const summaryCards: SummaryCardData[] = [
-    {
-      label: 'Gross Revenue',
-      value: formatCurrency(result?.gross_revenue ?? 0),
-      subtitle: 'Annual',
-      highlight: true,
-    },
-    {
-      label: 'Cash Needed',
-      value: formatCurrency(result?.total_cash_needed ?? 0),
-    },
-    {
-      label: 'Cash Flow',
-      value: `${formatCurrency(monthlyCashFlow)}/mo`,
-      positive: monthlyCashFlow > 0,
-      negative: monthlyCashFlow < 0,
-    },
-    {
-      label: 'Cap Rate',
-      value: `${(result?.cap_rate ?? 0).toFixed(1)}%`,
-    },
-    {
-      label: 'CoC Return',
-      value: `${(result?.cash_on_cash_return ?? 0).toFixed(1)}%`,
-      positive: (result?.cash_on_cash_return ?? 0) > 0,
-      negative: (result?.cash_on_cash_return ?? 0) < 0,
-    },
-    {
-      label: 'Deal Score',
-      value: `${result?.deal_score ?? 0}`,
-      subtitle: dealScoreLabel(result?.deal_score ?? 0),
-      highlight: true,
-    },
-  ]
+  const MetricRow = ({ label, value, target, isGood }: {
+    label: string
+    value: string
+    target?: string
+    isGood?: boolean
+  }) => (
+    <div className="flex items-center justify-between py-2.5 border-b border-surface-100 last:border-0">
+      <span className="text-sm text-surface-500">{label}</span>
+      <div className="flex items-center gap-2">
+        <span className={`text-sm font-semibold num ${isGood ? 'text-teal' : 'text-navy'}`}>{value}</span>
+        {target && <span className="text-[10px] text-surface-400">/ {target}</span>}
+      </div>
+    </div>
+  )
 
-  const grossRevenue = result?.gross_revenue ?? 0
-  const monthlyPayment = result?.monthly_payment ?? 0
-  const estLTRMonthlyRent = (grossRevenue / 12) * 0.35
-  const insuranceMonthly = inputs.insurance_annual / 12
-  const taxesMonthly = inputs.property_taxes_annual / 12
-  const estLTRCashFlow =
-    estLTRMonthlyRent - monthlyPayment - (inputs.supplies_monthly * 0.2) - insuranceMonthly * 0.6 - taxesMonthly
-  const grm = grossRevenue > 0 ? inputs.purchase_price / grossRevenue : 0
+  const SummaryBox = ({ label, value, variant = 'default' }: {
+    label: string
+    value: string
+    variant?: 'default' | 'success' | 'danger' | 'teal'
+  }) => {
+    const styles = {
+      default: 'bg-surface-50 border-surface-200',
+      success: 'bg-teal/10 border-teal/20',
+      danger: 'bg-danger/10 border-danger/20',
+      teal: 'bg-teal/10 border-teal/20',
+    }
+    const textColor = {
+      default: 'text-navy',
+      success: 'text-teal',
+      danger: 'text-danger',
+      teal: 'text-teal',
+    }
+    return (
+      <div className={`rounded-xl border px-4 py-3 ${styles[variant]}`}>
+        <div className="section-label text-surface-500 mb-0.5">{label}</div>
+        <div className={`text-lg font-bold num ${textColor[variant]}`}>{value}</div>
+      </div>
+    )
+  }
 
-  return (
-    <div className="str-worksheet-container">
-      {/* Summary Metrics - Responsive Grid: 2 cols mobile, 3 cols tablet, 6 cols desktop */}
-      <SummaryCards cards={summaryCards} />
+  const NextButton = ({ sectionIndex }: { sectionIndex: number }) => {
+    if (sectionIndex >= SECTIONS.length - 1 || viewMode === 'showall') return null
+    const nextSection = SECTIONS[sectionIndex + 1]
+    return (
+      <div className="pt-4 mt-4 border-t border-surface-100">
+        <button 
+          onClick={goToNextSection}
+          className="w-full py-3 px-4 bg-teal/10 hover:bg-teal/20 text-navy border border-teal/20 text-sm font-bold rounded-[40px] flex items-center justify-center gap-2 transition-colors"
+        >
+          Continue to {nextSection.title} →
+        </button>
+      </div>
+    )
+  }
 
-      {/* Loading/Error State */}
-      {(isCalculating || error) && (
-        <div className={`worksheet-status-message ${error ? 'error' : 'loading'}`}>
-          {error ? `Calculation error: ${error}` : 'Recalculating worksheet metrics...'}
-        </div>
-      )}
-
-      {/* Two-Column Layout: 50-50 on desktop, single column on mobile/tablet */}
-      <div className="worksheet-two-column-layout">
-        {/* LEFT COLUMN: Input Sections (scrollable on desktop) */}
-        <div className="worksheet-left-column">
-          <div className="worksheet-sections-stack">
-            {/* Purchase & Setup Section */}
-            <SectionCard title="Purchase & Setup">
-              <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />} hasSlider>
-                <EditableField
-                  value={inputs.purchase_price}
-                  onChange={(val) => updateInput('purchase_price', val)}
-                  format="currency"
-                  min={Math.round(originalPrice * 0.5)}
-                  max={Math.round(originalPrice * 1.5)}
-                  step={1000}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Purchase Costs" icon={<CreditCard className="w-4 h-4" />} hasSlider>
-                <EditableField
-                  value={inputs.purchase_costs}
-                  onChange={(val) => updateInput('purchase_costs', val)}
-                  format="currency"
-                  min={0}
-                  max={Math.round(originalPrice * 0.1)}
-                  step={500}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Furnishing Budget" hasSlider>
-                <EditableField
-                  value={inputs.furnishing_budget}
-                  onChange={(val) => updateInput('furnishing_budget', val)}
-                  format="currency"
-                  min={0}
-                  max={50000}
-                  step={500}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Total Cash Needed" isTotal>
-                <DisplayField value={result?.total_cash_needed ?? 0} format="currency" />
-              </DataRow>
-            </SectionCard>
-
-            {/* Financing Section */}
-            <SectionCard title="Financing">
-              <DataRow label="Loan Amount" icon={<Building2 className="w-4 h-4" />}>
-                <DisplayField value={result?.loan_amount ?? 0} format="currency" />
-              </DataRow>
-              <DataRow label="Loan Type">
-                <span className="text-right min-w-[100px] flex-shrink-0 font-semibold text-[var(--ws-text-primary)]">
-                  Amortizing, {inputs.loan_term_years} Year
-                </span>
-              </DataRow>
-              <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />} hasSlider>
-                <EditableField
-                  value={inputs.interest_rate}
-                  onChange={(val) => updateInput('interest_rate', val)}
-                  format="percent"
-                  min={0.04}
-                  max={0.12}
-                  step={0.00125}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Loan Term" icon={<Calendar className="w-4 h-4" />} hasSlider>
-                <EditableField
-                  value={inputs.loan_term_years}
-                  onChange={(val) => updateInput('loan_term_years', Math.round(val))}
-                  format="years"
-                  min={10}
-                  max={30}
-                  step={5}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Monthly Payment" isHighlight>
-                <DisplayField value={result?.monthly_payment ?? 0} format="currency" />
-              </DataRow>
-            </SectionCard>
-
-            {/* Revenue Section */}
-            <SectionCard title="Revenue">
-              <DataRow label="Average Daily Rate" hasSlider>
-                <EditableField
-                  value={inputs.average_daily_rate}
-                  onChange={(val) => updateInput('average_daily_rate', val)}
-                  format="currency"
-                  min={Math.round(originalAdr * 0.5)}
-                  max={Math.round(originalAdr * 2)}
-                  step={5}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Occupancy Rate" hasSlider>
-                <EditableField
-                  value={inputs.occupancy_rate}
-                  onChange={(val) => updateInput('occupancy_rate', val)}
-                  format="percent"
-                  min={0.3}
-                  max={0.95}
-                  step={0.01}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Cleaning Fee" hasSlider>
-                <EditableField
-                  value={inputs.cleaning_fee_revenue}
-                  onChange={(val) => updateInput('cleaning_fee_revenue', val)}
-                  format="currency"
-                  min={50}
-                  max={500}
-                  step={10}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Avg Booking Length" hasSlider>
-                <EditableField
-                  value={inputs.avg_booking_length}
-                  onChange={(val) => updateInput('avg_booking_length', val)}
-                  format="number"
-                  suffix=" nights"
-                  min={1}
-                  max={14}
-                  step={0.5}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Est. Bookings/Year">
-                <DisplayField value={result?.num_bookings ?? 0} format="number" />
-              </DataRow>
-              <DataRow label="Gross Revenue" isTotal>
-                <DisplayField value={result?.gross_revenue ?? 0} format="currency" />
-              </DataRow>
-            </SectionCard>
-
-            {/* Operating Expenses Section */}
-            <SectionCard title="Operating Expenses">
-              {/* Platform Fees % - Editable with slider */}
-              <DataRow label="% Platform Fees" icon={<Percent className="w-4 h-4" />} hasSlider>
-                <EditableField
-                  value={inputs.platform_fees_pct}
-                  onChange={(val) => updateInput('platform_fees_pct', val)}
-                  format="percent"
-                  min={0.03}
-                  max={0.20}
-                  step={0.01}
-                  showSlider={true}
-                />
-              </DataRow>
-              {/* Platform Fees $ - Calculated amount */}
-              <DataRow label="$ Platform Fees" icon={<CreditCard className="w-4 h-4" />}>
-                <DisplayField value={result?.platform_fees ?? 0} format="currency" />
-              </DataRow>
-              
-              {/* Property Management % - Editable with slider */}
-              <DataRow label="% Property Mgmt" icon={<Percent className="w-4 h-4" />} hasSlider>
-                <EditableField
-                  value={inputs.property_management_pct}
-                  onChange={(val) => updateInput('property_management_pct', val)}
-                  format="percent"
-                  min={0}
-                  max={0.30}
-                  step={0.01}
-                  showSlider={true}
-                />
-              </DataRow>
-              {/* Property Management $ - Calculated amount */}
-              <DataRow label="$ Property Mgmt" icon={<CreditCard className="w-4 h-4" />}>
-                <DisplayField value={result?.str_management ?? 0} format="currency" />
-              </DataRow>
-              
-              <DataRow label="Cleaning Cost/Turn" hasSlider>
-                <EditableField
-                  value={inputs.cleaning_cost_per_turn}
-                  onChange={(val) => updateInput('cleaning_cost_per_turn', val)}
-                  format="currency"
-                  min={50}
-                  max={300}
-                  step={10}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Supplies & Amenities" hasSlider>
-                <EditableField
-                  value={inputs.supplies_monthly}
-                  onChange={(val) => updateInput('supplies_monthly', val)}
-                  format="currency"
-                  min={0}
-                  max={500}
-                  step={25}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Utilities" hasSlider>
-                <EditableField
-                  value={inputs.utilities_monthly}
-                  onChange={(val) => updateInput('utilities_monthly', val)}
-                  format="currency"
-                  min={0}
-                  max={500}
-                  step={25}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Insurance (STR)" hasSlider>
-                <EditableField
-                  value={inputs.insurance_annual}
-                  onChange={(val) => updateInput('insurance_annual', val)}
-                  format="currency"
-                  min={1000}
-                  max={10000}
-                  step={100}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Property Taxes" hasSlider>
-                <EditableField
-                  value={inputs.property_taxes_annual}
-                  onChange={(val) => updateInput('property_taxes_annual', val)}
-                  format="currency"
-                  min={1000}
-                  max={30000}
-                  step={100}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Maintenance" hasSlider>
-                <EditableField
-                  value={inputs.maintenance_pct}
-                  onChange={(val) => updateInput('maintenance_pct', val)}
-                  format="percent"
-                  min={0}
-                  max={0.10}
-                  step={0.01}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="CapEx Reserve" icon={<Wrench className="w-4 h-4" />} hasSlider>
-                <EditableField
-                  value={inputs.capex_pct}
-                  onChange={(val) => updateInput('capex_pct', val)}
-                  format="percent"
-                  min={0}
-                  max={0.10}
-                  step={0.01}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Total Operating Expenses" isTotal>
-                <DisplayField value={result?.gross_expenses ?? 0} format="currency" />
-              </DataRow>
-            </SectionCard>
-
-            {/* Cash Flow Summary Section */}
-            <SectionCard title="Cash Flow Summary">
-              <DataRow label="Gross Revenue">
-                <DisplayField value={result?.gross_revenue ?? 0} format="currency" />
-              </DataRow>
-              <DataRow label="Operating Expenses">
-                <DisplayField value={-(result?.gross_expenses ?? 0)} format="currency" isNegative />
-              </DataRow>
-              <DataRow label="Net Operating Income">
-                <DisplayField value={result?.noi ?? 0} format="currency" />
-              </DataRow>
-              <DataRow label="Annual Debt Service">
-                <DisplayField value={-(derived.annualDebtService ?? 0)} format="currency" isNegative />
-              </DataRow>
-              <DataRow label="Annual Cash Flow" isTotal>
-                <DisplayField 
-                  value={result?.annual_cash_flow ?? 0} 
-                  format="currency" 
-                  isPositive={(result?.annual_cash_flow ?? 0) > 0}
-                  isNegative={(result?.annual_cash_flow ?? 0) < 0}
-                />
-              </DataRow>
-              <DataRow label="Monthly Cash Flow">
-                <DisplayField 
-                  value={result?.monthly_cash_flow ?? 0} 
-                  format="currency" 
-                  isPositive={(result?.monthly_cash_flow ?? 0) > 0}
-                  isNegative={(result?.monthly_cash_flow ?? 0) < 0}
-                />
-              </DataRow>
-            </SectionCard>
+  const Section = ({ index, title, iconKey, children }: {
+    index: number
+    title: string
+    iconKey: keyof typeof Icons
+    children: React.ReactNode
+  }) => {
+    const section = SECTIONS[index]
+    const isOpen = viewMode === 'showall' || currentSection === index
+    const isComplete = completedSections.has(index) && currentSection !== index
+    
+    return (
+      <div 
+        id={`section-${section.id}`}
+        className={`bg-white rounded-xl shadow-card overflow-hidden transition-shadow hover:shadow-card-hover ${isOpen ? 'ring-2 ring-teal/20' : ''}`}
+      >
+        <button 
+          onClick={() => toggleSection(index)}
+          className="w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-surface-50"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-teal">{Icons[iconKey]}</span>
+            <span className="text-sm font-semibold text-navy">{title}</span>
+            {isComplete && (
+              <span className="w-4 h-4 rounded-full bg-teal flex items-center justify-center text-white">
+                {Icons.check}
+              </span>
+            )}
+          </div>
+          <span 
+            className="text-surface-400 transition-transform duration-200"
+            style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+          >
+            {Icons.chevron}
+          </span>
+        </button>
+        <div 
+          className={`transition-all duration-300 ease-out overflow-hidden ${
+            isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="px-4 pb-4 pt-1">
+            {children}
+            <NextButton sectionIndex={index} />
           </div>
         </div>
+      </div>
+    )
+  }
 
-        {/* RIGHT COLUMN: Charts & Visualizations (sticky on desktop) */}
-        <aside className="worksheet-right-column">
-          <div className="worksheet-charts-stack">
+  // ============================================
+  // VERDICT LOGIC
+  // ============================================
+  const isProfit = calc.annualCashFlow >= 0
+  let verdict: string, verdictSub: string
+  if (calc.dealScore >= 85) {
+    verdict = "Great STR"
+    verdictSub = "Excellent short-term rental potential"
+  } else if (calc.dealScore >= 70) {
+    verdict = "Good STR"
+    verdictSub = "Solid STR fundamentals"
+  } else if (calc.dealScore >= 55) {
+    verdict = "Fair STR"
+    verdictSub = "Consider market conditions carefully"
+  } else if (isProfit) {
+    verdict = "Marginal STR"
+    verdictSub = "Thin margins - proceed with caution"
+  } else {
+    verdict = "Risky STR"
+    verdictSub = "Deal loses money as structured"
+  }
+
+  const targets = [
+    { label: 'Cap', actual: calc.capRate, target: 8, unit: '%', met: calc.capRate >= 8 },
+    { label: 'CoC', actual: calc.cashOnCash, target: 10, unit: '%', met: calc.cashOnCash >= 10 },
+    { label: 'DSCR', actual: calc.dscr, target: 1.2, unit: 'x', met: calc.dscr >= 1.2 },
+    { label: 'GRM', actual: calc.grm, target: 10, unit: '', met: calc.grm <= 10 && calc.grm > 0 },
+  ]
+
+  // Estimated LTR comparison
+  const estLTRMonthlyRent = (calc.grossRevenue / 12) * 0.35
+  const estLTRCashFlow = estLTRMonthlyRent - calc.monthlyPayment - (inputs.supplies_monthly * 0.2) - (inputs.insurance_annual / 12) * 0.6 - (inputs.property_taxes_annual / 12)
+
+  // ============================================
+  // RENDER
+  // ============================================
+  return (
+    <div className="min-h-screen bg-surface-50">
+      {/* PAGE HEADER */}
+      <header className="bg-white border-b border-surface-200 sticky top-14 z-50">
+        <div className="mx-auto px-4 sm:px-6 py-4" style={{ maxWidth: '1280px' }}>
+          {/* Top row */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div className="flex items-start sm:items-center gap-3 sm:gap-5 min-w-0 flex-1">
+              <button className="text-teal hover:text-teal-dark transition-colors text-sm font-medium flex-shrink-0">
+                ← Back
+              </button>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm sm:text-base font-semibold text-navy truncate">{address}</h1>
+                <p className="text-xs sm:text-sm text-surface-500 truncate">
+                  {city}{city && state ? ', ' : ''}{state} {zip}
+                  {beds > 0 && ` · ${beds} bed`}
+                  {baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}
+                  {sqft > 0 && ` · ${sqft.toLocaleString()} sqft`}
+                </p>
+              </div>
+            </div>
+            
+            {/* View Toggle */}
+            <div className="flex items-center bg-surface-100 rounded-lg p-1 flex-shrink-0 self-end sm:self-auto">
+              <button 
+                onClick={() => setViewMode('guided')}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold rounded-md transition-all ${
+                  viewMode === 'guided' ? 'bg-teal text-white' : 'text-surface-500 hover:text-surface-700'
+                }`}
+              >
+                Guided
+              </button>
+              <button 
+                onClick={() => setViewMode('showall')}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
+                  viewMode === 'showall' ? 'bg-teal text-white' : 'text-surface-500 hover:text-surface-700'
+                }`}
+              >
+                Expand All
+              </button>
+            </div>
+          </div>
+          
+          {/* Progress indicator */}
+          <div className="flex items-center mb-4 sm:mb-5">
+            {SECTIONS.map((section, i) => {
+              const isComplete = completedSections.has(i) && i !== currentSection
+              const isActive = i === currentSection
+              const isPast = currentSection !== null && i < currentSection
+              
+              return (
+                <div key={section.id} className="flex items-center flex-1 last:flex-none">
+                  <button 
+                    onClick={() => toggleSection(i)}
+                    className="relative group flex-shrink-0"
+                    title={section.title}
+                  >
+                    {isComplete ? (
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-teal flex items-center justify-center text-white shadow-sm">
+                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                        </svg>
+                      </div>
+                    ) : isActive ? (
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-teal shadow-sm ring-2 sm:ring-4 ring-teal/20" />
+                    ) : (
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-surface-200 border-2 border-surface-300" />
+                    )}
+                  </button>
+                  {i < SECTIONS.length - 1 && (
+                    <div className={`flex-1 h-0.5 mx-0.5 sm:mx-1 ${
+                      isPast || isComplete ? 'bg-teal' : 'bg-surface-200'
+                    }`} style={{ 
+                      backgroundImage: isPast || isComplete ? 'none' : 'repeating-linear-gradient(90deg, #CBD5E1 0, #CBD5E1 4px, transparent 4px, transparent 8px)' 
+                    }} />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+          
+          {/* KPI strip */}
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
+            <div className="rounded-lg p-2 sm:p-3 text-center" style={{ background: 'rgba(8, 145, 178, 0.15)' }}>
+              <div className="text-[7px] sm:text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Gross Revenue</div>
+              <div className="text-xs sm:text-sm font-bold text-teal num">{fmt.currencyCompact(calc.grossRevenue)}</div>
+            </div>
+            <div className="rounded-lg p-2 sm:p-3 text-center" style={{ background: 'rgba(10, 22, 40, 0.08)' }}>
+              <div className="text-[7px] sm:text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Cash Needed</div>
+              <div className="text-xs sm:text-sm font-bold text-navy num">{fmt.currencyCompact(calc.totalCashNeeded)}</div>
+            </div>
+            <div className="rounded-lg p-2 sm:p-3 text-center" style={{ background: calc.annualCashFlow >= 0 ? 'rgba(8, 145, 178, 0.15)' : 'rgba(239, 68, 68, 0.12)' }}>
+              <div className="text-[7px] sm:text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Annual Profit</div>
+              <div className={`text-xs sm:text-sm font-bold num ${calc.annualCashFlow >= 0 ? 'text-teal' : 'text-danger'}`}>
+                {calc.annualCashFlow >= 0 ? '+' : ''}{fmt.currencyCompact(calc.annualCashFlow)}
+              </div>
+            </div>
+            <div className="rounded-lg p-2 sm:p-3 text-center bg-surface-100">
+              <div className="text-[7px] sm:text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Cap Rate</div>
+              <div className="text-xs sm:text-sm font-bold text-navy num">{calc.capRate.toFixed(1)}%</div>
+            </div>
+            <div className="rounded-lg p-2 sm:p-3 text-center bg-surface-100">
+              <div className="text-[7px] sm:text-[8px] font-semibold text-surface-500 uppercase tracking-wide">CoC Return</div>
+              <div className="text-xs sm:text-sm font-bold text-navy num">{calc.cashOnCash.toFixed(1)}%</div>
+            </div>
+            <div className="rounded-lg p-2 sm:p-3 text-center" style={{ background: 'rgba(8, 145, 178, 0.15)' }}>
+              <div className="text-[7px] sm:text-[8px] font-semibold text-surface-500 uppercase tracking-wide">Deal Score</div>
+              <div className="text-xs sm:text-sm font-bold text-teal num">{calc.dealScore}</div>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      {/* MAIN CONTENT */}
+      <main className="mx-auto px-4 sm:px-6 py-6" style={{ maxWidth: '1280px' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          {/* LEFT COLUMN - Worksheet */}
+          <div className="space-y-3">
+            {/* Purchase & Setup */}
+            <Section index={0} title="Purchase & Setup" iconKey="home">
+              <InputRow 
+                label="Purchase Price" 
+                value={inputs.purchase_price} 
+                onChange={(val) => updateInput('purchase_price', val)} 
+                min={Math.round(originalPrice * 0.5)} 
+                max={Math.round(originalPrice * 1.5)} 
+                step={5000} 
+                format="currency" 
+              />
+              <InputRow 
+                label="Closing Costs" 
+                value={inputs.purchase_costs} 
+                onChange={(val) => updateInput('purchase_costs', val)} 
+                min={0} 
+                max={Math.round(originalPrice * 0.1)} 
+                step={500} 
+                format="currency" 
+              />
+              <InputRow 
+                label="Furnishing Budget" 
+                value={inputs.furnishing_budget} 
+                onChange={(val) => updateInput('furnishing_budget', val)} 
+                min={0} 
+                max={50000} 
+                step={500} 
+                format="currency" 
+              />
+              <div className="mt-3 pt-3">
+                <SummaryBox label="Total Cash Required" value={fmt.currency(calc.totalCashNeeded)} variant="teal" />
+              </div>
+            </Section>
+            
+            {/* Financing */}
+            <Section index={1} title="Financing" iconKey="bank">
+              <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
+              <InputRow 
+                label="Down Payment" 
+                value={inputs.down_payment_pct} 
+                onChange={(val) => updateInput('down_payment_pct', val)} 
+                min={0} 
+                max={1} 
+                step={0.01} 
+                format="percent" 
+                subValue={fmt.currency(inputs.purchase_price * inputs.down_payment_pct)}
+              />
+              <InputRow 
+                label="Interest Rate" 
+                value={inputs.interest_rate} 
+                onChange={(val) => updateInput('interest_rate', val)} 
+                min={0.04} 
+                max={0.12} 
+                step={0.00125} 
+                format="percent" 
+              />
+              <InputRow 
+                label="Loan Term" 
+                value={inputs.loan_term_years} 
+                onChange={(val) => updateInput('loan_term_years', val)} 
+                min={10} 
+                max={30} 
+                step={5} 
+                format="years" 
+              />
+              <div className="mt-3 pt-3">
+                <SummaryBox label="Monthly Payment" value={fmt.currency(calc.monthlyPayment)} variant="default" />
+              </div>
+            </Section>
+            
+            {/* Revenue */}
+            <Section index={2} title="Revenue" iconKey="calendar">
+              <InputRow 
+                label="Average Daily Rate" 
+                value={inputs.average_daily_rate} 
+                onChange={(val) => updateInput('average_daily_rate', val)} 
+                min={Math.round(originalAdr * 0.5)} 
+                max={Math.round(originalAdr * 2)} 
+                step={5} 
+                format="currency" 
+              />
+              <InputRow 
+                label="Occupancy Rate" 
+                value={inputs.occupancy_rate} 
+                onChange={(val) => updateInput('occupancy_rate', val)} 
+                min={0.3} 
+                max={0.95} 
+                step={0.01} 
+                format="percent" 
+                subValue={`${Math.round(inputs.occupancy_rate * 365)} nights`}
+              />
+              <InputRow 
+                label="Cleaning Fee" 
+                value={inputs.cleaning_fee} 
+                onChange={(val) => updateInput('cleaning_fee', val)} 
+                min={50} 
+                max={300} 
+                step={10} 
+                format="currency" 
+              />
+              <InputRow 
+                label="Avg Stay Length" 
+                value={inputs.avg_stay_length} 
+                onChange={(val) => updateInput('avg_stay_length', val)} 
+                min={1} 
+                max={14} 
+                step={0.5} 
+                format="nights" 
+              />
+              <div className="mt-3 pt-3 space-y-2">
+                <SummaryBox label="Gross Revenue" value={`${fmt.currency(calc.grossRevenue)}/yr`} variant="teal" />
+              </div>
+            </Section>
+            
+            {/* Expenses */}
+            <Section index={3} title="Expenses" iconKey="expense">
+              <InputRow 
+                label="Platform Fees" 
+                value={inputs.platform_fee_pct} 
+                onChange={(val) => updateInput('platform_fee_pct', val)} 
+                min={0} 
+                max={0.20} 
+                step={0.01} 
+                format="percent" 
+              />
+              <InputRow 
+                label="Property Management" 
+                value={inputs.property_management_pct} 
+                onChange={(val) => updateInput('property_management_pct', val)} 
+                min={0} 
+                max={0.30} 
+                step={0.01} 
+                format="percent" 
+              />
+              <InputRow 
+                label="Cleaning Cost/Turn" 
+                value={inputs.cleaning_cost_per_turn} 
+                onChange={(val) => updateInput('cleaning_cost_per_turn', val)} 
+                min={50} 
+                max={300} 
+                step={10} 
+                format="currency" 
+              />
+              <InputRow 
+                label="Supplies & Amenities" 
+                value={inputs.supplies_monthly} 
+                onChange={(val) => updateInput('supplies_monthly', val)} 
+                min={0} 
+                max={500} 
+                step={25} 
+                format="currency" 
+                subValue="/mo"
+              />
+              <InputRow 
+                label="Utilities" 
+                value={inputs.utilities_monthly} 
+                onChange={(val) => updateInput('utilities_monthly', val)} 
+                min={0} 
+                max={500} 
+                step={25} 
+                format="currency" 
+                subValue="/mo"
+              />
+              <InputRow 
+                label="Insurance (Annual)" 
+                value={inputs.insurance_annual} 
+                onChange={(val) => updateInput('insurance_annual', val)} 
+                min={1000} 
+                max={10000} 
+                step={100} 
+                format="currency" 
+              />
+              <InputRow 
+                label="Property Taxes" 
+                value={inputs.property_taxes_annual} 
+                onChange={(val) => updateInput('property_taxes_annual', val)} 
+                min={1000} 
+                max={30000} 
+                step={100} 
+                format="currency" 
+              />
+              <InputRow 
+                label="Maintenance" 
+                value={inputs.maintenance_pct} 
+                onChange={(val) => updateInput('maintenance_pct', val)} 
+                min={0} 
+                max={0.10} 
+                step={0.01} 
+                format="percent" 
+              />
+              <InputRow 
+                label="CapEx Reserve" 
+                value={inputs.capex_pct} 
+                onChange={(val) => updateInput('capex_pct', val)} 
+                min={0} 
+                max={0.10} 
+                step={0.01} 
+                format="percent" 
+              />
+              <div className="mt-3 pt-3">
+                <SummaryBox label="Total Operating Expenses" value={`${fmt.currency(calc.grossExpenses)}/yr`} variant="danger" />
+              </div>
+            </Section>
+            
+            {/* Cash Flow */}
+            <Section index={4} title="Cash Flow" iconKey="cashflow">
+              <DisplayRow label="Gross Revenue" value={`${fmt.currency(calc.grossRevenue)}/yr`} variant="teal" />
+              <DisplayRow label="Operating Expenses" value={`−${fmt.currency(calc.grossExpenses)}`} variant="danger" />
+              <DisplayRow label="Net Operating Income" value={fmt.currency(calc.noi)} />
+              <DisplayRow label="Annual Debt Service" value={`−${fmt.currency(calc.annualDebtService)}`} variant="danger" />
+              <div className="mt-3 pt-3 space-y-2">
+                <SummaryBox label="Monthly Cash Flow" value={fmt.currency(calc.monthlyCashFlow)} variant={calc.monthlyCashFlow >= 0 ? 'success' : 'danger'} />
+                <SummaryBox label="Annual Cash Flow" value={fmt.currency(calc.annualCashFlow)} variant={calc.annualCashFlow >= 0 ? 'success' : 'danger'} />
+              </div>
+            </Section>
+            
+            {/* Returns */}
+            <Section index={5} title="Returns" iconKey="returns">
+              <MetricRow label="Cap Rate" value={`${calc.capRate.toFixed(1)}%`} target="8%" isGood={calc.capRate >= 8} />
+              <MetricRow label="Cash on Cash" value={`${calc.cashOnCash.toFixed(1)}%`} target="10%" isGood={calc.cashOnCash >= 10} />
+              <MetricRow label="DSCR" value={fmt.ratio(calc.dscr)} target="1.2x" isGood={calc.dscr >= 1.2} />
+              <MetricRow label="Gross Rent Multiplier" value={calc.grm.toFixed(1)} target="10" isGood={calc.grm <= 10 && calc.grm > 0} />
+              <MetricRow label="RevPAR" value={fmt.currency(calc.revpar)} />
+            </Section>
+          </div>
+          
+          {/* RIGHT COLUMN - Insight Panel */}
+          <div className="lg:sticky lg:top-[208px] space-y-4" style={{ maxHeight: 'calc(100vh - 228px)', overflowY: 'auto' }}>
+            {/* IQ Verdict Card */}
+            <div className="bg-white rounded-xl shadow-card overflow-hidden">
+              <div className="p-5" style={{ 
+                background: calc.dealScore >= 70 
+                  ? 'linear-gradient(180deg, rgba(8, 145, 178, 0.10) 0%, rgba(8, 145, 178, 0.02) 100%)'
+                  : calc.dealScore >= 40
+                    ? 'linear-gradient(180deg, rgba(245, 158, 11, 0.10) 0%, rgba(245, 158, 11, 0.02) 100%)'
+                    : 'linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.02) 100%)'
+              }}>
+                <div className={`section-label mb-3 ${
+                  calc.dealScore >= 70 ? 'text-teal' : calc.dealScore >= 40 ? 'text-warning' : 'text-danger'
+                }`}>IQ VERDICT: SHORT-TERM RENTAL</div>
+                <div className="flex items-center gap-4 bg-white rounded-[40px] px-5 py-3 shadow-card mb-3">
+                  <span className={`text-3xl font-extrabold num ${
+                    calc.dealScore >= 70 ? 'text-teal' : calc.dealScore >= 40 ? 'text-warning' : 'text-danger'
+                  }`}>{calc.dealScore}</span>
+                  <div>
+                    <div className="text-base font-bold text-navy">{verdict}</div>
+                    <div className="text-xs text-surface-500">Deal Score</div>
+                  </div>
+                </div>
+                <p className="text-sm text-surface-500 text-center">{verdictSub}</p>
+              </div>
+              
+              <div className="px-5 py-4 border-t border-surface-100">
+                <div className="section-label text-navy mb-3">RETURNS VS TARGETS</div>
+                {targets.map((t, i) => (
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-surface-100 last:border-0">
+                    <span className="text-sm text-surface-500">{t.label}</span>
+                    <span className={`text-sm font-semibold num ${t.met ? 'text-teal' : 'text-navy'}`}>
+                      {t.actual.toFixed(1)}{t.unit} / {t.target}{t.unit}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
             {/* Profit Finder */}
-            <div className="chart-card">
-              <div className="chart-card-title">Profit Finder</div>
+            <div className="bg-white rounded-xl shadow-card p-5">
+              <div className="section-label text-navy mb-4">PROFIT FINDER</div>
               <ProfitFinder
                 purchasePrice={inputs.purchase_price}
                 listPrice={result?.list_price ?? inputs.list_price ?? inputs.purchase_price}
-                breakevenPrice={result?.breakeven_price ?? inputs.purchase_price}
-                monthlyCashFlow={result?.monthly_cash_flow ?? 0}
+                breakevenPrice={calc.breakevenPrice}
+                monthlyCashFlow={calc.monthlyCashFlow}
                 buyLabel="Buy"
                 listLabel="List"
                 evenLabel="Even"
               />
             </div>
-
-            {/* Pricing Ladder */}
-            <div className="chart-card">
-              <div className="chart-card-title">Pricing Ladder</div>
-              <PricingLadder
-                items={[
-                  { label: 'List Price', value: result?.list_price ?? inputs.list_price ?? inputs.purchase_price, type: 'list' },
-                  { label: 'Your Offer', value: inputs.purchase_price, type: 'current', highlight: true },
-                  { label: 'Breakeven', value: result?.breakeven_price ?? 0, hint: '0% CoC', type: 'target' },
-                  { label: '10% CoC', value: result?.target_coc_price ?? 0, hint: 'Target', type: 'coc' },
-                  { label: 'MAO', value: result?.mao_price ?? 0, hint: '70% GRM', type: 'mao' },
-                ]}
-                recoveryPercent={result?.discount_percent ?? 0}
-                indicatorLabel="below list"
-                indicatorClass="str"
-              />
-            </div>
-
+            
             {/* Revenue Breakdown */}
-            <div className="chart-card">
-              <div className="chart-card-title">Revenue Breakdown</div>
+            <div className="bg-white rounded-xl shadow-card p-5">
+              <div className="section-label text-navy mb-4">REVENUE BREAKDOWN</div>
               <StrRevenueBreakdown
-                grossRevenue={grossRevenue}
-                nightlyRevenue={result?.rental_revenue ?? 0}
-                cleaningFees={result?.cleaning_fee_revenue ?? 0}
-                revpar={result?.revpar ?? 0}
+                grossRevenue={calc.grossRevenue}
+                nightlyRevenue={calc.rentalRevenue}
+                cleaningFees={calc.cleaningFeeRevenue}
+                revpar={calc.revpar}
               />
             </div>
-
-            {/* Occupancy by Season */}
-            <div className="chart-card">
-              <div className="chart-card-title">Occupancy by Season</div>
-              <SeasonalityGrid
-                summer={result?.seasonality?.summer ?? 0}
-                fall={result?.seasonality?.fall ?? 0}
-                winter={result?.seasonality?.winter ?? 0}
-                spring={result?.seasonality?.spring ?? 0}
-              />
-            </div>
-
+            
             {/* Key Metrics */}
-            <div className="chart-card">
-              <div className="chart-card-title">Key Metrics</div>
+            <div className="bg-white rounded-xl shadow-card p-5">
+              <div className="section-label text-navy mb-4">KEY METRICS</div>
               <KeyMetricsGrid
                 metrics={[
-                  { value: `${(result?.cap_rate ?? 0).toFixed(1)}%`, label: 'Cap Rate', highlight: true },
-                  { value: `${(result?.cash_on_cash_return ?? 0).toFixed(1)}%`, label: 'CoC Return' },
-                  { value: `${(result?.dscr ?? 0).toFixed(2)}x`, label: 'DSCR' },
-                  { value: `${grm.toFixed(1)}`, label: 'GRM' },
+                  { value: `${calc.capRate.toFixed(1)}%`, label: 'Cap Rate', highlight: true },
+                  { value: `${calc.cashOnCash.toFixed(1)}%`, label: 'CoC Return' },
+                  { value: `${calc.dscr.toFixed(2)}x`, label: 'DSCR' },
+                  { value: `${calc.grm.toFixed(1)}`, label: 'GRM' },
                 ]}
                 accentClass="str"
               />
             </div>
-
+            
             {/* STR vs LTR Comparison */}
-            <div className="chart-card">
-              <div className="chart-card-title">STR vs LTR Comparison</div>
+            <div className="bg-white rounded-xl shadow-card p-5">
+              <div className="section-label text-navy mb-4">STR VS LTR COMPARISON</div>
               <StrVsLtrComparison
-                strCashFlow={result?.monthly_cash_flow ?? 0}
+                strCashFlow={calc.monthlyCashFlow}
                 ltrCashFlow={estLTRCashFlow}
               />
             </div>
+            
+            {/* CTA Button */}
+            <button 
+              onClick={onExportPDF}
+              className="w-full py-4 px-6 bg-teal/10 hover:bg-teal/20 border border-teal/25 rounded-[40px] text-navy font-bold text-sm transition-colors"
+            >
+              Export PDF Report →
+            </button>
           </div>
-        </aside>
-      </div>
+        </div>
+      </main>
     </div>
   )
 }
