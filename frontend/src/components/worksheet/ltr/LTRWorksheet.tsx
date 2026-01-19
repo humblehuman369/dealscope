@@ -657,12 +657,12 @@ export function LTRWorksheet({
                   <svg width="160" height="85" viewBox="0 0 160 85">
                     <path d="M 15 80 A 65 65 0 0 1 145 80" fill="none" stroke="#E2E8F0" strokeWidth="14" strokeLinecap="round" />
                     <path d="M 15 80 A 65 65 0 0 1 80 15" fill="none" stroke="rgba(239, 68, 68, 0.3)" strokeWidth="14" strokeLinecap="round" />
-                    <path d="M 80 15 A 65 65 0 0 1 145 80" fill="none" stroke="rgba(16, 185, 129, 0.3)" strokeWidth="14" strokeLinecap="round" />
-                    <line x1="80" y1="80" x2="115" y2="45" stroke="#10B981" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M 80 15 A 65 65 0 0 1 145 80" fill="none" stroke="rgba(8, 145, 178, 0.3)" strokeWidth="14" strokeLinecap="round" />
+                    <line x1="80" y1="80" x2="115" y2="45" stroke="#0891B2" strokeWidth="3" strokeLinecap="round" />
                     <circle cx="80" cy="80" r="5" fill="#0A1628" />
                   </svg>
                   <div className="absolute bottom-0 left-2 text-[9px] font-bold text-danger">LOSS</div>
-                  <div className="absolute bottom-0 right-2 text-[9px] font-bold text-success">PROFIT</div>
+                  <div className="absolute bottom-0 right-2 text-[9px] font-bold text-teal">PROFIT</div>
                 </div>
               </div>
               
