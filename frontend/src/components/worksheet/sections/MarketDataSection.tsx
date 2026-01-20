@@ -12,11 +12,11 @@ import {
 // ============================================
 // AXESSO API CONFIGURATION
 // ============================================
-// API Request: GET https://api.axesso.de/zil/rental-market[?city][&state]
+// API Request: GET https://api.axesso.de/zil/market-data[?location]
 const API_CONFIG = {
   baseUrl: 'https://api.axesso.de',
   endpoints: {
-    rentalMarket: '/zil/rental-market',
+    marketData: '/zil/market-data',
   },
   apiKey: process.env.NEXT_PUBLIC_AXESSO_API_KEY || '',
   apiKeyHeader: 'axesso-api-key',
@@ -25,12 +25,10 @@ const API_CONFIG = {
 // ============================================
 // API SERVICE
 // ============================================
-async function fetchMarketData(params: { city?: string; state?: string; zipcode?: string }) {
-  const url = new URL(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.rentalMarket}`)
+async function fetchMarketData(location: string) {
+  const url = new URL(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.marketData}`)
   
-  if (params.city) url.searchParams.append('city', params.city)
-  if (params.state) url.searchParams.append('state', params.state)
-  if (params.zipcode) url.searchParams.append('zipcode', params.zipcode)
+  if (location) url.searchParams.append('location', location)
 
   const response = await fetch(url.toString(), {
     method: 'GET',
@@ -450,10 +448,13 @@ export function MarketDataSection() {
   const property = propertyData?.property_data_snapshot
   const city = property?.city || ''
   const state = property?.state || ''
+  
+  // Format location as "City, State" for the API
+  const location = city && state ? `${city}, ${state}` : city || ''
 
   const fetchData = useCallback(async () => {
-    if (!city) {
-      setError('No city information available')
+    if (!location) {
+      setError('No location information available')
       return
     }
     
@@ -461,7 +462,7 @@ export function MarketDataSection() {
     setError(null)
     
     try {
-      const response = await fetchMarketData({ city, state })
+      const response = await fetchMarketData(location)
       const data = response.data?.marketPage || response.marketPage || response
       setMarketData(data)
     } catch (err) {
@@ -469,7 +470,7 @@ export function MarketDataSection() {
     } finally {
       setLoading(false)
     }
-  }, [city, state])
+  }, [location])
 
   useEffect(() => {
     if (city) {
