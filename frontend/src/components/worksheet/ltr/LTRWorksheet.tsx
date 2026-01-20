@@ -455,7 +455,7 @@ export function LTRWorksheet({
   // RENDER
   // ============================================
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 pt-12">
       {/* WORKSHEET TAB NAV - Full width, sticky below global header */}
       <div className="sticky top-12 z-40 bg-white border-b border-slate-200">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
