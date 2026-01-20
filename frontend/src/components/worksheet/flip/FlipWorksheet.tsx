@@ -99,7 +99,7 @@ export function FlipWorksheet({
   // STATE
   // ============================================
   const [purchasePrice, setPurchasePrice] = useState(propertyData.listPrice || 300000)
-  const [rehabCosts, setRehabCosts] = useState(propertyData.rehabCosts || 50000)
+  const [rehabCosts, setRehabCosts] = useState(50000)
   const [purchaseCostsPct, setPurchaseCostsPct] = useState(2)
   const [financingPct, setFinancingPct] = useState(90)
   const [interestRate, setInterestRate] = useState(12)

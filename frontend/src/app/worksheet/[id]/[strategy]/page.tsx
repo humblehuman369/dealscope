@@ -110,7 +110,7 @@ export default function StrategyWorksheetPage() {
         propertyId={propertyId}
         strategy="flip"
       >
-        <FlipWorksheet property={property} />
+        <FlipWorksheet property={property} propertyId={propertyId} />
       </WorksheetShell>
     )
   }
@@ -122,7 +122,7 @@ export default function StrategyWorksheetPage() {
         propertyId={propertyId}
         strategy="househack"
       >
-        <HouseHackWorksheet property={property} />
+        <HouseHackWorksheet property={property} propertyId={propertyId} />
       </WorksheetShell>
     )
   }
@@ -134,7 +134,7 @@ export default function StrategyWorksheetPage() {
         propertyId={propertyId}
         strategy="wholesale"
       >
-        <WholesaleWorksheet property={property} />
+        <WholesaleWorksheet property={property} propertyId={propertyId} />
       </WorksheetShell>
     )
   }
