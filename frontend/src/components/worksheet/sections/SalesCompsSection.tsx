@@ -405,22 +405,22 @@ export function SalesCompsSection() {
   const [selectedComps, setSelectedComps] = useState<(number | string)[]>([])
   const [expandedComp, setExpandedComp] = useState<number | string | null>(null)
 
-  // Build subject property from worksheet data
-  const property = propertyData?.property_data_snapshot
+  // Build subject property from worksheet data - use snapshot with fallback to top-level fields
+  const snapshot = propertyData?.property_data_snapshot
   const subject: SubjectProperty = useMemo(() => ({
-    address: property?.streetAddress || property?.address || '',
-    city: property?.city || '',
-    state: property?.state || '',
-    zip: property?.zipcode || '',
-    price: assumptions.purchasePrice || property?.listPrice || 0,
-    beds: property?.bedrooms || 0,
-    baths: property?.bathrooms || 0,
-    sqft: property?.sqft || property?.livingArea || 0,
-    lotSize: property?.lotSize || 0,
-    yearBuilt: property?.yearBuilt || 0,
-    latitude: property?.latitude || 0,
-    longitude: property?.longitude || 0,
-  }), [property, assumptions.purchasePrice])
+    address: snapshot?.street || snapshot?.streetAddress || snapshot?.address || propertyData?.address_street || '',
+    city: snapshot?.city || propertyData?.address_city || '',
+    state: snapshot?.state || propertyData?.address_state || '',
+    zip: snapshot?.zipCode || snapshot?.zipcode || propertyData?.address_zip || '',
+    price: assumptions.purchasePrice || snapshot?.listPrice || 0,
+    beds: snapshot?.bedrooms || 0,
+    baths: snapshot?.bathrooms || 0,
+    sqft: snapshot?.sqft || snapshot?.livingArea || 0,
+    lotSize: snapshot?.lotSize || 0,
+    yearBuilt: snapshot?.yearBuilt || 0,
+    latitude: snapshot?.latitude || 0,
+    longitude: snapshot?.longitude || 0,
+  }), [snapshot, propertyData, assumptions.purchasePrice])
 
   const fetchComps = useCallback(async () => {
     if (!subject.address) {

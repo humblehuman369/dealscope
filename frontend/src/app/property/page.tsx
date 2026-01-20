@@ -251,6 +251,12 @@ function PropertyContent() {
           full_address: fullAddress,
           status: 'watching',
           property_data_snapshot: {
+            // Include address in snapshot for reliability
+            street: property.address,
+            city: property.city,
+            state: property.state,
+            zipCode: property.zipCode,
+            // Property details
             listPrice: property.listPrice,
             monthlyRent: property.monthlyRent,
             propertyTaxes: property.propertyTaxes,
@@ -372,6 +378,12 @@ function PropertyContent() {
         full_address: fullAddress,
         status: 'watching',
         property_data_snapshot: {
+          // Include address in snapshot for reliability
+          street: property.address,
+          city: property.city,
+          state: property.state,
+          zipCode: property.zipCode,
+          // Property details
           listPrice: property.listPrice,
           monthlyRent: property.monthlyRent,
           averageDailyRate: property.averageDailyRate,

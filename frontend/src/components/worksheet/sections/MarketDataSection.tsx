@@ -445,9 +445,10 @@ export function MarketDataSection() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const property = propertyData?.property_data_snapshot
-  const city = property?.city || ''
-  const state = property?.state || ''
+  const snapshot = propertyData?.property_data_snapshot
+  // Use snapshot city/state first, fall back to top-level property fields
+  const city = snapshot?.city || propertyData?.address_city || ''
+  const state = snapshot?.state || propertyData?.address_state || ''
   
   // Format location as "City, State" for the API
   const location = city && state ? `${city}, ${state}` : city || ''

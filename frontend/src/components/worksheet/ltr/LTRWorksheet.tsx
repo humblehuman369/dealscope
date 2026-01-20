@@ -117,15 +117,16 @@ export function LTRWorksheet({
   // Get active section from store for tab navigation
   const { activeSection } = useWorksheetStore()
   
-  // Property data
+  // Property data - use snapshot as primary source for reliability
   const propertyData = property.property_data_snapshot || {}
   const beds = propertyData.bedrooms || 0
   const baths = propertyData.bathrooms || 0
   const sqft = propertyData.sqft || 1
-  const address = getDisplayAddress(property)
-  const city = property.address_city || ''
-  const state = property.address_state || ''
-  const zip = property.address_zip || ''
+  const address = propertyData.street || property.address_street || getDisplayAddress(property)
+  // Use snapshot city/state/zip first, fall back to property fields
+  const city = propertyData.city || property.address_city || ''
+  const state = propertyData.state || property.address_state || ''
+  const zip = propertyData.zipCode || property.address_zip || ''
 
   // ============================================
   // STATE

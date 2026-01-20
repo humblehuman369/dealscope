@@ -13,6 +13,13 @@ export type PropertyStatus =
   | 'archived'
 
 export interface PropertyDataSnapshot {
+  // Address info (stored in snapshot for reliability)
+  street?: string
+  city?: string
+  state?: string
+  zipCode?: string
+  
+  // Property details
   listPrice?: number
   monthlyRent?: number
   propertyTaxes?: number
