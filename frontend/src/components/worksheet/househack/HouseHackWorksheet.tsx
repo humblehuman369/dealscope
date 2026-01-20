@@ -3,793 +3,329 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
-import { SectionCard, DataRow } from '../SectionCard'
-import { EditableField, DisplayField } from '../EditableField'
-import { ProfitFinder } from '../charts/ProfitFinder'
-import { PricingLadder } from '../charts/PricingLadder'
-import { HousingCostGauge } from '../charts/HousingCostGauge'
-import { UnitBreakdown } from '../charts/UnitBreakdown'
-import { MoveOutSummary } from '../charts/MoveOutSummary'
-import { useHouseHackWorksheetCalculator } from '@/hooks/useHouseHackWorksheetCalculator'
-import { Home, Percent, DollarSign, Users, Building2, ArrowRightLeft } from 'lucide-react'
 
 // ============================================
-// TYPES
+// ICONS
 // ============================================
-interface HouseHackWorksheetProps {
-  property: SavedProperty
-  onExportPDF?: () => void
+const Icons = {
+  home: (<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>),
+  bank: (<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"/></svg>),
+  users: (<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>),
+  expense: (<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>),
+  cashflow: (<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>),
+  returns: (<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>),
 }
 
-// ============================================
-// FORMATTERS
-// ============================================
+const SECTIONS = [
+  { id: 'property', title: 'Property & Purchase', icon: 'home' },
+  { id: 'financing', title: 'Financing', icon: 'bank' },
+  { id: 'units', title: 'Unit Income', icon: 'users' },
+  { id: 'expenses', title: 'Expenses', icon: 'expense' },
+  { id: 'cashflow', title: 'Cash Flow', icon: 'cashflow' },
+  { id: 'returns', title: 'Returns', icon: 'returns' },
+] as const
+
 const fmt = {
-  currency: (val: number) =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(val),
-  percent: (val: number) => `${val.toFixed(1)}%`,
-  ratio: (val: number) => val.toFixed(2),
+  currency: (v: number) => `$${Math.round(v).toLocaleString()}`,
+  currencyCompact: (v: number) => {
+    const abs = Math.abs(v); const sign = v < 0 ? '-' : ''
+    if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(abs >= 10000000 ? 1 : 2)}M`
+    if (abs >= 100000) return `${sign}$${(abs / 1000).toFixed(0)}K`
+    if (abs >= 10000) return `${sign}$${(abs / 1000).toFixed(1)}K`
+    return `${sign}$${Math.round(abs).toLocaleString()}`
+  },
+  percent: (v: number) => `${v.toFixed(1)}%`,
 }
 
-// ============================================
-// DEAL SCORE HELPERS
-// ============================================
-const getDealScoreLabel = (score: number): string => {
-  if (score >= 85) return 'Excellent Deal'
-  if (score >= 70) return 'Great Deal'
-  if (score >= 55) return 'Good Deal'
-  return 'Fair Deal'
-}
+interface HouseHackWorksheetProps { property: SavedProperty; propertyId: string; onExportPDF?: () => void }
 
-const getDealScoreColor = (score: number): string => {
-  if (score >= 70) return 'text-violet-600'
-  if (score >= 50) return 'text-amber-600'
-  return 'text-red-600'
-}
+export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseHackWorksheetProps) {
+  const propertyData = property.property_data_snapshot || {}
+  const beds = propertyData.bedrooms || 0
+  const baths = propertyData.bathrooms || 0
+  const sqft = propertyData.sqft || 1
+  const address = getDisplayAddress(property)
+  const city = property.address_city || ''
+  const state = property.address_state || ''
+  const zip = property.address_zip || ''
 
-const getDealScoreBg = (score: number): string => {
-  if (score >= 70) return 'bg-violet-500'
-  if (score >= 50) return 'bg-amber-500'
-  return 'bg-red-500'
-}
+  // STATE
+  const [purchasePrice, setPurchasePrice] = useState(propertyData.listPrice || 400000)
+  const [downPaymentPct, setDownPaymentPct] = useState(5)
+  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)
+  const [interestRate, setInterestRate] = useState(7.0)
+  const [loanTerm, setLoanTerm] = useState(30)
+  const [propertyType, setPropertyType] = useState<'duplex' | 'triplex' | 'fourplex'>('duplex')
+  const [ownerUnit, setOwnerUnit] = useState(0)
+  const [unit1Rent, setUnit1Rent] = useState(1500)
+  const [unit2Rent, setUnit2Rent] = useState(1500)
+  const [unit3Rent, setUnit3Rent] = useState(1200)
+  const [unit4Rent, setUnit4Rent] = useState(1200)
+  const [vacancyRate, setVacancyRate] = useState(5)
+  const [propertyTaxes, setPropertyTaxes] = useState(propertyData.propertyTaxes || 5000)
+  const [insurance, setInsurance] = useState(propertyData.insurance || 2400)
+  const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)
+  const [maintenancePct, setMaintenancePct] = useState(5)
+  const [marketRent, setMarketRent] = useState(1800)
+  
+  const [viewMode, setViewMode] = useState<'guided' | 'showall'>('guided')
+  const [currentSection, setCurrentSection] = useState<number | null>(0)
+  const [completedSections, setCompletedSections] = useState<Set<number>>(new Set([0]))
 
-// ============================================
-// IQ VERDICT CARD
-// ============================================
-interface IQVerdictCardProps {
-  dealScore: number
-  housingCost: number
-  marketRent: number
-  savingsVsRenting: number
-  cocReturn: number
-  fullRentalCashFlow: number
-  targetSavings?: number
-  targetCoC?: number
-}
+  const unitCount = propertyType === 'duplex' ? 2 : propertyType === 'triplex' ? 3 : 4
+  const unitRents = [unit1Rent, unit2Rent, unit3Rent, unit4Rent].slice(0, unitCount)
 
-function IQVerdictCard({
-  dealScore,
-  housingCost,
-  marketRent,
-  savingsVsRenting,
-  cocReturn,
-  fullRentalCashFlow,
-  targetSavings = 500,
-  targetCoC = 8,
-}: IQVerdictCardProps) {
-  const savingsMet = savingsVsRenting >= targetSavings
-  const cocMet = cocReturn >= targetCoC
-  const liveFree = housingCost <= 0
+  const calc = useMemo(() => {
+    const downPayment = purchasePrice * (downPaymentPct / 100)
+    const loanAmount = purchasePrice - downPayment
+    const purchaseCosts = purchasePrice * (purchaseCostsPct / 100)
+    const totalCashNeeded = downPayment + purchaseCosts
+    const monthlyRate = (interestRate / 100) / 12
+    const numPayments = loanTerm * 12
+    const monthlyPayment = loanAmount > 0 ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1) : 0
+    
+    const rentalIncome = unitRents.filter((_, i) => i !== ownerUnit).reduce((a, b) => a + b, 0)
+    const grossRentalIncome = rentalIncome * (1 - vacancyRate / 100)
+    const ownerUnitValue = unitRents[ownerUnit] || 0
+    
+    const monthlyTaxes = propertyTaxes / 12
+    const monthlyInsurance = insurance / 12
+    const monthlyMgmt = grossRentalIncome * (propertyMgmtPct / 100)
+    const monthlyMaintenance = grossRentalIncome * (maintenancePct / 100)
+    const totalExpenses = monthlyTaxes + monthlyInsurance + monthlyMgmt + monthlyMaintenance
+    
+    const totalPITI = monthlyPayment + monthlyTaxes + monthlyInsurance
+    const ownerPortion = totalPITI / unitCount
+    const yourHousingCost = ownerPortion + (totalExpenses / unitCount) - grossRentalIncome
+    const actualHousingCost = Math.max(yourHousingCost, totalPITI - grossRentalIncome)
+    
+    const savingsVsRenting = marketRent - actualHousingCost
+    const monthlyCashFlow = grossRentalIncome - totalExpenses - monthlyPayment
+    const fullRentalCashFlow = (unitRents.reduce((a, b) => a + b, 0) * (1 - vacancyRate / 100)) - totalExpenses - monthlyPayment
+    
+    const annualCashFlow = monthlyCashFlow * 12
+    const cocReturn = totalCashNeeded > 0 ? (annualCashFlow / totalCashNeeded) * 100 : 0
+    const liveFree = actualHousingCost <= 0
+    
+    const savingsScore = Math.min(30, Math.max(0, (savingsVsRenting / marketRent) * 60))
+    const cocScore = Math.min(25, Math.max(0, (cocReturn / 10) * 25))
+    const cfScore = fullRentalCashFlow > 0 ? Math.min(25, Math.max(0, (fullRentalCashFlow / 500) * 25)) : Math.max(-10, (fullRentalCashFlow / 250) * 10)
+    const liveFreeScore = liveFree ? 20 : Math.min(15, Math.max(0, 15 - (actualHousingCost / marketRent) * 15))
+    const dealScore = Math.round(Math.min(100, Math.max(0, savingsScore + cocScore + cfScore + liveFreeScore)))
+    
+    return {
+      downPayment, loanAmount, purchaseCosts, totalCashNeeded, monthlyPayment,
+      rentalIncome, grossRentalIncome, ownerUnitValue,
+      monthlyTaxes, monthlyInsurance, monthlyMgmt, monthlyMaintenance, totalExpenses,
+      totalPITI, yourHousingCost: actualHousingCost, savingsVsRenting,
+      monthlyCashFlow, fullRentalCashFlow, annualCashFlow, cocReturn, liveFree, dealScore,
+    }
+  }, [purchasePrice, downPaymentPct, purchaseCostsPct, interestRate, loanTerm, unitRents, ownerUnit, vacancyRate, propertyTaxes, insurance, propertyMgmtPct, maintenancePct, marketRent, unitCount])
 
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-      {/* Header */}
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-        IQ VERDICT
+  const toggleSection = useCallback((index: number) => {
+    if (viewMode === 'showall') return
+    if (currentSection === index) setCurrentSection(null)
+    else { setCurrentSection(index); setCompletedSections(prev => new Set([...Array.from(prev), index])) }
+  }, [viewMode, currentSection])
+
+  const InputRow = ({ label, value, onChange, min, max, step, format, subValue }: { label: string; value: number; onChange: (v: number) => void; min: number; max: number; step: number; format: 'currency' | 'percent' | 'years' | 'number'; subValue?: string }) => {
+    const displayValue = format === 'currency' ? fmt.currency(value) : format === 'percent' ? fmt.percent(value) : format === 'years' ? `${value} yr` : value.toString()
+    const percentage = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100))
+    return (
+      <div className="py-3">
+        <div className="flex items-center justify-between mb-2"><label className="text-sm text-slate-500">{label}</label><div className="text-right"><span className="text-sm font-semibold text-slate-800 tabular-nums">{displayValue}</span>{subValue && <span className="text-xs text-slate-400 ml-1.5 tabular-nums">{subValue}</span>}</div></div>
+        <div className="relative"><div className="h-1.5 bg-slate-200 rounded-full"><div className="h-full bg-blue-500 rounded-full transition-all duration-100" style={{ width: `${percentage}%` }} /></div><input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} className="absolute inset-0 w-full h-6 -top-2 opacity-0 cursor-pointer"/></div>
       </div>
+    )
+  }
 
-      {/* Deal Score Circle */}
-      <div className="flex items-center gap-4 mb-5">
-        <div className="relative w-20 h-20">
-          <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-            <circle
-              cx="40"
-              cy="40"
-              r="34"
-              fill="none"
-              stroke="#e2e8f0"
-              strokeWidth="6"
-            />
-            <circle
-              cx="40"
-              cy="40"
-              r="34"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={`${(dealScore / 100) * 213.6} 213.6`}
-              className={getDealScoreColor(dealScore)}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className={`text-2xl font-bold ${getDealScoreColor(dealScore)}`}>
-              {dealScore}
-            </span>
-          </div>
-        </div>
-        <div>
-          <div className={`text-lg font-bold ${getDealScoreColor(dealScore)}`}>
-            {getDealScoreLabel(dealScore)}
-          </div>
-          <div className="text-sm text-slate-500">
-            {liveFree ? '🎉 Live FREE!' : housingCost < marketRent ? 'Below market rent' : 'Above market rent'}
-          </div>
-        </div>
+  const DisplayRow = ({ label, value, variant = 'default' }: { label: string; value: string; variant?: 'default' | 'success' | 'danger' | 'muted' | 'blue' }) => {
+    const colors = { default: 'text-slate-800', success: 'text-emerald-600', danger: 'text-red-500', muted: 'text-slate-400', blue: 'text-blue-600' }
+    return <div className="flex items-center justify-between py-2.5"><span className="text-sm text-slate-500">{label}</span><span className={`text-sm font-semibold tabular-nums ${colors[variant]}`}>{value}</span></div>
+  }
+
+  const SummaryBox = ({ label, value, variant = 'default' }: { label: string; value: string; variant?: 'default' | 'success' | 'danger' | 'blue' }) => {
+    const styles = { default: 'bg-slate-50 border-slate-200', success: 'bg-emerald-50 border-emerald-200', danger: 'bg-red-50 border-red-200', blue: 'bg-blue-50 border-blue-200' }
+    const textColor = { default: 'text-slate-800', success: 'text-emerald-600', danger: 'text-red-500', blue: 'text-blue-600' }
+    return <div className={`flex items-center justify-between p-3 rounded-lg border ${styles[variant]}`}><span className="text-sm font-medium text-slate-600">{label}</span><span className={`text-base font-bold tabular-nums ${textColor[variant]}`}>{value}</span></div>
+  }
+
+  const Section = ({ index, title, iconKey, children }: { index: number; title: string; iconKey: keyof typeof Icons; children: React.ReactNode }) => {
+    const isOpen = viewMode === 'showall' || currentSection === index
+    const isComplete = completedSections.has(index) && currentSection !== index
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
+        <button onClick={() => toggleSection(index)} className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+          <div className="flex items-center gap-3"><div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isComplete ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>{Icons[iconKey]}</div><span className="font-semibold text-slate-800">{title}</span></div>
+          <div className="flex items-center gap-2">{isComplete && <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center"><svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg></div>}<svg className={`w-5 h-5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg></div>
+        </button>
+        {isOpen && <div className="px-4 pb-4 border-t border-slate-100">{children}</div>}
       </div>
+    )
+  }
 
-      {/* Returns vs Targets */}
-      <div className="space-y-3">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-2">
-          RETURNS VS TARGETS
-        </div>
+  let verdict: string, verdictSub: string
+  if (calc.dealScore >= 85) { verdict = "Excellent Hack"; verdictSub = calc.liveFree ? "Live for FREE!" : "Major housing savings" }
+  else if (calc.dealScore >= 70) { verdict = "Great Hack"; verdictSub = "Significant savings vs renting" }
+  else if (calc.dealScore >= 55) { verdict = "Good Hack"; verdictSub = "Solid house hack opportunity" }
+  else if (calc.yourHousingCost < calc.monthlyPayment) { verdict = "Fair Hack"; verdictSub = "Some savings achieved" }
+  else { verdict = "Weak Hack"; verdictSub = "Limited benefit vs renting" }
 
-        {/* Monthly Savings */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-600">Monthly Savings</span>
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-semibold ${savingsMet ? 'text-violet-600' : 'text-slate-800'}`}>
-              {fmt.currency(savingsVsRenting)}
-            </span>
-            <span className="text-xs text-slate-400">/ {fmt.currency(targetSavings)}</span>
-            {savingsMet ? (
-              <span className="w-5 h-5 rounded-full bg-violet-100 flex items-center justify-center">
-                <span className="text-violet-600 text-xs">✓</span>
-              </span>
-            ) : (
-              <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
-                <span className="text-slate-400 text-xs">–</span>
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* CoC Return (Move Out) */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-600">CoC (Move Out)</span>
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-semibold ${cocMet ? 'text-violet-600' : 'text-slate-800'}`}>
-              {fmt.percent(cocReturn)}
-            </span>
-            <span className="text-xs text-slate-400">/ {targetCoC}%</span>
-            {cocMet ? (
-              <span className="w-5 h-5 rounded-full bg-violet-100 flex items-center justify-center">
-                <span className="text-violet-600 text-xs">✓</span>
-              </span>
-            ) : (
-              <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
-                <span className="text-slate-400 text-xs">–</span>
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Live Free Status */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-600">Live Free?</span>
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-semibold ${liveFree ? 'text-violet-600' : 'text-slate-800'}`}>
-              {liveFree ? 'Yes!' : fmt.currency(housingCost)}
-            </span>
-            <span className="text-xs text-slate-400">/ $0</span>
-            {liveFree ? (
-              <span className="w-5 h-5 rounded-full bg-violet-100 flex items-center justify-center">
-                <span className="text-violet-600 text-xs">✓</span>
-              </span>
-            ) : (
-              <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
-                <span className="text-slate-400 text-xs">–</span>
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ============================================
-// PRICE POSITION CARD
-// ============================================
-interface PricePositionCardProps {
-  purchasePrice: number
-  listPrice: number
-  breakevenPrice: number
-  targetCoCPrice: number
-  fhaMaxPrice: number
-}
-
-function PricePositionCard({
-  purchasePrice,
-  listPrice,
-  breakevenPrice,
-  targetCoCPrice,
-  fhaMaxPrice,
-}: PricePositionCardProps) {
-  // Calculate position percentage (0-100) relative to list price
-  const maxPrice = Math.max(listPrice, fhaMaxPrice) * 1.1
-  const positionPct = Math.min(100, Math.max(0, (purchasePrice / maxPrice) * 100))
-  const breakevenLine = Math.min(100, Math.max(0, (breakevenPrice / maxPrice) * 100))
-  const targetLine = Math.min(100, Math.max(0, (targetCoCPrice / maxPrice) * 100))
-
-  // Determine status
-  const isExcellent = purchasePrice <= targetCoCPrice
-  const isGood = purchasePrice > targetCoCPrice && purchasePrice <= breakevenPrice
-  const isOkay = purchasePrice > breakevenPrice && purchasePrice <= listPrice
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-        PRICE POSITION
-      </div>
-
-      {/* Gauge */}
-      <div className="relative h-8 bg-gradient-to-r from-violet-500 via-amber-400 to-red-500 rounded-full mb-6 overflow-hidden">
-        {/* Target CoC marker */}
-        <div
-          className="absolute top-0 bottom-0 w-0.5 bg-white/80"
-          style={{ left: `${targetLine}%` }}
-        />
-        {/* Breakeven marker */}
-        <div
-          className="absolute top-0 bottom-0 w-0.5 bg-white/80"
-          style={{ left: `${breakevenLine}%` }}
-        />
-        {/* Current position indicator */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg border-2 border-slate-800"
-          style={{ left: `calc(${positionPct}% - 8px)` }}
-        />
-      </div>
-
-      {/* Legend */}
-      <div className="grid grid-cols-2 gap-3 text-sm">
-        <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg">
-          <span className="text-slate-500">List Price</span>
-          <span className="font-semibold text-slate-800">{fmt.currency(listPrice)}</span>
-        </div>
-        <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg">
-          <span className="text-slate-500">Your Offer</span>
-          <span className={`font-semibold ${isExcellent ? 'text-violet-600' : isGood ? 'text-amber-600' : 'text-red-600'}`}>
-            {fmt.currency(purchasePrice)}
-          </span>
-        </div>
-        <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg">
-          <span className="text-slate-500">Breakeven</span>
-          <span className="font-semibold text-slate-800">{fmt.currency(breakevenPrice)}</span>
-        </div>
-        <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg">
-          <span className="text-slate-500">10% CoC Target</span>
-          <span className="font-semibold text-slate-800">{fmt.currency(targetCoCPrice)}</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ============================================
-// KEY METRICS GRID
-// ============================================
-interface KeyMetric {
-  label: string
-  value: string
-  highlight?: boolean
-  positive?: boolean
-  negative?: boolean
-}
-
-function KeyMetricsGrid({ metrics }: { metrics: KeyMetric[] }) {
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-        KEY METRICS
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {metrics.map((metric, idx) => (
-          <div
-            key={idx}
-            className={`py-3 px-4 rounded-lg ${
-              metric.highlight ? 'bg-violet-50 border border-violet-200' : 'bg-slate-50'
-            }`}
-          >
-            <div className="text-xs text-slate-500 mb-1">{metric.label}</div>
-            <div
-              className={`text-lg font-bold ${
-                metric.positive
-                  ? 'text-violet-600'
-                  : metric.negative
-                  ? 'text-red-600'
-                  : metric.highlight
-                  ? 'text-violet-700'
-                  : 'text-slate-800'
-              }`}
-            >
-              {metric.value}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ============================================
-// MAIN COMPONENT
-// ============================================
-export function HouseHackWorksheet({ property, onExportPDF }: HouseHackWorksheetProps) {
-  const { inputs, updateInput, result, isCalculating, error } = useHouseHackWorksheetCalculator(property)
-  const unitsCount = inputs.property_type === 'rooms' ? 2 : Number.parseInt(inputs.property_type, 10)
-
-  // Use ORIGINAL values from property for stable slider ranges
-  const originalPrice = property.property_data_snapshot?.listPrice || inputs.purchase_price || 500000
-  const originalRent = property.property_data_snapshot?.monthlyRent || inputs.unit2_rent || 1500
-
-  // Housing cost color
-  const housingCostColor =
-    (result?.your_housing_cost ?? 0) <= 0
-      ? 'text-violet-600'
-      : (result?.your_housing_cost ?? 0) <= inputs.owner_market_rent
-      ? 'text-teal-600'
-      : 'text-red-500'
+  const targets = [
+    { label: 'Housing Cost', actual: calc.yourHousingCost, target: 0, unit: '$', met: calc.yourHousingCost <= 0 },
+    { label: 'Savings vs Rent', actual: calc.savingsVsRenting, target: 500, unit: '$', met: calc.savingsVsRenting >= 500 },
+    { label: 'CoC Return', actual: calc.cocReturn, target: 8, unit: '%', met: calc.cocReturn >= 8 },
+    { label: 'Move-Out CF', actual: calc.fullRentalCashFlow, target: 200, unit: '$', met: calc.fullRentalCashFlow >= 200 },
+  ]
 
   return (
     <div className="w-full min-h-screen bg-slate-50 pt-12">
-      {/* WorksheetTabNav - sticky below header */}
-      <div className="w-full sticky top-12 z-40 bg-white border-b border-slate-200">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          <WorksheetTabNav
-            propertyId={property.id}
-            strategy="househack"
-          />
-        </div>
-      </div>
-
-      {/* Page Header */}
+      <div className="w-full sticky top-12 z-40 bg-white border-b border-slate-200"><div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8"><WorksheetTabNav propertyId={propertyId} strategy="househack" /></div></div>
+      
       <div className="w-full bg-white border-b border-slate-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
-              <Users className="w-5 h-5 text-violet-600" />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div className="flex items-start sm:items-center gap-3 sm:gap-5 min-w-0 flex-1">
+              <button className="text-blue-500 hover:text-blue-600 transition-colors text-sm font-medium flex-shrink-0">← Back</button>
+              <div className="min-w-0 flex-1"><h1 className="text-sm sm:text-base font-semibold text-slate-800 truncate">{address}</h1><p className="text-xs sm:text-sm text-slate-500 truncate">{city}{city && state ? ', ' : ''}{state} {zip}{beds > 0 && ` · ${beds} bed`}{baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}{sqft > 0 && ` · ${sqft.toLocaleString()} sqft`}</p></div>
             </div>
-            <div>
-              <h1 className="text-lg font-bold text-slate-800">
-                {getDisplayAddress(property) || 'House Hack Analysis'}
-              </h1>
-              <p className="text-sm text-slate-500">House Hack Strategy Worksheet</p>
+            <div className="flex items-center bg-slate-100 rounded-lg p-1 flex-shrink-0 self-end sm:self-auto">
+              <button onClick={() => setViewMode('guided')} className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold rounded-md transition-all ${viewMode === 'guided' ? 'bg-blue-500 text-white' : 'text-slate-500 hover:text-slate-700'}`}>Guided</button>
+              <button onClick={() => setViewMode('showall')} className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === 'showall' ? 'bg-blue-500 text-white' : 'text-slate-500 hover:text-slate-700'}`}>Expand All</button>
             </div>
+          </div>
+          
+          <div className="flex items-center mb-4 sm:mb-5">
+            {SECTIONS.map((section, i) => {
+              const isComplete = completedSections.has(i) && i !== currentSection; const isActive = i === currentSection; const isPast = currentSection !== null && i < currentSection
+              return (
+                <div key={section.id} className="flex items-center flex-1 last:flex-none">
+                  <button onClick={() => toggleSection(i)} className="relative group flex-shrink-0" title={section.title}>
+                    {isComplete ? <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-sm"><svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg></div>
+                    : isActive ? <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 shadow-sm ring-2 sm:ring-4 ring-blue-500/20" />
+                    : <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-200 border-2 border-slate-300" />}
+                  </button>
+                  {i < SECTIONS.length - 1 && <div className={`flex-1 h-0.5 mx-0.5 sm:mx-1 ${isPast || isComplete ? 'bg-blue-500' : 'bg-slate-200'}`} style={{ backgroundImage: isPast || isComplete ? 'none' : 'repeating-linear-gradient(90deg, #CBD5E1 0, #CBD5E1 4px, transparent 4px, transparent 8px)' }} />}
+                </div>
+              )
+            })}
+          </div>
+          
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
+            <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${calc.liveFree ? 'bg-emerald-500/15' : calc.yourHousingCost < marketRent ? 'bg-blue-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Housing Cost</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums truncate ${calc.liveFree ? 'text-emerald-600' : calc.yourHousingCost < marketRent ? 'text-blue-600' : 'text-red-500'}`}>{fmt.currencyCompact(calc.yourHousingCost)}/mo</div></div>
+            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-emerald-500/10"><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Rental Income</div><div className="text-xs sm:text-sm lg:text-base font-bold text-emerald-600 tabular-nums truncate">{fmt.currencyCompact(calc.grossRentalIncome)}/mo</div></div>
+            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-slate-800/5"><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Cash Needed</div><div className="text-xs sm:text-sm lg:text-base font-bold text-slate-800 tabular-nums truncate">{fmt.currencyCompact(calc.totalCashNeeded)}</div></div>
+            <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${calc.fullRentalCashFlow >= 0 ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Move-Out CF</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums truncate ${calc.fullRentalCashFlow >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>{fmt.currencyCompact(calc.fullRentalCashFlow)}/mo</div></div>
+            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-blue-500/10"><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">CoC Return</div><div className="text-xs sm:text-sm lg:text-base font-bold text-blue-600 tabular-nums truncate">{fmt.percent(calc.cocReturn)}</div></div>
+            <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${calc.dealScore >= 70 ? 'bg-blue-500/15' : calc.dealScore >= 40 ? 'bg-amber-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Deal Score</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums ${calc.dealScore >= 70 ? 'text-blue-600' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{calc.dealScore}</div></div>
           </div>
         </div>
       </div>
-
-      {/* Main Content */}
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Error/Loading State */}
-        {(isCalculating || error) && (
-          <div className={`mb-4 p-3 rounded-lg ${error ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500'} text-sm`}>
-            {error ? `Calculation error: ${error}` : 'Recalculating worksheet metrics...'}
-          </div>
-        )}
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-          <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-4 text-white">
-            <div className="text-xs font-medium text-violet-100 mb-1">Your Housing Cost</div>
-            <div className="text-xl font-bold">{fmt.currency(result?.your_housing_cost ?? 0)}</div>
-            <div className="text-xs text-violet-200">Per month</div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/60">
-            <div className="text-xs font-medium text-slate-500 mb-1">Rental Income</div>
-            <div className="text-xl font-bold text-teal-600">{fmt.currency(result?.rental_income ?? 0)}</div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/60">
-            <div className="text-xs font-medium text-slate-500 mb-1">Cash Needed</div>
-            <div className="text-xl font-bold text-slate-800">{fmt.currency(result?.total_cash_needed ?? 0)}</div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/60">
-            <div className="text-xs font-medium text-slate-500 mb-1">If You Move Out</div>
-            <div className="text-xl font-bold text-teal-600">{fmt.currency(result?.full_rental_cash_flow ?? 0)}/mo</div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/60">
-            <div className="text-xs font-medium text-slate-500 mb-1">CoC Return</div>
-            <div className="text-xl font-bold text-violet-600">{fmt.percent(result?.coc_return ?? 0)}</div>
-          </div>
-          <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-4 text-white">
-            <div className="text-xs font-medium text-slate-300 mb-1">Deal Score</div>
-            <div className="text-xl font-bold">{result?.deal_score ?? 0}</div>
-            <div className="text-xs text-slate-400">{getDealScoreLabel(result?.deal_score ?? 0).replace(' Deal', '')}</div>
-          </div>
-        </div>
-
-        {/* Two Column Layout */}
+      
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="grid grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
-          {/* Left Column - Worksheet Inputs */}
-          <div className="space-y-4">
-            {/* Property & Purchase */}
-            <SectionCard title="Property & Purchase">
-              <DataRow label="Property Type">
-                <select
-                  className="w-full max-w-[180px] px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                  value={inputs.property_type}
-                  aria-label="Property type"
-                  onChange={(event) => updateInput('property_type', event.target.value as typeof inputs.property_type)}
-                >
-                  <option value="2">Duplex (2 Units)</option>
-                  <option value="3">Triplex (3 Units)</option>
-                  <option value="4">Fourplex (4 Units)</option>
-                  <option value="1">SFH with ADU</option>
-                  <option value="rooms">Room Rental</option>
-                </select>
-              </DataRow>
-              <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />} hasSlider>
-                <EditableField
-                  value={inputs.purchase_price}
-                  onChange={(val) => updateInput('purchase_price', val)}
-                  format="currency"
-                  min={Math.round(originalPrice * 0.5)}
-                  max={Math.round(originalPrice * 1.5)}
-                  step={1000}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Down Payment" hasSlider>
-                <EditableField
-                  value={inputs.down_payment_pct}
-                  onChange={(val) => updateInput('down_payment_pct', val)}
-                  format="percent"
-                  min={0.035}
-                  max={0.25}
-                  step={0.005}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Closing Costs" hasSlider>
-                <EditableField
-                  value={inputs.closing_costs}
-                  onChange={(val) => updateInput('closing_costs', val)}
-                  format="currency"
-                  min={0}
-                  max={Math.round(originalPrice * 0.05)}
-                  step={500}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Total Cash Needed" isTotal>
-                <DisplayField value={result?.total_cash_needed ?? 0} format="currency" />
-              </DataRow>
-            </SectionCard>
-
-            {/* Financing */}
-            <SectionCard title="Financing">
-              <DataRow label="Loan Amount">
-                <DisplayField value={result?.loan_amount ?? 0} format="currency" />
-              </DataRow>
-              <DataRow label="Loan Type">
-                <select
-                  className="w-full max-w-[180px] px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                  value={inputs.loan_type}
-                  aria-label="Loan type"
-                  onChange={(event) => updateInput('loan_type', event.target.value as typeof inputs.loan_type)}
-                >
-                  <option value="fha">FHA (3.5% min)</option>
-                  <option value="conventional">Conventional (5% min)</option>
-                  <option value="va">VA (0% down)</option>
-                </select>
-              </DataRow>
-              <DataRow label="Interest Rate" icon={<Percent className="w-4 h-4" />} hasSlider>
-                <EditableField
-                  value={inputs.interest_rate}
-                  onChange={(val) => updateInput('interest_rate', val)}
-                  format="percent"
-                  min={0.04}
-                  max={0.10}
-                  step={0.00125}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Loan Term" hasSlider>
-                <EditableField
-                  value={inputs.loan_term_years}
-                  onChange={(val) => updateInput('loan_term_years', Math.round(val))}
-                  format="years"
-                  min={15}
-                  max={30}
-                  step={5}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="PMI Rate" hasSlider>
-                <EditableField
-                  value={inputs.pmi_rate}
-                  onChange={(val) => updateInput('pmi_rate', val)}
-                  format="percent"
-                  min={0}
-                  max={0.02}
-                  step={0.001}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Total Monthly Payment" isTotal>
-                <DisplayField value={result?.monthly_piti ?? 0} format="currency" />
-              </DataRow>
-            </SectionCard>
-
-            {/* Rental Income */}
-            <SectionCard title="Rental Income">
-              <DataRow label="Unit 2 Rent" hasSlider>
-                <EditableField
-                  value={inputs.unit2_rent}
-                  onChange={(val) => updateInput('unit2_rent', val)}
-                  format="currency"
-                  min={Math.round(originalRent * 0.5)}
-                  max={Math.round(originalRent * 2)}
-                  step={50}
-                  showSlider={true}
-                />
-              </DataRow>
-              {unitsCount >= 3 && (
-                <DataRow label="Unit 3 Rent" hasSlider>
-                  <EditableField
-                    value={inputs.unit3_rent}
-                    onChange={(val) => updateInput('unit3_rent', val)}
-                    format="currency"
-                    min={Math.round(originalRent * 0.5)}
-                    max={Math.round(originalRent * 2)}
-                    step={50}
-                    showSlider={true}
-                  />
-                </DataRow>
-              )}
-              {unitsCount >= 4 && (
-                <DataRow label="Unit 4 Rent" hasSlider>
-                  <EditableField
-                    value={inputs.unit4_rent}
-                    onChange={(val) => updateInput('unit4_rent', val)}
-                    format="currency"
-                    min={Math.round(originalRent * 0.5)}
-                    max={Math.round(originalRent * 2)}
-                    step={50}
-                    showSlider={true}
-                  />
-                </DataRow>
-              )}
-              <DataRow label="Vacancy Rate" hasSlider>
-                <EditableField
-                  value={inputs.vacancy_rate}
-                  onChange={(val) => updateInput('vacancy_rate', val)}
-                  format="percent"
-                  min={0}
-                  max={0.15}
-                  step={0.01}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Effective Rental Income" isTotal>
-                <DisplayField value={result?.rental_income ?? 0} format="currency" />
-              </DataRow>
-            </SectionCard>
-
-            {/* Operating Expenses */}
-            <SectionCard title="Operating Expenses">
-              <DataRow label="Property Taxes" hasSlider>
-                <EditableField
-                  value={inputs.property_taxes_monthly}
-                  onChange={(val) => updateInput('property_taxes_monthly', val)}
-                  format="currency"
-                  min={100}
-                  max={1500}
-                  step={25}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Insurance" hasSlider>
-                <EditableField
-                  value={inputs.insurance_monthly}
-                  onChange={(val) => updateInput('insurance_monthly', val)}
-                  format="currency"
-                  min={50}
-                  max={500}
-                  step={25}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Maintenance" hasSlider>
-                <EditableField
-                  value={inputs.maintenance_pct}
-                  onChange={(val) => updateInput('maintenance_pct', val)}
-                  format="percent"
-                  min={0}
-                  max={0.10}
-                  step={0.01}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="CapEx Reserve" hasSlider>
-                <EditableField
-                  value={inputs.capex_pct}
-                  onChange={(val) => updateInput('capex_pct', val)}
-                  format="percent"
-                  min={0}
-                  max={0.10}
-                  step={0.01}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Utilities (Your Share)" hasSlider>
-                <EditableField
-                  value={inputs.utilities_monthly}
-                  onChange={(val) => updateInput('utilities_monthly', val)}
-                  format="currency"
-                  min={0}
-                  max={500}
-                  step={25}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Total Monthly Expenses" isTotal>
-                <DisplayField value={result?.total_monthly_expenses ?? 0} format="currency" isNegative />
-              </DataRow>
-            </SectionCard>
-
-            {/* Your Housing Cost */}
-            <SectionCard title="Your Housing Cost">
-              <DataRow label="Mortgage + PMI">
-                <DisplayField value={result?.monthly_piti ?? 0} format="currency" />
-              </DataRow>
-              <DataRow label="Operating Expenses">
-                <DisplayField value={result?.total_monthly_expenses ?? 0} format="currency" />
-              </DataRow>
-              <DataRow label="Rental Income Offset">
-                <DisplayField value={-(result?.rental_income ?? 0)} format="currency" isPositive />
-              </DataRow>
-              <DataRow label="Your Net Housing Cost" isTotal>
-                <span className={`text-right min-w-[100px] flex-shrink-0 font-semibold ${housingCostColor}`}>
-                  {fmt.currency(result?.your_housing_cost ?? 0)}
-                </span>
-              </DataRow>
-              <DataRow label="Market Rent Equivalent" hasSlider>
-                <EditableField
-                  value={inputs.owner_market_rent}
-                  onChange={(val) => updateInput('owner_market_rent', val)}
-                  format="currency"
-                  min={500}
-                  max={5000}
-                  step={50}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Monthly Savings vs Renting" isHighlight>
-                <DisplayField
-                  value={result?.savings_vs_renting ?? 0}
-                  format="currency"
-                  isPositive={(result?.savings_vs_renting ?? 0) >= 0}
-                  isNegative={(result?.savings_vs_renting ?? 0) < 0}
-                />
-              </DataRow>
-            </SectionCard>
+          <div className="space-y-3">
+            <Section index={0} title="Property & Purchase" iconKey="home">
+              <div className="py-3"><label className="text-sm text-slate-500">Property Type</label><select value={propertyType} onChange={(e) => setPropertyType(e.target.value as typeof propertyType)} className="mt-2 w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="duplex">Duplex (2 Units)</option><option value="triplex">Triplex (3 Units)</option><option value="fourplex">Fourplex (4 Units)</option></select></div>
+              <InputRow label="Purchase Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={1500000} step={5000} format="currency" />
+              <InputRow label="Down Payment" value={downPaymentPct} onChange={setDownPaymentPct} min={0} max={25} step={0.5} format="percent" subValue={fmt.currency(calc.downPayment)} />
+              <InputRow label="Closing Costs" value={purchaseCostsPct} onChange={setPurchaseCostsPct} min={0} max={6} step={0.5} format="percent" subValue={fmt.currency(calc.purchaseCosts)} />
+              <div className="mt-3 pt-3"><SummaryBox label="Total Cash Needed" value={fmt.currency(calc.totalCashNeeded)} variant="blue" /></div>
+            </Section>
+            
+            <Section index={1} title="Financing" iconKey="bank">
+              <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
+              <InputRow label="Interest Rate" value={interestRate} onChange={setInterestRate} min={3} max={10} step={0.125} format="percent" />
+              <InputRow label="Loan Term" value={loanTerm} onChange={setLoanTerm} min={15} max={30} step={5} format="years" />
+              <div className="mt-3 pt-3"><SummaryBox label="Monthly Payment" value={fmt.currency(calc.monthlyPayment)} /></div>
+            </Section>
+            
+            <Section index={2} title="Unit Income" iconKey="users">
+              <div className="py-3"><label className="text-sm text-slate-500">You Live In</label><select value={ownerUnit} onChange={(e) => setOwnerUnit(parseInt(e.target.value))} className="mt-2 w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">{unitRents.map((_, i) => <option key={i} value={i}>Unit {i + 1}</option>)}</select></div>
+              {unitRents.map((rent, i) => (
+                <InputRow key={i} label={`Unit ${i + 1} Rent${i === ownerUnit ? ' (Your Unit)' : ''}`} value={i === 0 ? unit1Rent : i === 1 ? unit2Rent : i === 2 ? unit3Rent : unit4Rent} onChange={i === 0 ? setUnit1Rent : i === 1 ? setUnit2Rent : i === 2 ? setUnit3Rent : setUnit4Rent} min={500} max={5000} step={50} format="currency" subValue={i === ownerUnit ? 'You' : ''} />
+              ))}
+              <InputRow label="Vacancy Rate" value={vacancyRate} onChange={setVacancyRate} min={0} max={15} step={1} format="percent" />
+              <div className="mt-3 pt-3"><SummaryBox label="Gross Rental Income" value={`${fmt.currency(calc.grossRentalIncome)}/mo`} variant="success" /></div>
+            </Section>
+            
+            <Section index={3} title="Expenses" iconKey="expense">
+              <InputRow label="Property Taxes" value={propertyTaxes} onChange={setPropertyTaxes} min={1000} max={20000} step={100} format="currency" subValue="/yr" />
+              <InputRow label="Insurance" value={insurance} onChange={setInsurance} min={500} max={10000} step={100} format="currency" subValue="/yr" />
+              <InputRow label="Property Mgmt" value={propertyMgmtPct} onChange={setPropertyMgmtPct} min={0} max={12} step={1} format="percent" />
+              <InputRow label="Maintenance" value={maintenancePct} onChange={setMaintenancePct} min={0} max={15} step={1} format="percent" />
+              <div className="mt-3 pt-3"><SummaryBox label="Monthly Expenses" value={`−${fmt.currency(calc.totalExpenses)}`} variant="danger" /></div>
+            </Section>
+            
+            <Section index={4} title="Cash Flow" iconKey="cashflow">
+              <DisplayRow label="Rental Income" value={`+${fmt.currency(calc.grossRentalIncome)}`} variant="success" />
+              <DisplayRow label="Total Expenses" value={`−${fmt.currency(calc.totalExpenses)}`} variant="danger" />
+              <DisplayRow label="Mortgage (P&I)" value={`−${fmt.currency(calc.monthlyPayment)}`} variant="danger" />
+              <div className="mt-3 pt-3 space-y-2">
+                <SummaryBox label="Your Housing Cost" value={`${fmt.currency(calc.yourHousingCost)}/mo`} variant={calc.liveFree ? 'success' : 'default'} />
+                <SummaryBox label="If You Move Out" value={`${fmt.currency(calc.fullRentalCashFlow)}/mo`} variant={calc.fullRentalCashFlow >= 0 ? 'success' : 'danger'} />
+              </div>
+            </Section>
+            
+            <Section index={5} title="Returns" iconKey="returns">
+              <InputRow label="Market Rent (Comparable)" value={marketRent} onChange={setMarketRent} min={500} max={5000} step={50} format="currency" />
+              <DisplayRow label="Your Housing Cost" value={`${fmt.currency(calc.yourHousingCost)}/mo`} variant={calc.liveFree ? 'success' : 'default'} />
+              <DisplayRow label="Savings vs Renting" value={`+${fmt.currency(calc.savingsVsRenting)}/mo`} variant={calc.savingsVsRenting > 0 ? 'success' : 'danger'} />
+              <DisplayRow label="CoC Return" value={fmt.percent(calc.cocReturn)} variant={calc.cocReturn >= 8 ? 'success' : 'default'} />
+              <DisplayRow label="Annual Cash Flow" value={fmt.currency(calc.annualCashFlow)} variant={calc.annualCashFlow >= 0 ? 'success' : 'danger'} />
+            </Section>
           </div>
-
-          {/* Right Column - Insights Panel */}
-          <div className="sm:sticky sm:top-28 space-y-4 sm:max-h-[calc(100vh-8rem)] sm:overflow-y-auto">
-            {/* IQ Verdict */}
-            <IQVerdictCard
-              dealScore={result?.deal_score ?? 0}
-              housingCost={result?.your_housing_cost ?? 0}
-              marketRent={inputs.owner_market_rent}
-              savingsVsRenting={result?.savings_vs_renting ?? 0}
-              cocReturn={result?.coc_return ?? 0}
-              fullRentalCashFlow={result?.full_rental_cash_flow ?? 0}
-            />
-
-            {/* Price Position */}
-            <PricePositionCard
-              purchasePrice={inputs.purchase_price}
-              listPrice={inputs.list_price}
-              breakevenPrice={result?.breakeven_price ?? inputs.purchase_price}
-              targetCoCPrice={result?.target_coc_price ?? 0}
-              fhaMaxPrice={inputs.fha_max_price}
-            />
-
-            {/* Key Metrics */}
-            <KeyMetricsGrid
-              metrics={[
-                { label: 'Housing Cost', value: fmt.currency(result?.your_housing_cost ?? 0), highlight: true },
-                { label: 'Monthly Savings', value: fmt.currency(result?.savings_vs_renting ?? 0), positive: (result?.savings_vs_renting ?? 0) > 0 },
-                { label: 'CoC Return', value: fmt.percent(result?.coc_return ?? 0) },
-                { label: 'Move-Out Cash Flow', value: `${fmt.currency(result?.full_rental_cash_flow ?? 0)}/mo` },
-              ]}
-            />
-
-            {/* Profit Finder Chart */}
+          
+          <div className="space-y-4 sm:sticky sm:top-28">
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                PROFIT FINDER
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">IQ VERDICT: HOUSE HACK</div>
+              <div className="flex items-center gap-4 mb-5">
+                <div className="relative w-20 h-20">
+                  <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="#e2e8f0" strokeWidth="6"/><circle cx="40" cy="40" r="34" fill="none" stroke={calc.dealScore >= 70 ? '#3b82f6' : calc.dealScore >= 40 ? '#f59e0b' : '#ef4444'} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${(calc.dealScore / 100) * 213.6} 213.6`}/></svg>
+                  <div className="absolute inset-0 flex items-center justify-center"><span className={`text-2xl font-bold ${calc.dealScore >= 70 ? 'text-blue-600' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{calc.dealScore}</span></div>
+                </div>
+                <div><div className={`text-lg font-bold ${calc.dealScore >= 70 ? 'text-blue-600' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{verdict}</div><div className="text-sm text-slate-500">{verdictSub}</div></div>
               </div>
-              <ProfitFinder
-                purchasePrice={inputs.purchase_price}
-                listPrice={inputs.list_price}
-                breakevenPrice={result?.breakeven_price ?? inputs.purchase_price}
-                monthlyCashFlow={result?.your_housing_cost ?? 0}
-                buyLabel="Buy"
-                listLabel="List"
-                evenLabel="Even"
-                cashFlowLabel="Net Housing Cost:"
-              />
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-2">HOUSE HACK TARGETS</div>
+                {targets.map((t, i) => (
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                    <span className="text-sm text-slate-500">{t.label}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-semibold tabular-nums ${t.met ? 'text-blue-600' : 'text-slate-800'}`}>{t.unit === '$' ? fmt.currencyCompact(t.actual) : fmt.percent(t.actual)}</span>
+                      <span className="text-[10px] text-slate-400">/ {t.unit === '$' ? fmt.currencyCompact(t.target) : `${t.target}%`}</span>
+                      {t.met ? <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg> : <svg className="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg>}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-
-            {/* Pricing Ladder */}
+            
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                PRICING LADDER
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">HOUSING COST COMPARISON</div>
+              <div className="relative h-3 bg-gradient-to-r from-emerald-500 via-amber-400 to-red-500 rounded-full mb-4">
+                <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg border-2 border-slate-800" style={{ left: `calc(${Math.min(100, Math.max(0, (calc.yourHousingCost / marketRent) * 100))}% - 8px)` }}/>
               </div>
-              <PricingLadder
-                items={[
-                  { label: 'List Price', value: inputs.list_price, type: 'list' },
-                  { label: 'Your Offer', value: inputs.purchase_price, type: 'current', highlight: true },
-                  { label: 'Breakeven', value: result?.breakeven_price ?? 0, hint: '$0 housing cost', type: 'target' },
-                  { label: '10% CoC', value: result?.target_coc_price ?? 0, hint: 'After move-out', type: 'coc' },
-                  { label: 'FHA Max', value: inputs.fha_max_price, hint: 'Your area', type: 'mao' },
-                ]}
-              />
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg"><span className="text-slate-500">Market Rent</span><span className="font-semibold text-slate-800">{fmt.currencyCompact(marketRent)}</span></div>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg"><span className="text-slate-500">Your Cost</span><span className={`font-semibold ${calc.liveFree ? 'text-emerald-600' : 'text-blue-600'}`}>{fmt.currencyCompact(calc.yourHousingCost)}</span></div>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg col-span-2"><span className="text-slate-500">Monthly Savings</span><span className={`font-semibold ${calc.savingsVsRenting > 0 ? 'text-emerald-600' : 'text-red-500'}`}>+{fmt.currencyCompact(calc.savingsVsRenting)}</span></div>
+              </div>
             </div>
-
-            {/* Housing Cost Gauge */}
+            
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                YOUR HOUSING COST
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">KEY METRICS</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className={`py-3 px-4 rounded-lg ${calc.liveFree ? 'bg-emerald-50 border border-emerald-200' : 'bg-blue-50 border border-blue-200'}`}><div className="text-xs text-slate-500 mb-1">Housing Cost</div><div className={`text-lg font-bold ${calc.liveFree ? 'text-emerald-600' : 'text-blue-600'}`}>{fmt.currencyCompact(calc.yourHousingCost)}</div></div>
+                <div className="py-3 px-4 rounded-lg bg-slate-50"><div className="text-xs text-slate-500 mb-1">Rental Income</div><div className="text-lg font-bold text-emerald-600">{fmt.currencyCompact(calc.grossRentalIncome)}</div></div>
+                <div className="py-3 px-4 rounded-lg bg-slate-50"><div className="text-xs text-slate-500 mb-1">CoC Return</div><div className={`text-lg font-bold ${calc.cocReturn >= 8 ? 'text-blue-600' : 'text-slate-800'}`}>{fmt.percent(calc.cocReturn)}</div></div>
+                <div className="py-3 px-4 rounded-lg bg-slate-50"><div className="text-xs text-slate-500 mb-1">Move-Out CF</div><div className={`text-lg font-bold ${calc.fullRentalCashFlow >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>{fmt.currencyCompact(calc.fullRentalCashFlow)}</div></div>
               </div>
-              <HousingCostGauge
-                housingCost={result?.your_housing_cost ?? 0}
-                rentingEquivalent={inputs.owner_market_rent}
-                savings={result?.savings_vs_renting ?? 0}
-              />
             </div>
-
-            {/* Unit Breakdown */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                UNIT BREAKDOWN
-              </div>
-              <UnitBreakdown
-                unit2Rent={inputs.unit2_rent}
-                unit3Rent={inputs.unit3_rent}
-                unit4Rent={inputs.unit4_rent}
-                unitCount={unitsCount}
-              />
-            </div>
-
-            {/* Move Out Summary */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                IF YOU MOVE OUT
-              </div>
-              <MoveOutSummary
-                monthlyCashFlow={result?.full_rental_cash_flow ?? 0}
-                capRate={result?.moveout_cap_rate ?? 0}
-                cocReturn={result?.coc_return ?? 0}
-              />
-            </div>
-
-            {/* CTA Button */}
-            <button
-              onClick={onExportPDF}
-              className="w-full py-4 px-6 bg-violet-600 hover:bg-violet-700 rounded-full text-white font-bold text-sm transition-colors shadow-sm"
-            >
-              Export PDF Report →
+            
+            <button onClick={onExportPDF} className="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+              Export PDF Report
             </button>
           </div>
         </div>

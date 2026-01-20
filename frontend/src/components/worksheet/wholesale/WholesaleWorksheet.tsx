@@ -3,655 +3,297 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
-import { SectionCard, DataRow } from '../SectionCard'
-import { EditableField, DisplayField } from '../EditableField'
-import { ProfitFinder } from '../charts/ProfitFinder'
-import { PricingLadder } from '../charts/PricingLadder'
-import { DealFlow } from '../charts/DealFlow'
-import { ProfitComparison } from '../charts/ProfitComparison'
-import { ClosingCostsBreakdown } from '../charts/ClosingCostsBreakdown'
-import { DealCriteriaList } from '../charts/DealCriteriaList'
-import { useWholesaleWorksheetCalculator } from '@/hooks/useWholesaleWorksheetCalculator'
-import { DollarSign, Home, Wrench, FileSignature, Users, ArrowRightLeft } from 'lucide-react'
 
 // ============================================
-// TYPES
+// ICONS
 // ============================================
-interface WholesaleWorksheetProps {
-  property: SavedProperty
-  onExportPDF?: () => void
+const Icons = {
+  home: (<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>),
+  tool: (<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/></svg>),
+  contract: (<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>),
+  buyer: (<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>),
+  profit: (<svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>),
 }
 
-// ============================================
-// FORMATTERS
-// ============================================
+const SECTIONS = [
+  { id: 'property', title: 'Property Analysis', icon: 'home' },
+  { id: 'rehab', title: 'Rehab Estimate', icon: 'tool' },
+  { id: 'contract', title: 'Contract Terms', icon: 'contract' },
+  { id: 'buyer', title: 'Buyer Analysis', icon: 'buyer' },
+  { id: 'profit', title: 'Your Profit', icon: 'profit' },
+] as const
+
 const fmt = {
-  currency: (val: number) =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(val),
-  percent: (val: number) => `${val.toFixed(1)}%`,
-  ratio: (val: number) => val.toFixed(2),
+  currency: (v: number) => `$${Math.round(v).toLocaleString()}`,
+  currencyCompact: (v: number) => {
+    const abs = Math.abs(v); const sign = v < 0 ? '-' : ''
+    if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(abs >= 10000000 ? 1 : 2)}M`
+    if (abs >= 100000) return `${sign}$${(abs / 1000).toFixed(0)}K`
+    if (abs >= 10000) return `${sign}$${(abs / 1000).toFixed(1)}K`
+    return `${sign}$${Math.round(abs).toLocaleString()}`
+  },
+  percent: (v: number) => `${v.toFixed(1)}%`,
 }
 
-// ============================================
-// DEAL SCORE HELPERS
-// ============================================
-const getDealScoreLabel = (score: number): string => {
-  if (score >= 90) return 'Excellent Deal'
-  if (score >= 75) return 'Great Deal'
-  if (score >= 60) return 'Good Deal'
-  if (score >= 40) return 'Fair Deal'
-  return 'Poor Deal'
-}
+interface WholesaleWorksheetProps { property: SavedProperty; propertyId: string; onExportPDF?: () => void }
 
-const getDealScoreColor = (score: number): string => {
-  if (score >= 75) return 'text-amber-600'
-  if (score >= 50) return 'text-yellow-600'
-  return 'text-red-600'
-}
+export function WholesaleWorksheet({ property, propertyId, onExportPDF }: WholesaleWorksheetProps) {
+  const propertyData = property.property_data_snapshot || {}
+  const beds = propertyData.bedrooms || 0
+  const baths = propertyData.bathrooms || 0
+  const sqft = propertyData.sqft || 1
+  const address = getDisplayAddress(property)
+  const city = property.address_city || ''
+  const state = property.address_state || ''
+  const zip = property.address_zip || ''
 
-const getDealScoreBg = (score: number): string => {
-  if (score >= 75) return 'bg-amber-500'
-  if (score >= 50) return 'bg-yellow-500'
-  return 'bg-red-500'
-}
+  // STATE
+  const [contractPrice, setContractPrice] = useState(propertyData.listPrice || 200000)
+  const [arv, setArv] = useState(propertyData.arv || (propertyData.listPrice || 200000) * 1.4)
+  const [rehabCosts, setRehabCosts] = useState(40000)
+  const [assignmentFee, setAssignmentFee] = useState(10000)
+  const [earnestMoney, setEarnestMoney] = useState(1000)
+  const [marketingCosts, setMarketingCosts] = useState(500)
+  const [closingCostsPct, setClosingCostsPct] = useState(2)
+  const [buyerTargetProfit, setBuyerTargetProfit] = useState(25)
+  
+  const [viewMode, setViewMode] = useState<'guided' | 'showall'>('guided')
+  const [currentSection, setCurrentSection] = useState<number | null>(0)
+  const [completedSections, setCompletedSections] = useState<Set<number>>(new Set([0]))
 
-// ============================================
-// IQ VERDICT CARD
-// ============================================
-interface IQVerdictCardProps {
-  dealScore: number
-  assignmentFee: number
-  investorRoi: number
-  meetsSeventyRule: boolean
-  targetAssignmentFee?: number
-  targetInvestorRoi?: number
-}
+  const calc = useMemo(() => {
+    // 70% Rule MAO
+    const mao = (arv * 0.7) - rehabCosts
+    const meets70Rule = contractPrice <= mao
+    
+    // Assignment sale price
+    const assignmentSalePrice = contractPrice + assignmentFee
+    
+    // Buyer's numbers
+    const buyerAllInCost = assignmentSalePrice + rehabCosts + (assignmentSalePrice * (closingCostsPct / 100))
+    const buyerProfit = arv - buyerAllInCost - (arv * 0.08) // 8% selling costs
+    const buyerRoi = buyerAllInCost > 0 ? (buyerProfit / buyerAllInCost) * 100 : 0
+    const buyerHasGoodDeal = buyerRoi >= buyerTargetProfit
+    
+    // Your profit
+    const yourCosts = earnestMoney + marketingCosts
+    const yourNetProfit = assignmentFee - marketingCosts
+    const yourRoi = yourCosts > 0 ? (yourNetProfit / yourCosts) * 100 : 0
+    
+    // Price per sqft
+    const pricePerSqft = sqft > 0 ? contractPrice / sqft : 0
+    const arvPerSqft = sqft > 0 ? arv / sqft : 0
+    const allInPctArv = arv > 0 ? (assignmentSalePrice / arv) * 100 : 0
+    
+    // Deal Score
+    const feeScore = Math.min(30, Math.max(0, (assignmentFee / 15000) * 30))
+    const ruleScore = meets70Rule ? 25 : Math.max(0, 25 - ((contractPrice - mao) / 5000) * 5)
+    const buyerScore = buyerHasGoodDeal ? 25 : Math.max(0, 25 - ((buyerTargetProfit - buyerRoi) / 5) * 5)
+    const roiScore = Math.min(20, Math.max(0, (yourRoi / 500) * 20))
+    const dealScore = Math.round(Math.min(100, Math.max(0, feeScore + ruleScore + buyerScore + roiScore)))
+    
+    return {
+      mao, meets70Rule, assignmentSalePrice, buyerAllInCost, buyerProfit, buyerRoi, buyerHasGoodDeal,
+      yourCosts, yourNetProfit, yourRoi, pricePerSqft, arvPerSqft, allInPctArv, dealScore,
+    }
+  }, [contractPrice, arv, rehabCosts, assignmentFee, earnestMoney, marketingCosts, closingCostsPct, buyerTargetProfit, sqft])
 
-function IQVerdictCard({
-  dealScore,
-  assignmentFee,
-  investorRoi,
-  meetsSeventyRule,
-  targetAssignmentFee = 5000,
-  targetInvestorRoi = 25,
-}: IQVerdictCardProps) {
-  const feeMet = assignmentFee >= targetAssignmentFee
-  const roiMet = investorRoi >= targetInvestorRoi
+  const toggleSection = useCallback((index: number) => {
+    if (viewMode === 'showall') return
+    if (currentSection === index) setCurrentSection(null)
+    else { setCurrentSection(index); setCompletedSections(prev => new Set([...Array.from(prev), index])) }
+  }, [viewMode, currentSection])
 
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-      {/* Header */}
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-        IQ VERDICT
+  const InputRow = ({ label, value, onChange, min, max, step, format, subValue }: { label: string; value: number; onChange: (v: number) => void; min: number; max: number; step: number; format: 'currency' | 'percent' | 'number'; subValue?: string }) => {
+    const displayValue = format === 'currency' ? fmt.currency(value) : format === 'percent' ? fmt.percent(value) : value.toString()
+    const percentage = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100))
+    return (
+      <div className="py-3">
+        <div className="flex items-center justify-between mb-2"><label className="text-sm text-slate-500">{label}</label><div className="text-right"><span className="text-sm font-semibold text-slate-800 tabular-nums">{displayValue}</span>{subValue && <span className="text-xs text-slate-400 ml-1.5 tabular-nums">{subValue}</span>}</div></div>
+        <div className="relative"><div className="h-1.5 bg-slate-200 rounded-full"><div className="h-full bg-blue-500 rounded-full transition-all duration-100" style={{ width: `${percentage}%` }} /></div><input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(parseFloat(e.target.value))} className="absolute inset-0 w-full h-6 -top-2 opacity-0 cursor-pointer"/></div>
       </div>
+    )
+  }
 
-      {/* Deal Score Circle */}
-      <div className="flex items-center gap-4 mb-5">
-        <div className="relative w-20 h-20">
-          <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-            <circle
-              cx="40"
-              cy="40"
-              r="34"
-              fill="none"
-              stroke="#e2e8f0"
-              strokeWidth="6"
-            />
-            <circle
-              cx="40"
-              cy="40"
-              r="34"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={`${(dealScore / 100) * 213.6} 213.6`}
-              className={getDealScoreColor(dealScore)}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className={`text-2xl font-bold ${getDealScoreColor(dealScore)}`}>
-              {dealScore}
-            </span>
-          </div>
-        </div>
-        <div>
-          <div className={`text-lg font-bold ${getDealScoreColor(dealScore)}`}>
-            {getDealScoreLabel(dealScore)}
-          </div>
-          <div className="text-sm text-slate-500">
-            {meetsSeventyRule ? '✓ Meets 70% Rule' : '✗ Above 70% ARV'}
-          </div>
-        </div>
+  const DisplayRow = ({ label, value, variant = 'default' }: { label: string; value: string; variant?: 'default' | 'success' | 'danger' | 'muted' | 'blue' }) => {
+    const colors = { default: 'text-slate-800', success: 'text-emerald-600', danger: 'text-red-500', muted: 'text-slate-400', blue: 'text-blue-600' }
+    return <div className="flex items-center justify-between py-2.5"><span className="text-sm text-slate-500">{label}</span><span className={`text-sm font-semibold tabular-nums ${colors[variant]}`}>{value}</span></div>
+  }
+
+  const SummaryBox = ({ label, value, variant = 'default' }: { label: string; value: string; variant?: 'default' | 'success' | 'danger' | 'blue' }) => {
+    const styles = { default: 'bg-slate-50 border-slate-200', success: 'bg-emerald-50 border-emerald-200', danger: 'bg-red-50 border-red-200', blue: 'bg-blue-50 border-blue-200' }
+    const textColor = { default: 'text-slate-800', success: 'text-emerald-600', danger: 'text-red-500', blue: 'text-blue-600' }
+    return <div className={`flex items-center justify-between p-3 rounded-lg border ${styles[variant]}`}><span className="text-sm font-medium text-slate-600">{label}</span><span className={`text-base font-bold tabular-nums ${textColor[variant]}`}>{value}</span></div>
+  }
+
+  const Section = ({ index, title, iconKey, children }: { index: number; title: string; iconKey: keyof typeof Icons; children: React.ReactNode }) => {
+    const isOpen = viewMode === 'showall' || currentSection === index
+    const isComplete = completedSections.has(index) && currentSection !== index
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
+        <button onClick={() => toggleSection(index)} className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+          <div className="flex items-center gap-3"><div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isComplete ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>{Icons[iconKey]}</div><span className="font-semibold text-slate-800">{title}</span></div>
+          <div className="flex items-center gap-2">{isComplete && <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center"><svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg></div>}<svg className={`w-5 h-5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg></div>
+        </button>
+        {isOpen && <div className="px-4 pb-4 border-t border-slate-100">{children}</div>}
       </div>
+    )
+  }
 
-      {/* Returns vs Targets */}
-      <div className="space-y-3">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-2">
-          DEAL CRITERIA
-        </div>
+  const isProfit = calc.yourNetProfit > 0
+  let verdict: string, verdictSub: string
+  if (calc.dealScore >= 85) { verdict = "Excellent Wholesale"; verdictSub = "Strong fee with good buyer margins" }
+  else if (calc.dealScore >= 70) { verdict = "Good Wholesale"; verdictSub = "Solid assignment opportunity" }
+  else if (calc.dealScore >= 55) { verdict = "Fair Wholesale"; verdictSub = "May need to reduce fee" }
+  else if (isProfit) { verdict = "Marginal Wholesale"; verdictSub = "Tight margins - verify buyer interest" }
+  else { verdict = "Weak Wholesale"; verdictSub = "Numbers don't work" }
 
-        {/* Assignment Fee */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-600">Assignment Fee</span>
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-semibold ${feeMet ? 'text-amber-600' : 'text-slate-800'}`}>
-              {fmt.currency(assignmentFee)}
-            </span>
-            <span className="text-xs text-slate-400">/ {fmt.currency(targetAssignmentFee)}</span>
-            {feeMet ? (
-              <span className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
-                <span className="text-amber-600 text-xs">✓</span>
-              </span>
-            ) : (
-              <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
-                <span className="text-slate-400 text-xs">–</span>
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Investor ROI */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-600">Investor ROI</span>
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-semibold ${roiMet ? 'text-amber-600' : 'text-slate-800'}`}>
-              {fmt.percent(investorRoi)}
-            </span>
-            <span className="text-xs text-slate-400">/ {targetInvestorRoi}%</span>
-            {roiMet ? (
-              <span className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
-                <span className="text-amber-600 text-xs">✓</span>
-              </span>
-            ) : (
-              <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
-                <span className="text-slate-400 text-xs">–</span>
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* 70% Rule */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-600">70% Rule</span>
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-semibold ${meetsSeventyRule ? 'text-amber-600' : 'text-slate-800'}`}>
-              {meetsSeventyRule ? 'Passes' : 'Fails'}
-            </span>
-            <span className="text-xs text-slate-400">≤ 70% ARV</span>
-            {meetsSeventyRule ? (
-              <span className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
-                <span className="text-amber-600 text-xs">✓</span>
-              </span>
-            ) : (
-              <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
-                <span className="text-slate-400 text-xs">–</span>
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ============================================
-// PRICE POSITION CARD
-// ============================================
-interface PricePositionCardProps {
-  contractPrice: number
-  investorPrice: number
-  arv: number
-  mao: number
-  investorAllIn: number
-}
-
-function PricePositionCard({
-  contractPrice,
-  investorPrice,
-  arv,
-  mao,
-  investorAllIn,
-}: PricePositionCardProps) {
-  // Calculate position percentage (0-100) relative to ARV
-  const positionPct = Math.min(100, Math.max(0, (investorPrice / arv) * 100))
-  const maoLine = Math.min(100, Math.max(0, (mao / arv) * 100))
-  const contractLine = Math.min(100, Math.max(0, (contractPrice / arv) * 100))
-
-  // Determine status
-  const isExcellent = investorPrice <= mao
-  const isGood = investorPrice > mao && investorPrice <= arv * 0.75
-  const isBad = investorPrice > arv * 0.75
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-        PRICE POSITION
-      </div>
-
-      {/* Gauge */}
-      <div className="relative h-8 bg-gradient-to-r from-amber-500 via-yellow-400 to-red-500 rounded-full mb-6 overflow-hidden">
-        {/* MAO marker */}
-        <div
-          className="absolute top-0 bottom-0 w-0.5 bg-white/80"
-          style={{ left: `${maoLine}%` }}
-        />
-        {/* Contract price marker */}
-        <div
-          className="absolute top-0 bottom-0 w-0.5 bg-white/80"
-          style={{ left: `${contractLine}%` }}
-        />
-        {/* Current position indicator (investor price) */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg border-2 border-slate-800"
-          style={{ left: `calc(${positionPct}% - 8px)` }}
-        />
-      </div>
-
-      {/* Legend */}
-      <div className="grid grid-cols-2 gap-3 text-sm">
-        <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg">
-          <span className="text-slate-500">ARV</span>
-          <span className="font-semibold text-slate-800">{fmt.currency(arv)}</span>
-        </div>
-        <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg">
-          <span className="text-slate-500">Investor Pays</span>
-          <span className={`font-semibold ${isExcellent ? 'text-amber-600' : isGood ? 'text-yellow-600' : 'text-red-600'}`}>
-            {fmt.currency(investorPrice)}
-          </span>
-        </div>
-        <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg">
-          <span className="text-slate-500">Your Contract</span>
-          <span className="font-semibold text-slate-800">{fmt.currency(contractPrice)}</span>
-        </div>
-        <div className="flex justify-between items-center py-2 px-3 bg-slate-50 rounded-lg">
-          <span className="text-slate-500">MAO (70%)</span>
-          <span className="font-semibold text-slate-800">{fmt.currency(mao)}</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ============================================
-// KEY METRICS GRID
-// ============================================
-interface KeyMetric {
-  label: string
-  value: string
-  highlight?: boolean
-  positive?: boolean
-  negative?: boolean
-}
-
-function KeyMetricsGrid({ metrics }: { metrics: KeyMetric[] }) {
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-        KEY METRICS
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {metrics.map((metric, idx) => (
-          <div
-            key={idx}
-            className={`py-3 px-4 rounded-lg ${
-              metric.highlight ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50'
-            }`}
-          >
-            <div className="text-xs text-slate-500 mb-1">{metric.label}</div>
-            <div
-              className={`text-lg font-bold ${
-                metric.positive
-                  ? 'text-amber-600'
-                  : metric.negative
-                  ? 'text-red-600'
-                  : metric.highlight
-                  ? 'text-amber-700'
-                  : 'text-slate-800'
-              }`}
-            >
-              {metric.value}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ============================================
-// MAIN COMPONENT
-// ============================================
-export function WholesaleWorksheet({ property, onExportPDF }: WholesaleWorksheetProps) {
-  const { inputs, updateInput, result, isCalculating, error } = useWholesaleWorksheetCalculator(property)
-
-  // Use ORIGINAL values from property for stable slider ranges
-  const originalPrice = property.property_data_snapshot?.listPrice || inputs.investor_price || 500000
-  const originalArv = property.property_data_snapshot?.arv || inputs.arv || originalPrice * 1.3
-
-  // Computed values
-  const assignmentFee = result?.assignment_fee ?? 0
-  const assignmentFeePct = inputs.investor_price > 0 ? (assignmentFee / inputs.investor_price) * 100 : 0
-  const closingCosts = result?.closing_costs ?? 0
-  const titleEscrow = Math.max(0, inputs.marketing_costs)
-  const transferTax = Math.max(0, inputs.earnest_money)
-  const otherClosing = Math.max(0, closingCosts - titleEscrow - transferTax)
-  const meetsSeventyRule = inputs.investor_price <= inputs.arv * 0.7
+  const targets = [
+    { label: 'Assignment Fee', actual: assignmentFee, target: 10000, unit: '$', met: assignmentFee >= 10000 },
+    { label: 'Meets 70% Rule', actual: calc.allInPctArv, target: 70, unit: '%', met: calc.meets70Rule },
+    { label: 'Buyer ROI', actual: calc.buyerRoi, target: buyerTargetProfit, unit: '%', met: calc.buyerHasGoodDeal },
+    { label: 'Your ROI', actual: calc.yourRoi, target: 500, unit: '%', met: calc.yourRoi >= 500 },
+  ]
 
   return (
     <div className="w-full min-h-screen bg-slate-50 pt-12">
-      {/* WorksheetTabNav - sticky below header */}
-      <div className="w-full sticky top-12 z-40 bg-white border-b border-slate-200">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          <WorksheetTabNav
-            propertyId={property.id}
-            strategy="wholesale"
-          />
-        </div>
-      </div>
-
-      {/* Page Header */}
+      <div className="w-full sticky top-12 z-40 bg-white border-b border-slate-200"><div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8"><WorksheetTabNav propertyId={propertyId} strategy="wholesale" /></div></div>
+      
       <div className="w-full bg-white border-b border-slate-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-              <FileSignature className="w-5 h-5 text-amber-600" />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div className="flex items-start sm:items-center gap-3 sm:gap-5 min-w-0 flex-1">
+              <button className="text-blue-500 hover:text-blue-600 transition-colors text-sm font-medium flex-shrink-0">← Back</button>
+              <div className="min-w-0 flex-1"><h1 className="text-sm sm:text-base font-semibold text-slate-800 truncate">{address}</h1><p className="text-xs sm:text-sm text-slate-500 truncate">{city}{city && state ? ', ' : ''}{state} {zip}{beds > 0 && ` · ${beds} bed`}{baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}{sqft > 0 && ` · ${sqft.toLocaleString()} sqft`}</p></div>
             </div>
-            <div>
-              <h1 className="text-lg font-bold text-slate-800">
-                {getDisplayAddress(property) || 'Wholesale Analysis'}
-              </h1>
-              <p className="text-sm text-slate-500">Wholesale Strategy Worksheet</p>
+            <div className="flex items-center bg-slate-100 rounded-lg p-1 flex-shrink-0 self-end sm:self-auto">
+              <button onClick={() => setViewMode('guided')} className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold rounded-md transition-all ${viewMode === 'guided' ? 'bg-blue-500 text-white' : 'text-slate-500 hover:text-slate-700'}`}>Guided</button>
+              <button onClick={() => setViewMode('showall')} className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === 'showall' ? 'bg-blue-500 text-white' : 'text-slate-500 hover:text-slate-700'}`}>Expand All</button>
             </div>
+          </div>
+          
+          <div className="flex items-center mb-4 sm:mb-5">
+            {SECTIONS.map((section, i) => {
+              const isComplete = completedSections.has(i) && i !== currentSection; const isActive = i === currentSection; const isPast = currentSection !== null && i < currentSection
+              return (
+                <div key={section.id} className="flex items-center flex-1 last:flex-none">
+                  <button onClick={() => toggleSection(i)} className="relative group flex-shrink-0" title={section.title}>
+                    {isComplete ? <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-sm"><svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg></div>
+                    : isActive ? <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 shadow-sm ring-2 sm:ring-4 ring-blue-500/20" />
+                    : <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-200 border-2 border-slate-300" />}
+                  </button>
+                  {i < SECTIONS.length - 1 && <div className={`flex-1 h-0.5 mx-0.5 sm:mx-1 ${isPast || isComplete ? 'bg-blue-500' : 'bg-slate-200'}`} style={{ backgroundImage: isPast || isComplete ? 'none' : 'repeating-linear-gradient(90deg, #CBD5E1 0, #CBD5E1 4px, transparent 4px, transparent 8px)' }} />}
+                </div>
+              )
+            })}
+          </div>
+          
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
+            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-slate-800/5"><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Contract</div><div className="text-xs sm:text-sm lg:text-base font-bold text-slate-800 tabular-nums truncate">{fmt.currencyCompact(contractPrice)}</div></div>
+            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-blue-500/10"><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">ARV</div><div className="text-xs sm:text-sm lg:text-base font-bold text-blue-600 tabular-nums truncate">{fmt.currencyCompact(arv)}</div></div>
+            <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${isProfit ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Your Fee</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums truncate ${isProfit ? 'text-emerald-600' : 'text-red-500'}`}>{fmt.currencyCompact(assignmentFee)}</div></div>
+            <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${calc.buyerHasGoodDeal ? 'bg-emerald-500/10' : 'bg-amber-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Buyer ROI</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums truncate ${calc.buyerHasGoodDeal ? 'text-emerald-600' : 'text-amber-500'}`}>{fmt.percent(calc.buyerRoi)}</div></div>
+            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-blue-500/10"><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Your ROI</div><div className="text-xs sm:text-sm lg:text-base font-bold text-blue-600 tabular-nums truncate">{fmt.percent(calc.yourRoi)}</div></div>
+            <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${calc.dealScore >= 70 ? 'bg-blue-500/15' : calc.dealScore >= 40 ? 'bg-amber-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Deal Score</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums ${calc.dealScore >= 70 ? 'text-blue-600' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{calc.dealScore}</div></div>
           </div>
         </div>
       </div>
-
-      {/* Main Content */}
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Error/Loading State */}
-        {(isCalculating || error) && (
-          <div className={`mb-4 p-3 rounded-lg ${error ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500'} text-sm`}>
-            {error ? `Calculation error: ${error}` : 'Recalculating worksheet metrics...'}
-          </div>
-        )}
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-          <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white">
-            <div className="text-xs font-medium text-amber-100 mb-1">Assignment Fee</div>
-            <div className="text-xl font-bold">{fmt.currency(assignmentFee)}</div>
-            <div className="text-xs text-amber-200">Your profit</div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/60">
-            <div className="text-xs font-medium text-slate-500 mb-1">Your Contract</div>
-            <div className="text-xl font-bold text-slate-800">{fmt.currency(inputs.contract_price)}</div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/60">
-            <div className="text-xs font-medium text-slate-500 mb-1">Investor Pays</div>
-            <div className="text-xl font-bold text-slate-800">{fmt.currency(inputs.investor_price)}</div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/60">
-            <div className="text-xs font-medium text-slate-500 mb-1">Cash Needed</div>
-            <div className="text-xl font-bold text-slate-800">{fmt.currency(inputs.earnest_money)}</div>
-            <div className="text-xs text-slate-400">Earnest money</div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/60">
-            <div className="text-xs font-medium text-slate-500 mb-1">Investor ROI</div>
-            <div className="text-xl font-bold text-amber-600">{fmt.percent(result?.investor_roi ?? 0)}</div>
-          </div>
-          <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-4 text-white">
-            <div className="text-xs font-medium text-slate-300 mb-1">Deal Score</div>
-            <div className="text-xl font-bold">{result?.deal_score ?? 0}</div>
-            <div className="text-xs text-slate-400">{getDealScoreLabel(result?.deal_score ?? 0).replace(' Deal', '')}</div>
-          </div>
-        </div>
-
-        {/* Two Column Layout */}
+      
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="grid grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
-          {/* Left Column - Worksheet Inputs */}
-          <div className="space-y-4">
-            {/* Wholesale Analysis */}
-            <SectionCard title="Wholesale Analysis">
-              <DataRow label="Investor Purchase Price" icon={<Home className="w-4 h-4" />} hasSlider>
-                <EditableField
-                  value={inputs.investor_price}
-                  onChange={(val) => updateInput('investor_price', val)}
-                  format="currency"
-                  min={Math.round(originalPrice * 0.5)}
-                  max={Math.round(originalPrice * 1.5)}
-                  step={1000}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Your Contract Price" hasSlider>
-                <EditableField
-                  value={inputs.contract_price}
-                  onChange={(val) => updateInput('contract_price', val)}
-                  format="currency"
-                  min={Math.round(originalPrice * 0.3)}
-                  max={Math.round(originalPrice * 1.2)}
-                  step={1000}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Earnest Money" icon={<DollarSign className="w-4 h-4" />} hasSlider>
-                <EditableField
-                  value={inputs.earnest_money}
-                  onChange={(val) => updateInput('earnest_money', val)}
-                  format="currency"
-                  min={0}
-                  max={10000}
-                  step={100}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Closing Costs" hasSlider>
-                <EditableField
-                  value={inputs.marketing_costs}
-                  onChange={(val) => updateInput('marketing_costs', val)}
-                  format="currency"
-                  min={0}
-                  max={5000}
-                  step={100}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Your Assignment Fee" isHighlight>
-                <DisplayField value={assignmentFee} format="currency" isPositive />
-              </DataRow>
-              <DataRow label="Post-Tax Profit">
-                <DisplayField value={result?.post_tax_profit ?? 0} format="currency" />
-              </DataRow>
-            </SectionCard>
-
-            {/* Purchase & Rehab (Investor) */}
-            <SectionCard title="Purchase & Rehab (Investor)">
-              <DataRow label="Purchase Price">
-                <DisplayField value={inputs.investor_price} format="currency" />
-              </DataRow>
-              <DataRow label="Rehab Costs" icon={<Wrench className="w-4 h-4" />} hasSlider>
-                <EditableField
-                  value={inputs.rehab_costs}
-                  onChange={(val) => updateInput('rehab_costs', val)}
-                  format="currency"
-                  min={0}
-                  max={Math.round(originalPrice * 0.4)}
-                  step={1000}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Amount Financed">
-                <DisplayField value={result?.amount_financed ?? 0} format="currency" />
-              </DataRow>
-              <DataRow label="Down Payment">
-                <DisplayField value={result?.down_payment ?? 0} format="currency" />
-              </DataRow>
-              <DataRow label="Purchase Costs">
-                <DisplayField value={result?.investor_purchase_costs ?? 0} format="currency" />
-              </DataRow>
-              <DataRow label="Total Cash Needed" isTotal>
-                <DisplayField value={result?.total_cash_needed ?? 0} format="currency" />
-              </DataRow>
-            </SectionCard>
-
-            {/* Sale & Profit (Investor) */}
-            <SectionCard title="Sale & Profit (Investor)">
-              <DataRow label="After Repair Value" hasSlider>
-                <EditableField
-                  value={inputs.arv}
-                  onChange={(val) => updateInput('arv', val)}
-                  format="currency"
-                  min={Math.round(originalArv * 0.7)}
-                  max={Math.round(originalArv * 1.5)}
-                  step={1000}
-                  showSlider={true}
-                />
-              </DataRow>
-              <DataRow label="Selling Costs">
-                <DisplayField value={result?.selling_costs ?? 0} format="currency" />
-              </DataRow>
-              <DataRow label="Sale Proceeds">
-                <DisplayField value={result?.sale_proceeds ?? 0} format="currency" isPositive />
-              </DataRow>
-              <DataRow label="Total Investment">
-                <DisplayField value={-(result?.investor_all_in ?? 0)} format="currency" isNegative />
-              </DataRow>
-              <DataRow label="Investor Profit" isTotal>
-                <DisplayField value={result?.investor_profit ?? 0} format="currency" isPositive />
-              </DataRow>
-              <DataRow label="Investor ROI">
-                <DisplayField value={result?.investor_roi ?? 0} format="number" suffix="%" />
-              </DataRow>
-            </SectionCard>
+          <div className="space-y-3">
+            <Section index={0} title="Property Analysis" iconKey="home">
+              <InputRow label="Contract Price" value={contractPrice} onChange={setContractPrice} min={50000} max={500000} step={5000} format="currency" />
+              <InputRow label="After Repair Value" value={arv} onChange={setArv} min={Math.round(contractPrice * 0.8)} max={Math.round(contractPrice * 2)} step={5000} format="currency" />
+              <DisplayRow label="Price / Sq.Ft." value={`$${Math.round(calc.pricePerSqft)}`} />
+              <DisplayRow label="ARV / Sq.Ft." value={`$${Math.round(calc.arvPerSqft)}`} />
+              <div className="mt-3 pt-3"><SummaryBox label="70% Rule MAO" value={fmt.currency(calc.mao)} variant={calc.meets70Rule ? 'success' : 'danger'} /></div>
+            </Section>
+            
+            <Section index={1} title="Rehab Estimate" iconKey="tool">
+              <InputRow label="Estimated Rehab" value={rehabCosts} onChange={setRehabCosts} min={0} max={150000} step={1000} format="currency" />
+              <DisplayRow label="$/Sq.Ft. Rehab" value={`$${Math.round(rehabCosts / sqft)}`} />
+              <div className="mt-3 pt-3"><SummaryBox label="Total Rehab Budget" value={fmt.currency(rehabCosts)} /></div>
+            </Section>
+            
+            <Section index={2} title="Contract Terms" iconKey="contract">
+              <InputRow label="Earnest Money" value={earnestMoney} onChange={setEarnestMoney} min={100} max={10000} step={100} format="currency" />
+              <InputRow label="Assignment Fee" value={assignmentFee} onChange={setAssignmentFee} min={1000} max={50000} step={500} format="currency" />
+              <DisplayRow label="Assignment Sale Price" value={fmt.currency(calc.assignmentSalePrice)} variant="blue" />
+              <DisplayRow label="All-In % of ARV" value={fmt.percent(calc.allInPctArv)} variant={calc.meets70Rule ? 'success' : 'danger'} />
+            </Section>
+            
+            <Section index={3} title="Buyer Analysis" iconKey="buyer">
+              <DisplayRow label="Buyer Pays You" value={fmt.currency(calc.assignmentSalePrice)} />
+              <DisplayRow label="+ Rehab Costs" value={fmt.currency(rehabCosts)} />
+              <InputRow label="+ Closing Costs" value={closingCostsPct} onChange={setClosingCostsPct} min={0} max={5} step={0.5} format="percent" subValue={fmt.currency(calc.assignmentSalePrice * (closingCostsPct / 100))} />
+              <DisplayRow label="Buyer All-In Cost" value={fmt.currency(calc.buyerAllInCost)} />
+              <DisplayRow label="Buyer's ARV" value={fmt.currency(arv)} variant="blue" />
+              <DisplayRow label="Buyer's Profit" value={fmt.currency(calc.buyerProfit)} variant={calc.buyerProfit > 0 ? 'success' : 'danger'} />
+              <InputRow label="Buyer Target ROI" value={buyerTargetProfit} onChange={setBuyerTargetProfit} min={10} max={50} step={5} format="percent" />
+              <div className="mt-3 pt-3"><SummaryBox label="Buyer ROI" value={fmt.percent(calc.buyerRoi)} variant={calc.buyerHasGoodDeal ? 'success' : 'danger'} /></div>
+            </Section>
+            
+            <Section index={4} title="Your Profit" iconKey="profit">
+              <DisplayRow label="Assignment Fee" value={fmt.currency(assignmentFee)} variant="success" />
+              <InputRow label="Marketing Costs" value={marketingCosts} onChange={setMarketingCosts} min={0} max={5000} step={100} format="currency" />
+              <DisplayRow label="Earnest Money (Refundable)" value={fmt.currency(earnestMoney)} variant="muted" />
+              <div className="mt-3 pt-3 space-y-2">
+                <SummaryBox label="Your Net Profit" value={fmt.currency(calc.yourNetProfit)} variant={isProfit ? 'success' : 'danger'} />
+                <SummaryBox label="Your ROI" value={fmt.percent(calc.yourRoi)} variant="blue" />
+              </div>
+            </Section>
           </div>
-
-          {/* Right Column - Insights Panel */}
-          <div className="sm:sticky sm:top-28 space-y-4 sm:max-h-[calc(100vh-8rem)] sm:overflow-y-auto">
-            {/* IQ Verdict */}
-            <IQVerdictCard
-              dealScore={result?.deal_score ?? 0}
-              assignmentFee={assignmentFee}
-              investorRoi={result?.investor_roi ?? 0}
-              meetsSeventyRule={meetsSeventyRule}
-            />
-
-            {/* Price Position */}
-            <PricePositionCard
-              contractPrice={inputs.contract_price}
-              investorPrice={inputs.investor_price}
-              arv={inputs.arv}
-              mao={result?.mao ?? inputs.arv * 0.7}
-              investorAllIn={result?.investor_all_in ?? 0}
-            />
-
-            {/* Key Metrics */}
-            <KeyMetricsGrid
-              metrics={[
-                { label: 'Assignment Fee', value: fmt.currency(assignmentFee), highlight: true },
-                { label: 'Investor ROI', value: fmt.percent(result?.investor_roi ?? 0) },
-                { label: 'Investor Profit', value: fmt.currency(result?.investor_profit ?? 0) },
-                { label: 'Your Cash at Risk', value: fmt.currency(inputs.earnest_money) },
-              ]}
-            />
-
-            {/* Profit Finder Chart */}
+          
+          <div className="space-y-4 sm:sticky sm:top-28">
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                PROFIT FINDER
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">IQ VERDICT: WHOLESALE</div>
+              <div className="flex items-center gap-4 mb-5">
+                <div className="relative w-20 h-20">
+                  <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="#e2e8f0" strokeWidth="6"/><circle cx="40" cy="40" r="34" fill="none" stroke={calc.dealScore >= 70 ? '#3b82f6' : calc.dealScore >= 40 ? '#f59e0b' : '#ef4444'} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${(calc.dealScore / 100) * 213.6} 213.6`}/></svg>
+                  <div className="absolute inset-0 flex items-center justify-center"><span className={`text-2xl font-bold ${calc.dealScore >= 70 ? 'text-blue-600' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{calc.dealScore}</span></div>
+                </div>
+                <div><div className={`text-lg font-bold ${calc.dealScore >= 70 ? 'text-blue-600' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{verdict}</div><div className="text-sm text-slate-500">{verdictSub}</div></div>
               </div>
-              <ProfitFinder
-                purchasePrice={inputs.contract_price}
-                listPrice={inputs.arv}
-                breakevenPrice={result?.mao ?? inputs.arv * 0.7}
-                monthlyCashFlow={assignmentFee}
-                buyLabel="Contract"
-                listLabel="ARV"
-                evenLabel="MAO"
-                cashFlowLabel="Assignment Fee:"
-              />
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-2">WHOLESALE TARGETS</div>
+                {targets.map((t, i) => (
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                    <span className="text-sm text-slate-500">{t.label}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-semibold tabular-nums ${t.met ? 'text-blue-600' : 'text-slate-800'}`}>{t.unit === '$' ? fmt.currencyCompact(t.actual) : fmt.percent(t.actual)}</span>
+                      <span className="text-[10px] text-slate-400">/ {t.unit === '$' ? fmt.currencyCompact(t.target) : `${t.target}%`}</span>
+                      {t.met ? <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg> : <svg className="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg>}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-
-            {/* Pricing Ladder */}
+            
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                PRICING LADDER
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">DEAL FLOW</div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">1</div><div className="flex-1"><div className="text-sm font-medium text-slate-800">You Contract at</div><div className="text-lg font-bold text-slate-800">{fmt.currencyCompact(contractPrice)}</div></div></div>
+                <div className="w-0.5 h-4 bg-slate-200 ml-4"></div>
+                <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">2</div><div className="flex-1"><div className="text-sm font-medium text-slate-800">You Assign at</div><div className="text-lg font-bold text-blue-600">{fmt.currencyCompact(calc.assignmentSalePrice)}</div></div></div>
+                <div className="w-0.5 h-4 bg-slate-200 ml-4"></div>
+                <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-600">3</div><div className="flex-1"><div className="text-sm font-medium text-slate-800">You Profit</div><div className="text-lg font-bold text-emerald-600">{fmt.currencyCompact(calc.yourNetProfit)}</div></div></div>
               </div>
-              <PricingLadder
-                items={[
-                  { label: 'ARV', value: inputs.arv, type: 'arv' },
-                  { label: 'Investor All-In', value: result?.investor_all_in ?? 0, type: 'current', highlight: true },
-                  { label: 'Investor Pays', value: inputs.investor_price, type: 'target' },
-                  { label: 'Your Contract', value: inputs.contract_price, type: 'coc' },
-                  { label: 'MAO', value: result?.mao ?? 0, hint: '70% Rule', type: 'mao' },
-                ]}
-                recoveryPercent={assignmentFeePct}
-                indicatorLabel="assignment fee"
-                indicatorClass="assignment"
-                indicatorValue={fmt.currency(assignmentFee)}
-              />
             </div>
-
-            {/* Deal Flow */}
+            
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                DEAL FLOW
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">KEY METRICS</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="py-3 px-4 rounded-lg bg-blue-50 border border-blue-200"><div className="text-xs text-slate-500 mb-1">Your Fee</div><div className="text-lg font-bold text-blue-600">{fmt.currencyCompact(assignmentFee)}</div></div>
+                <div className="py-3 px-4 rounded-lg bg-slate-50"><div className="text-xs text-slate-500 mb-1">Your Costs</div><div className="text-lg font-bold text-slate-800">{fmt.currencyCompact(calc.yourCosts)}</div></div>
+                <div className="py-3 px-4 rounded-lg bg-slate-50"><div className="text-xs text-slate-500 mb-1">Buyer Profit</div><div className={`text-lg font-bold ${calc.buyerProfit > 0 ? 'text-emerald-600' : 'text-red-500'}`}>{fmt.currencyCompact(calc.buyerProfit)}</div></div>
+                <div className="py-3 px-4 rounded-lg bg-slate-50"><div className="text-xs text-slate-500 mb-1">Buyer ROI</div><div className={`text-lg font-bold ${calc.buyerHasGoodDeal ? 'text-emerald-600' : 'text-amber-500'}`}>{fmt.percent(calc.buyerRoi)}</div></div>
               </div>
-              <DealFlow
-                contractPrice={inputs.contract_price}
-                investorPrice={inputs.investor_price}
-                assignmentFee={assignmentFee}
-              />
             </div>
-
-            {/* Profit Comparison */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                PROFIT COMPARISON
-              </div>
-              <ProfitComparison
-                yourProfit={assignmentFee}
-                investorProfit={result?.investor_profit ?? 0}
-              />
-            </div>
-
-            {/* Closing Costs Breakdown */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                CLOSING COSTS
-              </div>
-              <ClosingCostsBreakdown
-                titleEscrow={titleEscrow}
-                transferTax={transferTax}
-                other={otherClosing}
-              />
-            </div>
-
-            {/* Deal Criteria */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                DEAL CRITERIA
-              </div>
-              <DealCriteriaList
-                items={[
-                  { label: 'Assignment Fee > $5,000', passed: assignmentFee > 5000 },
-                  { label: 'Investor ROI > 25%', passed: (result?.investor_roi ?? 0) > 25 },
-                  { label: 'Investor at ≤ 70% ARV', passed: meetsSeventyRule },
-                ]}
-              />
-            </div>
-
-            {/* CTA Button */}
-            <button
-              onClick={onExportPDF}
-              className="w-full py-4 px-6 bg-amber-600 hover:bg-amber-700 rounded-full text-white font-bold text-sm transition-colors shadow-sm"
-            >
-              Export PDF Report →
+            
+            <button onClick={onExportPDF} className="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+              Export PDF Report
             </button>
           </div>
         </div>
