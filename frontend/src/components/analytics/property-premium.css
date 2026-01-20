@@ -17,6 +17,8 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #FFFFFF;
   overflow-x: hidden;
+  /* Account for global fixed header (h-12 = 48px) */
+  padding-top: 48px;
 }
 
 html:not(.dark) .premium-property-page {
