@@ -3,6 +3,10 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
+import { useWorksheetStore } from '@/stores/worksheetStore'
+import { SalesCompsSection } from '../sections/SalesCompsSection'
+import { RentalCompsSection } from '../sections/RentalCompsSection'
+import { MarketDataSection } from '../sections/MarketDataSection'
 
 // ============================================
 // ICONS (minimal line style)
@@ -110,6 +114,9 @@ export function LTRWorksheet({
   propertyId,
   onExportPDF,
 }: LTRWorksheetProps) {
+  // Get active section from store for tab navigation
+  const { activeSection } = useWorksheetStore()
+  
   // Property data
   const propertyData = property.property_data_snapshot || {}
   const beds = propertyData.bedrooms || 0
@@ -578,8 +585,16 @@ export function LTRWorksheet({
         </div>
       </div>
       
-      {/* MAIN CONTENT - Two columns */}
+      {/* MAIN CONTENT */}
       <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        {/* Render different content based on active tab */}
+        {activeSection === 'sales-comps' ? (
+          <SalesCompsSection />
+        ) : activeSection === 'rental-comps' ? (
+          <RentalCompsSection />
+        ) : activeSection === 'market-data' ? (
+          <MarketDataSection />
+        ) : (
         <div className="grid grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
           
           {/* LEFT COLUMN - Worksheet sections */}
@@ -799,6 +814,7 @@ export function LTRWorksheet({
             </button>
           </div>
         </div>
+        )}
       </main>
     </div>
   )
