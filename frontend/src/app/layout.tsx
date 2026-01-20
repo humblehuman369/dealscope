@@ -36,7 +36,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans bg-neutral-50 text-navy-900 dark:bg-navy-900 dark:text-neutral-100 transition-colors duration-300">
         <Providers>
-          {/* Header - conditionally rendered based on route */}
+          {/* Header - conditionally rendered based on route (hidden on landing pages) */}
           <Header />
 
           {/* Main content */}

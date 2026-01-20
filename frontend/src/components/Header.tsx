@@ -59,7 +59,9 @@ export default function Header() {
   
   // Only hide header on landing pages
   const hiddenPaths = ['/', '/landing', '/landing2']
-  if (hiddenPaths.includes(pathname || '')) {
+  const isHidden = hiddenPaths.includes(pathname || '')
+  
+  if (isHidden) {
     return null
   }
 
@@ -83,6 +85,7 @@ export default function Header() {
   ]
 
   return (
+    <>
     <header className="fixed top-0 left-0 right-0 w-full bg-white/95 dark:bg-[#0b1426]/95 backdrop-blur-xl border-b border-gray-200 dark:border-white/[0.08] z-50 transition-colors duration-200">
       {/* Container - centered with max-width */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-between gap-6">
@@ -317,5 +320,9 @@ export default function Header() {
         onClose={() => setShowSearchModal(false)} 
       />
     </header>
+    
+    {/* Spacer div - takes up same height as fixed header to prevent content overlap */}
+    <div className="h-12" aria-hidden="true" />
+    </>
   )
 }

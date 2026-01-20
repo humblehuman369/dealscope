@@ -212,8 +212,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-navy-900 transition-colors">
-      {/* pt-20 accounts for the fixed navigation header (h-12 = 48px + extra spacing) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8">
+      {/* py-8 for content spacing - header offset handled globally in layout.tsx */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <div>
