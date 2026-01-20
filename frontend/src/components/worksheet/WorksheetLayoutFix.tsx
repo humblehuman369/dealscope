@@ -40,7 +40,7 @@
 
 import React from 'react'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
-import { WorksheetTabNav } from '../WorksheetTabNav'
+import { WorksheetTabNav } from './WorksheetTabNav'
 import { Home } from 'lucide-react'
 
 interface ExampleWorksheetProps {

@@ -152,7 +152,9 @@ export function BrrrrWorksheet({
     const monthlyCashFlow = result?.monthly_cash_flow ?? 0
     const dealScore = result?.deal_score ?? 0
     const cashLeftInDeal = result?.cash_left_in_deal ?? 0
-    const dscr = result?.dscr ?? 0
+    const annualDebtService = result?.annual_debt_service ?? 0
+    const noi = result?.noi ?? 0
+    const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
     
     // Gauge needle calculation
     const gaugeAngle = 180 - (dealScore * 1.8)

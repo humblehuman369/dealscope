@@ -98,7 +98,7 @@ export default function StrategyWorksheetPage() {
         propertyId={propertyId}
         strategy="brrrr"
       >
-        <BrrrrWorksheet property={property} />
+        <BrrrrWorksheet property={property} propertyId={propertyId} />
       </WorksheetShell>
     )
   }
