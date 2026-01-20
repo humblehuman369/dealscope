@@ -137,10 +137,10 @@ export function IQVerdictScreen({
             <Text
               style={[
                 styles.scoreNumber,
-                { color: getDealScoreColor(analysis.dealScore) },
+                { color: getDealScoreColor(topStrategy.score) },
               ]}
             >
-              {analysis.dealScore}
+              {topStrategy.score}
             </Text>
             <View style={styles.scoreTextContainer}>
               <Text style={[styles.scoreVerdict, { color: theme.text }]}>

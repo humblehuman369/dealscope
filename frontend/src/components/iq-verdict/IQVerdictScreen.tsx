@@ -105,9 +105,9 @@ export function IQVerdictScreen({
               >
                 <span 
                   className="text-5xl font-extrabold"
-                  style={{ color: getDealScoreColor(analysis.dealScore) }}
+                  style={{ color: getDealScoreColor(topStrategy.score) }}
                 >
-                  {analysis.dealScore}
+                  {topStrategy.score}
                 </span>
                 <div className="text-left">
                   <p className="font-bold text-gray-900 dark:text-white text-lg">
