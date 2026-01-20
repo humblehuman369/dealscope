@@ -25,7 +25,10 @@ export function WorksheetShell({
 
   const shortAddress = getShortAddress(property)
   const cityStateZip = getCityStateZip(property)
-  const details = `${propertyData.bedrooms || 0} BR • ${propertyData.bathrooms || 0} BA • ${(propertyData.sqft || 0).toLocaleString()} Sq.Ft.`
+  const beds = propertyData.bedrooms || 0
+  const baths = propertyData.bathrooms || 0
+  const sqft = propertyData.sqft || 0
+  const details = `${beds} bed · ${Math.round(baths * 10) / 10} bath · ${sqft.toLocaleString()} sqft`
   const listPrice = propertyData.listPrice || 0
 
   return (

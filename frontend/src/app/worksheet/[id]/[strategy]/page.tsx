@@ -3,7 +3,6 @@
 import { useEffect, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
-import { WorksheetLayout } from '@/components/worksheet/WorksheetLayout'
 import { WorksheetShell } from '@/components/worksheet/WorksheetShell'
 import { LTRWorksheet } from '@/components/worksheet/ltr/LTRWorksheet'
 import { StrWorksheet } from '@/components/worksheet/str/StrWorksheet'
@@ -93,49 +92,25 @@ export default function StrategyWorksheetPage() {
 
   if (strategyParam === 'brrrr') {
     return (
-      <WorksheetShell
-        property={property}
-        propertyId={propertyId}
-        strategy="brrrr"
-      >
-        <BrrrrWorksheet property={property} propertyId={propertyId} />
-      </WorksheetShell>
+      <BrrrrWorksheet property={property} propertyId={propertyId} />
     )
   }
 
   if (strategyParam === 'flip') {
     return (
-      <WorksheetShell
-        property={property}
-        propertyId={propertyId}
-        strategy="flip"
-      >
-        <FlipWorksheet property={property} propertyId={propertyId} />
-      </WorksheetShell>
+      <FlipWorksheet property={property} propertyId={propertyId} />
     )
   }
 
   if (strategyParam === 'househack') {
     return (
-      <WorksheetShell
-        property={property}
-        propertyId={propertyId}
-        strategy="househack"
-      >
-        <HouseHackWorksheet property={property} propertyId={propertyId} />
-      </WorksheetShell>
+      <HouseHackWorksheet property={property} propertyId={propertyId} />
     )
   }
 
   if (strategyParam === 'wholesale') {
     return (
-      <WorksheetShell
-        property={property}
-        propertyId={propertyId}
-        strategy="wholesale"
-      >
-        <WholesaleWorksheet property={property} propertyId={propertyId} />
-      </WorksheetShell>
+      <WholesaleWorksheet property={property} propertyId={propertyId} />
     )
   }
 
