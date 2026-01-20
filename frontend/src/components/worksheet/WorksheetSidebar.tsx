@@ -55,7 +55,7 @@ export function WorksheetSidebar({ property, isOpen, onClose }: WorksheetSidebar
       title: 'Property Info',
       items: [
         { id: 'description', label: 'Property Description', icon: FileText, disabled: true },
-        { id: 'purchase', label: 'Purchase Worksheet', icon: DollarSign, section: 'analysis' },
+        { id: 'purchase', label: 'Purchase Worksheet', icon: DollarSign, section: 'market-data' },
         { id: 'photos', label: 'Photos', icon: Image, disabled: true },
         { id: 'map', label: 'Map', icon: MapPin, disabled: true },
       ],
@@ -63,7 +63,7 @@ export function WorksheetSidebar({ property, isOpen, onClose }: WorksheetSidebar
     {
       title: 'Analysis',
       items: [
-        { id: 'analysis', label: 'Property Analysis', icon: BarChart3, section: 'analysis' },
+        { id: 'market-data', label: 'Market Data', icon: BarChart3, section: 'market-data' },
         { id: 'projections', label: 'Buy & Hold Projections', icon: TrendingUp, section: 'projections' },
       ],
     },

@@ -27,7 +27,7 @@ interface TabItem {
 }
 
 const tabs: TabItem[] = [
-  { id: 'analysis', label: 'Property Analysis', shortLabel: 'Analysis', icon: BarChart3, section: 'analysis' },
+  { id: 'market-data', label: 'Market Data', shortLabel: 'Market Data', icon: BarChart3, section: 'market-data' },
   { id: 'projections', label: 'Buy & Hold Projections', shortLabel: 'Projections', icon: TrendingUp, section: 'projections' },
   { id: 'sales-comps', label: 'Sales Comps & ARV', shortLabel: 'Comps', icon: Building2, section: 'sales-comps' },
   { id: 'rental-comps', label: 'Rental Comps', shortLabel: 'Rentals', icon: DollarSign, section: 'rental-comps' },

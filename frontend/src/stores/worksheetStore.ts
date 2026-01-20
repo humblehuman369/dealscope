@@ -153,7 +153,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
   isDirty: false,
   isSaving: false,
   lastSaved: null,
-  activeSection: 'analysis',
+  activeSection: 'market-data',
   viewMode: 'yearly',
 
   initializeFromProperty: (property: any) => {
@@ -309,7 +309,7 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
       isDirty: false,
       isSaving: false,
       lastSaved: null,
-      activeSection: 'analysis',
+      activeSection: 'market-data',
       viewMode: 'yearly',
     })
   },

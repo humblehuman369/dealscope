@@ -40,7 +40,7 @@ export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLay
 
   const renderActiveSection = () => {
     switch (activeSection) {
-      case 'analysis':
+      case 'market-data':
         return (
           <>
             <PurchaseRehabSection />
@@ -90,7 +90,7 @@ export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLay
         propertyId={propertyId}
       />
 
-      {activeSection === 'analysis' ? (
+      {activeSection === 'market-data' ? (
         <div className="worksheet-layout-2col">
           <div className="worksheet-main-content">
             <div className="worksheet-sections">
