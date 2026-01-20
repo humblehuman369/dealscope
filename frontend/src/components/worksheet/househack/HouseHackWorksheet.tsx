@@ -348,9 +348,9 @@ export function HouseHackWorksheet({ property, onExportPDF }: HouseHackWorksheet
       : 'text-red-500'
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-12">
+    <div className="w-full min-h-screen bg-slate-50 pt-12">
       {/* WorksheetTabNav - sticky below header */}
-      <div className="sticky top-12 z-40 bg-white border-b border-slate-200">
+      <div className="w-full sticky top-12 z-40 bg-white border-b border-slate-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <WorksheetTabNav
             propertyId={property.id}
@@ -360,7 +360,7 @@ export function HouseHackWorksheet({ property, onExportPDF }: HouseHackWorksheet
       </div>
 
       {/* Page Header */}
-      <div className="bg-white border-b border-slate-200">
+      <div className="w-full bg-white border-b border-slate-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
