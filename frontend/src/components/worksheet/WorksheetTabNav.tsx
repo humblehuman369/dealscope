@@ -30,7 +30,7 @@ const tabs: TabItem[] = [
   { id: 'analysis', label: 'Property Analysis', shortLabel: 'Analysis', icon: BarChart3, section: 'analysis' },
   { id: 'projections', label: 'Buy & Hold Projections', shortLabel: 'Projections', icon: TrendingUp, section: 'projections' },
   { id: 'sales-comps', label: 'Sales Comps & ARV', shortLabel: 'Comps', icon: Building2, section: 'sales-comps' },
-  { id: 'rental-comps', label: 'Rental Comps', shortLabel: 'Rentals', icon: DollarSign, disabled: true },
+  { id: 'rental-comps', label: 'Rental Comps', shortLabel: 'Rentals', icon: DollarSign, section: 'rental-comps' },
   { id: 'records', label: 'Records & Listings', shortLabel: 'Records', icon: FileSearch, disabled: true },
   { id: 'offer', label: 'Offer Calculator', shortLabel: 'Offer', icon: Calculator, disabled: true },
   { id: 'reports', label: 'Reports & Sharing', shortLabel: 'Reports', icon: Share2, disabled: true },

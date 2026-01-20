@@ -11,6 +11,7 @@ import { InvestmentReturns } from './sections/InvestmentReturns'
 import { FinancialRatios } from './sections/FinancialRatios'
 import { MultiYearProjections } from './sections/MultiYearProjections'
 import { SalesCompsSection } from './sections/SalesCompsSection'
+import { RentalCompsSection } from './sections/RentalCompsSection'
 import { CashFlowChart } from './charts/CashFlowChart'
 import { EquityChart } from './charts/EquityChart'
 import { ProfitFinder } from './charts/ProfitFinder'
@@ -62,6 +63,8 @@ export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLay
         )
       case 'sales-comps':
         return <SalesCompsSection />
+      case 'rental-comps':
+        return <RentalCompsSection />
       default:
         return (
           <>
