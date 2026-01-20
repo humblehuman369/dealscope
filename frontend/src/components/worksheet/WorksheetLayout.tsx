@@ -12,6 +12,7 @@ import { FinancialRatios } from './sections/FinancialRatios'
 import { MultiYearProjections } from './sections/MultiYearProjections'
 import { SalesCompsSection } from './sections/SalesCompsSection'
 import { RentalCompsSection } from './sections/RentalCompsSection'
+import { MarketDataSection } from './sections/MarketDataSection'
 import { CashFlowChart } from './charts/CashFlowChart'
 import { EquityChart } from './charts/EquityChart'
 import { ProfitFinder } from './charts/ProfitFinder'
@@ -41,16 +42,7 @@ export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLay
   const renderActiveSection = () => {
     switch (activeSection) {
       case 'market-data':
-        return (
-          <>
-            <PurchaseRehabSection />
-            <FinancingSection />
-            <ValuationSection />
-            <CashFlowSection />
-            <InvestmentReturns />
-            <FinancialRatios />
-          </>
-        )
+        return <MarketDataSection />
       case 'projections':
         return (
           <>
@@ -90,7 +82,7 @@ export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLay
         propertyId={propertyId}
       />
 
-      {activeSection === 'market-data' ? (
+      {activeSection === 'worksheet-analysis' ? (
         <div className="worksheet-layout-2col">
           <div className="worksheet-main-content">
             <div className="worksheet-sections">
