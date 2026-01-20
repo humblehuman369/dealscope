@@ -111,7 +111,7 @@ export function IQVerdictScreen({
               {property.address}
             </Text>
             <Text style={[styles.propertyMeta, { color: theme.textSecondary }]}>
-              {property.beds} bd · {property.baths} ba · {property.sqft?.toLocaleString() || '—'} sqft
+              {property.beds} bd · {Math.round(property.baths * 10) / 10} ba · {property.sqft?.toLocaleString() || '—'} sqft
             </Text>
           </View>
           <Text style={styles.propertyPrice}>{formatPrice(property.price)}</Text>
@@ -129,7 +129,11 @@ export function IQVerdictScreen({
         >
           <Text style={styles.verdictLabel}>IQ VERDICT</Text>
 
-          <View style={[styles.scoreContainer, { backgroundColor: theme.cardBg }]}>
+          <TouchableOpacity 
+            style={[styles.scoreContainer, { backgroundColor: theme.cardBg }]}
+            onPress={handleViewTopStrategy}
+            activeOpacity={0.8}
+          >
             <Text
               style={[
                 styles.scoreNumber,
@@ -146,7 +150,7 @@ export function IQVerdictScreen({
                 Deal Score
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
           <Text style={[styles.verdictDescription, { color: theme.textSecondary }]}>
             {analysis.verdictDescription}
@@ -353,7 +357,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   verdictLabel: {
-    fontSize: 11,
+    fontSize: 18,
     fontWeight: '600',
     color: IQ_COLORS.pacificTeal,
     letterSpacing: 1,
@@ -399,7 +403,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 18,
     fontWeight: '600',
     color: IQ_COLORS.pacificTeal,
     letterSpacing: 1,
