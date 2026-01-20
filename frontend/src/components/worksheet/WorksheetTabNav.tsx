@@ -50,7 +50,8 @@ export function WorksheetTabNav({
   onMobileMenuClose,
 }: WorksheetTabNavProps) {
   const { activeSection, setActiveSection } = useWorksheetStore()
-  const isTabsEnabled = strategy === 'ltr'
+  // Tabs are enabled for all strategies (removed ltr-only restriction)
+  const isTabsEnabled = true
   
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [showLeftFade, setShowLeftFade] = useState(false)
