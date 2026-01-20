@@ -255,18 +255,10 @@ html, body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: white;
-  border-bottom: 2px solid var(--ws-border);
-  padding: 0 var(--ws-spacing-sm);
   width: 100%;
   max-width: 100%;
   overflow: hidden;
-}
-
-@media (min-width: 768px) {
-  .worksheet-tab-nav {
-    padding: 0 var(--ws-spacing-lg);
-  }
+  /* Note: background, border, and padding removed - now controlled by wrapper */
 }
 
 /* Tabs Wrapper with Fade Indicators */
