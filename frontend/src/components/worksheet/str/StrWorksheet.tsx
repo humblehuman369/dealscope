@@ -5,13 +5,13 @@ import { useStrWorksheetCalculator } from '@/hooks/useStrWorksheetCalculator'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
 
-// Chart components (keep these as external imports)
+// Chart components
 import { StrRevenueBreakdown } from '../charts/StrRevenueBreakdown'
 import { KeyMetricsGrid } from '../charts/KeyMetricsGrid'
 import { StrVsLtrComparison } from '../charts/StrVsLtrComparison'
 
 // ============================================
-// ICONS (minimal line style matching design system)
+// ICONS (minimal line style)
 // ============================================
 const Icons = {
   home: (
@@ -27,11 +27,6 @@ const Icons = {
   calendar: (
     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
-    </svg>
-  ),
-  income: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
     </svg>
   ),
   expense: (
@@ -81,13 +76,9 @@ const fmt = {
   currencyCompact: (v: number) => {
     const abs = Math.abs(v)
     const sign = v < 0 ? '-' : ''
-    if (abs >= 1000000) {
-      return `${sign}$${(abs / 1000000).toFixed(abs >= 10000000 ? 1 : 2)}M`
-    } else if (abs >= 100000) {
-      return `${sign}$${(abs / 1000).toFixed(0)}K`
-    } else if (abs >= 10000) {
-      return `${sign}$${(abs / 1000).toFixed(1)}K`
-    }
+    if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(abs >= 10000000 ? 1 : 2)}M`
+    if (abs >= 100000) return `${sign}$${(abs / 1000).toFixed(0)}K`
+    if (abs >= 10000) return `${sign}$${(abs / 1000).toFixed(1)}K`
     return `${sign}$${Math.round(abs).toLocaleString()}`
   },
   percent: (v: number) => `${(v * 100).toFixed(1)}%`,
@@ -157,7 +148,6 @@ export function StrWorksheet({
     const dscr = result?.dscr ?? 0
     const grm = grossRevenue > 0 ? inputs.purchase_price / grossRevenue : 0
     
-    // Calculate breakeven price
     const breakevenPrice = result?.breakeven_price ?? inputs.purchase_price
     
     // Gauge needle calculation
@@ -168,21 +158,9 @@ export function StrWorksheet({
     const needleY = 80 - needleLength * Math.sin(gaugeAngleRad)
 
     return {
-      grossRevenue,
-      grossExpenses,
-      noi,
-      annualDebtService,
-      annualCashFlow,
-      monthlyCashFlow,
-      totalCashNeeded,
-      dealScore,
-      capRate,
-      cashOnCash,
-      dscr,
-      grm,
-      breakevenPrice,
-      needleX,
-      needleY,
+      grossRevenue, grossExpenses, noi, annualDebtService, annualCashFlow, monthlyCashFlow,
+      totalCashNeeded, dealScore, capRate, cashOnCash, dscr, grm, breakevenPrice,
+      needleX, needleY,
       loanAmount: result?.loan_amount ?? 0,
       monthlyPayment: result?.monthly_payment ?? 0,
       rentalRevenue: result?.rental_revenue ?? 0,
@@ -197,7 +175,6 @@ export function StrWorksheet({
   // ============================================
   const toggleSection = useCallback((index: number) => {
     if (viewMode === 'showall') return
-    
     if (currentSection === index) {
       setCurrentSection(null)
     } else {
@@ -237,14 +214,14 @@ export function StrWorksheet({
     return (
       <div className="py-3">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-sm text-surface-500">{label}</label>
+          <label className="text-sm text-slate-500">{label}</label>
           <div className="text-right">
-            <span className="text-sm font-semibold text-navy num">{displayValue}</span>
-            {subValue && <span className="text-xs text-surface-400 ml-1.5 num">{subValue}</span>}
+            <span className="text-sm font-semibold text-slate-800 tabular-nums">{displayValue}</span>
+            {subValue && <span className="text-xs text-slate-400 ml-1.5 tabular-nums">{subValue}</span>}
           </div>
         </div>
         <div className="relative">
-          <div className="h-1.5 bg-surface-200 rounded-full">
+          <div className="h-1.5 bg-slate-200 rounded-full">
             <div className="h-full bg-teal rounded-full transition-all duration-100" style={{ width: `${percentage}%` }} />
           </div>
           <input 
@@ -267,16 +244,16 @@ export function StrWorksheet({
     variant?: 'default' | 'success' | 'danger' | 'muted' | 'teal'
   }) => {
     const colors = {
-      default: 'text-navy',
+      default: 'text-slate-800',
       success: 'text-teal',
-      danger: 'text-danger',
-      muted: 'text-surface-400',
+      danger: 'text-red-500',
+      muted: 'text-slate-400',
       teal: 'text-teal',
     }
     return (
       <div className="flex items-center justify-between py-2.5">
-        <span className="text-sm text-surface-500">{label}</span>
-        <span className={`text-sm font-semibold num ${colors[variant]}`}>{value}</span>
+        <span className="text-sm text-slate-500">{label}</span>
+        <span className={`text-sm font-semibold tabular-nums ${colors[variant]}`}>{value}</span>
       </div>
     )
   }
@@ -287,11 +264,11 @@ export function StrWorksheet({
     target?: string
     isGood?: boolean
   }) => (
-    <div className="flex items-center justify-between py-2.5 border-b border-surface-100 last:border-0">
-      <span className="text-sm text-surface-500">{label}</span>
+    <div className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0">
+      <span className="text-sm text-slate-500">{label}</span>
       <div className="flex items-center gap-2">
-        <span className={`text-sm font-semibold num ${isGood ? 'text-teal' : 'text-navy'}`}>{value}</span>
-        {target && <span className="text-[10px] text-surface-400">/ {target}</span>}
+        <span className={`text-sm font-semibold tabular-nums ${isGood ? 'text-teal' : 'text-slate-800'}`}>{value}</span>
+        {target && <span className="text-[10px] text-slate-400">/ {target}</span>}
       </div>
     </div>
   )
@@ -302,21 +279,21 @@ export function StrWorksheet({
     variant?: 'default' | 'success' | 'danger' | 'teal'
   }) => {
     const styles = {
-      default: 'bg-surface-50 border-surface-200',
+      default: 'bg-slate-50 border-slate-200',
       success: 'bg-teal/10 border-teal/20',
-      danger: 'bg-danger/10 border-danger/20',
+      danger: 'bg-red-50 border-red-200',
       teal: 'bg-teal/10 border-teal/20',
     }
     const textColor = {
-      default: 'text-navy',
+      default: 'text-slate-800',
       success: 'text-teal',
-      danger: 'text-danger',
+      danger: 'text-red-500',
       teal: 'text-teal',
     }
     return (
       <div className={`rounded-xl border px-4 py-3 ${styles[variant]}`}>
-        <div className="section-label text-surface-500 mb-0.5">{label}</div>
-        <div className={`text-lg font-bold num ${textColor[variant]}`}>{value}</div>
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-0.5">{label}</div>
+        <div className={`text-lg font-bold tabular-nums ${textColor[variant]}`}>{value}</div>
       </div>
     )
   }
@@ -325,10 +302,10 @@ export function StrWorksheet({
     if (sectionIndex >= SECTIONS.length - 1 || viewMode === 'showall') return null
     const nextSection = SECTIONS[sectionIndex + 1]
     return (
-      <div className="pt-4 mt-4 border-t border-surface-100">
+      <div className="pt-4 mt-4 border-t border-slate-100">
         <button 
           onClick={goToNextSection}
-          className="w-full py-3 px-4 bg-teal/10 hover:bg-teal/20 text-navy border border-teal/20 text-sm font-bold rounded-[40px] flex items-center justify-center gap-2 transition-colors"
+          className="w-full py-3 px-4 bg-teal/10 hover:bg-teal/20 text-slate-800 border border-teal/20 text-sm font-bold rounded-full flex items-center justify-center gap-2 transition-colors"
         >
           Continue to {nextSection.title} →
         </button>
@@ -349,15 +326,15 @@ export function StrWorksheet({
     return (
       <div 
         id={`section-${section.id}`}
-        className={`bg-white rounded-xl shadow-card overflow-hidden transition-shadow hover:shadow-card-hover ${isOpen ? 'ring-2 ring-teal/20' : ''}`}
+        className={`bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden transition-shadow hover:shadow-md ${isOpen ? 'ring-2 ring-teal/20' : ''}`}
       >
         <button 
           onClick={() => toggleSection(index)}
-          className="w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-surface-50"
+          className="w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-slate-50"
         >
           <div className="flex items-center gap-3">
             <span className="text-teal">{Icons[iconKey]}</span>
-            <span className="text-sm font-semibold text-navy">{title}</span>
+            <span className="text-sm font-semibold text-slate-800">{title}</span>
             {isComplete && (
               <span className="w-4 h-4 rounded-full bg-teal flex items-center justify-center text-white">
                 {Icons.check}
@@ -365,7 +342,7 @@ export function StrWorksheet({
             )}
           </div>
           <span 
-            className="text-surface-400 transition-transform duration-200"
+            className="text-slate-400 transition-transform duration-200"
             style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
           >
             {Icons.chevron}
@@ -436,12 +413,12 @@ export function StrWorksheet({
           {/* Top row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <div className="flex items-start sm:items-center gap-3 sm:gap-5 min-w-0 flex-1">
-              <button className="text-teal hover:text-teal-dark transition-colors text-sm font-medium flex-shrink-0">
+              <button className="text-teal hover:text-teal/80 transition-colors text-sm font-medium flex-shrink-0">
                 ← Back
               </button>
               <div className="min-w-0 flex-1">
-                <h1 className="text-sm sm:text-base font-semibold text-navy truncate">{address}</h1>
-                <p className="text-xs sm:text-sm text-surface-500 truncate">
+                <h1 className="text-sm sm:text-base font-semibold text-slate-800 truncate">{address}</h1>
+                <p className="text-xs sm:text-sm text-slate-500 truncate">
                   {city}{city && state ? ', ' : ''}{state} {zip}
                   {beds > 0 && ` · ${beds} bed`}
                   {baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}
@@ -451,11 +428,11 @@ export function StrWorksheet({
             </div>
             
             {/* View Toggle */}
-            <div className="flex items-center bg-surface-100 rounded-lg p-1 flex-shrink-0 self-end sm:self-auto">
+            <div className="flex items-center bg-slate-100 rounded-lg p-1 flex-shrink-0 self-end sm:self-auto">
               <button 
                 onClick={() => setViewMode('guided')}
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold rounded-md transition-all ${
-                  viewMode === 'guided' ? 'bg-teal text-white' : 'text-surface-500 hover:text-surface-700'
+                  viewMode === 'guided' ? 'bg-teal text-white' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 Guided
@@ -463,7 +440,7 @@ export function StrWorksheet({
               <button 
                 onClick={() => setViewMode('showall')}
                 className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
-                  viewMode === 'showall' ? 'bg-teal text-white' : 'text-surface-500 hover:text-surface-700'
+                  viewMode === 'showall' ? 'bg-teal text-white' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 Expand All
@@ -494,12 +471,12 @@ export function StrWorksheet({
                     ) : isActive ? (
                       <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-teal shadow-sm ring-2 sm:ring-4 ring-teal/20" />
                     ) : (
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-surface-200 border-2 border-surface-300" />
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-200 border-2 border-slate-300" />
                     )}
                   </button>
                   {i < SECTIONS.length - 1 && (
                     <div className={`flex-1 h-0.5 mx-0.5 sm:mx-1 ${
-                      isPast || isComplete ? 'bg-teal' : 'bg-surface-200'
+                      isPast || isComplete ? 'bg-teal' : 'bg-slate-200'
                     }`} style={{ 
                       backgroundImage: isPast || isComplete ? 'none' : 'repeating-linear-gradient(90deg, #CBD5E1 0, #CBD5E1 4px, transparent 4px, transparent 8px)' 
                     }} />
@@ -509,50 +486,47 @@ export function StrWorksheet({
             })}
           </div>
           
-          {/* KPI strip - responsive grid with dynamic text sizing */}
+          {/* KPI strip */}
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
-            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0" style={{ background: 'rgba(8, 145, 178, 0.12)' }}>
-              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Gross Revenue</div>
-              <div className="text-xs sm:text-sm lg:text-base font-bold text-teal num truncate">{fmt.currencyCompact(calc.grossRevenue)}</div>
+            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-teal/10">
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Gross Revenue</div>
+              <div className="text-xs sm:text-sm lg:text-base font-bold text-teal tabular-nums truncate">{fmt.currencyCompact(calc.grossRevenue)}</div>
             </div>
-            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0" style={{ background: 'rgba(10, 22, 40, 0.06)' }}>
-              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Cash Needed</div>
-              <div className="text-xs sm:text-sm lg:text-base font-bold text-navy num truncate">{fmt.currencyCompact(calc.totalCashNeeded)}</div>
+            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-slate-800/5">
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Cash Needed</div>
+              <div className="text-xs sm:text-sm lg:text-base font-bold text-slate-800 tabular-nums truncate">{fmt.currencyCompact(calc.totalCashNeeded)}</div>
             </div>
-            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0" style={{ background: isProfit ? 'rgba(8, 145, 178, 0.12)' : 'rgba(239, 68, 68, 0.12)' }}>
-              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Annual Profit</div>
-              <div className={`text-xs sm:text-sm lg:text-base font-bold num truncate ${isProfit ? 'text-teal' : 'text-danger'}`}>
+            <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${isProfit ? 'bg-teal/10' : 'bg-red-500/10'}`}>
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Annual Profit</div>
+              <div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums truncate ${isProfit ? 'text-teal' : 'text-red-500'}`}>
                 {isProfit ? '+' : ''}{fmt.currencyCompact(calc.annualCashFlow)}
               </div>
             </div>
-            <div className="bg-surface-50 border border-surface-200 rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0">
-              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Cap Rate</div>
-              <div className="text-xs sm:text-sm lg:text-base font-bold text-navy num">{calc.capRate.toFixed(1)}%</div>
+            <div className="bg-slate-50 border border-slate-200 rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0">
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Cap Rate</div>
+              <div className="text-xs sm:text-sm lg:text-base font-bold text-slate-800 tabular-nums">{calc.capRate.toFixed(1)}%</div>
             </div>
-            <div className="bg-surface-50 border border-surface-200 rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0">
-              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">CoC Return</div>
-              <div className="text-xs sm:text-sm lg:text-base font-bold text-navy num">{calc.cashOnCash.toFixed(1)}%</div>
+            <div className="bg-slate-50 border border-slate-200 rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0">
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">CoC Return</div>
+              <div className="text-xs sm:text-sm lg:text-base font-bold text-slate-800 tabular-nums">{calc.cashOnCash.toFixed(1)}%</div>
             </div>
-            <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0" style={{ 
-              background: calc.dealScore >= 70 
-                ? 'rgba(8, 145, 178, 0.15)' 
-                : calc.dealScore >= 40 
-                  ? 'rgba(245, 158, 11, 0.12)' 
-                  : 'rgba(239, 68, 68, 0.12)' 
-            }}>
-              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Deal Score</div>
-              <div className={`text-xs sm:text-sm lg:text-base font-bold num ${
-                calc.dealScore >= 70 ? 'text-teal' : calc.dealScore >= 40 ? 'text-warning' : 'text-danger'
+            <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${
+              calc.dealScore >= 70 ? 'bg-teal/15' : calc.dealScore >= 40 ? 'bg-amber-500/10' : 'bg-red-500/10'
+            }`}>
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Deal Score</div>
+              <div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums ${
+                calc.dealScore >= 70 ? 'text-teal' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
               }`}>{calc.dealScore}</div>
             </div>
           </div>
         </div>
       </div>
       
-      {/* MAIN CONTENT */}
-      <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 overflow-x-hidden">
+      {/* MAIN CONTENT - Two columns */}
+      <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 items-start">
-          {/* LEFT COLUMN - Worksheet */}
+          
+          {/* LEFT COLUMN - Worksheet sections */}
           <div className="space-y-3">
             {/* Purchase & Setup */}
             <Section index={0} title="Purchase & Setup" iconKey="home">
@@ -781,9 +755,9 @@ export function StrWorksheet({
           </div>
           
           {/* RIGHT COLUMN - Insight Panel */}
-          <div className="xl:sticky xl:top-[280px] space-y-4 xl:max-h-[calc(100vh-300px)] xl:overflow-y-auto">
+          <div className="space-y-4">
             {/* IQ Verdict Card */}
-            <div className="bg-white rounded-xl shadow-card overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
               <div className="p-5" style={{ 
                 background: calc.dealScore >= 70 
                   ? 'linear-gradient(180deg, rgba(8, 145, 178, 0.10) 0%, rgba(8, 145, 178, 0.02) 100%)'
@@ -791,27 +765,27 @@ export function StrWorksheet({
                     ? 'linear-gradient(180deg, rgba(245, 158, 11, 0.10) 0%, rgba(245, 158, 11, 0.02) 100%)'
                     : 'linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.02) 100%)'
               }}>
-                <div className={`section-label mb-3 ${
-                  calc.dealScore >= 70 ? 'text-teal' : calc.dealScore >= 40 ? 'text-warning' : 'text-danger'
+                <div className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${
+                  calc.dealScore >= 70 ? 'text-teal' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
                 }`}>IQ VERDICT: SHORT-TERM RENTAL</div>
-                <div className="flex items-center gap-4 bg-white rounded-[40px] px-5 py-3 shadow-card mb-3">
-                  <span className={`text-3xl font-extrabold num ${
-                    calc.dealScore >= 70 ? 'text-teal' : calc.dealScore >= 40 ? 'text-warning' : 'text-danger'
+                <div className="flex items-center gap-4 bg-white rounded-full px-5 py-3 shadow-sm mb-3">
+                  <span className={`text-3xl font-extrabold tabular-nums ${
+                    calc.dealScore >= 70 ? 'text-teal' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
                   }`}>{calc.dealScore}</span>
                   <div>
-                    <div className="text-base font-bold text-navy">{verdict}</div>
-                    <div className="text-xs text-surface-500">Deal Score</div>
+                    <div className="text-base font-bold text-slate-800">{verdict}</div>
+                    <div className="text-xs text-slate-500">Deal Score</div>
                   </div>
                 </div>
-                <p className="text-sm text-surface-500 text-center">{verdictSub}</p>
+                <p className="text-sm text-slate-500 text-center">{verdictSub}</p>
               </div>
               
-              <div className="px-5 py-4 border-t border-surface-100">
-                <div className="section-label text-navy mb-3">RETURNS VS TARGETS</div>
+              <div className="px-5 py-4 border-t border-slate-100">
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-800 mb-3">RETURNS VS TARGETS</div>
                 {targets.map((t, i) => (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-surface-100 last:border-0">
-                    <span className="text-sm text-surface-500">{t.label}</span>
-                    <span className={`text-sm font-semibold num ${t.met ? 'text-teal' : 'text-navy'}`}>
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                    <span className="text-sm text-slate-500">{t.label}</span>
+                    <span className={`text-sm font-semibold tabular-nums ${t.met ? 'text-teal' : 'text-slate-800'}`}>
                       {t.actual.toFixed(1)}{t.unit} / {t.target}{t.unit}
                     </span>
                   </div>
@@ -820,65 +794,57 @@ export function StrWorksheet({
             </div>
             
             {/* Price Position Card */}
-            <div className="bg-white rounded-xl shadow-card p-5">
-              <div className="section-label text-navy mb-4">PRICE POSITION</div>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-800 mb-4">PRICE POSITION</div>
               
-              {/* Gauge SVG - Dynamic needle based on deal score */}
+              {/* Gauge SVG */}
               <div className="flex justify-center mb-4">
                 <div className="relative">
                   <svg width="160" height="90" viewBox="0 0 160 90">
-                    {/* Background track */}
                     <path d="M 15 80 A 65 65 0 0 1 145 80" fill="none" stroke="#E2E8F0" strokeWidth="14" strokeLinecap="round" />
-                    {/* Loss zone (left side - red) */}
                     <path d="M 15 80 A 65 65 0 0 1 80 15" fill="none" stroke="rgba(239, 68, 68, 0.35)" strokeWidth="14" strokeLinecap="round" />
-                    {/* Profit zone (right side - teal) */}
                     <path d="M 80 15 A 65 65 0 0 1 145 80" fill="none" stroke="rgba(8, 145, 178, 0.35)" strokeWidth="14" strokeLinecap="round" />
-                    {/* Dynamic needle - rotates based on deal score */}
                     <line 
-                      x1="80" 
-                      y1="80" 
-                      x2={calc.needleX} 
-                      y2={calc.needleY} 
+                      x1="80" y1="80" 
+                      x2={calc.needleX} y2={calc.needleY} 
                       stroke={calc.dealScore >= 50 ? '#0891B2' : '#EF4444'} 
-                      strokeWidth="3" 
-                      strokeLinecap="round"
+                      strokeWidth="3" strokeLinecap="round"
                       style={{ transition: 'all 0.3s ease-out' }}
                     />
-                    {/* Center pivot */}
-                    <circle cx="80" cy="80" r="6" fill="#0A1628" />
+                    <circle cx="80" cy="80" r="6" fill="#0f172a" />
                     <circle cx="80" cy="80" r="3" fill="#fff" />
                   </svg>
-                  <div className="absolute bottom-0 left-1 text-[9px] font-bold text-danger">LOSS</div>
+                  <div className="absolute bottom-0 left-1 text-[9px] font-bold text-red-500">LOSS</div>
                   <div className="absolute bottom-0 right-1 text-[9px] font-bold text-teal">PROFIT</div>
                 </div>
               </div>
               
               {/* Price rows */}
               <div className="space-y-1">
-                <div className="flex justify-between items-center py-2.5 px-3 rounded-lg border border-transparent">
-                  <span className="text-sm text-surface-500">List Price</span>
-                  <span className="text-sm font-semibold text-navy num">{fmt.currency(inputs.purchase_price)}</span>
+                <div className="flex justify-between items-center py-2.5 px-3 rounded-lg">
+                  <span className="text-sm text-slate-500">List Price</span>
+                  <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(inputs.purchase_price)}</span>
                 </div>
-                <div className="flex justify-between items-center py-2.5 px-3 rounded-lg border border-transparent">
-                  <span className="text-sm text-surface-500">Breakeven Price</span>
-                  <span className="text-sm font-semibold text-navy num">{fmt.currency(calc.breakevenPrice)}</span>
+                <div className="flex justify-between items-center py-2.5 px-3 rounded-lg">
+                  <span className="text-sm text-slate-500">Breakeven Price</span>
+                  <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(calc.breakevenPrice)}</span>
                 </div>
                 <div className={`flex justify-between items-center py-2.5 px-3 rounded-lg border ${
                   inputs.purchase_price <= calc.breakevenPrice 
                     ? 'bg-teal/10 border-teal/20' 
-                    : 'bg-danger/10 border-danger/20'
+                    : 'bg-red-500/10 border-red-500/20'
                 }`}>
-                  <span className={`text-sm font-medium ${inputs.purchase_price <= calc.breakevenPrice ? 'text-teal' : 'text-danger'}`}>
+                  <span className={`text-sm font-medium ${inputs.purchase_price <= calc.breakevenPrice ? 'text-teal' : 'text-red-500'}`}>
                     Your Price
                   </span>
-                  <span className={`text-sm font-bold num ${inputs.purchase_price <= calc.breakevenPrice ? 'text-teal' : 'text-danger'}`}>
+                  <span className={`text-sm font-bold tabular-nums ${inputs.purchase_price <= calc.breakevenPrice ? 'text-teal' : 'text-red-500'}`}>
                     {fmt.currency(inputs.purchase_price)}
                   </span>
                 </div>
                 {inputs.purchase_price > calc.breakevenPrice && (
-                  <div className="mt-2 px-3 py-2 bg-warning/10 border border-warning/20 rounded-lg">
-                    <p className="text-xs text-warning font-medium">
-                      ⚠️ Price is {fmt.currency(inputs.purchase_price - calc.breakevenPrice)} above breakeven
+                  <div className="mt-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                    <p className="text-xs text-amber-600 font-medium">
+                      Price is {fmt.currency(inputs.purchase_price - calc.breakevenPrice)} above breakeven
                     </p>
                   </div>
                 )}
@@ -886,8 +852,8 @@ export function StrWorksheet({
             </div>
             
             {/* Revenue Breakdown */}
-            <div className="bg-white rounded-xl shadow-card p-5">
-              <div className="section-label text-navy mb-4">REVENUE BREAKDOWN</div>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-800 mb-4">REVENUE BREAKDOWN</div>
               <StrRevenueBreakdown
                 grossRevenue={calc.grossRevenue}
                 nightlyRevenue={calc.rentalRevenue}
@@ -897,8 +863,8 @@ export function StrWorksheet({
             </div>
             
             {/* Key Metrics */}
-            <div className="bg-white rounded-xl shadow-card p-5">
-              <div className="section-label text-navy mb-4">KEY METRICS</div>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-800 mb-4">KEY METRICS</div>
               <KeyMetricsGrid
                 metrics={[
                   { value: `${calc.capRate.toFixed(1)}%`, label: 'Cap Rate', highlight: true },
@@ -911,8 +877,8 @@ export function StrWorksheet({
             </div>
             
             {/* STR vs LTR Comparison */}
-            <div className="bg-white rounded-xl shadow-card p-5">
-              <div className="section-label text-navy mb-4">STR VS LTR COMPARISON</div>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-800 mb-4">STR VS LTR COMPARISON</div>
               <StrVsLtrComparison
                 strCashFlow={calc.monthlyCashFlow}
                 ltrCashFlow={estLTRCashFlow}
@@ -922,7 +888,7 @@ export function StrWorksheet({
             {/* CTA Button */}
             <button 
               onClick={onExportPDF}
-              className="w-full py-4 px-6 bg-teal/10 hover:bg-teal/20 border border-teal/25 rounded-[40px] text-navy font-bold text-sm transition-colors"
+              className="w-full py-4 px-6 bg-teal/10 hover:bg-teal/20 border border-teal/25 rounded-full text-slate-800 font-bold text-sm transition-colors"
             >
               Export PDF Report →
             </button>
