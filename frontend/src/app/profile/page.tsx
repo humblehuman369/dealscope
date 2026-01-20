@@ -10,7 +10,8 @@ import {
   Plus, Trash2, Check, ChevronDown, Briefcase, FileText
 } from 'lucide-react'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+// Use relative URLs to go through Next.js API routes (which proxy to backend)
+const API_BASE_URL = ''
 
 // ===========================================
 // Types
