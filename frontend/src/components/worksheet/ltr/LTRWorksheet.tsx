@@ -670,7 +670,7 @@ export function LTRWorksheet({
           </div>
           
           {/* RIGHT COLUMN - Insight Panel */}
-          <div className="space-y-4">
+          <div className="xl:sticky xl:top-28 space-y-4 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto">
             {/* IQ Verdict Card */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
               <div className="p-5" style={{ 
