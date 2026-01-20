@@ -92,13 +92,17 @@ export function IQVerdictScreen({
               }}
             >
               <p 
-                className="text-xs font-semibold tracking-widest mb-4"
+                className="text-lg font-semibold tracking-widest mb-4"
                 style={{ color: IQ_COLORS.pacificTeal }}
               >
                 IQ VERDICT
               </p>
               
-              <div className="inline-flex items-center gap-4 bg-white dark:bg-navy-800 rounded-full px-8 py-4 shadow-lg mb-6">
+              {/* Clickable Deal Score - navigates to top strategy */}
+              <button
+                onClick={() => onViewStrategy(topStrategy)}
+                className="inline-flex items-center gap-4 bg-white dark:bg-navy-800 rounded-full px-8 py-4 shadow-lg mb-6 transition-all hover:shadow-xl hover:scale-[1.02] cursor-pointer"
+              >
                 <span 
                   className="text-5xl font-extrabold"
                   style={{ color: getDealScoreColor(analysis.dealScore) }}
@@ -111,7 +115,7 @@ export function IQVerdictScreen({
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Deal Score</p>
                 </div>
-              </div>
+              </button>
               
               <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm mx-auto">
                 {analysis.verdictDescription}
@@ -142,7 +146,7 @@ export function IQVerdictScreen({
           {/* Right Column - Strategy Rankings */}
           <div>
             <p 
-              className="text-xs font-semibold tracking-widest mb-4"
+              className="text-lg font-semibold tracking-widest mb-4"
               style={{ color: IQ_COLORS.pacificTeal }}
             >
               IQ RANKED STRATEGIES
