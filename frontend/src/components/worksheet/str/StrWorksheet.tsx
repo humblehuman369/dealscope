@@ -524,7 +524,7 @@ export function StrWorksheet({
       
       {/* MAIN CONTENT - Two columns */}
       <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
           
           {/* LEFT COLUMN - Worksheet sections */}
           <div className="space-y-3">
@@ -755,7 +755,7 @@ export function StrWorksheet({
           </div>
           
           {/* RIGHT COLUMN - Insight Panel */}
-          <div className="lg:sticky lg:top-28 space-y-4 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
+          <div className="sm:sticky sm:top-28 space-y-4 sm:max-h-[calc(100vh-8rem)] sm:overflow-y-auto">
             {/* IQ Verdict Card */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
               <div className="p-5" style={{ 

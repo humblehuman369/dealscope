@@ -407,17 +407,17 @@ export function BrrrrWorksheet({
   // RENDER
   // ============================================
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="w-full min-h-screen bg-slate-50 pt-12">
       {/* WORKSHEET TAB NAV */}
-      <div className="sticky top-12 z-40 bg-white border-b border-slate-200">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full sticky top-12 z-40 bg-white border-b border-slate-200">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <WorksheetTabNav propertyId={propertyId} strategy="brrrr" />
         </div>
       </div>
       
       {/* PAGE HEADER */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="w-full bg-white border-b border-slate-200">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           {/* Top row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <div className="flex items-start sm:items-center gap-3 sm:gap-5 min-w-0 flex-1">
@@ -533,8 +533,8 @@ export function BrrrrWorksheet({
       </div>
       
       {/* MAIN CONTENT */}
-      <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 items-start">
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="grid grid-cols-1 sm:grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
           
           {/* LEFT COLUMN - Worksheet sections */}
           <div className="space-y-3">
@@ -618,7 +618,7 @@ export function BrrrrWorksheet({
           </div>
           
           {/* RIGHT COLUMN - Insight Panel */}
-          <div className="space-y-4">
+          <div className="sm:sticky sm:top-28 space-y-4 sm:max-h-[calc(100vh-8rem)] sm:overflow-y-auto">
             {/* IQ Verdict Card */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
               <div className="p-5" style={{ 
