@@ -419,7 +419,7 @@ export function FlipWorksheet({ property, onExportPDF }: FlipWorksheetProps) {
         </div>
 
         {/* Two Column Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
+        <div className="grid grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
           {/* Left Column - Worksheet Inputs */}
           <div className="space-y-4">
             {/* Purchase & Rehab */}

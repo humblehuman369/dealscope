@@ -534,7 +534,7 @@ export function BrrrrWorksheet({
       
       {/* MAIN CONTENT */}
       <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <div className="grid grid-cols-1 sm:grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
+        <div className="grid grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
           
           {/* LEFT COLUMN - Worksheet sections */}
           <div className="space-y-3">
