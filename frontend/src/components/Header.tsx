@@ -83,9 +83,9 @@ export default function Header() {
   ]
 
   return (
-    <header className="w-full bg-white/95 dark:bg-[#0b1426]/95 backdrop-blur-xl border-b border-gray-200 dark:border-white/[0.08] sticky top-0 z-50 transition-colors duration-200">
-      {/* Container - EXACT same classes as page content */}
-      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-between gap-6">
+    <header className="fixed top-0 left-0 right-0 w-full bg-white/95 dark:bg-[#0b1426]/95 backdrop-blur-xl border-b border-gray-200 dark:border-white/[0.08] z-50 transition-colors duration-200">
+      {/* Container - centered with max-width */}
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-between gap-6">
         
         {/* Logo */}
         <Link href="/" className="flex items-center flex-shrink-0 hover:opacity-90 transition-opacity">
