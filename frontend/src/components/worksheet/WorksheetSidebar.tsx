@@ -70,7 +70,7 @@ export function WorksheetSidebar({ property, isOpen, onClose }: WorksheetSidebar
     {
       title: 'Research',
       items: [
-        { id: 'sales-comps', label: 'Sales Comps & ARV', icon: Building2, disabled: true },
+        { id: 'sales-comps', label: 'Sales Comps & ARV', icon: Building2, section: 'sales-comps' },
         { id: 'rental-comps', label: 'Rental Comps & Rent', icon: DollarSign, disabled: true },
         { id: 'records', label: 'Records & Listings', icon: FileSearch, disabled: true },
         { id: 'owner', label: 'Owner Lookup', icon: Users, disabled: true },

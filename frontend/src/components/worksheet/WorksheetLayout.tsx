@@ -10,6 +10,7 @@ import { CashFlowSection } from './sections/CashFlowSection'
 import { InvestmentReturns } from './sections/InvestmentReturns'
 import { FinancialRatios } from './sections/FinancialRatios'
 import { MultiYearProjections } from './sections/MultiYearProjections'
+import { SalesCompsSection } from './sections/SalesCompsSection'
 import { CashFlowChart } from './charts/CashFlowChart'
 import { EquityChart } from './charts/EquityChart'
 import { ProfitFinder } from './charts/ProfitFinder'
@@ -59,6 +60,8 @@ export function WorksheetLayout({ property, propertyId, strategy }: WorksheetLay
             </div>
           </>
         )
+      case 'sales-comps':
+        return <SalesCompsSection />
       default:
         return (
           <>
