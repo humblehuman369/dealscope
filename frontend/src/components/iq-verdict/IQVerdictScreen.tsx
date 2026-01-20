@@ -144,7 +144,7 @@ export function IQVerdictScreen({
           </div>
 
           {/* Right Column - Strategy Rankings */}
-          <div>
+          <div className="pt-4 lg:pt-6">
             <p 
               className="text-lg font-semibold tracking-widest mb-4"
               style={{ color: IQ_COLORS.pacificTeal }}
