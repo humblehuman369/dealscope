@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { StrategyDropdown } from './StrategyDropdown'
 import { WorksheetStrategyId } from '@/constants/worksheetStrategies'
@@ -51,7 +52,8 @@ export function WorksheetTabNav({
   mobileMenuOpen = false,
   onMobileMenuClose,
 }: WorksheetTabNavProps) {
-  const { activeSection, setActiveSection } = useWorksheetStore()
+  const router = useRouter()
+  const { activeSection, setActiveSection, propertyData } = useWorksheetStore()
   // Tabs are enabled for all strategies (removed ltr-only restriction)
   const isTabsEnabled = true
   
@@ -102,6 +104,22 @@ export function WorksheetTabNav({
 
   const handleTabClick = (tab: TabItem) => {
     if (!isTabsEnabled || tab.disabled) return
+    
+    // Navigate to property details page for property-details tab
+    if (tab.id === 'property-details') {
+      const zpid = propertyData?.property_data_snapshot?.zpid
+      if (zpid) {
+        router.push(`/property/${zpid}`)
+        return
+      }
+      // Fallback: use address if zpid not available
+      const address = propertyData?.full_address || propertyData?.address_street
+      if (address) {
+        router.push(`/property?address=${encodeURIComponent(address)}`)
+        return
+      }
+    }
+    
     if (tab.section) {
       setActiveSection(tab.section)
     }
