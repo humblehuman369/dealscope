@@ -264,15 +264,15 @@ export function PropertyPremiumPage({
           <h1 className="premium-info-address">{property.address}</h1>
           <p className="premium-info-location">{location}</p>
           <p className="premium-info-specs">{specs}</p>
-          {/* View Full Details Link */}
+          {/* View Full Property Details Button */}
           {property.zpid && (
             <Link 
               href={`/property/${property.zpid}?address=${encodeURIComponent(`${property.address}, ${property.city}, ${property.state} ${property.zipCode}`)}`}
-              className="inline-flex items-center gap-1.5 mt-2 text-sm font-medium text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors"
+              className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 hover:bg-teal-500/20 transition-colors border border-teal-500/20"
             >
               <Info className="w-4 h-4" />
-              View Full Details
-              <ChevronRight className="w-3.5 h-3.5" />
+              <span className="font-medium">View Full Property Details</span>
+              <ChevronRight className="w-4 h-4" />
             </Link>
           )}
         </div>
