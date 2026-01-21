@@ -514,6 +514,9 @@ export function MarketDataSection() {
   }, [location])
 
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MarketDataSection.tsx:useEffect',message:'useEffect mount',data:{city,state,location,willFetch:!!city},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D,E'})}).catch(()=>{});
+    // #endregion
     if (city) {
       fetchData()
     }

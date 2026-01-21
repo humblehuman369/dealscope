@@ -92,6 +92,10 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
         const data = await response.json()
         console.log('[useWorksheetProperty] Property loaded:', data.id, data.address_street)
         
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useWorksheetProperty.ts:93',message:'Property data loaded from API',data:{id:data.id,address_street:data.address_street,address_city:data.address_city,address_state:data.address_state,snapshotCity:data.property_data_snapshot?.city,snapshotState:data.property_data_snapshot?.state,hasSnapshot:!!data.property_data_snapshot,snapshotKeys:data.property_data_snapshot?Object.keys(data.property_data_snapshot):[]},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
+        // #endregion
+        
         setProperty(data)
         onLoadedRef.current?.(data)
       } catch (err) {
