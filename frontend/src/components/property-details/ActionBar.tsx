@@ -7,6 +7,7 @@ import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
 interface ActionBarProps {
   zpid: string
+  address: string
   onSave?: () => void
   onShare?: () => void
   onGenerateLOI?: () => void
@@ -22,6 +23,7 @@ interface ActionBarProps {
  */
 export function ActionBar({ 
   zpid, 
+  address,
   onSave, 
   onShare, 
   onGenerateLOI,
@@ -86,7 +88,7 @@ export function ActionBar({
 
         {/* Analyze Property Button - Primary CTA */}
         <Link
-          href={`/property?address=${encodeURIComponent(zpid)}`}
+          href={`/property?address=${encodeURIComponent(address)}`}
           className="flex items-center gap-2 px-6 sm:px-8 py-3 rounded-lg bg-teal-500 hover:bg-teal-600 text-white transition-colors shadow-sm"
         >
           <FileText size={18} />
