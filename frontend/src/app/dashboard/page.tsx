@@ -6,42 +6,28 @@ import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { 
-  User, 
-  Mail, 
-  Calendar, 
-  Shield, 
-  Building2, 
-  MapPin, 
-  DollarSign,
-  TrendingUp,
-  Trash2,
-  ExternalLink,
-  Star,
-  Clock,
-  ChevronRight,
+  PortfolioSummary, 
+  QuickActions, 
+  DealPipeline, 
+  MarketAlerts,
+  Watchlist,
+  PortfolioProperties,
+  ActivityFeed,
+  InvestmentGoals 
+} from '@/components/dashboard'
+import { 
+  LayoutDashboard, 
+  Bell, 
+  Settings,
+  Shield,
   Users,
   Activity,
-  BarChart3,
-  Settings,
+  Building2,
+  TrendingUp,
   UserCog,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
   Search,
-  Filter,
-  MoreHorizontal,
-  PlusCircle,
-  ArrowUpRight,
-  ArrowDownRight,
-  FileText,
-  History,
-  Wallet,
-  Home,
-  Target,
-  Zap,
-  Sparkles,
-  Eye,
-  Download
+  CheckCircle,
+  XCircle
 } from 'lucide-react'
 
 // ===========================================
@@ -65,20 +51,19 @@ interface SavedProperty {
   saved_at: string
   last_viewed_at?: string
   updated_at: string
+  // Additional fields for portfolio view
+  estimated_value?: number
+  equity?: number
+  monthly_rent?: number
 }
 
 interface PropertyStats {
   total: number
   by_status: Record<string, number>
-}
-
-interface PortfolioSummary {
-  total_properties: number
-  total_estimated_value: number
-  total_monthly_cash_flow: number
-  average_coc_return: number
-  best_performer?: SavedProperty
-  properties_by_strategy: Record<string, number>
+  total_estimated_value?: number
+  total_monthly_cash_flow?: number
+  average_coc_return?: number
+  by_strategy?: Record<string, number>
 }
 
 interface SearchHistoryItem {
@@ -117,18 +102,6 @@ const API_BASE_URL = ''
 // Formatting Helpers
 // ===========================================
 
-const formatCurrency = (value: number): string => {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0
-  }).format(value)
-}
-
-const formatPercent = (value: number): string => `${(value * 100).toFixed(1)}%`
-
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -152,53 +125,177 @@ const formatRelativeTime = (dateString: string) => {
   return formatDate(dateString)
 }
 
-const getStrategyLabel = (strategy: string): string => {
-  const labels: Record<string, string> = {
-    ltr: 'Long-Term Rental',
-    str: 'Short-Term Rental',
-    brrrr: 'BRRRR',
-    flip: 'Fix & Flip',
-    house_hack: 'House Hack',
-    wholesale: 'Wholesale'
-  }
-  return labels[strategy] || strategy
-}
-
-const getStrategyColor = (strategy: string): string => {
-  const colors: Record<string, string> = {
-    ltr: 'bg-blue-500',
-    str: 'bg-purple-500',
-    brrrr: 'bg-orange-500',
-    flip: 'bg-pink-500',
-    house_hack: 'bg-green-500',
-    wholesale: 'bg-cyan-500'
-  }
-  return colors[strategy] || 'bg-gray-500'
-}
-
 // ===========================================
 // Main Dashboard Component
 // ===========================================
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading, needsOnboarding } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading, needsOnboarding } = useAuth()
   const router = useRouter()
+  
+  // State for modal
+  const [showSearchModal, setShowSearchModal] = useState(false)
+  
+  // State for dashboard data
+  const [isLoading, setIsLoading] = useState(true)
+  const [portfolioData, setPortfolioData] = useState({
+    portfolioValue: 0,
+    portfolioChange: 0,
+    propertiesTracked: 0,
+    totalEquity: 0,
+    monthlyCashFlow: 0,
+    avgCoC: 0,
+  })
+  const [pipelineData, setPipelineData] = useState({
+    watching: 0,
+    analyzing: 0,
+    negotiating: 0,
+    underContract: 0,
+  })
+  const [watchlistProperties, setWatchlistProperties] = useState<any[]>([])
+  const [portfolioProperties, setPortfolioProperties] = useState<any[]>([])
+  const [recentActivity, setRecentActivity] = useState<any[]>([])
+  const [investmentGoals, setInvestmentGoals] = useState<any[]>([])
+  const [marketAlerts, setMarketAlerts] = useState([
+    { market: 'South Florida', temp: 'Hot' as const, change: '+8.2%', trend: 'up' as const },
+    { market: 'Tampa Bay', temp: 'Warm' as const, change: '+5.1%', trend: 'up' as const },
+    { market: 'Orlando', temp: 'Neutral' as const, change: '+1.8%', trend: 'up' as const },
+  ])
   
   // Redirect if not authenticated or needs onboarding
   useEffect(() => {
-    if (!isLoading) {
+    if (!authLoading) {
       if (!isAuthenticated) {
         router.push('/')
       } else if (needsOnboarding) {
         router.push('/onboarding')
       }
     }
-  }, [isLoading, isAuthenticated, needsOnboarding, router])
+  }, [authLoading, isAuthenticated, needsOnboarding, router])
 
-  if (isLoading) {
+  // Fetch dashboard data
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      // Fetch saved properties and stats in parallel
+      const [propertiesRes, statsRes, historyRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/v1/properties/saved?limit=20`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        }),
+        fetch(`${API_BASE_URL}/api/v1/properties/saved/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        }),
+        fetch(`${API_BASE_URL}/api/v1/search-history/recent?limit=5`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        })
+      ])
+
+      // Process properties data
+      if (propertiesRes.ok) {
+        const data = await propertiesRes.json()
+        const properties: SavedProperty[] = data.items || data || []
+        
+        // Convert to watchlist format
+        const watchlist = properties
+          .filter(p => p.status === 'watching' || p.status === 'analyzing')
+          .slice(0, 5)
+          .map(p => ({
+            id: p.id,
+            address: p.address_street,
+            city: `${p.address_city || ''}, ${p.address_state || ''}`.trim().replace(/^,\s*|,\s*$/g, ''),
+            price: p.estimated_value || 0,
+            priceChange: 0,
+            daysOnMarket: Math.floor((new Date().getTime() - new Date(p.saved_at).getTime()) / 86400000),
+            beds: 3, // Default values - would come from property data
+            baths: 2,
+            sqft: 1800,
+            score: p.best_coc_return ? Math.round(p.best_coc_return * 10) : 75,
+          }))
+        setWatchlistProperties(watchlist)
+        
+        // Convert to portfolio format (owned properties)
+        const portfolio = properties
+          .filter(p => p.status === 'owned' || p.status === 'under_contract')
+          .slice(0, 5)
+          .map(p => ({
+            id: p.id,
+            address: p.nickname || p.address_street,
+            city: `${p.address_city || ''}, ${p.address_state || ''}`.trim().replace(/^,\s*|,\s*$/g, ''),
+            value: p.estimated_value || 0,
+            equity: p.equity || 0,
+            monthlyRent: p.monthly_rent || 0,
+            cashFlow: p.best_cash_flow || 0,
+            cocReturn: p.best_coc_return ? (p.best_coc_return * 100).toFixed(1) : 0,
+            status: p.best_cash_flow && p.best_cash_flow > 0 ? 'performing' : 'watch',
+          }))
+        setPortfolioProperties(portfolio)
+        
+        // Calculate pipeline counts
+        const statusCounts = properties.reduce((acc, p) => {
+          acc[p.status] = (acc[p.status] || 0) + 1
+          return acc
+        }, {} as Record<string, number>)
+        
+        setPipelineData({
+          watching: statusCounts.watching || 0,
+          analyzing: statusCounts.analyzing || 0,
+          negotiating: statusCounts.contacted || statusCounts.negotiating || 0,
+          underContract: statusCounts.under_contract || 0,
+        })
+      }
+
+      // Process stats data
+      if (statsRes.ok) {
+        const statsData: PropertyStats = await statsRes.json()
+        setPortfolioData({
+          portfolioValue: statsData.total_estimated_value || 0,
+          portfolioChange: 8.5, // Would calculate from historical data
+          propertiesTracked: statsData.total || 0,
+          totalEquity: (statsData.total_estimated_value || 0) * 0.25, // Estimate 25% equity
+          monthlyCashFlow: statsData.total_monthly_cash_flow || 0,
+          avgCoC: statsData.average_coc_return ? (statsData.average_coc_return * 100) : 0,
+        })
+      }
+
+      // Process search history as activity
+      if (historyRes.ok) {
+        const historyData: SearchHistoryItem[] = await historyRes.json()
+        const activities = historyData.map((item, i) => ({
+          id: item.id || String(i),
+          type: item.was_saved ? 'analysis' as const : (item.was_successful ? 'new_match' as const : 'alert' as const),
+          property: item.search_query.split(',')[0],
+          detail: item.was_saved ? 'Property saved to watchlist' : (item.was_successful ? 'Search completed' : 'Property not found'),
+          time: formatRelativeTime(item.searched_at),
+        }))
+        setRecentActivity(activities)
+      }
+
+      // Set default investment goals (would come from user profile)
+      setInvestmentGoals([
+        { label: 'Monthly Cash Flow Goal', current: portfolioData.monthlyCashFlow || 5000, target: 15000, unit: '$' },
+        { label: 'Properties Goal', current: portfolioData.propertiesTracked || 2, target: 10, unit: '' },
+        { label: 'Portfolio Value Goal', current: (portfolioData.portfolioValue || 500000) / 1000000, target: 5, unit: 'M' },
+      ])
+
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      fetchDashboardData()
+    }
+  }, [isAuthenticated, authLoading, fetchDashboardData])
+
+  if (authLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 dark:bg-navy-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500"></div>
+      <div className="min-h-screen bg-slate-50 dark:bg-navy-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
       </div>
     )
   }
@@ -211,54 +308,94 @@ export default function DashboardPage() {
   const firstName = user.full_name?.split(' ')[0] || 'there'
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-navy-900 transition-colors">
-      {/* py-8 for content spacing - header offset handled globally in layout.tsx */}
+    <div className="min-h-screen bg-slate-50 dark:bg-navy-900 transition-colors dashboard-container">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Header */}
+        {/* Page Title */}
+        <div className="flex items-center gap-2 mb-6">
+          <LayoutDashboard size={16} className="text-teal-500 dark:text-teal-400" />
+          <span className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide">
+            Dashboard
+          </span>
+        </div>
+
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-navy-900 dark:text-white">
-              Welcome back, {firstName}! 👋
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">
+              Welcome back, {firstName}
             </h1>
-            <p className="mt-1 text-neutral-600 dark:text-neutral-400">
-              {isAdmin ? 'Manage your investments and platform administration' : 'Here\'s what\'s happening with your portfolio'}
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Here's what's happening with your portfolio
             </p>
           </div>
-          <Link
-            href="/profile"
-            className="mt-4 sm:mt-0 inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-navy-800 border border-neutral-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-navy-700 text-gray-700 dark:text-gray-300 rounded-xl transition-colors text-sm font-medium"
-          >
-            <Settings className="w-4 h-4" />
-            Settings
-          </Link>
+          <div className="flex items-center gap-3 mt-4 sm:mt-0">
+            <button className="relative p-2.5 rounded-lg bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors">
+              <Bell size={18} className="text-slate-600 dark:text-slate-400" />
+              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                3
+              </span>
+            </button>
+            <Link
+              href="/profile"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors"
+            >
+              <Settings size={16} className="text-slate-600 dark:text-slate-400" />
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Settings</span>
+            </Link>
+          </div>
         </div>
 
         {/* Quick Actions */}
-        <QuickActionsSection />
+        <div className="mb-6">
+          <QuickActions onSearchClick={() => setShowSearchModal(true)} />
+        </div>
 
-        {/* Portfolio Stats */}
-        <PortfolioStatsSection />
+        {/* Portfolio Summary */}
+        <div className="mb-6">
+          <PortfolioSummary data={portfolioData} isLoading={isLoading} />
+        </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          {/* Saved Properties - 2 columns */}
-          <div className="lg:col-span-2">
-            <SavedPropertiesSection />
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column - 8 cols */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Watchlist */}
+            <Watchlist 
+              properties={watchlistProperties} 
+              isLoading={isLoading}
+              onAddClick={() => setShowSearchModal(true)}
+            />
+
+            {/* Portfolio Properties */}
+            <PortfolioProperties 
+              properties={portfolioProperties} 
+              isLoading={isLoading}
+              onAddClick={() => setShowSearchModal(true)}
+            />
           </div>
-          
-          {/* Sidebar - 1 column */}
-          <div className="space-y-6">
-            <RecentActivitySection />
-            <QuickLinksSection />
+
+          {/* Right Column - 4 cols */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Deal Pipeline */}
+            <DealPipeline pipeline={pipelineData} isLoading={isLoading} />
+
+            {/* Market Alerts */}
+            <MarketAlerts alerts={marketAlerts} isLoading={false} />
+
+            {/* Investment Goals */}
+            <InvestmentGoals goals={investmentGoals} isLoading={isLoading} />
+
+            {/* Activity Feed */}
+            <ActivityFeed activities={recentActivity} isLoading={isLoading} />
           </div>
         </div>
 
         {/* Admin Sections */}
         {isAdmin && (
-          <div className="mt-12 pt-8 border-t border-neutral-200 dark:border-neutral-700">
+          <div className="mt-12 pt-8 border-t border-slate-200 dark:border-navy-700">
             <div className="flex items-center gap-2 mb-6">
               <Shield className="w-6 h-6 text-amber-500" />
-              <h2 className="text-xl font-bold text-navy-900 dark:text-white">Administration</h2>
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white">Administration</h2>
             </div>
             <div className="space-y-8">
               <PlatformStatsSection />
@@ -267,594 +404,13 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-    </div>
-  )
-}
-
-// ===========================================
-// Quick Actions Section
-// ===========================================
-
-function QuickActionsSection() {
-  const [showSearchModal, setShowSearchModal] = useState(false)
-  
-  const linkActions = [
-    { label: 'Compare Deals', href: '/compare', icon: BarChart3, color: 'bg-purple-500', description: 'Side-by-side comparison' },
-    { label: 'View Strategies', href: '/strategies', icon: Target, color: 'bg-orange-500', description: 'Explore investment types' },
-    { label: 'Search History', href: '/search-history', icon: History, color: 'bg-green-500', description: 'Past searches' },
-  ]
-
-  return (
-    <>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {/* Search Property - Opens Modal */}
-        <button
-          onClick={() => setShowSearchModal(true)}
-          className="group bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 hover:border-brand-300 dark:hover:border-brand-600 hover:shadow-lg transition-all text-left"
-        >
-          <div className="w-10 h-10 bg-brand-500 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-            <Search className="w-5 h-5 text-white" />
-          </div>
-          <h3 className="font-semibold text-navy-900 dark:text-white text-sm">Search Property</h3>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Find and analyze properties</p>
-        </button>
-
-        {/* Other Actions - Links */}
-        {linkActions.map((action) => (
-          <Link
-            key={action.href}
-            href={action.href}
-            className="group bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 hover:border-brand-300 dark:hover:border-brand-600 hover:shadow-lg transition-all"
-          >
-            <div className={`w-10 h-10 ${action.color} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-              <action.icon className="w-5 h-5 text-white" />
-            </div>
-            <h3 className="font-semibold text-navy-900 dark:text-white text-sm">{action.label}</h3>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{action.description}</p>
-          </Link>
-        ))}
-      </div>
 
       {/* Search Property Modal */}
       <SearchPropertyModal 
         isOpen={showSearchModal} 
         onClose={() => setShowSearchModal(false)} 
       />
-    </>
-  )
-}
-
-// ===========================================
-// Portfolio Stats Section
-// ===========================================
-
-function PortfolioStatsSection() {
-  const [stats, setStats] = useState<PortfolioSummary | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const token = localStorage.getItem('access_token')
-        if (!token) return
-
-        // Fetch saved properties stats
-        const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved/stats`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          
-          // Calculate portfolio summary from stats
-          setStats({
-            total_properties: data.total || 0,
-            total_estimated_value: data.total_estimated_value || 0,
-            total_monthly_cash_flow: data.total_monthly_cash_flow || 0,
-            average_coc_return: data.average_coc_return || 0,
-            properties_by_strategy: data.by_strategy || {},
-          })
-        }
-      } catch (err) {
-        console.error('Failed to fetch portfolio stats:', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchStats()
-  }, [])
-
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map(i => (
-          <div key={i} className="bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 animate-pulse">
-            <div className="h-4 bg-gray-200 dark:bg-navy-700 rounded w-20 mb-2"></div>
-            <div className="h-6 bg-gray-200 dark:bg-navy-700 rounded w-24"></div>
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  const statCards = [
-    { 
-      label: 'Properties Tracked', 
-      value: stats?.total_properties || 0,
-      format: 'number',
-      icon: Building2,
-      color: 'text-brand-500',
-      bgColor: 'bg-brand-100 dark:bg-brand-900/30'
-    },
-    { 
-      label: 'Est. Portfolio Value', 
-      value: stats?.total_estimated_value || 0,
-      format: 'currency',
-      icon: Wallet,
-      color: 'text-green-500',
-      bgColor: 'bg-green-100 dark:bg-green-900/30'
-    },
-    { 
-      label: 'Monthly Cash Flow', 
-      value: stats?.total_monthly_cash_flow || 0,
-      format: 'currency',
-      icon: TrendingUp,
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-100 dark:bg-purple-900/30',
-      trend: (stats?.total_monthly_cash_flow || 0) >= 0 ? 'up' : 'down'
-    },
-    { 
-      label: 'Avg. CoC Return', 
-      value: stats?.average_coc_return || 0,
-      format: 'percent',
-      icon: Target,
-      color: 'text-orange-500',
-      bgColor: 'bg-orange-100 dark:bg-orange-900/30'
-    },
-  ]
-
-  return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {statCards.map((stat, index) => (
-        <div key={index} className="bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{stat.label}</span>
-            <div className={`p-1.5 rounded-lg ${stat.bgColor}`}>
-              <stat.icon className={`w-4 h-4 ${stat.color}`} />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-navy-900 dark:text-white">
-              {stat.format === 'currency' ? formatCurrency(stat.value) : 
-               stat.format === 'percent' ? formatPercent(stat.value) : 
-               stat.value.toLocaleString()}
-            </span>
-            {stat.trend && (
-              <span className={`flex items-center text-xs ${stat.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                {stat.trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-              </span>
-            )}
-          </div>
-        </div>
-      ))}
     </div>
-  )
-}
-
-// ===========================================
-// Recent Activity Section
-// ===========================================
-
-function RecentActivitySection() {
-  const [activity, setActivity] = useState<SearchHistoryItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [showSearchModal, setShowSearchModal] = useState(false)
-
-  useEffect(() => {
-    const fetchActivity = async () => {
-      try {
-        const token = localStorage.getItem('access_token')
-        if (!token) return
-
-        const response = await fetch(`${API_BASE_URL}/api/v1/search-history/recent?limit=5`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setActivity(data || [])
-        }
-      } catch (err) {
-        console.error('Failed to fetch activity:', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchActivity()
-  }, [])
-
-  return (
-    <div className="bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-      <div className="p-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
-        <h3 className="font-semibold text-navy-900 dark:text-white flex items-center gap-2">
-          <Clock className="w-4 h-4 text-brand-500" />
-          Recent Searches
-        </h3>
-        <Link href="/search-history" className="text-xs text-brand-500 hover:text-brand-600 font-medium">
-          View all
-        </Link>
-      </div>
-      
-      {isLoading ? (
-        <div className="p-4 space-y-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="animate-pulse flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-200 dark:bg-navy-700 rounded-lg"></div>
-              <div className="flex-1">
-                <div className="h-3 bg-gray-200 dark:bg-navy-700 rounded w-3/4 mb-1"></div>
-                <div className="h-2 bg-gray-200 dark:bg-navy-700 rounded w-1/2"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : activity.length === 0 ? (
-        <>
-          <div className="p-6 text-center">
-            <Search className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">No recent searches</p>
-            <button 
-              onClick={() => setShowSearchModal(true)}
-              className="text-xs text-brand-500 hover:text-brand-600 font-medium mt-1 inline-block"
-            >
-              Search a property
-            </button>
-          </div>
-          <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
-        </>
-      ) : (
-        <div className="divide-y divide-neutral-100 dark:divide-neutral-700">
-          {activity.map((item) => (
-            <Link
-              key={item.id}
-              href={`/property?address=${encodeURIComponent(item.search_query)}`}
-              className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-navy-700/50 transition-colors"
-            >
-              <div className={`p-2 rounded-lg ${item.was_successful ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-gray-800'}`}>
-                <MapPin className={`w-4 h-4 ${item.was_successful ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-navy-900 dark:text-white truncate">
-                  {item.search_query.split(',')[0]}
-                </p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {item.address_city && item.address_state ? `${item.address_city}, ${item.address_state}` : formatRelativeTime(item.searched_at)}
-                </p>
-              </div>
-              {item.was_saved && (
-                <Star className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-              )}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ===========================================
-// Quick Links Section
-// ===========================================
-
-function QuickLinksSection() {
-  const links = [
-    { label: 'Edit Profile', href: '/profile', icon: User },
-    { label: 'View Strategies', href: '/strategies', icon: Target },
-    { label: 'My Documents', href: '/documents', icon: FileText },
-    { label: 'Help Center', href: '/help', icon: Sparkles },
-  ]
-
-  return (
-    <div className="bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-      <div className="p-4 border-b border-neutral-200 dark:border-neutral-700">
-        <h3 className="font-semibold text-navy-900 dark:text-white flex items-center gap-2">
-          <Zap className="w-4 h-4 text-brand-500" />
-          Quick Links
-        </h3>
-      </div>
-      <div className="p-2">
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-navy-700 transition-colors"
-          >
-            <link.icon className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-navy-900 dark:text-white">{link.label}</span>
-            <ChevronRight className="w-4 h-4 text-gray-300 ml-auto" />
-          </Link>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ===========================================
-// Saved Properties Section (Enhanced)
-// ===========================================
-
-function SavedPropertiesSection() {
-  const [properties, setProperties] = useState<SavedProperty[]>([])
-  const [stats, setStats] = useState<PropertyStats | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string | null>(null)
-  const [showSearchModal, setShowSearchModal] = useState(false)
-
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        const token = localStorage.getItem('access_token')
-        if (!token) return
-
-        const [propertiesRes, statsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/v1/properties/saved?limit=10`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-          }),
-          fetch(`${API_BASE_URL}/api/v1/properties/saved/stats`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-          })
-        ])
-
-        if (propertiesRes.ok) {
-          const data = await propertiesRes.json()
-          setProperties(data.items || data || [])
-        }
-
-        if (statsRes.ok) {
-          const statsData = await statsRes.json()
-          setStats(statsData)
-        }
-      } catch (err) {
-        console.error('Failed to fetch properties:', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchProperties()
-  }, [])
-
-  const handleRemoveProperty = async (propertyId: string) => {
-    if (!confirm('Remove this property from your saved list?')) return
-
-    try {
-      const token = localStorage.getItem('access_token')
-      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved/${propertyId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
-
-      if (response.ok) {
-        setProperties(prev => prev.filter(p => p.id !== propertyId))
-      }
-    } catch (err) {
-      console.error('Failed to remove property:', err)
-    }
-  }
-
-  const filteredProperties = properties.filter(p => {
-    const matchesSearch = !searchQuery || 
-      p.address_street.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.nickname?.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = !statusFilter || p.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
-
-  const statusColors: Record<string, string> = {
-    watching: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    analyzing: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-    contacted: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    under_contract: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-    owned: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    passed: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400',
-  }
-
-  return (
-    <>
-    <div className="bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-      {/* Header */}
-      <div className="p-4 border-b border-neutral-200 dark:border-neutral-700">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <h3 className="font-semibold text-navy-900 dark:text-white flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-brand-500" />
-            Saved Properties
-            {stats && <span className="text-sm font-normal text-neutral-500">({stats.total})</span>}
-          </h3>
-          
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1 sm:flex-none">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search properties..."
-                className="w-full sm:w-48 pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-navy-700 border border-neutral-200 dark:border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-navy-900 dark:text-white"
-              />
-            </div>
-            <button
-              onClick={() => setShowSearchModal(true)}
-              className="p-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors"
-              title="Add property"
-            >
-              <PlusCircle className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Status Filters */}
-        {stats && stats.by_status && Object.keys(stats.by_status).length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-3">
-            <button
-              onClick={() => setStatusFilter(null)}
-              className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                !statusFilter
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-gray-100 dark:bg-navy-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-navy-600'
-              }`}
-            >
-              All
-            </button>
-            {Object.entries(stats.by_status).map(([status, count]) => (
-              <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                  statusFilter === status
-                    ? 'bg-brand-500 text-white'
-                    : 'bg-gray-100 dark:bg-navy-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-navy-600'
-                }`}
-              >
-                {status.replace('_', ' ').charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')} ({count})
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Properties List */}
-      {isLoading ? (
-        <div className="p-6 flex justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
-        </div>
-      ) : filteredProperties.length === 0 ? (
-        <div className="p-8 text-center">
-          <Building2 className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-          <h4 className="text-lg font-medium text-navy-900 dark:text-white mb-1">
-            {searchQuery || statusFilter ? 'No matching properties' : 'No saved properties yet'}
-          </h4>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-            {searchQuery || statusFilter ? 'Try adjusting your filters' : 'Search for properties and save them to track here'}
-          </p>
-          {!searchQuery && !statusFilter && (
-            <button
-              onClick={() => setShowSearchModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors text-sm font-medium"
-            >
-              <Search className="w-4 h-4" />
-              Search Properties
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="divide-y divide-neutral-100 dark:divide-neutral-700">
-          {filteredProperties.map((property) => (
-            <div
-              key={property.id}
-              className="p-4 hover:bg-gray-50 dark:hover:bg-navy-700/50 transition-colors"
-            >
-              <div className="flex items-start gap-4">
-                {/* Strategy Color Bar */}
-                <div className={`w-1.5 h-16 rounded-full ${getStrategyColor(property.best_strategy || 'ltr')} flex-shrink-0`} />
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h4 className="font-medium text-navy-900 dark:text-white text-sm">
-                        {property.nickname || property.address_street}
-                      </h4>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1 mt-0.5">
-                        <MapPin className="w-3 h-3" />
-                        {[property.address_city, property.address_state].filter(Boolean).join(', ')}
-                      </p>
-                    </div>
-                    
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusColors[property.status] || 'bg-gray-100 text-gray-700'}`}>
-                      {property.status.replace('_', ' ')}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-4 mt-2">
-                    {property.best_strategy && (
-                      <span className="text-xs text-neutral-600 dark:text-neutral-400">
-                        <span className={`inline-block w-2 h-2 rounded-full ${getStrategyColor(property.best_strategy)} mr-1`}></span>
-                        {getStrategyLabel(property.best_strategy)}
-                      </span>
-                    )}
-                    {property.best_cash_flow !== undefined && (
-                      <span className={`text-xs font-medium ${property.best_cash_flow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {formatCurrency(property.best_cash_flow)}/mo
-                      </span>
-                    )}
-                    {property.best_coc_return !== undefined && (
-                      <span className="text-xs text-neutral-600 dark:text-neutral-400">
-                        {formatPercent(property.best_coc_return)} CoC
-                      </span>
-                    )}
-                    {property.priority && property.priority > 0 && (
-                      <span className="flex items-center text-yellow-500">
-                        {Array.from({ length: Math.min(property.priority, 3) }).map((_, i) => (
-                          <Star key={i} className="w-3 h-3 fill-current" />
-                        ))}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 mt-3">
-                    <Link
-                      href={`/worksheet/${property.id}`}
-                      className="text-xs text-brand-500 hover:text-brand-600 font-medium flex items-center gap-1"
-                    >
-                      <FileText className="w-3 h-3" />
-                      Worksheet
-                    </Link>
-                    <span className="text-neutral-300 dark:text-neutral-600">|</span>
-                    <Link
-                      href={`/property?address=${encodeURIComponent(property.address_street + ', ' + (property.address_city || '') + ', ' + (property.address_state || ''))}`}
-                      className="text-xs text-gray-500 hover:text-brand-500 font-medium flex items-center gap-1"
-                    >
-                      <Eye className="w-3 h-3" />
-                      Quick View
-                    </Link>
-                    <span className="text-neutral-300 dark:text-neutral-600">|</span>
-                    <button
-                      onClick={() => handleRemoveProperty(property.id)}
-                      className="text-xs text-gray-400 hover:text-red-500 font-medium flex items-center gap-1"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Footer */}
-      {properties.length > 0 && (
-        <div className="p-3 border-t border-neutral-100 dark:border-neutral-700 bg-gray-50 dark:bg-navy-700/30 flex justify-center">
-          <Link
-            href="/saved-properties"
-            className="text-sm text-brand-500 hover:text-brand-600 font-medium flex items-center gap-1"
-          >
-            View all saved properties
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
-      )}
-    </div>
-    <SearchPropertyModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
-    </>
   )
 }
 
@@ -894,7 +450,7 @@ function PlatformStatsSection() {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map(i => (
-          <div key={i} className="bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 animate-pulse">
+          <div key={i} className="bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 p-4 animate-pulse">
             <div className="h-4 bg-gray-200 dark:bg-navy-700 rounded w-24 mb-2"></div>
             <div className="h-8 bg-gray-200 dark:bg-navy-700 rounded w-16"></div>
           </div>
@@ -913,14 +469,16 @@ function PlatformStatsSection() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {platformStats.map((stat, index) => (
-        <div key={index} className="bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+        <div key={index} className="bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 p-4">
           <div className="flex items-center gap-3">
-            <div className={`p-2 bg-gray-100 dark:bg-navy-700 rounded-lg`}>
+            <div className="p-2 bg-slate-100 dark:bg-navy-700 rounded-lg">
               <stat.icon className={`w-5 h-5 ${stat.color}`} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-navy-900 dark:text-white">{stat.value.toLocaleString()}</p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">{stat.label}</p>
+              <p className="text-2xl font-bold text-slate-800 dark:text-white tabular-nums">
+                {stat.value.toLocaleString()}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{stat.label}</p>
             </div>
           </div>
         </div>
@@ -932,6 +490,16 @@ function PlatformStatsSection() {
 // ===========================================
 // User Management Section (Admin)
 // ===========================================
+
+interface AdminUser {
+  id: string
+  email: string
+  full_name?: string
+  is_active: boolean
+  is_verified: boolean
+  is_superuser: boolean
+  created_at: string
+}
 
 function UserManagementSection() {
   const [users, setUsers] = useState<AdminUser[]>([])
@@ -985,48 +553,56 @@ function UserManagementSection() {
     u.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+
   return (
-    <div className="bg-white dark:bg-navy-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-      <div className="p-4 border-b border-neutral-200 dark:border-neutral-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h3 className="font-semibold text-navy-900 dark:text-white flex items-center gap-2">
+    <div className="bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 overflow-hidden">
+      <div className="p-4 border-b border-slate-200 dark:border-navy-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h3 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
           <UserCog className="w-5 h-5 text-amber-500" />
           User Management
         </h3>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search users..."
-            className="w-full sm:w-64 pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-navy-700 border border-neutral-200 dark:border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-navy-900 dark:text-white"
+            className="w-full sm:w-64 pl-9 pr-3 py-2 text-sm bg-slate-50 dark:bg-navy-700 border border-slate-200 dark:border-navy-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 dark:text-white"
           />
         </div>
       </div>
 
       {isLoading ? (
         <div className="p-6 flex justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-navy-700">
+            <thead className="bg-slate-50 dark:bg-navy-700">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">User</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Role</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Joined</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">User</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Role</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Joined</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
+            <tbody className="divide-y divide-slate-100 dark:divide-navy-700">
               {filteredUsers.map((u) => (
-                <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-navy-700/50">
+                <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-navy-700/50">
                   <td className="px-4 py-3">
                     <div>
-                      <p className="text-sm font-medium text-navy-900 dark:text-white">{u.full_name || 'No name'}</p>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">{u.email}</p>
+                      <p className="text-sm font-medium text-slate-800 dark:text-white">{u.full_name || 'No name'}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{u.email}</p>
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -1043,12 +619,12 @@ function UserManagementSection() {
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                       u.is_superuser
                         ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                        : 'bg-slate-100 text-slate-700 dark:bg-navy-700 dark:text-slate-300'
                     }`}>
                       {u.is_superuser ? 'Admin' : 'User'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
+                  <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                     {formatDate(u.created_at)}
                   </td>
                   <td className="px-4 py-3 text-right">

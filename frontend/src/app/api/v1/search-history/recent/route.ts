@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// Force dynamic rendering for API routes
+export const dynamic = 'force-dynamic'
+
 // Backend API URL
 const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.railway.app'
 

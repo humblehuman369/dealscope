@@ -12,6 +12,13 @@
   --text-tertiary: #9ca3af;
   --text-muted: #d1d5db;
   
+  /* InvestIQ Brand Teal (IQ's Voice) */
+  --iq-teal: #007ea7;
+  --iq-teal-light: #4dd0e1;
+  --iq-teal-dark: #006080;
+  --iq-teal-10: rgba(0, 126, 167, 0.1);
+  --iq-teal-20: rgba(0, 126, 167, 0.2);
+  
   /* Brand Gradient */
   --gradient-slider: linear-gradient(90deg, #8b5cf6 0%, #06b6d4 50%, #10b981 100%);
   --gradient-purple: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
@@ -919,5 +926,236 @@ html.dark {
   
   .text-white\/40 {
     color: rgba(255, 255, 255, 0.6) !important;
+  }
+}
+
+/* ==========================================
+   INVESTIQ DASHBOARD STYLES
+   ========================================== */
+
+/* Dashboard Container */
+.dashboard-container {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html.dark .dashboard-container {
+  background-color: #0b1426;
+}
+
+/* Tabular Numbers for consistent number display */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dashboard Card Base */
+.dashboard-card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+html.dark .dashboard-card {
+  background: rgba(11, 20, 38, 0.95);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Dashboard Section Header */
+.dashboard-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-section-icon {
+  color: var(--iq-teal);
+}
+
+html.dark .dashboard-section-icon {
+  color: var(--iq-teal-light);
+}
+
+/* IQ Brand Accent Elements */
+.iq-accent {
+  color: var(--iq-teal);
+}
+
+html.dark .iq-accent {
+  color: var(--iq-teal-light);
+}
+
+.iq-accent-bg {
+  background-color: var(--iq-teal-10);
+}
+
+.iq-accent-border {
+  border-color: var(--iq-teal-20);
+}
+
+/* Quick Action Card Hover Effect */
+.quick-action-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.quick-action-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--iq-teal);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+  transform-origin: left;
+}
+
+.quick-action-card:hover::after {
+  transform: scaleX(1);
+}
+
+html.dark .quick-action-card::after {
+  background: var(--iq-teal-light);
+}
+
+/* Pipeline Progress Bar */
+.pipeline-bar {
+  display: flex;
+  height: 0.75rem;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+html.dark .pipeline-bar {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Watchlist Property Card */
+.watchlist-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.watchlist-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+html.dark .watchlist-card {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+html.dark .watchlist-card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Portfolio Property Row */
+.portfolio-property-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  transition: background-color 0.2s ease;
+}
+
+.portfolio-property-row:hover {
+  background: #f1f5f9;
+}
+
+html.dark .portfolio-property-row {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+html.dark .portfolio-property-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Status Indicator */
+.status-indicator {
+  width: 0.5rem;
+  height: 3rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.status-performing { background: #14b8a6; }
+.status-watch { background: #f59e0b; }
+.status-underperforming { background: #ef4444; }
+
+/* Activity Feed Item */
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.activity-item:hover {
+  background: #f8fafc;
+}
+
+html.dark .activity-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Goal Progress Bar */
+.goal-progress {
+  height: 0.5rem;
+  background: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+html.dark .goal-progress {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.goal-progress-fill {
+  height: 100%;
+  background: var(--iq-teal);
+  border-radius: 9999px;
+  transition: width 0.5s ease;
+}
+
+html.dark .goal-progress-fill {
+  background: var(--iq-teal-light);
+}
+
+/* Dashboard Grid Layout */
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Dashboard Responsive Adjustments */
+@media (max-width: 640px) {
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .dashboard-quick-actions {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

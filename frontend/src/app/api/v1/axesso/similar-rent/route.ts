@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// Force dynamic rendering for API routes
+export const dynamic = 'force-dynamic'
+
 // Axesso API configuration - use server-side env var (no NEXT_PUBLIC_ prefix)
 const AXESSO_BASE_URL = 'https://api.axesso.de'
 const AXESSO_API_KEY = process.env.AXESSO_API_KEY || process.env.NEXT_PUBLIC_AXESSO_API_KEY || ''
