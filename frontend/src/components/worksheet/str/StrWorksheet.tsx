@@ -197,6 +197,7 @@ export function StrWorksheet({
     const currentlyOpen = isSectionOpen(index)
     setManualOverrides(prev => ({ ...prev, [index]: !currentlyOpen }))
     if (!currentlyOpen) {
+      setCurrentSection(index)
       setCompletedSections(prev => new Set([...Array.from(prev), index]))
     }
   }, [isSectionOpen])

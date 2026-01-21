@@ -120,7 +120,10 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   const toggleSection = useCallback((index: number) => {
     const currentlyOpen = isSectionOpen(index)
     setManualOverrides(prev => ({ ...prev, [index]: !currentlyOpen }))
-    if (!currentlyOpen) setCompletedSections(prev => new Set([...Array.from(prev), index]))
+    if (!currentlyOpen) {
+      setCurrentSection(index)
+      setCompletedSections(prev => new Set([...Array.from(prev), index]))
+    }
   }, [isSectionOpen])
 
   const InputRow = ({ label, value, onChange, min, max, step, format, subValue }: { label: string; value: number; onChange: (v: number) => void; min: number; max: number; step: number; format: 'currency' | 'percent' | 'number'; subValue?: string }) => {

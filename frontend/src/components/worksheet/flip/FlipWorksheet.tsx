@@ -180,7 +180,10 @@ export function FlipWorksheet({
   const toggleSection = useCallback((index: number) => {
     const currentlyOpen = isSectionOpen(index)
     setManualOverrides(prev => ({ ...prev, [index]: !currentlyOpen }))
-    if (!currentlyOpen) setCompletedSections(prev => new Set([...Array.from(prev), index]))
+    if (!currentlyOpen) {
+      setCurrentSection(index)
+      setCompletedSections(prev => new Set([...Array.from(prev), index]))
+    }
   }, [isSectionOpen])
 
   // ============================================

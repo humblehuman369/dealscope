@@ -265,8 +265,9 @@ export function LTRWorksheet({
     const currentlyOpen = isSectionOpen(index)
     // Set manual override to opposite of current state
     setManualOverrides(prev => ({ ...prev, [index]: !currentlyOpen }))
-    // Track as completed when opened
+    // Track as completed and update current section when opened
     if (!currentlyOpen) {
+      setCurrentSection(index)
       setCompletedSections(prev => new Set([...Array.from(prev), index]))
     }
   }, [isSectionOpen])
