@@ -20,11 +20,8 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">
-            {property.address.streetAddress}
+            {property.address.streetAddress}, {property.address.city}, {property.address.state} {property.address.zipcode}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {property.address.city}, {property.address.state} {property.address.zipcode}
-          </p>
           {property.address.neighborhood && (
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
               {property.address.neighborhood} · {property.address.county}

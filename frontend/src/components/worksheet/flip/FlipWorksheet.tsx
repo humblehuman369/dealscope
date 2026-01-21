@@ -298,8 +298,10 @@ export function FlipWorksheet({
             <div className="flex items-start sm:items-center gap-3 sm:gap-5 min-w-0 flex-1">
               <button className="text-blue-500 hover:text-blue-600 transition-colors text-sm font-medium flex-shrink-0">← Back</button>
               <div className="min-w-0 flex-1">
-                <h1 className="text-sm sm:text-base font-semibold text-slate-800 truncate">{address}</h1>
-                <p className="text-xs sm:text-sm text-slate-500 truncate">{city}{city && state ? ', ' : ''}{state} {zip}{beds > 0 && ` · ${beds} bed`}{baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}{sqft > 0 && ` · ${sqft.toLocaleString()} sqft`}</p>
+                <h1 className="text-sm sm:text-base font-semibold text-slate-800 truncate">
+                  {address}{city ? `, ${city}` : ''}{state ? `, ${state}` : ''}{zip ? ` ${zip}` : ''}
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-500 truncate">{beds > 0 && `${beds} bed`}{baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}{sqft > 0 && ` · ${sqft.toLocaleString()} sqft`}</p>
               </div>
             </div>
             <div className="flex items-center bg-slate-100 rounded-lg p-1 flex-shrink-0 self-end sm:self-auto">

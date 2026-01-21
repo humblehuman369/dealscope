@@ -539,10 +539,11 @@ export function LTRWorksheet({
                 ← Back
               </button>
               <div className="min-w-0 flex-1">
-                <h1 className="text-sm sm:text-base font-semibold text-slate-800 truncate">{address}</h1>
+                <h1 className="text-sm sm:text-base font-semibold text-slate-800 truncate">
+                  {address}{city ? `, ${city}` : ''}{state ? `, ${state}` : ''}{zip ? ` ${zip}` : ''}
+                </h1>
                 <p className="text-xs sm:text-sm text-slate-500 truncate">
-                  {city}{city && state ? ', ' : ''}{state} {zip}
-                  {beds > 0 && ` · ${beds} bed`}
+                  {beds > 0 && `${beds} bed`}
                   {baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}
                   {sqft > 0 && ` · ${sqft.toLocaleString()} sqft`}
                 </p>
