@@ -13,6 +13,9 @@ export type PropertyStatus =
   | 'archived'
 
 export interface PropertyDataSnapshot {
+  // Zillow Property ID for API calls
+  zpid?: string | number
+  
   // Address info (stored in snapshot for reliability)
   street?: string
   city?: string

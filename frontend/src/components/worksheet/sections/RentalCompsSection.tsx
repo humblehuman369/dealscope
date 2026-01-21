@@ -9,42 +9,35 @@ import {
 } from 'lucide-react'
 
 // ============================================
-// AXESSO API CONFIGURATION FOR RENTALS
-// ============================================
-// API Request: GET https://api.axesso.de/zil/similar-rent[?zpid][&url][&address]
-const API_CONFIG = {
-  baseUrl: 'https://api.axesso.de',
-  endpoints: {
-    similarRent: '/zil/similar-rent',
-  },
-  apiKey: process.env.NEXT_PUBLIC_AXESSO_API_KEY || '',
-  apiKeyHeader: 'axesso-api-key',
-}
-
-// ============================================
-// API SERVICE
+// API SERVICE - Uses Next.js proxy to avoid CORS
 // ============================================
 async function fetchRentalComps(params: { zpid?: string; url?: string; address?: string }) {
-  const url = new URL(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.similarRent}`)
+  // Use Next.js API route to proxy requests to Axesso (avoids CORS)
+  const url = new URL('/api/v1/axesso/similar-rent', window.location.origin)
   
   if (params.zpid) url.searchParams.append('zpid', params.zpid)
   if (params.url) url.searchParams.append('url', params.url)
   if (params.address) url.searchParams.append('address', params.address)
 
+  console.log('[RentalComps] Fetching from proxy:', url.toString())
+
   const response = await fetch(url.toString(), {
     method: 'GET',
     headers: {
-      [API_CONFIG.apiKeyHeader]: API_CONFIG.apiKey,
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
   })
 
+  const data = await response.json()
+
   if (!response.ok) {
-    throw new Error(`API Error ${response.status}`)
+    console.error('[RentalComps] API Error:', data)
+    throw new Error(data.error || `API Error ${response.status}`)
   }
 
-  return response.json()
+  console.log('[RentalComps] Success, results:', data.results?.length || 0)
+  return data
 }
 
 // ============================================
@@ -405,9 +398,12 @@ export function RentalCompsSection() {
     longitude: snapshot?.longitude || 0,
   }), [snapshot, propertyData, assumptions.purchasePrice])
 
+  // Get zpid from property data if available
+  const zpid = propertyData?.zpid?.toString() || snapshot?.zpid?.toString() || ''
+
   const fetchComps = useCallback(async () => {
-    if (!subject.address) {
-      setError('No property address available')
+    if (!subject.address && !zpid) {
+      setError('No property address or ID available')
       return
     }
     
@@ -415,8 +411,18 @@ export function RentalCompsSection() {
     setError(null)
     
     try {
-      const fullAddress = `${subject.address}, ${subject.city}, ${subject.state} ${subject.zip}`.trim()
-      const response = await fetchRentalComps({ address: fullAddress })
+      // Prefer zpid for more accurate results, fall back to address
+      const params: { zpid?: string; address?: string } = {}
+      if (zpid) {
+        params.zpid = zpid
+        console.log('[RentalComps] Using zpid:', zpid)
+      } else {
+        const fullAddress = `${subject.address}, ${subject.city}, ${subject.state} ${subject.zip}`.trim()
+        params.address = fullAddress
+        console.log('[RentalComps] Using address:', fullAddress)
+      }
+      
+      const response = await fetchRentalComps(params)
       const transformed = transformRentalResponse(response, subject)
       setComps(transformed)
       
@@ -424,11 +430,12 @@ export function RentalCompsSection() {
         setSelectedComps(transformed.slice(0, 3).map(c => c.id))
       }
     } catch (err) {
+      console.error('[RentalComps] Fetch error:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch rental comps')
     } finally {
       setLoading(false)
     }
-  }, [subject])
+  }, [subject, zpid])
 
   useEffect(() => {
     if (subject.address) {

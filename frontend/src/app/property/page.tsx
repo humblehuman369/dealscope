@@ -253,6 +253,8 @@ function PropertyContent() {
           full_address: fullAddress,
           status: 'watching',
           property_data_snapshot: {
+            // Zillow Property ID for API calls
+            zpid: property.zpid,
             // Include address in snapshot for reliability
             street: property.address,
             city: property.city,
@@ -380,6 +382,8 @@ function PropertyContent() {
         full_address: fullAddress,
         status: 'watching',
         property_data_snapshot: {
+          // Zillow Property ID for API calls
+          zpid: property.zpid,
           // Include address in snapshot for reliability
           street: property.address,
           city: property.city,

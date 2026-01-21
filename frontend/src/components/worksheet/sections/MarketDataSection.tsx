@@ -10,40 +10,33 @@ import {
 } from 'lucide-react'
 
 // ============================================
-// AXESSO API CONFIGURATION
-// ============================================
-// API Request: GET https://api.axesso.de/zil/market-data[?location]
-const API_CONFIG = {
-  baseUrl: 'https://api.axesso.de',
-  endpoints: {
-    marketData: '/zil/market-data',
-  },
-  apiKey: process.env.NEXT_PUBLIC_AXESSO_API_KEY || '',
-  apiKeyHeader: 'axesso-api-key',
-}
-
-// ============================================
-// API SERVICE
+// API SERVICE - Uses Next.js proxy to avoid CORS
 // ============================================
 async function fetchMarketData(location: string) {
-  const url = new URL(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.marketData}`)
+  // Use Next.js API route to proxy requests to Axesso (avoids CORS)
+  const url = new URL('/api/v1/axesso/market-data', window.location.origin)
   
   if (location) url.searchParams.append('location', location)
+
+  console.log('[MarketData] Fetching from proxy:', url.toString())
 
   const response = await fetch(url.toString(), {
     method: 'GET',
     headers: {
-      [API_CONFIG.apiKeyHeader]: API_CONFIG.apiKey,
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
   })
 
+  const data = await response.json()
+
   if (!response.ok) {
-    throw new Error(`API Error ${response.status}`)
+    console.error('[MarketData] API Error:', data)
+    throw new Error(data.error || `API Error ${response.status}`)
   }
 
-  return response.json()
+  console.log('[MarketData] Success')
+  return data
 }
 
 // ============================================
