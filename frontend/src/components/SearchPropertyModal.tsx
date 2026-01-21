@@ -77,11 +77,11 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
           {/* Header - IQ icon on left, text on right, left-aligned */}
           <div className="mb-8">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 flex-shrink-0 flex items-center justify-center">
+              <div className="w-[84px] h-[84px] flex-shrink-0 flex items-center justify-center">
                 <img 
                   src="/images/iq-brain-dark.png" 
                   alt="IQ" 
-                  className="w-[52px] h-[52px] object-contain"
+                  className="w-[78px] h-[78px] object-contain"
                   onError={(e) => {
                     // Fallback if image doesn't load
                     (e.target as HTMLImageElement).style.display = 'none';
