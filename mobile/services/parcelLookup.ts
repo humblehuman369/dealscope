@@ -140,7 +140,7 @@ export async function queryPropertiesAlongScanPath(
   coneAngle: number = 20
 ): Promise<ParcelData[]> {
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parcelLookup.ts:queryPropertiesAlongScanPath:entry',message:'Starting scan path query',data:{userLat,userLng,heading,estimatedDistance,coneAngle},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2-H4'})}).catch(()=>{});
+  console.log('[DEBUG-H2-H4] queryPropertiesAlongScanPath:entry', JSON.stringify({userLat,userLng,heading,estimatedDistance,coneAngle}));
   // #endregion
   
   const allProperties: Map<string, ParcelData> = new Map();
@@ -198,7 +198,7 @@ export async function queryPropertiesAlongScanPath(
   // #region agent log
   const successCount = results.filter(r => r.length > 0).length;
   const failCount = results.filter(r => r.length === 0).length;
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parcelLookup.ts:queryPropertiesAlongScanPath:afterPromises',message:'All geocode requests completed',data:{totalRequests:results.length,successCount,failCount},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3-H5'})}).catch(()=>{});
+  console.log('[DEBUG-H3-H5] queryPropertiesAlongScanPath:afterPromises', JSON.stringify({totalRequests:results.length,successCount,failCount}));
   // #endregion
   
   // Deduplicate by address and keep the best scoring version
@@ -228,7 +228,7 @@ export async function queryPropertiesAlongScanPath(
   console.log(`[ScanPath] Found ${uniqueProperties.length} unique properties`);
   
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parcelLookup.ts:queryPropertiesAlongScanPath:exit',message:'Scan path query complete',data:{totalSamples:samplePromises.length,uniquePropertiesFound:uniqueProperties.length,firstAddress:uniqueProperties[0]?.address},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1-H5'})}).catch(()=>{});
+  console.log('[DEBUG-H1-H5] queryPropertiesAlongScanPath:exit', JSON.stringify({totalSamples:samplePromises.length,uniquePropertiesFound:uniqueProperties.length,firstAddress:uniqueProperties[0]?.address}));
   // #endregion
   
   return uniqueProperties;
@@ -256,7 +256,7 @@ async function googleReverseGeocode(lat: number, lng: number): Promise<ParcelDat
   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latStr},${lngStr}&key=${GOOGLE_MAPS_API_KEY}`;
   
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parcelLookup.ts:googleReverseGeocode',message:'API call starting',data:{lat:latStr,lng:lngStr,hasApiKey:!!GOOGLE_MAPS_API_KEY,apiKeyLength:GOOGLE_MAPS_API_KEY?.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1-H2'})}).catch(()=>{});
+  console.log('[DEBUG-H1-H2] googleReverseGeocode:start', JSON.stringify({lat:latStr,lng:lngStr,hasApiKey:!!GOOGLE_MAPS_API_KEY,apiKeyLength:GOOGLE_MAPS_API_KEY?.length}));
   // #endregion
   
   let response;
@@ -264,13 +264,13 @@ async function googleReverseGeocode(lat: number, lng: number): Promise<ParcelDat
     response = await axios.get(url, { timeout: 10000 });
   } catch (axiosErr: any) {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parcelLookup.ts:googleReverseGeocode:catch',message:'Axios request failed',data:{error:axiosErr?.message,code:axiosErr?.code,lat:latStr,lng:lngStr},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
+    console.log('[DEBUG-H5] googleReverseGeocode:error', JSON.stringify({error:axiosErr?.message,code:axiosErr?.code,lat:latStr,lng:lngStr}));
     // #endregion
     throw axiosErr;
   }
   
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'parcelLookup.ts:googleReverseGeocode:response',message:'API response received',data:{status:response.data.status,resultsCount:response.data.results?.length,errorMessage:response.data.error_message},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3'})}).catch(()=>{});
+  console.log('[DEBUG-H3] googleReverseGeocode:response', JSON.stringify({status:response.data.status,resultsCount:response.data.results?.length,errorMessage:response.data.error_message}));
   // #endregion
   
   if (response.data.status !== 'OK' || !response.data.results?.length) {
