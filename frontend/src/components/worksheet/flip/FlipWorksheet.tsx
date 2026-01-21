@@ -329,7 +329,7 @@ export function FlipWorksheet({
             </div>
           </>
         ) : (
-        <div className="grid grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
+        <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">
           
           {/* LEFT COLUMN */}
           <div className="space-y-3">
