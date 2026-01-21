@@ -58,6 +58,9 @@ export function WorksheetTabNav({
 }: WorksheetTabNavProps) {
   const router = useRouter()
   const { activeSection, setActiveSection, propertyData } = useWorksheetStore()
+  // #region agent log
+  useEffect(() => { fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'WorksheetTabNav.tsx:60',message:'TabNav mounted/updated',data:{zpid,zpidType:typeof zpid,propertyId,strategy,propertyDataFullAddress:propertyData?.full_address,propertyDataZpid:propertyData?.zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C'})}).catch(()=>{}); }, [zpid, propertyId, propertyData]);
+  // #endregion
   // Tabs are enabled for all strategies (removed ltr-only restriction)
   const isTabsEnabled = true
   
@@ -123,6 +126,9 @@ export function WorksheetTabNav({
       const fullAddress = propertyData?.full_address || ''
       const addressParam = fullAddress ? `?address=${encodeURIComponent(fullAddress)}` : ''
       const propertyRoute = zpid ? `/property/${zpid}${addressParam}` : `/worksheet/${propertyId}`
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'WorksheetTabNav.tsx:125',message:'Details tab clicked',data:{zpid,zpidType:typeof zpid,propertyId,fullAddress,addressParam,propertyRoute,propertyDataKeys:propertyData?Object.keys(propertyData):null},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
+      // #endregion
       router.push(propertyRoute)
       return
     }
