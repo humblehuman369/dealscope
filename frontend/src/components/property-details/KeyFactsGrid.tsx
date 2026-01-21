@@ -2,7 +2,8 @@
 
 import { 
   DollarSign, Grid3X3, Home, Layers, TrendingUp, Building, 
-  Shield, Receipt, Car, Flame, Wind, Tag 
+  Shield, Receipt, Car, Flame, Wind, Tag,
+  LucideIcon
 } from 'lucide-react'
 import { PropertyData } from './types'
 import { formatCurrency, formatNumber, formatPropertyType } from './utils'
@@ -15,7 +16,7 @@ interface FactItem {
   label: string
   value: string
   sublabel?: string
-  icon: React.ComponentType<{ size?: number; className?: string }>
+  icon: LucideIcon
   highlight?: boolean
 }
 
