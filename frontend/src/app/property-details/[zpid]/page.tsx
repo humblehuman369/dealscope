@@ -9,43 +9,51 @@ import {
 /**
  * Property Details Page
  * 
- * Dynamic route: /property-details/[zpid]
- * Fetches comprehensive property data from AXESSO API using ZPID.
+ * Dynamic route: /property-details/[zpid]?address=...
+ * Fetches comprehensive property data using ZPID and address.
  */
 
 interface PageProps {
   params: Promise<{ zpid: string }>
+  searchParams: Promise<{ address?: string }>
 }
 
-// Enable static generation for common properties
+// Enable dynamic rendering
 export const dynamic = 'force-dynamic'
-export const revalidate = 3600 // Revalidate every hour
 
 /**
  * Fetch property data from our API route
  */
-async function getPropertyData(zpid: string): Promise<PropertyData | null> {
+async function getPropertyData(zpid: string, address?: string): Promise<PropertyData | null> {
   try {
     // Use absolute URL for server-side fetch
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const response = await fetch(`${baseUrl}/api/v1/property-details/${zpid}`, {
-      next: { revalidate: 3600 }
+    const url = new URL(`${baseUrl}/api/v1/property-details/${zpid}`)
+    if (address) {
+      url.searchParams.set('address', address)
+    }
+    
+    console.log('[Property Details Page] Fetching:', url.toString())
+    
+    const response = await fetch(url.toString(), {
+      cache: 'no-store'
     })
 
     if (!response.ok) {
-      console.error(`Failed to fetch property: ${response.status}`)
+      console.error(`[Property Details Page] Failed to fetch: ${response.status}`)
       return null
     }
 
     const result = await response.json()
     
     if (!result.success || !result.data) {
+      console.error('[Property Details Page] No data in response')
       return null
     }
 
     return result.data as PropertyData
   } catch (error) {
-    console.error('Error fetching property:', error)
+    console.error('[Property Details Page] Error:', error)
     return null
   }
 }
@@ -68,8 +76,8 @@ export async function generateMetadata({ params }: PageProps) {
  * Property Details Content Component
  * Separated to enable Suspense boundary
  */
-async function PropertyDetailsContent({ zpid }: { zpid: string }) {
-  const property = await getPropertyData(zpid)
+async function PropertyDetailsContent({ zpid, address }: { zpid: string; address?: string }) {
+  const property = await getPropertyData(zpid, address)
 
   if (!property) {
     notFound()
@@ -81,12 +89,13 @@ async function PropertyDetailsContent({ zpid }: { zpid: string }) {
 /**
  * Main Page Component
  */
-export default async function PropertyDetailsPage({ params }: PageProps) {
+export default async function PropertyDetailsPage({ params, searchParams }: PageProps) {
   const { zpid } = await params
+  const { address } = await searchParams
 
   return (
     <Suspense fallback={<PropertyDetailsSkeleton />}>
-      <PropertyDetailsContent zpid={zpid} />
+      <PropertyDetailsContent zpid={zpid} address={address} />
     </Suspense>
   )
 }

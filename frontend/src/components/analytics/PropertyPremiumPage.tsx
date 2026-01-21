@@ -267,7 +267,7 @@ export function PropertyPremiumPage({
           {/* View Full Details Link */}
           {property.zpid && (
             <Link 
-              href={`/property-details/${property.zpid}`}
+              href={`/property-details/${property.zpid}?address=${encodeURIComponent(`${property.address}, ${property.city}, ${property.state} ${property.zipCode}`)}`}
               className="inline-flex items-center gap-1.5 mt-2 text-sm font-medium text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors"
             >
               <Info className="w-4 h-4" />

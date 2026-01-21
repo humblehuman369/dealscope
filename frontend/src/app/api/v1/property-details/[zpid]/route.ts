@@ -3,13 +3,13 @@ import { NextRequest, NextResponse } from 'next/server'
 /**
  * Property Details API Route
  * 
- * Fetches comprehensive property data from AXESSO Zillow API using ZPID.
+ * Fetches comprehensive property data by proxying to the backend.
+ * Uses address for property search and zpid for photos.
  * 
- * GET /api/v1/property-details/[zpid]
+ * GET /api/v1/property-details/[zpid]?address=...
  */
 
-const AXESSO_API_KEY = process.env.AXESSO_API_KEY || ''
-const AXESSO_BASE_URL = process.env.AXESSO_URL || 'https://api.axesso.de/zil'
+const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.railway.app'
 
 interface RouteContext {
   params: Promise<{ zpid: string }>
@@ -20,6 +20,10 @@ export async function GET(
   context: RouteContext
 ) {
   const { zpid } = await context.params
+  const { searchParams } = new URL(request.url)
+  const address = searchParams.get('address')
+
+  console.log('[Property Details API] Request - zpid:', zpid, 'address:', address)
 
   if (!zpid) {
     return NextResponse.json(
@@ -28,62 +32,45 @@ export async function GET(
     )
   }
 
-  if (!AXESSO_API_KEY) {
-    console.error('AXESSO_API_KEY not configured')
-    return NextResponse.json(
-      { success: false, error: 'API configuration error' },
-      { status: 500 }
-    )
-  }
-
-  const headers = {
-    'axesso-api-key': AXESSO_API_KEY,
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  }
-
   try {
-    // Fetch property details, price/tax history, and schools in parallel
-    const [propertyRes, historyRes, schoolsRes, photosRes] = await Promise.allSettled([
-      fetch(`${AXESSO_BASE_URL}/property-v2?zpid=${zpid}`, { headers, next: { revalidate: 3600 } }),
-      fetch(`${AXESSO_BASE_URL}/price-tax-history?zpid=${zpid}`, { headers, next: { revalidate: 3600 } }),
-      fetch(`${AXESSO_BASE_URL}/schools?zpid=${zpid}`, { headers, next: { revalidate: 86400 } }),
-      fetch(`${AXESSO_BASE_URL}/photos?zpid=${zpid}`, { headers, next: { revalidate: 86400 } }),
+    // Fetch property data and photos in parallel
+    const [propertyRes, photosRes] = await Promise.allSettled([
+      // Fetch property data via backend search endpoint (if address available)
+      address ? fetch(`${BACKEND_URL}/api/v1/properties/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address }),
+      }) : Promise.resolve(null),
+      // Fetch photos via backend photos endpoint
+      fetch(`${BACKEND_URL}/api/v1/photos?zpid=${zpid}`),
     ])
 
-    // Process property details
+    // Process property data
     let propertyData: Record<string, unknown> | null = null
-    if (propertyRes.status === 'fulfilled' && propertyRes.value.ok) {
+    if (propertyRes.status === 'fulfilled' && propertyRes.value && 'ok' in propertyRes.value && propertyRes.value.ok) {
       propertyData = await propertyRes.value.json()
+      console.log('[Property Details API] Property data received')
+    } else {
+      console.log('[Property Details API] Failed to fetch property data')
+    }
+
+    // Process photos
+    let photosData: { photos?: { url?: string }[] } | null = null
+    if (photosRes.status === 'fulfilled' && photosRes.value.ok) {
+      photosData = await photosRes.value.json()
+      console.log('[Property Details API] Photos received:', photosData?.photos?.length || 0)
     }
 
     if (!propertyData) {
+      // If no property data from search, return error
       return NextResponse.json(
-        { success: false, error: 'Property not found' },
+        { success: false, error: 'Property not found. Please provide a valid address.' },
         { status: 404 }
       )
     }
 
-    // Process price/tax history
-    let historyData: Record<string, unknown> | null = null
-    if (historyRes.status === 'fulfilled' && historyRes.value.ok) {
-      historyData = await historyRes.value.json()
-    }
-
-    // Process schools
-    let schoolsData: Record<string, unknown> | null = null
-    if (schoolsRes.status === 'fulfilled' && schoolsRes.value.ok) {
-      schoolsData = await schoolsRes.value.json()
-    }
-
-    // Process photos
-    let photosData: Record<string, unknown> | null = null
-    if (photosRes.status === 'fulfilled' && photosRes.value.ok) {
-      photosData = await photosRes.value.json()
-    }
-
-    // Normalize and combine data
-    const normalizedProperty = normalizePropertyData(propertyData, historyData, schoolsData, photosData)
+    // Normalize the property data
+    const normalizedProperty = normalizePropertyData(propertyData, photosData, zpid)
 
     return NextResponse.json({
       success: true,
@@ -91,7 +78,7 @@ export async function GET(
     })
 
   } catch (error) {
-    console.error('Error fetching property:', error)
+    console.error('[Property Details API] Error:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch property data' },
       { status: 500 }
@@ -100,188 +87,145 @@ export async function GET(
 }
 
 /**
- * Normalize AXESSO API responses into our PropertyData format
+ * Normalize backend API response into PropertyData format
  */
 function normalizePropertyData(
   property: Record<string, unknown>,
-  history: Record<string, unknown> | null,
-  schools: Record<string, unknown> | null,
-  photos: Record<string, unknown> | null
+  photos: { photos?: { url?: string }[] } | null,
+  zpid: string
 ) {
-  // Extract photos from various possible formats
-  let images: string[] = []
-  if (photos && Array.isArray((photos as { photos?: unknown[] }).photos)) {
-    images = (photos as { photos: { url?: string; mixedSources?: { jpeg?: { url?: string }[] } }[] }).photos
-      .map(p => p.url || (p.mixedSources?.jpeg?.[0]?.url))
-      .filter((url): url is string => !!url)
-  } else if (property && Array.isArray((property as { photos?: unknown[] }).photos)) {
-    images = ((property as { photos: { url?: string }[] }).photos)
-      .map(p => p.url)
-      .filter((url): url is string => !!url)
-  } else if (property && Array.isArray((property as { responsivePhotos?: unknown[] }).responsivePhotos)) {
-    images = ((property as { responsivePhotos: { mixedSources?: { jpeg?: { url?: string }[] } }[] }).responsivePhotos)
-      .map(p => p.mixedSources?.jpeg?.[0]?.url)
-      .filter((url): url is string => !!url)
-  }
-
-  // Extract price history
-  let priceHistory: { date: string; event: string; price: number; source: string; priceChangeRate?: number }[] = []
-  if (history && Array.isArray((history as { priceHistory?: unknown[] }).priceHistory)) {
-    priceHistory = ((history as { priceHistory: { date?: string; event?: string; price?: number; source?: string; priceChangeRate?: number }[] }).priceHistory)
-      .filter(item => item.date && item.price)
-      .map(item => ({
-        date: item.date || '',
-        event: item.event || 'Price event',
-        price: item.price || 0,
-        source: item.source || 'Public Record',
-        priceChangeRate: item.priceChangeRate || 0
-      }))
-  }
-
-  // Extract tax history
-  let taxHistory: { year: number; taxPaid: number; assessedValue: number; landValue?: number; improvementValue?: number }[] = []
-  if (history && Array.isArray((history as { taxHistory?: unknown[] }).taxHistory)) {
-    taxHistory = ((history as { taxHistory: { time?: number; taxPaid?: number; value?: number; taxIncreaseRate?: number }[] }).taxHistory)
-      .filter(item => item.time && item.taxPaid)
-      .map(item => ({
-        year: new Date(item.time || 0).getFullYear(),
-        taxPaid: item.taxPaid || 0,
-        assessedValue: item.value || 0
-      }))
-  }
-
-  // Extract schools
-  let schoolsArray: { name: string; level: string; grades: string; rating: number; distance: number; type: string; link?: string }[] = []
-  if (schools && Array.isArray((schools as { schools?: unknown[] }).schools)) {
-    schoolsArray = ((schools as { schools: { name?: string; level?: string; grades?: string; rating?: number; distance?: string; type?: string; link?: string }[] }).schools)
-      .map(school => ({
-        name: school.name || '',
-        level: school.level || 'Unknown',
-        grades: school.grades || '',
-        rating: school.rating || 0,
-        distance: parseFloat(school.distance || '0'),
-        type: school.type || 'Public',
-        link: school.link
-      }))
-  }
-
-  // Cast to typed object for easier access
+  // Type the property data
   const p = property as {
-    zpid?: number | string
-    streetAddress?: string
-    address?: { streetAddress?: string; city?: string; state?: string; zipcode?: string }
-    city?: string
-    state?: string
-    zipcode?: string
-    neighborhood?: string
-    county?: string
-    price?: number
-    homeStatus?: string
-    daysOnZillow?: number
-    views?: number
-    saveCount?: number
-    bedrooms?: number
-    bathrooms?: number
-    livingArea?: number
-    lotAreaValue?: number
-    lotAreaUnit?: string
-    yearBuilt?: number
-    homeType?: string
-    stories?: number
-    zestimate?: number
-    rentZestimate?: number
-    taxAssessedValue?: number
-    propertyTaxRate?: number
-    annualHomeownersInsurance?: number
-    monthlyHoaFee?: number
-    hoaFee?: number
-    heating?: string[]
-    cooling?: string[]
-    parking?: { parkingFeatures?: string[] }
-    parkingSpaces?: number
-    flooring?: string[]
-    appliances?: string[]
-    interiorFeatures?: string[]
-    exteriorFeatures?: string[]
-    constructionMaterials?: string[]
-    roof?: string
-    foundation?: string
-    isWaterfront?: boolean
-    waterfrontFeatures?: string[]
-    latitude?: number
-    longitude?: number
+    zpid?: string | number
+    address?: {
+      street?: string
+      city?: string
+      state?: string
+      zip_code?: string
+    }
+    details?: {
+      bedrooms?: number
+      bathrooms?: number
+      square_footage?: number
+      year_built?: number
+      property_type?: string
+      lot_size?: number
+      stories?: number
+    }
+    valuations?: {
+      current_value_avm?: number
+      zestimate?: number
+      rent_zestimate?: number
+      tax_assessed_value?: number
+      arv?: number
+    }
+    rentals?: {
+      monthly_rent_ltr?: number
+      average_rent?: number
+      average_daily_rate?: number
+      occupancy_rate?: number
+    }
+    market?: {
+      property_taxes_annual?: number
+      hoa_fee?: number
+    }
+    features?: {
+      heating?: string[]
+      cooling?: string[]
+      parking?: string[]
+      flooring?: string[]
+      appliances?: string[]
+      interior?: string[]
+      exterior?: string[]
+      construction?: string[]
+      roof?: string
+      foundation?: string
+      waterfront?: boolean
+      waterfront_features?: string[]
+    }
     description?: string
-    photoCount?: number
-    listingAgent?: { name?: string; phone?: string; brokerage?: string }
-    mlsId?: string
-    datePosted?: string
+    listing_agent?: {
+      name?: string
+      phone?: string
+      brokerage?: string
+    }
+    mls_id?: string
+    list_date?: string
   }
 
-  const streetAddress = p.streetAddress || p.address?.streetAddress || ''
-  const city = p.city || p.address?.city || ''
-  const state = p.state || p.address?.state || ''
-  const zipcode = p.zipcode || p.address?.zipcode || ''
-  const price = p.price || p.zestimate || 0
-  const livingArea = p.livingArea || 0
-  const lotSize = p.lotAreaValue || 0
+  // Extract photos
+  let images: string[] = []
+  if (photos?.photos && Array.isArray(photos.photos)) {
+    images = photos.photos
+      .map(photo => photo.url)
+      .filter((url): url is string => !!url)
+  }
+
+  // Fallback photos
+  if (images.length === 0) {
+    images = getPlaceholderImages()
+  }
+
+  const streetAddress = p.address?.street || ''
+  const city = p.address?.city || ''
+  const state = p.address?.state || ''
+  const zipcode = p.address?.zip_code || ''
+  const price = p.valuations?.current_value_avm || p.valuations?.zestimate || 0
+  const livingArea = p.details?.square_footage || 0
 
   return {
-    zpid: p.zpid || '',
+    zpid: p.zpid || zpid,
     address: {
       streetAddress,
       city,
       state,
       zipcode,
-      neighborhood: p.neighborhood,
-      county: p.county
     },
     price,
-    listingStatus: p.homeStatus || 'FOR_SALE',
-    daysOnZillow: p.daysOnZillow,
-    views: p.views,
-    saves: p.saveCount,
-    bedrooms: p.bedrooms || 0,
-    bathrooms: p.bathrooms || 0,
+    listingStatus: 'FOR_SALE',
+    daysOnZillow: undefined,
+    views: undefined,
+    saves: undefined,
+    bedrooms: p.details?.bedrooms || 0,
+    bathrooms: p.details?.bathrooms || 0,
     livingArea,
-    lotSize,
-    lotSizeAcres: lotSize ? Math.round(lotSize / 43560 * 100) / 100 : undefined,
-    yearBuilt: p.yearBuilt || 0,
-    propertyType: p.homeType || 'SINGLE_FAMILY',
-    stories: p.stories,
-    zestimate: p.zestimate,
-    rentZestimate: p.rentZestimate,
+    lotSize: p.details?.lot_size,
+    lotSizeAcres: p.details?.lot_size ? Math.round(p.details.lot_size / 43560 * 100) / 100 : undefined,
+    yearBuilt: p.details?.year_built || 0,
+    propertyType: p.details?.property_type || 'SINGLE_FAMILY',
+    stories: p.details?.stories,
+    zestimate: p.valuations?.zestimate,
+    rentZestimate: p.valuations?.rent_zestimate || p.rentals?.monthly_rent_ltr,
     pricePerSqft: livingArea ? Math.round(price / livingArea) : undefined,
-    annualTax: p.taxAssessedValue && p.propertyTaxRate 
-      ? Math.round(p.taxAssessedValue * p.propertyTaxRate / 100) 
-      : taxHistory[0]?.taxPaid,
-    taxAssessedValue: p.taxAssessedValue,
-    taxYear: taxHistory[0]?.year || new Date().getFullYear(),
-    hoaFee: p.monthlyHoaFee || p.hoaFee,
-    hoaFrequency: p.monthlyHoaFee ? 'monthly' : 'mo',
-    heating: p.heating || [],
-    cooling: p.cooling || [],
-    parking: p.parking?.parkingFeatures || [],
-    parkingSpaces: p.parkingSpaces,
-    flooring: p.flooring || [],
-    appliances: p.appliances || [],
-    interiorFeatures: p.interiorFeatures || [],
-    exteriorFeatures: p.exteriorFeatures || [],
-    construction: p.constructionMaterials || [],
-    roof: p.roof,
-    foundation: p.foundation,
-    isWaterfront: p.isWaterfront,
-    waterfrontFeatures: p.waterfrontFeatures,
-    latitude: p.latitude,
-    longitude: p.longitude,
+    annualTax: p.market?.property_taxes_annual,
+    taxAssessedValue: p.valuations?.tax_assessed_value,
+    taxYear: new Date().getFullYear(),
+    hoaFee: p.market?.hoa_fee,
+    hoaFrequency: 'monthly',
+    heating: p.features?.heating || [],
+    cooling: p.features?.cooling || [],
+    parking: p.features?.parking || [],
+    parkingSpaces: p.features?.parking?.length,
+    flooring: p.features?.flooring || [],
+    appliances: p.features?.appliances || [],
+    interiorFeatures: p.features?.interior || [],
+    exteriorFeatures: p.features?.exterior || [],
+    construction: p.features?.construction || [],
+    roof: p.features?.roof,
+    foundation: p.features?.foundation,
+    isWaterfront: p.features?.waterfront,
+    waterfrontFeatures: p.features?.waterfront_features,
+    latitude: undefined,
+    longitude: undefined,
     description: p.description || '',
-    images: images.length > 0 ? images : getPlaceholderImages(),
-    totalPhotos: p.photoCount || images.length,
-    listingAgent: p.listingAgent,
-    mlsId: p.mlsId,
-    listDate: p.datePosted,
-    priceHistory,
-    taxHistory,
-    schools: schoolsArray
+    images,
+    totalPhotos: images.length,
+    listingAgent: p.listing_agent,
+    mlsId: p.mls_id,
+    listDate: p.list_date,
+    priceHistory: [],
+    taxHistory: [],
+    schools: []
   }
 }
 
