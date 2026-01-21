@@ -419,18 +419,8 @@ export function SalesCompsSection() {
   // Get zpid from property data if available
   const zpid = propertyData?.zpid?.toString() || snapshot?.zpid?.toString() || ''
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SalesCompsSection.tsx:421',message:'SalesCompsSection render',data:{hasPropertyData:!!propertyData,zpid,subjectAddress:subject.address,subjectCity:subject.city,subjectState:subject.state,hasSnapshot:!!snapshot,snapshotZpid:snapshot?.zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B'})}).catch(()=>{});
-  // #endregion
-
   const fetchComps = useCallback(async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SalesCompsSection.tsx:fetchComps',message:'fetchComps called',data:{zpid,subjectAddress:subject.address,hasPropertyData:!!propertyData},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
     if (!subject.address && !zpid) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SalesCompsSection.tsx:noAddressOrZpid',message:'No address or zpid',data:{zpid,subjectAddress:subject.address},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B'})}).catch(()=>{});
-      // #endregion
       setError('No property address or ID available')
       return
     }
@@ -450,16 +440,7 @@ export function SalesCompsSection() {
         console.log('[SalesComps] Using address:', fullAddress)
       }
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SalesCompsSection.tsx:beforeApiCall',message:'Calling API',data:{params},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-      
       const response = await fetchSimilarSold(params)
-      
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SalesCompsSection.tsx:afterApiCall',message:'API response received',data:{hasResults:!!response.results,resultsLength:response.results?.length,responseKeys:Object.keys(response||{})},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C,D'})}).catch(()=>{});
-      // #endregion
-      
       const transformed = transformApiResponse(response, subject)
       setComps(transformed)
       
@@ -476,9 +457,6 @@ export function SalesCompsSection() {
   }, [subject, zpid])
 
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SalesCompsSection.tsx:useEffect',message:'useEffect mount',data:{subjectAddress:subject.address,willFetch:!!subject.address},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
     if (subject.address) {
       fetchComps()
     }

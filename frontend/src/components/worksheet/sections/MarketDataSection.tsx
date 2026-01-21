@@ -483,18 +483,8 @@ export function MarketDataSection() {
   // Format location as "City, State" for the API
   const location = city && state ? `${city}, ${state}` : city || ''
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MarketDataSection.tsx:485',message:'MarketDataSection render',data:{hasPropertyData:!!propertyData,propertyDataKeys:propertyData?Object.keys(propertyData):[],city,state,location,hasSnapshot:!!snapshot,snapshotCity:snapshot?.city,snapshotState:snapshot?.state,addressCity:propertyData?.address_city,addressState:propertyData?.address_state},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C'})}).catch(()=>{});
-  // #endregion
-
   const fetchData = useCallback(async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MarketDataSection.tsx:fetchData',message:'fetchData called',data:{location,city,state,hasPropertyData:!!propertyData},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
     if (!location) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MarketDataSection.tsx:noLocation',message:'No location - setting error',data:{location,city,state},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C,D'})}).catch(()=>{});
-      // #endregion
       setError('No location information available')
       return
     }
@@ -514,9 +504,6 @@ export function MarketDataSection() {
   }, [location])
 
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'MarketDataSection.tsx:useEffect',message:'useEffect mount',data:{city,state,location,willFetch:!!city},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D,E'})}).catch(()=>{});
-    // #endregion
     if (city) {
       fetchData()
     }
