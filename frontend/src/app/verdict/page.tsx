@@ -14,7 +14,7 @@ import {
   IQVerdictScreen, 
   IQProperty, 
   IQStrategy,
-  generateMockAnalysis,
+  calculateDynamicAnalysis,
   STRATEGY_ROUTE_MAP,
 } from '@/components/iq-verdict'
 
@@ -85,7 +85,8 @@ function VerdictContent() {
         }
 
         // Get monthly rent (used for estimating price if needed)
-        const monthlyRent = data.rentals?.monthly_rent_ltr || data.rentals?.average_rent || 2500
+        const monthlyRentLTR = data.rentals?.monthly_rent_ltr || data.rentals?.average_rent || null
+        const monthlyRent = monthlyRentLTR || 2500
         const estimatedValueFromRent = monthlyRent / 0.007
 
         // Get the best available price
@@ -95,7 +96,22 @@ function VerdictContent() {
           || data.valuations?.last_sale_price
           || estimatedValueFromRent
 
-        // Build IQProperty from API data
+        // Get property taxes from API data
+        const propertyTaxes = data.taxes?.annual_tax_amount 
+          || data.taxes?.tax_amount 
+          || null
+
+        // Get insurance estimate if available
+        const insurance = data.expenses?.insurance_annual || null
+
+        // Get STR data if available
+        const averageDailyRate = data.rentals?.str_adr || data.rentals?.average_daily_rate || null
+        const occupancyRate = data.rentals?.str_occupancy || data.rentals?.occupancy_rate || null
+
+        // Get ARV if available (for flip/BRRRR strategies)
+        const arv = data.valuations?.arv || data.valuations?.after_repair_value || null
+
+        // Build IQProperty from API data with enriched data for dynamic scoring
         const propertyData: IQProperty = {
           id: data.property_id,
           address: data.address?.street || decodeURIComponent(addressParam).split(',')[0] || decodeURIComponent(addressParam),
@@ -110,6 +126,13 @@ function VerdictContent() {
           yearBuilt: data.details?.year_built,
           lotSize: data.details?.lot_size,
           propertyType: data.details?.property_type,
+          // Enriched data for dynamic scoring
+          monthlyRent: monthlyRentLTR,
+          propertyTaxes,
+          insurance,
+          averageDailyRate,
+          occupancyRate: occupancyRate ? occupancyRate / 100 : undefined, // Convert from percentage
+          arv,
         }
 
         setProperty(propertyData)
@@ -135,8 +158,8 @@ function VerdictContent() {
     fetchPropertyData()
   }, [addressParam])
 
-  // Generate analysis from property data
-  const analysis = property ? generateMockAnalysis(property) : null
+  // Generate dynamic analysis from property data
+  const analysis = property ? calculateDynamicAnalysis(property) : null
 
   // Navigation handlers
   const handleBack = useCallback(() => {

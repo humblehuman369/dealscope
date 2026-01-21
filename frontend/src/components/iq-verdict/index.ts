@@ -27,5 +27,8 @@ export {
   getRankColor,
   getDealScoreColor,
   formatPrice,
-  generateMockAnalysis,
+  
+  // Analysis generators
+  calculateDynamicAnalysis,
+  generateMockAnalysis, // @deprecated - use calculateDynamicAnalysis
 } from './types'
