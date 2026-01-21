@@ -495,14 +495,15 @@ export function calculateDynamicAnalysis(property: IQProperty): IQAnalysisResult
   const price = property.price;
   
   // Use provided data or estimate from price
-  const monthlyRent = property.monthlyRent || price * 0.007; // 0.7% rule
-  const propertyTaxes = property.propertyTaxes || price * 0.012; // 1.2% estimate
-  const insurance = property.insurance || 1800; // Default estimate
-  const arv = property.arv || price * 1.15; // 15% above list
+  // Note: Use nullish coalescing (??) for numeric values to properly handle 0
+  const monthlyRent = property.monthlyRent ?? price * 0.007; // 0.7% rule
+  const propertyTaxes = property.propertyTaxes ?? price * 0.012; // 1.2% estimate
+  const insurance = property.insurance ?? 1800; // Default estimate
+  const arv = property.arv ?? price * 1.15; // 15% above list
   const rehabCost = price * 0.05; // 5% of price for light rehab
-  const averageDailyRate = property.averageDailyRate || (monthlyRent / 30) * 1.5;
-  const occupancyRate = property.occupancyRate || 0.65;
-  const beds = property.beds || 3;
+  const averageDailyRate = property.averageDailyRate ?? (monthlyRent / 30) * 1.5;
+  const occupancyRate = property.occupancyRate ?? 0.65; // Properly handles 0% occupancy
+  const beds = property.beds || 3; // beds=0 is invalid, so || is fine here
   
   // Calculate all strategies
   const strategyResults: StrategyCalculationResult[] = [

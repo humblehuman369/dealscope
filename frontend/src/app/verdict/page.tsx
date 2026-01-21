@@ -104,9 +104,9 @@ function VerdictContent() {
         // Get insurance estimate if available
         const insurance = data.expenses?.insurance_annual || null
 
-        // Get STR data if available
-        const averageDailyRate = data.rentals?.str_adr || data.rentals?.average_daily_rate || null
-        const occupancyRate = data.rentals?.str_occupancy || data.rentals?.occupancy_rate || null
+        // Get STR data if available (use null checks to properly handle 0 values)
+        const averageDailyRate = data.rentals?.str_adr ?? data.rentals?.average_daily_rate ?? null
+        const occupancyRate = data.rentals?.str_occupancy ?? data.rentals?.occupancy_rate ?? null
 
         // Get ARV if available (for flip/BRRRR strategies)
         const arv = data.valuations?.arv || data.valuations?.after_repair_value || null
@@ -131,7 +131,8 @@ function VerdictContent() {
           propertyTaxes,
           insurance,
           averageDailyRate,
-          occupancyRate: occupancyRate ? occupancyRate / 100 : undefined, // Convert from percentage
+          // Use null check (not truthy check) to properly handle 0% occupancy
+          occupancyRate: occupancyRate != null ? occupancyRate / 100 : undefined,
           arv,
         }
 
