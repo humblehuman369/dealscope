@@ -150,9 +150,10 @@ export function LTRWorksheet({
   const [capExPct, setCapExPct] = useState(0)
   const [hoaFees, setHoaFees] = useState(0)
   
-  const [viewMode, setViewMode] = useState<'guided' | 'showall'>('guided')
+  // Hybrid accordion mode: guided by default, but manual clicks override
   const [currentSection, setCurrentSection] = useState<number | null>(0)
   const [completedSections, setCompletedSections] = useState<Set<number>>(new Set([0]))
+  const [manualOverrides, setManualOverrides] = useState<Record<number, boolean>>({})
 
   // ============================================
   // CALCULATIONS
@@ -250,15 +251,25 @@ export function LTRWorksheet({
   // ============================================
   // SECTION NAVIGATION
   // ============================================
+  // Hybrid toggle: check if section is currently open, then toggle manual override
+  const isSectionOpen = useCallback((index: number) => {
+    // If user has manually set this section, use their preference
+    if (manualOverrides[index] !== undefined) {
+      return manualOverrides[index]
+    }
+    // Otherwise, use guided logic (current section is open)
+    return currentSection === index
+  }, [manualOverrides, currentSection])
+
   const toggleSection = useCallback((index: number) => {
-    if (viewMode === 'showall') return
-    if (currentSection === index) {
-      setCurrentSection(null)
-    } else {
-      setCurrentSection(index)
+    const currentlyOpen = isSectionOpen(index)
+    // Set manual override to opposite of current state
+    setManualOverrides(prev => ({ ...prev, [index]: !currentlyOpen }))
+    // Track as completed when opened
+    if (!currentlyOpen) {
       setCompletedSections(prev => new Set([...Array.from(prev), index]))
     }
-  }, [viewMode, currentSection])
+  }, [isSectionOpen])
 
   const goToNextSection = useCallback(() => {
     if (currentSection !== null && currentSection < SECTIONS.length - 1) {
@@ -443,8 +454,8 @@ export function LTRWorksheet({
     children: React.ReactNode
   }) => {
     const section = SECTIONS[index]
-    const isOpen = viewMode === 'showall' || currentSection === index
-    const isComplete = completedSections.has(index) && currentSection !== index
+    const isOpen = isSectionOpen(index)
+    const isComplete = completedSections.has(index) && !isOpen
     
     return (
       <div 
@@ -599,28 +610,6 @@ export function LTRWorksheet({
           </>
         ) : (
         <>
-          {/* View Toggle */}
-          <div className="flex justify-end mb-4">
-            <div className="flex items-center bg-slate-100 rounded-lg p-1">
-              <button 
-                onClick={() => setViewMode('guided')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                  viewMode === 'guided' ? 'bg-teal text-white' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Guided
-              </button>
-              <button 
-                onClick={() => setViewMode('showall')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
-                  viewMode === 'showall' ? 'bg-teal text-white' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Expand All
-              </button>
-            </div>
-          </div>
-          
           <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">
           
           {/* LEFT COLUMN - Worksheet sections */}

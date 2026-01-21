@@ -137,11 +137,11 @@ export function StrWorksheet({
   const originalAdr = propertyData.averageDailyRate || inputs.average_daily_rate || 200
 
   // ============================================
-  // VIEW STATE
+  // VIEW STATE - Hybrid accordion mode
   // ============================================
-  const [viewMode, setViewMode] = useState<'guided' | 'showall'>('guided')
   const [currentSection, setCurrentSection] = useState<number | null>(0)
   const [completedSections, setCompletedSections] = useState<Set<number>>(new Set([0]))
+  const [manualOverrides, setManualOverrides] = useState<Record<number, boolean>>({})
 
   // ============================================
   // DERIVED CALCULATIONS
@@ -185,15 +185,21 @@ export function StrWorksheet({
   // ============================================
   // SECTION NAVIGATION
   // ============================================
+  // Hybrid toggle: check if section is currently open, then toggle manual override
+  const isSectionOpen = useCallback((index: number) => {
+    if (manualOverrides[index] !== undefined) {
+      return manualOverrides[index]
+    }
+    return currentSection === index
+  }, [manualOverrides, currentSection])
+
   const toggleSection = useCallback((index: number) => {
-    if (viewMode === 'showall') return
-    if (currentSection === index) {
-      setCurrentSection(null)
-    } else {
-      setCurrentSection(index)
+    const currentlyOpen = isSectionOpen(index)
+    setManualOverrides(prev => ({ ...prev, [index]: !currentlyOpen }))
+    if (!currentlyOpen) {
       setCompletedSections(prev => new Set([...Array.from(prev), index]))
     }
-  }, [viewMode, currentSection])
+  }, [isSectionOpen])
 
   const goToNextSection = useCallback(() => {
     if (currentSection !== null && currentSection < SECTIONS.length - 1) {
@@ -380,8 +386,8 @@ export function StrWorksheet({
     children: React.ReactNode
   }) => {
     const section = SECTIONS[index]
-    const isOpen = viewMode === 'showall' || currentSection === index
-    const isComplete = completedSections.has(index) && currentSection !== index
+    const isOpen = isSectionOpen(index)
+    const isComplete = completedSections.has(index) && !isOpen
     
     return (
       <div 
@@ -540,28 +546,6 @@ export function StrWorksheet({
           </>
         ) : (
         <>
-          {/* View Toggle */}
-          <div className="flex justify-end mb-4">
-            <div className="flex items-center bg-slate-100 rounded-lg p-1">
-              <button 
-                onClick={() => setViewMode('guided')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                  viewMode === 'guided' ? 'bg-teal text-white' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Guided
-              </button>
-              <button 
-                onClick={() => setViewMode('showall')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
-                  viewMode === 'showall' ? 'bg-teal text-white' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Expand All
-              </button>
-            </div>
-          </div>
-          
           <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">
           
           {/* LEFT COLUMN - Worksheet sections */}
