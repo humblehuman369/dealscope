@@ -136,12 +136,26 @@ const MarketTemperatureGauge = ({ temperature }: { temperature: string }) => {
 // ============================================
 // SUMMARY STATS
 // ============================================
-const SummaryStats = ({ summary }: { summary: MarketPageData['summary'] }) => {
+const SummaryStats = ({ summary }: { summary: MarketPageData['summary'] | undefined }) => {
+  // Handle case where summary is undefined
+  if (!summary) {
+    return (
+      <div className="grid grid-cols-4 gap-3">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-white rounded-xl border border-slate-200 p-3 animate-pulse">
+            <div className="h-3 bg-slate-200 rounded w-16 mb-2" />
+            <div className="h-6 bg-slate-200 rounded w-20" />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
   const stats = [
-    { label: 'Median Rent', value: formatCurrency(summary.medianRent), sub: '/mo', icon: DollarSign, color: 'teal' },
-    { label: 'Monthly Change', value: formatCurrency(summary.monthlyChange), icon: summary.monthlyChange >= 0 ? TrendingUp : TrendingDown, color: summary.monthlyChange >= 0 ? 'teal' : 'red' },
-    { label: 'Yearly Change', value: formatPercent(summary.yearlyChange), icon: summary.yearlyChange >= 0 ? ArrowUpRight : ArrowDownRight, color: summary.yearlyChange >= 0 ? 'teal' : 'red' },
-    { label: 'Available', value: formatNumber(summary.availableRentals), sub: 'listings', icon: Home, color: 'slate' },
+    { label: 'Median Rent', value: formatCurrency(summary.medianRent ?? 0), sub: '/mo', icon: DollarSign, color: 'teal' },
+    { label: 'Monthly Change', value: formatCurrency(summary.monthlyChange ?? 0), icon: (summary.monthlyChange ?? 0) >= 0 ? TrendingUp : TrendingDown, color: (summary.monthlyChange ?? 0) >= 0 ? 'teal' : 'red' },
+    { label: 'Yearly Change', value: formatPercent(summary.yearlyChange ?? 0), icon: (summary.yearlyChange ?? 0) >= 0 ? ArrowUpRight : ArrowDownRight, color: (summary.yearlyChange ?? 0) >= 0 ? 'teal' : 'red' },
+    { label: 'Available', value: formatNumber(summary.availableRentals ?? 0), sub: 'listings', icon: Home, color: 'slate' },
   ]
 
   return (
@@ -168,15 +182,36 @@ const SummaryStats = ({ summary }: { summary: MarketPageData['summary'] }) => {
 // RENT TREND CHART
 // ============================================
 const RentTrendChart = ({ currentYear, prevYear }: { currentYear: MarketPageData['medianRentPriceOverTime']['currentYear']; prevYear: MarketPageData['medianRentPriceOverTime']['prevYear'] }) => {
+  // Handle empty arrays gracefully
   const allPrices = [...currentYear.map(d => d.price), ...prevYear.map(d => d.price)]
+  
+  // If no data, show placeholder
+  if (allPrices.length === 0) {
+    return (
+      <div className="bg-white rounded-xl border border-slate-200 p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4 text-teal-500" />
+            <h4 className="text-sm font-semibold text-slate-800">Rent Trend</h4>
+          </div>
+        </div>
+        <div className="h-40 flex items-center justify-center text-sm text-slate-400">
+          No trend data available
+        </div>
+      </div>
+    )
+  }
+
   const maxPrice = Math.max(...allPrices)
   const minPrice = Math.min(...allPrices)
-  const range = maxPrice - minPrice
+  const range = maxPrice - minPrice || 1 // Prevent division by zero
   const padding = range * 0.1
 
   const getY = (price: number) => 100 - ((price - minPrice + padding) / (range + padding * 2)) * 100
 
   const createPath = (data: typeof currentYear) => {
+    if (data.length === 0) return ''
+    if (data.length === 1) return `M 50 ${getY(data[0].price)}`
     return data.map((d, i) => {
       const x = (i / (data.length - 1)) * 100
       const y = getY(d.price)
@@ -186,7 +221,7 @@ const RentTrendChart = ({ currentYear, prevYear }: { currentYear: MarketPageData
 
   const lastCurrentPrice = currentYear[currentYear.length - 1]?.price || 0
   const lastPrevPrice = prevYear[prevYear.length - 1]?.price || 0
-  const yoyChange = ((lastCurrentPrice - lastPrevPrice) / lastPrevPrice) * 100
+  const yoyChange = lastPrevPrice > 0 ? ((lastCurrentPrice - lastPrevPrice) / lastPrevPrice) * 100 : 0
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-4">
@@ -352,11 +387,13 @@ const NearbyAreasComparison = ({ nearbyTrends, currentMedian, areaName }: { near
 // ============================================
 // IQ MARKET SCORE
 // ============================================
-const IQMarketScore = ({ summary, temperature }: { summary: MarketPageData['summary']; temperature: string }) => {
+const IQMarketScore = ({ summary, temperature }: { summary: MarketPageData['summary'] | undefined; temperature: string }) => {
   const tempScores: Record<string, number> = { 'Hot': 90, 'Warm': 75, 'Neutral': 50, 'Cool': 35, 'Cold': 20 }
   const tempScore = tempScores[temperature] || 50
-  const yoyScore = Math.min(100, Math.max(0, 50 + summary.yearlyChange * 3))
-  const supplyScore = summary.availableRentals > 1000 ? 70 : summary.availableRentals > 500 ? 50 : 30
+  const yearlyChange = summary?.yearlyChange ?? 0
+  const availableRentals = summary?.availableRentals ?? 0
+  const yoyScore = Math.min(100, Math.max(0, 50 + yearlyChange * 3))
+  const supplyScore = availableRentals > 1000 ? 70 : availableRentals > 500 ? 50 : 30
   const overallScore = Math.round((tempScore * 0.4 + yoyScore * 0.4 + supplyScore * 0.2))
 
   const getScoreLabel = (score: number) => {
@@ -400,11 +437,11 @@ const IQMarketScore = ({ summary, temperature }: { summary: MarketPageData['summ
             </div>
             <div className="flex justify-between py-1 border-b border-slate-100">
               <span className="text-slate-500">YoY Growth</span>
-              <span className="font-semibold text-teal-600 tabular-nums">{formatPercent(summary.yearlyChange)}</span>
+              <span className="font-semibold text-teal-600 tabular-nums">{formatPercent(yearlyChange)}</span>
             </div>
             <div className="flex justify-between py-1">
               <span className="text-slate-500">Supply</span>
-              <span className="font-semibold text-slate-700 tabular-nums">{formatNumber(summary.availableRentals)}</span>
+              <span className="font-semibold text-slate-700 tabular-nums">{formatNumber(availableRentals)}</span>
             </div>
           </div>
         </div>
