@@ -1,12 +1,19 @@
 'use client'
 
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
+import { useUIStore } from '@/stores'
 import { WorksheetExport } from './WorksheetExport'
 import {
   Edit3,
   Share2,
   Loader2,
   Check,
+  ArrowLeft,
+  ArrowLeftRight,
+  ChevronDown,
+  CheckCircle2,
 } from 'lucide-react'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 
@@ -15,10 +22,27 @@ interface WorksheetHeaderProps {
   propertyId: string
 }
 
+// Strategy definitions
+const strategies = [
+  { id: 'ltr', label: 'Long-term Rental' },
+  { id: 'str', label: 'Short-term Rental' },
+  { id: 'brrrr', label: 'BRRRR' },
+  { id: 'flip', label: 'Fix & Flip' },
+  { id: 'househack', label: 'House Hack' },
+  { id: 'wholesale', label: 'Wholesale' },
+]
+
 export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) {
+  const router = useRouter()
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  
   const { isDirty, isSaving, lastSaved, viewMode, setViewMode, isCalculating, calculationError, worksheetMetrics } =
     useWorksheetStore()
   const derived = useWorksheetDerived()
+  const { activeStrategy, setActiveStrategy } = useUIStore()
+
+  // Get current strategy label
+  const currentStrategy = strategies.find(s => s.id === activeStrategy) || strategies[0]
 
   const formatLastSaved = () => {
     if (!lastSaved) return null
@@ -48,59 +72,154 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
   const cocReturn = derived.cashOnCash || 0
   const dealScore = worksheetMetrics?.deal_score ?? 0
 
+  // Determine KPI card colors
+  const getKpiColor = (type: string, value: number) => {
+    switch (type) {
+      case 'cashFlow':
+        return value >= 0 ? 'default' : 'red'
+      case 'cocReturn':
+        return value >= 10 ? 'teal' : value < 0 ? 'red' : 'default'
+      case 'dealScore':
+        return value >= 7 ? 'teal' : value < 4 ? 'red' : 'default'
+      default:
+        return 'default'
+    }
+  }
+
+  const kpiCards = [
+    { label: 'LIST PRICE', value: formatCurrency(purchasePrice), color: 'teal' },
+    { label: 'CASH NEEDED', value: formatCurrency(cashNeeded), color: 'default' },
+    { label: 'ANNUAL PROFIT', value: formatCurrency(cashFlow), color: getKpiColor('cashFlow', cashFlow), subtitle: `${formatCurrency(monthlyCashFlow)}/mo` },
+    { label: 'CAP RATE', value: `${capRate.toFixed(1)}%`, color: 'default' },
+    { label: 'COC RETURN', value: `${cocReturn.toFixed(1)}%`, color: getKpiColor('cocReturn', cocReturn) },
+    { label: 'DEAL SCORE', value: String(Math.round(dealScore)), color: getKpiColor('dealScore', dealScore) },
+  ]
+
   return (
     <div className="worksheet-header-v2">
-      {/* Summary Cards Row */}
-      <div className="summary-cards">
-        <div className="summary-card">
-          <div className="summary-card-label">Purchase Price</div>
-          <div className="summary-card-value">{formatCurrency(purchasePrice)}</div>
-        </div>
-
-        <div className="summary-card">
-          <div className="summary-card-label">Cash Needed</div>
-          <div className="summary-card-value">{formatCurrency(cashNeeded)}</div>
-        </div>
-
-        <div className="summary-card">
-          <div className="summary-card-label">Cash Flow</div>
-          <div className={`summary-card-value ${cashFlow >= 0 ? 'positive' : 'negative'}`}>
-            {formatCurrency(cashFlow)}
+      {/* Page Title Row with Back Arrow + Strategy Switcher */}
+      <div className="bg-white border-b border-[var(--ws-border)] px-4 sm:px-6 py-4">
+        <div className="flex items-center justify-between gap-4">
+          {/* Left: Back Arrow + Page Title */}
+          <div className="flex items-center gap-3 min-w-0">
+            <button 
+              onClick={() => router.back()}
+              className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-[var(--ws-bg-alt)] transition-colors flex-shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5 text-[var(--ws-text-secondary)]" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold text-[var(--ws-text-primary)] truncate">
+                {currentStrategy.label} Analysis
+              </h1>
+              <p className="text-sm text-[var(--ws-text-secondary)] truncate">
+                {getDisplayAddress(property)}
+              </p>
+            </div>
           </div>
-          <div className="summary-card-subtitle">{formatCurrency(monthlyCashFlow)}/mo</div>
-        </div>
-
-        <div className="summary-card">
-          <div className="summary-card-label">Cap Rate</div>
-          <div className="summary-card-value">{capRate.toFixed(1)}%</div>
-        </div>
-
-        <div className="summary-card">
-          <div className="summary-card-label">CoC Return</div>
-          <div className={`summary-card-value ${cocReturn >= 10 ? 'positive' : ''}`}>
-            {cocReturn.toFixed(1)}%
+          
+          {/* Right: Strategy Switcher */}
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-2 bg-white border border-[var(--ws-border)] hover:border-[var(--iq-teal)] hover:bg-[var(--ws-accent-bg)] text-[var(--ws-text-primary)] px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              <ArrowLeftRight className="w-4 h-4 text-[var(--ws-text-secondary)]" />
+              <span className="hidden sm:inline">Switch Strategy</span>
+              <ChevronDown 
+                className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+            
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <>
+                {/* Backdrop to close dropdown */}
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={() => setIsDropdownOpen(false)}
+                />
+                <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-[var(--ws-border)] py-1 z-50">
+                  <div className="px-3 py-2 border-b border-[var(--ws-border-light)]">
+                    <span className="text-xs font-semibold text-[var(--ws-text-muted)] uppercase tracking-wider">
+                      Investment Strategies
+                    </span>
+                  </div>
+                  {strategies.map((strategy) => (
+                    <button
+                      key={strategy.id}
+                      onClick={() => {
+                        setActiveStrategy(strategy.id)
+                        setIsDropdownOpen(false)
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-[var(--ws-bg-alt)] transition-colors ${
+                        activeStrategy === strategy.id 
+                          ? 'bg-[var(--ws-accent-bg)] text-[var(--iq-teal)]' 
+                          : 'text-[var(--ws-text-primary)]'
+                      }`}
+                    >
+                      <span className="font-medium">{strategy.label}</span>
+                      {activeStrategy === strategy.id && (
+                        <CheckCircle2 className="w-4 h-4 ml-auto text-[var(--iq-teal)]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
+      </div>
 
-        <div className="summary-card highlight">
-          <div className="summary-card-label">Deal Score</div>
-          <div className="summary-card-value highlight">{Math.round(dealScore)}</div>
+      {/* KPI Cards Row */}
+      <div className="px-4 sm:px-6 py-4">
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-1">
+          {kpiCards.map((kpi, index) => (
+            <div 
+              key={index}
+              className={`flex-1 min-w-[120px] rounded-lg px-3 sm:px-4 py-3 text-center ${
+                kpi.color === 'teal' 
+                  ? 'bg-[var(--ws-accent-bg)] border border-[var(--iq-teal-light)]' 
+                  : kpi.color === 'red'
+                  ? 'bg-[var(--ws-negative-light)] border border-red-200'
+                  : 'bg-white border border-[var(--ws-border)]'
+              }`}
+            >
+              <div className="text-[10px] sm:text-xs text-[var(--ws-text-muted)] font-medium tracking-wide">
+                {kpi.label}
+              </div>
+              <div className={`text-base sm:text-lg font-semibold mt-0.5 ${
+                kpi.color === 'teal' 
+                  ? 'text-[var(--iq-teal)]' 
+                  : kpi.color === 'red'
+                  ? 'text-[var(--ws-negative)]'
+                  : 'text-[var(--ws-text-primary)]'
+              }`}>
+                {kpi.value}
+              </div>
+              {kpi.subtitle && (
+                <div className="text-[10px] text-[var(--ws-text-secondary)] mt-0.5">
+                  {kpi.subtitle}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
       {calculationError && (
-        <div className="mt-3 text-sm text-[var(--ws-negative)]">
+        <div className="px-4 sm:px-6 pb-2 text-sm text-[var(--ws-negative)]">
           Calculation error: {calculationError}
         </div>
       )}
       {isCalculating && !calculationError && (
-        <div className="mt-3 text-sm text-[var(--ws-text-secondary)]">
+        <div className="px-4 sm:px-6 pb-2 text-sm text-[var(--ws-text-secondary)]">
           Recalculating worksheet metrics...
         </div>
       )}
       
       {/* Actions Row */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between px-4 sm:px-6 pb-4">
         {/* View Toggle */}
         <div className="toggle-group">
           <button 
@@ -118,9 +237,9 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
         </div>
         
         {/* Right side actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Save indicator */}
-          <div className="flex items-center gap-2 text-sm text-[var(--ws-text-secondary)]">
+          <div className="hidden sm:flex items-center gap-2 text-sm text-[var(--ws-text-secondary)]">
             {isSaving ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
