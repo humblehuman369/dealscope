@@ -21,10 +21,6 @@ function AnalyzingContent() {
   const beds = searchParams.get('beds')
   const baths = searchParams.get('baths')
   const sqft = searchParams.get('sqft')
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'analyzing/page.tsx:params',message:'Analyzing page loaded with params',data:{address,price,beds,baths,sqft,rawSearchParams:searchParams.toString()},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-  // #endregion
 
   // Build property object from query params
   const property = useMemo((): IQProperty => ({

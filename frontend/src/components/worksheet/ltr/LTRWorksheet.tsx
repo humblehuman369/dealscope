@@ -122,9 +122,6 @@ export function LTRWorksheet({
   
   // Property data - use snapshot as primary source for reliability
   const propertyData = property.property_data_snapshot || {}
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LTRWorksheet.tsx:propertyData',message:'Property data loaded',data:{fullProperty:property,snapshot:propertyData,snapshotStreet:propertyData.street,propertyAddressStreet:property.address_street,propertyFullAddress:property.full_address},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,C'})}).catch(()=>{});
-  // #endregion
   const beds = propertyData.bedrooms || 0
   const baths = propertyData.bathrooms || 0
   const sqft = propertyData.sqft || 1

@@ -109,10 +109,6 @@ export function WorksheetTabNav({
   const handleTabClick = (tab: TabItem) => {
     if (!isTabsEnabled || tab.disabled) return
     
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'WorksheetTabNav.tsx:handleTabClick',message:'Tab clicked - checking propertyData',data:{tabId:tab.id,propertyData:propertyData,fullAddress:propertyData?.full_address,addressStreet:propertyData?.address_street,snapshot:propertyData?.property_data_snapshot},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
-    
     // Navigate to analyzing page for analyze tab - pass address so it's preserved
     if (tab.id === 'analyze') {
       const fullAddress = propertyData?.full_address || ''
@@ -127,9 +123,6 @@ export function WorksheetTabNav({
       const fullAddress = propertyData?.full_address || ''
       const addressParam = fullAddress ? `?address=${encodeURIComponent(fullAddress)}` : ''
       const propertyRoute = zpid ? `/property/${zpid}${addressParam}` : `/worksheet/${propertyId}`
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'WorksheetTabNav.tsx:property-details-nav',message:'Navigating to property page',data:{targetUrl:propertyRoute,zpid:zpid,fullAddress:fullAddress,propertyId:propertyId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
-      // #endregion
       router.push(propertyRoute)
       return
     }

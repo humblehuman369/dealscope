@@ -128,10 +128,6 @@ function VerdictContent() {
         // Parse address from URL parameter as fallback when API data is incomplete
         // This ensures city/state/zip are preserved even if API doesn't return them
         const parsedAddress = parseAddressString(addressParam)
-        
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'verdict/page.tsx:buildProperty',message:'Building property object',data:{addressParam,parsedAddress,apiStreet:data.address?.street,apiCity:data.address?.city,apiState:data.address?.state,apiZip:data.address?.zip_code},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
 
         // Build IQProperty from API data with enriched data for dynamic scoring
         const propertyData: IQProperty = {
@@ -159,9 +155,6 @@ function VerdictContent() {
           arv,
         }
 
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'verdict/page.tsx:setProperty',message:'Final property object set',data:{address:propertyData.address,city:propertyData.city,state:propertyData.state,zip:propertyData.zip},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
         setProperty(propertyData)
       } catch (err) {
         console.error('Error fetching property:', err)
