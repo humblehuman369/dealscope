@@ -169,7 +169,14 @@ function VerdictContent() {
 
   const handleViewStrategy = useCallback((strategy: IQStrategy) => {
     if (!property) return
-    const encodedAddress = encodeURIComponent(property.address)
+    // Build full address with city, state, zip
+    const fullAddress = [
+      property.address,
+      property.city,
+      property.state,
+      property.zip
+    ].filter(Boolean).join(', ')
+    const encodedAddress = encodeURIComponent(fullAddress)
     const strategyId = STRATEGY_ROUTE_MAP[strategy.id]
     
     // Navigate to the property page with the selected strategy worksheet
@@ -178,7 +185,14 @@ function VerdictContent() {
 
   const handleCompareAll = useCallback(() => {
     if (!property) return
-    const encodedAddress = encodeURIComponent(property.address)
+    // Build full address with city, state, zip
+    const fullAddress = [
+      property.address,
+      property.city,
+      property.state,
+      property.zip
+    ].filter(Boolean).join(', ')
+    const encodedAddress = encodeURIComponent(fullAddress)
     router.push(`/compare?address=${encodedAddress}`)
   }, [property, router])
 
