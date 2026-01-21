@@ -9,7 +9,7 @@ import {
 /**
  * Property Details Page
  * 
- * Dynamic route: /property-details/[zpid]?address=...
+ * Dynamic route: /property/[zpid]?address=...
  * Fetches comprehensive property data directly from backend.
  * 
  * NOTE: We call the backend directly instead of going through our own API route

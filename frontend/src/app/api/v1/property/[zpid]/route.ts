@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
  * Fetches comprehensive property data by proxying to the backend.
  * Uses address for property search and zpid for photos.
  * 
- * GET /api/v1/property-details/[zpid]?address=...
+ * GET /api/v1/property/[zpid]?address=...
  */
 
 const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.railway.app'
