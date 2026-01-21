@@ -7,6 +7,9 @@ import { useWorksheetStore } from '@/stores/worksheetStore'
 import { SalesCompsSection } from '../sections/SalesCompsSection'
 import { RentalCompsSection } from '../sections/RentalCompsSection'
 import { MarketDataSection } from '../sections/MarketDataSection'
+import { MultiYearProjections } from '../sections/MultiYearProjections'
+import { CashFlowChart } from '../charts/CashFlowChart'
+import { EquityChart } from '../charts/EquityChart'
 
 // ============================================
 // ICONS (minimal line style)
@@ -595,6 +598,14 @@ export function LTRWorksheet({
           <RentalCompsSection />
         ) : activeSection === 'market-data' ? (
           <MarketDataSection />
+        ) : activeSection === 'projections' ? (
+          <>
+            <MultiYearProjections />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+              <CashFlowChart />
+              <EquityChart />
+            </div>
+          </>
         ) : (
         <div className="grid grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
           
