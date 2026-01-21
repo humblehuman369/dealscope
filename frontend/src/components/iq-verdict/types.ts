@@ -11,6 +11,7 @@
 
 export interface IQProperty {
   id?: string;
+  zpid?: string | number;
   address: string;
   city?: string;
   state?: string;

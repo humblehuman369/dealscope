@@ -23,6 +23,8 @@ import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
 interface PropertyDetailsClientProps {
   property: PropertyData
+  /** Optional initial strategy to highlight or auto-navigate to */
+  initialStrategy?: string
 }
 
 /**
@@ -31,7 +33,7 @@ interface PropertyDetailsClientProps {
  * Client component wrapper for property details with interactive features
  * like saving, sharing, and navigation to analysis.
  */
-export function PropertyDetailsClient({ property }: PropertyDetailsClientProps) {
+export function PropertyDetailsClient({ property, initialStrategy }: PropertyDetailsClientProps) {
   const router = useRouter()
   const { isAuthenticated, setShowAuthModal } = useAuth()
   const [isSaved, setIsSaved] = useState(false)

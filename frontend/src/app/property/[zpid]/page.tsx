@@ -18,7 +18,7 @@ import {
 
 interface PageProps {
   params: Promise<{ zpid: string }>
-  searchParams: Promise<{ address?: string }>
+  searchParams: Promise<{ address?: string; strategy?: string }>
 }
 
 // Enable dynamic rendering
@@ -305,14 +305,14 @@ export async function generateMetadata({ params }: PageProps) {
  * Property Details Content Component
  * Separated to enable Suspense boundary
  */
-async function PropertyDetailsContent({ zpid, address }: { zpid: string; address?: string }) {
+async function PropertyDetailsContent({ zpid, address, strategy }: { zpid: string; address?: string; strategy?: string }) {
   const property = await getPropertyData(zpid, address)
 
   if (!property) {
     notFound()
   }
 
-  return <PropertyDetailsClient property={property} />
+  return <PropertyDetailsClient property={property} initialStrategy={strategy} />
 }
 
 /**
@@ -320,11 +320,11 @@ async function PropertyDetailsContent({ zpid, address }: { zpid: string; address
  */
 export default async function PropertyDetailsPage({ params, searchParams }: PageProps) {
   const { zpid } = await params
-  const { address } = await searchParams
+  const { address, strategy } = await searchParams
 
   return (
     <Suspense fallback={<PropertyDetailsSkeleton />}>
-      <PropertyDetailsContent zpid={zpid} address={address} />
+      <PropertyDetailsContent zpid={zpid} address={address} strategy={strategy} />
     </Suspense>
   )
 }

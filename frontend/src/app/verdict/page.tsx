@@ -119,6 +119,7 @@ function VerdictContent() {
         // Build IQProperty from API data with enriched data for dynamic scoring
         const propertyData: IQProperty = {
           id: data.property_id,
+          zpid: data.zpid,
           address: data.address?.street || parsedAddress.street || decodeURIComponent(addressParam),
           city: data.address?.city || parsedAddress.city,
           state: data.address?.state || parsedAddress.state,
@@ -191,8 +192,10 @@ function VerdictContent() {
     const encodedAddress = encodeURIComponent(fullAddress)
     const strategyId = STRATEGY_ROUTE_MAP[strategy.id]
     
-    // Navigate to the property page with the selected strategy worksheet
-    router.push(`/property?address=${encodedAddress}&strategy=${strategyId}`)
+    // Navigate to the NEW property-details page with zpid in the path
+    // Falls back to 'unknown' if zpid is not available (rare edge case)
+    const zpid = property.zpid || 'unknown'
+    router.push(`/property/${zpid}?address=${encodedAddress}&strategy=${strategyId}`)
   }, [property, router])
 
   const handleCompareAll = useCallback(() => {
