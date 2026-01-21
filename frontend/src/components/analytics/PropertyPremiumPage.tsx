@@ -268,7 +268,7 @@ export function PropertyPremiumPage({
           {property.zpid && (
             <Link 
               href={`/property/${property.zpid}?address=${encodeURIComponent(`${property.address}, ${property.city}, ${property.state} ${property.zipCode}`)}`}
-              className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 hover:bg-teal-500/20 transition-colors border border-teal-500/20"
+              className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-lg bg-teal-500/10 text-sm text-teal-600 dark:text-teal-400 hover:bg-teal-500/20 transition-colors border border-teal-500/20"
             >
               <Info className="w-4 h-4" />
               <span className="font-medium">View Full Property Details</span>
