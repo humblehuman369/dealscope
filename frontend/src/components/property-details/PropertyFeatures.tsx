@@ -44,18 +44,18 @@ export function PropertyFeatures({
   const currentFeatures = tabs.find(t => t.id === activeTab)?.features || []
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-      <div className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-4">
+    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+      <div className="text-sm font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-5">
         Features & Amenities
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-5">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
               activeTab === tab.id
                 ? 'bg-teal-500 text-white'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -67,17 +67,17 @@ export function PropertyFeatures({
       </div>
 
       {/* Features Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {currentFeatures.map((feature, i) => (
-          <div key={i} className="flex items-center gap-2 py-2">
-            <Check size={14} className="text-teal-500 flex-shrink-0" />
-            <span className="text-sm text-slate-600 dark:text-slate-400">{feature}</span>
+          <div key={i} className="flex items-center gap-2.5 py-2.5">
+            <Check size={18} className="text-teal-500 flex-shrink-0" />
+            <span className="text-base text-slate-600 dark:text-slate-400">{feature}</span>
           </div>
         ))}
       </div>
 
       {currentFeatures.length === 0 && (
-        <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-4">
+        <p className="text-base text-slate-400 dark:text-slate-500 text-center py-6">
           No {activeTab} features listed
         </p>
       )}
@@ -106,33 +106,33 @@ export function PropertyFeatures({
 
       {/* Construction */}
       {(construction?.length > 0 || roof || foundation) && (
-        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="mt-5 pt-5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-5">
           {construction?.length > 0 && (
             <div>
-              <div className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-1">
+              <div className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
                 Construction
               </div>
-              <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <div className="text-base font-medium text-slate-700 dark:text-slate-300">
                 {construction.join(', ')}
               </div>
             </div>
           )}
           {roof && (
             <div>
-              <div className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-1">
+              <div className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
                 Roof
               </div>
-              <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <div className="text-base font-medium text-slate-700 dark:text-slate-300">
                 {roof}
               </div>
             </div>
           )}
           {foundation && (
             <div>
-              <div className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-1">
+              <div className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-2">
                 Foundation
               </div>
-              <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <div className="text-base font-medium text-slate-700 dark:text-slate-300">
                 {foundation}
               </div>
             </div>

@@ -18,17 +18,17 @@ export function PropertyDescription({ description }: PropertyDescriptionProps) {
   const displayText = expanded || !isLong ? description : description.slice(0, 400) + '...'
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-      <div className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-3">
+    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+      <div className="text-sm font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-4">
         Description
       </div>
-      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line">
+      <p className="text-base text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line">
         {displayText}
       </p>
       {isLong && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="mt-3 text-sm font-medium text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors"
+          className="mt-4 text-base font-medium text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors"
         >
           {expanded ? 'Show less' : 'Read more'}
         </button>

@@ -135,6 +135,19 @@ function normalizePropertyData(
       year_built?: number
       features?: string[]
       stories?: number
+      // HVAC
+      heating_type?: string
+      cooling_type?: string
+      has_heating?: boolean
+      has_cooling?: boolean
+      // Parking
+      has_garage?: boolean
+      garage_spaces?: number
+      // Construction
+      exterior_type?: string
+      roof_type?: string
+      // Fireplace
+      has_fireplace?: boolean
     }
     valuations?: {
       current_value_avm?: number
@@ -175,6 +188,36 @@ function normalizePropertyData(
   const price = p.valuations?.current_value_avm || p.valuations?.zestimate || 0
   const livingArea = p.details?.square_footage || 0
 
+  // Build heating array
+  const heating: string[] = []
+  if (p.details?.heating_type) heating.push(p.details.heating_type)
+  else if (p.details?.has_heating) heating.push('Yes')
+
+  // Build cooling array  
+  const cooling: string[] = []
+  if (p.details?.cooling_type) cooling.push(p.details.cooling_type)
+  else if (p.details?.has_cooling) cooling.push('Central')
+
+  // Build parking info
+  const parking: string[] = []
+  if (p.details?.garage_spaces) {
+    parking.push(`${p.details.garage_spaces} Car Garage`)
+  } else if (p.details?.has_garage) {
+    parking.push('Garage')
+  }
+
+  // Build exterior features
+  const exteriorFeatures: string[] = []
+  if (p.details?.exterior_type) exteriorFeatures.push(p.details.exterior_type)
+  
+  // Build construction info
+  const construction: string[] = []
+  if (p.details?.exterior_type) construction.push(p.details.exterior_type)
+
+  // Build interior features
+  const interiorFeatures: string[] = [...(p.details?.features || [])]
+  if (p.details?.has_fireplace) interiorFeatures.push('Fireplace')
+
   return {
     zpid: p.zpid || zpid,
     address: { streetAddress, city, state, zipcode },
@@ -183,8 +226,10 @@ function normalizePropertyData(
     bathrooms: p.details?.bathrooms || 0,
     livingArea,
     lotSize: p.details?.lot_size,
+    lotSizeAcres: p.details?.lot_size ? Math.round(p.details.lot_size / 43560 * 100) / 100 : undefined,
     yearBuilt: p.details?.year_built || 0,
     propertyType: p.details?.property_type || 'SINGLE_FAMILY',
+    stories: p.details?.stories,
     zestimate: p.valuations?.zestimate,
     rentZestimate: p.valuations?.rent_zestimate || p.rentals?.monthly_rent_ltr,
     pricePerSqft: p.valuations?.price_per_sqft || (livingArea ? Math.round(price / livingArea) : undefined),
@@ -194,14 +239,17 @@ function normalizePropertyData(
     description: p.description || `${p.details?.bedrooms || 0} bed, ${p.details?.bathrooms || 0} bath property in ${city}, ${state}.`,
     images,
     totalPhotos: images.length,
-    interiorFeatures: p.details?.features || [],
-    heating: [],
-    cooling: [],
-    parking: [],
+    // Features
+    heating,
+    cooling,
+    parking,
+    parkingSpaces: p.details?.garage_spaces,
+    interiorFeatures,
+    exteriorFeatures,
+    construction,
+    roof: p.details?.roof_type,
     flooring: [],
     appliances: [],
-    exteriorFeatures: [],
-    construction: [],
     priceHistory: [],
     taxHistory: [],
     schools: []

@@ -135,7 +135,21 @@ class PropertyService:
                 square_footage=normalized.get("square_footage"),
                 lot_size=normalized.get("lot_size"),
                 year_built=normalized.get("year_built"),
-                num_units=normalized.get("num_units", 1)
+                num_units=normalized.get("num_units", 1),
+                stories=normalized.get("stories"),
+                # HVAC
+                heating_type=normalized.get("heating_type"),
+                cooling_type=normalized.get("cooling_type"),
+                has_heating=normalized.get("has_heating"),
+                has_cooling=normalized.get("has_cooling"),
+                # Parking
+                has_garage=normalized.get("has_garage"),
+                garage_spaces=normalized.get("garage_spaces"),
+                # Construction
+                exterior_type=normalized.get("exterior_type"),
+                roof_type=normalized.get("roof_type"),
+                # Fireplace
+                has_fireplace=normalized.get("has_fireplace"),
             ),
             valuations=ValuationData(
                 current_value_avm=normalized.get("current_value_avm"),

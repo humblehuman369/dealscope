@@ -97,30 +97,30 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
   ]
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
-      <div className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-4">
+    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+      <div className="text-sm font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-5">
         Property Facts
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
         {facts.map((fact, i) => (
           <div 
             key={i} 
-            className={`p-3 rounded-lg ${
+            className={`p-4 rounded-lg ${
               fact.highlight 
                 ? 'bg-teal-500/10 dark:bg-teal-400/10' 
                 : 'bg-slate-50 dark:bg-slate-800/50'
             }`}
           >
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-2">
               <fact.icon 
-                size={14} 
+                size={18} 
                 className={fact.highlight ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400'} 
               />
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                 {fact.label}
               </span>
             </div>
-            <div className={`text-sm font-semibold tabular-nums ${
+            <div className={`text-lg font-bold tabular-nums ${
               fact.highlight 
                 ? 'text-teal-600 dark:text-teal-400' 
                 : 'text-slate-800 dark:text-slate-200'
@@ -128,7 +128,7 @@ export function KeyFactsGrid({ property }: KeyFactsGridProps) {
               {fact.value}
             </div>
             {fact.sublabel && (
-              <div className="text-[10px] text-slate-400 dark:text-slate-500">
+              <div className="text-sm text-slate-400 dark:text-slate-500 mt-1">
                 {fact.sublabel}
               </div>
             )}

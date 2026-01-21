@@ -93,9 +93,26 @@ class PropertyDetails(BaseModel):
     lot_size: Optional[int] = None
     year_built: Optional[int] = None
     num_units: Optional[int] = 1
+    stories: Optional[int] = None
     features: Optional[List[str]] = []
+    # HVAC
+    heating_type: Optional[str] = None
+    cooling_type: Optional[str] = None
+    has_heating: Optional[bool] = None
+    has_cooling: Optional[bool] = None
+    # Parking
+    has_garage: Optional[bool] = None
+    garage_spaces: Optional[int] = None
+    parking_type: Optional[str] = None
+    # Construction
+    exterior_type: Optional[str] = None
+    roof_type: Optional[str] = None
+    foundation_type: Optional[str] = None
+    # Fireplace
+    has_fireplace: Optional[bool] = None
+    fireplace_count: Optional[int] = None
     
-    @field_validator('square_footage', 'lot_size', 'bedrooms', 'year_built', 'num_units', mode='before')
+    @field_validator('square_footage', 'lot_size', 'bedrooms', 'year_built', 'num_units', 'stories', 'garage_spaces', 'fireplace_count', mode='before')
     @classmethod
     def convert_float_to_int(cls, v):
         """Convert float values to int (API sometimes returns floats for int fields)."""
