@@ -9,7 +9,7 @@ import {
 /**
  * Property Details Page
  * 
- * Dynamic route: /property/[zpid]
+ * Dynamic route: /property-details/[zpid]
  * Fetches comprehensive property data from AXESSO API using ZPID.
  */
 
@@ -28,7 +28,7 @@ async function getPropertyData(zpid: string): Promise<PropertyData | null> {
   try {
     // Use absolute URL for server-side fetch
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const response = await fetch(`${baseUrl}/api/v1/property/${zpid}`, {
+    const response = await fetch(`${baseUrl}/api/v1/property-details/${zpid}`, {
       next: { revalidate: 3600 }
     })
 

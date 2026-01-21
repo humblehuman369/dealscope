@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
  * 
  * Fetches comprehensive property data from AXESSO Zillow API using ZPID.
  * 
- * GET /api/v1/property/[zpid]
+ * GET /api/v1/property-details/[zpid]
  */
 
 const AXESSO_API_KEY = process.env.AXESSO_API_KEY || ''

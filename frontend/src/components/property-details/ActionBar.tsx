@@ -79,7 +79,7 @@ export function ActionBar({
           </span>
         </button>
 
-        {/* Generate LOI Button - Primary CTA */}
+        {/* Analyze Property Button - Primary CTA */}
         <Link
           href={`/property?address=${encodeURIComponent(zpid)}`}
           className="flex items-center gap-2 px-6 sm:px-8 py-3 rounded-lg bg-teal-500 hover:bg-teal-600 text-white transition-colors shadow-sm"
