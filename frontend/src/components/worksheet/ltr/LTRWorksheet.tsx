@@ -279,15 +279,67 @@ export function LTRWorksheet({
     format: 'currency' | 'percent' | 'years'
     subValue?: string
   }) => {
+    const [isEditing, setIsEditing] = useState(false)
+    const [editValue, setEditValue] = useState('')
+    
     const displayValue = format === 'currency' ? fmt.currency(value) : format === 'percent' ? fmt.percent(value) : fmt.years(value)
     const percentage = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100))
+    
+    const handleStartEdit = () => {
+      // Set initial edit value without formatting symbols
+      if (format === 'currency') {
+        setEditValue(Math.round(value).toString())
+      } else if (format === 'percent') {
+        setEditValue(value.toFixed(1))
+      } else {
+        setEditValue(value.toString())
+      }
+      setIsEditing(true)
+    }
+    
+    const handleEndEdit = () => {
+      setIsEditing(false)
+      // Parse the input value
+      let parsed = parseFloat(editValue.replace(/[$,%\s]/g, ''))
+      if (isNaN(parsed)) {
+        return // Keep original value if invalid
+      }
+      // Clamp to min/max
+      parsed = Math.min(max, Math.max(min, parsed))
+      onChange(parsed)
+    }
+    
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleEndEdit()
+      } else if (e.key === 'Escape') {
+        setIsEditing(false)
+      }
+    }
     
     return (
       <div className="py-3">
         <div className="flex items-center justify-between mb-2">
           <label className="text-sm text-slate-500">{label}</label>
           <div className="text-right">
-            <span className="text-sm font-semibold text-slate-800 tabular-nums">{displayValue}</span>
+            {isEditing ? (
+              <input
+                type="text"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={handleEndEdit}
+                onKeyDown={handleKeyDown}
+                autoFocus
+                className="w-24 px-2 py-0.5 text-sm font-semibold text-slate-800 tabular-nums text-right border border-teal rounded focus:outline-none focus:ring-1 focus:ring-teal"
+              />
+            ) : (
+              <span 
+                onClick={handleStartEdit}
+                className="text-sm font-semibold text-slate-800 tabular-nums cursor-pointer hover:text-teal hover:underline"
+              >
+                {displayValue}
+              </span>
+            )}
             {subValue && <span className="text-xs text-slate-400 ml-1.5 tabular-nums">{subValue}</span>}
           </div>
         </div>
