@@ -228,7 +228,7 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
             </div>
           </>
         ) : (
-        <div className="grid grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[55fr,45fr] gap-4 sm:gap-6 items-start">
           <div className="space-y-3">
             <Section index={0} title="Property Analysis" iconKey="home">
               <InputRow label="Contract Price" value={contractPrice} onChange={setContractPrice} min={50000} max={500000} step={5000} format="currency" />
