@@ -23,6 +23,7 @@ const API_BASE_URL = ''
  */
 
 interface PropertyData {
+  zpid?: string | number
   address: string
   city: string
   state: string
@@ -144,6 +145,7 @@ function PropertyContent() {
         
         // Transform API response to our format
         const propertyData: PropertyData = {
+          zpid: data.zpid,
           address: data.address?.street || addressParam.split(',')[0] || addressParam,
           city: data.address?.city || '',
           state: data.address?.state || '',

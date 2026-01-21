@@ -13,7 +13,8 @@ import {
   FileText,
   ChevronRight,
   Home,
-  Search
+  Search,
+  Info
 } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
 import { StrategyId } from './types'
@@ -21,6 +22,7 @@ import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import './property-premium.css'
 
 interface PropertyData {
+  zpid?: string | number
   address: string
   city: string
   state: string
@@ -262,6 +264,17 @@ export function PropertyPremiumPage({
           <h1 className="premium-info-address">{property.address}</h1>
           <p className="premium-info-location">{location}</p>
           <p className="premium-info-specs">{specs}</p>
+          {/* View Full Details Link */}
+          {property.zpid && (
+            <Link 
+              href={`/property-details/${property.zpid}`}
+              className="inline-flex items-center gap-1.5 mt-2 text-sm font-medium text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors"
+            >
+              <Info className="w-4 h-4" />
+              View Full Details
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
         </div>
         <div className="premium-info-right">
           <div className="premium-info-price">{formatCurrency(property.listPrice)}</div>
