@@ -17,6 +17,7 @@ import {
   calculateDynamicAnalysis,
   STRATEGY_ROUTE_MAP,
 } from '@/components/iq-verdict'
+import { parseAddressString } from '@/utils/formatters'
 
 // Sample photos for fallback
 const SAMPLE_PHOTOS = [
@@ -111,13 +112,17 @@ function VerdictContent() {
         // Get ARV if available (for flip/BRRRR strategies)
         const arv = data.valuations?.arv || data.valuations?.after_repair_value || null
 
+        // Parse address from URL parameter as fallback when API data is incomplete
+        // This ensures city/state/zip are preserved even if API doesn't return them
+        const parsedAddress = parseAddressString(addressParam)
+
         // Build IQProperty from API data with enriched data for dynamic scoring
         const propertyData: IQProperty = {
           id: data.property_id,
-          address: data.address?.street || decodeURIComponent(addressParam).split(',')[0] || decodeURIComponent(addressParam),
-          city: data.address?.city,
-          state: data.address?.state,
-          zip: data.address?.zip_code,
+          address: data.address?.street || parsedAddress.street || decodeURIComponent(addressParam),
+          city: data.address?.city || parsedAddress.city,
+          state: data.address?.state || parsedAddress.state,
+          zip: data.address?.zip_code || parsedAddress.zip,
           beds: data.details?.bedrooms || 3,
           baths: data.details?.bathrooms || 2,
           sqft: data.details?.square_footage || 1500,
@@ -141,9 +146,15 @@ function VerdictContent() {
         console.error('Error fetching property:', err)
         setError(err instanceof Error ? err.message : 'Failed to load property')
         
+        // Parse address from URL parameter to preserve city/state/zip in fallback
+        const parsedFallback = parseAddressString(addressParam)
+        
         // Create fallback property from address param
         const fallbackProperty: IQProperty = {
-          address: decodeURIComponent(addressParam).split(',')[0] || 'Unknown Address',
+          address: parsedFallback.street || 'Unknown Address',
+          city: parsedFallback.city,
+          state: parsedFallback.state,
+          zip: parsedFallback.zip,
           beds: 3,
           baths: 2,
           sqft: 1500,

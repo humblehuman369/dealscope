@@ -182,6 +182,107 @@ export const formatAddress = (
 };
 
 /**
+ * Parse address string into components
+ * Handles formats like:
+ * - "123 Main St, Austin, TX 78701"
+ * - "123 Main St, Austin, TX"
+ * - "123 Main St, Austin TX 78701"
+ * - "123 Main St"
+ * 
+ * This is the canonical address parser - use this everywhere to avoid
+ * inconsistent parsing that loses city/state/zip data.
+ */
+export interface ParsedAddress {
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+}
+
+export const parseAddressString = (addressString: string): ParsedAddress => {
+  if (!addressString) {
+    return { street: '', city: '', state: '', zip: '' };
+  }
+
+  // Decode URI component in case it's URL encoded
+  const decoded = decodeURIComponent(addressString).trim();
+  
+  // Split by comma to get parts
+  const parts = decoded.split(',').map(p => p.trim()).filter(Boolean);
+  
+  if (parts.length === 0) {
+    return { street: decoded, city: '', state: '', zip: '' };
+  }
+
+  // First part is always the street
+  const street = parts[0];
+  
+  if (parts.length === 1) {
+    // Only street address provided
+    return { street, city: '', state: '', zip: '' };
+  }
+
+  if (parts.length === 2) {
+    // Format: "street, city state zip" OR "street, city"
+    const lastPart = parts[1];
+    
+    // Try to extract state and zip from the last part
+    // Pattern: "Austin TX 78701" or "Austin, TX 78701" or "TX 78701" or just "Austin"
+    const stateZipMatch = lastPart.match(/^(.+?)\s+([A-Z]{2})\s*(\d{5}(?:-\d{4})?)?$/i);
+    
+    if (stateZipMatch) {
+      // Found pattern like "Austin TX 78701"
+      return {
+        street,
+        city: stateZipMatch[1].trim(),
+        state: stateZipMatch[2].toUpperCase(),
+        zip: stateZipMatch[3] || '',
+      };
+    }
+    
+    // Try pattern without city: "TX 78701"
+    const stateZipOnlyMatch = lastPart.match(/^([A-Z]{2})\s*(\d{5}(?:-\d{4})?)?$/i);
+    if (stateZipOnlyMatch) {
+      return {
+        street,
+        city: '',
+        state: stateZipOnlyMatch[1].toUpperCase(),
+        zip: stateZipOnlyMatch[2] || '',
+      };
+    }
+    
+    // Just city name
+    return { street, city: lastPart, state: '', zip: '' };
+  }
+
+  // parts.length >= 3
+  // Format: "street, city, state zip" (most common from our app)
+  const city = parts[1];
+  const stateZipPart = parts.slice(2).join(', ').trim();
+  
+  // Parse state and zip from "TX 78701" or "TX" or "78701"
+  const stateZipMatch = stateZipPart.match(/^([A-Z]{2})\s*(\d{5}(?:-\d{4})?)?$/i);
+  
+  if (stateZipMatch) {
+    return {
+      street,
+      city,
+      state: stateZipMatch[1].toUpperCase(),
+      zip: stateZipMatch[2] || '',
+    };
+  }
+  
+  // Maybe it's just a zip code
+  const zipOnlyMatch = stateZipPart.match(/^(\d{5}(?:-\d{4})?)$/);
+  if (zipOnlyMatch) {
+    return { street, city, state: '', zip: zipOnlyMatch[1] };
+  }
+  
+  // Couldn't parse state/zip, treat everything after city as state
+  return { street, city, state: stateZipPart, zip: '' };
+};
+
+/**
  * Pluralize a word
  */
 export const pluralize = (count: number, singular: string, plural?: string): string => {

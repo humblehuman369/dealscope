@@ -9,6 +9,7 @@ import {
 } from '@/components/analytics'
 import { useAuth } from '@/context/AuthContext'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
+import { parseAddressString } from '@/utils/formatters'
 
 // Use relative paths for API calls to go through Next.js API routes
 const API_BASE_URL = ''
@@ -276,13 +277,17 @@ function PropertyContent() {
           || data.valuations?.last_sale_price
           || estimatedValueFromRent
         
+        // Parse address from URL parameter as fallback when API data is incomplete
+        // This ensures city/state/zip are preserved even if API doesn't return them
+        const parsedAddress = parseAddressString(addressParam)
+        
         // Transform API response to our format
         const propertyData: PropertyData = {
           zpid: data.zpid,
-          address: data.address?.street || addressParam.split(',')[0] || addressParam,
-          city: data.address?.city || '',
-          state: data.address?.state || '',
-          zipCode: data.address?.zip_code || '',
+          address: data.address?.street || parsedAddress.street || addressParam,
+          city: data.address?.city || parsedAddress.city,
+          state: data.address?.state || parsedAddress.state,
+          zipCode: data.address?.zip_code || parsedAddress.zip,
           listPrice: Math.round(listPrice),
           monthlyRent: monthlyRent,
           averageDailyRate: data.rentals?.average_daily_rate || Math.round(monthlyRent / 30 * 1.5),
@@ -302,12 +307,15 @@ function PropertyContent() {
       } catch (err) {
         console.error('Error fetching property:', err)
         
-        // Use demo data as fallback
+        // Parse address from URL parameter for fallback
+        const parsedFallback = parseAddressString(addressParam)
+        
+        // Use demo data as fallback, but preserve address components from URL
         const demoProperty: PropertyData = {
-          address: addressParam.split(',')[0] || addressParam,
-          city: 'Demo City',
-          state: 'FL',
-          zipCode: '33483',
+          address: parsedFallback.street || addressParam,
+          city: parsedFallback.city || 'Demo City',
+          state: parsedFallback.state || 'FL',
+          zipCode: parsedFallback.zip || '33483',
           listPrice: 350000,
           monthlyRent: 2800,
           averageDailyRate: 195,
