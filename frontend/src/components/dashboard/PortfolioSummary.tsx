@@ -65,9 +65,10 @@ export function PortfolioSummary({ data, isLoading }: PortfolioSummaryProps) {
     <div className="bg-white dark:bg-navy-800 rounded-xl shadow-sm border border-slate-100 dark:border-navy-700 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide mb-1">
-            Portfolio Value
-          </h2>
+          <div className="flex items-center gap-2 mb-1">
+            <Briefcase size={16} className="text-teal-500 dark:text-teal-400" />
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-white">Portfolio Value</h3>
+          </div>
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-bold text-slate-800 dark:text-white tabular-nums">
               {formatCurrency(data.portfolioValue)}
@@ -89,10 +90,10 @@ export function PortfolioSummary({ data, isLoading }: PortfolioSummaryProps) {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
-          <div key={i} className="p-4 rounded-xl bg-slate-50 dark:bg-navy-700/50">
+          <div key={i} className="p-4 rounded-xl bg-slate-50 dark:bg-navy-700/50 border border-slate-100 dark:border-navy-600">
             <div className="flex items-center gap-2 mb-2">
-              <stat.icon size={14} className="text-slate-400 dark:text-slate-500" />
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              <stat.icon size={14} className="text-teal-500 dark:text-teal-400" />
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                 {stat.label}
               </span>
             </div>

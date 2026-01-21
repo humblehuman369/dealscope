@@ -313,9 +313,7 @@ export default function DashboardPage() {
         {/* Page Title */}
         <div className="flex items-center gap-2 mb-6">
           <LayoutDashboard size={16} className="text-teal-500 dark:text-teal-400" />
-          <span className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide">
-            Dashboard
-          </span>
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-white">Dashboard</h3>
         </div>
 
         {/* Header */}
