@@ -74,9 +74,9 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
             <X size={24} />
           </button>
 
-          {/* Header - IQ icon on left, text on right, centered */}
-          <div className="mb-8 flex flex-col items-center">
-            <div className="flex items-center gap-4 mb-3">
+          {/* Header - IQ icon on left, text on right, left-aligned */}
+          <div className="mb-8">
+            <div className="flex items-center gap-4">
               <div className="w-14 h-14 flex-shrink-0 flex items-center justify-center">
                 <img 
                   src="/images/iq-brain-dark.png" 
@@ -88,13 +88,15 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                   }}
                 />
               </div>
-              <h2 className="text-xl font-bold text-white leading-tight">
-                How would you like to<br />analyze a property?
-              </h2>
+              <div>
+                <h2 className="text-xl font-bold text-white leading-tight">
+                  How would you like to<br />analyze a property?
+                </h2>
+                <p className="text-gray-400 text-sm mt-1">
+                  Choose your preferred method to get started
+                </p>
+              </div>
             </div>
-            <p className="text-gray-400 text-sm">
-              Choose your preferred method to get started
-            </p>
           </div>
 
           {/* Options or Address Input */}
