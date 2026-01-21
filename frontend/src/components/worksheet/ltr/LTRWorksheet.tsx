@@ -434,7 +434,7 @@ export function LTRWorksheet({
   }
 
   const NextButton = ({ sectionIndex }: { sectionIndex: number }) => {
-    if (sectionIndex >= SECTIONS.length - 1 || viewMode === 'showall') return null
+    if (sectionIndex >= SECTIONS.length - 1) return null
     const nextSection = SECTIONS[sectionIndex + 1]
     return (
       <div className="pt-4 mt-4 border-t border-slate-100">
