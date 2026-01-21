@@ -174,7 +174,7 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
 
   return (
     <div className="w-full min-h-screen bg-slate-50 pt-12">
-      <div className="w-full sticky top-12 z-40 bg-white border-b border-slate-200"><div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8"><WorksheetTabNav propertyId={propertyId} strategy="wholesale" /></div></div>
+      <div className="w-full sticky top-12 z-40 bg-white border-b border-slate-200"><div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8"><WorksheetTabNav propertyId={propertyId} strategy="wholesale" zpid={property.zpid || propertyData.zpid} /></div></div>
       
       <div className="w-full bg-white border-b border-slate-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">

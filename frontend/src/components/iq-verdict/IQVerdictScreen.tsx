@@ -32,6 +32,12 @@ export function IQVerdictScreen({
   onCompareAll,
 }: IQVerdictScreenProps) {
   const topStrategy = analysis.strategies[0]
+  
+  // Build full address with city, state, zip
+  const fullAddress = [
+    property.address,
+    [property.city, property.state, property.zip].filter(Boolean).join(' ')
+  ].filter(Boolean).join(', ')
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-navy-900">
@@ -70,7 +76,7 @@ export function IQVerdictScreen({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h2 className="font-semibold text-gray-900 dark:text-white truncate">{property.address}</h2>
+                  <h2 className="font-semibold text-gray-900 dark:text-white truncate">{fullAddress}</h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {property.beds} bd · {property.baths} ba · {property.sqft?.toLocaleString() || '—'} sqft
                   </p>

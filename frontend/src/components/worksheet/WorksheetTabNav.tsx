@@ -44,6 +44,7 @@ const tabs: TabItem[] = [
 interface WorksheetTabNavProps {
   propertyId: string
   strategy: WorksheetStrategyId
+  zpid?: string | number
   mobileMenuOpen?: boolean
   onMobileMenuClose?: () => void
 }
@@ -51,6 +52,7 @@ interface WorksheetTabNavProps {
 export function WorksheetTabNav({ 
   propertyId, 
   strategy,
+  zpid,
   mobileMenuOpen = false,
   onMobileMenuClose,
 }: WorksheetTabNavProps) {
@@ -119,10 +121,12 @@ export function WorksheetTabNav({
     
     // Navigate to property details page for property-details tab
     if (tab.id === 'property-details') {
+      // Use zpid for the property page route, fall back to propertyId
+      const propertyRoute = zpid ? `/property/${zpid}` : `/worksheet/${propertyId}`
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'WorksheetTabNav.tsx:property-details-nav',message:'Navigating to property-details',data:{targetUrl:'/property-details',propertyId:propertyId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'WorksheetTabNav.tsx:property-details-nav',message:'Navigating to property page',data:{targetUrl:propertyRoute,zpid:zpid,propertyId:propertyId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
       // #endregion
-      router.push('/property-details')
+      router.push(propertyRoute)
       return
     }
     

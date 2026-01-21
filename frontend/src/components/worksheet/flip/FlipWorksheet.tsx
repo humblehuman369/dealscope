@@ -287,7 +287,7 @@ export function FlipWorksheet({
       {/* WORKSHEET TAB NAV */}
       <div className="w-full sticky top-12 z-40 bg-white border-b border-slate-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          <WorksheetTabNav propertyId={propertyId} strategy="flip" />
+          <WorksheetTabNav propertyId={propertyId} strategy="flip" zpid={property.zpid || propertyData.zpid} />
         </div>
       </div>
       

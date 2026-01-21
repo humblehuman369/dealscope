@@ -463,7 +463,7 @@ export function StrWorksheet({
       {/* WORKSHEET TAB NAV - Full width, sticky below global header */}
       <div className="w-full sticky top-12 z-40 bg-white border-b border-slate-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          <WorksheetTabNav propertyId={propertyId} strategy="str" />
+          <WorksheetTabNav propertyId={propertyId} strategy="str" zpid={property.zpid || propertyData.zpid} />
         </div>
       </div>
       

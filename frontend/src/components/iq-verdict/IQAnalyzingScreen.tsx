@@ -30,6 +30,12 @@ export function IQAnalyzingScreen({
   minimumDisplayTime = 2800,
 }: IQAnalyzingScreenProps) {
   const [completedStrategies, setCompletedStrategies] = useState<number>(0)
+  
+  // Build full address with city, state, zip
+  const fullAddress = [
+    property.address,
+    [property.city, property.state, property.zip].filter(Boolean).join(' ')
+  ].filter(Boolean).join(', ')
 
   // Staggered progress animation
   useEffect(() => {
@@ -121,7 +127,7 @@ export function IQAnalyzingScreen({
         {/* Property Reference */}
         <div className="absolute bottom-10 left-0 right-0 text-center">
           <p className="text-sm" style={{ color: IQ_COLORS.slate }}>
-            {property.address}
+            {fullAddress}
           </p>
         </div>
       </div>
