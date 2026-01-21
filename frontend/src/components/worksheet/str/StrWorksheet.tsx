@@ -552,7 +552,7 @@ export function StrWorksheet({
             </div>
           </>
         ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[55fr,45fr] gap-4 sm:gap-6 items-start">
+        <div className="grid grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
           
           {/* LEFT COLUMN - Worksheet sections */}
           <div className="space-y-3">

@@ -251,7 +251,7 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
             </div>
           </>
         ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[55fr,45fr] gap-4 sm:gap-6 items-start">
+        <div className="grid grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
           <div className="space-y-3">
             <Section index={0} title="Property & Purchase" iconKey="home">
               <div className="py-3"><label className="text-sm text-slate-500">Property Type</label><select value={propertyType} onChange={(e) => setPropertyType(e.target.value as typeof propertyType)} className="mt-2 w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="duplex">Duplex (2 Units)</option><option value="triplex">Triplex (3 Units)</option><option value="fourplex">Fourplex (4 Units)</option></select></div>

@@ -286,7 +286,7 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
             </div>
           </>
         ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[55fr,45fr] gap-4 sm:gap-6 items-start">
+        <div className="grid grid-cols-[1.4fr,1fr] md:grid-cols-[1.5fr,320px] lg:grid-cols-[1fr,380px] gap-4 sm:gap-6 items-start">
           <div className="space-y-3">
             <Section index={0} title="Purchase & Rehab" iconKey="home">
               <InputRow label="Purchase Price" value={purchasePrice} onChange={setPurchasePrice} min={50000} max={500000} step={5000} format="currency" />
