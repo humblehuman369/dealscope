@@ -1,5 +1,11 @@
 """
 Reports router for generating downloadable property analysis reports.
+
+Endpoints:
+- /property/{id}/excel - Comprehensive Excel report with all strategies
+- /property/{id}/financial-statements - Focused NOI, DSCR, Pro Forma report
+- /property/{id}/csv - Simple CSV summary
+- /saved/{id}/excel - Report for saved properties
 """
 
 import logging
@@ -30,13 +36,18 @@ router = APIRouter(prefix="/api/v1/reports", tags=["Reports"])
 async def generate_excel_report(
     property_id: str,
     current_user: OptionalUser,
-    include_sensitivity: bool = Query(False, description="Include sensitivity analysis"),
+    include_sensitivity: bool = Query(True, description="Include sensitivity analysis sheet"),
 ):
     """
     Generate a comprehensive Excel report for a property.
     
-    The report includes:
+    The report now includes enhanced financial statements:
     - Property summary and details
+    - **Cash Flow Statement (NOI format)** - Professional income/expense breakdown
+    - **DSCR Qualification Analysis** - Lender requirement checks
+    - **10-Year Pro Forma** - Growth projections
+    - **Amortization Schedule** - Loan payoff timeline
+    - **Sensitivity Analysis** - What-if scenarios (optional)
     - All 6 investment strategy analyses
     - Strategy comparison matrix
     - Assumptions reference
@@ -90,6 +101,87 @@ async def generate_excel_report(
     street = address.get("street", "property").replace(" ", "_").replace(",", "")[:30]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"InvestIQ_{street}_{timestamp}.xlsx"
+    
+    return StreamingResponse(
+        BytesIO(excel_bytes),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
+    )
+
+
+@router.get(
+    "/property/{property_id}/financial-statements",
+    summary="Generate comprehensive financial statements (NOI, DSCR, Pro Forma)"
+)
+async def generate_financial_statements_report(
+    property_id: str,
+    current_user: OptionalUser,
+):
+    """
+    Generate a comprehensive financial statements report for lenders/investors.
+    
+    This focused report includes:
+    - Executive Summary with investment verdict
+    - Property Cash Flow Statement (NOI format)
+    - DSCR Qualification Analysis with lender requirements
+    - 10-Year Pro Forma Projection
+    - Loan Amortization Schedule
+    - Sensitivity Analysis (rent, vacancy, interest rate scenarios)
+    
+    Returns an Excel file suitable for:
+    - Lender presentations
+    - Investor pitches
+    - Personal investment analysis
+    - Due diligence documentation
+    """
+    # Get property data from cache
+    if property_id not in property_service._property_cache:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Property not found. Please search for the property first."
+        )
+    
+    property_data = property_service._property_cache[property_id]["data"]
+    
+    # Calculate analytics
+    try:
+        analytics = await property_service.calculate_analytics(
+            property_id=property_id,
+            assumptions=None,  # Use defaults
+            strategies=None,   # All strategies
+        )
+    except Exception as e:
+        logger.error(f"Failed to calculate analytics: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to calculate analytics for report"
+        )
+    
+    # Convert to dict for report service
+    property_dict = property_data.model_dump() if hasattr(property_data, 'model_dump') else property_data
+    analytics_dict = analytics.model_dump() if hasattr(analytics, 'model_dump') else analytics
+    
+    # Generate Financial Statements Report
+    try:
+        excel_bytes = report_service.generate_financial_statements_report(
+            property_data=property_dict,
+            analytics_data=analytics_dict,
+            assumptions=None,
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate financial statements report: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate financial statements report"
+        )
+    
+    # Generate filename
+    address = property_dict.get("address", {})
+    street = address.get("street", "property").replace(" ", "_").replace(",", "")[:30]
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"InvestIQ_Financial_Statements_{street}_{timestamp}.xlsx"
     
     return StreamingResponse(
         BytesIO(excel_bytes),
@@ -203,12 +295,13 @@ async def generate_saved_property_report(
     saved_property_id: str,
     current_user: CurrentUser,
     db: DbSession,
+    include_sensitivity: bool = Query(True, description="Include sensitivity analysis"),
 ):
     """
     Generate an Excel report for a saved property.
     
     Uses the saved property's custom adjustments and assumptions
-    for personalized analysis.
+    for personalized analysis. Includes all enhanced financial statements.
     """
     from app.services.saved_property_service import saved_property_service
     
