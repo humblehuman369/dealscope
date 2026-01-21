@@ -587,6 +587,146 @@ class PropertyService:
                 "fetched_at": datetime.utcnow().isoformat()
             }
     
+    async def get_market_data(self, location: str) -> Dict[str, Any]:
+        """
+        Fetch rental market data from Zillow via AXESSO API.
+        
+        Args:
+            location: City, State format (e.g., "Delray Beach, FL")
+            
+        Returns:
+            Dict with market data including median rent, trends, etc.
+        """
+        logger.info(f"Fetching market data for location: {location}")
+        
+        try:
+            result = await self.zillow.get_market_data(location=location)
+            
+            if result.success and result.data:
+                logger.info(f"Market data fetch successful for: {location}")
+                return {
+                    "success": True,
+                    "location": location,
+                    "data": result.data,
+                    "fetched_at": datetime.utcnow().isoformat()
+                }
+            else:
+                logger.warning(f"Market data fetch failed: {result.error}")
+                return {
+                    "success": False,
+                    "location": location,
+                    "error": result.error or "Failed to fetch market data from AXESSO API",
+                    "data": None,
+                    "fetched_at": datetime.utcnow().isoformat()
+                }
+        except Exception as e:
+            logger.error(f"Error fetching market data: {e}")
+            return {
+                "success": False,
+                "location": location,
+                "error": str(e),
+                "data": None,
+                "fetched_at": datetime.utcnow().isoformat()
+            }
+    
+    async def get_similar_rent(
+        self,
+        zpid: Optional[str] = None,
+        url: Optional[str] = None,
+        address: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Fetch similar rental properties from Zillow via AXESSO API.
+        
+        Args:
+            zpid: Zillow Property ID
+            url: Property URL on Zillow
+            address: Property address
+            
+        Returns:
+            Dict with similar rental properties
+        """
+        logger.info(f"Fetching similar rentals - zpid: {zpid}, address: {address}")
+        
+        try:
+            result = await self.zillow.get_similar_rent(zpid=zpid, url=url, address=address)
+            
+            if result.success and result.data:
+                logger.info(f"Similar rent fetch successful")
+                return {
+                    "success": True,
+                    "results": result.data.get("similarProperties", result.data.get("properties", [])),
+                    "total_count": len(result.data.get("similarProperties", result.data.get("properties", []))),
+                    "fetched_at": datetime.utcnow().isoformat()
+                }
+            else:
+                logger.warning(f"Similar rent fetch failed: {result.error}")
+                return {
+                    "success": False,
+                    "error": result.error or "Failed to fetch similar rentals from AXESSO API",
+                    "results": [],
+                    "total_count": 0,
+                    "fetched_at": datetime.utcnow().isoformat()
+                }
+        except Exception as e:
+            logger.error(f"Error fetching similar rentals: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "results": [],
+                "total_count": 0,
+                "fetched_at": datetime.utcnow().isoformat()
+            }
+    
+    async def get_similar_sold(
+        self,
+        zpid: Optional[str] = None,
+        url: Optional[str] = None,
+        address: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Fetch similar sold properties from Zillow via AXESSO API.
+        
+        Args:
+            zpid: Zillow Property ID
+            url: Property URL on Zillow
+            address: Property address
+            
+        Returns:
+            Dict with similar sold properties
+        """
+        logger.info(f"Fetching similar sold - zpid: {zpid}, address: {address}")
+        
+        try:
+            result = await self.zillow.get_similar_sold(zpid=zpid, url=url, address=address)
+            
+            if result.success and result.data:
+                logger.info(f"Similar sold fetch successful")
+                return {
+                    "success": True,
+                    "results": result.data.get("similarProperties", result.data.get("properties", [])),
+                    "total_count": len(result.data.get("similarProperties", result.data.get("properties", []))),
+                    "fetched_at": datetime.utcnow().isoformat()
+                }
+            else:
+                logger.warning(f"Similar sold fetch failed: {result.error}")
+                return {
+                    "success": False,
+                    "error": result.error or "Failed to fetch similar sold from AXESSO API",
+                    "results": [],
+                    "total_count": 0,
+                    "fetched_at": datetime.utcnow().isoformat()
+                }
+        except Exception as e:
+            logger.error(f"Error fetching similar sold: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "results": [],
+                "total_count": 0,
+                "fetched_at": datetime.utcnow().isoformat()
+            }
+    
     def get_mock_property(self) -> PropertyResponse:
         """
         Return mock property data for testing/demo.

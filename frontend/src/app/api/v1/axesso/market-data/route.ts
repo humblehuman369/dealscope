@@ -3,13 +3,13 @@ import { NextRequest, NextResponse } from 'next/server'
 // Force dynamic rendering for API routes
 export const dynamic = 'force-dynamic'
 
-// Axesso API configuration - use server-side env var (no NEXT_PUBLIC_ prefix)
-const AXESSO_BASE_URL = 'https://api.axesso.de'
-const AXESSO_API_KEY = process.env.AXESSO_API_KEY || process.env.NEXT_PUBLIC_AXESSO_API_KEY || ''
+// Backend URL - proxy requests through backend which has the Axesso API key
+const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.railway.app'
 
 /**
  * GET /api/v1/axesso/market-data
- * Proxies requests to Axesso /zil/market-data endpoint
+ * Proxies requests to backend /api/v1/market-data endpoint
+ * which then calls Axesso API with the API key
  * 
  * Query params:
  * - location: City, State format (e.g., "Delray Beach, FL")
@@ -17,54 +17,59 @@ const AXESSO_API_KEY = process.env.AXESSO_API_KEY || process.env.NEXT_PUBLIC_AXE
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    
-    // Build Axesso URL with query params
-    const axessoUrl = new URL(`${AXESSO_BASE_URL}/zil/market-data`)
-    
-    // Forward location param
     const location = searchParams.get('location')
-    
-    if (location) axessoUrl.searchParams.append('location', location)
 
-    console.log('[Axesso Market Data] Fetching:', axessoUrl.toString())
-    console.log('[Axesso Market Data] API Key present:', !!AXESSO_API_KEY)
-
-    if (!AXESSO_API_KEY) {
-      console.error('[Axesso Market Data] No API key configured')
+    if (!location) {
       return NextResponse.json(
-        { error: 'Axesso API key not configured' },
-        { status: 500 }
+        { error: 'Location parameter is required' },
+        { status: 400 }
       )
     }
 
-    const response = await fetch(axessoUrl.toString(), {
+    // Build backend URL with query params
+    const backendUrl = new URL(`${BACKEND_URL}/api/v1/market-data`)
+    backendUrl.searchParams.append('location', location)
+
+    console.log('[Market Data Proxy] Fetching from backend:', backendUrl.toString())
+
+    const response = await fetch(backendUrl.toString(), {
       method: 'GET',
       headers: {
-        'axesso-api-key': AXESSO_API_KEY,
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
+      cache: 'no-store',
     })
 
-    console.log('[Axesso Market Data] Response status:', response.status)
+    console.log('[Market Data Proxy] Backend response status:', response.status)
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('[Axesso Market Data] Error:', response.status, errorText)
-      return NextResponse.json(
-        { error: `Axesso API error: ${response.status}`, details: errorText },
-        { status: response.status }
-      )
+      console.error('[Market Data Proxy] Backend error:', response.status, errorText)
+      
+      // Try to parse as JSON for better error message
+      try {
+        const errorJson = JSON.parse(errorText)
+        return NextResponse.json(
+          { error: errorJson.detail || `Backend error: ${response.status}` },
+          { status: response.status }
+        )
+      } catch {
+        return NextResponse.json(
+          { error: `Backend error: ${response.status}`, details: errorText },
+          { status: response.status }
+        )
+      }
     }
 
     const data = await response.json()
-    console.log('[Axesso Market Data] Success')
+    console.log('[Market Data Proxy] Success - received market data')
     
     return NextResponse.json(data)
   } catch (error) {
-    console.error('[Axesso Market Data] Exception:', error)
+    console.error('[Market Data Proxy] Exception:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch market data' },
+      { error: 'Failed to fetch market data from backend' },
       { status: 500 }
     )
   }

@@ -1540,6 +1540,115 @@ async def get_property_photos(
 
 
 # ============================================
+# MARKET DATA ENDPOINTS
+# ============================================
+
+@app.get("/api/v1/market-data")
+async def get_market_data(
+    location: str = Query(..., description="City, State format (e.g., 'Delray Beach, FL')")
+):
+    """
+    Get rental market data from Zillow via AXESSO API.
+    
+    Args:
+        location: City, State format (e.g., "Delray Beach, FL")
+    
+    Returns:
+        Market data including median rent, trends, temperature, etc.
+    """
+    try:
+        logger.info(f"Market data request for location: {location}")
+        
+        result = await property_service.get_market_data(location=location)
+        
+        if result.get("success"):
+            return result.get("data", {})
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail=result.get("error", "Failed to fetch market data")
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Market data fetch error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/similar-rent")
+async def get_similar_rent(
+    zpid: Optional[str] = None,
+    url: Optional[str] = None,
+    address: Optional[str] = None
+):
+    """
+    Get similar rental properties from Zillow via AXESSO API.
+    
+    Args:
+        zpid: Zillow Property ID
+        url: Property URL on Zillow
+        address: Property address
+    
+    Returns:
+        List of similar rental properties
+    """
+    try:
+        if not zpid and not url and not address:
+            raise HTTPException(
+                status_code=400, 
+                detail="At least one of zpid, url, or address is required"
+            )
+        
+        logger.info(f"Similar rent request - zpid: {zpid}, address: {address}")
+        
+        result = await property_service.get_similar_rent(zpid=zpid, url=url, address=address)
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Similar rent fetch error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/similar-sold")
+async def get_similar_sold(
+    zpid: Optional[str] = None,
+    url: Optional[str] = None,
+    address: Optional[str] = None
+):
+    """
+    Get similar sold properties from Zillow via AXESSO API.
+    
+    Args:
+        zpid: Zillow Property ID
+        url: Property URL on Zillow
+        address: Property address
+    
+    Returns:
+        List of similar recently sold properties
+    """
+    try:
+        if not zpid and not url and not address:
+            raise HTTPException(
+                status_code=400, 
+                detail="At least one of zpid, url, or address is required"
+            )
+        
+        logger.info(f"Similar sold request - zpid: {zpid}, address: {address}")
+        
+        result = await property_service.get_similar_sold(zpid=zpid, url=url, address=address)
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Similar sold fetch error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
 # COMPARISON ENDPOINTS (EXISTING - PRESERVED)
 # ============================================
 
