@@ -72,7 +72,7 @@ export default function Header() {
   const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', auth: true },
     { href: '/search', icon: Search, label: 'Search', auth: false },
-    { href: propertyAnalyticsUrl, icon: BarChart3, label: 'Analyze', auth: false },
+    { href: '/analyzing', icon: BarChart3, label: 'Analyze', auth: false },
     { href: '/compare', icon: GitCompare, label: 'Compare', auth: false },
   ]
 

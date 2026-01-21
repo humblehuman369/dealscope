@@ -15,6 +15,7 @@ import {
   HelpCircle,
   ChevronLeft,
   ChevronRight,
+  Home,
 } from 'lucide-react'
 
 interface TabItem {
@@ -27,6 +28,7 @@ interface TabItem {
 }
 
 const tabs: TabItem[] = [
+  { id: 'property-details', label: 'Property Details', shortLabel: 'Details', icon: Home, section: 'property-details' },
   { id: 'market-data', label: 'Market Data', shortLabel: 'Market Data', icon: BarChart3, section: 'market-data' },
   { id: 'projections', label: 'Buy & Hold Projections', shortLabel: 'Projections', icon: TrendingUp, section: 'projections' },
   { id: 'sales-comps', label: 'Sales Comps & ARV', shortLabel: 'Comps', icon: Building2, section: 'sales-comps' },
