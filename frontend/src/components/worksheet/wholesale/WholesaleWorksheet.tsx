@@ -176,7 +176,7 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   const fullAddress = property.full_address || `${address}${city ? `, ${city}` : ''}${state ? `, ${state}` : ''}${zip ? ` ${zip}` : ''}`
 
   return (
-    <div className="w-full min-h-screen bg-slate-50 pt-12">
+    <div className="w-full min-h-screen bg-slate-50">
       {/* PROPERTY ADDRESS BAR */}
       <div className="w-full bg-white">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2">
