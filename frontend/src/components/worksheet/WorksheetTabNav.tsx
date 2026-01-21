@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
+  Search,
 } from 'lucide-react'
 
 interface TabItem {
@@ -29,6 +30,7 @@ interface TabItem {
 }
 
 const tabs: TabItem[] = [
+  { id: 'analyze', label: 'Analyze Property', shortLabel: 'Analyze', icon: Search, section: 'analyze' },
   { id: 'property-details', label: 'Property Details', shortLabel: 'Details', icon: Home, section: 'property-details' },
   { id: 'market-data', label: 'Market Data', shortLabel: 'Market Data', icon: BarChart3, section: 'market-data' },
   { id: 'projections', label: 'Buy & Hold Projections', shortLabel: 'Projections', icon: TrendingUp, section: 'projections' },
@@ -105,19 +107,16 @@ export function WorksheetTabNav({
   const handleTabClick = (tab: TabItem) => {
     if (!isTabsEnabled || tab.disabled) return
     
+    // Navigate to analyzing page for analyze tab
+    if (tab.id === 'analyze') {
+      router.push('/analyzing')
+      return
+    }
+    
     // Navigate to property details page for property-details tab
     if (tab.id === 'property-details') {
-      const zpid = propertyData?.property_data_snapshot?.zpid
-      if (zpid) {
-        router.push(`/property/${zpid}`)
-        return
-      }
-      // Fallback: use address if zpid not available
-      const address = propertyData?.full_address || propertyData?.address_street
-      if (address) {
-        router.push(`/property?address=${encodeURIComponent(address)}`)
-        return
-      }
+      router.push('/property-details')
+      return
     }
     
     if (tab.section) {
