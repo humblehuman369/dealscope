@@ -18,6 +18,17 @@ import {
   STRATEGY_ROUTE_MAP,
 } from '@/components/iq-verdict'
 import { parseAddressString } from '@/utils/formatters'
+import { useAuth } from '@/context/AuthContext'
+
+// Map IQ strategy IDs to worksheet route segments
+const WORKSHEET_ROUTES: Record<string, string> = {
+  'long-term-rental': 'ltr',
+  'short-term-rental': 'str',
+  'brrrr': 'brrrr',
+  'fix-and-flip': 'flip',
+  'house-hack': 'househack',
+  'wholesale': 'wholesale',
+}
 
 // Sample photos for fallback
 const SAMPLE_PHOTOS = [
@@ -28,6 +39,7 @@ const SAMPLE_PHOTOS = [
 function VerdictContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { isAuthenticated, setShowAuthModal } = useAuth()
 
   const addressParam = searchParams.get('address') || ''
   
@@ -35,6 +47,7 @@ function VerdictContent() {
   const [property, setProperty] = useState<IQProperty | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isNavigating, setIsNavigating] = useState(false)
 
   // Fetch property data from API
   useEffect(() => {
@@ -179,24 +192,114 @@ function VerdictContent() {
     router.back()
   }, [router])
 
-  const handleViewStrategy = useCallback((strategy: IQStrategy) => {
+  const handleViewStrategy = useCallback(async (strategy: IQStrategy) => {
     if (!property) return
-    // Build full address with city, state zip (no comma between state and zip)
-    // Format: "street, city, state zip" - required by backend address parser
-    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-    const fullAddress = [
-      property.address,
-      property.city,
-      stateZip
-    ].filter(Boolean).join(', ')
-    const encodedAddress = encodeURIComponent(fullAddress)
-    const strategyId = STRATEGY_ROUTE_MAP[strategy.id]
     
-    // Navigate to the NEW property-details page with zpid in the path
-    // Falls back to 'unknown' if zpid is not available (rare edge case)
-    const zpid = property.zpid || 'unknown'
-    router.push(`/property/${zpid}?address=${encodedAddress}&strategy=${strategyId}`)
-  }, [property, router])
+    // Require authentication for worksheets
+    if (!isAuthenticated) {
+      // Store intended destination for after login
+      localStorage.setItem('pendingStrategy', strategy.id)
+      localStorage.setItem('pendingAddress', addressParam)
+      setShowAuthModal('login')
+      return
+    }
+    
+    setIsNavigating(true)
+    
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        setShowAuthModal('login')
+        setIsNavigating(false)
+        return
+      }
+      
+      // Build full address
+      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+      const fullAddress = [
+        property.address,
+        property.city,
+        stateZip
+      ].filter(Boolean).join(', ')
+      
+      // Save property to get an ID for the worksheet
+      const saveResponse = await fetch('/api/v1/properties/saved', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          address_street: property.address,
+          address_city: property.city,
+          address_state: property.state,
+          address_zip: property.zip,
+          full_address: fullAddress,
+          status: 'watching',
+          property_data_snapshot: {
+            zpid: property.zpid,
+            street: property.address,
+            city: property.city,
+            state: property.state,
+            zipCode: property.zip,
+            listPrice: property.price,
+            monthlyRent: property.monthlyRent,
+            propertyTaxes: property.propertyTaxes,
+            insurance: property.insurance,
+            bedrooms: property.beds,
+            bathrooms: property.baths,
+            sqft: property.sqft,
+            arv: property.arv || property.price,
+            averageDailyRate: property.averageDailyRate,
+            occupancyRate: property.occupancyRate,
+          },
+        }),
+      })
+      
+      let propertyId: string | null = null
+      
+      if (saveResponse.ok) {
+        const data = await saveResponse.json()
+        propertyId = data.id
+      } else if (saveResponse.status === 409 || saveResponse.status === 400) {
+        // Property already exists, fetch the list to find it
+        const listResponse = await fetch('/api/v1/properties/saved', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        })
+        
+        if (listResponse.ok) {
+          const properties = await listResponse.json()
+          const existing = properties.find((p: { address_street: string; full_address?: string }) => 
+            p.address_street === property.address || 
+            p.full_address?.includes(property.address)
+          )
+          if (existing) {
+            propertyId = existing.id
+          }
+        }
+      } else if (saveResponse.status === 401) {
+        setShowAuthModal('login')
+        setIsNavigating(false)
+        return
+      }
+      
+      if (propertyId) {
+        // Navigate to the worksheet
+        const worksheetRoute = WORKSHEET_ROUTES[strategy.id] || 'ltr'
+        router.push(`/worksheet/${propertyId}/${worksheetRoute}`)
+      } else {
+        throw new Error('Could not save property')
+      }
+    } catch (err) {
+      console.error('Failed to navigate to worksheet:', err)
+      setIsNavigating(false)
+      // Fallback to property details page
+      const zpid = property.zpid || 'unknown'
+      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+      const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+      router.push(`/property/${zpid}?address=${encodeURIComponent(fullAddress)}`)
+    }
+  }, [property, isAuthenticated, addressParam, setShowAuthModal, router])
 
   const handleCompareAll = useCallback(() => {
     if (!property) return
@@ -219,6 +322,18 @@ function VerdictContent() {
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-gray-500 dark:text-gray-400">Analyzing property...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Navigating to worksheet state
+  if (isNavigating) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-navy-900">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-500 dark:text-gray-400">Loading worksheet...</p>
         </div>
       </div>
     )
