@@ -455,22 +455,23 @@ export function StrWorksheet({
   const estLTRMonthlyRent = (calc.grossRevenue / 12) * 0.35
   const estLTRCashFlow = estLTRMonthlyRent - calc.monthlyPayment - (inputs.supplies_monthly * 0.2) - (inputs.insurance_annual / 12) * 0.6 - (inputs.property_taxes_annual / 12)
 
+  // Build full address - use property.full_address if available, otherwise construct it
+  const fullAddress = property.full_address || `${address}${city ? `, ${city}` : ''}${state ? `, ${state}` : ''}${zip ? ` ${zip}` : ''}`
+
   // ============================================
   // RENDER
   // ============================================
   return (
     <div className="w-full min-h-screen bg-slate-50 pt-12">
       {/* PROPERTY ADDRESS BAR - Above worksheet tabs */}
-      <div className="w-full bg-white border-b border-slate-200">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <h1 className="text-base sm:text-lg font-semibold text-slate-800">
-            {address}{city ? `, ${city}` : ''}{state ? `, ${state}` : ''}{zip ? ` ${zip}` : ''}
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500">
-            {beds > 0 && `${beds} bed`}
-            {baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}
-            {sqft > 0 && ` · ${sqft.toLocaleString()} sqft`}
-          </p>
+      <div className="w-full bg-white">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <div className="flex items-center gap-3">
+            <button onClick={() => window.history.back()} className="text-teal hover:text-teal/80 transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <h1 className="text-base sm:text-lg font-semibold text-slate-800">{fullAddress}</h1>
+          </div>
         </div>
       </div>
       
