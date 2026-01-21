@@ -9,7 +9,7 @@ import axios from 'axios';
 import { calculateBoundingBox, calculateTargetPoint, calculateDistance } from '../utils/geoCalculations';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
-const GOOGLE_MAPS_API_KEY = 'AIzaSyCKp7Tt4l2zu2h2EV6PXPz7xbZLoPrtziw';
+const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
 // Enable mock data in development when API is unreachable
 const USE_MOCK_DATA_ON_ERROR = false; // Disable mock data - use real Google Maps API

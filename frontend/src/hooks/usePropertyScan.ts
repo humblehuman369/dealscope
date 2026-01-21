@@ -26,7 +26,7 @@ export interface ScanResult {
   distance: number;
 }
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyCKp7Tt4l2zu2h2EV6PXPz7xbZLoPrtziw';
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
 /**
  * Reverse geocode coordinates to get address using Google Maps API.

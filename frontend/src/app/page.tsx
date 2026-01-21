@@ -85,7 +85,7 @@ function MobileScannerView({ onSwitchMode }: { onSwitchMode: () => void }) {
       const { latitude, longitude } = position.coords;
       
       // Use Google Maps reverse geocode to find property at location
-      const GOOGLE_MAPS_API_KEY = 'AIzaSyCKp7Tt4l2zu2h2EV6PXPz7xbZLoPrtziw';
+      const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
       const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude.toFixed(6)},${longitude.toFixed(6)}&key=${GOOGLE_MAPS_API_KEY}`;
       const response = await fetch(url);
       const data = await response.json();
