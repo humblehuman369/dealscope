@@ -194,6 +194,10 @@ export function usePropertyScan() {
       console.log(`[ImprovedScan] Scanning from: ${userLat.toFixed(6)}, ${userLng.toFixed(6)} heading ${heading}°`);
       console.log(`[ImprovedScan] GPS accuracy: ±${currentScanner.accuracy}m`);
 
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'usePropertyScan.ts:performScan:beforeQuery',message:'Starting scan with params',data:{userLat,userLng,heading,estimatedDistance,accuracy:currentScanner.accuracy,useOverride},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2-H4'})}).catch(()=>{});
+      // #endregion
+
       // IMPROVED: Use multi-point sampling to find all nearby properties
       // This queries multiple points along the scan direction to catch adjacent properties
       const properties = await queryPropertiesAlongScanPath(
@@ -203,6 +207,10 @@ export function usePropertyScan() {
         estimatedDistance,
         20 // 20° cone angle for good coverage
       );
+
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'usePropertyScan.ts:performScan:afterQuery',message:'Scan query completed',data:{propertiesFound:properties.length,firstProperty:properties[0]?.address},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1-H5'})}).catch(()=>{});
+      // #endregion
 
       if (properties.length === 0) {
         throw new Error('No properties found in scan area. Try adjusting distance or aim.');
