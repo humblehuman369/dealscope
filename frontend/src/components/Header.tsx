@@ -248,6 +248,23 @@ export default function Header() {
             {navItems.map((item) => {
               if (item.auth && !isAuthenticated) return null
               
+              // Special case: Search opens modal
+              if (item.label === 'Search') {
+                return (
+                  <button 
+                    key="mobile-search"
+                    onClick={() => {
+                      setShowMobileMenu(false)
+                      setShowSearchModal(true)
+                    }}
+                    className="flex items-center gap-3 px-3.5 py-3 text-[15px] font-medium rounded-[10px] transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:text-teal dark:hover:text-cyan-400 text-left"
+                  >
+                    <item.icon className="w-5 h-5" />
+                    {item.label}
+                  </button>
+                )
+              }
+              
               const active = item.href === '/dashboard' 
                 ? isActive('/dashboard')
                 : item.href.startsWith('/property') 

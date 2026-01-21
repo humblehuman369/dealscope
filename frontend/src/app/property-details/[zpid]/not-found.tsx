@@ -1,14 +1,19 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Home, Search, ArrowLeft } from 'lucide-react'
+import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
 /**
  * Property Not Found Page
  * 
  * Shown when a property with the given ZPID cannot be found.
+ * Opens search modal instead of linking to old search page.
  */
 export default function PropertyNotFound() {
+  const [showSearchModal, setShowSearchModal] = useState(false)
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0b1426] flex flex-col items-center justify-center p-6 transition-colors">
       <div className="text-center max-w-md">
@@ -30,13 +35,13 @@ export default function PropertyNotFound() {
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link
-            href="/search"
+          <button
+            onClick={() => setShowSearchModal(true)}
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-xl transition-colors"
           >
             <Search size={18} />
             Search Properties
-          </Link>
+          </button>
           <Link
             href="/"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium rounded-xl transition-colors"
@@ -46,6 +51,12 @@ export default function PropertyNotFound() {
           </Link>
         </div>
       </div>
+
+      {/* Search Modal */}
+      <SearchPropertyModal 
+        isOpen={showSearchModal} 
+        onClose={() => setShowSearchModal(false)} 
+      />
     </div>
   )
 }

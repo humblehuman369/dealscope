@@ -26,8 +26,12 @@ export const dynamic = 'force-dynamic'
  */
 async function getPropertyData(zpid: string, address?: string): Promise<PropertyData | null> {
   try {
-    // Use absolute URL for server-side fetch
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    // Build URL for server-side fetch
+    // Priority: NEXT_PUBLIC_APP_URL > VERCEL_URL > localhost
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL 
+      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+      || 'http://localhost:3000'
+    
     const url = new URL(`${baseUrl}/api/v1/property-details/${zpid}`)
     if (address) {
       url.searchParams.set('address', address)
@@ -40,14 +44,15 @@ async function getPropertyData(zpid: string, address?: string): Promise<Property
     })
 
     if (!response.ok) {
-      console.error(`[Property Details Page] Failed to fetch: ${response.status}`)
+      const errorText = await response.text().catch(() => 'Unknown error')
+      console.error(`[Property Details Page] Failed to fetch: ${response.status}`, errorText)
       return null
     }
 
     const result = await response.json()
     
     if (!result.success || !result.data) {
-      console.error('[Property Details Page] No data in response')
+      console.error('[Property Details Page] No data in response:', result.error || 'Unknown')
       return null
     }
 

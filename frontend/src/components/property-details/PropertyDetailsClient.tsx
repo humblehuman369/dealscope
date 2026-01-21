@@ -17,8 +17,9 @@ import {
   ListingInfo,
   LocationMap,
 } from './index'
-import { Heart, FileText, Share2, ArrowLeft } from 'lucide-react'
+import { Heart, FileText, Share2, Search } from 'lucide-react'
 import Link from 'next/link'
+import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
 interface PropertyDetailsClientProps {
   property: PropertyData
@@ -36,6 +37,7 @@ export function PropertyDetailsClient({ property }: PropertyDetailsClientProps) 
   const [isSaved, setIsSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
+  const [showSearchModal, setShowSearchModal] = useState(false)
 
   const fullAddress = `${property.address.streetAddress}, ${property.address.city}, ${property.address.state} ${property.address.zipcode}`
 
@@ -201,14 +203,14 @@ export function PropertyDetailsClient({ property }: PropertyDetailsClientProps) 
       {/* Fixed Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 px-6 z-50 backdrop-blur-lg bg-opacity-95 dark:bg-opacity-95">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-3 sm:gap-4">
-          {/* Back to Search */}
-          <Link
-            href="/search"
+          {/* Search New Property */}
+          <button
+            onClick={() => setShowSearchModal(true)}
             className="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
-            <ArrowLeft size={18} />
-            <span className="text-sm font-medium hidden sm:inline">Back</span>
-          </Link>
+            <Search size={18} />
+            <span className="text-sm font-medium hidden sm:inline">Search</span>
+          </button>
 
           {/* Save Button */}
           <button 
@@ -248,6 +250,12 @@ export function PropertyDetailsClient({ property }: PropertyDetailsClientProps) 
           </button>
         </div>
       </div>
+
+      {/* Search Modal */}
+      <SearchPropertyModal 
+        isOpen={showSearchModal} 
+        onClose={() => setShowSearchModal(false)} 
+      />
     </div>
   )
 }
