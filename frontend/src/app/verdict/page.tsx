@@ -169,12 +169,13 @@ function VerdictContent() {
 
   const handleViewStrategy = useCallback((strategy: IQStrategy) => {
     if (!property) return
-    // Build full address with city, state, zip
+    // Build full address with city, state zip (no comma between state and zip)
+    // Format: "street, city, state zip" - required by backend address parser
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const fullAddress = [
       property.address,
       property.city,
-      property.state,
-      property.zip
+      stateZip
     ].filter(Boolean).join(', ')
     const encodedAddress = encodeURIComponent(fullAddress)
     const strategyId = STRATEGY_ROUTE_MAP[strategy.id]
@@ -185,12 +186,13 @@ function VerdictContent() {
 
   const handleCompareAll = useCallback(() => {
     if (!property) return
-    // Build full address with city, state, zip
+    // Build full address with city, state zip (no comma between state and zip)
+    // Format: "street, city, state zip" - required by backend address parser
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const fullAddress = [
       property.address,
       property.city,
-      property.state,
-      property.zip
+      stateZip
     ].filter(Boolean).join(', ')
     const encodedAddress = encodeURIComponent(fullAddress)
     router.push(`/compare?address=${encodedAddress}`)
