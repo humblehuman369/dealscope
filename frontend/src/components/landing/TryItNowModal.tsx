@@ -47,12 +47,16 @@ export function TryItNowModal({ isOpen, onClose, onScanProperty }: TryItNowModal
           <X size={24} />
         </button>
 
-        {/* Header */}
+        {/* Header - IQ icon on left, text on right */}
         <div className="try-modal-header">
-          <div className="try-modal-icon">
-            <img src="/images/iq-brain-dark.png" alt="IQ" className="try-modal-iq-icon" />
+          <div className="flex items-center gap-4 mb-3">
+            <div className="try-modal-icon flex-shrink-0">
+              <img src="/images/iq-brain-dark.png" alt="IQ" className="try-modal-iq-icon" />
+            </div>
+            <h2 className="try-modal-title leading-tight">
+              How would you like to<br />analyze a property?
+            </h2>
           </div>
-          <h2 className="try-modal-title">How would you like to analyze a property?</h2>
           <p className="try-modal-subtitle">Choose your preferred method to get started</p>
         </div>
 

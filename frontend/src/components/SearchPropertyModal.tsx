@@ -74,22 +74,24 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
             <X size={24} />
           </button>
 
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <img 
-                src="/images/iq-brain-dark.png" 
-                alt="IQ" 
-                className="w-14 h-14 object-contain"
-                onError={(e) => {
-                  // Fallback if image doesn't load
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
+          {/* Header - IQ icon on left, text on right */}
+          <div className="mb-8">
+            <div className="flex items-center gap-4 mb-3">
+              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                <img 
+                  src="/images/iq-brain-dark.png" 
+                  alt="IQ" 
+                  className="w-10 h-10 object-contain"
+                  onError={(e) => {
+                    // Fallback if image doesn't load
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+              <h2 className="text-xl font-bold text-white leading-tight">
+                How would you like to<br />analyze a property?
+              </h2>
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">
-              How would you like to analyze a property?
-            </h2>
             <p className="text-gray-400 text-sm">
               Choose your preferred method to get started
             </p>
