@@ -25,6 +25,17 @@ export const dynamic = 'force-dynamic'
  * Fetch property data from our API route
  */
 async function getPropertyData(zpid: string, address?: string): Promise<PropertyData | null> {
+  console.log('[Property Details Page] ========================================')
+  console.log('[Property Details Page] Starting data fetch')
+  console.log('[Property Details Page] ZPID:', zpid)
+  console.log('[Property Details Page] Address:', address)
+  
+  // Validate inputs
+  if (!address) {
+    console.error('[Property Details Page] ERROR: No address provided')
+    return null
+  }
+  
   try {
     // Build URL for server-side fetch
     // Priority: NEXT_PUBLIC_APP_URL > VERCEL_URL > localhost
@@ -33,15 +44,16 @@ async function getPropertyData(zpid: string, address?: string): Promise<Property
       || 'http://localhost:3000'
     
     const url = new URL(`${baseUrl}/api/v1/property-details/${zpid}`)
-    if (address) {
-      url.searchParams.set('address', address)
-    }
+    url.searchParams.set('address', address)
     
-    console.log('[Property Details Page] Fetching:', url.toString())
+    console.log('[Property Details Page] Fetching from:', url.toString())
+    console.log('[Property Details Page] Base URL used:', baseUrl)
     
     const response = await fetch(url.toString(), {
       cache: 'no-store'
     })
+
+    console.log('[Property Details Page] Response status:', response.status)
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error')
@@ -51,14 +63,22 @@ async function getPropertyData(zpid: string, address?: string): Promise<Property
 
     const result = await response.json()
     
-    if (!result.success || !result.data) {
-      console.error('[Property Details Page] No data in response:', result.error || 'Unknown')
+    if (!result.success) {
+      console.error('[Property Details Page] API returned success=false:', result.error || 'Unknown error')
+      return null
+    }
+    
+    if (!result.data) {
+      console.error('[Property Details Page] No data in response')
       return null
     }
 
+    console.log('[Property Details Page] Successfully received property data')
+    console.log('[Property Details Page] Property address:', result.data.address?.streetAddress)
+    
     return result.data as PropertyData
   } catch (error) {
-    console.error('[Property Details Page] Error:', error)
+    console.error('[Property Details Page] Unexpected error:', error)
     return null
   }
 }

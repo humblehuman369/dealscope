@@ -23,54 +23,101 @@ export async function GET(
   const { searchParams } = new URL(request.url)
   const address = searchParams.get('address')
 
-  console.log('[Property Details API] Request - zpid:', zpid, 'address:', address)
+  console.log('[Property Details API] ========================================')
+  console.log('[Property Details API] Request received')
+  console.log('[Property Details API] ZPID:', zpid)
+  console.log('[Property Details API] Address:', address)
+  console.log('[Property Details API] Backend URL:', BACKEND_URL)
 
   if (!zpid) {
+    console.log('[Property Details API] ERROR: ZPID is required')
     return NextResponse.json(
       { success: false, error: 'ZPID is required' },
       { status: 400 }
     )
   }
 
+  if (!address) {
+    console.log('[Property Details API] ERROR: Address is required')
+    return NextResponse.json(
+      { success: false, error: 'Address is required for property lookup' },
+      { status: 400 }
+    )
+  }
+
   try {
     // Fetch property data and photos in parallel
-    const [propertyRes, photosRes] = await Promise.allSettled([
-      // Fetch property data via backend search endpoint (if address available)
-      address ? fetch(`${BACKEND_URL}/api/v1/properties/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address }),
-      }) : Promise.resolve(null),
-      // Fetch photos via backend photos endpoint
-      fetch(`${BACKEND_URL}/api/v1/photos?zpid=${zpid}`),
-    ])
+    console.log('[Property Details API] Fetching property data and photos in parallel...')
+    
+    const propertyPromise = fetch(`${BACKEND_URL}/api/v1/properties/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address }),
+    })
+    
+    const photosPromise = fetch(`${BACKEND_URL}/api/v1/photos?zpid=${zpid}`)
 
-    // Process property data
+    const [propertyRes, photosRes] = await Promise.allSettled([propertyPromise, photosPromise])
+
+    // Process property response
     let propertyData: Record<string, unknown> | null = null
-    if (propertyRes.status === 'fulfilled' && propertyRes.value && 'ok' in propertyRes.value && propertyRes.value.ok) {
-      propertyData = await propertyRes.value.json()
-      console.log('[Property Details API] Property data received')
+    
+    if (propertyRes.status === 'fulfilled') {
+      const response = propertyRes.value
+      console.log('[Property Details API] Property fetch status:', response.status)
+      
+      if (response.ok) {
+        try {
+          propertyData = await response.json()
+          console.log('[Property Details API] Property data received - property_id:', 
+            (propertyData as { property_id?: string })?.property_id,
+            'zpid:', (propertyData as { zpid?: string })?.zpid
+          )
+        } catch (parseError) {
+          console.error('[Property Details API] Failed to parse property response:', parseError)
+        }
+      } else {
+        const errorText = await response.text().catch(() => 'Unknown error')
+        console.error('[Property Details API] Backend returned error:', response.status, errorText)
+      }
     } else {
-      console.log('[Property Details API] Failed to fetch property data')
+      console.error('[Property Details API] Property fetch failed:', propertyRes.reason)
     }
 
-    // Process photos
-    let photosData: { photos?: { url?: string }[] } | null = null
-    if (photosRes.status === 'fulfilled' && photosRes.value.ok) {
-      photosData = await photosRes.value.json()
-      console.log('[Property Details API] Photos received:', photosData?.photos?.length || 0)
+    // Process photos response  
+    let photosData: { photos?: { url?: string }[]; success?: boolean } | null = null
+    
+    if (photosRes.status === 'fulfilled') {
+      const response = photosRes.value
+      console.log('[Property Details API] Photos fetch status:', response.status)
+      
+      if (response.ok) {
+        try {
+          photosData = await response.json()
+          console.log('[Property Details API] Photos received:', photosData?.photos?.length || 0)
+        } catch (parseError) {
+          console.error('[Property Details API] Failed to parse photos response:', parseError)
+        }
+      }
+    } else {
+      console.error('[Property Details API] Photos fetch failed:', photosRes.reason)
     }
 
+    // Check if we have property data
     if (!propertyData) {
-      // If no property data from search, return error
+      console.error('[Property Details API] No property data received - returning 404')
       return NextResponse.json(
-        { success: false, error: 'Property not found. Please provide a valid address.' },
+        { success: false, error: 'Property not found. The backend search returned no data.' },
         { status: 404 }
       )
     }
 
     // Normalize the property data
+    console.log('[Property Details API] Normalizing property data...')
     const normalizedProperty = normalizePropertyData(propertyData, photosData, zpid)
+    console.log('[Property Details API] Normalized successfully - address:', 
+      normalizedProperty.address?.streetAddress || 'unknown'
+    )
 
     return NextResponse.json({
       success: true,
@@ -78,9 +125,9 @@ export async function GET(
     })
 
   } catch (error) {
-    console.error('[Property Details API] Error:', error)
+    console.error('[Property Details API] Unexpected error:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch property data' },
+      { success: false, error: 'Failed to fetch property data: ' + (error instanceof Error ? error.message : 'Unknown error') },
       { status: 500 }
     )
   }
@@ -88,28 +135,47 @@ export async function GET(
 
 /**
  * Normalize backend API response into PropertyData format
+ * 
+ * Backend PropertyResponse structure:
+ * {
+ *   property_id: string
+ *   zpid: string | null
+ *   address: { street, city, state, zip_code, county, full_address }
+ *   details: { property_type, bedrooms, bathrooms, square_footage, lot_size, year_built, num_units, features }
+ *   valuations: { current_value_avm, zestimate, rent_zestimate, tax_assessed_value, arv, ... }
+ *   rentals: { monthly_rent_ltr, average_rent, average_daily_rate, occupancy_rate, ... }
+ *   market: { property_taxes_annual, hoa_fees_monthly, ... }
+ *   provenance: { ... }
+ *   data_quality: { ... }
+ *   fetched_at: string
+ * }
  */
 function normalizePropertyData(
   property: Record<string, unknown>,
-  photos: { photos?: { url?: string }[] } | null,
+  photos: { photos?: { url?: string }[]; success?: boolean } | null,
   zpid: string
 ) {
-  // Type the property data
+  // Type the backend PropertyResponse
   const p = property as {
+    property_id?: string
     zpid?: string | number
     address?: {
       street?: string
       city?: string
       state?: string
       zip_code?: string
+      county?: string
+      full_address?: string
     }
     details?: {
+      property_type?: string
       bedrooms?: number
       bathrooms?: number
       square_footage?: number
-      year_built?: number
-      property_type?: string
       lot_size?: number
+      year_built?: number
+      num_units?: number
+      features?: string[]
       stories?: number
     }
     valuations?: {
@@ -117,7 +183,11 @@ function normalizePropertyData(
       zestimate?: number
       rent_zestimate?: number
       tax_assessed_value?: number
+      tax_assessment_year?: number
       arv?: number
+      last_sale_price?: number
+      last_sale_date?: string
+      price_per_sqft?: number
     }
     rentals?: {
       monthly_rent_ltr?: number
@@ -127,8 +197,18 @@ function normalizePropertyData(
     }
     market?: {
       property_taxes_annual?: number
-      hoa_fee?: number
+      hoa_fees_monthly?: number
     }
+    fetched_at?: string
+    // Legacy fields that might exist
+    description?: string
+    listing_agent?: {
+      name?: string
+      phone?: string
+      brokerage?: string
+    }
+    mls_id?: string
+    list_date?: string
     features?: {
       heating?: string[]
       cooling?: string[]
@@ -143,14 +223,6 @@ function normalizePropertyData(
       waterfront?: boolean
       waterfront_features?: string[]
     }
-    description?: string
-    listing_agent?: {
-      name?: string
-      phone?: string
-      brokerage?: string
-    }
-    mls_id?: string
-    list_date?: string
   }
 
   // Extract photos
@@ -161,18 +233,22 @@ function normalizePropertyData(
       .filter((url): url is string => !!url)
   }
 
-  // Fallback photos
+  // Fallback photos if none found
   if (images.length === 0) {
     images = getPlaceholderImages()
   }
 
+  // Extract address components
   const streetAddress = p.address?.street || ''
   const city = p.address?.city || ''
   const state = p.address?.state || ''
   const zipcode = p.address?.zip_code || ''
+  
+  // Get price - prefer current_value_avm, fall back to zestimate
   const price = p.valuations?.current_value_avm || p.valuations?.zestimate || 0
   const livingArea = p.details?.square_footage || 0
 
+  // Build normalized property object matching frontend PropertyData interface
   return {
     zpid: p.zpid || zpid,
     address: {
@@ -196,19 +272,20 @@ function normalizePropertyData(
     stories: p.details?.stories,
     zestimate: p.valuations?.zestimate,
     rentZestimate: p.valuations?.rent_zestimate || p.rentals?.monthly_rent_ltr,
-    pricePerSqft: livingArea ? Math.round(price / livingArea) : undefined,
+    pricePerSqft: p.valuations?.price_per_sqft || (livingArea ? Math.round(price / livingArea) : undefined),
     annualTax: p.market?.property_taxes_annual,
     taxAssessedValue: p.valuations?.tax_assessed_value,
-    taxYear: new Date().getFullYear(),
-    hoaFee: p.market?.hoa_fee,
+    taxYear: p.valuations?.tax_assessment_year || new Date().getFullYear(),
+    hoaFee: p.market?.hoa_fees_monthly,
     hoaFrequency: 'monthly',
+    // Feature arrays - from details.features or legacy features object
     heating: p.features?.heating || [],
     cooling: p.features?.cooling || [],
     parking: p.features?.parking || [],
     parkingSpaces: p.features?.parking?.length,
     flooring: p.features?.flooring || [],
     appliances: p.features?.appliances || [],
-    interiorFeatures: p.features?.interior || [],
+    interiorFeatures: p.features?.interior || p.details?.features || [],
     exteriorFeatures: p.features?.exterior || [],
     construction: p.features?.construction || [],
     roof: p.features?.roof,
@@ -217,7 +294,7 @@ function normalizePropertyData(
     waterfrontFeatures: p.features?.waterfront_features,
     latitude: undefined,
     longitude: undefined,
-    description: p.description || '',
+    description: p.description || `${p.details?.bedrooms || 0} bed, ${p.details?.bathrooms || 0} bath property in ${city}, ${state}.`,
     images,
     totalPhotos: images.length,
     listingAgent: p.listing_agent,
