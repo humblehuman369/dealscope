@@ -460,6 +460,20 @@ export function StrWorksheet({
   // ============================================
   return (
     <div className="w-full min-h-screen bg-slate-50 pt-12">
+      {/* PROPERTY ADDRESS BAR - Above worksheet tabs */}
+      <div className="w-full bg-white border-b border-slate-200">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <h1 className="text-base sm:text-lg font-semibold text-slate-800">
+            {address}{city ? `, ${city}` : ''}{state ? `, ${state}` : ''}{zip ? ` ${zip}` : ''}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500">
+            {beds > 0 && `${beds} bed`}
+            {baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}
+            {sqft > 0 && ` · ${sqft.toLocaleString()} sqft`}
+          </p>
+        </div>
+      </div>
+      
       {/* WORKSHEET TAB NAV - Full width, sticky below global header */}
       <div className="w-full sticky top-12 z-40 bg-white border-b border-slate-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -467,86 +481,9 @@ export function StrWorksheet({
         </div>
       </div>
       
-      {/* PAGE HEADER - Property info + KPIs */}
+      {/* PAGE HEADER - KPIs only */}
       <div className="w-full bg-white border-b border-slate-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          {/* Top row */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-            <div className="flex items-start sm:items-center gap-3 sm:gap-5 min-w-0 flex-1">
-              <button className="text-teal hover:text-teal/80 transition-colors text-sm font-medium flex-shrink-0">
-                ← Back
-              </button>
-              <div className="min-w-0 flex-1">
-                <h1 className="text-sm sm:text-base font-semibold text-slate-800 truncate">
-                  {address}{city ? `, ${city}` : ''}{state ? `, ${state}` : ''}{zip ? ` ${zip}` : ''}
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-500 truncate">
-                  {beds > 0 && `${beds} bed`}
-                  {baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}
-                  {sqft > 0 && ` · ${sqft.toLocaleString()} sqft`}
-                </p>
-              </div>
-            </div>
-            
-            {/* View Toggle */}
-            <div className="flex items-center bg-slate-100 rounded-lg p-1 flex-shrink-0 self-end sm:self-auto">
-              <button 
-                onClick={() => setViewMode('guided')}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold rounded-md transition-all ${
-                  viewMode === 'guided' ? 'bg-teal text-white' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Guided
-              </button>
-              <button 
-                onClick={() => setViewMode('showall')}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
-                  viewMode === 'showall' ? 'bg-teal text-white' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Expand All
-              </button>
-            </div>
-          </div>
-          
-          {/* Progress indicator */}
-          <div className="flex items-center mb-4 sm:mb-5">
-            {SECTIONS.map((section, i) => {
-              const isComplete = completedSections.has(i) && i !== currentSection
-              const isActive = i === currentSection
-              const isPast = currentSection !== null && i < currentSection
-              
-              return (
-                <div key={section.id} className="flex items-center flex-1 last:flex-none">
-                  <button 
-                    onClick={() => toggleSection(i)}
-                    className="relative group flex-shrink-0"
-                    title={section.title}
-                  >
-                    {isComplete ? (
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-teal flex items-center justify-center text-white shadow-sm">
-                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
-                        </svg>
-                      </div>
-                    ) : isActive ? (
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-teal shadow-sm ring-2 sm:ring-4 ring-teal/20" />
-                    ) : (
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-200 border-2 border-slate-300" />
-                    )}
-                  </button>
-                  {i < SECTIONS.length - 1 && (
-                    <div className={`flex-1 h-0.5 mx-0.5 sm:mx-1 ${
-                      isPast || isComplete ? 'bg-teal' : 'bg-slate-200'
-                    }`} style={{ 
-                      backgroundImage: isPast || isComplete ? 'none' : 'repeating-linear-gradient(90deg, #CBD5E1 0, #CBD5E1 4px, transparent 4px, transparent 8px)' 
-                    }} />
-                  )}
-                </div>
-              )
-            })}
-          </div>
-          
           {/* KPI strip */}
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
             <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-teal/10">
@@ -601,7 +538,30 @@ export function StrWorksheet({
             </div>
           </>
         ) : (
-        <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">
+        <>
+          {/* View Toggle */}
+          <div className="flex justify-end mb-4">
+            <div className="flex items-center bg-slate-100 rounded-lg p-1">
+              <button 
+                onClick={() => setViewMode('guided')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                  viewMode === 'guided' ? 'bg-teal text-white' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Guided
+              </button>
+              <button 
+                onClick={() => setViewMode('showall')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
+                  viewMode === 'showall' ? 'bg-teal text-white' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Expand All
+              </button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">
           
           {/* LEFT COLUMN - Worksheet sections */}
           <div className="space-y-3">
@@ -971,6 +931,7 @@ export function StrWorksheet({
             </button>
           </div>
         </div>
+        </>
         )}
       </main>
     </div>

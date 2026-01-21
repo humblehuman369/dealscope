@@ -197,37 +197,18 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
 
   return (
     <div className="w-full min-h-screen bg-slate-50 pt-12">
+      {/* PROPERTY ADDRESS BAR */}
+      <div className="w-full bg-white border-b border-slate-200">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <h1 className="text-base sm:text-lg font-semibold text-slate-800">{address}{city ? `, ${city}` : ''}{state ? `, ${state}` : ''}{zip ? ` ${zip}` : ''}</h1>
+          <p className="text-xs sm:text-sm text-slate-500">{beds > 0 && `${beds} bed`}{baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}{sqft > 0 && ` · ${sqft.toLocaleString()} sqft`}</p>
+        </div>
+      </div>
+      
       <div className="w-full sticky top-12 z-40 bg-white border-b border-slate-200"><div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8"><WorksheetTabNav propertyId={propertyId} strategy="househack" zpid={property.zpid || propertyData.zpid} /></div></div>
       
       <div className="w-full bg-white border-b border-slate-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-            <div className="flex items-start sm:items-center gap-3 sm:gap-5 min-w-0 flex-1">
-              <button className="text-blue-500 hover:text-blue-600 transition-colors text-sm font-medium flex-shrink-0">← Back</button>
-              <div className="min-w-0 flex-1"><h1 className="text-sm sm:text-base font-semibold text-slate-800 truncate">{address}{city ? `, ${city}` : ''}{state ? `, ${state}` : ''}{zip ? ` ${zip}` : ''}</h1><p className="text-xs sm:text-sm text-slate-500 truncate">{beds > 0 && `${beds} bed`}{baths > 0 && ` · ${Math.round(baths * 10) / 10} bath`}{sqft > 0 && ` · ${sqft.toLocaleString()} sqft`}</p></div>
-            </div>
-            <div className="flex items-center bg-slate-100 rounded-lg p-1 flex-shrink-0 self-end sm:self-auto">
-              <button onClick={() => setViewMode('guided')} className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold rounded-md transition-all ${viewMode === 'guided' ? 'bg-blue-500 text-white' : 'text-slate-500 hover:text-slate-700'}`}>Guided</button>
-              <button onClick={() => setViewMode('showall')} className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === 'showall' ? 'bg-blue-500 text-white' : 'text-slate-500 hover:text-slate-700'}`}>Expand All</button>
-            </div>
-          </div>
-          
-          <div className="flex items-center mb-4 sm:mb-5">
-            {SECTIONS.map((section, i) => {
-              const isComplete = completedSections.has(i) && i !== currentSection; const isActive = i === currentSection; const isPast = currentSection !== null && i < currentSection
-              return (
-                <div key={section.id} className="flex items-center flex-1 last:flex-none">
-                  <button onClick={() => toggleSection(i)} className="relative group flex-shrink-0" title={section.title}>
-                    {isComplete ? <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-sm"><svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg></div>
-                    : isActive ? <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 shadow-sm ring-2 sm:ring-4 ring-blue-500/20" />
-                    : <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-200 border-2 border-slate-300" />}
-                  </button>
-                  {i < SECTIONS.length - 1 && <div className={`flex-1 h-0.5 mx-0.5 sm:mx-1 ${isPast || isComplete ? 'bg-blue-500' : 'bg-slate-200'}`} style={{ backgroundImage: isPast || isComplete ? 'none' : 'repeating-linear-gradient(90deg, #CBD5E1 0, #CBD5E1 4px, transparent 4px, transparent 8px)' }} />}
-                </div>
-              )
-            })}
-          </div>
-          
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
             <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${calc.liveFree ? 'bg-emerald-500/15' : calc.yourHousingCost < marketRent ? 'bg-blue-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Housing Cost</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums truncate ${calc.liveFree ? 'text-emerald-600' : calc.yourHousingCost < marketRent ? 'text-blue-600' : 'text-red-500'}`}>{fmt.currencyCompact(calc.yourHousingCost)}/mo</div></div>
             <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-emerald-500/10"><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Rental Income</div><div className="text-xs sm:text-sm lg:text-base font-bold text-emerald-600 tabular-nums truncate">{fmt.currencyCompact(calc.grossRentalIncome)}/mo</div></div>
@@ -256,7 +237,16 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
             </div>
           </>
         ) : (
-        <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">
+        <>
+          {/* View Toggle */}
+          <div className="flex justify-end mb-4">
+            <div className="flex items-center bg-slate-100 rounded-lg p-1">
+              <button onClick={() => setViewMode('guided')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${viewMode === 'guided' ? 'bg-blue-500 text-white' : 'text-slate-500 hover:text-slate-700'}`}>Guided</button>
+              <button onClick={() => setViewMode('showall')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${viewMode === 'showall' ? 'bg-blue-500 text-white' : 'text-slate-500 hover:text-slate-700'}`}>Expand All</button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">
           <div className="space-y-3">
             <Section index={0} title="Property & Purchase" iconKey="home">
               <div className="py-3"><label className="text-sm text-slate-500">Property Type</label><select value={propertyType} onChange={(e) => setPropertyType(e.target.value as typeof propertyType)} className="mt-2 w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="duplex">Duplex (2 Units)</option><option value="triplex">Triplex (3 Units)</option><option value="fourplex">Fourplex (4 Units)</option></select></div>
@@ -362,6 +352,7 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
             </button>
           </div>
         </div>
+        </>
         )}
       </main>
     </div>
