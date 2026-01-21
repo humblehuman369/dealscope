@@ -13,6 +13,16 @@ import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 // Use relative paths for API calls to go through Next.js API routes
 const API_BASE_URL = ''
 
+// Map strategy IDs to React worksheet routes (constant, outside component)
+const STRATEGY_ROUTES: Record<StrategyId, string> = {
+  ltr: 'ltr',
+  str: 'str',
+  brrrr: 'brrrr',
+  flip: 'flip',
+  house_hack: 'househack',
+  wholesale: 'wholesale',
+}
+
 /**
  * Property Analytics Page
  * 
@@ -70,14 +80,137 @@ function PropertyContent() {
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [showSearchModal, setShowSearchModal] = useState(false)
   
+  // Handle strategy selection - save property and navigate to React worksheet
+  // Wrapped in useCallback to ensure stable reference for useEffect dependency
+  const handleSelectStrategy = useCallback(async (strategyId: StrategyId) => {
+    if (!property) return
+    
+    // Require authentication for production worksheets
+    if (!isAuthenticated) {
+      // Store intended destination for after login
+      localStorage.setItem('pendingStrategy', strategyId)
+      localStorage.setItem('pendingAddress', addressParam || '')
+      setShowAuthModal('login')
+      return
+    }
+    
+    // Show loading state immediately
+    setIsNavigatingToWorksheet(true)
+    
+    try {
+      // Save property to get an ID for React worksheet
+      const token = localStorage.getItem('access_token')
+      
+      if (!token) {
+        console.error('[handleSelectStrategy] No token found')
+        setShowAuthModal('login')
+        setIsNavigatingToWorksheet(false)
+        return
+      }
+      
+      const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`.trim()
+      
+      console.log('[handleSelectStrategy] Saving property:', { address: property.address, strategy: strategyId })
+      
+      const saveResponse = await fetch('/api/v1/properties/saved', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          address_street: property.address,
+          address_city: property.city,
+          address_state: property.state,
+          address_zip: property.zipCode,
+          full_address: fullAddress,
+          status: 'watching',
+          property_data_snapshot: {
+            zpid: property.zpid,
+            street: property.address,
+            city: property.city,
+            state: property.state,
+            zipCode: property.zipCode,
+            listPrice: property.listPrice,
+            monthlyRent: property.monthlyRent,
+            propertyTaxes: property.propertyTaxes,
+            insurance: property.insurance,
+            bedrooms: property.bedrooms,
+            bathrooms: property.bathrooms,
+            sqft: property.sqft,
+            arv: property.arv || property.listPrice,
+            averageDailyRate: property.averageDailyRate,
+            occupancyRate: property.occupancyRate,
+            photos: property.photos,
+          },
+        }),
+      })
+      
+      console.log('[handleSelectStrategy] Save response:', saveResponse.status)
+      
+      let propertyId: string | null = null
+      
+      if (saveResponse.ok) {
+        const data = await saveResponse.json()
+        propertyId = data.id
+        console.log('[handleSelectStrategy] Property saved with ID:', propertyId)
+      } else if (saveResponse.status === 409 || saveResponse.status === 400) {
+        console.log('[handleSelectStrategy] Property already exists, fetching list...')
+        
+        const listResponse = await fetch('/api/v1/properties/saved', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        })
+        
+        if (listResponse.ok) {
+          const properties = await listResponse.json()
+          console.log('[handleSelectStrategy] Found', properties.length, 'saved properties')
+          
+          const existing = properties.find((p: { address_street: string; full_address?: string }) => 
+            p.address_street === property.address || 
+            p.full_address?.includes(property.address)
+          )
+          
+          if (existing) {
+            propertyId = existing.id
+            console.log('[handleSelectStrategy] Found existing property ID:', propertyId)
+          } else {
+            console.log('[handleSelectStrategy] No matching property found in list')
+          }
+        } else {
+          console.error('[handleSelectStrategy] Failed to fetch saved properties:', listResponse.status)
+        }
+      } else if (saveResponse.status === 401) {
+        console.error('[handleSelectStrategy] Unauthorized - token may be expired')
+        setShowAuthModal('login')
+        setIsNavigatingToWorksheet(false)
+        return
+      } else {
+        const errorData = await saveResponse.json().catch(() => ({}))
+        console.error('[handleSelectStrategy] Save failed:', saveResponse.status, errorData)
+      }
+      
+      if (propertyId) {
+        const strategyRoute = STRATEGY_ROUTES[strategyId]
+        console.log('[handleSelectStrategy] Navigating to worksheet:', `/worksheet/${propertyId}/${strategyRoute}`)
+        router.push(`/worksheet/${propertyId}/${strategyRoute}`)
+      } else {
+        throw new Error('Could not get property ID')
+      }
+    } catch (err) {
+      console.error('[handleSelectStrategy] Error:', err)
+      setSaveMessage('Error loading worksheet. Please try again.')
+      setIsNavigatingToWorksheet(false)
+      setTimeout(() => setSaveMessage(null), 3000)
+    }
+  }, [property, isAuthenticated, addressParam, setShowAuthModal, router])
+
   // If strategy is in URL and user is authenticated, auto-navigate to worksheet
   useEffect(() => {
     if (strategyParam && property && isAuthenticated && !authLoading && !isNavigatingToWorksheet) {
       setIsNavigatingToWorksheet(true)
-      // Trigger the strategy selection which will save and navigate
       handleSelectStrategy(strategyParam)
     }
-  }, [strategyParam, property, isAuthenticated, authLoading])
+  }, [strategyParam, property, isAuthenticated, authLoading, isNavigatingToWorksheet, handleSelectStrategy])
 
   useEffect(() => {
     async function fetchProperty() {
@@ -197,145 +330,6 @@ function PropertyContent() {
 
     fetchProperty()
   }, [addressParam])
-
-  // Map strategy IDs to React worksheet routes
-  const STRATEGY_ROUTES: Record<StrategyId, string> = {
-    ltr: 'ltr',
-    str: 'str',
-    brrrr: 'brrrr',
-    flip: 'flip',
-    house_hack: 'househack',
-    wholesale: 'wholesale',
-  }
-
-  // Handle strategy selection - save property and navigate to React worksheet
-  const handleSelectStrategy = async (strategyId: StrategyId) => {
-    if (!property) return
-    
-    // Require authentication for production worksheets
-    if (!isAuthenticated) {
-      // Store intended destination for after login
-      localStorage.setItem('pendingStrategy', strategyId)
-      localStorage.setItem('pendingAddress', addressParam || '')
-      setShowAuthModal('login')
-      return
-    }
-    
-    // Show loading state immediately
-    setIsNavigatingToWorksheet(true)
-    
-    try {
-      // Save property to get an ID for React worksheet
-      const token = localStorage.getItem('access_token')
-      
-      if (!token) {
-        console.error('[handleSelectStrategy] No token found')
-        setShowAuthModal('login')
-        setIsNavigatingToWorksheet(false)
-        return
-      }
-      
-      const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`.trim()
-      
-      console.log('[handleSelectStrategy] Saving property:', { address: property.address, strategy: strategyId })
-      
-      const saveResponse = await fetch('/api/v1/properties/saved', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          address_street: property.address,
-          address_city: property.city,
-          address_state: property.state,
-          address_zip: property.zipCode,
-          full_address: fullAddress,
-          status: 'watching',
-          property_data_snapshot: {
-            // Zillow Property ID for API calls
-            zpid: property.zpid,
-            // Include address in snapshot for reliability
-            street: property.address,
-            city: property.city,
-            state: property.state,
-            zipCode: property.zipCode,
-            // Property details
-            listPrice: property.listPrice,
-            monthlyRent: property.monthlyRent,
-            propertyTaxes: property.propertyTaxes,
-            insurance: property.insurance,
-            bedrooms: property.bedrooms,
-            bathrooms: property.bathrooms,
-            sqft: property.sqft,
-            arv: property.arv || property.listPrice,
-            averageDailyRate: property.averageDailyRate,
-            occupancyRate: property.occupancyRate,
-            photos: property.photos,
-          },
-        }),
-      })
-      
-      console.log('[handleSelectStrategy] Save response:', saveResponse.status)
-      
-      let propertyId: string | null = null
-      
-      if (saveResponse.ok) {
-        const data = await saveResponse.json()
-        propertyId = data.id
-        console.log('[handleSelectStrategy] Property saved with ID:', propertyId)
-      } else if (saveResponse.status === 409 || saveResponse.status === 400) {
-        // Property already saved (400 = "already in your saved list", 409 = conflict)
-        console.log('[handleSelectStrategy] Property already exists, fetching list...')
-        
-        const listResponse = await fetch('/api/v1/properties/saved', {
-          headers: { 'Authorization': `Bearer ${token}` },
-        })
-        
-        if (listResponse.ok) {
-          const properties = await listResponse.json()
-          console.log('[handleSelectStrategy] Found', properties.length, 'saved properties')
-          
-          // Try exact match first, then partial match
-          const existing = properties.find((p: { address_street: string; full_address?: string }) => 
-            p.address_street === property.address || 
-            p.full_address?.includes(property.address)
-          )
-          
-          if (existing) {
-            propertyId = existing.id
-            console.log('[handleSelectStrategy] Found existing property ID:', propertyId)
-          } else {
-            console.log('[handleSelectStrategy] No matching property found in list')
-          }
-        } else {
-          console.error('[handleSelectStrategy] Failed to fetch saved properties:', listResponse.status)
-        }
-      } else if (saveResponse.status === 401) {
-        console.error('[handleSelectStrategy] Unauthorized - token may be expired')
-        setShowAuthModal('login')
-        setIsNavigatingToWorksheet(false)
-        return
-      } else {
-        const errorData = await saveResponse.json().catch(() => ({}))
-        console.error('[handleSelectStrategy] Save failed:', saveResponse.status, errorData)
-      }
-      
-      if (propertyId) {
-        // Navigate to React worksheet
-        const strategyRoute = STRATEGY_ROUTES[strategyId]
-        console.log('[handleSelectStrategy] Navigating to worksheet:', `/worksheet/${propertyId}/${strategyRoute}`)
-        router.push(`/worksheet/${propertyId}/${strategyRoute}`)
-      } else {
-        throw new Error('Could not get property ID')
-      }
-    } catch (err) {
-      console.error('[handleSelectStrategy] Error:', err)
-      setSaveMessage('Error loading worksheet. Please try again.')
-      setIsNavigatingToWorksheet(false)
-      setTimeout(() => setSaveMessage(null), 3000)
-    }
-  }
 
   // Handle save property
   const handleSave = useCallback(async () => {
