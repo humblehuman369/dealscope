@@ -111,6 +111,10 @@ class PropertyDetails(BaseModel):
     # Fireplace
     has_fireplace: Optional[bool] = None
     fireplace_count: Optional[int] = None
+    # Pool
+    has_pool: Optional[bool] = None
+    # View
+    view_type: Optional[str] = None
     
     @field_validator('square_footage', 'lot_size', 'bedrooms', 'year_built', 'num_units', 'stories', 'garage_spaces', 'fireplace_count', mode='before')
     @classmethod

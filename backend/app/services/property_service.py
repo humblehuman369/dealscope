@@ -150,6 +150,10 @@ class PropertyService:
                 roof_type=normalized.get("roof_type"),
                 # Fireplace
                 has_fireplace=normalized.get("has_fireplace"),
+                # Pool
+                has_pool=normalized.get("has_pool"),
+                # View
+                view_type=normalized.get("view_type"),
             ),
             valuations=ValuationData(
                 current_value_avm=normalized.get("current_value_avm"),

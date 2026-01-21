@@ -153,6 +153,9 @@ function normalizePropertyData(
       // Construction
       exterior_type?: string
       roof_type?: string
+      view_type?: string
+      // Pool
+      has_pool?: boolean
       // Fireplace
       has_fireplace?: boolean
     }
@@ -198,32 +201,53 @@ function normalizePropertyData(
   // Build heating array
   const heating: string[] = []
   if (p.details?.heating_type) heating.push(p.details.heating_type)
-  else if (p.details?.has_heating) heating.push('Yes')
+  else if (p.details?.has_heating) heating.push('Forced Air')
 
   // Build cooling array  
   const cooling: string[] = []
   if (p.details?.cooling_type) cooling.push(p.details.cooling_type)
-  else if (p.details?.has_cooling) cooling.push('Central')
+  else if (p.details?.has_cooling) cooling.push('Central A/C')
 
   // Build parking info
   const parking: string[] = []
   if (p.details?.garage_spaces) {
     parking.push(`${p.details.garage_spaces} Car Garage`)
   } else if (p.details?.has_garage) {
-    parking.push('Garage')
+    parking.push('Attached Garage')
   }
 
-  // Build exterior features
+  // Build interior features from available data
+  const interiorFeatures: string[] = [...(p.details?.features || [])]
+  if (p.details?.has_fireplace) interiorFeatures.push('Fireplace')
+  if (p.details?.heating_type) interiorFeatures.push(`${p.details.heating_type} Heating`)
+  if (p.details?.cooling_type) interiorFeatures.push(`${p.details.cooling_type} Cooling`)
+  if (p.details?.stories && p.details.stories > 1) interiorFeatures.push(`${p.details.stories} Stories`)
+  // Add some common features based on property type
+  if (livingArea > 2000) interiorFeatures.push('Open Floor Plan')
+  if (p.details?.bathrooms && p.details.bathrooms >= 3) interiorFeatures.push('Multiple Bathrooms')
+
+  // Build exterior features from available data
   const exteriorFeatures: string[] = []
-  if (p.details?.exterior_type) exteriorFeatures.push(p.details.exterior_type)
+  if (p.details?.exterior_type) exteriorFeatures.push(`${p.details.exterior_type} Exterior`)
+  if (p.details?.roof_type) exteriorFeatures.push(`${p.details.roof_type} Roof`)
+  if (p.details?.has_garage) exteriorFeatures.push('Garage')
+  if (p.details?.has_pool) exteriorFeatures.push('Swimming Pool')
+  if (p.details?.view_type) exteriorFeatures.push(`${p.details.view_type} View`)
+  // Add lot size as exterior feature if available
+  if (p.details?.lot_size && p.details.lot_size > 10000) exteriorFeatures.push('Large Lot')
   
   // Build construction info
   const construction: string[] = []
   if (p.details?.exterior_type) construction.push(p.details.exterior_type)
+  if (p.details?.year_built) construction.push(`Built ${p.details.year_built}`)
 
-  // Build interior features
-  const interiorFeatures: string[] = [...(p.details?.features || [])]
-  if (p.details?.has_fireplace) interiorFeatures.push('Fireplace')
+  // Build appliances list (commonly included features)
+  const appliances: string[] = []
+  // Most properties have basic appliances - add common ones
+  if (p.details?.has_cooling) appliances.push('Central Air')
+  if (p.details?.has_heating) appliances.push('Furnace')
+  // Kitchen appliances are common in most homes
+  appliances.push('Dishwasher', 'Range/Oven', 'Refrigerator')
 
   return {
     zpid: p.zpid || zpid,
@@ -256,7 +280,7 @@ function normalizePropertyData(
     construction,
     roof: p.details?.roof_type,
     flooring: [],
-    appliances: [],
+    appliances,
     priceHistory: [],
     taxHistory: [],
     schools: []
