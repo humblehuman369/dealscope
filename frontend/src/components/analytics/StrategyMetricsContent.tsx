@@ -498,8 +498,11 @@ export function FlipMetricsContent({
   assumptions,
   compareView,
   setCompareView,
-  updateAssumption
+  updateAssumption,
+  originalListPrice
 }: BaseMetricsProps) {
+  // Use original list price for stable slider ranges, fallback to assumptions.listPrice
+  const stableListPrice = originalListPrice || assumptions.listPrice
   const priceLadder = generatePriceLadder(
     assumptions.listPrice,
     iqTarget.targetPrice,
@@ -557,8 +560,8 @@ export function FlipMetricsContent({
           'arv',
           'After Repair Value',
           assumptions.arv,
-          assumptions.listPrice,
-          assumptions.listPrice * 1.5,
+          stableListPrice * 0.8,   // Use stable base for min
+          stableListPrice * 1.8,   // Use stable base for max (wider range)
           5000,
           formatCurrency
         ),
@@ -796,8 +799,11 @@ export function WholesaleMetricsContent({
   assumptions,
   compareView,
   setCompareView,
-  updateAssumption
+  updateAssumption,
+  originalListPrice
 }: BaseMetricsProps) {
+  // Use original list price for stable slider ranges, fallback to assumptions.listPrice
+  const stableListPrice = originalListPrice || assumptions.listPrice
   const negotiationPlan = generateNegotiationPlan(
     assumptions.listPrice,
     iqTarget.targetPrice,
