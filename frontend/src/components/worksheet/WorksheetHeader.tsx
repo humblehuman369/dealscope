@@ -149,8 +149,12 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
                     <button
                       key={strategy.id}
                       onClick={() => {
-                        setActiveStrategy(strategy.id)
                         setIsDropdownOpen(false)
+                        // Only navigate if selecting a different strategy
+                        if (strategy.id !== activeStrategy) {
+                          setActiveStrategy(strategy.id)
+                          router.push(`/worksheet/${propertyId}/${strategy.id}`)
+                        }
                       }}
                       className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-[var(--ws-bg-alt)] transition-colors ${
                         activeStrategy === strategy.id 
