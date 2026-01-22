@@ -11,7 +11,10 @@ interface MobileCompressedViewProps {
   purchasePrice: number
   downPaymentPct: number
   purchaseCostsPct: number
-  // Calculated values
+  // Deal Score from backend API (not in calc anymore)
+  dealScore: number
+  breakeven: number
+  // Calculated values (financial metrics only - no Deal Score)
   calc: {
     totalCashNeeded: number
     downPayment: number
@@ -23,12 +26,10 @@ interface MobileCompressedViewProps {
     cashOnCash: number
     dscr: number
     rentToValue: number
-    dealScore: number
     noi: number
     grossIncome: number
     grossExpenses: number
     monthlyPayment: number
-    breakeven: number
   }
   // Formatters
   fmt: {
@@ -85,6 +86,8 @@ export function MobileCompressedView({
   purchasePrice,
   downPaymentPct,
   purchaseCostsPct,
+  dealScore,
+  breakeven,
   calc,
   fmt,
   onNavigateToSection,
@@ -109,7 +112,7 @@ export function MobileCompressedView({
     return { label: 'Weak', sublabel: 'Investment', color: 'text-red-500' }
   }
 
-  const scoreRating = getDealScoreRating(calc.dealScore)
+  const scoreRating = getDealScoreRating(dealScore)
   const isProfit = calc.annualCashFlow > 0
 
   // Return benchmarks status
@@ -189,7 +192,7 @@ export function MobileCompressedView({
           
           {/* Score Display - Compact */}
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span className={`text-2xl font-bold ${scoreRating.color}`}>{calc.dealScore}</span>
+            <span className={`text-2xl font-bold ${scoreRating.color}`}>{dealScore}</span>
             <div className="min-w-0">
               <div className="text-[10px] font-semibold text-slate-900 leading-tight truncate">{scoreRating.label}</div>
               <div className="text-[9px] text-slate-500 leading-tight">Deal Score</div>
@@ -270,7 +273,7 @@ export function MobileCompressedView({
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Breakeven Price</span>
-              <span className="font-semibold text-slate-900">{fmt.currency(calc.breakeven)}</span>
+              <span className="font-semibold text-slate-900">{fmt.currency(breakeven)}</span>
             </div>
           </div>
         </AccordionSection>

@@ -16,6 +16,7 @@ import { EquityChart } from '../charts/EquityChart'
 import { MobileCompressedView } from './MobileCompressedView'
 import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
 import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
+import { useDealScore, getDealScoreColor } from '@/hooks/useDealScore'
 
 // Strategy definitions for switcher
 const strategies = [
@@ -209,7 +210,37 @@ export function LTRWorksheet({
   const [manualOverrides, setManualOverrides] = useState<Record<number, boolean>>({})
 
   // ============================================
-  // CALCULATIONS
+  // DEAL SCORE FROM BACKEND API
+  // ============================================
+  // All Deal Score calculations are done by the backend to ensure consistency
+  const { result: dealScoreResult, isLoading: isDealScoreLoading } = useDealScore({
+    listPrice: listPrice,
+    purchasePrice: purchasePrice,
+    monthlyRent: monthlyRent,
+    propertyTaxes: propertyTaxes,
+    insurance: insurance,
+    vacancyRate: vacancyRate / 100,      // Convert from % to decimal
+    maintenancePct: maintenancePct / 100,
+    managementPct: propertyMgmtPct / 100,
+    downPaymentPct: downPaymentPct / 100,
+    interestRate: interestRate / 100,
+    loanTermYears: loanTerm,
+  })
+  
+  // Extract Deal Score values from backend result
+  const dealScore = dealScoreResult?.dealScore ?? 0
+  const breakeven = dealScoreResult?.breakevenPrice ?? purchasePrice
+  const dealVerdict = dealScoreResult?.dealVerdict ?? 'Calculating...'
+  
+  // Gauge needle calculation for display (no financial logic)
+  const gaugeAngle = 180 - (dealScore * 1.8)
+  const gaugeAngleRad = (gaugeAngle * Math.PI) / 180
+  const needleLength = 35
+  const needleX = 80 + needleLength * Math.cos(gaugeAngleRad)
+  const needleY = 80 - needleLength * Math.sin(gaugeAngleRad)
+
+  // ============================================
+  // CALCULATIONS (Financial metrics only - NO Deal Score)
   // ============================================
   const calc = useMemo(() => {
     const downPayment = purchasePrice * (downPaymentPct / 100)
@@ -255,39 +286,8 @@ export function LTRWorksheet({
     const dscr = annualLoanPayments > 0 ? noi / annualLoanPayments : 0
     const debtYield = loanAmount > 0 ? (noi / loanAmount) * 100 : 0
     
-    // Breakeven price calculation
-    let breakevenPrice = purchasePrice
-    const tolerance = 1000
-    for (let i = 0; i < 20; i++) {
-      const beDownPayment = breakevenPrice * (downPaymentPct / 100)
-      const beLoanAmount = breakevenPrice - beDownPayment
-      const beMonthlyPayment = beLoanAmount > 0 && monthlyRate > 0
-        ? beLoanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
-        : 0
-      const beAnnualDebt = beMonthlyPayment * 12
-      const beNetCashFlow = noi - beAnnualDebt
-      
-      if (Math.abs(beNetCashFlow) < tolerance) break
-      const adjustment = beNetCashFlow / (annualLoanPayments / purchasePrice || 1)
-      breakevenPrice += adjustment * 0.5
-    }
-    const breakeven = Math.max(0, Math.round(breakevenPrice))
-    
-    // Deal Score (Opportunity-Based)
-    // Score based on how much discount from LIST PRICE is needed to reach breakeven
-    // Smaller discount = better opportunity (property is closer to being profitable at list price)
-    const discountPercent = listPrice > 0 
-      ? Math.max(0, ((listPrice - breakeven) / listPrice) * 100)
-      : 0
-    // 0% discount = 100 score, 50% discount = 0 score
-    const dealScore = Math.max(0, Math.min(100, Math.round(100 - discountPercent * 2)))
-    
-    // Gauge needle
-    const gaugeAngle = 180 - (dealScore * 1.8)
-    const gaugeAngleRad = (gaugeAngle * Math.PI) / 180
-    const needleLength = 35
-    const needleX = 80 + needleLength * Math.cos(gaugeAngleRad)
-    const needleY = 80 - needleLength * Math.sin(gaugeAngleRad)
+    // NOTE: Deal Score and Breakeven are now calculated by the backend API
+    // See useDealScore hook above - NO financial calculations here
     
     return {
       downPayment, loanAmount, purchaseCosts, totalCashNeeded, ltv, monthlyPayment,
@@ -297,7 +297,6 @@ export function LTRWorksheet({
       annualLoanPayments, monthlyCashFlow, annualCashFlow, noi,
       capRatePurchase, capRateMarket, cashOnCash, returnOnEquity, returnOnInvestment,
       rentToValue, grossRentMultiplier, breakEvenRatio, dscr, debtYield,
-      breakeven, dealScore, needleX, needleY,
     }
   }, [purchasePrice, downPaymentPct, purchaseCostsPct, interestRate, loanTerm, rehabCosts, arv, monthlyRent, vacancyRate, propertyTaxes, insurance, propertyMgmtPct, maintenancePct, capExPct, hoaFees, sqft])
 
@@ -556,7 +555,7 @@ export function LTRWorksheet({
   const isProfit = calc.annualCashFlow >= 0
   // Opportunity-based verdict using discount percentage
   const discountNeeded = purchasePrice > 0 
-    ? Math.max(0, ((purchasePrice - calc.breakeven) / purchasePrice) * 100)
+    ? Math.max(0, ((purchasePrice - breakeven) / purchasePrice) * 100)
     : 0
   let verdict: string, verdictSub: string
   if (discountNeeded <= 5) {
@@ -707,12 +706,12 @@ export function LTRWorksheet({
               <div className="text-xs sm:text-sm lg:text-base font-bold text-slate-800 tabular-nums">{fmt.percent(calc.cashOnCash)}</div>
             </div>
             <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${
-              calc.dealScore >= 70 ? 'bg-teal/15' : calc.dealScore >= 40 ? 'bg-amber-500/10' : 'bg-red-500/10'
+              dealScore >= 70 ? 'bg-teal/15' : dealScore >= 40 ? 'bg-amber-500/10' : 'bg-red-500/10'
             }`}>
               <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Deal Score</div>
               <div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums ${
-                calc.dealScore >= 70 ? 'text-teal' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
-              }`}>{calc.dealScore}</div>
+                dealScore >= 70 ? 'text-teal' : dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
+              }`}>{dealScore}</div>
             </div>
           </div>
         </div>
@@ -726,6 +725,8 @@ export function LTRWorksheet({
             purchasePrice={purchasePrice}
             downPaymentPct={downPaymentPct}
             purchaseCostsPct={purchaseCostsPct}
+            dealScore={dealScore}
+            breakeven={breakeven}
             calc={calc}
             fmt={fmt}
             onNavigateToSection={(sectionId) => {
@@ -863,19 +864,19 @@ export function LTRWorksheet({
             {/* IQ Verdict Card */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
               <div className="p-5" style={{ 
-                background: calc.dealScore >= 70 
+                background: dealScore >= 70 
                   ? 'linear-gradient(180deg, rgba(8, 145, 178, 0.10) 0%, rgba(8, 145, 178, 0.02) 100%)'
-                  : calc.dealScore >= 40
+                  : dealScore >= 40
                     ? 'linear-gradient(180deg, rgba(245, 158, 11, 0.10) 0%, rgba(245, 158, 11, 0.02) 100%)'
                     : 'linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.02) 100%)'
               }}>
                 <div className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${
-                  calc.dealScore >= 70 ? 'text-teal' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
+                  dealScore >= 70 ? 'text-teal' : dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
                 }`}>IQ VERDICT: LONG-TERM RENTAL</div>
                 <div className="flex items-center gap-4 bg-white rounded-full px-5 py-3 shadow-sm mb-3">
                   <span className={`text-3xl font-extrabold tabular-nums ${
-                    calc.dealScore >= 70 ? 'text-teal' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
-                  }`}>{calc.dealScore}</span>
+                    dealScore >= 70 ? 'text-teal' : dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
+                  }`}>{dealScore}</span>
                   <div>
                     <div className="text-base font-bold text-slate-800">{verdict}</div>
                     <div className="text-xs text-slate-500">Deal Score</div>
@@ -910,8 +911,8 @@ export function LTRWorksheet({
                     <path d="M 80 15 A 65 65 0 0 1 145 80" fill="none" stroke="rgba(8, 145, 178, 0.35)" strokeWidth="14" strokeLinecap="round" />
                     <line 
                       x1="80" y1="80" 
-                      x2={calc.needleX} y2={calc.needleY} 
-                      stroke={calc.dealScore >= 50 ? '#0891B2' : '#EF4444'} 
+                      x2={needleX} y2={needleY} 
+                      stroke={dealScore >= 50 ? '#0891B2' : '#EF4444'} 
                       strokeWidth="3" strokeLinecap="round"
                       style={{ transition: 'all 0.3s ease-out' }}
                     />
@@ -931,24 +932,24 @@ export function LTRWorksheet({
                 </div>
                 <div className="flex justify-between items-center py-2.5 px-3 rounded-lg">
                   <span className="text-sm text-slate-500">Breakeven Price</span>
-                  <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(calc.breakeven)}</span>
+                  <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(breakeven)}</span>
                 </div>
                 <div className={`flex justify-between items-center py-2.5 px-3 rounded-lg border ${
-                  purchasePrice <= calc.breakeven 
+                  purchasePrice <= breakeven 
                     ? 'bg-teal/10 border-teal/20' 
                     : 'bg-red-500/10 border-red-500/20'
                 }`}>
-                  <span className={`text-sm font-medium ${purchasePrice <= calc.breakeven ? 'text-teal' : 'text-red-500'}`}>
+                  <span className={`text-sm font-medium ${purchasePrice <= breakeven ? 'text-teal' : 'text-red-500'}`}>
                     Your Price
                   </span>
-                  <span className={`text-sm font-bold tabular-nums ${purchasePrice <= calc.breakeven ? 'text-teal' : 'text-red-500'}`}>
+                  <span className={`text-sm font-bold tabular-nums ${purchasePrice <= breakeven ? 'text-teal' : 'text-red-500'}`}>
                     {fmt.currency(purchasePrice)}
                   </span>
                 </div>
-                {purchasePrice > calc.breakeven && (
+                {purchasePrice > breakeven && (
                   <div className="mt-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                     <p className="text-xs text-amber-600 font-medium">
-                      Price is {fmt.currency(purchasePrice - calc.breakeven)} above breakeven
+                      Price is {fmt.currency(purchasePrice - breakeven)} above breakeven
                     </p>
                   </div>
                 )}

@@ -944,6 +944,120 @@ async def get_default_assumptions():
 
 
 # ============================================
+# DEAL SCORE CALCULATION ENDPOINT
+# ============================================
+
+class DealScoreInput(BaseModel):
+    """Input for Deal Score calculation."""
+    list_price: float = Field(..., description="Original property list price")
+    purchase_price: float = Field(..., description="User's purchase price (what they want to pay)")
+    monthly_rent: float = Field(..., description="Monthly rent")
+    property_taxes: float = Field(..., description="Annual property taxes")
+    insurance: float = Field(..., description="Annual insurance")
+    # Optional overrides for calculation parameters
+    vacancy_rate: Optional[float] = Field(None, description="Vacancy rate (e.g., 0.01 = 1%)")
+    maintenance_pct: Optional[float] = Field(None, description="Maintenance % of rent")
+    management_pct: Optional[float] = Field(None, description="Management % of rent")
+    down_payment_pct: Optional[float] = Field(None, description="Down payment %")
+    interest_rate: Optional[float] = Field(None, description="Interest rate (e.g., 0.06 = 6%)")
+    loan_term_years: Optional[int] = Field(None, description="Loan term in years")
+
+
+class DealScoreResponse(BaseModel):
+    """Response from Deal Score calculation."""
+    deal_score: int
+    deal_verdict: str
+    discount_percent: float
+    breakeven_price: float
+    purchase_price: float
+    list_price: float
+    # Calculation details for transparency
+    calculation_details: dict
+
+
+@app.post("/api/v1/worksheet/deal-score", response_model=DealScoreResponse)
+async def calculate_deal_score(input_data: DealScoreInput):
+    """
+    Calculate Deal Score for worksheet pages.
+    
+    This endpoint provides a centralized Deal Score calculation that all
+    worksheet pages should use to ensure consistency.
+    
+    The Deal Score is based on the discount from list price to breakeven:
+    - Breakeven = price where cash flow = $0
+    - Discount % = (list_price - breakeven) / list_price × 100
+    - Score = 100 - (discount % × 2)
+    
+    Scoring thresholds:
+    - 0-5% discount: Strong Opportunity (90-100)
+    - 5-10% discount: Great Opportunity (80-90)
+    - 10-15% discount: Moderate Opportunity (70-80)
+    - 15-25% discount: Potential Opportunity (50-70)
+    - 25-35% discount: Mild Opportunity (30-50)
+    - 35-45% discount: Weak Opportunity (10-30)
+    - 45%+ discount: Poor Opportunity (0-10)
+    """
+    try:
+        list_price = input_data.list_price
+        purchase_price = input_data.purchase_price
+        monthly_rent = input_data.monthly_rent
+        property_taxes = input_data.property_taxes
+        insurance = input_data.insurance
+        
+        # Use provided overrides or defaults
+        vacancy = input_data.vacancy_rate if input_data.vacancy_rate is not None else OPERATING.vacancy_rate
+        maint_pct = input_data.maintenance_pct if input_data.maintenance_pct is not None else OPERATING.maintenance_pct
+        mgmt_pct = input_data.management_pct if input_data.management_pct is not None else OPERATING.property_management_pct
+        down_pct = input_data.down_payment_pct if input_data.down_payment_pct is not None else FINANCING.down_payment_pct
+        rate = input_data.interest_rate if input_data.interest_rate is not None else FINANCING.interest_rate
+        term = input_data.loan_term_years if input_data.loan_term_years is not None else FINANCING.loan_term_years
+        
+        # Calculate breakeven price
+        breakeven = estimate_breakeven_price(
+            monthly_rent=monthly_rent,
+            property_taxes=property_taxes,
+            insurance=insurance,
+            down_payment_pct=down_pct,
+            interest_rate=rate,
+            loan_term_years=term,
+            vacancy_rate=vacancy,
+            maintenance_pct=maint_pct,
+            management_pct=mgmt_pct,
+        )
+        
+        # Calculate Deal Score based on discount from list to breakeven
+        deal_score, discount_pct, deal_verdict = _calculate_opportunity_score(breakeven, list_price)
+        
+        # Log for debugging
+        logger.info(f"Deal Score calculation: list=${list_price:,.0f}, purchase=${purchase_price:,.0f}, "
+                   f"breakeven=${breakeven:,.0f}, discount={discount_pct:.1f}%, score={deal_score}")
+        
+        return DealScoreResponse(
+            deal_score=deal_score,
+            deal_verdict=deal_verdict,
+            discount_percent=round(discount_pct, 1),
+            breakeven_price=breakeven,
+            purchase_price=purchase_price,
+            list_price=list_price,
+            calculation_details={
+                "monthly_rent": monthly_rent,
+                "property_taxes": property_taxes,
+                "insurance": insurance,
+                "vacancy_rate": vacancy,
+                "maintenance_pct": maint_pct,
+                "management_pct": mgmt_pct,
+                "down_payment_pct": down_pct,
+                "interest_rate": rate,
+                "loan_term_years": term,
+            },
+        )
+        
+    except Exception as e:
+        logger.error(f"Deal Score calculation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
 # WORKSHEET CALCULATION ENDPOINTS
 # ============================================
 
