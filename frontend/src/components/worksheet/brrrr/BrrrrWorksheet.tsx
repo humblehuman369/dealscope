@@ -8,6 +8,7 @@ import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
 import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
+import { useDealScore } from '@/hooks/useDealScore'
 
 // Section components for tab navigation
 import { SalesCompsSection } from '../sections/SalesCompsSection'
@@ -134,6 +135,29 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
   const [completedSections, setCompletedSections] = useState<Set<number>>(new Set([0]))
   const [manualOverrides, setManualOverrides] = useState<Record<number, boolean>>({})
 
+  // ============================================
+  // DEAL OPPORTUNITY SCORE FROM BACKEND API
+  // ============================================
+  // Measures: How obtainable is this deal? (discount from list to breakeven)
+  const { result: dealScoreResult } = useDealScore({
+    listPrice: listPrice,
+    purchasePrice: purchasePrice,
+    monthlyRent: monthlyRent,
+    propertyTaxes: propertyTaxes,
+    insurance: insurance,
+    vacancyRate: vacancyRate / 100,
+    maintenancePct: maintenancePct / 100,
+    managementPct: propertyMgmtPct / 100,
+    downPaymentPct: 0.10, // BRRRR typically uses 10% down with hard money
+    interestRate: refiInterestRate / 100, // Use refinance rate for long-term
+    loanTermYears: 30,
+  })
+  
+  // Extract Deal Opportunity Score from backend result
+  const opportunityScore = dealScoreResult?.dealScore ?? 0
+  const breakeven = dealScoreResult?.breakevenPrice ?? purchasePrice
+  const opportunityVerdict = dealScoreResult?.dealVerdict ?? 'Calculating...'
+
   const calc = useMemo(() => {
     // Purchase Phase
     const purchaseCosts = purchasePrice * (purchaseCostsPct / 100)
@@ -161,8 +185,12 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
     const refinanceLoanAmount = arv * (refiLtvPct / 100)
     const cashOut = refinanceLoanAmount - loanAmount - refiClosingCosts
     const cashLeftInDeal = totalCashInvested - cashOut
-    const cashOutPct = totalCashInvested > 0 ? (cashOut / totalCashInvested) * 100 : 0
-    const recoveryPercent = totalCashInvested > 0 ? (cashOut / totalCashInvested) * 100 : 0
+    
+    // Cash Recovery % = ((ARV × Refinance LTV) - AllInCost) ÷ AllInCost × 100
+    // This shows how much of your capital investment you recover at refinance
+    const cashRecoveryPct = allInCost > 0 
+      ? ((refinanceLoanAmount - allInCost) / allInCost) * 100 
+      : 0
     
     // Cash Flow (Post-Refinance)
     const grossMonthlyRent = monthlyRent
@@ -189,22 +217,36 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
     const cashOnCash = cashLeftInDeal > 0 ? (annualCashFlow / cashLeftInDeal) * 100 : (annualCashFlow > 0 ? 999 : 0)
     const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
     
-    // Deal Score (Opportunity-Based)
-    // For BRRRR, score based on all-in cost as percentage of ARV
-    // Lower all-in % = better opportunity (75% or less is ideal)
-    const discountPercent = Math.max(0, allInPctArv - 55) // 55% all-in = 0% "discount needed", 100% = 45%
-    const dealScore = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
-    
     return {
       purchaseCosts, allInCost, loanAmount, downPayment, pointsCost, cashToClose,
       totalHoldingInterest, totalHoldingCosts, totalCashInvested,
       allInPctArv, equityCreated, pricePerSqft, arvPerSqft,
-      refinanceLoanAmount, cashOut, cashLeftInDeal, cashOutPct, recoveryPercent,
+      refinanceLoanAmount, cashOut, cashLeftInDeal, cashRecoveryPct,
       effectiveRent, annualGrossRent, annualExpenses, noi,
       refiMonthlyPayment, annualDebtService, annualCashFlow, monthlyCashFlow,
-      capRate, cashOnCash, dscr, dealScore,
+      capRate, cashOnCash, dscr,
     }
   }, [purchasePrice, rehabCosts, purchaseCostsPct, loanToCostPct, interestRate, loanPoints, arv, holdingMonths, propertyTaxes, insurance, utilities, refiLtvPct, refiInterestRate, refiClosingCosts, monthlyRent, vacancyRate, propertyMgmtPct, maintenancePct, sqft])
+
+  // ============================================
+  // STRATEGY PERFORMANCE SCORE (BRRRR-specific)
+  // ============================================
+  // Measures: How well does BRRRR perform at this purchase price?
+  // Based on Cash Recovery %: 100% = 100, 0% = 50, -100% = 0
+  const performanceScore = Math.max(0, Math.min(100, Math.round(50 + (calc.cashRecoveryPct / 2))))
+  
+  // Performance verdict based on Cash Recovery %
+  const getPerformanceVerdict = (score: number): string => {
+    if (score >= 90) return 'Excellent Recovery'
+    if (score >= 75) return 'Good Recovery'
+    if (score >= 50) return 'Fair Recovery'
+    if (score >= 25) return 'Weak Recovery'
+    return 'Poor Recovery'
+  }
+  const performanceVerdict = getPerformanceVerdict(performanceScore)
+  
+  // Combined Deal Score (average of both)
+  const dealScore = Math.round((opportunityScore + performanceScore) / 2)
 
   // Hybrid toggle
   const isSectionOpen = useCallback((index: number) => {
@@ -281,7 +323,7 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
 
   const targets = [
     { label: 'All-In/ARV', actual: calc.allInPctArv, target: 75, unit: '%', met: calc.allInPctArv <= 75, inverse: true },
-    { label: 'Cash Recovery', actual: calc.recoveryPercent, target: 100, unit: '%', met: calc.recoveryPercent >= 100 },
+    { label: 'Cash Recovery', actual: calc.cashRecoveryPct, target: 100, unit: '%', met: calc.cashRecoveryPct >= 100 },
     { label: 'Cap Rate', actual: calc.capRate, target: 8, unit: '%', met: calc.capRate >= 8 },
     { label: 'CoC Return', actual: infiniteCoC ? 999 : calc.cashOnCash, target: 10, unit: '%', met: calc.cashOnCash >= 10 || infiniteCoC },
   ]
@@ -339,7 +381,7 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
             <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${calc.cashOut > 0 ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Cash Out</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums truncate ${calc.cashOut > 0 ? 'text-emerald-600' : 'text-red-500'}`}>{fmt.currencyCompact(calc.cashOut)}</div></div>
             <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${isProfit ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Cash Flow</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums truncate ${isProfit ? 'text-emerald-600' : 'text-red-500'}`}>{fmt.currencyCompact(calc.monthlyCashFlow)}/mo</div></div>
             <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-blue-500/10"><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">CoC Return</div><div className="text-xs sm:text-sm lg:text-base font-bold text-blue-600 tabular-nums truncate">{infiniteCoC ? '∞%' : fmt.percent(calc.cashOnCash)}</div></div>
-            <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${calc.dealScore >= 70 ? 'bg-blue-500/15' : calc.dealScore >= 40 ? 'bg-amber-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Deal Score</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums ${calc.dealScore >= 70 ? 'text-blue-600' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{calc.dealScore}</div></div>
+            <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${dealScore >= 70 ? 'bg-blue-500/15' : dealScore >= 40 ? 'bg-amber-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Deal Score</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums ${dealScore >= 70 ? 'text-blue-600' : dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{dealScore}</div></div>
           </div>
         </div>
       </div>
@@ -424,7 +466,7 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
               <DisplayRow label="Total Cash Invested" value={fmt.currency(calc.totalCashInvested)} />
               <DisplayRow label="Cash Recovered" value={fmt.currency(calc.cashOut)} variant={calc.cashOut > 0 ? 'success' : 'default'} />
               <DisplayRow label="Cash Left in Deal" value={fmt.currency(Math.max(0, calc.cashLeftInDeal))} variant={calc.cashLeftInDeal <= 0 ? 'success' : 'default'} />
-              <DisplayRow label="Cash-Out %" value={fmt.percent(calc.cashOutPct)} variant={calc.cashOutPct >= 100 ? 'success' : 'default'} />
+              <DisplayRow label="Cash Recovery %" value={fmt.percent(calc.cashRecoveryPct)} variant={calc.cashRecoveryPct >= 100 ? 'success' : 'default'} />
               <DisplayRow label="Cap Rate (on ARV)" value={fmt.percent(calc.capRate)} variant={calc.capRate >= 8 ? 'success' : 'default'} />
               <DisplayRow label="CoC After Refi" value={infiniteCoC ? '∞%' : fmt.percent(calc.cashOnCash)} variant={calc.cashOnCash >= 10 || infiniteCoC ? 'success' : 'default'} />
               <DisplayRow label="DSCR" value={calc.dscr.toFixed(2)} variant={calc.dscr >= 1.2 ? 'success' : calc.dscr >= 1 ? 'default' : 'danger'} />
@@ -435,12 +477,30 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
           <div className="space-y-4 sm:sticky sm:top-28">
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
               <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">IQ VERDICT: BRRRR</div>
-              <div className="flex items-center gap-4 mb-5">
-                <div className="relative w-20 h-20">
-                  <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="#e2e8f0" strokeWidth="6"/><circle cx="40" cy="40" r="34" fill="none" stroke={calc.dealScore >= 70 ? '#3b82f6' : calc.dealScore >= 40 ? '#f59e0b' : '#ef4444'} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${(calc.dealScore / 100) * 213.6} 213.6`}/></svg>
-                  <div className="absolute inset-0 flex items-center justify-center"><span className={`text-2xl font-bold ${calc.dealScore >= 70 ? 'text-blue-600' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{calc.dealScore}</span></div>
+              
+              {/* Two-Score Display */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                {/* Deal Opportunity Score */}
+                <div className="bg-slate-50 rounded-lg px-3 py-2 text-center">
+                  <span className={`text-2xl font-extrabold tabular-nums ${
+                    opportunityScore >= 70 ? 'text-blue-600' : opportunityScore >= 40 ? 'text-amber-500' : 'text-red-500'
+                  }`}>{opportunityScore}</span>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Opportunity</div>
+                  <div className="text-[9px] font-medium text-slate-400 truncate">{opportunityVerdict}</div>
                 </div>
-                <div><div className={`text-lg font-bold ${calc.dealScore >= 70 ? 'text-blue-600' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{verdict}</div><div className="text-sm text-slate-500">{verdictSub}</div></div>
+                {/* Strategy Performance Score */}
+                <div className="bg-slate-50 rounded-lg px-3 py-2 text-center">
+                  <span className={`text-2xl font-extrabold tabular-nums ${
+                    performanceScore >= 70 ? 'text-blue-600' : performanceScore >= 40 ? 'text-amber-500' : 'text-red-500'
+                  }`}>{performanceScore}</span>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Performance</div>
+                  <div className="text-[9px] font-medium text-slate-400 truncate">{performanceVerdict}</div>
+                </div>
+              </div>
+              
+              <div className="text-center mb-4">
+                <div className={`text-base font-bold ${dealScore >= 70 ? 'text-blue-600' : dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{verdict}</div>
+                <div className="text-xs text-slate-500">{verdictSub}</div>
               </div>
               <div className="space-y-2">
                 <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-2">BRRRR TARGETS</div>
@@ -476,7 +536,7 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
               <div className="grid grid-cols-2 gap-3">
                 <div className={`py-3 px-4 rounded-lg ${calc.cashLeftInDeal <= 0 ? 'bg-emerald-50 border border-emerald-200' : 'bg-blue-50 border border-blue-200'}`}><div className="text-xs text-slate-500 mb-1">Cash Left In</div><div className={`text-lg font-bold ${calc.cashLeftInDeal <= 0 ? 'text-emerald-600' : 'text-blue-600'}`}>{fmt.currencyCompact(Math.max(0, calc.cashLeftInDeal))}</div></div>
                 <div className="py-3 px-4 rounded-lg bg-slate-50"><div className="text-xs text-slate-500 mb-1">Equity Captured</div><div className={`text-lg font-bold ${calc.equityCreated > 0 ? 'text-emerald-600' : 'text-red-500'}`}>{fmt.currencyCompact(calc.equityCreated)}</div></div>
-                <div className="py-3 px-4 rounded-lg bg-slate-50"><div className="text-xs text-slate-500 mb-1">Cash-Out %</div><div className={`text-lg font-bold ${calc.cashOutPct >= 100 ? 'text-emerald-600' : 'text-slate-800'}`}>{fmt.percent(calc.cashOutPct)}</div></div>
+                <div className="py-3 px-4 rounded-lg bg-slate-50"><div className="text-xs text-slate-500 mb-1">Cash Recovery %</div><div className={`text-lg font-bold ${calc.cashRecoveryPct >= 100 ? 'text-emerald-600' : 'text-slate-800'}`}>{fmt.percent(calc.cashRecoveryPct)}</div></div>
                 <div className="py-3 px-4 rounded-lg bg-slate-50"><div className="text-xs text-slate-500 mb-1">CoC After Refi</div><div className={`text-lg font-bold ${calc.cashOnCash >= 10 || infiniteCoC ? 'text-blue-600' : 'text-slate-800'}`}>{infiniteCoC ? '∞%' : fmt.percent(calc.cashOnCash)}</div></div>
               </div>
             </div>

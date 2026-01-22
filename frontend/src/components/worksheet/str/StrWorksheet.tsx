@@ -167,9 +167,9 @@ export function StrWorksheet({
   const [manualOverrides, setManualOverrides] = useState<Record<number, boolean>>({})
 
   // ============================================
-  // DEAL SCORE FROM BACKEND API
+  // DEAL OPPORTUNITY SCORE FROM BACKEND API
   // ============================================
-  // All Deal Score calculations are done by the backend to ensure consistency
+  // Measures: How obtainable is this deal? (discount from list to breakeven)
   // For STR, we estimate monthly rent equivalent from ADR × 30 × occupancy
   const estimatedMonthlyRent = (inputs.average_daily_rate || 200) * 30 * (inputs.occupancy_rate || 0.65)
   
@@ -187,17 +187,10 @@ export function StrWorksheet({
     loanTermYears: inputs.loan_term_years || 30,
   })
   
-  // Extract Deal Score values from backend result
-  const dealScore = dealScoreResult?.dealScore ?? 0
+  // Extract Deal Opportunity Score from backend result
+  const opportunityScore = dealScoreResult?.dealScore ?? 0
   const breakeven = dealScoreResult?.breakevenPrice ?? inputs.purchase_price
-  const dealVerdict = dealScoreResult?.dealVerdict ?? 'Calculating...'
-  
-  // Gauge needle calculation for display (no financial logic)
-  const gaugeAngle = 180 - (dealScore * 1.8)
-  const gaugeAngleRad = (gaugeAngle * Math.PI) / 180
-  const needleLength = 35
-  const needleX = 80 + needleLength * Math.cos(gaugeAngleRad)
-  const needleY = 80 - needleLength * Math.sin(gaugeAngleRad)
+  const opportunityVerdict = dealScoreResult?.dealVerdict ?? 'Calculating...'
 
   // ============================================
   // DERIVED CALCULATIONS (Financial metrics only - NO Deal Score)
@@ -229,6 +222,33 @@ export function StrWorksheet({
       bookedNights: result?.nights_occupied ?? 0,
     }
   }, [result, derived, inputs.purchase_price])
+
+  // ============================================
+  // STRATEGY PERFORMANCE SCORE (STR-specific)
+  // ============================================
+  // Measures: How well does STR perform at this purchase price?
+  // Based on Cash-on-Cash return: 15% CoC = 100, 0% = 50, -15% = 0
+  const performanceScore = Math.max(0, Math.min(100, Math.round(50 + (calc.cashOnCash * 3.33))))
+  
+  // Performance verdict based on CoC return
+  const getPerformanceVerdict = (score: number): string => {
+    if (score >= 90) return 'Excellent Return'
+    if (score >= 75) return 'Good Return'
+    if (score >= 50) return 'Fair Return'
+    if (score >= 25) return 'Weak Return'
+    return 'Poor Return'
+  }
+  const performanceVerdict = getPerformanceVerdict(performanceScore)
+  
+  // Combined Deal Score (average of both for backward compatibility)
+  const dealScore = Math.round((opportunityScore + performanceScore) / 2)
+  
+  // Gauge needle calculation for display (uses combined score)
+  const gaugeAngle = 180 - (dealScore * 1.8)
+  const gaugeAngleRad = (gaugeAngle * Math.PI) / 180
+  const needleLength = 35
+  const needleX = 80 + needleLength * Math.cos(gaugeAngleRad)
+  const needleY = 80 - needleLength * Math.sin(gaugeAngleRad)
 
   // ============================================
   // SECTION NAVIGATION
@@ -909,15 +929,27 @@ export function StrWorksheet({
                 <div className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${
                   dealScore >= 70 ? 'text-teal' : dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
                 }`}>IQ VERDICT: SHORT-TERM RENTAL</div>
-                <div className="flex items-center gap-4 bg-white rounded-full px-5 py-3 shadow-sm mb-3">
-                  <span className={`text-3xl font-extrabold tabular-nums ${
-                    dealScore >= 70 ? 'text-teal' : dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
-                  }`}>{dealScore}</span>
-                  <div>
-                    <div className="text-base font-bold text-slate-800">{verdict}</div>
-                    <div className="text-xs text-slate-500">Deal Score</div>
+                
+                {/* Two-Score Display */}
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  {/* Deal Opportunity Score */}
+                  <div className="bg-white rounded-lg px-3 py-2 shadow-sm text-center">
+                    <span className={`text-2xl font-extrabold tabular-nums ${
+                      opportunityScore >= 70 ? 'text-teal' : opportunityScore >= 40 ? 'text-amber-500' : 'text-red-500'
+                    }`}>{opportunityScore}</span>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Opportunity</div>
+                    <div className="text-[9px] font-medium text-slate-400 truncate">{opportunityVerdict}</div>
+                  </div>
+                  {/* Strategy Performance Score */}
+                  <div className="bg-white rounded-lg px-3 py-2 shadow-sm text-center">
+                    <span className={`text-2xl font-extrabold tabular-nums ${
+                      performanceScore >= 70 ? 'text-teal' : performanceScore >= 40 ? 'text-amber-500' : 'text-red-500'
+                    }`}>{performanceScore}</span>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Performance</div>
+                    <div className="text-[9px] font-medium text-slate-400 truncate">{performanceVerdict}</div>
                   </div>
                 </div>
+                
                 <p className="text-sm text-slate-500 text-center">{verdictSub}</p>
               </div>
               
