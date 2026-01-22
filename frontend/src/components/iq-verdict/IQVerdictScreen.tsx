@@ -111,24 +111,42 @@ export function IQVerdictScreen({
                 IQ VERDICT
               </p>
               
-              {/* Clickable Deal Score - navigates to top strategy */}
-              <button
-                onClick={() => onViewStrategy(topStrategy)}
-                className="inline-flex items-center gap-4 bg-white dark:bg-navy-800 rounded-full px-8 py-4 shadow-lg mb-6 transition-all hover:shadow-xl hover:scale-[1.02] cursor-pointer"
-              >
-                <span 
-                  className="text-5xl font-extrabold"
-                  style={{ color: getDealScoreColor(analysis.dealScore) }}
+              {/* Two-Score Display */}
+              <div className="grid grid-cols-2 gap-4 mb-6 max-w-sm mx-auto">
+                {/* Opportunity Score */}
+                <button
+                  onClick={() => onViewStrategy(topStrategy)}
+                  className="bg-white dark:bg-navy-800 rounded-xl p-4 shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] cursor-pointer text-center"
                 >
-                  {analysis.dealScore}
-                </span>
-                <div className="text-left">
-                  <p className="font-bold text-gray-900 dark:text-white text-lg">
+                  <span 
+                    className="text-4xl font-extrabold block"
+                    style={{ color: getDealScoreColor(analysis.dealScore) }}
+                  >
+                    {analysis.dealScore}
+                  </span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Opportunity</p>
+                  <p className="text-[10px] font-medium text-gray-400 truncate">
                     {analysis.dealVerdict}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Deal Score</p>
-                </div>
-              </button>
+                </button>
+                
+                {/* Performance Score (Top Strategy) */}
+                <button
+                  onClick={() => onViewStrategy(topStrategy)}
+                  className="bg-white dark:bg-navy-800 rounded-xl p-4 shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] cursor-pointer text-center"
+                >
+                  <span 
+                    className="text-4xl font-extrabold block"
+                    style={{ color: getDealScoreColor(topStrategy.score) }}
+                  >
+                    {topStrategy.score}
+                  </span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Performance</p>
+                  <p className="text-[10px] font-medium text-gray-400 truncate">
+                    {topStrategy.name}
+                  </p>
+                </button>
+              </div>
               
               <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm mx-auto">
                 {analysis.verdictDescription}

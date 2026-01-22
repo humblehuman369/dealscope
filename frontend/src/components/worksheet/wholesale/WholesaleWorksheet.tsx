@@ -8,6 +8,7 @@ import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
 import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_TARGET_PURCHASE_PCT } from '@/lib/iqTarget'
+import { useDealScore } from '@/hooks/useDealScore'
 
 // Section components for tab navigation
 import { SalesCompsSection } from '../sections/SalesCompsSection'
@@ -108,6 +109,32 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   const [completedSections, setCompletedSections] = useState<Set<number>>(new Set([0]))
   const [manualOverrides, setManualOverrides] = useState<Record<number, boolean>>({})
 
+  // ============================================
+  // DEAL OPPORTUNITY SCORE FROM BACKEND API
+  // ============================================
+  // Measures: How obtainable is this deal? (discount from list to breakeven)
+  // For Wholesale, we estimate monthly rent based on ARV
+  const estimatedMonthlyRent = arv * 0.007 // 0.7% of ARV as potential rent
+  
+  const { result: dealScoreResult } = useDealScore({
+    listPrice: listPrice,
+    purchasePrice: contractPrice,
+    monthlyRent: estimatedMonthlyRent,
+    propertyTaxes: listPrice * 0.012, // Estimate 1.2% property tax
+    insurance: listPrice * 0.01, // Estimate 1% insurance
+    vacancyRate: 0.05,
+    maintenancePct: 0.05,
+    managementPct: 0.08,
+    downPaymentPct: 0.20,
+    interestRate: 0.06,
+    loanTermYears: 30,
+  })
+  
+  // Extract Deal Opportunity Score from backend result
+  const opportunityScore = dealScoreResult?.dealScore ?? 0
+  const breakeven = dealScoreResult?.breakevenPrice ?? contractPrice
+  const opportunityVerdict = dealScoreResult?.dealVerdict ?? 'Calculating...'
+
   const calc = useMemo(() => {
     // 70% Rule MAO
     const mao = (arv * 0.7) - rehabCosts
@@ -132,18 +159,31 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
     const arvPerSqft = sqft > 0 ? arv / sqft : 0
     const allInPctArv = arv > 0 ? (assignmentSalePrice / arv) * 100 : 0
     
-    // Deal Score (Opportunity-Based)
-    // For Wholesale, score based on how far above/below MAO the contract price is
-    // Contract at MAO = great opportunity, contract above MAO = less opportunity
-    const discountFromMao = mao > 0 ? Math.max(0, ((contractPrice - mao) / mao) * 100) : 0
-    // Invert and scale: 0% above MAO = 100, 45% above MAO = 0
-    const dealScore = Math.max(0, Math.min(100, Math.round(100 - (discountFromMao * 100 / 45))))
-    
     return {
       mao, meets70Rule, assignmentSalePrice, buyerAllInCost, buyerProfit, buyerRoi, buyerHasGoodDeal,
-      yourCosts, yourNetProfit, yourRoi, pricePerSqft, arvPerSqft, allInPctArv, dealScore,
+      yourCosts, yourNetProfit, yourRoi, pricePerSqft, arvPerSqft, allInPctArv,
     }
   }, [contractPrice, arv, rehabCosts, assignmentFee, earnestMoney, marketingCosts, closingCostsPct, buyerTargetProfit, sqft])
+
+  // ============================================
+  // STRATEGY PERFORMANCE SCORE (Wholesale-specific)
+  // ============================================
+  // Measures: How well does Wholesale perform?
+  // Based on Your ROI: 100% = 100, 0% = 50, -100% = 0
+  const performanceScore = Math.max(0, Math.min(100, Math.round(50 + (calc.yourRoi / 2))))
+  
+  // Performance verdict based on Your ROI
+  const getPerformanceVerdict = (score: number): string => {
+    if (score >= 90) return 'Excellent Profit'
+    if (score >= 75) return 'Good Profit'
+    if (score >= 50) return 'Fair Profit'
+    if (score >= 25) return 'Weak Profit'
+    return 'No Profit'
+  }
+  const performanceVerdict = getPerformanceVerdict(performanceScore)
+  
+  // Combined Deal Score (average of both)
+  const dealScore = Math.round((opportunityScore + performanceScore) / 2)
 
   // Hybrid toggle
   const isSectionOpen = useCallback((index: number) => {
@@ -272,7 +312,7 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
             <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${isProfit ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Your Fee</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums truncate ${isProfit ? 'text-emerald-600' : 'text-red-500'}`}>{fmt.currencyCompact(assignmentFee)}</div></div>
             <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${calc.buyerHasGoodDeal ? 'bg-emerald-500/10' : 'bg-amber-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Buyer ROI</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums truncate ${calc.buyerHasGoodDeal ? 'text-emerald-600' : 'text-amber-500'}`}>{fmt.percent(calc.buyerRoi)}</div></div>
             <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-blue-500/10"><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Your ROI</div><div className="text-xs sm:text-sm lg:text-base font-bold text-blue-600 tabular-nums truncate">{fmt.percent(calc.yourRoi)}</div></div>
-            <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${calc.dealScore >= 70 ? 'bg-blue-500/15' : calc.dealScore >= 40 ? 'bg-amber-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Deal Score</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums ${calc.dealScore >= 70 ? 'text-blue-600' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{calc.dealScore}</div></div>
+            <div className={`rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 ${dealScore >= 70 ? 'bg-blue-500/15' : dealScore >= 40 ? 'bg-amber-500/10' : 'bg-red-500/10'}`}><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Deal Score</div><div className={`text-xs sm:text-sm lg:text-base font-bold tabular-nums ${dealScore >= 70 ? 'text-blue-600' : dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{dealScore}</div></div>
           </div>
         </div>
       </div>
@@ -343,12 +383,30 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
           <div className="space-y-4 sm:sticky sm:top-28">
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
               <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-4">IQ VERDICT: WHOLESALE</div>
-              <div className="flex items-center gap-4 mb-5">
-                <div className="relative w-20 h-20">
-                  <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="#e2e8f0" strokeWidth="6"/><circle cx="40" cy="40" r="34" fill="none" stroke={calc.dealScore >= 70 ? '#3b82f6' : calc.dealScore >= 40 ? '#f59e0b' : '#ef4444'} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${(calc.dealScore / 100) * 213.6} 213.6`}/></svg>
-                  <div className="absolute inset-0 flex items-center justify-center"><span className={`text-2xl font-bold ${calc.dealScore >= 70 ? 'text-blue-600' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{calc.dealScore}</span></div>
+              
+              {/* Two-Score Display */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                {/* Deal Opportunity Score */}
+                <div className="bg-slate-50 rounded-lg px-3 py-2 text-center">
+                  <span className={`text-2xl font-extrabold tabular-nums ${
+                    opportunityScore >= 70 ? 'text-blue-600' : opportunityScore >= 40 ? 'text-amber-500' : 'text-red-500'
+                  }`}>{opportunityScore}</span>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Opportunity</div>
+                  <div className="text-[9px] font-medium text-slate-400 truncate">{opportunityVerdict}</div>
                 </div>
-                <div><div className={`text-lg font-bold ${calc.dealScore >= 70 ? 'text-blue-600' : calc.dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{verdict}</div><div className="text-sm text-slate-500">{verdictSub}</div></div>
+                {/* Strategy Performance Score */}
+                <div className="bg-slate-50 rounded-lg px-3 py-2 text-center">
+                  <span className={`text-2xl font-extrabold tabular-nums ${
+                    performanceScore >= 70 ? 'text-blue-600' : performanceScore >= 40 ? 'text-amber-500' : 'text-red-500'
+                  }`}>{performanceScore}</span>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Performance</div>
+                  <div className="text-[9px] font-medium text-slate-400 truncate">{performanceVerdict}</div>
+                </div>
+              </div>
+              
+              <div className="text-center mb-4">
+                <div className={`text-base font-bold ${dealScore >= 70 ? 'text-blue-600' : dealScore >= 40 ? 'text-amber-500' : 'text-red-500'}`}>{verdict}</div>
+                <div className="text-xs text-slate-500">{verdictSub}</div>
               </div>
               <div className="space-y-2">
                 <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-2">WHOLESALE TARGETS</div>
