@@ -1,5 +1,6 @@
 // LTR Worksheet Components
 export { LTRWorksheet } from './LTRWorksheet'
+export { MobileCompressedView } from './MobileCompressedView'
 export { KPIRow, type KPIRowProps } from './KPIRow'
 export { KPIBox } from './KPIBox'
 export { DealScoreBox } from './DealScoreBox'

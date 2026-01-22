@@ -6,12 +6,14 @@ import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { SalesCompsSection } from '../sections/SalesCompsSection'
 import { RentalCompsSection } from '../sections/RentalCompsSection'
 import { MarketDataSection } from '../sections/MarketDataSection'
 import { MultiYearProjections } from '../sections/MultiYearProjections'
 import { CashFlowChart } from '../charts/CashFlowChart'
 import { EquityChart } from '../charts/EquityChart'
+import { MobileCompressedView } from './MobileCompressedView'
 import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
 
 // Strategy definitions for switcher
@@ -136,6 +138,10 @@ export function LTRWorksheet({
   const [isStrategyDropdownOpen, setIsStrategyDropdownOpen] = useState(false)
   const { activeStrategy, setActiveStrategy } = useUIStore()
   const currentStrategy = strategies.find(s => s.id === activeStrategy) || strategies[0]
+  
+  // Mobile compressed view - show below 640px (sm breakpoint)
+  const isMobileCompressed = useIsMobile(640)
+  const [showFullViewOnMobile, setShowFullViewOnMobile] = useState(false)
   
   // Get active section from store for tab navigation
   const { activeSection } = useWorksheetStore()
@@ -680,7 +686,30 @@ export function LTRWorksheet({
       
       {/* MAIN CONTENT */}
       <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        {/* Render different content based on active tab */}
+        {/* Mobile Compressed View - shown on small screens when not in full view mode */}
+        {isMobileCompressed && !showFullViewOnMobile && activeSection === 'worksheet' ? (
+          <MobileCompressedView
+            purchasePrice={purchasePrice}
+            downPaymentPct={downPaymentPct}
+            purchaseCostsPct={purchaseCostsPct}
+            calc={calc}
+            fmt={fmt}
+            onNavigateToSection={(sectionId) => {
+              if (sectionId === 'full') {
+                setShowFullViewOnMobile(true)
+              } else {
+                // Toggle to the requested section
+                const sectionIndex = SECTIONS.findIndex(s => s.id === sectionId)
+                if (sectionIndex !== -1) {
+                  setShowFullViewOnMobile(true)
+                  toggleSection(sectionIndex)
+                }
+              }
+            }}
+          />
+        ) : (
+        <>
+        {/* Desktop / Full View Content */}
         {activeSection === 'sales-comps' ? (
           <SalesCompsSection />
         ) : activeSection === 'rental-comps' ? (
@@ -697,6 +726,15 @@ export function LTRWorksheet({
           </>
         ) : (
         <>
+          {/* Mobile: Back to compressed view button */}
+          {isMobileCompressed && showFullViewOnMobile && (
+            <button
+              onClick={() => setShowFullViewOnMobile(false)}
+              className="mb-4 flex items-center gap-2 text-teal text-sm font-medium hover:underline"
+            >
+              ← Back to Summary
+            </button>
+          )}
           <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">
           
           {/* LEFT COLUMN - Worksheet sections */}
@@ -916,6 +954,8 @@ export function LTRWorksheet({
             </button>
           </div>
         </div>
+        </>
+        )}
         </>
         )}
       </main>
