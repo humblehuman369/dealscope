@@ -65,7 +65,9 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   // Strategy switcher state
   const [isStrategyDropdownOpen, setIsStrategyDropdownOpen] = useState(false)
   const { activeStrategy, setActiveStrategy } = useUIStore()
-  const currentStrategy = strategies.find(s => s.id === activeStrategy) || strategies[5] // Default to Wholesale
+  
+  // This worksheet's strategy - always Wholesale
+  const thisStrategy = { id: 'wholesale', label: 'Wholesale' }
   
   // Get active section from store for tab navigation
   const { activeSection } = useWorksheetStore()

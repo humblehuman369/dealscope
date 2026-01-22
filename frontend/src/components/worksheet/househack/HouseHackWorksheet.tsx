@@ -67,7 +67,9 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
   // Strategy switcher state
   const [isStrategyDropdownOpen, setIsStrategyDropdownOpen] = useState(false)
   const { activeStrategy, setActiveStrategy } = useUIStore()
-  const currentStrategy = strategies.find(s => s.id === activeStrategy) || strategies[4] // Default to House Hack
+  
+  // This worksheet's strategy - always House Hack
+  const thisStrategy = { id: 'househack', label: 'House Hack' }
   
   // Get active section from store for tab navigation
   const { activeSection } = useWorksheetStore()
