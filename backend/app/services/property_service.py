@@ -7,6 +7,7 @@ import hashlib
 import json
 import uuid
 import logging
+import re
 
 from app.services.api_clients import (
     RentCastClient, AXESSOClient, DataNormalizer, create_api_clients
@@ -257,6 +258,53 @@ class PropertyService:
             # Typical 1-1.5% of value
             return avm * 0.012
         return 4500  # Default fallback
+
+    async def _resolve_zpid_from_address(self, address: str) -> Optional[str]:
+        """Resolve a Zillow zpid from a full address."""
+        if not address:
+            return None
+
+        try:
+            response = await self.zillow.search_by_address(address)
+        except Exception as exc:
+            logger.warning(f"ZPID lookup failed for address '{address}': {exc}")
+            return None
+
+        if not response.success or not response.data:
+            return response.zpid
+
+        if isinstance(response.data, dict):
+            return str(response.data.get("zpid") or response.data.get("zillow_id") or response.zpid) if (response.data.get("zpid") or response.data.get("zillow_id") or response.zpid) else None
+
+        if isinstance(response.data, list) and response.data:
+            zpid = response.data[0].get("zpid")
+            return str(zpid) if zpid else response.zpid
+
+        return response.zpid
+
+    def _build_market_location_candidates(self, location: str) -> List[str]:
+        """Generate fallback location formats for market data queries."""
+        normalized = " ".join(location.split()).strip()
+        candidates: List[str] = [normalized] if normalized else []
+
+        zip_match = re.search(r"\b\d{5}\b", normalized)
+        if zip_match:
+            candidates.append(zip_match.group(0))
+
+        if "," in normalized:
+            city = normalized.split(",", 1)[0].strip()
+            if city:
+                candidates.append(city)
+
+        # Deduplicate while preserving order
+        seen = set()
+        unique_candidates = []
+        for candidate in candidates:
+            if candidate and candidate not in seen:
+                unique_candidates.append(candidate)
+                seen.add(candidate)
+
+        return unique_candidates
     
     async def calculate_analytics(
         self,
@@ -597,37 +645,40 @@ class PropertyService:
         Returns:
             Dict with market data including median rent, trends, etc.
         """
-        logger.info(f"Fetching market data for location: {location}")
-        
-        try:
-            result = await self.zillow.get_market_data(location=location)
-            
+        candidates = self._build_market_location_candidates(location)
+        logger.info(f"Fetching market data for location: {location} (candidates: {candidates})")
+
+        last_error = None
+
+        for candidate in candidates or [location]:
+            try:
+                result = await self.zillow.get_market_data(location=candidate)
+            except Exception as e:
+                logger.error(f"Error fetching market data for {candidate}: {e}")
+                last_error = str(e)
+                continue
+
             if result.success and result.data:
-                logger.info(f"Market data fetch successful for: {location}")
+                logger.info(f"Market data fetch successful for: {candidate}")
                 return {
                     "success": True,
-                    "location": location,
+                    "location": candidate,
                     "data": result.data,
                     "fetched_at": datetime.utcnow().isoformat()
                 }
-            else:
-                logger.warning(f"Market data fetch failed: {result.error}")
-                return {
-                    "success": False,
-                    "location": location,
-                    "error": result.error or "Failed to fetch market data from AXESSO API",
-                    "data": None,
-                    "fetched_at": datetime.utcnow().isoformat()
-                }
-        except Exception as e:
-            logger.error(f"Error fetching market data: {e}")
-            return {
-                "success": False,
-                "location": location,
-                "error": str(e),
-                "data": None,
-                "fetched_at": datetime.utcnow().isoformat()
-            }
+
+            last_error = result.error or "Failed to fetch market data from AXESSO API"
+            if result.error and "Invalid location" not in result.error:
+                break
+
+        logger.warning(f"Market data fetch failed: {last_error}")
+        return {
+            "success": False,
+            "location": location,
+            "error": last_error,
+            "data": None,
+            "fetched_at": datetime.utcnow().isoformat()
+        }
     
     async def get_similar_rent(
         self,
@@ -649,7 +700,18 @@ class PropertyService:
         logger.info(f"Fetching similar rentals - zpid: {zpid}, address: {address}")
         
         try:
-            result = await self.zillow.get_similar_rentals(zpid=zpid, url=url, address=address)
+            resolved_zpid = zpid
+            if not resolved_zpid and address and not url:
+                resolved_zpid = await self._resolve_zpid_from_address(address)
+
+            query_zpid = resolved_zpid
+            query_address = address if not query_zpid and not url else None
+
+            result = await self.zillow.get_similar_rentals(
+                zpid=query_zpid,
+                url=url,
+                address=query_address
+            )
             
             if result.success and result.data:
                 logger.info(f"Similar rent fetch successful")
@@ -705,7 +767,18 @@ class PropertyService:
         logger.info(f"Fetching similar sold - zpid: {zpid}, address: {address}")
         
         try:
-            result = await self.zillow.get_similar_sold(zpid=zpid, url=url, address=address)
+            resolved_zpid = zpid
+            if not resolved_zpid and address and not url:
+                resolved_zpid = await self._resolve_zpid_from_address(address)
+
+            query_zpid = resolved_zpid
+            query_address = address if not query_zpid and not url else None
+
+            result = await self.zillow.get_similar_sold(
+                zpid=query_zpid,
+                url=url,
+                address=query_address
+            )
             
             if result.success and result.data:
                 logger.info(f"Similar sold fetch successful")
