@@ -1,7 +1,7 @@
 """Add worksheet_assumptions column to saved_properties
 
 Revision ID: 20250113_0001
-Revises: 20250112_0002
+Revises: 20250112_0001
 Create Date: 2025-01-13 06:15:00.000000
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import JSON
 
 # revision identifiers, used by Alembic.
 revision = '20250113_0001'
-down_revision = '20250112_0002'
+down_revision = '20250112_0001'
 branch_labels = None
 depends_on = None
 

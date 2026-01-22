@@ -1,7 +1,7 @@
 """Add search history and business profile fields
 
 Revision ID: 20250112_0001
-Revises: 20241228_0001
+Revises: 0002
 Create Date: 2025-01-12
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '20250112_0001'
-down_revision = '20241228_0001'
+down_revision = '0002'
 branch_labels = None
 depends_on = None
 
