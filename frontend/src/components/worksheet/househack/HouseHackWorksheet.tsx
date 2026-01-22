@@ -7,6 +7,7 @@ import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
+import { calculateInitialPurchasePrice } from '@/lib/iqTarget'
 
 // Section components for tab navigation
 import { SalesCompsSection } from '../sections/SalesCompsSection'
@@ -84,19 +85,34 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
   const zip = property.address_zip || ''
 
   // STATE - Updated defaults per default_assumptions.csv
-  const defaultPurchasePrice = propertyData.listPrice || 400000
-  const defaultInsurance = propertyData.insurance || (defaultPurchasePrice * 0.01) // 1% of purchase price
+  const listPrice = propertyData.listPrice || 400000
+  const defaultInsurance = propertyData.insurance || (listPrice * 0.01) // 1% of list price
   const defaultBedrooms = propertyData.bedrooms || 4
   const defaultMonthlyRent = propertyData.monthlyRent || 2400 // Total rent for property
+  const defaultPropertyTaxes = propertyData.propertyTaxes || 5000
   // Room rent formula: (monthlyRent / bedrooms) * units_rented_out
   const rentPerRoom = defaultMonthlyRent / defaultBedrooms
   const defaultRoomRent = Math.round(rentPerRoom * 2) // 2 units rented out by default
   const defaultMarketRent = Math.round(rentPerRoom)   // Owner unit market rent = rent per room
   
-  const [purchasePrice, setPurchasePrice] = useState(defaultPurchasePrice)
-  const [downPaymentPct, setDownPaymentPct] = useState(3.5)               // 3.5% FHA (was 5%)
+  // Calculate initial purchase price as 95% of estimated breakeven
+  const initialPurchasePrice = calculateInitialPurchasePrice({
+    monthlyRent: defaultRoomRent,  // Use rental income from rented units
+    propertyTaxes: defaultPropertyTaxes,
+    insurance: defaultInsurance,
+    listPrice: listPrice,
+    vacancyRate: 0.01,
+    maintenancePct: 0.05,
+    managementPct: 0,
+    downPaymentPct: 0.035,   // FHA down payment
+    interestRate: 0.06,
+    loanTermYears: 30,
+  })
+  
+  const [purchasePrice, setPurchasePrice] = useState(initialPurchasePrice)
+  const [downPaymentPct, setDownPaymentPct] = useState(3.5)               // 3.5% FHA
   const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)
-  const [interestRate, setInterestRate] = useState(6.0)                   // 6% (was 7.0%)
+  const [interestRate, setInterestRate] = useState(6.0)                   // 6%
   const [loanTerm, setLoanTerm] = useState(30)
   const [propertyType, setPropertyType] = useState<'duplex' | 'triplex' | 'fourplex'>('duplex')
   const [ownerUnit, setOwnerUnit] = useState(0)
@@ -104,8 +120,8 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
   const [unit2Rent, setUnit2Rent] = useState(Math.round(rentPerRoom))     // Rent per room
   const [unit3Rent, setUnit3Rent] = useState(Math.round(rentPerRoom))
   const [unit4Rent, setUnit4Rent] = useState(Math.round(rentPerRoom))
-  const [vacancyRate, setVacancyRate] = useState(1)                       // 1% (was 5%)
-  const [propertyTaxes, setPropertyTaxes] = useState(propertyData.propertyTaxes || 5000)
+  const [vacancyRate, setVacancyRate] = useState(1)                       // 1%
+  const [propertyTaxes, setPropertyTaxes] = useState(defaultPropertyTaxes)
   const [insurance, setInsurance] = useState(defaultInsurance)            // 1% of purchase price
   const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)
   const [maintenancePct, setMaintenancePct] = useState(5)

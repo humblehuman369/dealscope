@@ -7,6 +7,7 @@ import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
+import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_TARGET_PURCHASE_PCT } from '@/lib/iqTarget'
 
 // Section components for tab navigation
 import { SalesCompsSection } from '../sections/SalesCompsSection'
@@ -82,17 +83,24 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   const zip = property.address_zip || ''
 
   // STATE - Updated defaults per default_assumptions.csv
-  const defaultContractPrice = propertyData.listPrice || 200000
-  const defaultArv = propertyData.arv || defaultContractPrice * 1.4
-  const defaultRehabCosts = defaultArv * 0.05 // 5% of ARV
+  const listPrice = propertyData.listPrice || 200000
+  const defaultArv = propertyData.arv || listPrice * 1.4
+  const defaultRehabCosts = defaultArv * DEFAULT_RENOVATION_BUDGET_PCT // 5% of ARV
   
-  const [contractPrice, setContractPrice] = useState(defaultContractPrice)
+  // For wholesale, calculate initial contract price based on 70% rule MAO * 95%
+  const mao = (defaultArv * 0.70) - defaultRehabCosts
+  const initialContractPrice = Math.min(
+    Math.max(Math.round(mao * DEFAULT_TARGET_PURCHASE_PCT), listPrice * 0.50),
+    listPrice
+  )
+  
+  const [contractPrice, setContractPrice] = useState(initialContractPrice)
   const [arv, setArv] = useState(defaultArv)
   const [rehabCosts, setRehabCosts] = useState(defaultRehabCosts)         // 5% of ARV
-  const [assignmentFee, setAssignmentFee] = useState(15000)               // $15,000 (was $10,000)
+  const [assignmentFee, setAssignmentFee] = useState(15000)               // $15,000
   const [earnestMoney, setEarnestMoney] = useState(1000)                  // $1,000
   const [marketingCosts, setMarketingCosts] = useState(500)               // $500
-  const [closingCostsPct, setClosingCostsPct] = useState(3)               // 3% (was 2%)
+  const [closingCostsPct, setClosingCostsPct] = useState(3)               // 3%
   const [buyerTargetProfit, setBuyerTargetProfit] = useState(25)
   
   // Hybrid accordion mode

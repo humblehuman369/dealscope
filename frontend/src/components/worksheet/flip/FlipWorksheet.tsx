@@ -7,6 +7,7 @@ import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
+import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_TARGET_PURCHASE_PCT } from '@/lib/iqTarget'
 
 // Section components for tab navigation
 import { SalesCompsSection } from '../sections/SalesCompsSection'
@@ -132,23 +133,31 @@ export function FlipWorksheet({
   // ============================================
   // STATE - Updated defaults per default_assumptions.csv
   // ============================================
-  const defaultPurchasePrice = propertyData.listPrice || 300000
-  const defaultArv = propertyData.arv || defaultPurchasePrice * 1.35
-  const defaultInsurance = propertyData.insurance || (defaultPurchasePrice * 0.01) // 1% of purchase price
-  const defaultRehabCosts = defaultArv * 0.05 // 5% of ARV
+  const listPrice = propertyData.listPrice || 300000
+  const defaultArv = propertyData.arv || listPrice * 1.35
+  const defaultInsurance = propertyData.insurance || (listPrice * 0.01) // 1% of list price
+  const defaultRehabCosts = defaultArv * DEFAULT_RENOVATION_BUDGET_PCT // 5% of ARV
   
-  const [purchasePrice, setPurchasePrice] = useState(defaultPurchasePrice)
+  // For flips, estimate breakeven using 70% rule: ARV * 0.70 - Rehab = MAO
+  // Then initial purchase price = MAO * 95% (DEFAULT_TARGET_PURCHASE_PCT)
+  const mao = (defaultArv * 0.70) - defaultRehabCosts
+  const initialPurchasePrice = Math.min(
+    Math.max(Math.round(mao * DEFAULT_TARGET_PURCHASE_PCT), listPrice * 0.50),
+    listPrice
+  )
+  
+  const [purchasePrice, setPurchasePrice] = useState(initialPurchasePrice)
   const [rehabCosts, setRehabCosts] = useState(defaultRehabCosts)         // 5% of ARV
-  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)             // 3% (was 2%)
-  const [financingPct, setFinancingPct] = useState(80)                    // 80% (was 90%)
+  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)             // 3%
+  const [financingPct, setFinancingPct] = useState(80)                    // 80%
   const [interestRate, setInterestRate] = useState(12)                    // 12% hard money
   const [loanPoints, setLoanPoints] = useState(2)
   const [arv, setArv] = useState(defaultArv)
   const [holdingMonths, setHoldingMonths] = useState(6)
   const [propertyTaxes, setPropertyTaxes] = useState(propertyData.propertyTaxes || 4000)
   const [insurance, setInsurance] = useState(defaultInsurance)            // 1% of purchase price
-  const [utilities, setUtilities] = useState(100)                         // $100 (was $300)
-  const [sellingCostsPct, setSellingCostsPct] = useState(6)               // 6% (was 8%)
+  const [utilities, setUtilities] = useState(100)                         // $100
+  const [sellingCostsPct, setSellingCostsPct] = useState(6)               // 6%
   
   // Hybrid accordion mode
   const [currentSection, setCurrentSection] = useState<number | null>(0)

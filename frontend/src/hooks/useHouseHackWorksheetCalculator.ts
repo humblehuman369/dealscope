@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { SavedProperty } from './useWorksheetProperty'
+import { calculateInitialPurchasePrice } from '@/lib/iqTarget'
 
 const WORKSHEET_API_URL = '/api/v1/worksheet/househack/calculate'
 const CALC_DEBOUNCE_MS = 150
@@ -105,11 +106,11 @@ export function useHouseHackWorksheetCalculator(property: SavedProperty | null) 
     const listPrice = data.listPrice ?? defaultInputs.purchase_price
     const bedrooms = data.bedrooms ?? 3 // Default to 3 bedrooms if not provided
     const monthlyRent = data.monthlyRent ?? defaultInputs.unit2_rent
+    const propertyTaxes = data.propertyTaxes ?? (defaultInputs.property_taxes_monthly * 12)
     
     // Calculate insurance as 1% of purchase price annually
-    const insuranceMonthly = data.insurance 
-      ? data.insurance / 12 
-      : (listPrice * DEFAULT_INSURANCE_PCT) / 12
+    const insuranceAnnual = data.insurance ?? (listPrice * DEFAULT_INSURANCE_PCT)
+    const insuranceMonthly = insuranceAnnual / 12
     
     // Calculate room rent: (monthlyRent / bedrooms) * units_rented_out
     // Default units_rented_out = 2
@@ -118,12 +119,26 @@ export function useHouseHackWorksheetCalculator(property: SavedProperty | null) 
     
     // Owner unit market rent = monthlyRent / bedrooms (rent per room)
     const ownerUnitMarketRent = rentPerRoom
+    
+    // Calculate initial purchase price as 95% of estimated breakeven
+    const initialPurchasePrice = calculateInitialPurchasePrice({
+      monthlyRent: roomRentMonthly,  // Use rental income from rented units
+      propertyTaxes: propertyTaxes,
+      insurance: insuranceAnnual,
+      listPrice: listPrice,
+      vacancyRate: 0.01,
+      maintenancePct: 0.05,
+      managementPct: 0,
+      downPaymentPct: 0.035,   // FHA down payment
+      interestRate: 0.06,
+      loanTermYears: 30,
+    })
 
     setInputs((prev) => ({
       ...prev,
-      purchase_price: listPrice,
+      purchase_price: initialPurchasePrice,
       list_price: listPrice * 1.056,
-      property_taxes_monthly: (data.propertyTaxes ?? (prev.property_taxes_monthly * 12)) / 12,
+      property_taxes_monthly: propertyTaxes / 12,
       insurance_monthly: insuranceMonthly,
       unit2_rent: roomRentMonthly,
       owner_market_rent: ownerUnitMarketRent,

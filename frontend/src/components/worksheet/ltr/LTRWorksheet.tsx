@@ -15,6 +15,7 @@ import { CashFlowChart } from '../charts/CashFlowChart'
 import { EquityChart } from '../charts/EquityChart'
 import { MobileCompressedView } from './MobileCompressedView'
 import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
+import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
 
 // Strategy definitions for switcher
 const strategies = [
@@ -162,23 +163,43 @@ export function LTRWorksheet({
   // ============================================
   // STATE
   // ============================================
-  // Default insurance as 1% of purchase price
-  const defaultPurchasePrice = propertyData.listPrice || 723600
-  const defaultInsurance = propertyData.insurance || (defaultPurchasePrice * 0.01)
+  // Calculate initial values based on property data
+  const listPrice = propertyData.listPrice || 723600
+  const defaultMonthlyRent = propertyData.monthlyRent || 8081
+  const defaultPropertyTaxes = propertyData.propertyTaxes || 6471
+  const defaultInsurance = propertyData.insurance || (listPrice * 0.01) // 1% of list price
+  const defaultArv = propertyData.arv || listPrice * 1.1 || 795960
   
-  const [purchasePrice, setPurchasePrice] = useState(defaultPurchasePrice)
+  // Calculate initial purchase price as 95% of estimated breakeven
+  const initialPurchasePrice = calculateInitialPurchasePrice({
+    monthlyRent: defaultMonthlyRent,
+    propertyTaxes: defaultPropertyTaxes,
+    insurance: defaultInsurance,
+    listPrice: listPrice,
+    vacancyRate: 0.01,      // 1%
+    maintenancePct: 0.05,   // 5%
+    managementPct: 0,       // 0%
+    downPaymentPct: 0.20,   // 20%
+    interestRate: 0.06,     // 6%
+    loanTermYears: 30,
+  })
+  
+  // Calculate initial rehab budget as 5% of ARV
+  const initialRehabBudget = Math.round(defaultArv * DEFAULT_RENOVATION_BUDGET_PCT)
+  
+  const [purchasePrice, setPurchasePrice] = useState(initialPurchasePrice)
   const [downPaymentPct, setDownPaymentPct] = useState(20)              // 20%
   const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)           // 3%
-  const [interestRate, setInterestRate] = useState(6.0)                 // 6% (was 7.0%)
+  const [interestRate, setInterestRate] = useState(6.0)                 // 6%
   const [loanTerm, setLoanTerm] = useState(30)
-  const [rehabCosts, setRehabCosts] = useState(0)
-  const [arv, setArv] = useState(propertyData.arv || defaultPurchasePrice * 1.1 || 795960)
-  const [monthlyRent, setMonthlyRent] = useState(propertyData.monthlyRent || 8081)
-  const [vacancyRate, setVacancyRate] = useState(1)                     // 1% (was 8%)
-  const [propertyTaxes, setPropertyTaxes] = useState(propertyData.propertyTaxes || 6471)
+  const [rehabCosts, setRehabCosts] = useState(initialRehabBudget)      // 5% of ARV
+  const [arv, setArv] = useState(defaultArv)
+  const [monthlyRent, setMonthlyRent] = useState(defaultMonthlyRent)
+  const [vacancyRate, setVacancyRate] = useState(1)                     // 1%
+  const [propertyTaxes, setPropertyTaxes] = useState(defaultPropertyTaxes)
   const [insurance, setInsurance] = useState(defaultInsurance)          // 1% of purchase price
   const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)             // 0%
-  const [maintenancePct, setMaintenancePct] = useState(5)               // 5% (was 2%)
+  const [maintenancePct, setMaintenancePct] = useState(5)               // 5%
   const [capExPct, setCapExPct] = useState(0)
   const [hoaFees, setHoaFees] = useState(0)
   

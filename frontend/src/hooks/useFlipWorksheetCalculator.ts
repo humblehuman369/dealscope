@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { SavedProperty } from './useWorksheetProperty'
+import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_TARGET_PURCHASE_PCT } from '@/lib/iqTarget'
 
 const WORKSHEET_API_URL = '/api/v1/worksheet/flip/calculate'
 const CALC_DEBOUNCE_MS = 150
@@ -95,12 +96,20 @@ export function useFlipWorksheetCalculator(property: SavedProperty | null) {
     
     // Calculate percentage-based fields
     const insurance = data.insurance ?? (listPrice * DEFAULT_INSURANCE_PCT)
-    const rehabCosts = arv * DEFAULT_REHAB_BUDGET_PCT
+    const rehabCosts = arv * DEFAULT_RENOVATION_BUDGET_PCT
+    
+    // For flips, estimate breakeven using 70% rule: ARV * 0.70 - Rehab = MAO
+    // Then initial purchase price = MAO * 95% (DEFAULT_TARGET_PURCHASE_PCT)
+    const mao = (arv * 0.70) - rehabCosts
+    const initialPurchasePrice = Math.max(
+      Math.round(mao * DEFAULT_TARGET_PURCHASE_PCT),
+      listPrice * 0.50  // Floor at 50% of list to avoid unrealistic values
+    )
 
     setInputs((prev) => ({
       ...prev,
-      purchase_price: listPrice,
-      purchase_costs: listPrice * 0.03,
+      purchase_price: Math.min(initialPurchasePrice, listPrice),
+      purchase_costs: initialPurchasePrice * 0.03,
       arv: arv,
       rehab_costs: rehabCosts,
       property_taxes_annual: data.propertyTaxes ?? prev.property_taxes_annual,

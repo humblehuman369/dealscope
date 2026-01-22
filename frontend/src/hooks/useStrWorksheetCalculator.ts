@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { SavedProperty } from './useWorksheetProperty'
+import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
 
 const WORKSHEET_API_URL = '/api/v1/worksheet/str/calculate'
 const CALC_DEBOUNCE_MS = 150
@@ -109,14 +110,33 @@ export function useStrWorksheetCalculator(property: SavedProperty | null) {
     const propertyTaxes = data.propertyTaxes ?? defaultInputs.property_taxes_annual
     // Calculate insurance as 1% of purchase price if not provided
     const insurance = data.insurance ?? (listPrice * DEFAULT_INSURANCE_PCT)
+    
+    const adr = data.averageDailyRate ?? defaultInputs.average_daily_rate
+    const occupancy = data.occupancyRate ?? defaultInputs.occupancy_rate
+    // Estimate monthly rent from STR revenue (ADR * occupancy * 30 days)
+    const estimatedMonthlyRent = adr * occupancy * 30
+    
+    // Calculate initial purchase price as 95% of estimated breakeven
+    const initialPurchasePrice = calculateInitialPurchasePrice({
+      monthlyRent: estimatedMonthlyRent,
+      propertyTaxes: propertyTaxes,
+      insurance: insurance,
+      listPrice: listPrice,
+      vacancyRate: 0.01,
+      maintenancePct: 0.05,
+      managementPct: 0.10,
+      downPaymentPct: 0.20,
+      interestRate: 0.06,
+      loanTermYears: 30,
+    })
 
     setInputs((prev) => ({
       ...prev,
-      purchase_price: listPrice,
+      purchase_price: initialPurchasePrice,
       list_price: listPrice,
-      purchase_costs: listPrice * 0.03,
-      average_daily_rate: data.averageDailyRate ?? prev.average_daily_rate,
-      occupancy_rate: data.occupancyRate ?? prev.occupancy_rate,
+      purchase_costs: initialPurchasePrice * 0.03,
+      average_daily_rate: adr,
+      occupancy_rate: occupancy,
       property_taxes_annual: propertyTaxes,
       insurance_annual: insurance,
     }))

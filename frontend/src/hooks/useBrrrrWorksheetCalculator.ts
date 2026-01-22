@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { SavedProperty } from './useWorksheetProperty'
+import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
 
 const WORKSHEET_API_URL = '/api/v1/worksheet/brrrr/calculate'
 const CALC_DEBOUNCE_MS = 150
@@ -119,21 +120,37 @@ export function useBrrrrWorksheetCalculator(property: SavedProperty | null) {
     const data = property.property_data_snapshot || {}
     const listPrice = data.listPrice ?? defaultInputs.purchase_price
     const arv = data.arv ?? listPrice
+    const monthlyRent = data.monthlyRent ?? defaultInputs.monthly_rent
+    const propertyTaxes = data.propertyTaxes ?? defaultInputs.property_taxes_annual
     
     // Calculate percentage-based fields
     const insurance = data.insurance ?? (listPrice * DEFAULT_INSURANCE_PCT)
-    const rehabCosts = arv * DEFAULT_REHAB_BUDGET_PCT
+    const rehabCosts = arv * DEFAULT_RENOVATION_BUDGET_PCT
     const refiLoanAmount = arv * 0.75
     const refiClosingCosts = refiLoanAmount * DEFAULT_REFI_CLOSING_COSTS_PCT
+    
+    // Calculate initial purchase price as 95% of estimated breakeven
+    const initialPurchasePrice = calculateInitialPurchasePrice({
+      monthlyRent: monthlyRent,
+      propertyTaxes: propertyTaxes,
+      insurance: insurance,
+      listPrice: listPrice,
+      vacancyRate: 0.01,
+      maintenancePct: 0.05,
+      managementPct: 0,
+      downPaymentPct: 0.10,   // BRRRR typically uses hard money
+      interestRate: 0.06,    // Refinance rate
+      loanTermYears: 30,
+    })
 
     setInputs((prev) => ({
       ...prev,
-      purchase_price: listPrice,
-      purchase_costs: listPrice * 0.03,
+      purchase_price: initialPurchasePrice,
+      purchase_costs: initialPurchasePrice * 0.03,
       arv: arv,
       rehab_costs: rehabCosts,
-      monthly_rent: data.monthlyRent ?? prev.monthly_rent,
-      property_taxes_annual: data.propertyTaxes ?? prev.property_taxes_annual,
+      monthly_rent: monthlyRent,
+      property_taxes_annual: propertyTaxes,
       insurance_annual: insurance,
       refi_closing_costs: refiClosingCosts,
       sqft: data.sqft ?? prev.sqft,

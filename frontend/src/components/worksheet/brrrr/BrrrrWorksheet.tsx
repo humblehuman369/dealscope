@@ -7,6 +7,7 @@ import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
+import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
 
 // Section components for tab navigation
 import { SalesCompsSection } from '../sections/SalesCompsSection'
@@ -87,29 +88,45 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
   const zip = property.address_zip || ''
 
   // STATE - Updated defaults per default_assumptions.csv
-  const defaultPurchasePrice = propertyData.listPrice || 200000
-  const defaultArv = propertyData.arv || defaultPurchasePrice * 1.35
-  const defaultInsurance = propertyData.insurance || (defaultPurchasePrice * 0.01) // 1% of purchase price
-  const defaultRehabCosts = defaultArv * 0.05 // 5% of ARV
+  const listPrice = propertyData.listPrice || 200000
+  const defaultArv = propertyData.arv || listPrice * 1.35
+  const defaultInsurance = propertyData.insurance || (listPrice * 0.01) // 1% of list price
+  const defaultRehabCosts = defaultArv * DEFAULT_RENOVATION_BUDGET_PCT // 5% of ARV
   const defaultRefiClosingCosts = defaultArv * 0.75 * 0.03 // 3% of refinance amount
+  const defaultMonthlyRent = propertyData.monthlyRent || 2200
+  const defaultPropertyTaxes = propertyData.propertyTaxes || 3000
   
-  const [purchasePrice, setPurchasePrice] = useState(defaultPurchasePrice)
+  // Calculate initial purchase price as 95% of estimated breakeven
+  const initialPurchasePrice = calculateInitialPurchasePrice({
+    monthlyRent: defaultMonthlyRent,
+    propertyTaxes: defaultPropertyTaxes,
+    insurance: defaultInsurance,
+    listPrice: listPrice,
+    vacancyRate: 0.01,
+    maintenancePct: 0.05,
+    managementPct: 0,
+    downPaymentPct: 0.10,   // BRRRR typically uses hard money
+    interestRate: 0.06,    // Refinance rate
+    loanTermYears: 30,
+  })
+  
+  const [purchasePrice, setPurchasePrice] = useState(initialPurchasePrice)
   const [rehabCosts, setRehabCosts] = useState(defaultRehabCosts)         // 5% of ARV
-  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)             // 3% (was 2%)
+  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)             // 3%
   const [loanToCostPct, setLoanToCostPct] = useState(90)
   const [interestRate, setInterestRate] = useState(12)                    // 12% hard money
   const [loanPoints, setLoanPoints] = useState(2)
   const [arv, setArv] = useState(defaultArv)
   const [holdingMonths, setHoldingMonths] = useState(4)
-  const [propertyTaxes, setPropertyTaxes] = useState(propertyData.propertyTaxes || 3000)
+  const [propertyTaxes, setPropertyTaxes] = useState(defaultPropertyTaxes)
   const [insurance, setInsurance] = useState(defaultInsurance)            // 1% of purchase price
-  const [utilities, setUtilities] = useState(100)                         // $100 (was $200)
+  const [utilities, setUtilities] = useState(100)                         // $100
   const [refiLtvPct, setRefiLtvPct] = useState(75)
-  const [refiInterestRate, setRefiInterestRate] = useState(6.0)           // 6% (was 7.5%)
+  const [refiInterestRate, setRefiInterestRate] = useState(6.0)           // 6%
   const [refiClosingCosts, setRefiClosingCosts] = useState(defaultRefiClosingCosts) // 3% of refi amount
-  const [monthlyRent, setMonthlyRent] = useState(propertyData.monthlyRent || 2200)
-  const [vacancyRate, setVacancyRate] = useState(1)                       // 1% (was 8%)
-  const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)               // 0% (was 8%)
+  const [monthlyRent, setMonthlyRent] = useState(defaultMonthlyRent)
+  const [vacancyRate, setVacancyRate] = useState(1)                       // 1%
+  const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)               // 0%
   const [maintenancePct, setMaintenancePct] = useState(5)                 // 5%
   
   // Hybrid accordion mode

@@ -104,6 +104,118 @@ export const DEFAULT_HOLDING_COSTS_PCT = 0.01
 export const DEFAULT_REFINANCE_CLOSING_COSTS_PCT = 0.03
 
 // ============================================
+// BREAKEVEN ESTIMATION HELPER
+// ============================================
+
+/**
+ * Estimate breakeven purchase price for LTR based on basic property data.
+ * This is a simplified calculation used for setting initial purchase price values.
+ * 
+ * Breakeven is where monthly cash flow = $0
+ * At breakeven: NOI = Annual Debt Service
+ * 
+ * Uses typical LTR assumptions for a quick estimate.
+ */
+export function estimateLTRBreakeven(params: {
+  monthlyRent: number
+  propertyTaxes: number
+  insurance: number
+  vacancyRate?: number
+  maintenancePct?: number
+  managementPct?: number
+  downPaymentPct?: number
+  interestRate?: number
+  loanTermYears?: number
+}): number {
+  const {
+    monthlyRent,
+    propertyTaxes,
+    insurance,
+    vacancyRate = 0.01,      // 1%
+    maintenancePct = 0.05,   // 5%
+    managementPct = 0,       // 0%
+    downPaymentPct = 0.20,   // 20%
+    interestRate = 0.06,     // 6%
+    loanTermYears = 30,
+  } = params
+
+  // Calculate annual gross income
+  const annualGrossRent = monthlyRent * 12
+  const effectiveGrossIncome = annualGrossRent * (1 - vacancyRate)
+  
+  // Calculate operating expenses (not including debt service)
+  const annualMaintenance = effectiveGrossIncome * maintenancePct
+  const annualManagement = effectiveGrossIncome * managementPct
+  const operatingExpenses = propertyTaxes + insurance + annualMaintenance + annualManagement
+  
+  // NOI = Effective Gross Income - Operating Expenses
+  const noi = effectiveGrossIncome - operatingExpenses
+  
+  if (noi <= 0) {
+    // Property can't break even at any price (negative NOI)
+    return 0
+  }
+  
+  // At breakeven: NOI = Annual Debt Service
+  // Annual Debt Service = Monthly Payment * 12
+  // Monthly Payment = Loan Amount * (r * (1+r)^n) / ((1+r)^n - 1)
+  // Loan Amount = Purchase Price * (1 - Down Payment %)
+  
+  // So we need to solve for Purchase Price where:
+  // NOI = (Purchase Price * (1 - downPaymentPct)) * (monthlyRate * (1+monthlyRate)^n) / ((1+monthlyRate)^n - 1) * 12
+  
+  const monthlyRate = interestRate / 12
+  const numPayments = loanTermYears * 12
+  const ltvRatio = 1 - downPaymentPct
+  
+  // Mortgage constant (annual payment per $ of loan)
+  const mortgageConstant = (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+                           (Math.pow(1 + monthlyRate, numPayments) - 1) * 12
+  
+  // Solve for purchase price: NOI = PurchasePrice * LTV * MortgageConstant
+  // PurchasePrice = NOI / (LTV * MortgageConstant)
+  const breakeven = noi / (ltvRatio * mortgageConstant)
+  
+  return Math.round(breakeven)
+}
+
+/**
+ * Calculate initial purchase price as 95% of estimated breakeven
+ */
+export function calculateInitialPurchasePrice(params: {
+  monthlyRent: number
+  propertyTaxes: number
+  insurance: number
+  listPrice: number
+  vacancyRate?: number
+  maintenancePct?: number
+  managementPct?: number
+  downPaymentPct?: number
+  interestRate?: number
+  loanTermYears?: number
+}): number {
+  const breakeven = estimateLTRBreakeven(params)
+  
+  if (breakeven <= 0) {
+    // Can't estimate breakeven, fall back to list price
+    return params.listPrice
+  }
+  
+  // Target purchase price is 95% of breakeven
+  const targetPurchase = Math.round(breakeven * DEFAULT_TARGET_PURCHASE_PCT)
+  
+  // Return the target, but cap at list price (can't pay more than list)
+  return Math.min(targetPurchase, params.listPrice)
+}
+
+/**
+ * Calculate initial rehab budget as 5% of ARV
+ */
+export function calculateInitialRehabBudget(arv: number): number {
+  return Math.round(arv * DEFAULT_RENOVATION_BUDGET_PCT)
+}
+
+// ============================================
 // OPPORTUNITY SCORE CALCULATION
 // ============================================
 
