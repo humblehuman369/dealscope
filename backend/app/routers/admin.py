@@ -28,6 +28,10 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/admin", tags=["Admin"])
 
+# Debug: Print when module loads
+print(f">>> ADMIN ROUTER: Loading admin.py module", flush=True)
+logger.info("Admin router module loading")
+
 
 # ===========================================
 # Schemas
@@ -241,6 +245,13 @@ async def list_users(
 # ===========================================
 # Assumptions & Metrics Glossary
 # ===========================================
+
+# Debug: Simple test endpoint 
+@router.get("/debug-test", summary="Debug test endpoint")
+async def debug_test():
+    """Simple test to verify route registration."""
+    return {"message": "Admin debug test works", "routes_defined": len(router.routes)}
+
 
 @router.get(
     "/assumptions",
