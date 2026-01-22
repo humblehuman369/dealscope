@@ -339,7 +339,7 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
           <div className="space-y-3">
             <Section index={0} title="Property Analysis" iconKey="home">
               <InputRow label="Contract Price" value={contractPrice} onChange={setContractPrice} min={50000} max={500000} step={5000} format="currency" />
-              <InputRow label="After Repair Value" value={arv} onChange={setArv} min={Math.round(contractPrice * 0.8)} max={Math.round(contractPrice * 2)} step={5000} format="currency" />
+              <InputRow label="After Repair Value" value={arv} onChange={setArv} min={Math.round(listPrice * 0.7)} max={Math.round(listPrice * 2)} step={5000} format="currency" />
               <DisplayRow label="Price / Sq.Ft." value={`$${Math.round(calc.pricePerSqft)}`} />
               <DisplayRow label="ARV / Sq.Ft." value={`$${Math.round(calc.arvPerSqft)}`} />
               <div className="mt-3 pt-3"><SummaryBox label="70% Rule MAO" value={fmt.currency(calc.mao)} variant={calc.meets70Rule ? 'success' : 'danger'} /></div>

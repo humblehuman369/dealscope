@@ -4,7 +4,9 @@ Requires superuser privileges for all endpoints.
 """
 
 import logging
-from typing import Optional, List
+from typing import Optional, List, Any
+from pathlib import Path
+import json
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, HTTPException, status, Query
@@ -15,6 +17,12 @@ from pydantic import BaseModel, EmailStr
 from app.core.deps import SuperUser, DbSession
 from app.models.user import User
 from app.models.saved_property import SavedProperty
+from app.schemas.property import AllAssumptions
+from app.services.assumptions_service import (
+    get_assumptions_record,
+    get_default_assumptions,
+    upsert_default_assumptions,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +66,19 @@ class PlatformStats(BaseModel):
     new_users_30d: int
     verified_users: int
     admin_users: int
+
+
+class AdminAssumptionsResponse(BaseModel):
+    """Response for admin assumption defaults."""
+    assumptions: AllAssumptions
+    updated_at: Optional[datetime] = None
+    updated_by: Optional[str] = None
+    updated_by_email: Optional[EmailStr] = None
+
+
+class MetricsGlossaryResponse(BaseModel):
+    """Metrics glossary payload."""
+    data: Any
 
 
 # ===========================================
@@ -215,6 +236,87 @@ async def list_users(
         )
         for user in users
     ]
+
+
+# ===========================================
+# Assumptions & Metrics Glossary
+# ===========================================
+
+@router.get(
+    "/assumptions",
+    response_model=AdminAssumptionsResponse,
+    summary="Get admin default assumptions"
+)
+async def get_admin_assumptions(
+    admin_user: SuperUser,
+    db: DbSession
+):
+    """Get the current default assumptions for calculations."""
+    record = await get_assumptions_record(db)
+    assumptions = await get_default_assumptions(db)
+
+    updated_by = None
+    updated_by_email = None
+    updated_at = None
+
+    if record:
+        updated_at = record.updated_at
+        if record.updated_by_user:
+            updated_by = record.updated_by_user.full_name or str(record.updated_by_user.id)
+            updated_by_email = record.updated_by_user.email
+        elif record.updated_by:
+            updated_by = str(record.updated_by)
+
+    return AdminAssumptionsResponse(
+        assumptions=assumptions,
+        updated_at=updated_at,
+        updated_by=updated_by,
+        updated_by_email=updated_by_email
+    )
+
+
+@router.put(
+    "/assumptions",
+    response_model=AdminAssumptionsResponse,
+    summary="Update admin default assumptions"
+)
+async def update_admin_assumptions(
+    payload: AllAssumptions,
+    admin_user: SuperUser,
+    db: DbSession
+):
+    """Update default assumptions used in calculations."""
+    record = await upsert_default_assumptions(db, payload, admin_user.id)
+
+    updated_by = admin_user.full_name or str(admin_user.id)
+    updated_by_email = admin_user.email
+
+    return AdminAssumptionsResponse(
+        assumptions=payload,
+        updated_at=record.updated_at,
+        updated_by=updated_by,
+        updated_by_email=updated_by_email
+    )
+
+
+@router.get(
+    "/metrics-glossary",
+    response_model=MetricsGlossaryResponse,
+    summary="Get metrics glossary"
+)
+async def get_metrics_glossary(
+    admin_user: SuperUser
+):
+    """Return a formula glossary for admin display."""
+    glossary_path = Path(__file__).resolve().parents[1] / "data" / "metrics_glossary.json"
+
+    if not glossary_path.exists():
+        raise HTTPException(status_code=404, detail="Metrics glossary not found")
+
+    with glossary_path.open("r", encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    return MetricsGlossaryResponse(data=data)
 
 
 @router.get(

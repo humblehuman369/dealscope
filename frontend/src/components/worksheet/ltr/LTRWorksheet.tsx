@@ -819,7 +819,7 @@ export function LTRWorksheet({
             {/* Rehab & Valuation */}
             <Section index={2} title="Rehab & Valuation" iconKey="tool">
               <InputRow label="Rehab Budget" value={rehabCosts} onChange={setRehabCosts} min={0} max={200000} step={1000} format="currency" />
-              <InputRow label="After Repair Value" value={arv} onChange={setArv} min={Math.round(purchasePrice * 0.8)} max={Math.round(purchasePrice * 1.5)} step={5000} format="currency" />
+              <InputRow label="After Repair Value" value={arv} onChange={setArv} min={Math.round(listPrice * 0.7)} max={Math.round(listPrice * 1.8)} step={5000} format="currency" />
               <DisplayRow label="Price / Sq.Ft." value={`$${Math.round(calc.pricePerSqft)}`} />
               <DisplayRow label="ARV / Sq.Ft." value={`$${Math.round(calc.arvPerSqft)}`} />
               <div className="mt-3 pt-3">

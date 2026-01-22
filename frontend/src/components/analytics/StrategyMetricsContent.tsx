@@ -428,7 +428,7 @@ export function BRRRRMetricsContent({
         )
       ]
     }
-  ], [assumptions])
+  ], [assumptions, stableListPrice])
 
   return (
     <div className="space-y-4">
@@ -600,7 +600,7 @@ export function FlipMetricsContent({
         )
       ]
     }
-  ], [assumptions])
+  ], [assumptions, stableListPrice])
 
   return (
     <div className="space-y-4">

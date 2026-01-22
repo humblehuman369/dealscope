@@ -29,6 +29,7 @@ logger.info("=" * 50)
 
 try:
     from app.core.config import settings
+    from app.core.deps import DbSession
     logger.info("Config loaded successfully")
 except Exception as e:
     logger.error(f"Failed to load config: {e}")
@@ -48,6 +49,7 @@ except Exception as e:
 
 try:
     from app.services.property_service import property_service
+    from app.services.assumptions_service import get_default_assumptions as get_db_default_assumptions
     from app.services.calculators import (
         calculate_ltr, calculate_str, calculate_brrrr,
         calculate_flip, calculate_house_hack, calculate_wholesale
@@ -407,7 +409,8 @@ async def quick_analytics(
     property_id: str,
     purchase_price: Optional[float] = None,
     down_payment_pct: float = Query(0.20, ge=0, le=1),
-    interest_rate: float = Query(0.075, ge=0, le=0.3)
+    interest_rate: float = Query(0.075, ge=0, le=0.3),
+    db: DbSession
 ):
     """
     Quick analytics with minimal parameters.
@@ -416,7 +419,7 @@ async def quick_analytics(
     with optional overrides for key financing terms.
     """
     try:
-        assumptions = AllAssumptions()
+        assumptions = await get_db_default_assumptions(db)
         if purchase_price:
             assumptions.financing.purchase_price = purchase_price
         assumptions.financing.down_payment_pct = down_payment_pct
@@ -1950,14 +1953,14 @@ async def calculate_wholesale_worksheet(input_data: WholesaleWorksheetInput):
 # ============================================
 
 @app.get("/api/v1/assumptions/defaults")
-async def get_default_assumptions():
+async def get_default_assumptions(db: DbSession):
     """
     Get default assumptions for all strategies.
     
     Returns the Assumptions Reference from the Excel workbook
     with recommended default values for each parameter.
     """
-    defaults = AllAssumptions()
+    defaults = await get_db_default_assumptions(db)
     return {
         "assumptions": defaults.model_dump(),
         "descriptions": {
@@ -2235,7 +2238,7 @@ async def get_similar_sold(
 # ============================================
 
 @app.get("/api/v1/comparison/{property_id}")
-async def get_strategy_comparison(property_id: str):
+async def get_strategy_comparison(property_id: str, db: DbSession):
     """
     Get side-by-side comparison of all strategies.
     
@@ -2243,7 +2246,7 @@ async def get_strategy_comparison(property_id: str):
     with rankings and recommendations.
     """
     try:
-        assumptions = AllAssumptions()
+        assumptions = await get_db_default_assumptions(db)
         analytics = await property_service.calculate_analytics(
             property_id=property_id,
             assumptions=assumptions

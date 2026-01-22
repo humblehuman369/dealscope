@@ -474,7 +474,7 @@ export function FlipWorksheet({
             </Section>
             
             <Section index={2} title="Valuation" iconKey="tool">
-              <InputRow label="After Repair Value" value={arv} onChange={setArv} min={Math.round(purchasePrice * 0.8)} max={Math.round(purchasePrice * 2)} step={5000} format="currency" />
+              <InputRow label="After Repair Value" value={arv} onChange={setArv} min={Math.round(listPrice * 0.7)} max={Math.round(listPrice * 2)} step={5000} format="currency" />
               <DisplayRow label="Purchase / Sq.Ft." value={`$${Math.round(calc.pricePerSqft)}`} />
               <DisplayRow label="ARV / Sq.Ft." value={`$${Math.round(calc.arvPerSqft)}`} />
               <DisplayRow label="All-In % of ARV" value={fmt.percent(calc.allInPctArv)} variant={calc.meets70Rule ? 'success' : 'danger'} />
