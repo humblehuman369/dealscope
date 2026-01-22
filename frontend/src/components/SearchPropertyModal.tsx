@@ -56,9 +56,9 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
           WebkitBackdropFilter: 'blur(8px)',
         }}
       >
-        {/* Modal Content */}
+        {/* Modal Content - max-w-sm ensures it fits on mobile screens */}
         <div 
-          className="relative w-full max-w-md rounded-2xl p-8"
+          className="relative w-full max-w-sm sm:max-w-md rounded-2xl p-5 sm:p-8"
           style={{
             background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
             border: '1px solid rgba(8, 145, 178, 0.3)',
@@ -75,25 +75,25 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
           </button>
 
           {/* Header - IQ icon on left, text on right, left-aligned */}
-          <div className="mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-[84px] h-[84px] flex-shrink-0 flex items-center justify-center">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-[60px] h-[60px] sm:w-[84px] sm:h-[84px] flex-shrink-0 flex items-center justify-center">
                 <img 
                   src="/images/iq-brain-dark.png" 
                   alt="IQ" 
-                  className="w-[78px] h-[78px] object-contain"
+                  className="w-[54px] h-[54px] sm:w-[78px] sm:h-[78px] object-contain"
                   onError={(e) => {
                     // Fallback if image doesn't load
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-white leading-tight">
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl font-bold text-white leading-tight">
                   How would you like to<br />analyze a property?
                 </h2>
-                <p className="text-gray-400 text-sm mt-1">
-                  Choose your preferred method to get started
+                <p className="text-gray-400 text-xs sm:text-sm mt-1">
+                  Choose your method to get started
                 </p>
               </div>
             </div>
@@ -101,11 +101,11 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
 
           {/* Options or Address Input */}
           {!showAddressInput ? (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {/* Scan Property Option */}
               <button 
                 onClick={handleScanProperty}
-                className="w-full flex items-center gap-5 p-5 rounded-xl border transition-all text-left"
+                className="w-full flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-xl border transition-all text-left"
                 style={{
                   background: 'rgba(255, 255, 255, 0.02)',
                   borderColor: 'rgba(255, 255, 255, 0.08)',
@@ -120,16 +120,17 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                 }}
               >
                 <div 
-                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{
                     background: 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)',
                   }}
                 >
-                  <Camera size={28} className="text-white" />
+                  <Camera size={22} className="text-white sm:hidden" />
+                  <Camera size={28} className="text-white hidden sm:block" />
                 </div>
-                <div>
-                  <h3 className="text-base font-bold text-white mb-1">Scan Property</h3>
-                  <p className="text-sm text-gray-400">
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-white mb-0.5 sm:mb-1">Scan Property</h3>
+                  <p className="text-xs sm:text-sm text-gray-400 leading-snug">
                     Point your camera at any property for instant analysis
                   </p>
                 </div>
@@ -138,7 +139,7 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
               {/* Enter Address Option */}
               <button 
                 onClick={() => setShowAddressInput(true)}
-                className="w-full flex items-center gap-5 p-5 rounded-xl border transition-all text-left"
+                className="w-full flex items-center gap-3 sm:gap-5 p-4 sm:p-5 rounded-xl border transition-all text-left"
                 style={{
                   background: 'rgba(255, 255, 255, 0.02)',
                   borderColor: 'rgba(255, 255, 255, 0.08)',
@@ -153,16 +154,17 @@ export function SearchPropertyModal({ isOpen, onClose }: SearchPropertyModalProp
                 }}
               >
                 <div 
-                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{
                     background: 'linear-gradient(135deg, #0891b2 0%, #0e7490 100%)',
                   }}
                 >
-                  <Search size={28} className="text-white" />
+                  <Search size={22} className="text-white sm:hidden" />
+                  <Search size={28} className="text-white hidden sm:block" />
                 </div>
-                <div>
-                  <h3 className="text-base font-bold text-white mb-1">Enter Address</h3>
-                  <p className="text-sm text-gray-400">
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-white mb-0.5 sm:mb-1">Enter Address</h3>
+                  <p className="text-xs sm:text-sm text-gray-400 leading-snug">
                     Type in an address to analyze any property
                   </p>
                 </div>
