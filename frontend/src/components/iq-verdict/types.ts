@@ -554,6 +554,16 @@ function calculateWholesaleStrategy(
 // ===================
 
 /**
+ * @deprecated USE BACKEND API INSTEAD: POST /api/v1/analysis/verdict
+ * 
+ * This frontend calculation function is kept for backwards compatibility only.
+ * All new code should call the backend API which uses centralized defaults
+ * from backend/app/core/defaults.py.
+ * 
+ * The backend ensures consistent calculations across all pages.
+ * 
+ * ---
+ * 
  * Calculate dynamic deal analysis based on actual property economics
  * Scores each strategy 0-100 and ranks them from best to worst
  * 
@@ -636,7 +646,9 @@ export function calculateDynamicAnalysis(property: IQProperty): IQAnalysisResult
 // ===================
 
 /**
- * @deprecated Use calculateDynamicAnalysis instead
+ * @deprecated USE BACKEND API INSTEAD: POST /api/v1/analysis/verdict
+ * 
+ * This function is completely deprecated. Use the backend API for all analysis.
  */
 export function generateMockAnalysis(property: IQProperty): IQAnalysisResult {
   // Now just calls the dynamic analysis

@@ -471,10 +471,396 @@ async def quick_analytics(
 
 
 # ============================================
-# WORKSHEET CALCULATION ENDPOINTS
+# IQ VERDICT ANALYSIS ENDPOINT
 # ============================================
 
 from pydantic import BaseModel, Field
+from app.core.defaults import (
+    FINANCING, OPERATING, STR, REHAB, BRRRR, FLIP, HOUSE_HACK, WHOLESALE, GROWTH,
+    DEFAULT_TARGET_PURCHASE_PCT, estimate_breakeven_price, calculate_target_purchase_price,
+    get_all_defaults
+)
+
+
+class IQVerdictInput(BaseModel):
+    """Input for IQ Verdict multi-strategy analysis."""
+    list_price: float = Field(..., description="Property list price")
+    monthly_rent: Optional[float] = Field(None, description="Monthly rent (estimated if not provided)")
+    property_taxes: Optional[float] = Field(None, description="Annual property taxes")
+    insurance: Optional[float] = Field(None, description="Annual insurance")
+    bedrooms: int = Field(3, description="Number of bedrooms")
+    bathrooms: float = Field(2, description="Number of bathrooms")
+    sqft: Optional[int] = Field(None, description="Square footage")
+    arv: Optional[float] = Field(None, description="After Repair Value")
+    average_daily_rate: Optional[float] = Field(None, description="STR average daily rate")
+    occupancy_rate: Optional[float] = Field(None, description="STR occupancy rate (0.0-1.0)")
+
+
+class StrategyResult(BaseModel):
+    """Result for a single strategy."""
+    id: str
+    name: str
+    metric: str
+    metric_label: str
+    metric_value: float
+    score: int
+    rank: int
+    badge: Optional[str] = None
+
+
+class IQVerdictResponse(BaseModel):
+    """Response from IQ Verdict analysis."""
+    deal_score: int
+    deal_verdict: str
+    verdict_description: str
+    strategies: List[StrategyResult]
+    target_purchase_price: float
+    breakeven_price: float
+    list_price: float
+    defaults_used: dict
+
+
+def _normalize_score(value: float, min_value: float, max_value: float) -> int:
+    """Convert a metric to 0-100 scale."""
+    if value <= min_value:
+        return 0
+    if value >= max_value:
+        return 100
+    return round(((value - min_value) / (max_value - min_value)) * 100)
+
+
+def _format_compact_currency(value: float) -> str:
+    """Format currency for compact display."""
+    if abs(value) >= 1000000:
+        return f"${value / 1000000:.1f}M"
+    if abs(value) >= 1000:
+        return f"${round(value / 1000)}K"
+    return f"${round(value):,}"
+
+
+def _calculate_monthly_mortgage(principal: float, annual_rate: float, years: int) -> float:
+    """Calculate monthly mortgage payment."""
+    if annual_rate == 0:
+        return principal / (years * 12)
+    monthly_rate = annual_rate / 12
+    num_payments = years * 12
+    return principal * (monthly_rate * (1 + monthly_rate) ** num_payments) / \
+           ((1 + monthly_rate) ** num_payments - 1)
+
+
+def _calculate_ltr_strategy(
+    price: float,
+    monthly_rent: float,
+    property_taxes: float,
+    insurance: float,
+) -> dict:
+    """Calculate LTR strategy metrics using centralized defaults."""
+    down_payment = price * FINANCING.down_payment_pct
+    closing_costs = price * FINANCING.closing_costs_pct
+    loan_amount = price - down_payment
+    total_cash = down_payment + closing_costs
+    monthly_pi = _calculate_monthly_mortgage(loan_amount, FINANCING.interest_rate, FINANCING.loan_term_years)
+    annual_debt = monthly_pi * 12
+    annual_rent = monthly_rent * 12
+    effective_income = annual_rent * (1 - OPERATING.vacancy_rate)
+    op_ex = property_taxes + insurance + (annual_rent * OPERATING.property_management_pct) + (annual_rent * OPERATING.maintenance_pct)
+    noi = effective_income - op_ex
+    annual_cash_flow = noi - annual_debt
+    coc = annual_cash_flow / total_cash if total_cash > 0 else 0
+    score = _normalize_score(coc * 100, 0, 12)
+    
+    return {
+        "id": "long-term-rental",
+        "name": "Long-Term Rental",
+        "metric": f"{coc * 100:.1f}%",
+        "metric_label": "CoC Return",
+        "metric_value": coc * 100,
+        "score": score,
+    }
+
+
+def _calculate_str_strategy(
+    price: float,
+    adr: float,
+    occupancy: float,
+    property_taxes: float,
+    insurance: float,
+) -> dict:
+    """Calculate STR strategy metrics using centralized defaults."""
+    down_payment = price * FINANCING.down_payment_pct
+    closing_costs = price * FINANCING.closing_costs_pct
+    total_cash = down_payment + closing_costs + STR.furniture_setup_cost
+    loan_amount = price - down_payment
+    monthly_pi = _calculate_monthly_mortgage(loan_amount, FINANCING.interest_rate, FINANCING.loan_term_years)
+    annual_debt = monthly_pi * 12
+    annual_revenue = adr * 365 * occupancy
+    mgmt_fee = annual_revenue * STR.str_management_pct
+    platform_fees = annual_revenue * STR.platform_fees_pct
+    utilities = OPERATING.utilities_monthly * 12
+    supplies = STR.supplies_monthly * 12
+    maintenance = annual_revenue * OPERATING.maintenance_pct
+    op_ex = property_taxes + insurance + mgmt_fee + platform_fees + utilities + supplies + maintenance
+    noi = annual_revenue - op_ex
+    annual_cash_flow = noi - annual_debt
+    coc = annual_cash_flow / total_cash if total_cash > 0 else 0
+    score = _normalize_score(coc * 100, 0, 15)
+    
+    return {
+        "id": "short-term-rental",
+        "name": "Short-Term Rental",
+        "metric": f"{coc * 100:.1f}%",
+        "metric_label": "CoC Return",
+        "metric_value": coc * 100,
+        "score": score,
+    }
+
+
+def _calculate_brrrr_strategy(
+    price: float,
+    monthly_rent: float,
+    property_taxes: float,
+    insurance: float,
+    arv: float,
+    rehab_cost: float,
+) -> dict:
+    """Calculate BRRRR strategy metrics using centralized defaults."""
+    initial_cash = (price * 0.10) + rehab_cost + (price * FINANCING.closing_costs_pct)
+    refi_loan = arv * BRRRR.refinance_ltv
+    cash_back = refi_loan - (price * 0.90)
+    cash_left = max(0, initial_cash - max(0, cash_back))
+    recovery_pct = ((initial_cash - cash_left) / initial_cash * 100) if initial_cash > 0 else 0
+    
+    monthly_pi = _calculate_monthly_mortgage(refi_loan, BRRRR.refinance_interest_rate, BRRRR.refinance_term_years)
+    annual_debt = monthly_pi * 12
+    annual_rent = monthly_rent * 12
+    effective_income = annual_rent * (1 - OPERATING.vacancy_rate)
+    op_ex = property_taxes + insurance + (annual_rent * OPERATING.property_management_pct) + (annual_rent * OPERATING.maintenance_pct)
+    noi = effective_income - op_ex
+    annual_cash_flow = noi - annual_debt
+    coc = annual_cash_flow / cash_left if cash_left > 0 else (999 if annual_cash_flow > 0 else 0)
+    
+    score = _normalize_score(recovery_pct, 0, 100)
+    display_coc = "Infinite" if coc > 100 else f"{coc * 100:.1f}%"
+    
+    return {
+        "id": "brrrr",
+        "name": "BRRRR",
+        "metric": display_coc,
+        "metric_label": "CoC Return",
+        "metric_value": recovery_pct,
+        "score": score,
+    }
+
+
+def _calculate_flip_strategy(
+    price: float,
+    arv: float,
+    rehab_cost: float,
+    property_taxes: float,
+    insurance: float,
+) -> dict:
+    """Calculate Flip strategy metrics using centralized defaults."""
+    purchase_costs = price * FINANCING.closing_costs_pct
+    holding_months = FLIP.holding_period_months
+    holding_costs = (
+        (price * FLIP.hard_money_rate / 12 * holding_months) +
+        (property_taxes / 12 * holding_months) +
+        (insurance / 12 * holding_months)
+    )
+    selling_costs = arv * FLIP.selling_costs_pct
+    total_investment = price + purchase_costs + rehab_cost + holding_costs
+    net_profit = arv - total_investment - selling_costs
+    roi = net_profit / total_investment if total_investment > 0 else 0
+    score = _normalize_score(roi * 100, 0, 30)
+    
+    return {
+        "id": "fix-and-flip",
+        "name": "Fix & Flip",
+        "metric": _format_compact_currency(net_profit),
+        "metric_label": "Profit",
+        "metric_value": net_profit,
+        "score": score,
+    }
+
+
+def _calculate_house_hack_strategy(
+    price: float,
+    monthly_rent: float,
+    bedrooms: int,
+    property_taxes: float,
+    insurance: float,
+) -> dict:
+    """Calculate House Hack strategy metrics using centralized defaults."""
+    total_beds = max(bedrooms, 2)
+    rooms_rented = max(1, total_beds - 1)
+    rent_per_room = monthly_rent / total_beds
+    rental_income = rent_per_room * rooms_rented
+    
+    down_payment = price * HOUSE_HACK.fha_down_payment_pct
+    closing_costs = price * FINANCING.closing_costs_pct
+    loan_amount = price - down_payment
+    monthly_pi = _calculate_monthly_mortgage(loan_amount, FINANCING.interest_rate, FINANCING.loan_term_years)
+    monthly_taxes = property_taxes / 12
+    monthly_insurance = insurance / 12
+    pmi = loan_amount * HOUSE_HACK.fha_mip_rate / 12
+    maintenance = rental_income * OPERATING.maintenance_pct
+    vacancy = rental_income * OPERATING.vacancy_rate
+    
+    monthly_expenses = monthly_pi + monthly_taxes + monthly_insurance + pmi + maintenance + vacancy
+    housing_offset = (rental_income / monthly_expenses * 100) if monthly_expenses > 0 else 0
+    score = _normalize_score(housing_offset, 0, 100)
+    
+    return {
+        "id": "house-hack",
+        "name": "House Hack",
+        "metric": f"{round(housing_offset)}%",
+        "metric_label": "Savings",
+        "metric_value": housing_offset,
+        "score": score,
+    }
+
+
+def _calculate_wholesale_strategy(
+    price: float,
+    arv: float,
+    rehab_cost: float,
+) -> dict:
+    """Calculate Wholesale strategy metrics using centralized defaults."""
+    wholesale_fee = price * 0.007
+    mao = (arv * 0.70) - rehab_cost - wholesale_fee
+    assignment_fee = mao - (price * 0.85)
+    assignment_pct = (assignment_fee / price * 100) if price > 0 else 0
+    score = _normalize_score(assignment_pct, 0, 3)
+    
+    return {
+        "id": "wholesale",
+        "name": "Wholesale",
+        "metric": _format_compact_currency(max(0, assignment_fee)),
+        "metric_label": "Assignment",
+        "metric_value": assignment_fee,
+        "score": score,
+    }
+
+
+def _get_deal_verdict(score: int) -> str:
+    """Get deal verdict based on score."""
+    if score >= 90:
+        return "Excellent Investment"
+    if score >= 75:
+        return "Strong Investment"
+    if score >= 60:
+        return "Good Investment"
+    if score >= 45:
+        return "Fair Investment"
+    if score >= 30:
+        return "Weak Investment"
+    return "Poor Investment"
+
+
+def _get_verdict_description(score: int, top_strategy: dict) -> str:
+    """Get verdict description."""
+    name = top_strategy["name"]
+    metric = top_strategy["metric"]
+    label = top_strategy["metric_label"]
+    
+    if score >= 80:
+        return f"Excellent potential across multiple strategies. {name} shows best returns."
+    if score >= 60:
+        return f"Good investment opportunity. {name} is your strongest option at {metric} {label}."
+    if score >= 40:
+        return f"Moderate opportunity. Consider {name} for best results, but review numbers carefully."
+    return f"This property shows limited investment potential. {name} is the best option available."
+
+
+@app.post("/api/v1/analysis/verdict", response_model=IQVerdictResponse)
+async def calculate_iq_verdict(input_data: IQVerdictInput):
+    """
+    Calculate IQ Verdict multi-strategy analysis.
+    
+    This endpoint analyzes a property across all investment strategies
+    and returns ranked results with deal scores.
+    
+    Key features:
+    - Uses centralized default assumptions from backend
+    - Calculates target purchase price as 95% of breakeven
+    - No frontend calculations needed
+    """
+    try:
+        list_price = input_data.list_price
+        
+        # Use provided data or estimate from list price
+        monthly_rent = input_data.monthly_rent or (list_price * 0.007)
+        property_taxes = input_data.property_taxes or (list_price * 0.012)
+        insurance = input_data.insurance or (list_price * OPERATING.insurance_pct)
+        arv = input_data.arv or (list_price * 1.15)
+        rehab_cost = arv * REHAB.renovation_budget_pct
+        adr = input_data.average_daily_rate or ((monthly_rent / 30) * 1.5)
+        occupancy = input_data.occupancy_rate or 0.65
+        bedrooms = input_data.bedrooms
+        
+        # Calculate breakeven and target purchase price
+        breakeven = estimate_breakeven_price(monthly_rent, property_taxes, insurance)
+        target_price = calculate_target_purchase_price(list_price, monthly_rent, property_taxes, insurance)
+        
+        # Calculate all strategies using target price (95% of breakeven)
+        strategies = [
+            _calculate_ltr_strategy(target_price, monthly_rent, property_taxes, insurance),
+            _calculate_str_strategy(target_price, adr, occupancy, property_taxes, insurance),
+            _calculate_brrrr_strategy(target_price, monthly_rent, property_taxes, insurance, arv, rehab_cost),
+            _calculate_flip_strategy(target_price, arv, rehab_cost, property_taxes, insurance),
+            _calculate_house_hack_strategy(target_price, monthly_rent, bedrooms, property_taxes, insurance),
+            _calculate_wholesale_strategy(target_price, arv, rehab_cost),
+        ]
+        
+        # Add ranks and badges
+        for i, strategy in enumerate(strategies):
+            rank = i + 1
+            strategy["rank"] = rank
+            score = strategy["score"]
+            
+            if rank == 1 and score >= 70:
+                strategy["badge"] = "Best Match"
+            elif rank == 2 and score >= 70:
+                strategy["badge"] = "Strong"
+            elif rank == 3 and score >= 60:
+                strategy["badge"] = "Good"
+            else:
+                strategy["badge"] = None
+        
+        # Overall deal score is top strategy's score
+        top_strategy = strategies[0]
+        deal_score = top_strategy["score"]
+        
+        return IQVerdictResponse(
+            deal_score=deal_score,
+            deal_verdict=_get_deal_verdict(deal_score),
+            verdict_description=_get_verdict_description(deal_score, top_strategy),
+            strategies=[StrategyResult(**s) for s in strategies],
+            target_purchase_price=target_price,
+            breakeven_price=breakeven,
+            list_price=list_price,
+            defaults_used=get_all_defaults(),
+        )
+        
+    except Exception as e:
+        logger.error(f"IQ Verdict analysis error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/defaults")
+async def get_default_assumptions():
+    """
+    Get all default assumptions used in calculations.
+    
+    Returns the centralized default values for all investment strategies.
+    Frontend should use these values for display and form defaults.
+    """
+    return get_all_defaults()
+
+
+# ============================================
+# WORKSHEET CALCULATION ENDPOINTS
+# ============================================
 
 
 class LTRWorksheetInput(BaseModel):

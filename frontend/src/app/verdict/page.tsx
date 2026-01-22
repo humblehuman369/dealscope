@@ -6,6 +6,9 @@
  * 
  * Shows the IQ Verdict with ranked strategy recommendations after analysis.
  * Fetches real property data from the API including photos, beds, baths, sqft, and price.
+ * 
+ * IMPORTANT: All calculations are done by the backend API.
+ * This page does NOT perform any financial calculations locally.
  */
 
 import { useCallback, useEffect, useState, Suspense } from 'react'
@@ -14,11 +17,44 @@ import {
   IQVerdictScreen, 
   IQProperty, 
   IQStrategy,
-  calculateDynamicAnalysis,
+  IQAnalysisResult,
   STRATEGY_ROUTE_MAP,
 } from '@/components/iq-verdict'
 import { parseAddressString } from '@/utils/formatters'
 import { useAuth } from '@/context/AuthContext'
+
+// Backend analysis response type
+interface BackendAnalysisResponse {
+  deal_score: number
+  deal_verdict: string
+  verdict_description: string
+  strategies: Array<{
+    id: string
+    name: string
+    metric: string
+    metric_label: string
+    metric_value: number
+    score: number
+    rank: number
+    badge: string | null
+  }>
+  target_purchase_price: number
+  breakeven_price: number
+  list_price: number
+}
+
+// Helper to get strategy icon
+function getStrategyIcon(strategyId: string): string {
+  const icons: Record<string, string> = {
+    'long-term-rental': '🏠',
+    'short-term-rental': '🏨',
+    'brrrr': '🔄',
+    'fix-and-flip': '🔨',
+    'house-hack': '🏡',
+    'wholesale': '📋',
+  }
+  return icons[strategyId] || '📊'
+}
 
 // Map IQ strategy IDs to worksheet route segments
 const WORKSHEET_ROUTES: Record<string, string> = {
@@ -43,8 +79,9 @@ function VerdictContent() {
 
   const addressParam = searchParams.get('address') || ''
   
-  // State for property data
+  // State for property data and analysis
   const [property, setProperty] = useState<IQProperty | null>(null)
+  const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isNavigating, setIsNavigating] = useState(false)
@@ -156,6 +193,56 @@ function VerdictContent() {
         }
 
         setProperty(propertyData)
+        
+        // Fetch analysis from backend API (all calculations done server-side)
+        try {
+          const analysisResponse = await fetch('/api/v1/analysis/verdict', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              list_price: propertyData.price,
+              monthly_rent: propertyData.monthlyRent,
+              property_taxes: propertyData.propertyTaxes,
+              insurance: propertyData.insurance,
+              bedrooms: propertyData.beds,
+              bathrooms: propertyData.baths,
+              sqft: propertyData.sqft,
+              arv: propertyData.arv,
+              average_daily_rate: propertyData.averageDailyRate,
+              occupancy_rate: propertyData.occupancyRate,
+            }),
+          })
+          
+          if (analysisResponse.ok) {
+            const analysisData: BackendAnalysisResponse = await analysisResponse.json()
+            
+            // Convert backend response to frontend IQAnalysisResult format
+            const analysisResult: IQAnalysisResult = {
+              analyzedAt: new Date().toISOString(),
+              dealScore: analysisData.deal_score,
+              dealVerdict: analysisData.deal_verdict as IQAnalysisResult['dealVerdict'],
+              verdictDescription: analysisData.verdict_description,
+              strategies: analysisData.strategies.map(s => ({
+                id: s.id as IQStrategy['id'],
+                name: s.name,
+                icon: getStrategyIcon(s.id),
+                metric: s.metric,
+                metricLabel: s.metric_label,
+                metricValue: s.metric_value,
+                score: s.score,
+                rank: s.rank,
+                badge: s.badge as IQStrategy['badge'],
+              })),
+            }
+            setAnalysis(analysisResult)
+          } else {
+            console.error('Failed to fetch analysis from backend')
+          }
+        } catch (analysisErr) {
+          console.error('Error fetching analysis:', analysisErr)
+        }
       } catch (err) {
         console.error('Error fetching property:', err)
         setError(err instanceof Error ? err.message : 'Failed to load property')
@@ -184,8 +271,8 @@ function VerdictContent() {
     fetchPropertyData()
   }, [addressParam])
 
-  // Generate dynamic analysis from property data
-  const analysis = property ? calculateDynamicAnalysis(property) : null
+  // Analysis is now fetched from backend API (stored in state)
+  // No local calculations are performed
 
   // Navigation handlers
   const handleBack = useCallback(() => {

@@ -1,5 +1,10 @@
 /**
  * IQ Verdict Components for Web
+ * 
+ * IMPORTANT: All financial calculations should be done by the backend API.
+ * Use /api/v1/analysis/verdict for multi-strategy analysis.
+ * The frontend calculation functions are kept for backwards compatibility
+ * but should be considered DEPRECATED.
  */
 
 export { IQAnalyzingScreen } from './IQAnalyzingScreen'
@@ -19,7 +24,7 @@ export {
   STRATEGY_INFO,
   STRATEGY_ROUTE_MAP,
   
-  // Helper functions
+  // Helper functions (display only - no calculations)
   getStrategyBadge,
   getDealVerdict,
   getVerdictDescription,
@@ -28,7 +33,8 @@ export {
   getDealScoreColor,
   formatPrice,
   
-  // Analysis generators
+  // @deprecated - Use backend API /api/v1/analysis/verdict instead
+  // These are kept for backwards compatibility only
   calculateDynamicAnalysis,
-  generateMockAnalysis, // @deprecated - use calculateDynamicAnalysis
+  generateMockAnalysis,
 } from './types'
