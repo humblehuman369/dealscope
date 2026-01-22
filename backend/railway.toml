@@ -2,9 +2,8 @@
 builder = "nixpacks"
 
 [deploy]
-# Note: Alembic migrations removed from start command due to connection issues
-# Tables will be created by app startup or manual migration
-startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+# Run migrations before starting the server
+startCommand = "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
