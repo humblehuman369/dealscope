@@ -142,6 +142,9 @@ export function DesktopStrategyAnalyticsContainer({
 }: DesktopStrategyAnalyticsContainerProps) {
   const router = useRouter()
   
+  // Store the original list price - this never changes and is used for slider min/max
+  const originalListPrice = useMemo(() => property.listPrice, [property.listPrice])
+  
   // State
   const [activeStrategy, setActiveStrategy] = useState<StrategyId | null>(initialStrategy || null)
   const [activeSubTab, setActiveSubTab] = useState<SubTabId>('metrics')
@@ -330,6 +333,7 @@ export function DesktopStrategyAnalyticsContainer({
                   compareView={compareView}
                   setCompareView={setCompareView}
                   updateAssumption={updateAssumption}
+                  originalListPrice={originalListPrice}
                 />
               )}
 
@@ -370,6 +374,7 @@ export function DesktopStrategyAnalyticsContainer({
                 <DesktopWhatIfTabContent
                   assumptions={assumptions}
                   updateAssumption={updateAssumption}
+                  originalListPrice={originalListPrice}
                 />
               )}
             </div>
@@ -412,10 +417,11 @@ interface DesktopStrategySpecificMetricsProps {
   compareView: 'target' | 'list'
   setCompareView: (view: 'target' | 'list') => void
   updateAssumption: (key: keyof TargetAssumptions, value: number) => void
+  originalListPrice: number
 }
 
 function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsProps) {
-  const { strategy, iqTarget, metricsAtTarget, metricsAtList, assumptions, compareView, setCompareView, updateAssumption } = props
+  const { strategy, iqTarget, metricsAtTarget, metricsAtList, assumptions, compareView, setCompareView, updateAssumption, originalListPrice } = props
   
   // Generate price ladder
   const priceLadder = generatePriceLadder(
@@ -642,11 +648,11 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
           'listPrice',
           'Purchase Price',
           assumptions.listPrice,
-          assumptions.listPrice * 0.60,
-          assumptions.listPrice * 1.05,
+          originalListPrice * 0.60,  // Use original list price for stable min
+          originalListPrice * 1.10,  // Use original list price for stable max (expanded range)
           1000,
           formatCurrency,
-          assumptions.listPrice
+          originalListPrice  // Use original for change indicator comparison
         )}
         onSliderChange={(id, value) => updateAssumption(id as keyof TargetAssumptions, value)}
         defaultOpen={false}
@@ -852,16 +858,26 @@ function DesktopGrowthTabContent({ projections, iqTarget, assumptions, updateAss
 interface DesktopWhatIfTabContentProps {
   assumptions: TargetAssumptions
   updateAssumption: (key: keyof TargetAssumptions, value: number) => void
+  originalListPrice: number
 }
 
-function DesktopWhatIfTabContent({ assumptions, updateAssumption }: DesktopWhatIfTabContentProps) {
+function DesktopWhatIfTabContent({ assumptions, updateAssumption, originalListPrice }: DesktopWhatIfTabContentProps) {
   const tuneGroups: TuneGroup[] = [
     {
       id: 'price',
       title: 'Purchase Price Scenarios',
       isOpen: true,
       sliders: [
-        createSliderConfig('listPrice', 'Purchase Price', assumptions.listPrice, assumptions.listPrice * 0.60, assumptions.listPrice * 1.05, 1000, formatCurrency)
+        createSliderConfig(
+          'listPrice',
+          'Purchase Price',
+          assumptions.listPrice,
+          originalListPrice * 0.60,  // Use original list price for stable min
+          originalListPrice * 1.10,  // Use original list price for stable max
+          1000,
+          formatCurrency,
+          originalListPrice  // Use original for change indicator
+        )
       ]
     },
     {

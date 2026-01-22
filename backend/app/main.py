@@ -880,19 +880,16 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
             _calculate_wholesale_strategy(target_price, arv, rehab_cost),
         ]
         
-        # Sort strategies by score (highest first) and add ranks/badges
-        strategies.sort(key=lambda x: x["score"], reverse=True)
-        
+        # Fixed display order: LTR, STR, BRRRR, Fix & Flip, House Hack, Wholesale
+        # Assign ranks 1-6 in fixed order (no sorting by score)
         for i, strategy in enumerate(strategies):
-            rank = i + 1
-            strategy["rank"] = rank
+            strategy["rank"] = i + 1
             score = strategy["score"]
             
-            if rank == 1 and score >= 70:
-                strategy["badge"] = "Best Match"
-            elif rank == 2 and score >= 70:
+            # Assign badges based on individual score thresholds only
+            if score >= 80:
                 strategy["badge"] = "Strong"
-            elif rank == 3 and score >= 60:
+            elif score >= 60:
                 strategy["badge"] = "Good"
             else:
                 strategy["badge"] = None
@@ -901,8 +898,8 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
         # This is the core opportunity-based scoring methodology
         deal_score, discount_pct, deal_verdict = _calculate_opportunity_score(breakeven, list_price)
         
-        # Get top strategy for description
-        top_strategy = strategies[0]
+        # Get highest-scoring strategy for description (display order is fixed, but description uses best)
+        top_strategy = max(strategies, key=lambda x: x["score"])
         
         return IQVerdictResponse(
             deal_score=deal_score,

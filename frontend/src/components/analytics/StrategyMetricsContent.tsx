@@ -68,6 +68,7 @@ interface BaseMetricsProps {
   compareView: 'target' | 'list'
   setCompareView: (view: 'target' | 'list') => void
   updateAssumption: (key: keyof TargetAssumptions, value: number) => void
+  originalListPrice?: number  // Original list price for stable slider min/max
 }
 
 // ============================================
@@ -288,8 +289,11 @@ export function BRRRRMetricsContent({
   assumptions,
   compareView,
   setCompareView,
-  updateAssumption
+  updateAssumption,
+  originalListPrice
 }: BaseMetricsProps) {
+  // Use original list price for stable slider ranges, fallback to assumptions.listPrice
+  const stableListPrice = originalListPrice || assumptions.listPrice
   const currentMetrics = compareView === 'target' ? metricsAtTarget : metricsAtList
   
   const priceLadder = generatePriceLadder(
@@ -393,8 +397,8 @@ export function BRRRRMetricsContent({
           'arv',
           'After Repair Value',
           assumptions.arv,
-          assumptions.listPrice,
-          assumptions.listPrice * 1.5,
+          stableListPrice * 0.8,   // Use stable base for min
+          stableListPrice * 1.8,   // Use stable base for max (wider range)
           5000,
           formatCurrency
         )
