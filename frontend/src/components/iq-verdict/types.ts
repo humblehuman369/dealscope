@@ -66,14 +66,26 @@ export type IQStrategyBadge = 'Best Match' | 'Strong' | 'Good';
 
 export interface IQAnalysisResult {
   propertyId?: string;
-  analyzedAt: string;       // ISO timestamp
-  dealScore: number;        // Overall score 0-100
+  analyzedAt: string;           // ISO timestamp
+  dealScore: number;            // Overall score 0-100 (based on discount from list to breakeven)
   dealVerdict: IQDealVerdict;
   verdictDescription: string;
-  strategies: IQStrategy[];   // Sorted by rank (1-6)
+  discountPercent?: number;     // Discount % from list price to breakeven
+  purchasePrice?: number;       // Recommended purchase price (95% of breakeven)
+  breakevenPrice?: number;      // Price where cash flow = 0
+  listPrice?: number;           // Original list price
+  strategies: IQStrategy[];     // Sorted by rank (1-6)
 }
 
 export type IQDealVerdict = 
+  | 'Strong Opportunity'
+  | 'Great Opportunity'
+  | 'Moderate Opportunity'
+  | 'Potential Opportunity'
+  | 'Mild Opportunity'
+  | 'Weak Opportunity'
+  | 'Poor Opportunity'
+  // Legacy values for backwards compatibility
   | 'Excellent Investment'
   | 'Strong Investment'
   | 'Good Investment'

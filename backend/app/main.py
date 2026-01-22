@@ -513,8 +513,9 @@ class IQVerdictResponse(BaseModel):
     deal_score: int
     deal_verdict: str
     verdict_description: str
+    discount_percent: float
     strategies: List[StrategyResult]
-    target_purchase_price: float
+    purchase_price: float  # The recommended purchase price (95% of breakeven)
     breakeven_price: float
     list_price: float
     defaults_used: dict
@@ -742,19 +743,74 @@ def _calculate_wholesale_strategy(
     }
 
 
+def _calculate_opportunity_score(breakeven_price: float, list_price: float) -> tuple[int, float, str]:
+    """
+    Calculate Deal Score based on discount from list price to breakeven.
+    
+    The Deal Score methodology:
+    - Score is based on what discount from list price is needed to reach breakeven
+    - Smaller discount = better opportunity (higher score)
+    
+    Grading thresholds (discount %):
+    - 0-5%: Strong Opportunity (score 90-100)
+    - 5-10%: Great Opportunity (score 80-90)
+    - 10-15%: Moderate Opportunity (score 70-80)
+    - 15-25%: Potential Opportunity (score 50-70)
+    - 25-35%: Mild Opportunity (score 30-50)
+    - 35-45%: Weak Opportunity (score 10-30)
+    - 45%+: Poor Opportunity (score 0-10)
+    
+    Returns: (score, discount_percent, verdict)
+    """
+    if list_price <= 0:
+        return (0, 100.0, "Invalid")
+    
+    # Calculate discount percentage from list price to breakeven
+    discount_pct = ((list_price - breakeven_price) / list_price) * 100
+    
+    # Handle edge cases
+    if discount_pct < 0:
+        # Breakeven is ABOVE list price - very strong opportunity
+        discount_pct = 0
+    
+    # Score: inversely proportional to discount needed
+    # 0% discount = 100 score, 50% discount = 0 score
+    score = max(0, min(100, round(100 - discount_pct * 2)))
+    
+    # Determine verdict based on discount percentage
+    if discount_pct <= 5:
+        verdict = "Strong Opportunity"
+    elif discount_pct <= 10:
+        verdict = "Great Opportunity"
+    elif discount_pct <= 15:
+        verdict = "Moderate Opportunity"
+    elif discount_pct <= 25:
+        verdict = "Potential Opportunity"
+    elif discount_pct <= 35:
+        verdict = "Mild Opportunity"
+    elif discount_pct <= 45:
+        verdict = "Weak Opportunity"
+    else:
+        verdict = "Poor Opportunity"
+    
+    return (score, discount_pct, verdict)
+
+
 def _get_deal_verdict(score: int) -> str:
-    """Get deal verdict based on score."""
+    """Get deal verdict based on score (legacy - use _calculate_opportunity_score)."""
     if score >= 90:
-        return "Excellent Investment"
-    if score >= 75:
-        return "Strong Investment"
-    if score >= 60:
-        return "Good Investment"
-    if score >= 45:
-        return "Fair Investment"
+        return "Strong Opportunity"
+    if score >= 80:
+        return "Great Opportunity"
+    if score >= 70:
+        return "Moderate Opportunity"
+    if score >= 50:
+        return "Potential Opportunity"
     if score >= 30:
-        return "Weak Investment"
-    return "Poor Investment"
+        return "Mild Opportunity"
+    if score >= 10:
+        return "Weak Opportunity"
+    return "Poor Opportunity"
 
 
 def _get_verdict_description(score: int, top_strategy: dict) -> str:
@@ -812,7 +868,9 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
             _calculate_wholesale_strategy(target_price, arv, rehab_cost),
         ]
         
-        # Add ranks and badges
+        # Sort strategies by score (highest first) and add ranks/badges
+        strategies.sort(key=lambda x: x["score"], reverse=True)
+        
         for i, strategy in enumerate(strategies):
             rank = i + 1
             strategy["rank"] = rank
@@ -827,16 +885,20 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
             else:
                 strategy["badge"] = None
         
-        # Overall deal score is top strategy's score
+        # Calculate Deal Score based on discount from list to breakeven
+        # This is the core opportunity-based scoring methodology
+        deal_score, discount_pct, deal_verdict = _calculate_opportunity_score(breakeven, list_price)
+        
+        # Get top strategy for description
         top_strategy = strategies[0]
-        deal_score = top_strategy["score"]
         
         return IQVerdictResponse(
             deal_score=deal_score,
-            deal_verdict=_get_deal_verdict(deal_score),
+            deal_verdict=deal_verdict,
             verdict_description=_get_verdict_description(deal_score, top_strategy),
+            discount_percent=round(discount_pct, 1),
             strategies=[StrategyResult(**s) for s in strategies],
-            target_purchase_price=target_price,
+            purchase_price=target_price,  # Recommended purchase price (95% of breakeven)
             breakeven_price=breakeven,
             list_price=list_price,
             defaults_used=get_all_defaults(),

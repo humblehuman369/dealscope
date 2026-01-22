@@ -274,13 +274,13 @@ export function LTRWorksheet({
     const breakeven = Math.max(0, Math.round(breakevenPrice))
     
     // Deal Score (Opportunity-Based)
-    // Score based on how much discount from list price is needed to reach breakeven
-    // Lower discount = better opportunity
-    const discountPercent = purchasePrice > 0 
-      ? Math.max(0, ((purchasePrice - breakeven) / purchasePrice) * 100)
+    // Score based on how much discount from LIST PRICE is needed to reach breakeven
+    // Smaller discount = better opportunity (property is closer to being profitable at list price)
+    const discountPercent = listPrice > 0 
+      ? Math.max(0, ((listPrice - breakeven) / listPrice) * 100)
       : 0
-    // 0% discount = 100 score, 45% discount = 0 score
-    const dealScore = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
+    // 0% discount = 100 score, 50% discount = 0 score
+    const dealScore = Math.max(0, Math.min(100, Math.round(100 - discountPercent * 2)))
     
     // Gauge needle
     const gaugeAngle = 180 - (dealScore * 1.8)
@@ -686,7 +686,7 @@ export function LTRWorksheet({
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
             <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-teal/10">
               <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">List Price</div>
-              <div className="text-xs sm:text-sm lg:text-base font-bold text-teal tabular-nums truncate">{fmt.currencyCompact(purchasePrice)}</div>
+              <div className="text-xs sm:text-sm lg:text-base font-bold text-teal tabular-nums truncate">{fmt.currencyCompact(listPrice)}</div>
             </div>
             <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-slate-800/5">
               <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Cash Needed</div>
@@ -927,7 +927,7 @@ export function LTRWorksheet({
               <div className="space-y-1">
                 <div className="flex justify-between items-center py-2.5 px-3 rounded-lg">
                   <span className="text-sm text-slate-500">List Price</span>
-                  <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(purchasePrice)}</span>
+                  <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(listPrice)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2.5 px-3 rounded-lg">
                   <span className="text-sm text-slate-500">Breakeven Price</span>

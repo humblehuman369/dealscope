@@ -28,6 +28,7 @@ interface BackendAnalysisResponse {
   deal_score: number
   deal_verdict: string
   verdict_description: string
+  discount_percent: number
   strategies: Array<{
     id: string
     name: string
@@ -38,7 +39,7 @@ interface BackendAnalysisResponse {
     rank: number
     badge: string | null
   }>
-  target_purchase_price: number
+  purchase_price: number  // Recommended purchase price (95% of breakeven)
   breakeven_price: number
   list_price: number
 }
@@ -224,6 +225,10 @@ function VerdictContent() {
               dealScore: analysisData.deal_score,
               dealVerdict: analysisData.deal_verdict as IQAnalysisResult['dealVerdict'],
               verdictDescription: analysisData.verdict_description,
+              discountPercent: analysisData.discount_percent,
+              purchasePrice: analysisData.purchase_price,
+              breakevenPrice: analysisData.breakeven_price,
+              listPrice: analysisData.list_price,
               strategies: analysisData.strategies.map(s => ({
                 id: s.id as IQStrategy['id'],
                 name: s.name,

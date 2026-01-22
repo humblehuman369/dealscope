@@ -184,12 +184,13 @@ export function StrWorksheet({
     const breakevenPrice = result?.breakeven_price ?? inputs.purchase_price
     
     // Deal Score (Opportunity-Based)
-    // Score based on how much discount from list price is needed to reach breakeven
-    const discountPercent = inputs.purchase_price > 0 
-      ? Math.max(0, ((inputs.purchase_price - breakevenPrice) / inputs.purchase_price) * 100)
+    // Score based on how much discount from LIST PRICE is needed to reach breakeven
+    // Smaller discount = better opportunity
+    const discountPercent = originalPrice > 0 
+      ? Math.max(0, ((originalPrice - breakevenPrice) / originalPrice) * 100)
       : 0
-    // 0% discount = 100 score, 45% discount = 0 score
-    const dealScore = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
+    // 0% discount = 100 score, 50% discount = 0 score
+    const dealScore = Math.max(0, Math.min(100, Math.round(100 - discountPercent * 2)))
     
     // Gauge needle calculation
     const gaugeAngle = 180 - (dealScore * 1.8)
@@ -946,7 +947,7 @@ export function StrWorksheet({
               <div className="space-y-1">
                 <div className="flex justify-between items-center py-2.5 px-3 rounded-lg">
                   <span className="text-sm text-slate-500">List Price</span>
-                  <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(inputs.purchase_price)}</span>
+                  <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(originalPrice)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2.5 px-3 rounded-lg">
                   <span className="text-sm text-slate-500">Breakeven Price</span>

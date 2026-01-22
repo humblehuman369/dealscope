@@ -81,11 +81,18 @@ export function IQVerdictScreen({
                     {property.beds} bd · {property.baths} ba · {property.sqft?.toLocaleString() || '—'} sqft
                   </p>
                 </div>
-                <div 
-                  className="text-xl font-bold flex-shrink-0"
-                  style={{ color: IQ_COLORS.pacificTeal }}
-                >
-                  {formatPrice(property.price)}
+                <div className="text-right flex-shrink-0">
+                  <div 
+                    className="text-xl font-bold"
+                    style={{ color: IQ_COLORS.pacificTeal }}
+                  >
+                    {formatPrice(analysis.purchasePrice || property.price)}
+                  </div>
+                  {analysis.purchasePrice && analysis.listPrice && analysis.purchasePrice < analysis.listPrice && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      List: {formatPrice(analysis.listPrice)}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -111,9 +118,9 @@ export function IQVerdictScreen({
               >
                 <span 
                   className="text-5xl font-extrabold"
-                  style={{ color: getDealScoreColor(topStrategy.score) }}
+                  style={{ color: getDealScoreColor(analysis.dealScore) }}
                 >
-                  {topStrategy.score}
+                  {analysis.dealScore}
                 </span>
                 <div className="text-left">
                   <p className="font-bold text-gray-900 dark:text-white text-lg">
