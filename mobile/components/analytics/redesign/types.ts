@@ -247,9 +247,12 @@ export interface ScoreBreakdownItem {
 export interface DealScoreData {
   score: number;
   grade: string;
-  label: string;
+  label: string;  // "Strong Opportunity", "Great Opportunity", etc.
   color: string;
   breakdown: ScoreBreakdownItem[];
+  discountPercent?: number;  // How much discount from list needed
+  breakevenPrice?: number;
+  listPrice?: number;
 }
 
 // ============================================

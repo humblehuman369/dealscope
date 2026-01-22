@@ -120,12 +120,12 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
     const arvPerSqft = sqft > 0 ? arv / sqft : 0
     const allInPctArv = arv > 0 ? (assignmentSalePrice / arv) * 100 : 0
     
-    // Deal Score
-    const feeScore = Math.min(30, Math.max(0, (assignmentFee / 15000) * 30))
-    const ruleScore = meets70Rule ? 25 : Math.max(0, 25 - ((contractPrice - mao) / 5000) * 5)
-    const buyerScore = buyerHasGoodDeal ? 25 : Math.max(0, 25 - ((buyerTargetProfit - buyerRoi) / 5) * 5)
-    const roiScore = Math.min(20, Math.max(0, (yourRoi / 500) * 20))
-    const dealScore = Math.round(Math.min(100, Math.max(0, feeScore + ruleScore + buyerScore + roiScore)))
+    // Deal Score (Opportunity-Based)
+    // For Wholesale, score based on how far above/below MAO the contract price is
+    // Contract at MAO = great opportunity, contract above MAO = less opportunity
+    const discountFromMao = mao > 0 ? Math.max(0, ((contractPrice - mao) / mao) * 100) : 0
+    // Invert and scale: 0% above MAO = 100, 45% above MAO = 0
+    const dealScore = Math.max(0, Math.min(100, Math.round(100 - (discountFromMao * 100 / 45))))
     
     return {
       mao, meets70Rule, assignmentSalePrice, buyerAllInCost, buyerProfit, buyerRoi, buyerHasGoodDeal,
@@ -190,12 +190,15 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   }
 
   const isProfit = calc.yourNetProfit > 0
+  // Opportunity-based verdict using contract price vs MAO
+  const discountFromMao = calc.mao > 0 ? Math.max(0, ((contractPrice - calc.mao) / calc.mao) * 100) : 0
   let verdict: string, verdictSub: string
-  if (calc.dealScore >= 85) { verdict = "Excellent Wholesale"; verdictSub = "Strong fee with good buyer margins" }
-  else if (calc.dealScore >= 70) { verdict = "Good Wholesale"; verdictSub = "Solid assignment opportunity" }
-  else if (calc.dealScore >= 55) { verdict = "Fair Wholesale"; verdictSub = "May need to reduce fee" }
-  else if (isProfit) { verdict = "Marginal Wholesale"; verdictSub = "Tight margins - verify buyer interest" }
-  else { verdict = "Weak Wholesale"; verdictSub = "Numbers don't work" }
+  if (discountFromMao <= 0) { verdict = "Strong Opportunity"; verdictSub = "Excellent deal - at or below MAO" }
+  else if (discountFromMao <= 5) { verdict = "Great Opportunity"; verdictSub = "Very good - slightly above MAO" }
+  else if (discountFromMao <= 10) { verdict = "Moderate Opportunity"; verdictSub = "Good potential - negotiate lower" }
+  else if (discountFromMao <= 20) { verdict = "Potential Opportunity"; verdictSub = "Possible deal - need better price" }
+  else if (discountFromMao <= 30) { verdict = "Mild Opportunity"; verdictSub = "Challenging - significant gap to MAO" }
+  else { verdict = "Weak Opportunity"; verdictSub = "Not recommended - too far above MAO" }
 
   const targets = [
     { label: 'Assignment Fee', actual: assignmentFee, target: 10000, unit: '$', met: assignmentFee >= 10000 },

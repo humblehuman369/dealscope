@@ -2,18 +2,18 @@
 
 import React from 'react'
 import { Target, Award, TrendingUp, TrendingDown, CheckCircle, AlertTriangle } from 'lucide-react'
-import { ScoreItem, DealScoreData, GradeLevel } from './types'
+import { ScoreItem, DealScoreData, GradeLevel, OpportunityGrade } from './types'
 
 /**
  * DealScoreDisplay Component
  * 
- * Displays a comprehensive deal score with visual ring, breakdown bars,
- * and strengths/weaknesses analysis.
+ * Displays a comprehensive deal score based on Investment Opportunity.
+ * The score shows how much discount from list price is needed to reach breakeven.
  * 
  * Features:
  * - Animated score ring (0-100)
- * - Letter grade (A-F)
- * - Score breakdown by category
+ * - Opportunity grade (A+ to F)
+ * - Discount percentage required
  * - Strengths and areas of concern
  */
 
@@ -24,27 +24,50 @@ interface DealScoreDisplayProps {
 }
 
 export function DealScoreDisplay({ data, strengths = [], weaknesses = [] }: DealScoreDisplayProps) {
+  const formatCurrency = (value: number) => 
+    new Intl.NumberFormat('en-US', { 
+      style: 'currency', 
+      currency: 'USD', 
+      minimumFractionDigits: 0, 
+      maximumFractionDigits: 0 
+    }).format(value)
+
   return (
     <div className="space-y-4">
       {/* Score Ring */}
       <div className="flex flex-col items-center">
-        <ScoreRing score={data.overall} grade={data.grade as GradeLevel} />
+        <ScoreRing score={data.overall} grade={data.grade} />
         
-        {/* Verdict */}
+        {/* Label (Strong Opportunity, etc.) */}
         <div className={`mt-3 px-4 py-2 rounded-lg text-center ${getVerdictClasses(data.overall)}`}>
-          <div className="text-[0.78rem] font-semibold text-white">{data.verdict}</div>
+          <div className="text-[0.78rem] font-semibold text-white">{data.label}</div>
         </div>
+        
+        {/* Discount Info */}
+        {data.discountPercent !== undefined && (
+          <div className="mt-2 text-center">
+            <div className="text-[0.72rem] text-white/60">
+              {data.discountPercent <= 5 
+                ? 'Profitable near list price'
+                : `${data.discountPercent.toFixed(1)}% discount needed`
+              }
+            </div>
+            {data.breakevenPrice > 0 && (
+              <div className="text-[0.65rem] text-white/40 mt-1">
+                Breakeven: {formatCurrency(data.breakevenPrice)}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Score Breakdown */}
+      {/* Verdict */}
       <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3.5">
-        <h4 className="text-[0.68rem] font-bold text-white/60 uppercase tracking-wide mb-3">
-          Score Breakdown
+        <h4 className="text-[0.68rem] font-bold text-white/60 uppercase tracking-wide mb-2">
+          Assessment
         </h4>
-        <div className="space-y-2.5">
-          {data.items.map((item, index) => (
-            <ScoreBar key={index} item={item} />
-          ))}
+        <div className="text-[0.78rem] text-white/90">
+          {data.verdict}
         </div>
       </div>
 
@@ -105,7 +128,7 @@ function getVerdictClasses(score: number): string {
 
 interface ScoreRingProps {
   score: number
-  grade: GradeLevel
+  grade: OpportunityGrade
   size?: number
 }
 
@@ -195,58 +218,56 @@ function ScoreBar({ item }: ScoreBarProps) {
 }
 
 /**
- * Helper function to create deal score data from metrics
+ * Helper function to create deal score data from breakeven and list price
+ * 
+ * Uses the new opportunity-based scoring:
+ * - 0-5% discount needed = Strong Opportunity (A+)
+ * - 5-10% = Great Opportunity (A)
+ * - 10-15% = Moderate Opportunity (B)
+ * - 15-25% = Potential Opportunity (C)
+ * - 25-35% = Mild Opportunity (D)
+ * - 35-45%+ = Weak Opportunity (F)
  */
 export function calculateDealScoreData(
-  metrics: {
-    cashFlow: number
-    cashOnCash: number
-    capRate: number
-    onePercentRule: number
-    dscr: number
-    equityPotential: number
-    riskBuffer: number
-  }
+  breakevenPrice: number,
+  listPrice: number
 ): DealScoreData {
-  // Score calculations (each out of its max)
-  const cashFlowScore = Math.min(20, Math.max(0, (metrics.cashFlow / 500) * 20))
-  const cocScore = Math.min(20, Math.max(0, (metrics.cashOnCash / 0.12) * 20))
-  const capScore = Math.min(15, Math.max(0, (metrics.capRate / 0.06) * 15))
-  const onePercentScore = Math.min(15, Math.max(0, metrics.onePercentRule * 15))
-  const dscrScore = Math.min(15, Math.max(0, ((metrics.dscr - 0.5) / 1.0) * 15))
-  const equityScore = Math.min(10, Math.max(0, (metrics.equityPotential / 0.2) * 10))
-  const riskScore = Math.min(5, Math.max(0, metrics.riskBuffer * 5))
-
-  const overall = Math.round(cashFlowScore + cocScore + capScore + onePercentScore + dscrScore + equityScore + riskScore)
-
-  const getGrade = (score: number): string => {
-    if (score >= 85) return 'A'
-    if (score >= 70) return 'B'
-    if (score >= 55) return 'C'
-    if (score >= 40) return 'D'
-    return 'F'
+  // Calculate discount percentage needed to reach breakeven
+  const discountPercent = listPrice > 0 
+    ? Math.max(0, ((listPrice - breakevenPrice) / listPrice) * 100)
+    : 0
+  
+  // Score is inverse of discount (lower discount = higher score)
+  // 0% discount = 100 score, 45% discount = 0 score
+  const overall = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
+  
+  // Get grade and label based on discount percentage
+  const getGradeInfo = (dp: number): { grade: OpportunityGrade; label: string; verdict: string } => {
+    if (dp <= 5) return { grade: 'A+', label: 'Strong Opportunity', verdict: 'Excellent deal - minimal negotiation needed' }
+    if (dp <= 10) return { grade: 'A', label: 'Great Opportunity', verdict: 'Very good deal - reasonable negotiation required' }
+    if (dp <= 15) return { grade: 'B', label: 'Moderate Opportunity', verdict: 'Good potential - negotiate firmly' }
+    if (dp <= 25) return { grade: 'C', label: 'Potential Opportunity', verdict: 'Possible deal - significant discount needed' }
+    if (dp <= 35) return { grade: 'D', label: 'Mild Opportunity', verdict: 'Challenging deal - major price reduction required' }
+    return { grade: 'F', label: 'Weak Opportunity', verdict: 'Not recommended - unrealistic discount needed' }
   }
 
-  const getVerdict = (score: number): string => {
-    if (score >= 85) return 'Excellent Investment!'
-    if (score >= 70) return 'Strong Deal'
-    if (score >= 55) return 'Decent Opportunity'
-    if (score >= 40) return 'Needs Negotiation'
-    return 'Not Recommended'
-  }
+  const { grade, label, verdict } = getGradeInfo(discountPercent)
 
   return {
     overall,
-    grade: getGrade(overall),
-    verdict: getVerdict(overall),
+    grade,
+    label,
+    verdict,
+    discountPercent,
+    breakevenPrice,
+    listPrice,
     items: [
-      { label: 'Cash Flow', score: Math.round(cashFlowScore), maxScore: 20, fillPercent: (cashFlowScore / 20) * 100 },
-      { label: 'Cash-on-Cash', score: Math.round(cocScore), maxScore: 20, fillPercent: (cocScore / 20) * 100 },
-      { label: 'Cap Rate', score: Math.round(capScore), maxScore: 15, fillPercent: (capScore / 15) * 100 },
-      { label: '1% Rule', score: Math.round(onePercentScore), maxScore: 15, fillPercent: (onePercentScore / 15) * 100 },
-      { label: 'DSCR', score: Math.round(dscrScore), maxScore: 15, fillPercent: (dscrScore / 15) * 100 },
-      { label: 'Equity Potential', score: Math.round(equityScore), maxScore: 10, fillPercent: (equityScore / 10) * 100 },
-      { label: 'Risk Buffer', score: Math.round(riskScore), maxScore: 5, fillPercent: (riskScore / 5) * 100 }
+      { 
+        label: 'Discount Required', 
+        score: Math.round(100 - discountPercent), 
+        maxScore: 100, 
+        fillPercent: Math.max(0, 100 - discountPercent) 
+      }
     ]
   }
 }

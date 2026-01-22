@@ -179,11 +179,12 @@ export function FlipWorksheet({
     const pricePerSqft = sqft > 0 ? purchasePrice / sqft : 0
     const arvPerSqft = sqft > 0 ? arv / sqft : 0
     const breakeven = allInCost + totalHoldingCosts + (allInCost * (sellingCostsPct / 100))
-    const roiScore = Math.min(30, Math.max(0, (roi / 25) * 30))
-    const marginScore = Math.min(25, Math.max(0, (profitMargin / 15) * 25))
-    const ruleScore = meets70Rule ? 25 : Math.max(0, 25 - ((allInPctArv - 70) * 2.5))
-    const profitScore = Math.min(20, Math.max(0, (actualProfit / 50000) * 20))
-    const dealScore = Math.round(Math.min(100, Math.max(0, roiScore + marginScore + ruleScore + profitScore)))
+    
+    // Deal Score (Opportunity-Based)
+    // For Flip, score based on all-in cost as percentage of ARV
+    // 70% rule: all-in at 70% or less = strong opportunity
+    const discountPercent = Math.max(0, allInPctArv - 55) // 55% all-in = 0% "discount needed", 100% = 45%
+    const dealScore = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
     
     return {
       purchaseCosts, allInCost, loanAmount, downPayment, pointsCost, cashToClose,
@@ -293,12 +294,15 @@ export function FlipWorksheet({
   }
 
   const isProfit = calc.actualProfit > 0
+  // Opportunity-based verdict using all-in cost % of ARV
+  const allInDiscount = Math.max(0, calc.allInPctArv - 55)
   let verdict: string, verdictSub: string
-  if (calc.dealScore >= 85) { verdict = "Excellent Flip"; verdictSub = "Strong margins and high ROI" }
-  else if (calc.dealScore >= 70) { verdict = "Good Flip"; verdictSub = "Solid profit potential" }
-  else if (calc.dealScore >= 55) { verdict = "Fair Flip"; verdictSub = "Consider negotiating better terms" }
-  else if (isProfit) { verdict = "Marginal Flip"; verdictSub = "Thin margins - may need better deal" }
-  else { verdict = "Risky Flip"; verdictSub = "Projected loss on this deal" }
+  if (allInDiscount <= 5) { verdict = "Strong Opportunity"; verdictSub = "Excellent deal - great all-in cost" }
+  else if (allInDiscount <= 10) { verdict = "Great Opportunity"; verdictSub = "Very good flip fundamentals" }
+  else if (allInDiscount <= 15) { verdict = "Moderate Opportunity"; verdictSub = "Good potential - negotiate firmly" }
+  else if (allInDiscount <= 25) { verdict = "Potential Opportunity"; verdictSub = "Possible deal - need better purchase price" }
+  else if (allInDiscount <= 35) { verdict = "Mild Opportunity"; verdictSub = "Challenging - major price reduction needed" }
+  else { verdict = "Weak Opportunity"; verdictSub = "Not recommended - unrealistic discount needed" }
 
   const targets = [
     { label: 'ROI', actual: calc.roi, target: 20, unit: '%', met: calc.roi >= 20 },

@@ -285,17 +285,12 @@ export function StrategyAnalyticsView({
     );
   }, [assumptions.listPrice, iqTarget]);
 
-  // Deal score
+  // Deal score (Opportunity-Based)
   const dealScore = useMemo(() => {
-    return calculateDealScoreData({
-      cashFlow: iqTarget.monthlyCashFlow,
-      cashOnCash: iqTarget.cashOnCash,
-      capRate: iqTarget.capRate,
-      onePercentRule: assumptions.monthlyRent / assumptions.listPrice,
-      dscr: iqTarget.dscr,
-      equityPotential: 0.15,
-      riskBuffer: 0.8,
-    });
+    // Use the breakeven price and list price for opportunity-based scoring
+    const breakevenPrice = iqTarget.breakeven || iqTarget.targetPrice;
+    const listPrice = assumptions.listPrice;
+    return calculateDealScoreData(breakevenPrice, listPrice);
   }, [iqTarget, assumptions]);
 
   // Insight
@@ -463,8 +458,20 @@ export function StrategyAnalyticsView({
               <View style={styles.section}>
                 <DealScoreDisplayNew
                   data={dealScore}
-                  strengths={iqTarget.monthlyCashFlow > 300 ? ['Strong cash flow'] : []}
-                  weaknesses={iqTarget.dscr < 1.25 ? ['DSCR below 1.25'] : []}
+                  strengths={
+                    (dealScore.discountPercent || 0) <= 5 
+                      ? ['Profitable near list price'] 
+                      : (dealScore.discountPercent || 0) <= 10 
+                        ? ['Achievable with typical negotiation'] 
+                        : []
+                  }
+                  weaknesses={
+                    (dealScore.discountPercent || 0) > 25 
+                      ? [`Requires ${(dealScore.discountPercent || 0).toFixed(0)}% discount`] 
+                      : (dealScore.discountPercent || 0) > 15 
+                        ? [`Needs ${(dealScore.discountPercent || 0).toFixed(0)}% off list`] 
+                        : []
+                  }
                   isDark={isDark}
                 />
               </View>

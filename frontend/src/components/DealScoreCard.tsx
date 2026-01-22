@@ -5,7 +5,7 @@ import {
   Award, TrendingUp, TrendingDown, CheckCircle, AlertTriangle,
   DollarSign, Percent, Target, Shield, Zap
 } from 'lucide-react'
-import { calculateDealScore, DealScoreBreakdown, DealMetrics } from '@/lib/analytics'
+import { calculateDealScore, DealScoreBreakdown, DealMetrics, OpportunityGrade } from '@/lib/analytics'
 
 // ============================================
 // FORMATTING
@@ -121,12 +121,14 @@ function ScoreBar({
 // ============================================
 
 interface DealScoreCardProps {
-  metrics: DealMetrics
+  breakevenPrice: number
+  listPrice: number
+  metrics?: DealMetrics
   compact?: boolean
 }
 
-export default function DealScoreCard({ metrics, compact = false }: DealScoreCardProps) {
-  const score = useMemo(() => calculateDealScore(metrics), [metrics])
+export default function DealScoreCard({ breakevenPrice, listPrice, metrics, compact = false }: DealScoreCardProps) {
+  const score = useMemo(() => calculateDealScore(breakevenPrice, listPrice, metrics), [breakevenPrice, listPrice, metrics])
   
   if (compact) {
     return (
@@ -134,14 +136,22 @@ export default function DealScoreCard({ metrics, compact = false }: DealScoreCar
         <div className="flex items-center gap-4">
           <ScoreRing score={score.overall} grade={score.grade} size={80} />
           <div className="flex-1">
-            <div className="text-sm font-semibold text-gray-900">{score.verdict}</div>
-            <div className="flex flex-wrap gap-1 mt-2">
-              {score.strengths.slice(0, 2).map((s, i) => (
-                <span key={i} className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">
-                  {s}
-                </span>
-              ))}
+            <div className="text-sm font-semibold text-gray-900">{score.label}</div>
+            <div className="text-xs text-gray-500 mt-1">
+              {score.discountPercent <= 5 
+                ? 'Near list price'
+                : `${score.discountPercent.toFixed(1)}% discount needed`
+              }
             </div>
+            {score.strengths.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {score.strengths.slice(0, 2).map((s, i) => (
+                  <span key={i} className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -153,7 +163,7 @@ export default function DealScoreCard({ metrics, compact = false }: DealScoreCar
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold text-gray-800 dark:text-emerald-400">Deal Score</h2>
-        <p className="text-[14px] text-gray-500 dark:text-gray-400">Comprehensive deal analysis</p>
+        <p className="text-[14px] text-gray-500 dark:text-gray-400">Investment opportunity analysis</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -167,86 +177,96 @@ export default function DealScoreCard({ metrics, compact = false }: DealScoreCar
             score.overall >= 30 ? 'bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700' :
             'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700'
           }`}>
-            <div className="text-[14px] font-medium text-gray-900 dark:text-white">{score.verdict}</div>
+            <div className="text-[14px] font-medium text-gray-900 dark:text-white">{score.label}</div>
+          </div>
+          
+          {/* Discount Info */}
+          <div className="mt-2 text-center">
+            <div className="text-[13px] text-gray-600 dark:text-gray-400">
+              {score.discountPercent <= 5 
+                ? 'Profitable near list price'
+                : `${score.discountPercent.toFixed(1)}% discount needed`
+              }
+            </div>
+            <div className="text-[12px] text-gray-500 dark:text-gray-500 mt-1">
+              Breakeven: {formatCurrency(score.breakevenPrice)}
+            </div>
           </div>
         </div>
 
-        {/* Score Breakdown */}
-        <div className="space-y-2">
-          <h3 className="text-[14px] font-medium text-gray-700 dark:text-gray-300 mb-2">Score Breakdown</h3>
+        {/* Assessment */}
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-[14px] font-medium text-gray-700 dark:text-gray-300 mb-2">Assessment</h3>
+            <p className="text-[13px] text-gray-600 dark:text-gray-400">{score.verdict}</p>
+          </div>
           
-          <ScoreBar label="Cash Flow" score={score.cashFlow} maxScore={20} icon={DollarSign} />
-          <ScoreBar label="Cash-on-Cash" score={score.cashOnCash} maxScore={20} icon={Percent} />
-          <ScoreBar label="Cap Rate" score={score.capRate} maxScore={15} icon={TrendingUp} />
-          <ScoreBar label="1% Rule" score={score.onePercentRule} maxScore={15} icon={Target} />
-          <ScoreBar label="Debt Service Coverage Ratio" score={score.dscr} maxScore={15} icon={Shield} />
-          <ScoreBar label="Equity Potential" score={score.equityPotential} maxScore={10} icon={Zap} />
-          <ScoreBar label="Risk Buffer" score={score.riskLevel} maxScore={5} icon={Shield} />
+          {/* Price Summary */}
+          <div className="bg-gray-50 dark:bg-navy-700/30 rounded-lg p-3">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-[12px] text-gray-500 dark:text-gray-400">List Price</span>
+              <span className="text-[13px] font-medium text-gray-900 dark:text-white">{formatCurrency(score.listPrice)}</span>
+            </div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-[12px] text-gray-500 dark:text-gray-400">Breakeven Price</span>
+              <span className="text-[13px] font-medium text-gray-900 dark:text-white">{formatCurrency(score.breakevenPrice)}</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-600">
+              <span className="text-[12px] font-medium text-gray-700 dark:text-gray-300">Discount Required</span>
+              <span className={`text-[13px] font-bold ${
+                score.discountPercent <= 10 ? 'text-emerald-600' :
+                score.discountPercent <= 25 ? 'text-amber-600' :
+                'text-red-600'
+              }`}>{score.discountPercent.toFixed(1)}%</span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Strengths & Weaknesses */}
-      <div className="grid md:grid-cols-2 gap-3">
-        {/* Strengths */}
-        <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
-          <div className="flex items-center gap-1.5 mb-2">
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-            <h4 className="text-xs font-medium text-emerald-800">Strengths</h4>
+      {(score.strengths.length > 0 || score.weaknesses.length > 0) && (
+        <div className="grid md:grid-cols-2 gap-3">
+          {/* Strengths */}
+          <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3 border border-emerald-100 dark:border-emerald-800">
+            <div className="flex items-center gap-1.5 mb-2">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+              <h4 className="text-xs font-medium text-emerald-800 dark:text-emerald-400">Strengths</h4>
+            </div>
+            <div className="space-y-1">
+              {score.strengths.length > 0 ? (
+                score.strengths.map((s, i) => (
+                  <div key={i} className="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-300">
+                    <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                    {s}
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-emerald-600 opacity-70">No notable strengths</div>
+              )}
+            </div>
           </div>
-          <div className="space-y-1">
-            {score.strengths.length > 0 ? (
-              score.strengths.map((s, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-xs text-emerald-700">
-                  <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                  {s}
-                </div>
-              ))
-            ) : (
-              <div className="text-xs text-emerald-600 opacity-70">No notable strengths</div>
-            )}
-          </div>
-        </div>
 
-        {/* Weaknesses */}
-        <div className="bg-amber-50 rounded-lg p-3 border border-amber-100">
-          <div className="flex items-center gap-1.5 mb-2">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-            <h4 className="text-xs font-medium text-amber-800">Areas of Concern</h4>
+          {/* Weaknesses */}
+          <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-amber-100 dark:border-amber-800">
+            <div className="flex items-center gap-1.5 mb-2">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+              <h4 className="text-xs font-medium text-amber-800 dark:text-amber-400">Concerns</h4>
+            </div>
+            <div className="space-y-1">
+              {score.weaknesses.length > 0 ? (
+                score.weaknesses.map((w, i) => (
+                  <div key={i} className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300">
+                    <div className="w-1 h-1 rounded-full bg-amber-500" />
+                    {w}
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-amber-600 opacity-70">No major concerns</div>
+              )}
+            </div>
           </div>
-          <div className="space-y-1">
-            {score.weaknesses.length > 0 ? (
-              score.weaknesses.map((w, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-xs text-amber-700">
-                  <div className="w-1 h-1 rounded-full bg-amber-500" />
-                  {w}
-                </div>
-              ))
-            ) : (
-              <div className="text-xs text-amber-600 opacity-70">No major concerns</div>
-            )}
-          </div>
         </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-4 gap-2">
-        <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5 text-center">
-          <div className="text-[14px] font-bold text-gray-900 dark:text-white">{formatCurrency(metrics.monthlyCashFlow)}</div>
-          <div className="text-[13px] font-bold text-gray-600 dark:text-white uppercase tracking-wide">Monthly CF</div>
-        </div>
-        <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5 text-center">
-          <div className="text-[14px] font-bold text-gray-900 dark:text-white">{(metrics.cashOnCash * 100).toFixed(1)}%</div>
-          <div className="text-[13px] font-bold text-gray-600 dark:text-white uppercase tracking-wide">CoC Return</div>
-        </div>
-        <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5 text-center">
-          <div className="text-[14px] font-bold text-gray-900 dark:text-white">{(metrics.capRate * 100).toFixed(1)}%</div>
-          <div className="text-[13px] font-bold text-gray-600 dark:text-white uppercase tracking-wide">Cap Rate</div>
-        </div>
-        <div className="bg-gray-50 dark:bg-navy-700/50 rounded-lg p-2.5 text-center">
-          <div className="text-[14px] font-bold text-gray-900 dark:text-white">{metrics.dscr.toFixed(2)}</div>
-          <div className="text-[13px] font-bold text-gray-600 dark:text-white uppercase tracking-wide">Debt Service Coverage Ratio</div>
-        </div>
-      </div>
+      )}
     </div>
   )
 }

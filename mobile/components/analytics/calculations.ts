@@ -152,89 +152,160 @@ function calculateYearOnePrincipal(
 }
 
 // =============================================================================
-// DEAL SCORE
+// DEAL SCORE (Opportunity-Based)
 // =============================================================================
 
+import { OpportunityGrade } from './types';
+
 /**
- * Calculate Deal Score (0-100) with breakdown
+ * Calculate Deal Score based on Investment Opportunity
+ * 
+ * The score is based on how much discount from list price is needed
+ * to reach breakeven. Lower discount = better opportunity.
+ * 
+ * Thresholds:
+ * - 0-5% discount needed = Strong Opportunity (A+)
+ * - 5-10% = Great Opportunity (A)
+ * - 10-15% = Moderate Opportunity (B)
+ * - 15-25% = Potential Opportunity (C)
+ * - 25-35% = Mild Opportunity (D)
+ * - 35-45%+ = Weak Opportunity (F)
  */
-export function calculateDealScore(metrics: CalculatedMetrics): DealScore {
-  const breakdown: ScoreBreakdown[] = [];
+export function calculateDealScore(
+  breakevenPrice: number,
+  listPrice: number,
+  metrics?: CalculatedMetrics
+): DealScore {
+  // Calculate discount percentage needed to reach breakeven
+  const discountPercent = listPrice > 0 
+    ? Math.max(0, ((listPrice - breakevenPrice) / listPrice) * 100)
+    : 0;
   
-  // 1. Cash Flow (max 20 points)
-  const cfPoints = Math.min(20, Math.max(0, 
-    metrics.monthlyCashFlow <= 0 ? 0 :
-    metrics.monthlyCashFlow <= 100 ? metrics.monthlyCashFlow / 20 :
-    metrics.monthlyCashFlow <= 300 ? 5 + (metrics.monthlyCashFlow - 100) / 40 :
-    metrics.monthlyCashFlow <= 500 ? 10 + (metrics.monthlyCashFlow - 300) / 40 :
-    15 + Math.min(5, (metrics.monthlyCashFlow - 500) / 100)
-  ));
-  breakdown.push({ category: 'Cash Flow', points: Math.round(cfPoints), maxPoints: 20, icon: '💵' });
+  // Score is inverse of discount (lower discount = higher score)
+  // 0% discount = 100 score, 45% discount = 0 score
+  const score = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))));
   
-  // 2. Cash-on-Cash (max 20 points)
-  const cocPoints = Math.min(20, Math.max(0,
-    metrics.cashOnCash <= 0 ? 0 :
-    metrics.cashOnCash <= 4 ? metrics.cashOnCash * 1.25 :
-    metrics.cashOnCash <= 8 ? 5 + (metrics.cashOnCash - 4) * 1.25 :
-    metrics.cashOnCash <= 12 ? 10 + (metrics.cashOnCash - 8) * 1.25 :
-    15 + Math.min(5, (metrics.cashOnCash - 12) * 0.5)
-  ));
-  breakdown.push({ category: 'Cash-on-Cash', points: Math.round(cocPoints), maxPoints: 20, icon: '%' });
+  // Determine grade, label, verdict based on discount percentage
+  const { grade, label, verdict, color } = getOpportunityGrade(discountPercent);
   
-  // 3. Cap Rate (max 15 points)
-  const capPoints = Math.min(15, Math.max(0,
-    metrics.capRate <= 4 ? metrics.capRate * 0.75 :
-    metrics.capRate <= 6 ? 3 + (metrics.capRate - 4) * 2 :
-    metrics.capRate <= 8 ? 7 + (metrics.capRate - 6) * 2 :
-    11 + Math.min(4, (metrics.capRate - 8) * 0.5)
-  ));
-  breakdown.push({ category: 'Cap Rate', points: Math.round(capPoints), maxPoints: 15, icon: '📈' });
+  // Build breakdown showing the discount needed
+  const breakdown: ScoreBreakdown[] = [
+    {
+      category: 'Discount Required',
+      points: Math.round(100 - discountPercent),
+      maxPoints: 100,
+      icon: '📉',
+    }
+  ];
   
-  // 4. 1% Rule (max 15 points)
-  const onePercentPoints = Math.min(15, Math.max(0,
-    metrics.onePercentRule < 0.5 ? metrics.onePercentRule * 6 :
-    metrics.onePercentRule < 0.75 ? 3 + (metrics.onePercentRule - 0.5) * 16 :
-    metrics.onePercentRule < 1.0 ? 7 + (metrics.onePercentRule - 0.75) * 16 :
-    11 + Math.min(4, (metrics.onePercentRule - 1.0) * 8)
-  ));
-  breakdown.push({ category: '1% Rule', points: Math.round(onePercentPoints), maxPoints: 15, icon: '📊' });
-  
-  // 5. DSCR (max 15 points)
-  const dscrPoints = Math.min(15, Math.max(0,
-    metrics.dscr < 1.0 ? 0 :
-    metrics.dscr < 1.25 ? (metrics.dscr - 1.0) * 28 :
-    metrics.dscr < 1.5 ? 7 + (metrics.dscr - 1.25) * 20 :
-    12 + Math.min(3, (metrics.dscr - 1.5) * 6)
-  ));
-  breakdown.push({ category: 'DSCR', points: Math.round(dscrPoints), maxPoints: 15, icon: '🛡️' });
-  
-  // 6. Equity Potential (max 10 points)
-  const equityPoints = Math.min(10, Math.max(0, metrics.yearOneEquityGrowth / 1000));
-  breakdown.push({ category: 'Equity Potential', points: Math.round(equityPoints), maxPoints: 10, icon: '⚡' });
-  
-  // 7. Risk Buffer (max 5 points)
-  const riskPoints = Math.min(5, Math.max(0,
-    (metrics.dscr - 1.0) * 5 + 
-    (metrics.breakEvenVacancy > 15 ? 2 : metrics.breakEvenVacancy / 7.5)
-  ));
-  breakdown.push({ category: 'Risk Buffer', points: Math.round(riskPoints), maxPoints: 5, icon: '🔒' });
-  
-  const totalScore = Math.round(breakdown.reduce((sum, item) => sum + item.points, 0));
-  const { grade, label, color } = getGrade(totalScore);
-  
-  return { score: totalScore, grade, label, color, breakdown };
+  return { 
+    score, 
+    grade, 
+    label, 
+    verdict,
+    color, 
+    discountPercent,
+    breakevenPrice,
+    listPrice,
+    breakdown 
+  };
 }
 
 /**
- * Get grade info from score
+ * Legacy function for backwards compatibility
+ * Uses metrics to calculate breakeven internally
  */
-function getGrade(score: number): { grade: string; label: string; color: string } {
-  if (score >= 80) return { grade: 'A', label: 'Excellent Investment', color: '#22c55e' };
-  if (score >= 70) return { grade: 'B+', label: 'Strong Investment', color: '#22c55e' };
-  if (score >= 60) return { grade: 'B', label: 'Good Investment', color: '#84cc16' };
-  if (score >= 50) return { grade: 'C+', label: 'Fair Investment', color: '#f97316' };
-  if (score >= 40) return { grade: 'C', label: 'Below Average', color: '#f97316' };
-  return { grade: 'D', label: 'Poor Investment', color: '#ef4444' };
+export function calculateDealScoreFromMetrics(
+  metrics: CalculatedMetrics,
+  inputs: AnalyticsInputs
+): DealScore {
+  const breakevenPrice = calculateBreakevenPrice(inputs);
+  return calculateDealScore(breakevenPrice, inputs.purchasePrice, metrics);
+}
+
+/**
+ * Calculate breakeven price (where monthly cash flow = 0)
+ */
+export function calculateBreakevenPrice(inputs: AnalyticsInputs): number {
+  const listPrice = inputs.purchasePrice;
+  let low = listPrice * 0.30;
+  let high = listPrice * 1.10;
+  let breakeven = listPrice;
+  
+  for (let i = 0; i < 30; i++) {
+    const mid = (low + high) / 2;
+    const testInputs = { ...inputs, purchasePrice: mid };
+    const testMetrics = calculateMetrics(testInputs);
+    
+    if (Math.abs(testMetrics.monthlyCashFlow) < 10) {
+      breakeven = mid;
+      break;
+    } else if (testMetrics.monthlyCashFlow > 0) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+    breakeven = mid;
+  }
+  
+  return Math.round(breakeven / 1000) * 1000;
+}
+
+/**
+ * Get opportunity grade info from discount percentage
+ */
+function getOpportunityGrade(discountPercent: number): { 
+  grade: OpportunityGrade; 
+  label: string; 
+  verdict: string;
+  color: string 
+} {
+  if (discountPercent <= 5) {
+    return { 
+      grade: 'A+', 
+      label: 'Strong Opportunity', 
+      verdict: 'Excellent deal - minimal negotiation needed',
+      color: '#22c55e' 
+    };
+  }
+  if (discountPercent <= 10) {
+    return { 
+      grade: 'A', 
+      label: 'Great Opportunity', 
+      verdict: 'Very good deal - reasonable negotiation required',
+      color: '#22c55e' 
+    };
+  }
+  if (discountPercent <= 15) {
+    return { 
+      grade: 'B', 
+      label: 'Moderate Opportunity', 
+      verdict: 'Good potential - negotiate firmly',
+      color: '#84cc16' 
+    };
+  }
+  if (discountPercent <= 25) {
+    return { 
+      grade: 'C', 
+      label: 'Potential Opportunity', 
+      verdict: 'Possible deal - significant discount needed',
+      color: '#f97316' 
+    };
+  }
+  if (discountPercent <= 35) {
+    return { 
+      grade: 'D', 
+      label: 'Mild Opportunity', 
+      verdict: 'Challenging deal - major price reduction required',
+      color: '#f97316' 
+    };
+  }
+  return { 
+    grade: 'F', 
+    label: 'Weak Opportunity', 
+    verdict: 'Not recommended - unrealistic discount needed',
+    color: '#ef4444' 
+  };
 }
 
 // =============================================================================

@@ -166,13 +166,11 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
     const cashOnCash = cashLeftInDeal > 0 ? (annualCashFlow / cashLeftInDeal) * 100 : (annualCashFlow > 0 ? 999 : 0)
     const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
     
-    // Deal Score
-    const allInScore = allInPctArv <= 75 ? 25 : Math.max(0, 25 - ((allInPctArv - 75) * 2.5))
-    const recoveryScore = recoveryPercent >= 100 ? 25 : Math.max(0, (recoveryPercent / 100) * 25)
-    const capScore = Math.min(20, Math.max(0, (capRate / 8) * 20))
-    const cocScore = cashOnCash >= 10 || cashLeftInDeal <= 0 ? 20 : Math.max(0, (cashOnCash / 10) * 20)
-    const cfScore = annualCashFlow > 0 ? Math.min(10, (annualCashFlow / 3000) * 10) : Math.max(-10, (annualCashFlow / 1500) * 5)
-    const dealScore = Math.round(Math.min(100, Math.max(0, allInScore + recoveryScore + capScore + cocScore + cfScore)))
+    // Deal Score (Opportunity-Based)
+    // For BRRRR, score based on all-in cost as percentage of ARV
+    // Lower all-in % = better opportunity (75% or less is ideal)
+    const discountPercent = Math.max(0, allInPctArv - 55) // 55% all-in = 0% "discount needed", 100% = 45%
+    const dealScore = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
     
     return {
       purchaseCosts, allInCost, loanAmount, downPayment, pointsCost, cashToClose,
@@ -248,12 +246,15 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
 
   const isProfit = calc.annualCashFlow >= 0
   const infiniteCoC = calc.cashLeftInDeal <= 0 && calc.annualCashFlow > 0
+  // Opportunity-based verdict using all-in cost % of ARV
+  const allInDiscount = Math.max(0, calc.allInPctArv - 55)
   let verdict: string, verdictSub: string
-  if (calc.dealScore >= 85) { verdict = "Excellent BRRRR"; verdictSub = infiniteCoC ? "Infinite returns - all cash recovered!" : "Strong equity & cash flow" }
-  else if (calc.dealScore >= 70) { verdict = "Good BRRRR"; verdictSub = "Solid fundamentals for BRRRR strategy" }
-  else if (calc.dealScore >= 55) { verdict = "Fair BRRRR"; verdictSub = "Consider negotiating better terms" }
-  else if (isProfit) { verdict = "Marginal BRRRR"; verdictSub = "Thin margins - may need better deal" }
-  else { verdict = "Risky BRRRR"; verdictSub = "Cash flow negative after refinance" }
+  if (allInDiscount <= 5) { verdict = "Strong Opportunity"; verdictSub = infiniteCoC ? "Infinite returns - all cash recovered!" : "Excellent deal - great all-in cost" }
+  else if (allInDiscount <= 10) { verdict = "Great Opportunity"; verdictSub = "Very good BRRRR fundamentals" }
+  else if (allInDiscount <= 15) { verdict = "Moderate Opportunity"; verdictSub = "Good potential - negotiate firmly" }
+  else if (allInDiscount <= 25) { verdict = "Potential Opportunity"; verdictSub = "Possible deal - need better purchase price" }
+  else if (allInDiscount <= 35) { verdict = "Mild Opportunity"; verdictSub = "Challenging - major price reduction needed" }
+  else { verdict = "Weak Opportunity"; verdictSub = "Not recommended - unrealistic discount needed" }
 
   const targets = [
     { label: 'All-In/ARV', actual: calc.allInPctArv, target: 75, unit: '%', met: calc.allInPctArv <= 75, inverse: true },

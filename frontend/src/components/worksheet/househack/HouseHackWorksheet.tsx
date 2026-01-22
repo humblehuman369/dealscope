@@ -142,11 +142,13 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
     const cocReturn = totalCashNeeded > 0 ? (annualCashFlow / totalCashNeeded) * 100 : 0
     const liveFree = actualHousingCost <= 0
     
-    const savingsScore = Math.min(30, Math.max(0, (savingsVsRenting / marketRent) * 60))
-    const cocScore = Math.min(25, Math.max(0, (cocReturn / 10) * 25))
-    const cfScore = fullRentalCashFlow > 0 ? Math.min(25, Math.max(0, (fullRentalCashFlow / 500) * 25)) : Math.max(-10, (fullRentalCashFlow / 250) * 10)
-    const liveFreeScore = liveFree ? 20 : Math.min(15, Math.max(0, 15 - (actualHousingCost / marketRent) * 15))
-    const dealScore = Math.round(Math.min(100, Math.max(0, savingsScore + cocScore + cfScore + liveFreeScore)))
+    // Deal Score (Opportunity-Based)
+    // For House Hack, score based on housing cost offset
+    // Living free (0% housing cost) = 100 score, paying full market rent = 0 score
+    const housingCostPercent = marketRent > 0 ? Math.max(0, (actualHousingCost / marketRent) * 100) : 0
+    const discountPercent = housingCostPercent // 0% housing cost = 0% discount needed, 100% = 100% discount
+    // Cap at 45% to match the standard scale
+    const dealScore = Math.max(0, Math.min(100, Math.round(100 - (Math.min(discountPercent, 45) * 100 / 45))))
     
     return {
       downPayment, loanAmount, purchaseCosts, totalCashNeeded, monthlyPayment,
@@ -213,12 +215,15 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
     )
   }
 
+  // Opportunity-based verdict using housing cost offset
+  const housingCostPercent = marketRent > 0 ? Math.max(0, (calc.yourHousingCost / marketRent) * 100) : 0
   let verdict: string, verdictSub: string
-  if (calc.dealScore >= 85) { verdict = "Excellent Hack"; verdictSub = calc.liveFree ? "Live for FREE!" : "Major housing savings" }
-  else if (calc.dealScore >= 70) { verdict = "Great Hack"; verdictSub = "Significant savings vs renting" }
-  else if (calc.dealScore >= 55) { verdict = "Good Hack"; verdictSub = "Solid house hack opportunity" }
-  else if (calc.yourHousingCost < calc.monthlyPayment) { verdict = "Fair Hack"; verdictSub = "Some savings achieved" }
-  else { verdict = "Weak Hack"; verdictSub = "Limited benefit vs renting" }
+  if (housingCostPercent <= 5 || calc.liveFree) { verdict = "Strong Opportunity"; verdictSub = calc.liveFree ? "Live for FREE!" : "Excellent deal - minimal housing cost" }
+  else if (housingCostPercent <= 15) { verdict = "Great Opportunity"; verdictSub = "Very good - major housing savings" }
+  else if (housingCostPercent <= 25) { verdict = "Moderate Opportunity"; verdictSub = "Good potential - significant savings" }
+  else if (housingCostPercent <= 40) { verdict = "Potential Opportunity"; verdictSub = "Possible deal - some savings" }
+  else if (housingCostPercent <= 60) { verdict = "Mild Opportunity"; verdictSub = "Limited savings vs renting" }
+  else { verdict = "Weak Opportunity"; verdictSub = "Not recommended - little benefit" }
 
   const targets = [
     { label: 'Housing Cost', actual: calc.yourHousingCost, target: 0, unit: '$', met: calc.yourHousingCost <= 0 },

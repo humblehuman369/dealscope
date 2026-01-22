@@ -12,6 +12,7 @@ import {
   DealScore,
   ScoreBreakdown,
   ScoreImprovement,
+  OpportunityGrade,
 } from '../types/analytics';
 
 // ============================================
@@ -410,329 +411,215 @@ const calculateIRR = (cashFlows: number[], guess: number = 0.1): number => {
 };
 
 // ============================================
-// DEAL SCORE CALCULATION
+// DEAL SCORE CALCULATION (Opportunity-Based)
 // ============================================
 
 /**
- * Calculate Deal Score from metrics
+ * Calculate Deal Score based on Investment Opportunity
+ * 
+ * The score is based on how much discount from list price is needed
+ * to reach breakeven. Lower discount = better opportunity.
+ * 
+ * Thresholds:
+ * - 0-5% discount needed = Strong Opportunity (A+)
+ * - 5-10% = Great Opportunity (A)
+ * - 10-15% = Moderate Opportunity (B)
+ * - 15-25% = Potential Opportunity (C)
+ * - 25-35% = Mild Opportunity (D)
+ * - 35-45%+ = Weak Opportunity (F)
  */
 export const calculateDealScore = (
-  metrics: CalculatedMetrics,
-  inputs: AnalyticsInputs
+  breakevenPrice: number,
+  listPrice: number,
+  metrics?: CalculatedMetrics
 ): DealScore => {
-  const breakdown: ScoreBreakdown[] = [];
-
-  // 1. Cash Flow (max 20 points)
-  const cfPoints = calculateCashFlowPoints(metrics.monthlyCashFlow);
-  breakdown.push({
-    category: 'Cash Flow',
-    points: cfPoints,
-    maxPoints: 20,
-    icon: '💵',
-    description: `$${Math.round(metrics.monthlyCashFlow)}/mo`,
-    status: getPointsStatus(cfPoints, 20),
-  });
-
-  // 2. Cash-on-Cash (max 20 points)
-  const cocPoints = calculateCoCPoints(metrics.cashOnCash);
-  breakdown.push({
-    category: 'Cash-on-Cash',
-    points: cocPoints,
-    maxPoints: 20,
-    icon: '%',
-    description: `${metrics.cashOnCash.toFixed(1)}%`,
-    status: getPointsStatus(cocPoints, 20),
-  });
-
-  // 3. Cap Rate (max 15 points)
-  const capPoints = calculateCapRatePoints(metrics.capRate);
-  breakdown.push({
-    category: 'Cap Rate',
-    points: capPoints,
-    maxPoints: 15,
-    icon: '📈',
-    description: `${metrics.capRate.toFixed(1)}%`,
-    status: getPointsStatus(capPoints, 15),
-  });
-
-  // 4. 1% Rule (max 15 points)
-  const onePercentPoints = calculateOnePercentPoints(metrics.onePercentRule);
-  breakdown.push({
-    category: '1% Rule',
-    points: onePercentPoints,
-    maxPoints: 15,
-    icon: '📊',
-    description: `${metrics.onePercentRule.toFixed(2)}%`,
-    status: getPointsStatus(onePercentPoints, 15),
-  });
-
-  // 5. DSCR (max 15 points)
-  const dscrPoints = calculateDSCRPoints(metrics.dscr);
-  breakdown.push({
-    category: 'DSCR',
-    points: dscrPoints,
-    maxPoints: 15,
-    icon: '🛡️',
-    description: `${metrics.dscr.toFixed(2)}`,
-    status: getPointsStatus(dscrPoints, 15),
-  });
-
-  // 6. Equity Potential (max 10 points)
-  const equityPoints = calculateEquityPoints(inputs, metrics);
-  breakdown.push({
-    category: 'Equity Potential',
-    points: equityPoints,
-    maxPoints: 10,
-    icon: '⚡',
-    description: 'Year 1 growth',
-    status: getPointsStatus(equityPoints, 10),
-  });
-
-  // 7. Risk Buffer (max 5 points)
-  const riskPoints = calculateRiskPoints(metrics);
-  breakdown.push({
-    category: 'Risk Buffer',
-    points: riskPoints,
-    maxPoints: 5,
-    icon: '🔒',
-    description: 'Safety margin',
-    status: getPointsStatus(riskPoints, 5),
-  });
-
-  // Total score
-  const score = Math.round(breakdown.reduce((sum, item) => sum + item.points, 0));
-  const { grade, verdict, color } = getGradeInfo(score);
-
-  // Generate insights
-  const strengths = generateStrengths(metrics, breakdown);
-  const concerns = generateConcerns(metrics, breakdown);
-  const improvements = generateImprovements(inputs, metrics, score);
-
+  // Calculate discount percentage needed to reach breakeven
+  // If breakeven > list price, property is already profitable at list
+  const discountPercent = listPrice > 0 
+    ? Math.max(0, ((listPrice - breakevenPrice) / listPrice) * 100)
+    : 0;
+  
+  // Score is inverse of discount (lower discount = higher score)
+  // 0% discount = 100 score, 45% discount = 0 score
+  const score = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))));
+  
+  // Determine grade, label, and color based on discount percentage
+  const { grade, label, verdict, color } = getOpportunityGradeInfo(discountPercent);
+  
+  // Build breakdown showing the discount needed
+  const breakdown: ScoreBreakdown[] = [
+    {
+      category: 'Discount Required',
+      points: Math.round(100 - discountPercent),
+      maxPoints: 100,
+      icon: '📉',
+      description: `${discountPercent.toFixed(1)}% below list`,
+      status: getDiscountStatus(discountPercent),
+    }
+  ];
+  
+  // Generate insights based on metrics if provided
+  const strengths = metrics ? generateOpportunityStrengths(discountPercent, metrics) : [];
+  const concerns = metrics ? generateOpportunityConcerns(discountPercent, metrics) : [];
+  
   return {
     score,
     grade,
     verdict,
+    label,
     color,
+    discountPercent,
+    breakevenPrice,
+    listPrice,
     breakdown,
     strengths,
     concerns,
-    improvements,
+    improvements: [],
   };
 };
 
-// Point calculation helpers
-const calculateCashFlowPoints = (monthlyCF: number): number => {
-  if (monthlyCF <= 0) return 0;
-  if (monthlyCF <= 100) return monthlyCF / 20;
-  if (monthlyCF <= 300) return 5 + (monthlyCF - 100) / 40;
-  if (monthlyCF <= 500) return 10 + (monthlyCF - 300) / 40;
-  return Math.min(20, 15 + (monthlyCF - 500) / 100);
+/**
+ * Legacy function signature for backwards compatibility
+ * Calculates breakeven internally from metrics and inputs
+ */
+export const calculateDealScoreFromMetrics = (
+  metrics: CalculatedMetrics,
+  inputs: AnalyticsInputs
+): DealScore => {
+  // Calculate breakeven price using binary search
+  const breakevenPrice = calculateBreakevenPrice(inputs);
+  return calculateDealScore(breakevenPrice, inputs.purchasePrice, metrics);
 };
 
-const calculateCoCPoints = (coc: number): number => {
-  if (coc <= 0) return 0;
-  if (coc <= 4) return coc * 1.25;
-  if (coc <= 8) return 5 + (coc - 4) * 1.25;
-  if (coc <= 12) return 10 + (coc - 8) * 1.25;
-  return Math.min(20, 15 + (coc - 12) * 0.5);
+/**
+ * Calculate breakeven price (where monthly cash flow = 0)
+ */
+export const calculateBreakevenPrice = (inputs: AnalyticsInputs): number => {
+  const listPrice = inputs.purchasePrice;
+  let low = listPrice * 0.30;
+  let high = listPrice * 1.10;
+  let breakeven = listPrice;
+  
+  for (let i = 0; i < 30; i++) {
+    const mid = (low + high) / 2;
+    const testInputs = { ...inputs, purchasePrice: mid };
+    const testMetrics = calculateMetrics(testInputs);
+    
+    if (Math.abs(testMetrics.monthlyCashFlow) < 10) {
+      breakeven = mid;
+      break;
+    } else if (testMetrics.monthlyCashFlow > 0) {
+      // Still positive, go higher
+      low = mid;
+    } else {
+      // Negative, go lower
+      high = mid;
+    }
+    breakeven = mid;
+  }
+  
+  return Math.round(breakeven / 1000) * 1000;
 };
 
-const calculateCapRatePoints = (cap: number): number => {
-  if (cap <= 0) return 0;
-  if (cap <= 4) return cap * 0.75;
-  if (cap <= 6) return 3 + (cap - 4) * 2;
-  if (cap <= 8) return 7 + (cap - 6) * 2;
-  return Math.min(15, 11 + (cap - 8) * 0.5);
+const getOpportunityGradeInfo = (discountPercent: number): { 
+  grade: OpportunityGrade; 
+  label: string; 
+  verdict: string; 
+  color: string 
+} => {
+  if (discountPercent <= 5) {
+    return { 
+      grade: 'A+', 
+      label: 'Strong Opportunity', 
+      verdict: 'Excellent deal - minimal negotiation needed',
+      color: '#22c55e' 
+    };
+  }
+  if (discountPercent <= 10) {
+    return { 
+      grade: 'A', 
+      label: 'Great Opportunity', 
+      verdict: 'Very good deal - reasonable negotiation required',
+      color: '#22c55e' 
+    };
+  }
+  if (discountPercent <= 15) {
+    return { 
+      grade: 'B', 
+      label: 'Moderate Opportunity', 
+      verdict: 'Good potential - negotiate firmly',
+      color: '#84cc16' 
+    };
+  }
+  if (discountPercent <= 25) {
+    return { 
+      grade: 'C', 
+      label: 'Potential Opportunity', 
+      verdict: 'Possible deal - significant discount needed',
+      color: '#f97316' 
+    };
+  }
+  if (discountPercent <= 35) {
+    return { 
+      grade: 'D', 
+      label: 'Mild Opportunity', 
+      verdict: 'Challenging deal - major price reduction required',
+      color: '#f97316' 
+    };
+  }
+  return { 
+    grade: 'F', 
+    label: 'Weak Opportunity', 
+    verdict: 'Not recommended - unrealistic discount needed',
+    color: '#ef4444' 
+  };
 };
 
-const calculateOnePercentPoints = (onePercent: number): number => {
-  if (onePercent < 0.5) return onePercent * 6;
-  if (onePercent < 0.75) return 3 + (onePercent - 0.5) * 16;
-  if (onePercent < 1.0) return 7 + (onePercent - 0.75) * 16;
-  return Math.min(15, 11 + (onePercent - 1.0) * 8);
-};
-
-const calculateDSCRPoints = (dscr: number): number => {
-  if (dscr < 1.0) return 0;
-  if (dscr < 1.25) return (dscr - 1.0) * 28;
-  if (dscr < 1.5) return 7 + (dscr - 1.25) * 20;
-  return Math.min(15, 12 + (dscr - 1.5) * 6);
-};
-
-const calculateEquityPoints = (inputs: AnalyticsInputs, metrics: CalculatedMetrics): number => {
-  // Estimate year 1 equity growth from appreciation + principal paydown
-  const appreciation = inputs.purchasePrice * (inputs.appreciationRate / 100);
-  const principalPaydown = metrics.loanAmount - calculateRemainingBalance(
-    metrics.loanAmount,
-    inputs.interestRate,
-    inputs.loanTermYears,
-    1
-  );
-  const equityGrowth = appreciation + principalPaydown;
-  return Math.min(10, equityGrowth / 2000);
-};
-
-const calculateRiskPoints = (metrics: CalculatedMetrics): number => {
-  const dscrMargin = Math.max(0, metrics.dscr - 1.0);
-  const vacancyBuffer = Math.max(0, 100 - metrics.breakEvenOccupancy);
-  return Math.min(5, dscrMargin * 3 + vacancyBuffer / 20);
-};
-
-const getPointsStatus = (points: number, max: number): ScoreBreakdown['status'] => {
-  const ratio = points / max;
-  if (ratio >= 0.8) return 'excellent';
-  if (ratio >= 0.6) return 'good';
-  if (ratio >= 0.4) return 'average';
+const getDiscountStatus = (discountPercent: number): ScoreBreakdown['status'] => {
+  if (discountPercent <= 5) return 'excellent';
+  if (discountPercent <= 15) return 'good';
+  if (discountPercent <= 25) return 'average';
   return 'poor';
 };
 
-const getGradeInfo = (score: number): { grade: DealScore['grade']; verdict: string; color: string } => {
-  if (score >= 90) return { grade: 'A', verdict: 'Excellent Investment', color: '#22c55e' };
-  if (score >= 85) return { grade: 'A-', verdict: 'Excellent Investment', color: '#22c55e' };
-  if (score >= 80) return { grade: 'B+', verdict: 'Strong Investment', color: '#22c55e' };
-  if (score >= 75) return { grade: 'B', verdict: 'Good Investment', color: '#84cc16' };
-  if (score >= 70) return { grade: 'B-', verdict: 'Good Investment', color: '#84cc16' };
-  if (score >= 65) return { grade: 'C+', verdict: 'Fair Investment', color: '#f97316' };
-  if (score >= 60) return { grade: 'C', verdict: 'Below Average', color: '#f97316' };
-  if (score >= 55) return { grade: 'C-', verdict: 'Below Average', color: '#f97316' };
-  if (score >= 50) return { grade: 'D', verdict: 'Poor Investment', color: '#ef4444' };
-  return { grade: 'F', verdict: 'Not Recommended', color: '#ef4444' };
-};
-
-// Insight generators
-const generateStrengths = (metrics: CalculatedMetrics, breakdown: ScoreBreakdown[]): string[] => {
+const generateOpportunityStrengths = (discountPercent: number, metrics: CalculatedMetrics): string[] => {
   const strengths: string[] = [];
-
-  if (metrics.monthlyCashFlow >= 500) {
-    strengths.push(`Strong cash flow ($${Math.round(metrics.monthlyCashFlow)}/mo)`);
-  } else if (metrics.monthlyCashFlow >= 200) {
-    strengths.push(`Positive cash flow ($${Math.round(metrics.monthlyCashFlow)}/mo)`);
+  
+  if (discountPercent <= 5) {
+    strengths.push('Profitable near list price');
+  } else if (discountPercent <= 10) {
+    strengths.push('Achievable with typical negotiation');
   }
-
-  if (metrics.cashOnCash >= 12) {
-    strengths.push(`Excellent cash-on-cash return (${metrics.cashOnCash.toFixed(1)}%)`);
-  } else if (metrics.cashOnCash >= 8) {
-    strengths.push(`Good cash-on-cash return (${metrics.cashOnCash.toFixed(1)}%)`);
+  
+  if (metrics.monthlyCashFlow >= 300) {
+    strengths.push(`Strong cash flow potential ($${Math.round(metrics.monthlyCashFlow)}/mo)`);
   }
-
-  if (metrics.capRate >= 8) {
-    strengths.push(`High cap rate (${metrics.capRate.toFixed(1)}%)`);
+  
+  if (metrics.dscr >= 1.25) {
+    strengths.push(`Good debt coverage (DSCR: ${metrics.dscr.toFixed(2)})`);
   }
-
-  if (metrics.dscr >= 1.5) {
-    strengths.push(`Strong debt coverage (DSCR: ${metrics.dscr.toFixed(2)})`);
-  } else if (metrics.dscr >= 1.25) {
-    strengths.push(`DSCR above lender minimum (${metrics.dscr.toFixed(2)})`);
-  }
-
-  if (metrics.onePercentRule >= 1.0) {
-    strengths.push(`Meets 1% rule (${metrics.onePercentRule.toFixed(2)}%)`);
-  }
-
+  
   return strengths.slice(0, 3);
 };
 
-const generateConcerns = (metrics: CalculatedMetrics, breakdown: ScoreBreakdown[]): string[] => {
+const generateOpportunityConcerns = (discountPercent: number, metrics: CalculatedMetrics): string[] => {
   const concerns: string[] = [];
-
+  
+  if (discountPercent > 25) {
+    concerns.push(`Requires ${discountPercent.toFixed(0)}% discount - may be unrealistic`);
+  } else if (discountPercent > 15) {
+    concerns.push(`Needs significant negotiation (${discountPercent.toFixed(0)}% off)`);
+  }
+  
   if (metrics.monthlyCashFlow < 0) {
-    concerns.push(`Negative cash flow (-$${Math.abs(Math.round(metrics.monthlyCashFlow))}/mo)`);
-  } else if (metrics.monthlyCashFlow < 100) {
-    concerns.push(`Low cash flow ($${Math.round(metrics.monthlyCashFlow)}/mo) — little margin`);
+    concerns.push('Negative cash flow at list price');
   }
-
+  
   if (metrics.dscr < 1.0) {
-    concerns.push(`DSCR below 1.0 — income doesn't cover debt`);
-  } else if (metrics.dscr < 1.25) {
-    concerns.push(`DSCR of ${metrics.dscr.toFixed(2)} is below lender requirements`);
+    concerns.push('Income may not cover debt service');
   }
-
-  if (metrics.cashOnCash < 4) {
-    concerns.push(`Low cash-on-cash return (${metrics.cashOnCash.toFixed(1)}%)`);
-  }
-
-  if (metrics.onePercentRule < 0.7) {
-    concerns.push(`Well below 1% rule (${metrics.onePercentRule.toFixed(2)}%)`);
-  }
-
-  if (metrics.breakEvenOccupancy > 85) {
-    concerns.push(`High break-even occupancy (${metrics.breakEvenOccupancy.toFixed(0)}%)`);
-  }
-
+  
   return concerns.slice(0, 3);
-};
-
-const generateImprovements = (
-  inputs: AnalyticsInputs,
-  metrics: CalculatedMetrics,
-  currentScore: number
-): ScoreImprovement[] => {
-  const improvements: ScoreImprovement[] = [];
-
-  // Test price reduction
-  const reducedPriceInputs = { ...inputs, purchasePrice: inputs.purchasePrice * 0.9 };
-  const reducedPriceMetrics = calculateMetrics(reducedPriceInputs);
-  const reducedPriceScore = calculateDealScore(reducedPriceMetrics, reducedPriceInputs).score;
-  if (reducedPriceScore > currentScore) {
-    improvements.push({
-      action: `Negotiate purchase price down 10% to $${(inputs.purchasePrice * 0.9).toLocaleString()}`,
-      icon: '📉',
-      pointsGain: reducedPriceScore - currentScore,
-      newScore: reducedPriceScore,
-      newGrade: getGradeInfo(reducedPriceScore).grade,
-    });
-  }
-
-  // Test increased down payment
-  if (inputs.downPaymentPercent < 25) {
-    const higherDownInputs = { ...inputs, downPaymentPercent: 25 };
-    const higherDownMetrics = calculateMetrics(higherDownInputs);
-    const higherDownScore = calculateDealScore(higherDownMetrics, higherDownInputs).score;
-    if (higherDownScore > currentScore) {
-      improvements.push({
-        action: `Increase down payment to 25%`,
-        icon: '💰',
-        pointsGain: higherDownScore - currentScore,
-        newScore: higherDownScore,
-        newGrade: getGradeInfo(higherDownScore).grade,
-      });
-    }
-  }
-
-  // Test rent increase
-  const higherRentInputs = { ...inputs, monthlyRent: inputs.monthlyRent * 1.1 };
-  const higherRentMetrics = calculateMetrics(higherRentInputs);
-  const higherRentScore = calculateDealScore(higherRentMetrics, higherRentInputs).score;
-  if (higherRentScore > currentScore) {
-    improvements.push({
-      action: `Increase rent 10% to $${Math.round(inputs.monthlyRent * 1.1).toLocaleString()}`,
-      icon: '📈',
-      pointsGain: higherRentScore - currentScore,
-      newScore: higherRentScore,
-      newGrade: getGradeInfo(higherRentScore).grade,
-    });
-  }
-
-  // Test lower interest rate
-  if (inputs.interestRate > 5) {
-    const lowerRateInputs = { ...inputs, interestRate: inputs.interestRate - 0.5 };
-    const lowerRateMetrics = calculateMetrics(lowerRateInputs);
-    const lowerRateScore = calculateDealScore(lowerRateMetrics, lowerRateInputs).score;
-    if (lowerRateScore > currentScore) {
-      improvements.push({
-        action: `Shop for 0.5% lower rate (${(inputs.interestRate - 0.5).toFixed(2)}%)`,
-        icon: '🏦',
-        pointsGain: lowerRateScore - currentScore,
-        newScore: lowerRateScore,
-        newGrade: getGradeInfo(lowerRateScore).grade,
-      });
-    }
-  }
-
-  // Sort by points gain and return top 3
-  return improvements
-    .sort((a, b) => b.pointsGain - a.pointsGain)
-    .slice(0, 3);
 };
 
 // ============================================
@@ -753,7 +640,8 @@ export const calculateSensitivity = (
     const value = min + stepSize * i;
     const testInputs = { ...inputs, [variable]: value };
     const testMetrics = calculateMetrics(testInputs);
-    const testScore = calculateDealScore(testMetrics, testInputs);
+    const breakeven = calculateBreakevenPrice(testInputs);
+    const testScore = calculateDealScore(breakeven, testInputs.purchasePrice, testMetrics);
 
     results.push({
       value,

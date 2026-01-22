@@ -248,14 +248,14 @@ export function LTRWorksheet({
     }
     const breakeven = Math.max(0, Math.round(breakevenPrice))
     
-    // Deal Score (0-100)
-    const cocScore = Math.min(35, Math.max(0, (cashOnCash / 10) * 35))
-    const capScore = Math.min(25, Math.max(0, (capRatePurchase / 8) * 25))
-    const cfScore = annualCashFlow > 0 
-      ? Math.min(25, Math.max(0, (annualCashFlow / 12000) * 25))
-      : Math.max(-15, (annualCashFlow / 6000) * 15)
-    const dscrScore = Math.min(15, Math.max(0, ((dscr - 0.8) / 0.7) * 15))
-    const dealScore = Math.round(Math.min(100, Math.max(0, cocScore + capScore + cfScore + dscrScore)))
+    // Deal Score (Opportunity-Based)
+    // Score based on how much discount from list price is needed to reach breakeven
+    // Lower discount = better opportunity
+    const discountPercent = purchasePrice > 0 
+      ? Math.max(0, ((purchasePrice - breakeven) / purchasePrice) * 100)
+      : 0
+    // 0% discount = 100 score, 45% discount = 0 score
+    const dealScore = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
     
     // Gauge needle
     const gaugeAngle = 180 - (dealScore * 1.8)
@@ -529,22 +529,29 @@ export function LTRWorksheet({
   // VERDICT LOGIC
   // ============================================
   const isProfit = calc.annualCashFlow >= 0
+  // Opportunity-based verdict using discount percentage
+  const discountNeeded = purchasePrice > 0 
+    ? Math.max(0, ((purchasePrice - calc.breakeven) / purchasePrice) * 100)
+    : 0
   let verdict: string, verdictSub: string
-  if (calc.dealScore >= 70) {
-    verdict = "Strong Investment"
-    verdictSub = "Excellent potential with solid returns"
-  } else if (calc.dealScore >= 55) {
-    verdict = "Good Deal"
-    verdictSub = "Solid fundamentals with acceptable returns"
-  } else if (calc.dealScore >= 40) {
-    verdict = "Moderate Deal"
-    verdictSub = "Consider negotiating better terms"
-  } else if (isProfit) {
-    verdict = "Marginal Deal"
-    verdictSub = "Thin margins - proceed with caution"
+  if (discountNeeded <= 5) {
+    verdict = "Strong Opportunity"
+    verdictSub = "Excellent deal - minimal negotiation needed"
+  } else if (discountNeeded <= 10) {
+    verdict = "Great Opportunity"
+    verdictSub = "Very good deal - reasonable negotiation required"
+  } else if (discountNeeded <= 15) {
+    verdict = "Moderate Opportunity"
+    verdictSub = "Good potential - negotiate firmly"
+  } else if (discountNeeded <= 25) {
+    verdict = "Potential Opportunity"
+    verdictSub = "Possible deal - significant discount needed"
+  } else if (discountNeeded <= 35) {
+    verdict = "Mild Opportunity"
+    verdictSub = "Challenging deal - major price reduction required"
   } else {
-    verdict = "Cash Flow Negative"
-    verdictSub = "Deal loses money as structured"
+    verdict = "Weak Opportunity"
+    verdictSub = "Not recommended - unrealistic discount needed"
   }
 
   const targets = [

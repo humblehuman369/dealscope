@@ -176,13 +176,20 @@ export function StrWorksheet({
     const annualCashFlow = result?.annual_cash_flow ?? 0
     const monthlyCashFlow = result?.monthly_cash_flow ?? 0
     const totalCashNeeded = result?.total_cash_needed ?? 0
-    const dealScore = result?.deal_score ?? 0
     const capRate = result?.cap_rate ?? 0
     const cashOnCash = result?.cash_on_cash_return ?? 0
     const dscr = result?.dscr ?? 0
     const grm = grossRevenue > 0 ? inputs.purchase_price / grossRevenue : 0
     
     const breakevenPrice = result?.breakeven_price ?? inputs.purchase_price
+    
+    // Deal Score (Opportunity-Based)
+    // Score based on how much discount from list price is needed to reach breakeven
+    const discountPercent = inputs.purchase_price > 0 
+      ? Math.max(0, ((inputs.purchase_price - breakevenPrice) / inputs.purchase_price) * 100)
+      : 0
+    // 0% discount = 100 score, 45% discount = 0 score
+    const dealScore = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
     
     // Gauge needle calculation
     const gaugeAngle = 180 - (dealScore * 1.8)
@@ -194,6 +201,7 @@ export function StrWorksheet({
     return {
       grossRevenue, grossExpenses, noi, annualDebtService, annualCashFlow, monthlyCashFlow,
       totalCashNeeded, dealScore, capRate, cashOnCash, dscr, grm, breakevenPrice,
+      discountPercent,
       needleX, needleY,
       loanAmount: result?.loan_amount ?? 0,
       monthlyPayment: result?.monthly_payment ?? 0,
@@ -455,22 +463,27 @@ export function StrWorksheet({
   // VERDICT LOGIC
   // ============================================
   const isProfit = calc.annualCashFlow >= 0
+  // Opportunity-based verdict using discount percentage
+  const discountNeeded = calc.discountPercent ?? 0
   let verdict: string, verdictSub: string
-  if (calc.dealScore >= 85) {
-    verdict = "Great STR"
-    verdictSub = "Excellent short-term rental potential"
-  } else if (calc.dealScore >= 70) {
-    verdict = "Good STR"
-    verdictSub = "Solid STR fundamentals"
-  } else if (calc.dealScore >= 55) {
-    verdict = "Fair STR"
-    verdictSub = "Consider market conditions carefully"
-  } else if (isProfit) {
-    verdict = "Marginal STR"
-    verdictSub = "Thin margins - proceed with caution"
+  if (discountNeeded <= 5) {
+    verdict = "Strong Opportunity"
+    verdictSub = "Excellent deal - minimal negotiation needed"
+  } else if (discountNeeded <= 10) {
+    verdict = "Great Opportunity"
+    verdictSub = "Very good deal - reasonable negotiation required"
+  } else if (discountNeeded <= 15) {
+    verdict = "Moderate Opportunity"
+    verdictSub = "Good potential - negotiate firmly"
+  } else if (discountNeeded <= 25) {
+    verdict = "Potential Opportunity"
+    verdictSub = "Possible deal - significant discount needed"
+  } else if (discountNeeded <= 35) {
+    verdict = "Mild Opportunity"
+    verdictSub = "Challenging deal - major price reduction required"
   } else {
-    verdict = "Risky STR"
-    verdictSub = "Deal loses money as structured"
+    verdict = "Weak Opportunity"
+    verdictSub = "Not recommended - unrealistic discount needed"
   }
 
   const targets = [

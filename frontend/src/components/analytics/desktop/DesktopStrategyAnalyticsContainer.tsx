@@ -353,6 +353,7 @@ export function DesktopStrategyAnalyticsContainer({
                   strategy={activeStrategy}
                   metrics={currentMetrics}
                   iqTarget={iqTarget}
+                  assumptions={assumptions}
                 />
               )}
 
@@ -750,39 +751,45 @@ interface DesktopScoreTabContentProps {
   strategy: StrategyId
   metrics: ReturnType<typeof getMetricsAtPrice>
   iqTarget: IQTargetResult
+  assumptions: TargetAssumptions
 }
 
-function DesktopScoreTabContent({ strategy, metrics, iqTarget }: DesktopScoreTabContentProps) {
+function DesktopScoreTabContent({ strategy, metrics, iqTarget, assumptions }: DesktopScoreTabContentProps) {
   const hasRentalMetrics = 'monthlyCashFlow' in metrics && 'cashOnCash' in metrics && 'capRate' in metrics && 'dscr' in metrics
   
   const scoreData = useMemo(() => {
-    const cashFlow = hasRentalMetrics ? (metrics as { monthlyCashFlow: number }).monthlyCashFlow : 0
-    const cashOnCash = hasRentalMetrics ? (metrics as { cashOnCash: number }).cashOnCash : 0
-    const capRate = hasRentalMetrics ? (metrics as { capRate: number }).capRate : 0
-    const dscr = hasRentalMetrics ? (metrics as { dscr: number }).dscr : 0
+    // Use the opportunity-based scoring with breakeven and list price
+    const breakevenPrice = iqTarget.breakeven || assumptions.listPrice
+    const listPrice = assumptions.listPrice
     
-    return calculateDealScoreData({
-      cashFlow: cashFlow || 0,
-      cashOnCash: cashOnCash || 0,
-      capRate: capRate || 0,
-      onePercentRule: (iqTarget.monthlyCashFlow || 0) > 0 ? 0.01 : 0.008,
-      dscr: dscr || 0,
-      equityPotential: 0.15,
-      riskBuffer: 0.8
-    })
-  }, [metrics, iqTarget, hasRentalMetrics])
+    return calculateDealScoreData(breakevenPrice, listPrice)
+  }, [iqTarget, assumptions])
   
+  // Generate strengths and weaknesses based on opportunity score
   const strengths: string[] = []
   const weaknesses: string[] = []
   
+  // Opportunity-based insights
+  const discountNeeded = scoreData.discountPercent || 0
+  if (discountNeeded <= 5) {
+    strengths.push('Profitable near list price')
+  } else if (discountNeeded <= 10) {
+    strengths.push('Achievable with typical negotiation')
+  }
+  
   if (hasRentalMetrics) {
     const rentalMetrics = metrics as { monthlyCashFlow: number; cashOnCash: number; dscr: number }
-    if ((rentalMetrics.monthlyCashFlow || 0) >= 300) strengths.push('Strong monthly cash flow')
-    if ((rentalMetrics.cashOnCash || 0) >= 0.10) strengths.push('Excellent cash-on-cash return')
+    if ((rentalMetrics.monthlyCashFlow || 0) >= 300) strengths.push('Strong cash flow potential')
     if ((rentalMetrics.dscr || 0) >= 1.25) strengths.push('Good debt coverage')
     
-    if ((rentalMetrics.monthlyCashFlow || 0) < 100) weaknesses.push('Low cash flow margin')
-    if ((rentalMetrics.cashOnCash || 0) < 0.06) weaknesses.push('Below-average returns')
+    if ((rentalMetrics.monthlyCashFlow || 0) < 0) weaknesses.push('Negative cash flow at list price')
+    if ((rentalMetrics.dscr || 0) < 1.0) weaknesses.push('Income may not cover debt service')
+  }
+  
+  if (discountNeeded > 25) {
+    weaknesses.push(`Requires ${discountNeeded.toFixed(0)}% discount - may be unrealistic`)
+  } else if (discountNeeded > 15) {
+    weaknesses.push(`Needs significant negotiation (${discountNeeded.toFixed(0)}% off)`)
   }
   
   return (

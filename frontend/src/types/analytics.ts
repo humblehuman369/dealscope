@@ -143,8 +143,25 @@ export interface CalculatedMetrics {
 }
 
 // ============================================
-// DEAL SCORE
+// DEAL SCORE (Opportunity-Based Scoring)
 // ============================================
+
+/**
+ * Deal Score is based on Investment Opportunity
+ * 
+ * The score is calculated based on how much discount from list price 
+ * is needed to reach breakeven. Lower discount = better opportunity.
+ * 
+ * Thresholds:
+ * - 0-5% discount needed = Strong Opportunity (A+)
+ * - 5-10% = Great Opportunity (A)
+ * - 10-15% = Moderate Opportunity (B)
+ * - 15-25% = Potential Opportunity (C)
+ * - 25-35% = Mild Opportunity (D)
+ * - 35-45%+ = Weak Opportunity (F)
+ */
+
+export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
 
 export interface ScoreBreakdown {
   category: string;
@@ -157,9 +174,13 @@ export interface ScoreBreakdown {
 
 export interface DealScore {
   score: number;
-  grade: 'A' | 'A-' | 'B+' | 'B' | 'B-' | 'C+' | 'C' | 'C-' | 'D' | 'F';
+  grade: OpportunityGrade;
   verdict: string;
+  label: string;  // "Strong Opportunity", "Great Opportunity", etc.
   color: string;
+  discountPercent: number;  // How much discount from list needed
+  breakevenPrice: number;
+  listPrice: number;
   breakdown: ScoreBreakdown[];
   strengths: string[];
   concerns: string[];

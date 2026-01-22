@@ -237,8 +237,10 @@ export interface PerformanceRow {
 }
 
 // ============================================
-// DEAL SCORE
+// DEAL SCORE (Opportunity-Based)
 // ============================================
+
+export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'
 
 export interface ScoreItem {
   label: string
@@ -249,8 +251,12 @@ export interface ScoreItem {
 
 export interface DealScoreData {
   overall: number
-  grade: string
+  grade: OpportunityGrade
+  label: string  // "Strong Opportunity", "Great Opportunity", etc.
   verdict: string
+  discountPercent: number  // How much discount from list needed
+  breakevenPrice: number
+  listPrice: number
   items: ScoreItem[]
 }
 
@@ -272,7 +278,7 @@ export interface PropertyMiniData {
 // STRATEGY GRADE
 // ============================================
 
-export type GradeLevel = 'A' | 'B' | 'C' | 'D' | 'F'
+export type GradeLevel = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'
 
 export interface StrategyGrade {
   strategyId: StrategyId

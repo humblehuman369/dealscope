@@ -1,21 +1,23 @@
 /**
  * InvestIQ - Deal Scoring & Sensitivity Analysis
+ * 
+ * Deal Score is based on Investment Opportunity - how much discount from 
+ * list price is needed to reach breakeven. Lower discount = better opportunity.
  */
 
 // ============================================
-// DEAL SCORE CALCULATION
+// DEAL SCORE CALCULATION (Opportunity-Based)
 // ============================================
+
+export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'
 
 export interface DealScoreBreakdown {
   overall: number
-  cashFlow: number
-  cashOnCash: number
-  capRate: number
-  onePercentRule: number
-  dscr: number
-  equityPotential: number
-  riskLevel: number
-  grade: 'A+' | 'A' | 'B+' | 'B' | 'C+' | 'C' | 'D' | 'F'
+  discountPercent: number
+  breakevenPrice: number
+  listPrice: number
+  grade: OpportunityGrade
+  label: string
   verdict: string
   strengths: string[]
   weaknesses: string[]
@@ -33,184 +35,121 @@ export interface DealMetrics {
   monthlyRent: number
 }
 
-export function calculateDealScore(metrics: DealMetrics): DealScoreBreakdown {
+/**
+ * Calculate Deal Score based on Investment Opportunity
+ * 
+ * The score is based on how much discount from list price is needed
+ * to reach breakeven. Lower discount = better opportunity.
+ * 
+ * Thresholds:
+ * - 0-5% discount needed = Strong Opportunity (A+)
+ * - 5-10% = Great Opportunity (A)
+ * - 10-15% = Moderate Opportunity (B)
+ * - 15-25% = Potential Opportunity (C)
+ * - 25-35% = Mild Opportunity (D)
+ * - 35-45%+ = Weak Opportunity (F)
+ */
+export function calculateDealScore(
+  breakevenPrice: number,
+  listPrice: number,
+  metrics?: DealMetrics
+): DealScoreBreakdown {
+  // Calculate discount percentage needed to reach breakeven
+  const discountPercent = listPrice > 0 
+    ? Math.max(0, ((listPrice - breakevenPrice) / listPrice) * 100)
+    : 0
+  
+  // Score is inverse of discount (lower discount = higher score)
+  // 0% discount = 100 score, 45% discount = 0 score
+  const overall = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
+  
+  // Determine grade, label, verdict based on discount percentage
+  let grade: OpportunityGrade
+  let label: string
+  let verdict: string
+  
+  if (discountPercent <= 5) {
+    grade = 'A+'
+    label = 'Strong Opportunity'
+    verdict = 'Excellent deal - minimal negotiation needed'
+  } else if (discountPercent <= 10) {
+    grade = 'A'
+    label = 'Great Opportunity'
+    verdict = 'Very good deal - reasonable negotiation required'
+  } else if (discountPercent <= 15) {
+    grade = 'B'
+    label = 'Moderate Opportunity'
+    verdict = 'Good potential - negotiate firmly'
+  } else if (discountPercent <= 25) {
+    grade = 'C'
+    label = 'Potential Opportunity'
+    verdict = 'Possible deal - significant discount needed'
+  } else if (discountPercent <= 35) {
+    grade = 'D'
+    label = 'Mild Opportunity'
+    verdict = 'Challenging deal - major price reduction required'
+  } else {
+    grade = 'F'
+    label = 'Weak Opportunity'
+    verdict = 'Not recommended - unrealistic discount needed'
+  }
+  
+  // Generate insights
   const strengths: string[] = []
   const weaknesses: string[] = []
   
-  // Cash Flow Score (0-20 points)
-  // $0 = 0pts, $200 = 10pts, $500+ = 20pts
-  let cashFlowScore = 0
-  if (metrics.monthlyCashFlow >= 500) {
-    cashFlowScore = 20
-    strengths.push('Excellent cash flow')
-  } else if (metrics.monthlyCashFlow >= 300) {
-    cashFlowScore = 16
-    strengths.push('Strong cash flow')
-  } else if (metrics.monthlyCashFlow >= 200) {
-    cashFlowScore = 12
-  } else if (metrics.monthlyCashFlow >= 100) {
-    cashFlowScore = 8
-  } else if (metrics.monthlyCashFlow >= 0) {
-    cashFlowScore = 4
-    weaknesses.push('Low cash flow')
-  } else {
-    cashFlowScore = 0
-    weaknesses.push('Negative cash flow')
+  if (discountPercent <= 5) {
+    strengths.push('Profitable near list price')
+  } else if (discountPercent <= 10) {
+    strengths.push('Achievable with typical negotiation')
   }
   
-  // Cash-on-Cash Score (0-20 points)
-  // 0% = 0pts, 8% = 10pts, 12%+ = 20pts
-  let cocScore = 0
-  if (metrics.cashOnCash >= 0.15) {
-    cocScore = 20
-    strengths.push('Outstanding CoC return')
-  } else if (metrics.cashOnCash >= 0.12) {
-    cocScore = 18
-    strengths.push('Excellent CoC return')
-  } else if (metrics.cashOnCash >= 0.10) {
-    cocScore = 15
-    strengths.push('Good CoC return')
-  } else if (metrics.cashOnCash >= 0.08) {
-    cocScore = 12
-  } else if (metrics.cashOnCash >= 0.05) {
-    cocScore = 8
-    weaknesses.push('Below-average CoC return')
-  } else {
-    cocScore = Math.max(0, metrics.cashOnCash * 100)
-    weaknesses.push('Poor CoC return')
+  if (metrics) {
+    if (metrics.monthlyCashFlow >= 300) {
+      strengths.push(`Strong cash flow potential ($${Math.round(metrics.monthlyCashFlow)}/mo)`)
+    }
+    if (metrics.dscr >= 1.25) {
+      strengths.push(`Good debt coverage (DSCR: ${metrics.dscr.toFixed(2)})`)
+    }
+    if (metrics.monthlyCashFlow < 0) {
+      weaknesses.push('Negative cash flow at list price')
+    }
+    if (metrics.dscr < 1.0) {
+      weaknesses.push('Income may not cover debt service')
+    }
   }
   
-  // Cap Rate Score (0-15 points)
-  let capRateScore = 0
-  if (metrics.capRate >= 0.08) {
-    capRateScore = 15
-    strengths.push('High cap rate')
-  } else if (metrics.capRate >= 0.06) {
-    capRateScore = 12
-  } else if (metrics.capRate >= 0.05) {
-    capRateScore = 9
-  } else if (metrics.capRate >= 0.04) {
-    capRateScore = 6
-    weaknesses.push('Low cap rate')
-  } else {
-    capRateScore = 3
-    weaknesses.push('Very low cap rate')
-  }
-  
-  // 1% Rule Score (0-15 points)
-  let onePercentScore = 0
-  if (metrics.onePercentRule >= 0.012) {
-    onePercentScore = 15
-    strengths.push('Exceeds 1% rule')
-  } else if (metrics.onePercentRule >= 0.01) {
-    onePercentScore = 12
-    strengths.push('Meets 1% rule')
-  } else if (metrics.onePercentRule >= 0.008) {
-    onePercentScore = 8
-  } else if (metrics.onePercentRule >= 0.006) {
-    onePercentScore = 4
-    weaknesses.push('Below 1% rule')
-  } else {
-    onePercentScore = 0
-    weaknesses.push('Far below 1% rule')
-  }
-  
-  // DSCR Score (0-15 points)
-  let dscrScore = 0
-  if (metrics.dscr >= 1.5) {
-    dscrScore = 15
-    strengths.push('Strong debt coverage')
-  } else if (metrics.dscr >= 1.25) {
-    dscrScore = 12
-  } else if (metrics.dscr >= 1.1) {
-    dscrScore = 8
-  } else if (metrics.dscr >= 1.0) {
-    dscrScore = 5
-    weaknesses.push('Tight debt coverage')
-  } else {
-    dscrScore = 0
-    weaknesses.push('Insufficient debt coverage')
-  }
-  
-  // Equity Potential Score (0-10 points)
-  const equityUpside = metrics.arv > metrics.purchasePrice 
-    ? (metrics.arv - metrics.purchasePrice) / metrics.purchasePrice 
-    : 0
-  let equityScore = 0
-  if (equityUpside >= 0.20) {
-    equityScore = 10
-    strengths.push('High equity potential')
-  } else if (equityUpside >= 0.10) {
-    equityScore = 7
-  } else if (equityUpside >= 0.05) {
-    equityScore = 4
-  } else {
-    equityScore = 2
-  }
-  
-  // Risk Score (0-5 points) - based on cash cushion
-  const cashCushion = metrics.totalCashRequired > 0 
-    ? (metrics.monthlyCashFlow * 12) / metrics.totalCashRequired 
-    : 0
-  let riskScore = 0
-  if (cashCushion >= 0.10) {
-    riskScore = 5
-  } else if (cashCushion >= 0.05) {
-    riskScore = 3
-  } else {
-    riskScore = 1
-    if (metrics.monthlyCashFlow < 100) weaknesses.push('Low cash cushion')
-  }
-  
-  // Calculate overall score
-  const overall = Math.round(
-    cashFlowScore + cocScore + capRateScore + onePercentScore + dscrScore + equityScore + riskScore
-  )
-  
-  // Determine grade
-  let grade: DealScoreBreakdown['grade']
-  let verdict: string
-  
-  if (overall >= 90) {
-    grade = 'A+'
-    verdict = 'Exceptional deal - Act fast!'
-  } else if (overall >= 80) {
-    grade = 'A'
-    verdict = 'Excellent deal - Strongly consider'
-  } else if (overall >= 70) {
-    grade = 'B+'
-    verdict = 'Good deal - Worth pursuing'
-  } else if (overall >= 60) {
-    grade = 'B'
-    verdict = 'Decent deal - Proceed with caution'
-  } else if (overall >= 50) {
-    grade = 'C+'
-    verdict = 'Average deal - Negotiate harder'
-  } else if (overall >= 40) {
-    grade = 'C'
-    verdict = 'Below average - Consider alternatives'
-  } else if (overall >= 30) {
-    grade = 'D'
-    verdict = 'Poor deal - Not recommended'
-  } else {
-    grade = 'F'
-    verdict = 'Bad deal - Walk away'
+  if (discountPercent > 25) {
+    weaknesses.push(`Requires ${discountPercent.toFixed(0)}% discount - may be unrealistic`)
+  } else if (discountPercent > 15) {
+    weaknesses.push(`Needs significant negotiation (${discountPercent.toFixed(0)}% off)`)
   }
   
   return {
     overall,
-    cashFlow: cashFlowScore,
-    cashOnCash: cocScore,
-    capRate: capRateScore,
-    onePercentRule: onePercentScore,
-    dscr: dscrScore,
-    equityPotential: equityScore,
-    riskLevel: riskScore,
+    discountPercent,
+    breakevenPrice,
+    listPrice,
     grade,
+    label,
     verdict,
     strengths: strengths.slice(0, 4),
     weaknesses: weaknesses.slice(0, 4)
   }
+}
+
+/**
+ * Legacy function for backwards compatibility
+ * Uses metrics to estimate breakeven internally
+ */
+export function calculateDealScoreFromMetrics(metrics: DealMetrics): DealScoreBreakdown {
+  // Estimate breakeven as purchase price adjusted for cash flow
+  // This is a simplified estimate - actual calculation should use binary search
+  const monthlyDeficit = metrics.monthlyCashFlow < 0 ? Math.abs(metrics.monthlyCashFlow) : 0
+  const annualDeficit = monthlyDeficit * 12
+  const breakevenEstimate = metrics.purchasePrice - (annualDeficit * 10) // Rough estimate
+  
+  return calculateDealScore(breakevenEstimate, metrics.purchasePrice, metrics)
 }
 
 // ============================================

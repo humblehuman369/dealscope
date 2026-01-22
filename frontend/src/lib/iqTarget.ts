@@ -73,6 +73,102 @@ export interface TargetAssumptions {
 }
 
 // ============================================
+// OPPORTUNITY SCORE CALCULATION
+// ============================================
+
+export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'
+
+export interface OpportunityScore {
+  score: number           // 0-100 (inverted from discount %)
+  discountPercent: number // How much below list needed to reach breakeven
+  grade: OpportunityGrade
+  label: string           // "Strong Opportunity", etc.
+  color: string           // For UI display
+  breakevenPrice: number
+  listPrice: number
+}
+
+/**
+ * Calculate Deal Score based on Investment Opportunity
+ * 
+ * The score is based on how much discount from list price is needed
+ * to reach breakeven. Lower discount = better opportunity.
+ * 
+ * Thresholds:
+ * - 0-5% discount needed = Strong Opportunity (A+)
+ * - 5-10% = Great Opportunity (A)
+ * - 10-15% = Moderate Opportunity (B)
+ * - 15-25% = Potential Opportunity (C)
+ * - 25-35% = Mild Opportunity (D)
+ * - 35-45%+ = Weak Opportunity (F)
+ */
+export function calculateOpportunityScore(
+  breakevenPrice: number,
+  listPrice: number
+): OpportunityScore {
+  // Calculate discount percentage needed to reach breakeven
+  // If breakeven > list price, that means the property is already profitable at list
+  const discountPercent = listPrice > 0 
+    ? Math.max(0, ((listPrice - breakevenPrice) / listPrice) * 100)
+    : 0
+  
+  // Score is inverse of discount (lower discount = higher score)
+  // 0% discount = 100 score, 45% discount = 0 score
+  const score = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
+  
+  let grade: OpportunityGrade
+  let label: string
+  let color: string
+  
+  if (discountPercent <= 5) {
+    grade = 'A+'
+    label = 'Strong Opportunity'
+    color = '#22c55e' // green-500
+  } else if (discountPercent <= 10) {
+    grade = 'A'
+    label = 'Great Opportunity'
+    color = '#22c55e' // green-500
+  } else if (discountPercent <= 15) {
+    grade = 'B'
+    label = 'Moderate Opportunity'
+    color = '#84cc16' // lime-500
+  } else if (discountPercent <= 25) {
+    grade = 'C'
+    label = 'Potential Opportunity'
+    color = '#f97316' // orange-500
+  } else if (discountPercent <= 35) {
+    grade = 'D'
+    label = 'Mild Opportunity'
+    color = '#f97316' // orange-500
+  } else {
+    grade = 'F'
+    label = 'Weak Opportunity'
+    color = '#ef4444' // red-500
+  }
+  
+  return {
+    score,
+    discountPercent,
+    grade,
+    label,
+    color,
+    breakevenPrice,
+    listPrice
+  }
+}
+
+/**
+ * Get opportunity score from IQ Target result
+ * Convenience function that extracts breakeven and list price from IQ Target
+ */
+export function getOpportunityScoreFromTarget(
+  iqTarget: IQTargetResult,
+  listPrice: number
+): OpportunityScore {
+  return calculateOpportunityScore(iqTarget.breakeven, listPrice)
+}
+
+// ============================================
 // STRATEGY-SPECIFIC CALCULATIONS
 // ============================================
 
