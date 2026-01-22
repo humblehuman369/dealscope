@@ -137,7 +137,9 @@ export function LTRWorksheet({
   // Strategy switcher state
   const [isStrategyDropdownOpen, setIsStrategyDropdownOpen] = useState(false)
   const { activeStrategy, setActiveStrategy } = useUIStore()
-  const currentStrategy = strategies.find(s => s.id === activeStrategy) || strategies[0]
+  
+  // This worksheet's strategy - always LTR
+  const thisStrategy = { id: 'ltr', label: 'Long-term Rental' }
   
   // Mobile compressed view - show below 640px (sm breakpoint)
   const isMobileCompressed = useIsMobile(640)

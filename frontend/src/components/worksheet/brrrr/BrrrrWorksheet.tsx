@@ -70,7 +70,9 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
   // Strategy switcher state
   const [isStrategyDropdownOpen, setIsStrategyDropdownOpen] = useState(false)
   const { activeStrategy, setActiveStrategy } = useUIStore()
-  const currentStrategy = strategies.find(s => s.id === activeStrategy) || strategies[2] // Default to BRRRR
+  
+  // This worksheet's strategy - always BRRRR
+  const thisStrategy = { id: 'brrrr', label: 'BRRRR' }
   
   // Get active section from store for tab navigation
   const { activeSection } = useWorksheetStore()

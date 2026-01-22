@@ -134,7 +134,9 @@ export function StrWorksheet({
   // Strategy switcher state
   const [isStrategyDropdownOpen, setIsStrategyDropdownOpen] = useState(false)
   const { activeStrategy, setActiveStrategy } = useUIStore()
-  const currentStrategy = strategies.find(s => s.id === activeStrategy) || strategies[1] // Default to STR
+  
+  // This worksheet's strategy - always STR
+  const thisStrategy = { id: 'str', label: 'Short-term Rental' }
   
   // Get active section from store for tab navigation
   const { activeSection } = useWorksheetStore()

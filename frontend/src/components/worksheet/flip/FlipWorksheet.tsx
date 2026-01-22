@@ -113,7 +113,9 @@ export function FlipWorksheet({
   // Strategy switcher state
   const [isStrategyDropdownOpen, setIsStrategyDropdownOpen] = useState(false)
   const { activeStrategy, setActiveStrategy } = useUIStore()
-  const currentStrategy = strategies.find(s => s.id === activeStrategy) || strategies[3] // Default to Flip
+  
+  // This worksheet's strategy - always Fix & Flip
+  const thisStrategy = { id: 'flip', label: 'Fix & Flip' }
   
   // Get active section from store for tab navigation
   const { activeSection } = useWorksheetStore()
