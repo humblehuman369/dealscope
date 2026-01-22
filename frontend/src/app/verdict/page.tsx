@@ -196,6 +196,24 @@ function VerdictContent() {
         setProperty(propertyData)
         
         // Fetch analysis from backend API (all calculations done server-side)
+        // Use same fallback logic as worksheet to ensure consistency
+        const listPriceForCalc = propertyData.price
+        const rentForCalc = propertyData.monthlyRent || (listPriceForCalc * 0.007) // 0.7% rule
+        const taxesForCalc = propertyData.propertyTaxes || (listPriceForCalc * 0.012) // ~1.2%
+        const insuranceForCalc = propertyData.insurance || (listPriceForCalc * 0.01) // 1%
+        
+        console.log('[IQ Verdict] Calculation inputs:', {
+          list_price: listPriceForCalc,
+          monthly_rent: rentForCalc,
+          property_taxes: taxesForCalc,
+          insurance: insuranceForCalc,
+          provided: {
+            rent: propertyData.monthlyRent,
+            taxes: propertyData.propertyTaxes,
+            insurance: propertyData.insurance,
+          }
+        })
+        
         try {
           const analysisResponse = await fetch('/api/v1/analysis/verdict', {
             method: 'POST',
@@ -203,10 +221,10 @@ function VerdictContent() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              list_price: propertyData.price,
-              monthly_rent: propertyData.monthlyRent,
-              property_taxes: propertyData.propertyTaxes,
-              insurance: propertyData.insurance,
+              list_price: listPriceForCalc,
+              monthly_rent: rentForCalc,
+              property_taxes: taxesForCalc,
+              insurance: insuranceForCalc,
               bedrooms: propertyData.beds,
               bathrooms: propertyData.baths,
               sqft: propertyData.sqft,
@@ -217,7 +235,10 @@ function VerdictContent() {
           })
           
           if (analysisResponse.ok) {
-            const analysisData: BackendAnalysisResponse = await analysisResponse.json()
+            const analysisData = await analysisResponse.json()
+            
+            // Log the full response for debugging
+            console.log('[IQ Verdict] Backend response:', analysisData)
             
             // Convert backend response to frontend IQAnalysisResult format
             const analysisResult: IQAnalysisResult = {
@@ -229,7 +250,9 @@ function VerdictContent() {
               purchasePrice: analysisData.purchase_price,
               breakevenPrice: analysisData.breakeven_price,
               listPrice: analysisData.list_price,
-              strategies: analysisData.strategies.map(s => ({
+              // Include inputs used for transparency
+              inputsUsed: analysisData.inputs_used,
+              strategies: analysisData.strategies.map((s: BackendAnalysisResponse['strategies'][0]) => ({
                 id: s.id as IQStrategy['id'],
                 name: s.name,
                 icon: getStrategyIcon(s.id),

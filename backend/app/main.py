@@ -518,6 +518,8 @@ class IQVerdictResponse(BaseModel):
     purchase_price: float  # The recommended purchase price (95% of breakeven)
     breakeven_price: float
     list_price: float
+    # Inputs used for calculation (for transparency/debugging)
+    inputs_used: dict
     defaults_used: dict
 
 
@@ -845,18 +847,28 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
         list_price = input_data.list_price
         
         # Use provided data or estimate from list price
+        # NOTE: 0.7% of list price is the "1% rule" for monthly rent estimate
         monthly_rent = input_data.monthly_rent or (list_price * 0.007)
-        property_taxes = input_data.property_taxes or (list_price * 0.012)
-        insurance = input_data.insurance or (list_price * OPERATING.insurance_pct)
+        property_taxes = input_data.property_taxes or (list_price * 0.012)  # ~1.2% is typical
+        insurance = input_data.insurance or (list_price * OPERATING.insurance_pct)  # 1%
         arv = input_data.arv or (list_price * 1.15)
         rehab_cost = arv * REHAB.renovation_budget_pct
         adr = input_data.average_daily_rate or ((monthly_rent / 30) * 1.5)
         occupancy = input_data.occupancy_rate or 0.65
         bedrooms = input_data.bedrooms
         
+        # Log inputs for debugging
+        logger.info(f"IQ Verdict inputs: list_price=${list_price:,.0f}, monthly_rent=${monthly_rent:,.0f}, "
+                   f"property_taxes=${property_taxes:,.0f}, insurance=${insurance:,.0f}")
+        logger.info(f"  Provided values: rent={input_data.monthly_rent}, taxes={input_data.property_taxes}, "
+                   f"insurance={input_data.insurance}")
+        
         # Calculate breakeven and target purchase price
         breakeven = estimate_breakeven_price(monthly_rent, property_taxes, insurance)
         target_price = calculate_target_purchase_price(list_price, monthly_rent, property_taxes, insurance)
+        
+        # Log calculation results
+        logger.info(f"  Breakeven=${breakeven:,.0f}, Target Purchase=${target_price:,.0f}")
         
         # Calculate all strategies using target price (95% of breakeven)
         strategies = [
@@ -901,6 +913,17 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
             purchase_price=target_price,  # Recommended purchase price (95% of breakeven)
             breakeven_price=breakeven,
             list_price=list_price,
+            inputs_used={
+                "monthly_rent": monthly_rent,
+                "property_taxes": property_taxes,
+                "insurance": insurance,
+                "arv": arv,
+                "rehab_cost": rehab_cost,
+                "bedrooms": bedrooms,
+                "provided_rent": input_data.monthly_rent,
+                "provided_taxes": input_data.property_taxes,
+                "provided_insurance": input_data.insurance,
+            },
             defaults_used=get_all_defaults(),
         )
         

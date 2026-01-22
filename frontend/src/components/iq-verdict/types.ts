@@ -75,6 +75,18 @@ export interface IQAnalysisResult {
   breakevenPrice?: number;      // Price where cash flow = 0
   listPrice?: number;           // Original list price
   strategies: IQStrategy[];     // Sorted by rank (1-6)
+  // Inputs used for calculation (for transparency/debugging)
+  inputsUsed?: {
+    monthly_rent: number;
+    property_taxes: number;
+    insurance: number;
+    arv: number;
+    rehab_cost: number;
+    bedrooms: number;
+    provided_rent: number | null;
+    provided_taxes: number | null;
+    provided_insurance: number | null;
+  };
 }
 
 export type IQDealVerdict = 
