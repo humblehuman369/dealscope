@@ -49,3 +49,5 @@ resend==0.7.0
 # NEW: Billing (Phase 8)
 # ===========================================
 stripe==7.0.0
+
+# Force rebuild trigger: 2026-01-22-v2
