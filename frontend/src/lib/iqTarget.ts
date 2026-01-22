@@ -73,6 +73,37 @@ export interface TargetAssumptions {
 }
 
 // ============================================
+// DEFAULT CONSTANTS
+// ============================================
+
+/**
+ * Default target purchase price as percentage of breakeven
+ * 95% of breakeven means buying 5% below the break-even point
+ * ensuring immediate profitability
+ */
+export const DEFAULT_TARGET_PURCHASE_PCT = 0.95
+
+/**
+ * Default insurance as percentage of purchase price
+ */
+export const DEFAULT_INSURANCE_PCT = 0.01
+
+/**
+ * Default renovation budget as percentage of ARV
+ */
+export const DEFAULT_RENOVATION_BUDGET_PCT = 0.05
+
+/**
+ * Default holding costs as percentage of purchase price (annual)
+ */
+export const DEFAULT_HOLDING_COSTS_PCT = 0.01
+
+/**
+ * Default refinance closing costs as percentage of refinance amount
+ */
+export const DEFAULT_REFINANCE_CLOSING_COSTS_PCT = 0.03
+
+// ============================================
 // OPPORTUNITY SCORE CALCULATION
 // ============================================
 

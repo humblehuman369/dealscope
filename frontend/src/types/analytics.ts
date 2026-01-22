@@ -74,7 +74,7 @@ export const DEFAULT_INPUTS: AnalyticsInputs = {
   rehabCosts: 0,
 
   // Financing
-  interestRate: 7.0,
+  interestRate: 6.0,        // 6% (was 7.0%)
   loanTermYears: 30,
   loanType: 'conventional',
 
@@ -83,19 +83,19 @@ export const DEFAULT_INPUTS: AnalyticsInputs = {
   otherIncome: 0,
 
   // Operating Expenses
-  vacancyRate: 5,
-  maintenanceRate: 5,
-  managementRate: 0,
+  vacancyRate: 1,           // 1% (was 5%)
+  maintenanceRate: 5,       // 5%
+  managementRate: 0,        // 0%
   annualPropertyTax: 0,
-  annualInsurance: 0,
+  annualInsurance: 0,       // Will be calculated as 1% of purchase price
   monthlyHoa: 0,
-  utilities: 0,
+  utilities: 100,           // $100/mo (was 0)
 
   // Projection Assumptions
-  appreciationRate: 3,
-  rentGrowthRate: 3,
-  expenseGrowthRate: 2,
-  sellingCostsPercent: 6,
+  appreciationRate: 5,      // 5% (was 3%)
+  rentGrowthRate: 5,        // 5% (was 3%)
+  expenseGrowthRate: 3,     // 3% (was 2%)
+  sellingCostsPercent: 6,   // 6%
 };
 
 // ============================================

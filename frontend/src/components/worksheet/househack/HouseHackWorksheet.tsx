@@ -83,24 +83,33 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
   const state = property.address_state || ''
   const zip = property.address_zip || ''
 
-  // STATE
-  const [purchasePrice, setPurchasePrice] = useState(propertyData.listPrice || 400000)
-  const [downPaymentPct, setDownPaymentPct] = useState(5)
+  // STATE - Updated defaults per default_assumptions.csv
+  const defaultPurchasePrice = propertyData.listPrice || 400000
+  const defaultInsurance = propertyData.insurance || (defaultPurchasePrice * 0.01) // 1% of purchase price
+  const defaultBedrooms = propertyData.bedrooms || 4
+  const defaultMonthlyRent = propertyData.monthlyRent || 2400 // Total rent for property
+  // Room rent formula: (monthlyRent / bedrooms) * units_rented_out
+  const rentPerRoom = defaultMonthlyRent / defaultBedrooms
+  const defaultRoomRent = Math.round(rentPerRoom * 2) // 2 units rented out by default
+  const defaultMarketRent = Math.round(rentPerRoom)   // Owner unit market rent = rent per room
+  
+  const [purchasePrice, setPurchasePrice] = useState(defaultPurchasePrice)
+  const [downPaymentPct, setDownPaymentPct] = useState(3.5)               // 3.5% FHA (was 5%)
   const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)
-  const [interestRate, setInterestRate] = useState(7.0)
+  const [interestRate, setInterestRate] = useState(6.0)                   // 6% (was 7.0%)
   const [loanTerm, setLoanTerm] = useState(30)
   const [propertyType, setPropertyType] = useState<'duplex' | 'triplex' | 'fourplex'>('duplex')
   const [ownerUnit, setOwnerUnit] = useState(0)
-  const [unit1Rent, setUnit1Rent] = useState(1500)
-  const [unit2Rent, setUnit2Rent] = useState(1500)
-  const [unit3Rent, setUnit3Rent] = useState(1200)
-  const [unit4Rent, setUnit4Rent] = useState(1200)
-  const [vacancyRate, setVacancyRate] = useState(5)
+  const [unit1Rent, setUnit1Rent] = useState(defaultRoomRent)             // Calculated from formula
+  const [unit2Rent, setUnit2Rent] = useState(Math.round(rentPerRoom))     // Rent per room
+  const [unit3Rent, setUnit3Rent] = useState(Math.round(rentPerRoom))
+  const [unit4Rent, setUnit4Rent] = useState(Math.round(rentPerRoom))
+  const [vacancyRate, setVacancyRate] = useState(1)                       // 1% (was 5%)
   const [propertyTaxes, setPropertyTaxes] = useState(propertyData.propertyTaxes || 5000)
-  const [insurance, setInsurance] = useState(propertyData.insurance || 2400)
+  const [insurance, setInsurance] = useState(defaultInsurance)            // 1% of purchase price
   const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)
   const [maintenancePct, setMaintenancePct] = useState(5)
-  const [marketRent, setMarketRent] = useState(1800)
+  const [marketRent, setMarketRent] = useState(defaultMarketRent)         // Rent per room
   
   // Hybrid accordion mode
   const [currentSection, setCurrentSection] = useState<number | null>(0)

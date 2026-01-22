@@ -130,20 +130,25 @@ export function FlipWorksheet({
   const zip = property.address_zip || ''
 
   // ============================================
-  // STATE
+  // STATE - Updated defaults per default_assumptions.csv
   // ============================================
-  const [purchasePrice, setPurchasePrice] = useState(propertyData.listPrice || 300000)
-  const [rehabCosts, setRehabCosts] = useState(50000)
-  const [purchaseCostsPct, setPurchaseCostsPct] = useState(2)
-  const [financingPct, setFinancingPct] = useState(90)
-  const [interestRate, setInterestRate] = useState(12)
+  const defaultPurchasePrice = propertyData.listPrice || 300000
+  const defaultArv = propertyData.arv || defaultPurchasePrice * 1.35
+  const defaultInsurance = propertyData.insurance || (defaultPurchasePrice * 0.01) // 1% of purchase price
+  const defaultRehabCosts = defaultArv * 0.05 // 5% of ARV
+  
+  const [purchasePrice, setPurchasePrice] = useState(defaultPurchasePrice)
+  const [rehabCosts, setRehabCosts] = useState(defaultRehabCosts)         // 5% of ARV
+  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)             // 3% (was 2%)
+  const [financingPct, setFinancingPct] = useState(80)                    // 80% (was 90%)
+  const [interestRate, setInterestRate] = useState(12)                    // 12% hard money
   const [loanPoints, setLoanPoints] = useState(2)
-  const [arv, setArv] = useState(propertyData.arv || (propertyData.listPrice || 300000) * 1.35)
+  const [arv, setArv] = useState(defaultArv)
   const [holdingMonths, setHoldingMonths] = useState(6)
   const [propertyTaxes, setPropertyTaxes] = useState(propertyData.propertyTaxes || 4000)
-  const [insurance, setInsurance] = useState(propertyData.insurance || 2400)
-  const [utilities, setUtilities] = useState(300)
-  const [sellingCostsPct, setSellingCostsPct] = useState(8)
+  const [insurance, setInsurance] = useState(defaultInsurance)            // 1% of purchase price
+  const [utilities, setUtilities] = useState(100)                         // $100 (was $300)
+  const [sellingCostsPct, setSellingCostsPct] = useState(6)               // 6% (was 8%)
   
   // Hybrid accordion mode
   const [currentSection, setCurrentSection] = useState<number | null>(0)

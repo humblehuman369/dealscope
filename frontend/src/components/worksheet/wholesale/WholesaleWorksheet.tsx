@@ -81,14 +81,18 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   const state = property.address_state || ''
   const zip = property.address_zip || ''
 
-  // STATE
-  const [contractPrice, setContractPrice] = useState(propertyData.listPrice || 200000)
-  const [arv, setArv] = useState(propertyData.arv || (propertyData.listPrice || 200000) * 1.4)
-  const [rehabCosts, setRehabCosts] = useState(40000)
-  const [assignmentFee, setAssignmentFee] = useState(10000)
-  const [earnestMoney, setEarnestMoney] = useState(1000)
-  const [marketingCosts, setMarketingCosts] = useState(500)
-  const [closingCostsPct, setClosingCostsPct] = useState(2)
+  // STATE - Updated defaults per default_assumptions.csv
+  const defaultContractPrice = propertyData.listPrice || 200000
+  const defaultArv = propertyData.arv || defaultContractPrice * 1.4
+  const defaultRehabCosts = defaultArv * 0.05 // 5% of ARV
+  
+  const [contractPrice, setContractPrice] = useState(defaultContractPrice)
+  const [arv, setArv] = useState(defaultArv)
+  const [rehabCosts, setRehabCosts] = useState(defaultRehabCosts)         // 5% of ARV
+  const [assignmentFee, setAssignmentFee] = useState(15000)               // $15,000 (was $10,000)
+  const [earnestMoney, setEarnestMoney] = useState(1000)                  // $1,000
+  const [marketingCosts, setMarketingCosts] = useState(500)               // $500
+  const [closingCostsPct, setClosingCostsPct] = useState(3)               // 3% (was 2%)
   const [buyerTargetProfit, setBuyerTargetProfit] = useState(25)
   
   // Hybrid accordion mode

@@ -60,27 +60,30 @@ export interface HouseHackResult {
   fha_max_price: number
 }
 
+// Default percentages for calculated fields
+const DEFAULT_INSURANCE_PCT = 0.01        // 1% of purchase price annually
+
 const defaultInputs: HouseHackInputs = {
   property_type: '2',
   purchase_price: 425000,
-  down_payment_pct: 0.05,
+  down_payment_pct: 0.035,               // 3.5% FHA (was 5%)
   closing_costs: 8625,
-  interest_rate: 0.0725,
+  interest_rate: 0.06,                   // 6% (was 7.25%)
   loan_term_years: 30,
-  pmi_rate: 0.008,
+  pmi_rate: 0.0085,                      // 0.85% MIP (was 0.8%)
   unit2_rent: 1800,
   unit3_rent: 1600,
   unit4_rent: 1500,
-  vacancy_rate: 0.05,
+  vacancy_rate: 0.01,                    // 1% (was 5%)
   property_taxes_monthly: 354,
-  insurance_monthly: 175,
-  maintenance_pct: 0.05,
-  capex_pct: 0.05,
-  utilities_monthly: 150,
+  insurance_monthly: (425000 * DEFAULT_INSURANCE_PCT) / 12, // 1% of purchase price annually
+  maintenance_pct: 0.05,                 // 5%
+  capex_pct: 0.05,                       // 5%
+  utilities_monthly: 100,                // $100 (was $150)
   owner_market_rent: 2200,
   list_price: 449000,
   fha_max_price: 472030,
-  loan_type: 'conventional',
+  loan_type: 'fha',                      // Default to FHA (was conventional)
 }
 
 const getUnitsCount = (propertyType: PropertyTypeOption) => {
@@ -100,14 +103,30 @@ export function useHouseHackWorksheetCalculator(property: SavedProperty | null) 
 
     const data = property.property_data_snapshot || {}
     const listPrice = data.listPrice ?? defaultInputs.purchase_price
+    const bedrooms = data.bedrooms ?? 3 // Default to 3 bedrooms if not provided
+    const monthlyRent = data.monthlyRent ?? defaultInputs.unit2_rent
+    
+    // Calculate insurance as 1% of purchase price annually
+    const insuranceMonthly = data.insurance 
+      ? data.insurance / 12 
+      : (listPrice * DEFAULT_INSURANCE_PCT) / 12
+    
+    // Calculate room rent: (monthlyRent / bedrooms) * units_rented_out
+    // Default units_rented_out = 2
+    const rentPerRoom = monthlyRent / bedrooms
+    const roomRentMonthly = rentPerRoom * 2 // 2 units rented out by default
+    
+    // Owner unit market rent = monthlyRent / bedrooms (rent per room)
+    const ownerUnitMarketRent = rentPerRoom
 
     setInputs((prev) => ({
       ...prev,
       purchase_price: listPrice,
       list_price: listPrice * 1.056,
       property_taxes_monthly: (data.propertyTaxes ?? (prev.property_taxes_monthly * 12)) / 12,
-      insurance_monthly: (data.insurance ?? (prev.insurance_monthly * 12)) / 12,
-      unit2_rent: data.monthlyRent ?? prev.unit2_rent,
+      insurance_monthly: insuranceMonthly,
+      unit2_rent: roomRentMonthly,
+      owner_market_rent: ownerUnitMarketRent,
     }))
 
     hasInitialized.current = true

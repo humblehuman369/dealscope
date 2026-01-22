@@ -162,19 +162,23 @@ export function LTRWorksheet({
   // ============================================
   // STATE
   // ============================================
-  const [purchasePrice, setPurchasePrice] = useState(propertyData.listPrice || 723600)
-  const [downPaymentPct, setDownPaymentPct] = useState(20)
-  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)
-  const [interestRate, setInterestRate] = useState(7.0)
+  // Default insurance as 1% of purchase price
+  const defaultPurchasePrice = propertyData.listPrice || 723600
+  const defaultInsurance = propertyData.insurance || (defaultPurchasePrice * 0.01)
+  
+  const [purchasePrice, setPurchasePrice] = useState(defaultPurchasePrice)
+  const [downPaymentPct, setDownPaymentPct] = useState(20)              // 20%
+  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)           // 3%
+  const [interestRate, setInterestRate] = useState(6.0)                 // 6% (was 7.0%)
   const [loanTerm, setLoanTerm] = useState(30)
   const [rehabCosts, setRehabCosts] = useState(0)
-  const [arv, setArv] = useState(propertyData.arv || (propertyData.listPrice || 723600) * 1.1 || 795960)
+  const [arv, setArv] = useState(propertyData.arv || defaultPurchasePrice * 1.1 || 795960)
   const [monthlyRent, setMonthlyRent] = useState(propertyData.monthlyRent || 8081)
-  const [vacancyRate, setVacancyRate] = useState(8)
+  const [vacancyRate, setVacancyRate] = useState(1)                     // 1% (was 8%)
   const [propertyTaxes, setPropertyTaxes] = useState(propertyData.propertyTaxes || 6471)
-  const [insurance, setInsurance] = useState(propertyData.insurance || 2894)
-  const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)
-  const [maintenancePct, setMaintenancePct] = useState(2)
+  const [insurance, setInsurance] = useState(defaultInsurance)          // 1% of purchase price
+  const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)             // 0%
+  const [maintenancePct, setMaintenancePct] = useState(5)               // 5% (was 2%)
   const [capExPct, setCapExPct] = useState(0)
   const [hoaFees, setHoaFees] = useState(0)
   

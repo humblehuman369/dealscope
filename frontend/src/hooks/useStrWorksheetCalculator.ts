@@ -69,23 +69,26 @@ export interface StrWorksheetResult {
   }
 }
 
+// Default insurance as 1% of purchase price
+const DEFAULT_INSURANCE_PCT = 0.01
+
 const defaultInputs: StrWorksheetInputs = {
   purchase_price: 485000,
   purchase_costs: 14550,
-  furnishing_budget: 20000,
-  down_payment_pct: 0.25,
-  interest_rate: 0.075,
+  furnishing_budget: 6000,           // $6,000 (updated)
+  down_payment_pct: 0.20,            // 20% (was 25%)
+  interest_rate: 0.06,               // 6% (was 7.5%)
   loan_term_years: 30,
   average_daily_rate: 280,
   occupancy_rate: 0.7,
-  cleaning_fee_revenue: 150,
-  avg_booking_length: 5,
-  platform_fees_pct: 0.12,
-  property_management_pct: 0.2,
-  cleaning_cost_per_turn: 100,
-  supplies_monthly: 250,
-  utilities_monthly: 350,
-  insurance_annual: 250 * 12,
+  cleaning_fee_revenue: 75,          // $75 (was 150)
+  avg_booking_length: 6,             // 6 days (was 5)
+  platform_fees_pct: 0.15,           // 15% (was 12%)
+  property_management_pct: 0.10,     // 10% (was 20%)
+  cleaning_cost_per_turn: 150,       // $150 (was 100)
+  supplies_monthly: 100,             // $100 (was 250)
+  utilities_monthly: 100,            // $100 (was 350) - no additional utilities for STR
+  insurance_annual: 485000 * DEFAULT_INSURANCE_PCT, // 1% of purchase price (was fixed)
   property_taxes_annual: 485 * 12,
   maintenance_pct: 0.05,
   capex_pct: 0.05,
@@ -104,7 +107,8 @@ export function useStrWorksheetCalculator(property: SavedProperty | null) {
     const data = property.property_data_snapshot || {}
     const listPrice = data.listPrice ?? defaultInputs.purchase_price
     const propertyTaxes = data.propertyTaxes ?? defaultInputs.property_taxes_annual
-    const insurance = data.insurance ?? defaultInputs.insurance_annual
+    // Calculate insurance as 1% of purchase price if not provided
+    const insurance = data.insurance ?? (listPrice * DEFAULT_INSURANCE_PCT)
 
     setInputs((prev) => ({
       ...prev,

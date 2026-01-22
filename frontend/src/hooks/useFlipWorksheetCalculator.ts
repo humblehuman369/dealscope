@@ -56,22 +56,26 @@ export interface FlipWorksheetResult {
   target_fifteen_all_in: number
 }
 
+// Default percentages for calculated fields
+const DEFAULT_INSURANCE_PCT = 0.01        // 1% of purchase price
+const DEFAULT_REHAB_BUDGET_PCT = 0.05     // 5% of ARV
+
 const defaultInputs: FlipWorksheetInputs = {
   purchase_price: 24000,
   purchase_costs: 1225,
-  rehab_costs: 18865,
+  rehab_costs: 75000 * DEFAULT_REHAB_BUDGET_PCT, // 5% of ARV
   arv: 75000,
-  down_payment_pct: 0.25,
-  interest_rate: 0.12,
+  down_payment_pct: 0.20,              // 20% (was 25%)
+  interest_rate: 0.12,                 // 12% hard money
   points: 2,
-  holding_months: 3,
+  holding_months: 6,                   // 6 months (was 3)
   property_taxes_annual: 792,
-  insurance_annual: 648,
-  utilities_monthly: 75,
+  insurance_annual: 24000 * DEFAULT_INSURANCE_PCT, // 1% of purchase price
+  utilities_monthly: 100,              // $100 (was $75)
   dumpster_monthly: 100,
   inspection_costs: 0,
-  contingency_pct: 0,
-  selling_costs_pct: 0.08,
+  contingency_pct: 0.05,               // 5% (was 0)
+  selling_costs_pct: 0.06,             // 6% (was 8%)
   capital_gains_rate: 0.2,
   loan_type: 'interest_only',
 }
@@ -87,14 +91,20 @@ export function useFlipWorksheetCalculator(property: SavedProperty | null) {
     if (!property || hasInitialized.current) return
     const data = property.property_data_snapshot || {}
     const listPrice = data.listPrice ?? defaultInputs.purchase_price
+    const arv = data.arv ?? listPrice
+    
+    // Calculate percentage-based fields
+    const insurance = data.insurance ?? (listPrice * DEFAULT_INSURANCE_PCT)
+    const rehabCosts = arv * DEFAULT_REHAB_BUDGET_PCT
 
     setInputs((prev) => ({
       ...prev,
       purchase_price: listPrice,
       purchase_costs: listPrice * 0.03,
-      arv: data.arv ?? listPrice,
+      arv: arv,
+      rehab_costs: rehabCosts,
       property_taxes_annual: data.propertyTaxes ?? prev.property_taxes_annual,
-      insurance_annual: data.insurance ?? prev.insurance_annual,
+      insurance_annual: insurance,
     }))
     hasInitialized.current = true
   }, [property])

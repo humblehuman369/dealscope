@@ -77,28 +77,33 @@ export interface BrrrrWorksheetResult {
   equity_created: number
 }
 
+// Default percentages for calculated fields
+const DEFAULT_INSURANCE_PCT = 0.01        // 1% of purchase price
+const DEFAULT_REHAB_BUDGET_PCT = 0.05     // 5% of ARV
+const DEFAULT_REFI_CLOSING_COSTS_PCT = 0.03 // 3% of refinance amount
+
 const defaultInputs: BrrrrWorksheetInputs = {
   purchase_price: 285000,
   purchase_costs: 8550,
-  rehab_costs: 55000,
+  rehab_costs: 425000 * DEFAULT_REHAB_BUDGET_PCT, // 5% of ARV
   arv: 425000,
   monthly_rent: 2800,
   property_taxes_annual: 5700,
-  insurance_annual: 1800,
-  utilities_monthly: 475,
+  insurance_annual: 285000 * DEFAULT_INSURANCE_PCT, // 1% of purchase price
+  utilities_monthly: 100,                  // $100 (was $475)
   down_payment_pct: 0.1,
   loan_to_cost_pct: 90,
-  interest_rate: 0.12,
+  interest_rate: 0.12,                     // 12% hard money
   points: 2,
   holding_months: 4,
-  refi_ltv: 0.75,
-  refi_interest_rate: 0.07,
+  refi_ltv: 0.75,                          // 75%
+  refi_interest_rate: 0.06,                // 6% (was 7%)
   refi_loan_term: 30,
-  refi_closing_costs: 6375,
-  vacancy_rate: 0.05,
-  property_management_pct: 0.08,
-  maintenance_pct: 0.05,
-  capex_pct: 0.05,
+  refi_closing_costs: 425000 * 0.75 * DEFAULT_REFI_CLOSING_COSTS_PCT, // 3% of refinance amount
+  vacancy_rate: 0.01,                      // 1% (was 5%)
+  property_management_pct: 0.00,           // 0% (was 8%)
+  maintenance_pct: 0.05,                   // 5%
+  capex_pct: 0.05,                         // 5%
 }
 
 export function useBrrrrWorksheetCalculator(property: SavedProperty | null) {
@@ -113,15 +118,24 @@ export function useBrrrrWorksheetCalculator(property: SavedProperty | null) {
 
     const data = property.property_data_snapshot || {}
     const listPrice = data.listPrice ?? defaultInputs.purchase_price
+    const arv = data.arv ?? listPrice
+    
+    // Calculate percentage-based fields
+    const insurance = data.insurance ?? (listPrice * DEFAULT_INSURANCE_PCT)
+    const rehabCosts = arv * DEFAULT_REHAB_BUDGET_PCT
+    const refiLoanAmount = arv * 0.75
+    const refiClosingCosts = refiLoanAmount * DEFAULT_REFI_CLOSING_COSTS_PCT
 
     setInputs((prev) => ({
       ...prev,
       purchase_price: listPrice,
       purchase_costs: listPrice * 0.03,
-      arv: data.arv ?? listPrice,
+      arv: arv,
+      rehab_costs: rehabCosts,
       monthly_rent: data.monthlyRent ?? prev.monthly_rent,
       property_taxes_annual: data.propertyTaxes ?? prev.property_taxes_annual,
-      insurance_annual: data.insurance ?? prev.insurance_annual,
+      insurance_annual: insurance,
+      refi_closing_costs: refiClosingCosts,
       sqft: data.sqft ?? prev.sqft,
     }))
 

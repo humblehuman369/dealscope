@@ -86,25 +86,31 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
   const state = property.address_state || ''
   const zip = property.address_zip || ''
 
-  // STATE
-  const [purchasePrice, setPurchasePrice] = useState(propertyData.listPrice || 200000)
-  const [rehabCosts, setRehabCosts] = useState(50000)
-  const [purchaseCostsPct, setPurchaseCostsPct] = useState(2)
+  // STATE - Updated defaults per default_assumptions.csv
+  const defaultPurchasePrice = propertyData.listPrice || 200000
+  const defaultArv = propertyData.arv || defaultPurchasePrice * 1.35
+  const defaultInsurance = propertyData.insurance || (defaultPurchasePrice * 0.01) // 1% of purchase price
+  const defaultRehabCosts = defaultArv * 0.05 // 5% of ARV
+  const defaultRefiClosingCosts = defaultArv * 0.75 * 0.03 // 3% of refinance amount
+  
+  const [purchasePrice, setPurchasePrice] = useState(defaultPurchasePrice)
+  const [rehabCosts, setRehabCosts] = useState(defaultRehabCosts)         // 5% of ARV
+  const [purchaseCostsPct, setPurchaseCostsPct] = useState(3)             // 3% (was 2%)
   const [loanToCostPct, setLoanToCostPct] = useState(90)
-  const [interestRate, setInterestRate] = useState(12)
+  const [interestRate, setInterestRate] = useState(12)                    // 12% hard money
   const [loanPoints, setLoanPoints] = useState(2)
-  const [arv, setArv] = useState(propertyData.arv || (propertyData.listPrice || 200000) * 1.35)
+  const [arv, setArv] = useState(defaultArv)
   const [holdingMonths, setHoldingMonths] = useState(4)
   const [propertyTaxes, setPropertyTaxes] = useState(propertyData.propertyTaxes || 3000)
-  const [insurance, setInsurance] = useState(propertyData.insurance || 1800)
-  const [utilities, setUtilities] = useState(200)
+  const [insurance, setInsurance] = useState(defaultInsurance)            // 1% of purchase price
+  const [utilities, setUtilities] = useState(100)                         // $100 (was $200)
   const [refiLtvPct, setRefiLtvPct] = useState(75)
-  const [refiInterestRate, setRefiInterestRate] = useState(7.5)
-  const [refiClosingCosts, setRefiClosingCosts] = useState(4000)
+  const [refiInterestRate, setRefiInterestRate] = useState(6.0)           // 6% (was 7.5%)
+  const [refiClosingCosts, setRefiClosingCosts] = useState(defaultRefiClosingCosts) // 3% of refi amount
   const [monthlyRent, setMonthlyRent] = useState(propertyData.monthlyRent || 2200)
-  const [vacancyRate, setVacancyRate] = useState(8)
-  const [propertyMgmtPct, setPropertyMgmtPct] = useState(8)
-  const [maintenancePct, setMaintenancePct] = useState(5)
+  const [vacancyRate, setVacancyRate] = useState(1)                       // 1% (was 8%)
+  const [propertyMgmtPct, setPropertyMgmtPct] = useState(0)               // 0% (was 8%)
+  const [maintenancePct, setMaintenancePct] = useState(5)                 // 5%
   
   // Hybrid accordion mode
   const [currentSection, setCurrentSection] = useState<number | null>(0)
