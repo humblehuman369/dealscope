@@ -506,7 +506,8 @@ export function calculateDynamicAnalysis(property: IQProperty): IQAnalysisResult
   const occupancyRate = property.occupancyRate ?? 0.65; // Properly handles 0% occupancy
   const beds = property.beds || 3; // beds=0 is invalid, so || is fine here
   
-  // Calculate all strategies
+  // Calculate all strategies in fixed display order:
+  // 1. Long-term Rental, 2. Short-term Rental, 3. BRRRR, 4. Fix & Flip, 5. House Hack, 6. Wholesale
   const strategyResults: StrategyCalculationResult[] = [
     calculateLTRStrategy(price, monthlyRent, propertyTaxes, insurance),
     calculateSTRStrategy(price, averageDailyRate, occupancyRate, propertyTaxes, insurance),
@@ -516,8 +517,7 @@ export function calculateDynamicAnalysis(property: IQProperty): IQAnalysisResult
     calculateWholesaleStrategy(price, arv, rehabCost),
   ];
   
-  // Sort by score (highest first)
-  strategyResults.sort((a, b) => b.score - a.score);
+  // Strategies are kept in fixed order (no sorting by score)
   
   // Convert to IQStrategy with ranks and badges
   const strategies: IQStrategy[] = strategyResults.map((result, index) => {

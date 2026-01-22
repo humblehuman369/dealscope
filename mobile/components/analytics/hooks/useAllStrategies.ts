@@ -188,16 +188,15 @@ export function useAllStrategies(baseInputs: AnalyticsInputs): AllStrategiesResu
       },
     };
 
-    // Calculate rankings (sort by score, viable first)
-    const rankings = (Object.keys(strategies) as StrategyType[])
-      .sort((a, b) => {
-        // Viable strategies first
-        if (strategies[a].viable !== strategies[b].viable) {
-          return strategies[a].viable ? -1 : 1;
-        }
-        // Then by score
-        return strategies[b].score - strategies[a].score;
-      });
+    // Fixed strategy order: LTR, STR, BRRRR, Fix & Flip, House Hack, Wholesale
+    const rankings: StrategyType[] = [
+      'longTermRental',
+      'shortTermRental',
+      'brrrr',
+      'fixAndFlip',
+      'houseHack',
+      'wholesale',
+    ];
 
     // Assign ranks
     rankings.forEach((strategy, index) => {
