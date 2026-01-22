@@ -847,8 +847,8 @@ export function WholesaleMetricsContent({
           'arv',
           'After Repair Value',
           assumptions.arv,
-          assumptions.listPrice,
-          assumptions.listPrice * 1.5,
+          stableListPrice * 0.8,   // Use stable base for min
+          stableListPrice * 1.8,   // Use stable base for max (wider range)
           5000,
           formatCurrency
         ),
@@ -872,7 +872,7 @@ export function WholesaleMetricsContent({
         )
       ]
     }
-  ], [assumptions])
+  ], [assumptions, stableListPrice])
 
   return (
     <div className="space-y-4">
