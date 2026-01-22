@@ -454,13 +454,29 @@ function calculateBRRRRStrategy(
   const totalOpEx = propertyTaxes + insurance + (annualGrossRent * DEFAULT_ASSUMPTIONS.managementPct) + (annualGrossRent * DEFAULT_ASSUMPTIONS.maintenancePct);
   const noi = effectiveGrossIncome - totalOpEx;
   const annualCashFlow = noi - annualDebtService;
-  const cashOnCash = cashLeftInDeal > 0 ? annualCashFlow / cashLeftInDeal : (annualCashFlow > 0 ? 999 : 0);
+  
+  // Calculate CoC with safeguards for edge cases
+  // Use minimum threshold to avoid extreme percentages when cash_left is tiny
+  const minCashForCoC = Math.max(cashLeftInDeal, initialCash * 0.10);
+  let cashOnCash: number;
+  if (cashLeftInDeal <= 0) {
+    cashOnCash = annualCashFlow > 0 ? 999 : 0;
+  } else {
+    cashOnCash = annualCashFlow / minCashForCoC;
+  }
   
   // Score: 0% recovery = 0, 100%+ recovery = 100
   const score = normalizeScore(cashRecoveryPercent, 0, 100);
   
-  // Display the better metric
-  const displayCoC = cashOnCash > 100 ? 'Infinite' : `${(cashOnCash * 100).toFixed(1)}%`;
+  // Cap CoC display at reasonable limits (-100% to Infinite)
+  let displayCoC: string;
+  if (cashOnCash > 100) {
+    displayCoC = 'Infinite';
+  } else if (cashOnCash < -1) {
+    displayCoC = '<-100%';
+  } else {
+    displayCoC = `${(cashOnCash * 100).toFixed(1)}%`;
+  }
   
   return {
     id: 'brrrr',

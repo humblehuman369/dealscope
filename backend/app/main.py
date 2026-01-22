@@ -643,10 +643,26 @@ def _calculate_brrrr_strategy(
     op_ex = property_taxes + insurance + (annual_rent * OPERATING.property_management_pct) + (annual_rent * OPERATING.maintenance_pct)
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
-    coc = annual_cash_flow / cash_left if cash_left > 0 else (999 if annual_cash_flow > 0 else 0)
     
+    # Calculate CoC with safeguards for edge cases
+    # Use minimum $10K cash_left threshold to avoid extreme percentages
+    min_cash_for_coc = max(cash_left, initial_cash * 0.10)  # At least 10% of initial cash
+    if cash_left <= 0:
+        # No cash left in deal - infinite return if positive, 0 if negative
+        coc = 999 if annual_cash_flow > 0 else 0
+    else:
+        coc = annual_cash_flow / min_cash_for_coc
+    
+    # Cap CoC display at reasonable limits (-100% to Infinite)
+    if coc > 100:
+        display_coc = "Infinite"
+    elif coc < -1:
+        display_coc = "<-100%"
+    else:
+        display_coc = f"{coc * 100:.1f}%"
+    
+    # Score based on recovery percentage (0-100%)
     score = _normalize_score(recovery_pct, 0, 100)
-    display_coc = "Infinite" if coc > 100 else f"{coc * 100:.1f}%"
     
     return {
         "id": "brrrr",
