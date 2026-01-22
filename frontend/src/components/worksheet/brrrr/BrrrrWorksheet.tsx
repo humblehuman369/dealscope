@@ -1,9 +1,12 @@
 'use client'
 
 import React, { useState, useMemo, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
+import { useUIStore } from '@/stores'
+import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
 
 // Section components for tab navigation
 import { SalesCompsSection } from '../sections/SalesCompsSection'
@@ -12,6 +15,16 @@ import { MarketDataSection } from '../sections/MarketDataSection'
 import { MultiYearProjections } from '../sections/MultiYearProjections'
 import { CashFlowChart } from '../charts/CashFlowChart'
 import { EquityChart } from '../charts/EquityChart'
+
+// Strategy definitions for switcher
+const strategies = [
+  { id: 'ltr', label: 'Long-term Rental' },
+  { id: 'str', label: 'Short-term Rental' },
+  { id: 'brrrr', label: 'BRRRR' },
+  { id: 'flip', label: 'Fix & Flip' },
+  { id: 'househack', label: 'House Hack' },
+  { id: 'wholesale', label: 'Wholesale' },
+]
 
 // ============================================
 // ICONS
@@ -52,6 +65,13 @@ const fmt = {
 interface BrrrrWorksheetProps { property: SavedProperty; propertyId: string; onExportPDF?: () => void }
 
 export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorksheetProps) {
+  const router = useRouter()
+  
+  // Strategy switcher state
+  const [isStrategyDropdownOpen, setIsStrategyDropdownOpen] = useState(false)
+  const { activeStrategy, setActiveStrategy } = useUIStore()
+  const currentStrategy = strategies.find(s => s.id === activeStrategy) || strategies[2] // Default to BRRRR
+  
   // Get active section from store for tab navigation
   const { activeSection } = useWorksheetStore()
   
@@ -245,14 +265,40 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
 
   return (
     <div className="w-full min-h-screen bg-slate-50">
-      {/* PROPERTY ADDRESS BAR */}
-      <div className="w-full bg-white">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2">
-          <div className="flex items-center gap-3">
-            <button onClick={() => window.history.back()} className="text-blue-500 hover:text-blue-600 transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
-            </button>
-            <h1 className="text-base sm:text-lg font-semibold text-slate-800">{fullAddress}</h1>
+      {/* PAGE TITLE ROW - Back Arrow + Strategy Title + Strategy Switcher */}
+      <div className="w-full bg-white border-b border-slate-200">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <button onClick={() => router.back()} className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors flex-shrink-0">
+                <ArrowLeft className="w-5 h-5 text-slate-500" />
+              </button>
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 truncate">{currentStrategy.label} Analysis</h1>
+                <p className="text-sm text-slate-500 truncate">{fullAddress}</p>
+              </div>
+            </div>
+            <div className="relative flex-shrink-0">
+              <button onClick={() => setIsStrategyDropdownOpen(!isStrategyDropdownOpen)} className="flex items-center gap-2 bg-white border border-slate-300 hover:border-teal hover:bg-teal/5 text-slate-700 px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors">
+                <ArrowLeftRight className="w-4 h-4 text-slate-500" />
+                <span className="hidden sm:inline">Switch Strategy</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isStrategyDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {isStrategyDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsStrategyDropdownOpen(false)} />
+                  <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+                    <div className="px-3 py-2 border-b border-slate-100"><span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Investment Strategies</span></div>
+                    {strategies.map((strategy) => (
+                      <button key={strategy.id} onClick={() => { setIsStrategyDropdownOpen(false); if (strategy.id !== activeStrategy) { setActiveStrategy(strategy.id); router.push(`/worksheet/${propertyId}/${strategy.id}`); } }} className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-slate-50 transition-colors ${activeStrategy === strategy.id ? 'bg-teal/10 text-teal' : 'text-slate-700'}`}>
+                        <span className="font-medium">{strategy.label}</span>
+                        {activeStrategy === strategy.id && <CheckCircle2 className="w-4 h-4 ml-auto text-teal" />}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
