@@ -79,23 +79,6 @@ function AccordionSection({ title, icon, children, isExpanded, onToggle }: Accor
 }
 
 // ============================================
-// MINI PROGRESS BAR
-// ============================================
-function ProgressBar({ value, max, color = 'teal' }: { value: number; max: number; color?: string }) {
-  const percentage = Math.min(100, Math.max(0, (value / max) * 100))
-  const colorClass = color === 'teal' ? 'bg-teal' : color === 'green' ? 'bg-green-500' : 'bg-slate-400'
-  
-  return (
-    <div className="w-full bg-slate-100 rounded-full h-1">
-      <div 
-        className={`${colorClass} h-1 rounded-full transition-all duration-300`} 
-        style={{ width: `${percentage}%` }}
-      />
-    </div>
-  )
-}
-
-// ============================================
 // MAIN COMPONENT
 // ============================================
 export function MobileCompressedView({
@@ -134,30 +117,24 @@ export function MobileCompressedView({
     return value >= target ? 'text-green-600' : value >= target * 0.8 ? 'text-amber-500' : 'text-red-500'
   }
 
-  // Calculate price position for gauge (0-100, where 50 is breakeven)
-  const priceRange = purchasePrice * 0.4 // 20% below to 20% above
-  const pricePosition = Math.min(100, Math.max(0, 
-    50 + ((calc.breakeven - purchasePrice) / priceRange) * 100
-  ))
-
   return (
     <div className="px-3 pb-3 space-y-3">
       {/* ============================================ */}
       {/* SIDE-BY-SIDE CARDS: Purchase + IQ Verdict */}
       {/* ============================================ */}
       <div className="flex gap-2">
-        {/* LEFT: Purchase Card - Compressed */}
-        <div className="flex-1 bg-white rounded-xl border border-slate-200 p-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1.5">
-              <Home className="w-4 h-4 text-slate-400" />
-              <span className="text-xs font-semibold text-slate-900">Purchase</span>
+        {/* LEFT: Purchase Card - Ultra Compact */}
+        <div className="flex-1 bg-white rounded-xl border border-slate-200 p-2.5 min-w-0">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1">
+              <Home className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-[11px] font-semibold text-slate-900">Purchase</span>
             </div>
             <button onClick={() => toggleSection('purchase')}>
               {expandedSections.purchase ? (
-                <ChevronUp className="w-4 h-4 text-slate-400" />
+                <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-slate-400" />
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
               )}
             </button>
           </div>
@@ -165,116 +142,93 @@ export function MobileCompressedView({
           {expandedSections.purchase && (
             <>
               {/* Compressed rows */}
-              <div className="space-y-1.5 text-[11px]">
+              <div className="space-y-1 text-[10px]">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Price</span>
-                  <span className="font-semibold text-slate-900">{fmt.currency(purchasePrice)}</span>
-                </div>
-                <ProgressBar value={100} max={100} />
-                
-                <div className="flex justify-between items-center pt-1">
-                  <span className="text-slate-500">Loan</span>
-                  <span className="font-semibold text-slate-900">{fmt.currency(calc.loanAmount)}</span>
+                  <span className="text-slate-400">Price</span>
+                  <span className="font-semibold text-slate-900 truncate ml-1">{fmt.currencyCompact(purchasePrice)}</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Down</span>
-                  <span className="font-semibold text-slate-900">
-                    {downPaymentPct}% <span className="text-slate-400 font-normal">{fmt.currencyCompact(calc.downPayment)}</span>
-                  </span>
+                  <span className="text-slate-400">Loan</span>
+                  <span className="font-semibold text-slate-900 truncate ml-1">{fmt.currencyCompact(calc.loanAmount)}</span>
                 </div>
-                <ProgressBar value={downPaymentPct} max={100} />
                 
-                <div className="flex justify-between items-center pt-1">
-                  <span className="text-slate-500">Closing</span>
-                  <span className="font-semibold text-slate-900">
-                    {purchaseCostsPct}% <span className="text-slate-400 font-normal">{fmt.currencyCompact(calc.purchaseCosts)}</span>
-                  </span>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Down</span>
+                  <span className="font-semibold text-slate-900 truncate ml-1">{fmt.currencyCompact(calc.downPayment)}</span>
                 </div>
-                <ProgressBar value={purchaseCostsPct * 10} max={100} />
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Closing</span>
+                  <span className="font-semibold text-slate-900 truncate ml-1">{fmt.currencyCompact(calc.purchaseCosts)}</span>
+                </div>
               </div>
 
               {/* Total Cash Required */}
-              <div className="mt-3 bg-teal/10 rounded-lg px-2 py-2">
-                <div className="text-[9px] text-teal font-medium uppercase">Total Cash</div>
-                <div className="text-base font-bold text-teal">{fmt.currency(calc.totalCashNeeded)}</div>
+              <div className="mt-2 bg-teal/10 rounded-lg px-2 py-1.5">
+                <div className="text-[8px] text-teal font-medium uppercase">Cash Needed</div>
+                <div className="text-sm font-bold text-teal">{fmt.currencyCompact(calc.totalCashNeeded)}</div>
               </div>
 
               {/* CTA Button - Compact */}
               <button 
                 onClick={() => onNavigateToSection?.('financing')}
-                className="w-full mt-2 bg-slate-100 text-slate-700 text-[10px] font-medium py-2 rounded-lg hover:bg-slate-200 transition-colors"
+                className="w-full mt-1.5 bg-slate-100 text-slate-600 text-[9px] font-medium py-1.5 rounded-lg hover:bg-slate-200 transition-colors"
               >
-                Financing →
+                Details →
               </button>
             </>
           )}
         </div>
 
-        {/* RIGHT: IQ Verdict Card - Compressed */}
-        <div className="flex-1 bg-white rounded-xl border border-slate-200 p-3">
-          <div className="text-[9px] text-teal font-semibold uppercase tracking-wide mb-2">
-            IQ Verdict
+        {/* RIGHT: IQ Verdict Card - Ultra Compact */}
+        <div className="flex-1 bg-white rounded-xl border border-slate-200 p-2.5 min-w-0">
+          <div className="text-[8px] text-teal font-semibold uppercase tracking-wide mb-1.5">
+            Verdict
           </div>
           
           {/* Score Display - Compact */}
-          <div className="flex items-center gap-2 mb-2">
-            <span className={`text-3xl font-bold ${scoreRating.color}`}>{calc.dealScore}</span>
-            <div>
-              <div className="text-xs font-semibold text-slate-900 leading-tight">{scoreRating.label}</div>
-              <div className="text-xs font-semibold text-slate-900 leading-tight">{scoreRating.sublabel}</div>
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <span className={`text-2xl font-bold ${scoreRating.color}`}>{calc.dealScore}</span>
+            <div className="min-w-0">
+              <div className="text-[10px] font-semibold text-slate-900 leading-tight truncate">{scoreRating.label}</div>
+              <div className="text-[9px] text-slate-500 leading-tight">Deal Score</div>
             </div>
           </div>
-          
-          <p className="text-[10px] text-slate-500 mb-3 leading-snug">
-            {isProfit 
-              ? 'Strong cash flow potential with solid returns'
-              : 'Negative cash flow - review expenses or pricing'
-            }
-          </p>
 
-          {/* Returns vs Targets - Ultra Compact */}
-          <div className="text-[9px] text-slate-400 font-semibold uppercase mb-1.5">Returns</div>
-          <div className="space-y-1 text-[11px]">
+          {/* Returns - Ultra Compact Grid */}
+          <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
             <div className="flex justify-between">
-              <span className="text-slate-500">Cap</span>
+              <span className="text-slate-400">Cap</span>
               <span className={`font-semibold ${getReturnStatus(calc.capRatePurchase, 8)}`}>
                 {fmt.percent(calc.capRatePurchase)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">CoC</span>
+              <span className="text-slate-400">CoC</span>
               <span className={`font-semibold ${getReturnStatus(calc.cashOnCash, 10)}`}>
                 {fmt.percent(calc.cashOnCash)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">DSCR</span>
+              <span className="text-slate-400">DSCR</span>
               <span className={`font-semibold ${getReturnStatus(calc.dscr, 1.2)}`}>
                 {fmt.ratio(calc.dscr)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">1% Rule</span>
+              <span className="text-slate-400">1%</span>
               <span className={`font-semibold ${getReturnStatus(calc.rentToValue, 1)}`}>
                 {fmt.percent(calc.rentToValue)}
               </span>
             </div>
           </div>
 
-          {/* Mini Price Position Gauge */}
-          <div className="mt-3 pt-2 border-t border-slate-100">
-            <div className="text-[9px] text-slate-400 font-semibold uppercase mb-1">Price Position</div>
-            <div className="relative h-2 bg-gradient-to-r from-red-200 via-slate-200 to-teal/40 rounded-full">
-              <div 
-                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-teal rounded-full shadow-sm"
-                style={{ left: `${pricePosition}%`, transform: 'translate(-50%, -50%)' }}
-              />
-            </div>
-            <div className="flex justify-between text-[8px] text-slate-400 mt-0.5">
-              <span>Loss</span>
-              <span>Profit</span>
-            </div>
+          {/* Simplified Status Indicator */}
+          <div className={`mt-2 py-1.5 px-2 rounded-lg text-center text-[9px] font-medium ${
+            isProfit ? 'bg-teal/10 text-teal' : 'bg-red-500/10 text-red-500'
+          }`}>
+            {isProfit ? 'Positive Cash Flow' : 'Negative Cash Flow'}
           </div>
         </div>
       </div>
