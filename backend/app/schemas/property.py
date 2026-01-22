@@ -266,7 +266,7 @@ class AllAssumptions(BaseModel):
     """Combined assumptions for all strategies."""
     financing: FinancingAssumptions = Field(default_factory=FinancingAssumptions)
     operating: OperatingAssumptions = Field(default_factory=OperatingAssumptions)
-    str: STRAssumptions = Field(default_factory=STRAssumptions)
+    str_assumptions: STRAssumptions = Field(default_factory=STRAssumptions, alias="str")
     rehab: RehabAssumptions = Field(default_factory=RehabAssumptions)
     brrrr: BRRRRAssumptions = Field(default_factory=BRRRRAssumptions)
     flip: FlipAssumptions = Field(default_factory=FlipAssumptions)
@@ -277,6 +277,8 @@ class AllAssumptions(BaseModel):
     appreciation_rate: float = 0.05
     rent_growth_rate: float = 0.03
     expense_growth_rate: float = 0.03
+    
+    model_config = {"populate_by_name": True}
 
 
 # ============================================
@@ -601,13 +603,15 @@ class AnalyticsResponse(BaseModel):
     calculated_at: datetime
     
     ltr: Optional[LTRResults] = None
-    str: Optional[STRResults] = None
+    str_results: Optional[STRResults] = Field(default=None, alias="str")
     brrrr: Optional[BRRRRResults] = None
     flip: Optional[FlipResults] = None
     house_hack: Optional[HouseHackResults] = None
     wholesale: Optional[WholesaleResults] = None
     
     comparison: Optional[StrategyComparison] = None
+    
+    model_config = {"populate_by_name": True}
 
 
 class SensitivityRequest(BaseModel):

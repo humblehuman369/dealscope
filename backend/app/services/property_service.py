@@ -388,17 +388,17 @@ class PropertyService:
                 interest_rate=assumptions.financing.interest_rate,
                 loan_term_years=assumptions.financing.loan_term_years,
                 closing_costs_pct=assumptions.financing.closing_costs_pct,
-                furniture_setup_cost=assumptions.str.furniture_setup_cost,
-                platform_fees_pct=assumptions.str.platform_fees_pct,
-                str_management_pct=assumptions.str.str_management_pct,
-                cleaning_cost_per_turnover=assumptions.str.cleaning_cost_per_turnover,
-                cleaning_fee_revenue=assumptions.str.cleaning_fee_revenue,
-                avg_length_of_stay_days=assumptions.str.avg_length_of_stay_days,
-                supplies_monthly=assumptions.str.supplies_monthly,
-                additional_utilities_monthly=assumptions.str.additional_utilities_monthly,
-                insurance_annual=assumptions.str.str_insurance_annual
+                furniture_setup_cost=assumptions.str_assumptions.furniture_setup_cost,
+                platform_fees_pct=assumptions.str_assumptions.platform_fees_pct,
+                str_management_pct=assumptions.str_assumptions.str_management_pct,
+                cleaning_cost_per_turnover=assumptions.str_assumptions.cleaning_cost_per_turnover,
+                cleaning_fee_revenue=assumptions.str_assumptions.cleaning_fee_revenue,
+                avg_length_of_stay_days=assumptions.str_assumptions.avg_length_of_stay_days,
+                supplies_monthly=assumptions.str_assumptions.supplies_monthly,
+                additional_utilities_monthly=assumptions.str_assumptions.additional_utilities_monthly,
+                insurance_annual=assumptions.str_assumptions.str_insurance_annual
             )
-            results.str = STRResults(**str_result)
+            results.str_results = STRResults(**str_result)
         
         if StrategyType.BRRRR in strategies_to_calc:
             brrrr_result = calculate_brrrr(

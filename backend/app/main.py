@@ -440,9 +440,9 @@ async def quick_analytics(
                     "cap_rate": result.ltr.cap_rate if result.ltr else None
                 },
                 "str": {
-                    "monthly_cash_flow": result.str.monthly_cash_flow if result.str else None,
-                    "cash_on_cash_return": result.str.cash_on_cash_return if result.str else None,
-                    "break_even_occupancy": result.str.break_even_occupancy if result.str else None
+                    "monthly_cash_flow": result.str_assumptions.monthly_cash_flow if result.str_assumptions else None,
+                    "cash_on_cash_return": result.str_assumptions.cash_on_cash_return if result.str_assumptions else None,
+                    "break_even_occupancy": result.str_assumptions.break_even_occupancy if result.str_assumptions else None
                 },
                 "brrrr": {
                     "cash_left_in_deal": result.brrrr.cash_left_in_deal if result.brrrr else None,
@@ -2078,9 +2078,9 @@ async def run_sensitivity_analysis(request: SensitivityRequest):
             if analytics.ltr:
                 result_row["results"]["ltr_cash_flow"] = analytics.ltr.annual_cash_flow
                 result_row["results"]["ltr_coc"] = analytics.ltr.cash_on_cash_return
-            if analytics.str:
-                result_row["results"]["str_cash_flow"] = analytics.str.annual_cash_flow
-                result_row["results"]["str_coc"] = analytics.str.cash_on_cash_return
+            if analytics.str_results:
+                result_row["results"]["str_cash_flow"] = analytics.str_results.annual_cash_flow
+                result_row["results"]["str_coc"] = analytics.str_results.cash_on_cash_return
             if analytics.flip:
                 result_row["results"]["flip_profit"] = analytics.flip.net_profit_before_tax
                 result_row["results"]["flip_roi"] = analytics.flip.roi
@@ -2282,9 +2282,9 @@ async def get_strategy_comparison(property_id: str, db: DbSession):
                 },
                 "str": {
                     "name": "Short-Term Rental",
-                    "initial_investment": analytics.str.total_cash_required if analytics.str else None,
-                    "year1_cash_flow": analytics.str.annual_cash_flow if analytics.str else None,
-                    "year1_roi": analytics.str.cash_on_cash_return if analytics.str else None,
+                    "initial_investment": analytics.str_results.total_cash_required if analytics.str_results else None,
+                    "year1_cash_flow": analytics.str_results.annual_cash_flow if analytics.str_results else None,
+                    "year1_roi": analytics.str_results.cash_on_cash_return if analytics.str_results else None,
                     "risk_level": "Medium",
                     "time_horizon": "5-10 years",
                     "active_management": "High"
