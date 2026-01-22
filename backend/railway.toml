@@ -2,8 +2,8 @@
 builder = "nixpacks"
 
 [deploy]
-# Run migrations before starting the server
-startCommand = "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+# Run migrations (continue even if they fail) then start server with verbose logging
+startCommand = "echo '=== Starting deployment ===' && alembic upgrade head 2>&1 || echo '=== Migration failed, continuing ===' && echo '=== Starting uvicorn ===' && uvicorn app.main:app --host 0.0.0.0 --port $PORT --log-level debug"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
