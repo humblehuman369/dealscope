@@ -649,14 +649,21 @@ class PropertyService:
         logger.info(f"Fetching similar rentals - zpid: {zpid}, address: {address}")
         
         try:
-            result = await self.zillow.get_similar_rent(zpid=zpid, url=url, address=address)
+            result = await self.zillow.get_similar_rentals(zpid=zpid, url=url, address=address)
             
             if result.success and result.data:
                 logger.info(f"Similar rent fetch successful")
+                if isinstance(result.data, list):
+                    results = result.data
+                else:
+                    results = result.data.get(
+                        "similarProperties",
+                        result.data.get("properties", result.data.get("results", []))
+                    )
                 return {
                     "success": True,
-                    "results": result.data.get("similarProperties", result.data.get("properties", [])),
-                    "total_count": len(result.data.get("similarProperties", result.data.get("properties", []))),
+                    "results": results,
+                    "total_count": len(results),
                     "fetched_at": datetime.utcnow().isoformat()
                 }
             else:
@@ -702,10 +709,17 @@ class PropertyService:
             
             if result.success and result.data:
                 logger.info(f"Similar sold fetch successful")
+                if isinstance(result.data, list):
+                    results = result.data
+                else:
+                    results = result.data.get(
+                        "similarProperties",
+                        result.data.get("properties", result.data.get("results", []))
+                    )
                 return {
                     "success": True,
-                    "results": result.data.get("similarProperties", result.data.get("properties", [])),
-                    "total_count": len(result.data.get("similarProperties", result.data.get("properties", []))),
+                    "results": results,
+                    "total_count": len(results),
                     "fetched_at": datetime.utcnow().isoformat()
                 }
             else:

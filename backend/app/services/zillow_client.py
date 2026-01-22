@@ -351,6 +351,15 @@ class ZillowClient:
             params["address"] = address
             
         return await self._make_request(ZillowEndpoint.SIMILAR_RENT, params)
+
+    async def get_similar_rent(
+        self,
+        zpid: str = None,
+        url: str = None,
+        address: str = None
+    ) -> ZillowAPIResponse:
+        """Backward-compatible wrapper for similar rentals."""
+        return await self.get_similar_rentals(zpid=zpid, url=url, address=address)
     
     async def get_similar_sold(
         self,
