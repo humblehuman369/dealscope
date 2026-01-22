@@ -545,19 +545,19 @@ export function StrWorksheet({
                         key={strategy.id}
                         onClick={() => {
                           setIsStrategyDropdownOpen(false)
-                          if (strategy.id !== activeStrategy) {
+                          if (strategy.id !== thisStrategy.id) {
                             setActiveStrategy(strategy.id)
                             router.push(`/worksheet/${propertyId}/${strategy.id}`)
                           }
                         }}
                         className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-slate-50 transition-colors ${
-                          activeStrategy === strategy.id 
+                          thisStrategy.id === strategy.id 
                             ? 'bg-teal/10 text-teal' 
                             : 'text-slate-700'
                         }`}
                       >
                         <span className="font-medium">{strategy.label}</span>
-                        {activeStrategy === strategy.id && (
+                        {thisStrategy.id === strategy.id && (
                           <CheckCircle2 className="w-4 h-4 ml-auto text-teal" />
                         )}
                       </button>

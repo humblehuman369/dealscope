@@ -292,9 +292,9 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
                   <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
                     <div className="px-3 py-2 border-b border-slate-100"><span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Investment Strategies</span></div>
                     {strategies.map((strategy) => (
-                      <button key={strategy.id} onClick={() => { setIsStrategyDropdownOpen(false); if (strategy.id !== activeStrategy) { setActiveStrategy(strategy.id); router.push(`/worksheet/${propertyId}/${strategy.id}`); } }} className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-slate-50 transition-colors ${activeStrategy === strategy.id ? 'bg-teal/10 text-teal' : 'text-slate-700'}`}>
+                      <button key={strategy.id} onClick={() => { setIsStrategyDropdownOpen(false); if (strategy.id !== thisStrategy.id) { setActiveStrategy(strategy.id); router.push(`/worksheet/${propertyId}/${strategy.id}`); } }} className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-slate-50 transition-colors ${thisStrategy.id === strategy.id ? 'bg-teal/10 text-teal' : 'text-slate-700'}`}>
                         <span className="font-medium">{strategy.label}</span>
-                        {activeStrategy === strategy.id && <CheckCircle2 className="w-4 h-4 ml-auto text-teal" />}
+                        {thisStrategy.id === strategy.id && <CheckCircle2 className="w-4 h-4 ml-auto text-teal" />}
                       </button>
                     ))}
                   </div>
