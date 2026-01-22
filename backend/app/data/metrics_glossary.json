@@ -1,0 +1,246 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-01-22",
+  "source": "backend/app/services/calculators.py",
+  "strategies": [
+    {
+      "id": "ltr",
+      "name": "Long-Term Rental",
+      "metrics": {
+        "monthly_rent": { "formula": "monthly_rent = input", "inputs": ["monthly_rent"] },
+        "annual_gross_rent": { "formula": "annual_gross_rent = monthly_rent * 12", "inputs": ["monthly_rent"] },
+        "vacancy_loss": { "formula": "vacancy_loss = annual_gross_rent * vacancy_rate", "inputs": ["annual_gross_rent", "vacancy_rate"] },
+        "effective_gross_income": { "formula": "effective_gross_income = annual_gross_rent - vacancy_loss", "inputs": ["annual_gross_rent", "vacancy_loss"] },
+        "property_taxes": { "formula": "property_taxes = property_taxes_annual", "inputs": ["property_taxes_annual"] },
+        "insurance": { "formula": "insurance = insurance_annual", "inputs": ["insurance_annual"] },
+        "property_management": { "formula": "property_management = annual_gross_rent * property_management_pct", "inputs": ["annual_gross_rent", "property_management_pct"] },
+        "maintenance": { "formula": "maintenance = annual_gross_rent * maintenance_pct", "inputs": ["annual_gross_rent", "maintenance_pct"] },
+        "utilities": { "formula": "utilities = utilities_monthly * 12", "inputs": ["utilities_monthly"] },
+        "landscaping": { "formula": "landscaping = landscaping_annual", "inputs": ["landscaping_annual"] },
+        "pest_control": { "formula": "pest_control = pest_control_annual", "inputs": ["pest_control_annual"] },
+        "hoa_fees": { "formula": "hoa_fees = hoa_monthly * 12", "inputs": ["hoa_monthly"] },
+        "total_operating_expenses": {
+          "formula": "total_operating_expenses = property_taxes + insurance + property_management + maintenance + utilities + landscaping + pest_control + hoa_fees",
+          "inputs": ["property_taxes", "insurance", "property_management", "maintenance", "utilities", "landscaping", "pest_control", "hoa_fees"]
+        },
+        "loan_amount": { "formula": "loan_amount = purchase_price - down_payment", "inputs": ["purchase_price", "down_payment"] },
+        "monthly_pi": { "formula": "monthly_pi = mortgage_payment(loan_amount, interest_rate, loan_term_years)", "inputs": ["loan_amount", "interest_rate", "loan_term_years"] },
+        "annual_debt_service": { "formula": "annual_debt_service = monthly_pi * 12", "inputs": ["monthly_pi"] },
+        "noi": { "formula": "noi = effective_gross_income - total_operating_expenses", "inputs": ["effective_gross_income", "total_operating_expenses"] },
+        "monthly_cash_flow": { "formula": "monthly_cash_flow = annual_cash_flow / 12", "inputs": ["annual_cash_flow"] },
+        "annual_cash_flow": { "formula": "annual_cash_flow = noi - annual_debt_service", "inputs": ["noi", "annual_debt_service"] },
+        "cap_rate": { "formula": "cap_rate = noi / purchase_price", "inputs": ["noi", "purchase_price"] },
+        "cash_on_cash_return": { "formula": "cash_on_cash_return = annual_cash_flow / total_cash_required", "inputs": ["annual_cash_flow", "total_cash_required"] },
+        "dscr": { "formula": "dscr = noi / annual_debt_service", "inputs": ["noi", "annual_debt_service"] },
+        "grm": { "formula": "grm = purchase_price / annual_gross_rent", "inputs": ["purchase_price", "annual_gross_rent"] },
+        "one_percent_rule": { "formula": "one_percent_rule = monthly_rent / purchase_price", "inputs": ["monthly_rent", "purchase_price"] },
+        "total_cash_required": { "formula": "total_cash_required = down_payment + closing_costs", "inputs": ["down_payment", "closing_costs"] },
+        "down_payment": { "formula": "down_payment = purchase_price * down_payment_pct", "inputs": ["purchase_price", "down_payment_pct"] },
+        "closing_costs": { "formula": "closing_costs = purchase_price * closing_costs_pct", "inputs": ["purchase_price", "closing_costs_pct"] },
+        "ten_year_projection": {
+          "formula": "Per year: gross_rent = annual_gross_rent*(1+rent_growth_rate)^(year-1), expenses = total_operating_expenses*(1+expense_growth_rate)^(year-1), noi = gross_rent*(1-vacancy_rate)-expenses, cash_flow = noi - annual_debt_service, property_value = purchase_price*(1+appreciation_rate)^year, equity = property_value - (loan_amount*(1-(year/loan_term_years)*0.3))",
+          "inputs": ["annual_gross_rent", "rent_growth_rate", "total_operating_expenses", "expense_growth_rate", "vacancy_rate", "annual_debt_service", "purchase_price", "appreciation_rate", "loan_amount", "loan_term_years"]
+        }
+      }
+    },
+    {
+      "id": "str",
+      "name": "Short-Term Rental",
+      "metrics": {
+        "average_daily_rate": { "formula": "average_daily_rate = input", "inputs": ["average_daily_rate"] },
+        "occupancy_rate": { "formula": "occupancy_rate = input", "inputs": ["occupancy_rate"] },
+        "nights_occupied": { "formula": "nights_occupied = 365 * occupancy_rate", "inputs": ["occupancy_rate"] },
+        "num_bookings": { "formula": "num_bookings = nights_occupied / avg_length_of_stay_days", "inputs": ["nights_occupied", "avg_length_of_stay_days"] },
+        "rental_revenue": { "formula": "rental_revenue = average_daily_rate * nights_occupied", "inputs": ["average_daily_rate", "nights_occupied"] },
+        "cleaning_fee_revenue": { "formula": "cleaning_fee_revenue = cleaning_fee_revenue * num_bookings", "inputs": ["cleaning_fee_revenue", "num_bookings"] },
+        "total_gross_revenue": { "formula": "total_gross_revenue = rental_revenue + cleaning_fee_revenue", "inputs": ["rental_revenue", "cleaning_fee_revenue"] },
+        "property_taxes": { "formula": "property_taxes = property_taxes_annual", "inputs": ["property_taxes_annual"] },
+        "insurance": { "formula": "insurance = insurance_annual", "inputs": ["insurance_annual"] },
+        "platform_fees": { "formula": "platform_fees = total_gross_revenue * platform_fees_pct", "inputs": ["total_gross_revenue", "platform_fees_pct"] },
+        "str_management": { "formula": "str_management = total_gross_revenue * str_management_pct", "inputs": ["total_gross_revenue", "str_management_pct"] },
+        "cleaning_costs": { "formula": "cleaning_costs = cleaning_cost_per_turnover * num_bookings", "inputs": ["cleaning_cost_per_turnover", "num_bookings"] },
+        "supplies": { "formula": "supplies = supplies_monthly * 12", "inputs": ["supplies_monthly"] },
+        "utilities": { "formula": "utilities = additional_utilities_monthly * 12", "inputs": ["additional_utilities_monthly"] },
+        "maintenance": { "formula": "maintenance = maintenance_annual", "inputs": ["maintenance_annual"] },
+        "landscaping": { "formula": "landscaping = landscaping_annual", "inputs": ["landscaping_annual"] },
+        "pest_control": { "formula": "pest_control = pest_control_annual", "inputs": ["pest_control_annual"] },
+        "total_operating_expenses": {
+          "formula": "total_operating_expenses = taxes + insurance + platform_fees + str_management + cleaning_costs + supplies + utilities + maintenance + landscaping + pest_control + hoa_annual",
+          "inputs": ["property_taxes", "insurance", "platform_fees", "str_management", "cleaning_costs", "supplies", "utilities", "maintenance", "landscaping", "pest_control", "hoa_monthly"]
+        },
+        "loan_amount": { "formula": "loan_amount = purchase_price - down_payment", "inputs": ["purchase_price", "down_payment"] },
+        "monthly_pi": { "formula": "monthly_pi = mortgage_payment(loan_amount, interest_rate, loan_term_years)", "inputs": ["loan_amount", "interest_rate", "loan_term_years"] },
+        "annual_debt_service": { "formula": "annual_debt_service = monthly_pi * 12", "inputs": ["monthly_pi"] },
+        "noi": { "formula": "noi = total_gross_revenue - total_operating_expenses", "inputs": ["total_gross_revenue", "total_operating_expenses"] },
+        "monthly_cash_flow": { "formula": "monthly_cash_flow = annual_cash_flow / 12", "inputs": ["annual_cash_flow"] },
+        "annual_cash_flow": { "formula": "annual_cash_flow = noi - annual_debt_service", "inputs": ["noi", "annual_debt_service"] },
+        "cap_rate": { "formula": "cap_rate = noi / purchase_price", "inputs": ["noi", "purchase_price"] },
+        "cash_on_cash_return": { "formula": "cash_on_cash_return = annual_cash_flow / total_cash_required", "inputs": ["annual_cash_flow", "total_cash_required"] },
+        "dscr": { "formula": "dscr = noi / annual_debt_service", "inputs": ["noi", "annual_debt_service"] },
+        "revenue_per_available_night": { "formula": "revenue_per_available_night = total_gross_revenue / 365", "inputs": ["total_gross_revenue"] },
+        "break_even_occupancy": {
+          "formula": "break_even_occupancy = break_even_nights / 365; break_even_nights = fixed_costs / revenue_per_night_net; revenue_per_night_net = ADR - variable_cost_per_night",
+          "inputs": ["property_taxes_annual", "insurance_annual", "maintenance_annual", "landscaping_annual", "pest_control_annual", "hoa_monthly", "annual_debt_service", "average_daily_rate", "platform_fees_pct", "str_management_pct", "cleaning_cost_per_turnover", "avg_length_of_stay_days"]
+        },
+        "total_cash_required": { "formula": "total_cash_required = down_payment + closing_costs + furniture_setup_cost", "inputs": ["down_payment", "closing_costs", "furniture_setup_cost"] },
+        "down_payment": { "formula": "down_payment = purchase_price * down_payment_pct", "inputs": ["purchase_price", "down_payment_pct"] },
+        "closing_costs": { "formula": "closing_costs = purchase_price * closing_costs_pct", "inputs": ["purchase_price", "closing_costs_pct"] },
+        "furniture_setup": { "formula": "furniture_setup = furniture_setup_cost", "inputs": ["furniture_setup_cost"] },
+        "seasonality_analysis": { "formula": "Hardcoded seasonal buckets using ADR and occupancy adjustments", "inputs": ["average_daily_rate"] }
+      }
+    },
+    {
+      "id": "brrrr",
+      "name": "BRRRR",
+      "metrics": {
+        "purchase_price": { "formula": "purchase_price = market_value * (1 - purchase_discount_pct)", "inputs": ["market_value", "purchase_discount_pct"] },
+        "down_payment": { "formula": "down_payment = purchase_price * down_payment_pct", "inputs": ["purchase_price", "down_payment_pct"] },
+        "closing_costs": { "formula": "closing_costs = purchase_price * closing_costs_pct", "inputs": ["purchase_price", "closing_costs_pct"] },
+        "initial_loan_amount": { "formula": "initial_loan_amount = purchase_price - down_payment", "inputs": ["purchase_price", "down_payment"] },
+        "cash_required_phase1": { "formula": "cash_required_phase1 = down_payment + closing_costs", "inputs": ["down_payment", "closing_costs"] },
+        "renovation_budget": { "formula": "renovation_budget = input", "inputs": ["renovation_budget"] },
+        "contingency": { "formula": "contingency = renovation_budget * contingency_pct", "inputs": ["renovation_budget", "contingency_pct"] },
+        "holding_costs": { "formula": "holding_costs = monthly_holding_costs * holding_period_months", "inputs": ["monthly_holding_costs", "holding_period_months"] },
+        "cash_required_phase2": { "formula": "cash_required_phase2 = total_rehab + holding_costs; total_rehab = renovation_budget + contingency", "inputs": ["renovation_budget", "contingency", "holding_costs"] },
+        "total_cash_invested": { "formula": "total_cash_invested = cash_required_phase1 + cash_required_phase2", "inputs": ["cash_required_phase1", "cash_required_phase2"] },
+        "arv": { "formula": "arv = input", "inputs": ["arv"] },
+        "post_rehab_monthly_rent": { "formula": "post_rehab_monthly_rent = monthly_rent_post_rehab", "inputs": ["monthly_rent_post_rehab"] },
+        "annual_gross_rent": { "formula": "annual_gross_rent = monthly_rent_post_rehab * 12", "inputs": ["monthly_rent_post_rehab"] },
+        "estimated_cap_rate": { "formula": "estimated_cap_rate = noi / arv", "inputs": ["noi", "arv"] },
+        "refinance_loan_amount": { "formula": "refinance_loan_amount = arv * refinance_ltv", "inputs": ["arv", "refinance_ltv"] },
+        "refinance_costs": { "formula": "refinance_costs = refinance_closing_costs", "inputs": ["refinance_closing_costs"] },
+        "original_loan_payoff": { "formula": "original_loan_payoff = initial_loan_amount", "inputs": ["initial_loan_amount"] },
+        "cash_out_at_refinance": { "formula": "cash_out_at_refinance = refinance_loan_amount - initial_loan_amount - refinance_closing_costs", "inputs": ["refinance_loan_amount", "initial_loan_amount", "refinance_closing_costs"] },
+        "new_monthly_pi": { "formula": "new_monthly_pi = mortgage_payment(refinance_loan_amount, refinance_interest_rate, refinance_term_years)", "inputs": ["refinance_loan_amount", "refinance_interest_rate", "refinance_term_years"] },
+        "total_cash_invested": { "formula": "total_cash_invested = cash_required_phase1 + cash_required_phase2", "inputs": ["cash_required_phase1", "cash_required_phase2"] },
+        "capital_recycled_pct": { "formula": "capital_recycled_pct = cash_out_at_refinance / total_cash_invested", "inputs": ["cash_out_at_refinance", "total_cash_invested"] },
+        "cash_left_in_deal": { "formula": "cash_left_in_deal = total_cash_invested - cash_out_at_refinance", "inputs": ["total_cash_invested", "cash_out_at_refinance"] },
+        "equity_position": { "formula": "equity_position = arv - refinance_loan_amount", "inputs": ["arv", "refinance_loan_amount"] },
+        "equity_pct": { "formula": "equity_pct = equity_position / arv", "inputs": ["equity_position", "arv"] },
+        "post_refi_annual_cash_flow": { "formula": "post_refi_annual_cash_flow = noi - new_annual_debt_service", "inputs": ["noi", "new_annual_debt_service"] },
+        "post_refi_monthly_cash_flow": { "formula": "post_refi_monthly_cash_flow = post_refi_annual_cash_flow / 12", "inputs": ["post_refi_annual_cash_flow"] },
+        "post_refi_cash_on_cash": { "formula": "post_refi_cash_on_cash = post_refi_annual_cash_flow / cash_left_in_deal", "inputs": ["post_refi_annual_cash_flow", "cash_left_in_deal"] },
+        "infinite_roi_achieved": { "formula": "infinite_roi_achieved = cash_left_in_deal <= 0", "inputs": ["cash_left_in_deal"] },
+        "total_months_to_repeat": { "formula": "total_months_to_repeat = holding_period_months + 2 + 1", "inputs": ["holding_period_months"] },
+        "operating_expenses_note": {
+          "formula": "operating_expenses = (annual_gross_rent * operating_expense_pct) + property_taxes_annual + insurance_annual",
+          "inputs": ["annual_gross_rent", "operating_expense_pct", "property_taxes_annual", "insurance_annual"],
+          "notes": "insurance_annual is referenced in code but not defined in function signature"
+        }
+      }
+    },
+    {
+      "id": "flip",
+      "name": "Fix & Flip",
+      "metrics": {
+        "purchase_price": { "formula": "purchase_price = market_value * (1 - purchase_discount_pct)", "inputs": ["market_value", "purchase_discount_pct"] },
+        "hard_money_loan": { "formula": "hard_money_loan = purchase_price * hard_money_ltv", "inputs": ["purchase_price", "hard_money_ltv"] },
+        "down_payment": { "formula": "down_payment = purchase_price - hard_money_loan", "inputs": ["purchase_price", "hard_money_loan"] },
+        "closing_costs": { "formula": "closing_costs = purchase_price * closing_costs_pct", "inputs": ["purchase_price", "closing_costs_pct"] },
+        "inspection_costs": { "formula": "inspection_costs = inspection_costs", "inputs": ["inspection_costs"] },
+        "total_acquisition_cash": { "formula": "total_acquisition_cash = down_payment + closing_costs + inspection_costs", "inputs": ["down_payment", "closing_costs", "inspection_costs"] },
+        "renovation_budget": { "formula": "renovation_budget = renovation_budget", "inputs": ["renovation_budget"] },
+        "contingency": { "formula": "contingency = renovation_budget * contingency_pct", "inputs": ["renovation_budget", "contingency_pct"] },
+        "total_renovation": { "formula": "total_renovation = renovation_budget + contingency", "inputs": ["renovation_budget", "contingency"] },
+        "hard_money_interest": { "formula": "hard_money_interest = hard_money_loan * hard_money_rate * (holding_period_months / 12)", "inputs": ["hard_money_loan", "hard_money_rate", "holding_period_months"] },
+        "property_taxes": { "formula": "property_taxes = property_taxes_annual * (holding_period_months / 12)", "inputs": ["property_taxes_annual", "holding_period_months"] },
+        "insurance": { "formula": "insurance = insurance_annual * (holding_period_months / 12)", "inputs": ["insurance_annual", "holding_period_months"] },
+        "utilities": { "formula": "utilities = utilities_monthly * holding_period_months", "inputs": ["utilities_monthly", "holding_period_months"] },
+        "security_maintenance": { "formula": "security_maintenance = security_maintenance_monthly * holding_period_months", "inputs": ["security_maintenance_monthly", "holding_period_months"] },
+        "total_holding_costs": {
+          "formula": "total_holding_costs = hard_money_interest + property_taxes + insurance + utilities + security_maintenance",
+          "inputs": ["hard_money_interest", "property_taxes", "insurance", "utilities", "security_maintenance"]
+        },
+        "total_project_cost": {
+          "formula": "total_project_cost = purchase_price + closing_costs + inspection_costs + total_renovation + total_holding_costs",
+          "inputs": ["purchase_price", "closing_costs", "inspection_costs", "total_renovation", "total_holding_costs"]
+        },
+        "total_cash_required": {
+          "formula": "total_cash_required = total_acquisition_cash + total_renovation + total_holding_costs",
+          "inputs": ["total_acquisition_cash", "total_renovation", "total_holding_costs"]
+        },
+        "arv": { "formula": "arv = input", "inputs": ["arv"] },
+        "realtor_commission": { "formula": "realtor_commission = arv * 0.06", "inputs": ["arv"] },
+        "seller_closing_costs": { "formula": "seller_closing_costs = arv * 0.02", "inputs": ["arv"] },
+        "total_selling_costs": { "formula": "total_selling_costs = arv * selling_costs_pct", "inputs": ["arv", "selling_costs_pct"] },
+        "net_sale_proceeds": { "formula": "net_sale_proceeds = arv - total_selling_costs", "inputs": ["arv", "total_selling_costs"] },
+        "gross_profit": { "formula": "gross_profit = arv - total_project_cost", "inputs": ["arv", "total_project_cost"] },
+        "net_profit_before_tax": { "formula": "net_profit_before_tax = net_sale_proceeds - hard_money_loan - total_cash_required", "inputs": ["net_sale_proceeds", "hard_money_loan", "total_cash_required"] },
+        "capital_gains_tax": { "formula": "capital_gains_tax = max(0, net_profit_before_tax * capital_gains_rate)", "inputs": ["net_profit_before_tax", "capital_gains_rate"] },
+        "net_profit_after_tax": { "formula": "net_profit_after_tax = net_profit_before_tax - capital_gains_tax", "inputs": ["net_profit_before_tax", "capital_gains_tax"] },
+        "roi": { "formula": "roi = net_profit_before_tax / total_cash_required", "inputs": ["net_profit_before_tax", "total_cash_required"] },
+        "annualized_roi": { "formula": "annualized_roi = roi * (12 / holding_period_months)", "inputs": ["roi", "holding_period_months"] },
+        "profit_margin": { "formula": "profit_margin = net_profit_before_tax / arv", "inputs": ["net_profit_before_tax", "arv"] },
+        "seventy_pct_max_price": { "formula": "seventy_pct_max_price = (arv * 0.70) - renovation_budget", "inputs": ["arv", "renovation_budget"] },
+        "meets_70_rule": { "formula": "meets_70_rule = purchase_price <= seventy_pct_max_price", "inputs": ["purchase_price", "seventy_pct_max_price"] },
+        "minimum_sale_for_breakeven": { "formula": "minimum_sale_for_breakeven = total_project_cost / (1 - selling_costs_pct)", "inputs": ["total_project_cost", "selling_costs_pct"] }
+      }
+    },
+    {
+      "id": "house_hack",
+      "name": "House Hack",
+      "metrics": {
+        "purchase_price": { "formula": "purchase_price = input", "inputs": ["purchase_price"] },
+        "down_payment": { "formula": "down_payment = purchase_price * down_payment_pct", "inputs": ["purchase_price", "down_payment_pct"] },
+        "closing_costs": { "formula": "closing_costs = purchase_price * closing_costs_pct", "inputs": ["purchase_price", "closing_costs_pct"] },
+        "loan_amount": { "formula": "loan_amount = purchase_price - down_payment", "inputs": ["purchase_price", "down_payment"] },
+        "total_cash_required": { "formula": "total_cash_required = down_payment + closing_costs", "inputs": ["down_payment", "closing_costs"] },
+        "monthly_pi": { "formula": "monthly_pi = mortgage_payment(loan_amount, interest_rate, loan_term_years)", "inputs": ["loan_amount", "interest_rate", "loan_term_years"] },
+        "monthly_mip": { "formula": "monthly_mip = (loan_amount * fha_mip_rate) / 12", "inputs": ["loan_amount", "fha_mip_rate"] },
+        "monthly_piti": { "formula": "monthly_piti = monthly_pi + monthly_mip + monthly_taxes + monthly_insurance", "inputs": ["monthly_pi", "monthly_mip", "monthly_taxes", "monthly_insurance"] },
+        "rooms_rented": { "formula": "rooms_rented = input", "inputs": ["rooms_rented"] },
+        "room_rent": { "formula": "room_rent = monthly_rent_per_room", "inputs": ["monthly_rent_per_room"] },
+        "total_monthly_income": { "formula": "total_monthly_income = monthly_rent_per_room * rooms_rented", "inputs": ["monthly_rent_per_room", "rooms_rented"] },
+        "utilities_shared": { "formula": "utilities_shared = utilities_shared_monthly", "inputs": ["utilities_shared_monthly"] },
+        "maintenance": { "formula": "maintenance = maintenance_monthly", "inputs": ["maintenance_monthly"] },
+        "total_monthly_expenses": {
+          "formula": "total_monthly_expenses = monthly_piti + utilities_shared_monthly + maintenance_monthly",
+          "inputs": ["monthly_piti", "utilities_shared_monthly", "maintenance_monthly"]
+        },
+        "net_housing_cost_scenario_a": { "formula": "net_housing_cost_scenario_a = total_monthly_expenses - total_monthly_income", "inputs": ["total_monthly_expenses", "total_monthly_income"] },
+        "savings_vs_renting_a": { "formula": "savings_vs_renting_a = owner_unit_market_rent - net_housing_cost_scenario_a", "inputs": ["owner_unit_market_rent", "net_housing_cost_scenario_a"] },
+        "annual_savings_a": { "formula": "annual_savings_a = savings_vs_renting_a * 12", "inputs": ["savings_vs_renting_a"] },
+        "conversion_cost": { "formula": "conversion_cost = input", "inputs": ["conversion_cost"] },
+        "unit2_rent": { "formula": "unit2_rent = input", "inputs": ["unit2_rent"] },
+        "heloc_payment": { "formula": "heloc_payment = mortgage_payment(conversion_cost, 0.08, 10)", "inputs": ["conversion_cost"] },
+        "net_housing_cost_scenario_b": {
+          "formula": "net_housing_cost_scenario_b = (monthly_piti + heloc_payment + utilities_shared_monthly + maintenance_monthly*1.25) - unit2_rent",
+          "inputs": ["monthly_piti", "heloc_payment", "utilities_shared_monthly", "maintenance_monthly", "unit2_rent"]
+        },
+        "savings_vs_renting_b": { "formula": "savings_vs_renting_b = owner_unit_market_rent - net_housing_cost_scenario_b", "inputs": ["owner_unit_market_rent", "net_housing_cost_scenario_b"] },
+        "housing_cost_offset_pct": { "formula": "housing_cost_offset_pct = total_monthly_income / total_monthly_expenses", "inputs": ["total_monthly_income", "total_monthly_expenses"] },
+        "live_free_threshold": { "formula": "live_free_threshold = total_monthly_expenses", "inputs": ["total_monthly_expenses"] },
+        "roi_on_savings": { "formula": "roi_on_savings = annual_savings_a / total_cash_required", "inputs": ["annual_savings_a", "total_cash_required"] }
+      }
+    },
+    {
+      "id": "wholesale",
+      "name": "Wholesale",
+      "metrics": {
+        "contract_price": { "formula": "contract_price = seventy_pct_max_offer", "inputs": ["seventy_pct_max_offer"] },
+        "earnest_money": { "formula": "earnest_money = earnest_money_deposit", "inputs": ["earnest_money_deposit"] },
+        "assignment_fee": { "formula": "assignment_fee = assignment_fee", "inputs": ["assignment_fee"] },
+        "end_buyer_price": { "formula": "end_buyer_price = contract_price + assignment_fee", "inputs": ["contract_price", "assignment_fee"] },
+        "marketing_costs": { "formula": "marketing_costs = marketing_costs", "inputs": ["marketing_costs"] },
+        "total_cash_at_risk": { "formula": "total_cash_at_risk = earnest_money_deposit + marketing_costs", "inputs": ["earnest_money_deposit", "marketing_costs"] },
+        "gross_profit": { "formula": "gross_profit = assignment_fee", "inputs": ["assignment_fee"] },
+        "net_profit": { "formula": "net_profit = assignment_fee - marketing_costs", "inputs": ["assignment_fee", "marketing_costs"] },
+        "roi": { "formula": "roi = net_profit / total_cash_at_risk", "inputs": ["net_profit", "total_cash_at_risk"] },
+        "annualized_roi": { "formula": "annualized_roi = roi * (365 / days_to_close)", "inputs": ["roi", "days_to_close"] },
+        "effective_hourly_rate": { "formula": "effective_hourly_rate = net_profit / time_investment_hours", "inputs": ["net_profit", "time_investment_hours"] },
+        "time_investment_hours": { "formula": "time_investment_hours = input", "inputs": ["time_investment_hours"] },
+        "arv": { "formula": "arv = input", "inputs": ["arv"] },
+        "estimated_rehab": { "formula": "estimated_rehab = estimated_rehab_costs", "inputs": ["estimated_rehab_costs"] },
+        "seventy_pct_max_offer": { "formula": "seventy_pct_max_offer = (arv * (1 - arv_discount_pct)) - estimated_rehab_costs", "inputs": ["arv", "arv_discount_pct", "estimated_rehab_costs"] },
+        "spread_available": { "formula": "spread_available = arv - contract_price - estimated_rehab_costs", "inputs": ["arv", "contract_price", "estimated_rehab_costs"] },
+        "deal_viability": {
+          "formula": "If spread >= assignment_fee + 20000 → Strong; >= +10000 → Moderate; >= assignment_fee → Tight; else Not Viable",
+          "inputs": ["spread_available", "assignment_fee"]
+        },
+        "deals_needed_50k": { "formula": "deals_needed_50k = 50000 / net_profit", "inputs": ["net_profit"] },
+        "deals_needed_100k": { "formula": "deals_needed_100k = 100000 / net_profit", "inputs": ["net_profit"] },
+        "timeline_days": { "formula": "timeline_days = days_to_close", "inputs": ["days_to_close"] }
+      }
+    }
+  ]
+}
