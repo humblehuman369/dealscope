@@ -576,7 +576,7 @@ export function LTRWorksheet({
               </button>
               <div className="min-w-0">
                 <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 truncate">
-                  {currentStrategy.label} Analysis
+                  {thisStrategy.label} Analysis
                 </h1>
                 <p className="text-sm text-slate-500 truncate">
                   {fullAddress}
