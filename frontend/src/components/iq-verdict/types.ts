@@ -207,6 +207,28 @@ export const STRATEGY_ROUTE_MAP: Record<IQStrategyId, string> = {
 };
 
 // ===================
+// DEFAULT ASSUMPTIONS (aligned with stores/index.ts)
+// ===================
+
+const DEFAULT_ASSUMPTIONS = {
+  interestRate: 0.06,           // 6% (was 7.25%)
+  downPaymentPct: 0.20,         // 20%
+  loanTermYears: 30,
+  closingCostsPct: 0.03,        // 3%
+  vacancyRate: 0.01,            // 1% (was 5%)
+  managementPct: 0.00,          // 0% (was 8%)
+  maintenancePct: 0.05,         // 5%
+  insurancePct: 0.01,           // 1% of purchase price
+  strManagementPct: 0.10,       // 10% (was 20%)
+  platformFeesPct: 0.15,        // 15%
+  sellingCostsPct: 0.06,        // 6% (was 8%)
+  rehabBudgetPct: 0.05,         // 5% of ARV
+  targetPurchasePct: 0.95,      // 95% of breakeven
+  refinanceRate: 0.06,          // 6%
+  refinanceLtv: 0.75,           // 75%
+} as const;
+
+// ===================
 // CALCULATION HELPERS
 // ===================
 
@@ -219,6 +241,49 @@ function calculateMonthlyMortgage(principal: number, annualRate: number, years: 
   const numPayments = years * 12;
   return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
     (Math.pow(1 + monthlyRate, numPayments) - 1);
+}
+
+/**
+ * Estimate breakeven purchase price for LTR
+ * Breakeven is where monthly cash flow = $0 (NOI = Debt Service)
+ */
+function estimateBreakevenPrice(
+  monthlyRent: number,
+  propertyTaxes: number,
+  insurance: number
+): number {
+  const annualGrossRent = monthlyRent * 12;
+  const effectiveGrossIncome = annualGrossRent * (1 - DEFAULT_ASSUMPTIONS.vacancyRate);
+  const annualMaintenance = effectiveGrossIncome * DEFAULT_ASSUMPTIONS.maintenancePct;
+  const annualManagement = effectiveGrossIncome * DEFAULT_ASSUMPTIONS.managementPct;
+  const operatingExpenses = propertyTaxes + insurance + annualMaintenance + annualManagement;
+  const noi = effectiveGrossIncome - operatingExpenses;
+  
+  if (noi <= 0) return 0;
+  
+  const monthlyRate = DEFAULT_ASSUMPTIONS.interestRate / 12;
+  const numPayments = DEFAULT_ASSUMPTIONS.loanTermYears * 12;
+  const ltvRatio = 1 - DEFAULT_ASSUMPTIONS.downPaymentPct;
+  const mortgageConstant = (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+                           (Math.pow(1 + monthlyRate, numPayments) - 1) * 12;
+  
+  const breakeven = noi / (ltvRatio * mortgageConstant);
+  return Math.round(breakeven);
+}
+
+/**
+ * Calculate initial purchase price as 95% of breakeven
+ */
+function calculateTargetPurchasePrice(
+  listPrice: number,
+  monthlyRent: number,
+  propertyTaxes: number,
+  insurance: number
+): number {
+  const breakeven = estimateBreakevenPrice(monthlyRent, propertyTaxes, insurance);
+  if (breakeven <= 0) return listPrice;
+  const targetPrice = Math.round(breakeven * DEFAULT_ASSUMPTIONS.targetPurchasePct);
+  return Math.min(targetPrice, listPrice);
 }
 
 /**
@@ -262,15 +327,15 @@ function calculateLTRStrategy(
   monthlyRent: number,
   propertyTaxes: number,
   insurance: number,
-  downPaymentPct: number = 0.20,
-  interestRate: number = 0.0725,
-  loanTermYears: number = 30,
-  vacancyRate: number = 0.05,
-  managementPct: number = 0.08,
-  maintenancePct: number = 0.05
+  downPaymentPct: number = DEFAULT_ASSUMPTIONS.downPaymentPct,
+  interestRate: number = DEFAULT_ASSUMPTIONS.interestRate,
+  loanTermYears: number = DEFAULT_ASSUMPTIONS.loanTermYears,
+  vacancyRate: number = DEFAULT_ASSUMPTIONS.vacancyRate,
+  managementPct: number = DEFAULT_ASSUMPTIONS.managementPct,
+  maintenancePct: number = DEFAULT_ASSUMPTIONS.maintenancePct
 ): StrategyCalculationResult {
   const downPayment = price * downPaymentPct;
-  const closingCosts = price * 0.03;
+  const closingCosts = price * DEFAULT_ASSUMPTIONS.closingCostsPct;
   const loanAmount = price - downPayment;
   const totalCashRequired = downPayment + closingCosts;
   const monthlyPI = calculateMonthlyMortgage(loanAmount, interestRate, loanTermYears);
@@ -302,23 +367,23 @@ function calculateSTRStrategy(
   occupancyRate: number,
   propertyTaxes: number,
   insurance: number,
-  downPaymentPct: number = 0.25,
-  interestRate: number = 0.0725,
-  loanTermYears: number = 30
+  downPaymentPct: number = DEFAULT_ASSUMPTIONS.downPaymentPct,
+  interestRate: number = DEFAULT_ASSUMPTIONS.interestRate,
+  loanTermYears: number = DEFAULT_ASSUMPTIONS.loanTermYears
 ): StrategyCalculationResult {
   const downPayment = price * downPaymentPct;
-  const closingCosts = price * 0.03;
+  const closingCosts = price * DEFAULT_ASSUMPTIONS.closingCostsPct;
   const furnitureSetup = 6000;
   const loanAmount = price - downPayment;
   const totalCashRequired = downPayment + closingCosts + furnitureSetup;
   const monthlyPI = calculateMonthlyMortgage(loanAmount, interestRate, loanTermYears);
   const annualDebtService = monthlyPI * 12;
   const annualGrossRevenue = averageDailyRate * 365 * occupancyRate;
-  const managementFee = annualGrossRevenue * 0.20;
-  const platformFees = annualGrossRevenue * 0.03;
-  const utilities = 3600;
-  const supplies = 2400;
-  const maintenance = annualGrossRevenue * 0.05;
+  const managementFee = annualGrossRevenue * DEFAULT_ASSUMPTIONS.strManagementPct;
+  const platformFees = annualGrossRevenue * DEFAULT_ASSUMPTIONS.platformFeesPct;
+  const utilities = 1200;  // $100/mo (was $300/mo)
+  const supplies = 1200;   // $100/mo (was $200/mo)
+  const maintenance = annualGrossRevenue * DEFAULT_ASSUMPTIONS.maintenancePct;
   const totalOpEx = propertyTaxes + insurance + managementFee + platformFees + utilities + supplies + maintenance;
   const noi = annualGrossRevenue - totalOpEx;
   const annualCashFlow = noi - annualDebtService;
@@ -345,15 +410,15 @@ function calculateBRRRRStrategy(
   insurance: number,
   arv: number,
   rehabCost: number,
-  interestRate: number = 0.0725,
-  loanTermYears: number = 30
+  interestRate: number = DEFAULT_ASSUMPTIONS.refinanceRate,
+  loanTermYears: number = DEFAULT_ASSUMPTIONS.loanTermYears
 ): StrategyCalculationResult {
-  // Initial investment (30% down on purchase + rehab + closing)
-  const initialCash = (price * 0.30) + rehabCost + (price * 0.03);
+  // Initial investment (10% down on purchase via hard money + rehab + closing)
+  const initialCash = (price * 0.10) + rehabCost + (price * DEFAULT_ASSUMPTIONS.closingCostsPct);
   
   // Refinance at 75% of ARV
-  const refinanceLoanAmount = arv * 0.75;
-  const cashBack = refinanceLoanAmount - (price * 0.70); // Pay off initial loan
+  const refinanceLoanAmount = arv * DEFAULT_ASSUMPTIONS.refinanceLtv;
+  const cashBack = refinanceLoanAmount - (price * 0.90); // Pay off initial loan
   const cashLeftInDeal = Math.max(0, initialCash - Math.max(0, cashBack));
   const cashRecoveryPercent = initialCash > 0 ? ((initialCash - cashLeftInDeal) / initialCash) * 100 : 0;
   
@@ -361,8 +426,8 @@ function calculateBRRRRStrategy(
   const monthlyPI = calculateMonthlyMortgage(refinanceLoanAmount, interestRate, loanTermYears);
   const annualDebtService = monthlyPI * 12;
   const annualGrossRent = monthlyRent * 12;
-  const effectiveGrossIncome = annualGrossRent * 0.95;
-  const totalOpEx = propertyTaxes + insurance + (annualGrossRent * 0.08) + (annualGrossRent * 0.05);
+  const effectiveGrossIncome = annualGrossRent * (1 - DEFAULT_ASSUMPTIONS.vacancyRate);
+  const totalOpEx = propertyTaxes + insurance + (annualGrossRent * DEFAULT_ASSUMPTIONS.managementPct) + (annualGrossRent * DEFAULT_ASSUMPTIONS.maintenancePct);
   const noi = effectiveGrossIncome - totalOpEx;
   const annualCashFlow = noi - annualDebtService;
   const cashOnCash = cashLeftInDeal > 0 ? annualCashFlow / cashLeftInDeal : (annualCashFlow > 0 ? 999 : 0);
@@ -392,12 +457,12 @@ function calculateFlipStrategy(
   insurance: number,
   holdingPeriodMonths: number = 6
 ): StrategyCalculationResult {
-  const purchaseCosts = price * 0.03;
+  const purchaseCosts = price * DEFAULT_ASSUMPTIONS.closingCostsPct;
   const holdingCosts = 
     (price * 0.12 / 12 * holdingPeriodMonths) + // Hard money interest
     (propertyTaxes / 12 * holdingPeriodMonths) +
     (insurance / 12 * holdingPeriodMonths);
-  const sellingCosts = arv * 0.08; // 6% commission + 2% closing
+  const sellingCosts = arv * DEFAULT_ASSUMPTIONS.sellingCostsPct; // 6%
   const totalInvestment = price + purchaseCosts + rehabCost + holdingCosts;
   const netProfit = arv - totalInvestment - sellingCosts;
   const roi = totalInvestment > 0 ? netProfit / totalInvestment : 0;
@@ -422,8 +487,8 @@ function calculateHouseHackStrategy(
   beds: number,
   propertyTaxes: number,
   insurance: number,
-  interestRate: number = 0.0725,
-  loanTermYears: number = 30
+  interestRate: number = DEFAULT_ASSUMPTIONS.interestRate,
+  loanTermYears: number = DEFAULT_ASSUMPTIONS.loanTermYears
 ): StrategyCalculationResult {
   const totalBedrooms = Math.max(beds, 2);
   const roomsRented = Math.max(1, totalBedrooms - 1);
@@ -432,14 +497,14 @@ function calculateHouseHackStrategy(
   
   // FHA financing (3.5% down)
   const downPayment = price * 0.035;
-  const closingCosts = price * 0.03;
+  const closingCosts = price * DEFAULT_ASSUMPTIONS.closingCostsPct;
   const loanAmount = price - downPayment;
   const monthlyPI = calculateMonthlyMortgage(loanAmount, interestRate, loanTermYears);
   const monthlyTaxes = propertyTaxes / 12;
   const monthlyInsurance = insurance / 12;
   const pmi = loanAmount * 0.0085 / 12;
-  const maintenance = monthlyRentalIncome * 0.05;
-  const vacancy = monthlyRentalIncome * 0.05;
+  const maintenance = monthlyRentalIncome * DEFAULT_ASSUMPTIONS.maintenancePct;
+  const vacancy = monthlyRentalIncome * DEFAULT_ASSUMPTIONS.vacancyRate;
   
   const monthlyExpenses = monthlyPI + monthlyTaxes + monthlyInsurance + pmi + maintenance + vacancy;
   const effectiveHousingCost = monthlyExpenses - monthlyRentalIncome;
@@ -491,30 +556,37 @@ function calculateWholesaleStrategy(
 /**
  * Calculate dynamic deal analysis based on actual property economics
  * Scores each strategy 0-100 and ranks them from best to worst
+ * 
+ * KEY: Uses 95% of breakeven as the target purchase price (not list price)
+ * This aligns with the worksheet analysis page calculations.
  */
 export function calculateDynamicAnalysis(property: IQProperty): IQAnalysisResult {
-  const price = property.price;
+  const listPrice = property.price;
   
-  // Use provided data or estimate from price
+  // Use provided data or estimate from list price
   // Note: Use nullish coalescing (??) for numeric values to properly handle 0
-  const monthlyRent = property.monthlyRent ?? price * 0.007; // 0.7% rule
-  const propertyTaxes = property.propertyTaxes ?? price * 0.012; // 1.2% estimate
-  const insurance = property.insurance ?? 1800; // Default estimate
-  const arv = property.arv ?? price * 1.15; // 15% above list
-  const rehabCost = price * 0.05; // 5% of price for light rehab
+  const monthlyRent = property.monthlyRent ?? listPrice * 0.007; // 0.7% rule
+  const propertyTaxes = property.propertyTaxes ?? listPrice * 0.012; // 1.2% estimate
+  const insurance = property.insurance ?? listPrice * DEFAULT_ASSUMPTIONS.insurancePct; // 1% of price
+  const arv = property.arv ?? listPrice * 1.15; // 15% above list
+  const rehabCost = arv * DEFAULT_ASSUMPTIONS.rehabBudgetPct; // 5% of ARV
   const averageDailyRate = property.averageDailyRate ?? (monthlyRent / 30) * 1.5;
   const occupancyRate = property.occupancyRate ?? 0.65; // Properly handles 0% occupancy
   const beds = property.beds || 3; // beds=0 is invalid, so || is fine here
   
+  // Calculate target purchase price as 95% of breakeven (aligned with worksheets)
+  const targetPrice = calculateTargetPurchasePrice(listPrice, monthlyRent, propertyTaxes, insurance);
+  
   // Calculate all strategies in fixed display order:
   // 1. Long-term Rental, 2. Short-term Rental, 3. BRRRR, 4. Fix & Flip, 5. House Hack, 6. Wholesale
+  // Use targetPrice (95% of breakeven) instead of listPrice for consistent analysis
   const strategyResults: StrategyCalculationResult[] = [
-    calculateLTRStrategy(price, monthlyRent, propertyTaxes, insurance),
-    calculateSTRStrategy(price, averageDailyRate, occupancyRate, propertyTaxes, insurance),
-    calculateBRRRRStrategy(price, monthlyRent, propertyTaxes, insurance, arv, rehabCost),
-    calculateFlipStrategy(price, arv, rehabCost, propertyTaxes, insurance),
-    calculateHouseHackStrategy(price, monthlyRent, beds, propertyTaxes, insurance),
-    calculateWholesaleStrategy(price, arv, rehabCost),
+    calculateLTRStrategy(targetPrice, monthlyRent, propertyTaxes, insurance),
+    calculateSTRStrategy(targetPrice, averageDailyRate, occupancyRate, propertyTaxes, insurance),
+    calculateBRRRRStrategy(targetPrice, monthlyRent, propertyTaxes, insurance, arv, rehabCost),
+    calculateFlipStrategy(targetPrice, arv, rehabCost, propertyTaxes, insurance),
+    calculateHouseHackStrategy(targetPrice, monthlyRent, beds, propertyTaxes, insurance),
+    calculateWholesaleStrategy(targetPrice, arv, rehabCost),
   ];
   
   // Strategies are kept in fixed order (no sorting by score)
