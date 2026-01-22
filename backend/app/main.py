@@ -407,7 +407,7 @@ async def calculate_analytics(request: AnalyticsRequest):
 @app.get("/api/v1/analytics/{property_id}/quick")
 async def quick_analytics(
     property_id: str,
-    db: DbSession = Depends(),
+    db: DbSession,
     purchase_price: Optional[float] = None,
     down_payment_pct: float = Query(0.20, ge=0, le=1),
     interest_rate: float = Query(0.075, ge=0, le=0.3)
