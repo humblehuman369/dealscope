@@ -319,10 +319,24 @@ async def get_metrics_glossary(
     admin_user: SuperUser
 ):
     """Return a formula glossary for admin display."""
-    glossary_path = Path(__file__).resolve().parents[1] / "data" / "metrics_glossary.json"
-
-    if not glossary_path.exists():
-        raise HTTPException(status_code=404, detail="Metrics glossary not found")
+    # Try multiple path resolution strategies
+    possible_paths = [
+        Path(__file__).resolve().parents[1] / "data" / "metrics_glossary.json",  # app/data/
+        Path(__file__).resolve().parents[2] / "app" / "data" / "metrics_glossary.json",  # from routers up
+        Path("/app/app/data/metrics_glossary.json"),  # Railway absolute path
+        Path("app/data/metrics_glossary.json"),  # Relative from working dir
+    ]
+    
+    glossary_path = None
+    for path in possible_paths:
+        logger.info(f"Trying glossary path: {path} (exists: {path.exists()})")
+        if path.exists():
+            glossary_path = path
+            break
+    
+    if glossary_path is None:
+        logger.error(f"Metrics glossary not found. Tried paths: {possible_paths}")
+        raise HTTPException(status_code=404, detail=f"Metrics glossary not found. __file__={__file__}")
 
     with glossary_path.open("r", encoding="utf-8") as handle:
         data = json.load(handle)
