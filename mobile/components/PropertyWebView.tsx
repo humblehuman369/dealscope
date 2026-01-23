@@ -360,21 +360,21 @@ export default function PropertyWebView({ address, onClose, onFallbackToNative }
         )}
       </View>
       
-      {/* Floating Back Button - Rendered AFTER WebView to ensure it's on top */}
+      {/* Back Arrow Button - Top Left Corner */}
       <TouchableOpacity
         style={[
-          styles.floatingBackButton, 
-          { top: 8 },
-          isDarkMode && styles.floatingBackButtonDark
+          styles.backArrowButton, 
+          { top: 12 },
+          isDarkMode && styles.backArrowButtonDark
         ]}
         onPress={handleGoBack}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         activeOpacity={0.7}
       >
         <Ionicons
-          name="chevron-back"
-          size={26}
-          color={isDarkMode ? colors.white : colors.gray[700]}
+          name="arrow-back"
+          size={24}
+          color={isDarkMode ? colors.white : colors.gray[800]}
         />
       </TouchableOpacity>
 
@@ -398,25 +398,27 @@ const styles = StyleSheet.create({
   containerDark: {
     backgroundColor: '#07172e', // navy-900
   },
-  floatingBackButton: {
+  backArrowButton: {
     position: 'absolute',
-    left: 8,
+    left: 16,
     zIndex: 100,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
   },
-  floatingBackButtonDark: {
-    backgroundColor: 'rgba(7, 23, 46, 0.9)', // navy-900 with transparency
-    shadowColor: '#000',
+  backArrowButtonDark: {
+    backgroundColor: 'rgba(30, 41, 59, 0.95)', // slate-800 with slight transparency
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     shadowOpacity: 0.3,
   },
   webViewContainer: {

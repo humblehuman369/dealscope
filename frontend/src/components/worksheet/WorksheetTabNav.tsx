@@ -3,7 +3,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useWorksheetStore } from '@/stores/worksheetStore'
-import { StrategyDropdown } from './StrategyDropdown'
 import { WorksheetStrategyId } from '@/constants/worksheetStrategies'
 import {
   BarChart3,
@@ -137,8 +136,6 @@ export function WorksheetTabNav({
     <>
       {/* Tab Navigation - No wrapper, parent provides container */}
       <div className="flex items-center gap-2 h-[50px]">
-        <StrategyDropdown propertyId={propertyId} activeStrategy={strategy} />
-
         {/* Scroll Container */}
         <div className="flex-1 flex items-center relative min-w-0 overflow-hidden">
           {/* Left Fade */}
@@ -216,9 +213,6 @@ export function WorksheetTabNav({
           <div className="absolute top-0 left-0 right-0 bg-white rounded-b-2xl shadow-xl max-h-[80vh] overflow-y-auto">
             <div className="p-4 border-b border-slate-200 font-semibold text-slate-800">
               Navigation
-            </div>
-            <div className="p-3 border-b border-slate-200">
-              <StrategyDropdown propertyId={propertyId} activeStrategy={strategy} />
             </div>
             <div className="p-2">
               {tabs.map((tab) => {

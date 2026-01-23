@@ -404,10 +404,10 @@ export function FlipWorksheet({
               />
             </div>
             <div className="relative flex-shrink-0">
-              <button onClick={() => setIsStrategyDropdownOpen(!isStrategyDropdownOpen)} className="flex items-center gap-2 bg-white border border-slate-300 hover:border-teal hover:bg-teal/5 text-slate-700 px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors">
-                <ArrowLeftRight className="w-4 h-4 text-slate-500" />
+              <button onClick={() => setIsStrategyDropdownOpen(!isStrategyDropdownOpen)} className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-white hover:opacity-90" style={{ backgroundColor: '#007ea7' }}>
+                <ArrowLeftRight className="w-4 h-4 text-white" />
                 <span className="hidden sm:inline">Switch Strategy</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${isStrategyDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-white transition-transform ${isStrategyDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {isStrategyDropdownOpen && (
                 <>

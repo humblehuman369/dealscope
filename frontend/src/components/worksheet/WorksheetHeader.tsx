@@ -139,12 +139,13 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
           <div className="relative flex-shrink-0">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 bg-white border border-[var(--ws-border)] hover:border-[var(--iq-teal)] hover:bg-[var(--ws-accent-bg)] text-[var(--ws-text-primary)] px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-white hover:opacity-90"
+              style={{ backgroundColor: '#007ea7' }}
             >
-              <ArrowLeftRight className="w-4 h-4 text-[var(--ws-text-secondary)]" />
+              <ArrowLeftRight className="w-4 h-4 text-white" />
               <span className="hidden sm:inline">Switch Strategy</span>
               <ChevronDown 
-                className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                className={`w-4 h-4 text-white transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
               />
             </button>
             
