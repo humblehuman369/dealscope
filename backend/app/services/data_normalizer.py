@@ -963,15 +963,15 @@ class InvestIQNormalizer:
                               DataSource.RENTCAST, ConfidenceLevel.HIGH)
             
             # Rental market velocity metrics
-            if rental_data.get("medianDaysOnMarket"):
+            if rental_data.get("medianDaysOnMarket") is not None:
                 self._set_field(result, "rental_days_on_market",
                               int(rental_data["medianDaysOnMarket"]),
                               DataSource.RENTCAST, ConfidenceLevel.HIGH)
-            if rental_data.get("totalListings"):
+            if rental_data.get("totalListings") is not None:
                 self._set_field(result, "rental_total_listings",
                               int(rental_data["totalListings"]),
                               DataSource.RENTCAST, ConfidenceLevel.HIGH)
-            if rental_data.get("newListings"):
+            if rental_data.get("newListings") is not None:
                 self._set_field(result, "rental_new_listings",
                               int(rental_data["newListings"]),
                               DataSource.RENTCAST, ConfidenceLevel.HIGH)
