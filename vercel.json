@@ -4,5 +4,16 @@
   "installCommand": "npm install && cd frontend && npm install",
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/.next",
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.sentry.io https://*.sentry-cdn.com https://*.vercel-scripts.com https://*.vercel-insights.com https://vercel.live; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https: wss: http://localhost:* ws://localhost:* https://*.sentry.io https://*.vercel-insights.com; img-src * data: blob:; font-src 'self' data: https://fonts.gstatic.com; frame-ancestors 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'"
+        }
+      ]
+    }
+  ]
 }

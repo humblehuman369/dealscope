@@ -29,12 +29,12 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               // Scripts: self + unsafe-inline for Next.js hydration, unsafe-eval for dynamic imports/code splitting
-              // Added Sentry and common CDNs
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.sentry.io https://*.sentry-cdn.com",
+              // Added Sentry, Vercel analytics, and common CDNs
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.sentry.io https://*.sentry-cdn.com https://*.vercel-scripts.com https://*.vercel-insights.com https://vercel.live",
               // Styles: self + unsafe-inline for Tailwind CSS and inline styles + Google Fonts
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              // Connections: self + HTTPS for API calls + Sentry + localhost for dev
-              "connect-src 'self' https: wss: http://localhost:* ws://localhost:* http://127.0.0.1:* https://*.sentry.io",
+              // Connections: self + HTTPS for API calls + Sentry + Vercel + localhost for dev
+              "connect-src 'self' https: wss: http://localhost:* ws://localhost:* http://127.0.0.1:* https://*.sentry.io https://*.vercel-insights.com",
               // Images: allow any source for property photos
               "img-src * data: blob:",
               // Fonts: self + data URIs + Google Fonts
