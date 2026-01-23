@@ -4,11 +4,10 @@ import React, { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useStrWorksheetCalculator } from '@/hooks/useStrWorksheetCalculator'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
-import { PropertyStatusPills } from '../PropertyStatusPills'
 import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
-import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, ChevronDown, CheckCircle2 } from 'lucide-react'
 import { useDealScore } from '@/hooks/useDealScore'
 
 // Section components for tab navigation
@@ -544,20 +543,30 @@ export function StrWorksheet({
   // ============================================
   return (
     <div className="w-full min-h-screen bg-slate-50">
-      {/* PAGE TITLE ROW - Back Arrow + Strategy Title + Strategy Switcher */}
+      {/* PAGE TITLE ROW - Photo + Title + Price/Badges + Strategy Dropdown */}
       <div className="w-full bg-white border-b border-slate-200">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between gap-4">
-            {/* Left: Back Arrow + Page Title */}
+            {/* Left: Back Arrow + Photo + Title */}
             <div className="flex items-center gap-3 min-w-0">
               <button 
                 onClick={() => router.back()}
-                className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors flex-shrink-0"
+                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors flex-shrink-0"
               >
                 <ArrowLeft className="w-5 h-5 text-slate-500" />
               </button>
+              
+              {/* Property Photo Thumbnail */}
+              <div className="hidden sm:block flex-shrink-0">
+                <img 
+                  src={property.property_data_snapshot?.photos?.[0] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=200&h=150&fit=crop'}
+                  alt="Property"
+                  className="w-16 h-12 object-cover rounded-lg border border-slate-200"
+                />
+              </div>
+              
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 truncate">
+                <h1 className="text-lg sm:text-xl font-semibold text-slate-900 truncate">
                   {thisStrategy.label} Analysis
                 </h1>
                 <p className="text-sm text-slate-500 truncate">
@@ -566,33 +575,55 @@ export function StrWorksheet({
               </div>
             </div>
             
-            {/* Center: Status Pills (hidden on small screens) */}
-            <div className="hidden lg:flex flex-shrink-0">
-              <PropertyStatusPills
-                listingStatus={property.property_data_snapshot?.listingStatus}
-                isOffMarket={property.property_data_snapshot?.isOffMarket}
-                listPrice={property.property_data_snapshot?.listPrice}
-                zestimate={property.property_data_snapshot?.zestimate}
-                sellerType={property.property_data_snapshot?.sellerType}
-                isForeclosure={property.property_data_snapshot?.isForeclosure}
-                isBankOwned={property.property_data_snapshot?.isBankOwned}
-                isAuction={property.property_data_snapshot?.isAuction}
-                isNewConstruction={property.property_data_snapshot?.isNewConstruction}
-                daysOnMarket={property.property_data_snapshot?.daysOnMarket}
-              />
+            {/* Center: Price + Status Badges */}
+            <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+              {/* Price Display */}
+              <div className="text-right">
+                <div className="text-xl font-bold text-slate-900">
+                  {fmt.currency(property.property_data_snapshot?.zestimate || property.property_data_snapshot?.listPrice || originalPrice)}
+                </div>
+                <div className="text-xs text-slate-500">Est. Value</div>
+              </div>
+              
+              {/* Seller Type Badge (Bank Owned, etc.) */}
+              {property.property_data_snapshot?.isBankOwned && (
+                <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide bg-slate-800 text-white rounded">
+                  Bank Owned
+                </span>
+              )}
+              {property.property_data_snapshot?.isForeclosure && !property.property_data_snapshot?.isBankOwned && (
+                <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide bg-amber-500 text-white rounded">
+                  Foreclosure
+                </span>
+              )}
+              {property.property_data_snapshot?.isAuction && (
+                <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide bg-purple-600 text-white rounded">
+                  Auction
+                </span>
+              )}
+              
+              {/* Status Badge (Off-Market / Active) */}
+              {property.property_data_snapshot?.isOffMarket ? (
+                <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide border-2 border-red-500 text-red-500 rounded">
+                  Off-Market
+                </span>
+              ) : (
+                <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide border-2 border-teal text-teal rounded">
+                  Active
+                </span>
+              )}
             </div>
             
-            {/* Right: Strategy Switcher */}
+            {/* Right: Strategy Analysis Dropdown */}
             <div className="relative flex-shrink-0">
               <button
                 onClick={() => setIsStrategyDropdownOpen(!isStrategyDropdownOpen)}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-white hover:opacity-90"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors text-white hover:opacity-90"
                 style={{ backgroundColor: '#007ea7' }}
               >
-                <ArrowLeftRight className="w-4 h-4 text-white" />
-                <span className="hidden sm:inline">Switch Strategy</span>
+                <span className="hidden sm:inline">Strategy Analysis</span>
                 <ChevronDown 
-                  className={`w-4 h-4 text-white transition-transform ${isStrategyDropdownOpen ? 'rotate-180' : ''}`}
+                  className={`w-3.5 h-3.5 text-white transition-transform ${isStrategyDropdownOpen ? 'rotate-180' : ''}`}
                 />
               </button>
               
@@ -603,7 +634,7 @@ export function StrWorksheet({
                     className="fixed inset-0 z-40" 
                     onClick={() => setIsStrategyDropdownOpen(false)}
                   />
-                  <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+                  <div className="absolute top-full right-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
                     <div className="px-3 py-2 border-b border-slate-100">
                       <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                         Investment Strategies
@@ -619,7 +650,7 @@ export function StrWorksheet({
                             router.push(`/worksheet/${propertyId}/${strategy.id}`)
                           }
                         }}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-slate-50 transition-colors ${
+                        className={`w-full flex items-center gap-3 px-4 py-2 text-left text-sm hover:bg-slate-50 transition-colors ${
                           thisStrategy.id === strategy.id 
                             ? 'bg-teal/10 text-teal' 
                             : 'text-slate-700'
