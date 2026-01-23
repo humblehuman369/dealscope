@@ -293,15 +293,15 @@ class ListingInfo(BaseModel):
     listing_status: Optional[str] = None  # FOR_SALE, FOR_RENT, OFF_MARKET, SOLD, PENDING
     
     # Is property currently off-market (not actively listed)
-    is_off_market: bool = True
+    is_off_market: Optional[bool] = True
     
     # Seller/listing type indicators
     seller_type: Optional[str] = None  # Agent, FSBO, Foreclosure, BankOwned, Auction
-    is_foreclosure: bool = False
-    is_bank_owned: bool = False
-    is_fsbo: bool = False
-    is_auction: bool = False
-    is_new_construction: bool = False
+    is_foreclosure: Optional[bool] = False
+    is_bank_owned: Optional[bool] = False
+    is_fsbo: Optional[bool] = False
+    is_auction: Optional[bool] = False
+    is_new_construction: Optional[bool] = False
     
     # Pricing - only set if property is actively listed
     list_price: Optional[float] = None  # Actual asking price if listed
