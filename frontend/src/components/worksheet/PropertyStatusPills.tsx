@@ -23,7 +23,7 @@ interface PropertyStatusPillsProps {
  * Three pills showing:
  * 1. Status (For Sale/For Rent/Off-Market) with optional Active/Under Contract indicator
  * 2. Price (List Price or Est. Value)
- * 3. Seller type (Individual/Corporate/Bank Owned/etc.)
+ * 3. Owner type (Individual/Corporate/Bank Owned/etc.)
  */
 export function PropertyStatusPills({
   listingStatus = 'OFF_MARKET',
@@ -127,14 +127,14 @@ export function PropertyStatusPills({
         </div>
       </div>
 
-      {/* Seller Pill */}
+      {/* Owner Pill */}
       <div className={`rounded-lg px-4 py-2 ${
         isWarningSellerType 
           ? 'bg-[rgba(245,158,11,0.12)]' 
           : 'bg-slate-100'
       }`}>
         <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
-          SELLER
+          OWNER
         </div>
         <div className={`text-sm font-semibold mt-0.5 ${
           isWarningSellerType ? 'text-amber-700' : 'text-slate-900'
