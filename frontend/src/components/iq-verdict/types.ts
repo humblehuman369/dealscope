@@ -312,11 +312,33 @@ function calculateTargetPurchasePrice(
 
 /**
  * Score normalizer - converts a metric to 0-100 scale
+ * @deprecated Use performanceScore for consistency with worksheets
  */
 function normalizeScore(value: number, minValue: number, maxValue: number): number {
   if (value <= minValue) return 0;
   if (value >= maxValue) return 100;
   return Math.round(((value - minValue) / (maxValue - minValue)) * 100);
+}
+
+/**
+ * Calculate performance score using the worksheet formula: 50 + (metric × multiplier)
+ * 
+ * This formula centers at 50 for 0% return (breakeven), with:
+ * - Positive returns increasing the score
+ * - Negative returns decreasing the score
+ * - Score clamped to 0-100 range
+ * 
+ * Each strategy uses a different multiplier based on typical return ranges:
+ * - LTR: 5 (10% CoC = 100 score)
+ * - STR: 3.33 (15% CoC = 100 score)
+ * - BRRRR: 0.5 (100% recovery = 100 score)
+ * - Flip: 2.5 (20% ROI = 100 score)
+ * - House Hack: 0.5 (100% offset = 100 score)
+ * - Wholesale: 0.5 (100% ROI = 100 score)
+ */
+function performanceScore(metricValue: number, multiplier: number): number {
+  const score = Math.round(50 + (metricValue * multiplier));
+  return Math.max(0, Math.min(100, score));
 }
 
 /**
@@ -370,17 +392,19 @@ function calculateLTRStrategy(
   const noi = effectiveGrossIncome - totalOpEx;
   const annualCashFlow = noi - annualDebtService;
   const cashOnCash = totalCashRequired > 0 ? annualCashFlow / totalCashRequired : 0;
+  const cocPct = cashOnCash * 100;
   
-  // Score: 0% CoC = 0, 12%+ CoC = 100
-  const score = normalizeScore(cashOnCash * 100, 0, 12);
+  // Performance score: 50 + (CoC% × 5)
+  // 0% CoC = 50, 10% CoC = 100, -10% CoC = 0
+  const score = performanceScore(cocPct, 5);
   
   return {
     id: 'long-term-rental',
     name: 'Long-Term Rental',
     icon: '🏠',
-    metric: `${(cashOnCash * 100).toFixed(1)}%`,
+    metric: `${cocPct.toFixed(1)}%`,
     metricLabel: 'CoC Return',
-    metricValue: cashOnCash * 100,
+    metricValue: cocPct,
     score,
   };
 }
@@ -412,17 +436,19 @@ function calculateSTRStrategy(
   const noi = annualGrossRevenue - totalOpEx;
   const annualCashFlow = noi - annualDebtService;
   const cashOnCash = totalCashRequired > 0 ? annualCashFlow / totalCashRequired : 0;
+  const cocPct = cashOnCash * 100;
   
-  // Score: 0% CoC = 0, 15%+ CoC = 100
-  const score = normalizeScore(cashOnCash * 100, 0, 15);
+  // Performance score: 50 + (CoC% × 3.33)
+  // 0% CoC = 50, 15% CoC = 100, -15% CoC = 0
+  const score = performanceScore(cocPct, 3.33);
   
   return {
     id: 'short-term-rental',
     name: 'Short-Term Rental',
     icon: '🏨',
-    metric: `${(cashOnCash * 100).toFixed(1)}%`,
+    metric: `${cocPct.toFixed(1)}%`,
     metricLabel: 'CoC Return',
-    metricValue: cashOnCash * 100,
+    metricValue: cocPct,
     score,
   };
 }
@@ -465,8 +491,9 @@ function calculateBRRRRStrategy(
     cashOnCash = annualCashFlow / minCashForCoC;
   }
   
-  // Score: 0% recovery = 0, 100%+ recovery = 100
-  const score = normalizeScore(cashRecoveryPercent, 0, 100);
+  // Performance score: 50 + (cashRecoveryPct × 0.5)
+  // 0% recovery = 50, 100% recovery = 100, -100% recovery = 0
+  const score = performanceScore(cashRecoveryPercent, 0.5);
   
   // Cap CoC display at reasonable limits (-100% to Infinite)
   let displayCoC: string;
@@ -506,9 +533,11 @@ function calculateFlipStrategy(
   const totalInvestment = price + purchaseCosts + rehabCost + holdingCosts;
   const netProfit = arv - totalInvestment - sellingCosts;
   const roi = totalInvestment > 0 ? netProfit / totalInvestment : 0;
+  const roiPct = roi * 100;
   
-  // Score: 0% ROI = 0, 30%+ ROI = 100
-  const score = normalizeScore(roi * 100, 0, 30);
+  // Performance score: 50 + (ROI% × 2.5)
+  // 0% ROI = 50, 20% ROI = 100, -20% ROI = 0
+  const score = performanceScore(roiPct, 2.5);
   
   return {
     id: 'fix-and-flip',
@@ -550,8 +579,9 @@ function calculateHouseHackStrategy(
   const effectiveHousingCost = monthlyExpenses - monthlyRentalIncome;
   const housingCostOffset = monthlyExpenses > 0 ? (monthlyRentalIncome / monthlyExpenses) * 100 : 0;
   
-  // Score: 0% offset = 0, 100%+ offset (free living) = 100
-  const score = normalizeScore(housingCostOffset, 0, 100);
+  // Performance score: 50 + (housingOffsetPct × 0.5)
+  // 0% offset = 50, 100% offset = 100, -100% offset = 0
+  const score = performanceScore(housingCostOffset, 0.5);
   
   return {
     id: 'house-hack',
@@ -573,10 +603,13 @@ function calculateWholesaleStrategy(
   const wholesaleFee = price * 0.007; // Target fee
   const mao = (arv * 0.70) - rehabCost - wholesaleFee;
   const assignmentFee = mao - (price * 0.85); // Assume we can get 15% off list
-  const assignmentFeePercent = price > 0 ? (assignmentFee / price) * 100 : 0;
+  // Calculate ROI on EMD (assuming $5K earnest money deposit)
+  const emd = 5000;
+  const roiPct = emd > 0 ? (assignmentFee / emd) * 100 : 0;
   
-  // Score: 0% assignment fee = 0, 3%+ assignment fee = 100
-  const score = normalizeScore(assignmentFeePercent, 0, 3);
+  // Performance score: 50 + (ROI% × 0.5)
+  // 0% ROI = 50, 100% ROI = 100, -100% ROI = 0
+  const score = performanceScore(roiPct, 0.5);
   
   return {
     id: 'wholesale',

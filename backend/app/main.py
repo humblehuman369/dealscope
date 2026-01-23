@@ -788,8 +788,13 @@ def _calculate_wholesale_strategy(
     wholesale_fee = price * 0.007
     mao = (arv * 0.70) - rehab_cost - wholesale_fee
     assignment_fee = mao - (price * 0.85)
-    assignment_pct = (assignment_fee / price * 100) if price > 0 else 0
-    score = _normalize_score(assignment_pct, 0, 3)
+    # Calculate ROI on EMD (assuming $5K earnest money deposit)
+    emd = 5000
+    roi_pct = (assignment_fee / emd * 100) if emd > 0 else 0
+    
+    # Performance score: 50 + (ROI% / 2)
+    # 0% ROI = 50, 100% ROI = 100, -100% ROI = 0
+    score = _performance_score(roi_pct, 0.5)
     
     return {
         "id": "wholesale",
