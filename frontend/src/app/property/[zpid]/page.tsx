@@ -280,7 +280,7 @@ function normalizePropertyData(
     listingStatus,
     isOffMarket,
     // Listing info for Deal Opportunity Score
-    sellerType: p.listing?.seller_type,
+    sellerType: p.listing?.seller_type as 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown' | undefined,
     isForeclosure: p.listing?.is_foreclosure,
     isBankOwned: p.listing?.is_bank_owned,
     isFsbo: p.listing?.is_fsbo,
