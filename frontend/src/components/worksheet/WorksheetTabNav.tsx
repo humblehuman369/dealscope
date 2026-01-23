@@ -30,7 +30,7 @@ interface TabItem {
 
 const tabs: TabItem[] = [
   { id: 'analyze', label: 'Analyze Property', shortLabel: 'Analyze', icon: Search, section: 'analyze' },
-  { id: 'property-details', label: 'Property Details', shortLabel: 'Details', icon: Home, section: 'property-details' },
+  { id: 'property-details', label: 'Photos & Details', shortLabel: 'Photos & Details', icon: Home, section: 'property-details' },
   { id: 'market-data', label: 'Market Data', shortLabel: 'Market Data', icon: BarChart3, section: 'market-data' },
   { id: 'projections', label: 'Buy & Hold Projections', shortLabel: 'Projections', icon: TrendingUp, section: 'projections' },
   { id: 'sales-comps', label: 'Sales Comps & ARV', shortLabel: 'Comps', icon: Building2, section: 'sales-comps' },

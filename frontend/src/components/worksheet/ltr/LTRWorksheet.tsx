@@ -231,7 +231,8 @@ export function LTRWorksheet({
   // Extract Deal Opportunity Score from backend result
   const opportunityScore = dealScoreResult?.dealScore ?? 0
   const breakeven = dealScoreResult?.breakevenPrice ?? purchasePrice
-  const opportunityVerdict = dealScoreResult?.dealVerdict ?? 'Calculating...'
+  // Remove "Opportunity" suffix from backend verdict for cleaner display
+  const opportunityVerdict = (dealScoreResult?.dealVerdict ?? 'Calculating...').replace(' Opportunity', '')
 
   // ============================================
   // CALCULATIONS (Financial metrics only - NO Deal Score)
