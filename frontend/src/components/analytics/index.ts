@@ -206,6 +206,15 @@ export {
   type SellerType
 } from './ListingStatusBadge'
 
+// Market Temperature Indicator - Buyer/seller market analysis
+export {
+  MarketTemperatureIndicator,
+  MarketTemperatureBadge,
+  MarketTemperatureDot,
+  type MarketTemperature,
+  type MarketStats
+} from './MarketTemperatureIndicator'
+
 // Property Premium Page - World-class property analysis landing page
 export { PropertyPremiumPage } from './PropertyPremiumPage'
 

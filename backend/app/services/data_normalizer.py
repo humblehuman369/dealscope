@@ -142,11 +142,17 @@ class NormalizedProperty:
     middle_school_rating: Optional[int] = None
     high_school_rating: Optional[int] = None
     
-    # Market Context
+    # Market Context - Extended for Buyer/Seller Analysis
     market_median_price: Optional[float] = None
     market_avg_price_sqft: Optional[float] = None
-    market_days_on_market: Optional[int] = None
+    market_days_on_market: Optional[int] = None       # Median days on market
+    market_avg_days_on_market: Optional[float] = None # Average days on market (NEW)
+    market_min_days_on_market: Optional[int] = None   # Min days on market (NEW)
+    market_max_days_on_market: Optional[int] = None   # Max days on market (NEW)
     market_total_listings: Optional[int] = None
+    market_new_listings: Optional[int] = None         # New listings count (NEW)
+    market_absorption_rate: Optional[float] = None    # Calculated: new/total (NEW)
+    market_temperature: Optional[str] = None          # hot, warm, cold (NEW)
     
     # Comparables Counts
     sale_comps_count: Optional[int] = None
@@ -793,11 +799,19 @@ class InvestIQNormalizer:
                                       DataSource.ZILLOW, ConfidenceLevel.HIGH)
     
     def _merge_market(self, result: NormalizedProperty, rc: Dict, zl: Dict):
-        """Merge market statistics."""
+        """
+        Merge market statistics from RentCast saleData.
+        
+        Key metrics for buyer/seller market analysis:
+        - Days on Market (avg, median, min, max) - Higher = buyer's market
+        - Listing counts (new vs total) - Used to calculate absorption rate
+        - Market temperature classification based on metrics
+        """
         market = rc.get("market", {}) or {}
         sale_data = market.get("saleData", {}) or {}
         
         if sale_data:
+            # Price metrics
             if sale_data.get("medianPrice"):
                 self._set_field(result, "market_median_price", sale_data["medianPrice"],
                               DataSource.RENTCAST, ConfidenceLevel.HIGH)
@@ -805,13 +819,60 @@ class InvestIQNormalizer:
                 self._set_field(result, "market_avg_price_sqft",
                               sale_data["averagePricePerSquareFoot"],
                               DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            
+            # Days on Market metrics - KEY for negotiation leverage
             if sale_data.get("medianDaysOnMarket"):
                 self._set_field(result, "market_days_on_market",
                               int(sale_data["medianDaysOnMarket"]),
                               DataSource.RENTCAST, ConfidenceLevel.HIGH)
-            if sale_data.get("totalListings"):
+            if sale_data.get("averageDaysOnMarket"):
+                self._set_field(result, "market_avg_days_on_market",
+                              float(sale_data["averageDaysOnMarket"]),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            if sale_data.get("minDaysOnMarket"):
+                self._set_field(result, "market_min_days_on_market",
+                              int(sale_data["minDaysOnMarket"]),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            if sale_data.get("maxDaysOnMarket"):
+                self._set_field(result, "market_max_days_on_market",
+                              int(sale_data["maxDaysOnMarket"]),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            
+            # Listing inventory metrics
+            total_listings = sale_data.get("totalListings")
+            new_listings = sale_data.get("newListings")
+            
+            if total_listings:
                 self._set_field(result, "market_total_listings",
-                              int(sale_data["totalListings"]),
+                              int(total_listings),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            if new_listings is not None:
+                self._set_field(result, "market_new_listings",
+                              int(new_listings),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            
+            # Calculate absorption rate (new listings / total listings)
+            # Higher absorption rate = faster market (seller's market)
+            if total_listings and total_listings > 0 and new_listings is not None:
+                absorption_rate = round(new_listings / total_listings, 4)
+                self._set_field(result, "market_absorption_rate",
+                              absorption_rate,
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            
+            # Calculate market temperature based on days on market
+            # Hot market: < 30 days median (seller's market)
+            # Warm market: 30-60 days median (balanced)
+            # Cold market: > 60 days median (buyer's market - more negotiation power)
+            median_dom = sale_data.get("medianDaysOnMarket")
+            if median_dom:
+                if median_dom < 30:
+                    market_temp = "hot"
+                elif median_dom <= 60:
+                    market_temp = "warm"
+                else:
+                    market_temp = "cold"
+                self._set_field(result, "market_temperature",
+                              market_temp,
                               DataSource.RENTCAST, ConfidenceLevel.HIGH)
     
     def _merge_comps_counts(self, result: NormalizedProperty, rc: Dict, zl: Dict):

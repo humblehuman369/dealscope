@@ -20,7 +20,7 @@ from app.services.calculators import (
 from app.schemas import (
     PropertyResponse, AnalyticsResponse, AllAssumptions,
     StrategyType, Address, PropertyDetails, ValuationData,
-    RentalData, MarketData, ProvenanceMap, DataQuality,
+    RentalData, MarketData, MarketStatistics, ProvenanceMap, DataQuality,
     LTRResults, STRResults, BRRRRResults, FlipResults,
     HouseHackResults, WholesaleResults, FieldProvenance,
     ListingInfo
@@ -185,7 +185,24 @@ class PropertyService:
                 hoa_fees_monthly=normalized.get("hoa_fees_monthly", 0),
                 # Mortgage rates for frontend
                 mortgage_rate_arm5=normalized.get("mortgage_rate_arm5"),
-                mortgage_rate_30yr=normalized.get("mortgage_rate_30yr")
+                mortgage_rate_30yr=normalized.get("mortgage_rate_30yr"),
+                # Market statistics for buyer/seller analysis
+                market_stats=MarketStatistics(
+                    median_days_on_market=normalized.get("market_days_on_market"),
+                    avg_days_on_market=normalized.get("market_avg_days_on_market"),
+                    min_days_on_market=normalized.get("market_min_days_on_market"),
+                    max_days_on_market=normalized.get("market_max_days_on_market"),
+                    total_listings=normalized.get("market_total_listings"),
+                    new_listings=normalized.get("market_new_listings"),
+                    absorption_rate=normalized.get("market_absorption_rate"),
+                    market_temperature=normalized.get("market_temperature"),
+                    median_price=normalized.get("market_median_price"),
+                    avg_price_per_sqft=normalized.get("market_avg_price_sqft"),
+                ) if any([
+                    normalized.get("market_days_on_market"),
+                    normalized.get("market_total_listings"),
+                    normalized.get("market_new_listings"),
+                ]) else None,
             ),
             listing=ListingInfo(
                 listing_status=normalized.get("listing_status"),

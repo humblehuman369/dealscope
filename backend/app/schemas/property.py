@@ -180,6 +180,41 @@ class RentalData(BaseModel):
     average_rent: Optional[float] = None
 
 
+class MarketTemperature(str, Enum):
+    """Market temperature classification for buyer/seller analysis."""
+    HOT = "hot"        # Seller's market - low days on market, high absorption
+    WARM = "warm"      # Balanced market
+    COLD = "cold"      # Buyer's market - high days on market, low absorption
+
+
+class MarketStatistics(BaseModel):
+    """
+    Market health indicators for investment analysis.
+    
+    These metrics help determine:
+    - Is it a buyer's or seller's market?
+    - How much negotiation leverage does an investor have?
+    - How quickly will a flip sell?
+    """
+    # Days on Market metrics - key indicator of market velocity
+    median_days_on_market: Optional[int] = None
+    avg_days_on_market: Optional[float] = None
+    min_days_on_market: Optional[int] = None
+    max_days_on_market: Optional[int] = None
+    
+    # Listing inventory metrics
+    total_listings: Optional[int] = None
+    new_listings: Optional[int] = None
+    
+    # Calculated metrics
+    absorption_rate: Optional[float] = None  # new_listings / total_listings (higher = faster market)
+    market_temperature: Optional[str] = None  # "hot", "warm", "cold"
+    
+    # Price metrics
+    median_price: Optional[float] = None
+    avg_price_per_sqft: Optional[float] = None
+
+
 class MarketData(BaseModel):
     """Local market indicators."""
     market_health_score: Optional[int] = None
@@ -189,6 +224,8 @@ class MarketData(BaseModel):
     # Mortgage rate data for frontend calculations
     mortgage_rate_arm5: Optional[float] = None
     mortgage_rate_30yr: Optional[float] = None
+    # Market statistics for buyer/seller analysis
+    market_stats: Optional[MarketStatistics] = None
 
 
 class DataQuality(BaseModel):

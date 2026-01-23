@@ -11,6 +11,33 @@ export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'P
 // Seller Type - identifies listing source
 export type SellerType = 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown'
 
+// Market Temperature - buyer/seller market indicator
+export type MarketTemperature = 'hot' | 'warm' | 'cold'
+
+/**
+ * Market statistics for investment analysis.
+ * Helps determine buyer/seller market conditions and negotiation leverage.
+ */
+export interface MarketStatistics {
+  // Days on Market metrics - key indicator for negotiation power
+  medianDaysOnMarket?: number
+  avgDaysOnMarket?: number
+  minDaysOnMarket?: number
+  maxDaysOnMarket?: number
+  
+  // Listing inventory metrics
+  totalListings?: number
+  newListings?: number
+  
+  // Calculated metrics
+  absorptionRate?: number      // new_listings / total_listings
+  marketTemperature?: MarketTemperature  // 'hot' | 'warm' | 'cold'
+  
+  // Price metrics
+  medianPrice?: number
+  avgPricePerSqft?: number
+}
+
 export interface PropertyAddress {
   streetAddress: string
   city: string
@@ -154,6 +181,9 @@ export interface PropertyData {
   
   // Schools
   schools?: SchoolInfo[]
+  
+  // Market Statistics - buyer/seller market indicators
+  marketStats?: MarketStatistics
 }
 
 // API Response types

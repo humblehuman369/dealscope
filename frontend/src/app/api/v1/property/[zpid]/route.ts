@@ -201,6 +201,18 @@ function normalizePropertyData(
     market?: {
       property_taxes_annual?: number
       hoa_fees_monthly?: number
+      market_stats?: {
+        median_days_on_market?: number
+        avg_days_on_market?: number
+        min_days_on_market?: number
+        max_days_on_market?: number
+        total_listings?: number
+        new_listings?: number
+        absorption_rate?: number
+        market_temperature?: string
+        median_price?: number
+        avg_price_per_sqft?: number
+      }
     }
     listing?: {
       listing_status?: string
@@ -352,7 +364,21 @@ function normalizePropertyData(
     listDate: p.list_date,
     priceHistory: [],
     taxHistory: [],
-    schools: []
+    schools: [],
+    
+    // Market Statistics for buyer/seller market analysis
+    marketStats: p.market?.market_stats ? {
+      medianDaysOnMarket: p.market.market_stats.median_days_on_market,
+      avgDaysOnMarket: p.market.market_stats.avg_days_on_market,
+      minDaysOnMarket: p.market.market_stats.min_days_on_market,
+      maxDaysOnMarket: p.market.market_stats.max_days_on_market,
+      totalListings: p.market.market_stats.total_listings,
+      newListings: p.market.market_stats.new_listings,
+      absorptionRate: p.market.market_stats.absorption_rate,
+      marketTemperature: p.market.market_stats.market_temperature as 'hot' | 'warm' | 'cold' | undefined,
+      medianPrice: p.market.market_stats.median_price,
+      avgPricePerSqft: p.market.market_stats.avg_price_per_sqft,
+    } : undefined,
   }
 }
 
