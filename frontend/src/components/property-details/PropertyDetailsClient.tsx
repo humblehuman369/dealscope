@@ -86,6 +86,16 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
             sqft: property.livingArea,
             yearBuilt: property.yearBuilt,
             photos: property.images,
+            // Listing status data for header display
+            listingStatus: property.listingStatus,
+            isOffMarket: property.isOffMarket,
+            sellerType: property.sellerType,
+            isForeclosure: property.isForeclosure,
+            isBankOwned: property.isBankOwned,
+            isAuction: property.isAuction,
+            isNewConstruction: property.isNewConstruction,
+            daysOnMarket: property.daysOnMarket,
+            zestimate: property.zestimate,
           },
         }),
       })

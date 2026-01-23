@@ -12,6 +12,12 @@ export type PropertyStatus =
   | 'passed' 
   | 'archived'
 
+// Listing status for property (from AXESSO API)
+export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
+
+// Seller type classification
+export type SellerType = 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown'
+
 export interface PropertyDataSnapshot {
   // Zillow Property ID for API calls
   zpid?: string | number
@@ -34,6 +40,17 @@ export interface PropertyDataSnapshot {
   averageDailyRate?: number
   occupancyRate?: number
   photos?: string[]
+  
+  // Listing status info (for header display)
+  listingStatus?: ListingStatus
+  isOffMarket?: boolean
+  sellerType?: SellerType
+  isForeclosure?: boolean
+  isBankOwned?: boolean
+  isAuction?: boolean
+  isNewConstruction?: boolean
+  daysOnMarket?: number
+  zestimate?: number  // Estimated value for off-market properties
 }
 
 export interface SavedProperty {

@@ -16,6 +16,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
+import { PropertyStatusPills } from './PropertyStatusPills'
 
 interface WorksheetHeaderProps {
   property: SavedProperty
@@ -97,7 +98,7 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
 
   return (
     <div className="worksheet-header-v2">
-      {/* Page Title Row with Back Arrow + Strategy Switcher */}
+      {/* Page Title Row with Back Arrow + Status Pills + Strategy Switcher */}
       <div className="bg-white border-b border-[var(--ws-border)] px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Left: Back Arrow + Page Title */}
@@ -116,6 +117,22 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
                 {getDisplayAddress(property)}
               </p>
             </div>
+          </div>
+          
+          {/* Center: Status Pills (hidden on small screens) */}
+          <div className="hidden lg:flex flex-shrink-0">
+            <PropertyStatusPills
+              listingStatus={property.property_data_snapshot?.listingStatus}
+              isOffMarket={property.property_data_snapshot?.isOffMarket}
+              listPrice={property.property_data_snapshot?.listPrice}
+              zestimate={property.property_data_snapshot?.zestimate}
+              sellerType={property.property_data_snapshot?.sellerType}
+              isForeclosure={property.property_data_snapshot?.isForeclosure}
+              isBankOwned={property.property_data_snapshot?.isBankOwned}
+              isAuction={property.property_data_snapshot?.isAuction}
+              isNewConstruction={property.property_data_snapshot?.isNewConstruction}
+              daysOnMarket={property.property_data_snapshot?.daysOnMarket}
+            />
           </div>
           
           {/* Right: Strategy Switcher */}

@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
+import { PropertyStatusPills } from '../PropertyStatusPills'
 import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
@@ -315,6 +316,21 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
                 <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 truncate">{thisStrategy.label} Analysis</h1>
                 <p className="text-sm text-slate-500 truncate">{fullAddress}</p>
               </div>
+            </div>
+            {/* Center: Status Pills (hidden on small screens) */}
+            <div className="hidden lg:flex flex-shrink-0">
+              <PropertyStatusPills
+                listingStatus={property.property_data_snapshot?.listingStatus}
+                isOffMarket={property.property_data_snapshot?.isOffMarket}
+                listPrice={property.property_data_snapshot?.listPrice}
+                zestimate={property.property_data_snapshot?.zestimate}
+                sellerType={property.property_data_snapshot?.sellerType}
+                isForeclosure={property.property_data_snapshot?.isForeclosure}
+                isBankOwned={property.property_data_snapshot?.isBankOwned}
+                isAuction={property.property_data_snapshot?.isAuction}
+                isNewConstruction={property.property_data_snapshot?.isNewConstruction}
+                daysOnMarket={property.property_data_snapshot?.daysOnMarket}
+              />
             </div>
             <div className="relative flex-shrink-0">
               <button onClick={() => setIsStrategyDropdownOpen(!isStrategyDropdownOpen)} className="flex items-center gap-2 bg-white border border-slate-300 hover:border-teal hover:bg-teal/5 text-slate-700 px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors">

@@ -4,6 +4,7 @@ import React, { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useStrWorksheetCalculator } from '@/hooks/useStrWorksheetCalculator'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
+import { PropertyStatusPills } from '../PropertyStatusPills'
 import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
@@ -563,6 +564,22 @@ export function StrWorksheet({
                   {fullAddress}
                 </p>
               </div>
+            </div>
+            
+            {/* Center: Status Pills (hidden on small screens) */}
+            <div className="hidden lg:flex flex-shrink-0">
+              <PropertyStatusPills
+                listingStatus={property.property_data_snapshot?.listingStatus}
+                isOffMarket={property.property_data_snapshot?.isOffMarket}
+                listPrice={property.property_data_snapshot?.listPrice}
+                zestimate={property.property_data_snapshot?.zestimate}
+                sellerType={property.property_data_snapshot?.sellerType}
+                isForeclosure={property.property_data_snapshot?.isForeclosure}
+                isBankOwned={property.property_data_snapshot?.isBankOwned}
+                isAuction={property.property_data_snapshot?.isAuction}
+                isNewConstruction={property.property_data_snapshot?.isNewConstruction}
+                daysOnMarket={property.property_data_snapshot?.daysOnMarket}
+              />
             </div>
             
             {/* Right: Strategy Switcher */}
