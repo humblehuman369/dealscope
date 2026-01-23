@@ -100,6 +100,10 @@ function VerdictContent() {
         setIsLoading(true)
         setError(null)
 
+        // #region agent log
+        console.log('[DEBUG] Starting fetch for address:', decodeURIComponent(addressParam));
+        // #endregion
+        
         // Fetch property data from Next.js API route which proxies to backend
         const response = await fetch('/api/v1/properties/search', {
           method: 'POST',
@@ -109,11 +113,23 @@ function VerdictContent() {
           body: JSON.stringify({ address: decodeURIComponent(addressParam) })
         })
 
+        // #region agent log
+        console.log('[DEBUG] Fetch response:', { status: response.status, ok: response.ok, statusText: response.statusText });
+        // #endregion
+
         if (!response.ok) {
+          // #region agent log
+          const errorBody = await response.text().catch(() => 'Could not read body');
+          console.error('[DEBUG] Response NOT OK:', { status: response.status, errorBody: errorBody.substring(0, 500) });
+          // #endregion
           throw new Error('Failed to fetch property data')
         }
 
         const data = await response.json()
+        
+        // #region agent log
+        console.log('[DEBUG] Data parsed successfully:', { hasZpid: !!data.zpid, hasValuations: !!data.valuations, zpid: data.zpid });
+        // #endregion
 
         // Fetch photos if zpid is available
         let photoUrl: string | undefined = SAMPLE_PHOTOS[0]
@@ -272,6 +288,9 @@ function VerdictContent() {
           console.error('Error fetching analysis:', analysisErr)
         }
       } catch (err) {
+        // #region agent log
+        console.error('[DEBUG] CATCH ERROR:', { error: err instanceof Error ? err.message : String(err), stack: err instanceof Error ? err.stack : undefined });
+        // #endregion
         console.error('Error fetching property:', err)
         setError(err instanceof Error ? err.message : 'Failed to load property')
         
