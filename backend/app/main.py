@@ -535,6 +535,27 @@ def _normalize_score(value: float, min_value: float, max_value: float) -> int:
     return round(((value - min_value) / (max_value - min_value)) * 100)
 
 
+def _performance_score(metric_value: float, multiplier: float) -> int:
+    """
+    Calculate performance score using the worksheet formula: 50 + (metric × multiplier)
+    
+    This formula centers at 50 for 0% return (breakeven), with:
+    - Positive returns increasing the score
+    - Negative returns decreasing the score
+    - Score clamped to 0-100 range
+    
+    Each strategy uses a different multiplier based on typical return ranges:
+    - LTR: 5 (10% CoC = 100 score)
+    - STR: 3.33 (15% CoC = 100 score)
+    - BRRRR: 1 (50% recovery above breakeven = 100 score)
+    - Flip: 2.5 (20% ROI = 100 score)
+    - House Hack: 1 (50% offset above breakeven = 100 score)
+    - Wholesale: 0.5 (100% ROI = 100 score)
+    """
+    score = round(50 + (metric_value * multiplier))
+    return max(0, min(100, score))
+
+
 def _format_compact_currency(value: float) -> str:
     """Format currency for compact display."""
     if abs(value) >= 1000000:
@@ -573,14 +594,18 @@ def _calculate_ltr_strategy(
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
     coc = annual_cash_flow / total_cash if total_cash > 0 else 0
-    score = _normalize_score(coc * 100, 0, 12)
+    coc_pct = coc * 100
+    
+    # Performance score: 50 + (CoC% × 5)
+    # 0% CoC = 50, 10% CoC = 100, -10% CoC = 0
+    score = _performance_score(coc_pct, 5)
     
     return {
         "id": "long-term-rental",
         "name": "Long-Term Rental",
-        "metric": f"{coc * 100:.1f}%",
+        "metric": f"{coc_pct:.1f}%",
         "metric_label": "CoC Return",
-        "metric_value": coc * 100,
+        "metric_value": coc_pct,
         "score": score,
     }
 
@@ -609,14 +634,18 @@ def _calculate_str_strategy(
     noi = annual_revenue - op_ex
     annual_cash_flow = noi - annual_debt
     coc = annual_cash_flow / total_cash if total_cash > 0 else 0
-    score = _normalize_score(coc * 100, 0, 15)
+    coc_pct = coc * 100
+    
+    # Performance score: 50 + (CoC% × 3.33)
+    # 0% CoC = 50, 15% CoC = 100, -15% CoC = 0
+    score = _performance_score(coc_pct, 3.33)
     
     return {
         "id": "short-term-rental",
         "name": "Short-Term Rental",
-        "metric": f"{coc * 100:.1f}%",
+        "metric": f"{coc_pct:.1f}%",
         "metric_label": "CoC Return",
-        "metric_value": coc * 100,
+        "metric_value": coc_pct,
         "score": score,
     }
 
