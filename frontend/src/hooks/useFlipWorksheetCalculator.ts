@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { SavedProperty } from './useWorksheetProperty'
-import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_TARGET_PURCHASE_PCT } from '@/lib/iqTarget'
+import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_BUY_DISCOUNT_PCT } from '@/lib/iqTarget'
 
 const WORKSHEET_API_URL = '/api/v1/worksheet/flip/calculate'
 const CALC_DEBOUNCE_MS = 150
@@ -99,10 +99,10 @@ export function useFlipWorksheetCalculator(property: SavedProperty | null) {
     const rehabCosts = arv * DEFAULT_RENOVATION_BUDGET_PCT
     
     // For flips, estimate breakeven using 70% rule: ARV * 0.70 - Rehab = MAO
-    // Then initial purchase price = MAO * 95% (DEFAULT_TARGET_PURCHASE_PCT)
+    // Then buy price = MAO * (1 - Buy Discount %)
     const mao = (arv * 0.70) - rehabCosts
     const initialPurchasePrice = Math.max(
-      Math.round(mao * DEFAULT_TARGET_PURCHASE_PCT),
+      Math.round(mao * (1 - DEFAULT_BUY_DISCOUNT_PCT)),
       listPrice * 0.50  // Floor at 50% of list to avoid unrealistic values
     )
 

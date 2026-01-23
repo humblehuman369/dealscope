@@ -56,7 +56,7 @@ class RehabDefaults:
 @dataclass(frozen=True)
 class BRRRRDefaults:
     """Default BRRRR strategy assumptions."""
-    target_purchase_pct: float = 0.95       # 95% of breakeven
+    buy_discount_pct: float = 0.05          # 5% below breakeven
     refinance_ltv: float = 0.75             # 75%
     refinance_interest_rate: float = 0.06   # 6% (was 7%)
     refinance_term_years: int = 30          # 30 years
@@ -79,7 +79,7 @@ class HouseHackDefaults:
     fha_down_payment_pct: float = 0.035     # 3.5%
     fha_mip_rate: float = 0.0085            # 0.85%
     units_rented_out: int = 2               # 2 units
-    target_purchase_pct: float = 0.95       # 95% of breakeven
+    buy_discount_pct: float = 0.05          # 5% below breakeven
 
 
 @dataclass(frozen=True)
@@ -111,8 +111,8 @@ HOUSE_HACK = HouseHackDefaults()
 WHOLESALE = WholesaleDefaults()
 GROWTH = GrowthDefaults()
 
-# Target purchase price as percentage of breakeven
-DEFAULT_TARGET_PURCHASE_PCT = 0.95
+# Buy discount percentage below breakeven (5% = buy at 95% of breakeven)
+DEFAULT_BUY_DISCOUNT_PCT = 0.05
 
 
 def get_all_defaults() -> Dict[str, Any]:
@@ -154,7 +154,7 @@ def get_all_defaults() -> Dict[str, Any]:
             "holding_costs_pct": REHAB.holding_costs_pct,
         },
         "brrrr": {
-            "target_purchase_pct": BRRRR.target_purchase_pct,
+            "buy_discount_pct": BRRRR.buy_discount_pct,
             "refinance_ltv": BRRRR.refinance_ltv,
             "refinance_interest_rate": BRRRR.refinance_interest_rate,
             "refinance_term_years": BRRRR.refinance_term_years,
@@ -171,7 +171,7 @@ def get_all_defaults() -> Dict[str, Any]:
             "fha_down_payment_pct": HOUSE_HACK.fha_down_payment_pct,
             "fha_mip_rate": HOUSE_HACK.fha_mip_rate,
             "units_rented_out": HOUSE_HACK.units_rented_out,
-            "target_purchase_pct": HOUSE_HACK.target_purchase_pct,
+            "buy_discount_pct": HOUSE_HACK.buy_discount_pct,
         },
         "wholesale": {
             "assignment_fee": WHOLESALE.assignment_fee,
@@ -185,7 +185,7 @@ def get_all_defaults() -> Dict[str, Any]:
             "rent_growth_rate": GROWTH.rent_growth_rate,
             "expense_growth_rate": GROWTH.expense_growth_rate,
         },
-        "target_purchase_pct": DEFAULT_TARGET_PURCHASE_PCT,
+        "buy_discount_pct": DEFAULT_BUY_DISCOUNT_PCT,
     }
 
 
@@ -249,22 +249,26 @@ def estimate_breakeven_price(
     return round(breakeven)
 
 
-def calculate_target_purchase_price(
+def calculate_buy_price(
     list_price: float,
     monthly_rent: float,
     property_taxes: float,
     insurance: float,
+    buy_discount_pct: float = None,
 ) -> float:
     """
-    Calculate target purchase price as 95% of estimated breakeven.
+    Calculate buy price as breakeven minus the buy discount.
+    
+    Formula: Buy Price = Breakeven × (1 - Buy Discount %)
     
     This is the recommended purchase price that ensures profitability.
-    Returns the lesser of (breakeven × 95%) or list_price.
+    Returns the lesser of the calculated buy price or list_price.
     """
+    discount_pct = buy_discount_pct if buy_discount_pct is not None else DEFAULT_BUY_DISCOUNT_PCT
     breakeven = estimate_breakeven_price(monthly_rent, property_taxes, insurance)
     
     if breakeven <= 0:
         return list_price
     
-    target = round(breakeven * DEFAULT_TARGET_PURCHASE_PCT)
-    return min(target, list_price)
+    buy_price = round(breakeven * (1 - discount_pct))
+    return min(buy_price, list_price)

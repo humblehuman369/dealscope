@@ -30,7 +30,7 @@ export interface STRAssumptions {
   additional_utilities_monthly: number
   furniture_setup_cost: number
   str_insurance_pct: number  // Percentage of purchase price (was fixed str_insurance_annual)
-  target_purchase_pct: number  // Breakeven multiplier (0.95 = Breakeven × 95%)
+  buy_discount_pct: number  // Discount below breakeven (0.05 = 5% below breakeven)
 }
 
 export interface RehabAssumptions {
@@ -41,7 +41,7 @@ export interface RehabAssumptions {
 }
 
 export interface BRRRRAssumptions {
-  target_purchase_pct: number  // Breakeven multiplier (0.95 = Breakeven × 95%)
+  buy_discount_pct: number  // Discount below breakeven (0.05 = 5% below breakeven)
   refinance_ltv: number
   refinance_interest_rate: number
   refinance_term_years: number
@@ -60,7 +60,7 @@ export interface HouseHackAssumptions {
   fha_down_payment_pct: number
   fha_mip_rate: number
   units_rented_out: number
-  target_purchase_pct: number  // Breakeven multiplier (0.95 = Breakeven × 95%)
+  buy_discount_pct: number  // Discount below breakeven (0.05 = 5% below breakeven)
   // Note: room_rent_monthly is now calculated as (estimatedRent / bedrooms) * units_rented_out
   // Note: owner_unit_market_rent is now calculated as estimatedRent / bedrooms
 }
@@ -74,7 +74,7 @@ export interface WholesaleAssumptions {
 }
 
 export interface LTRAssumptions {
-  target_purchase_pct: number  // Breakeven multiplier (0.95 = Breakeven × 95%)
+  buy_discount_pct: number  // Discount below breakeven (0.05 = 5% below breakeven)
 }
 
 export interface AllAssumptions {
@@ -111,7 +111,7 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
     pest_control_annual: 200,      // $200
   },
   ltr: {
-    target_purchase_pct: 0.95,     // Breakeven × 95%
+    buy_discount_pct: 0.05,     // 5% below breakeven
   },
   str: {
     platform_fees_pct: 0.15,       // 15%
@@ -123,7 +123,7 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
     additional_utilities_monthly: 0, // $0 (was $125)
     furniture_setup_cost: 6000,    // $6,000
     str_insurance_pct: 0.01,       // 1% of purchase price (was $1,500 fixed)
-    target_purchase_pct: 0.95,     // Breakeven × 95%
+    buy_discount_pct: 0.05,     // 5% below breakeven
   },
   rehab: {
     renovation_budget_pct: 0.05,   // 5% of ARV (was $40,000 fixed)
@@ -132,7 +132,7 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
     holding_costs_pct: 0.01,       // 1% of purchase price annually (was $2,000/mo fixed)
   },
   brrrr: {
-    target_purchase_pct: 0.95,     // Breakeven × 95% (replaced purchase_discount_pct)
+    buy_discount_pct: 0.05,     // 5% below breakeven (replaced purchase_discount_pct)
     refinance_ltv: 0.75,           // 75%
     refinance_interest_rate: 0.06, // 6% (was 7%)
     refinance_term_years: 30,      // 30 years
@@ -149,7 +149,7 @@ export const DEFAULT_ASSUMPTIONS: AllAssumptions = {
     fha_down_payment_pct: 0.035,   // 3.5%
     fha_mip_rate: 0.0085,          // 0.85%
     units_rented_out: 2,           // 2 units
-    target_purchase_pct: 0.95,     // Breakeven × 95%
+    buy_discount_pct: 0.05,     // 5% below breakeven
     // room_rent_monthly now calculated: (estimatedRent / bedrooms) * units_rented_out
     // owner_unit_market_rent now calculated: estimatedRent / bedrooms
   },
@@ -257,9 +257,9 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
               str.str_insurance_pct = 0.01
               delete str.str_insurance_annual
             }
-            // Add target_purchase_pct if missing
-            if (!('target_purchase_pct' in str)) {
-              str.target_purchase_pct = 0.95
+            // Add buy_discount_pct if missing
+            if (!('buy_discount_pct' in str)) {
+              str.buy_discount_pct = 0.05
             }
           }
           
@@ -283,9 +283,9 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
             if ('purchase_discount_pct' in brrrr) {
               delete brrrr.purchase_discount_pct
             }
-            // Add target_purchase_pct if missing
-            if (!('target_purchase_pct' in brrrr)) {
-              brrrr.target_purchase_pct = 0.95
+            // Add buy_discount_pct if missing
+            if (!('buy_discount_pct' in brrrr)) {
+              brrrr.buy_discount_pct = 0.05
             }
             // Convert refinance_closing_costs to percentage
             if ('refinance_closing_costs' in brrrr && !('refinance_closing_costs_pct' in brrrr)) {
@@ -296,7 +296,7 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
           
           // Add LTR assumptions if missing
           if (!assumptions.ltr) {
-            assumptions.ltr = { target_purchase_pct: 0.95 }
+            assumptions.ltr = { buy_discount_pct: 0.05 }
           }
           
           // Migrate house_hack assumptions
@@ -305,9 +305,9 @@ export const useAssumptionsStore = create<AssumptionsStore>()(
             // Remove old fixed values (now calculated)
             delete houseHack.room_rent_monthly
             delete houseHack.owner_unit_market_rent
-            // Add target_purchase_pct if missing
-            if (!('target_purchase_pct' in houseHack)) {
-              houseHack.target_purchase_pct = 0.95
+            // Add buy_discount_pct if missing
+            if (!('buy_discount_pct' in houseHack)) {
+              houseHack.buy_discount_pct = 0.05
             }
           }
           

@@ -480,7 +480,7 @@ async def quick_analytics(
 from pydantic import BaseModel, Field
 from app.core.defaults import (
     FINANCING, OPERATING, STR, REHAB, BRRRR, FLIP, HOUSE_HACK, WHOLESALE, GROWTH,
-    DEFAULT_TARGET_PURCHASE_PCT, estimate_breakeven_price, calculate_target_purchase_price,
+    DEFAULT_BUY_DISCOUNT_PCT, estimate_breakeven_price, calculate_buy_price,
     get_all_defaults
 )
 
@@ -882,21 +882,21 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
         logger.info(f"  Provided values: rent={input_data.monthly_rent}, taxes={input_data.property_taxes}, "
                    f"insurance={input_data.insurance}")
         
-        # Calculate breakeven and target purchase price
+        # Calculate breakeven and buy price
         breakeven = estimate_breakeven_price(monthly_rent, property_taxes, insurance)
-        target_price = calculate_target_purchase_price(list_price, monthly_rent, property_taxes, insurance)
+        buy_price = calculate_buy_price(list_price, monthly_rent, property_taxes, insurance)
         
         # Log calculation results
-        logger.info(f"  Breakeven=${breakeven:,.0f}, Target Purchase=${target_price:,.0f}")
+        logger.info(f"  Breakeven=${breakeven:,.0f}, Buy Price=${buy_price:,.0f}")
         
-        # Calculate all strategies using target price (95% of breakeven)
+        # Calculate all strategies using buy price (breakeven × (1 - buy discount))
         strategies = [
-            _calculate_ltr_strategy(target_price, monthly_rent, property_taxes, insurance),
-            _calculate_str_strategy(target_price, adr, occupancy, property_taxes, insurance),
-            _calculate_brrrr_strategy(target_price, monthly_rent, property_taxes, insurance, arv, rehab_cost),
-            _calculate_flip_strategy(target_price, arv, rehab_cost, property_taxes, insurance),
-            _calculate_house_hack_strategy(target_price, monthly_rent, bedrooms, property_taxes, insurance),
-            _calculate_wholesale_strategy(target_price, arv, rehab_cost),
+            _calculate_ltr_strategy(buy_price, monthly_rent, property_taxes, insurance),
+            _calculate_str_strategy(buy_price, adr, occupancy, property_taxes, insurance),
+            _calculate_brrrr_strategy(buy_price, monthly_rent, property_taxes, insurance, arv, rehab_cost),
+            _calculate_flip_strategy(buy_price, arv, rehab_cost, property_taxes, insurance),
+            _calculate_house_hack_strategy(buy_price, monthly_rent, bedrooms, property_taxes, insurance),
+            _calculate_wholesale_strategy(buy_price, arv, rehab_cost),
         ]
         
         # Fixed display order: LTR, STR, BRRRR, Fix & Flip, House Hack, Wholesale
@@ -926,7 +926,7 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
             verdict_description=_get_verdict_description(deal_score, top_strategy),
             discount_percent=round(discount_pct, 1),
             strategies=[StrategyResult(**s) for s in strategies],
-            purchase_price=target_price,  # Recommended purchase price (95% of breakeven)
+            purchase_price=buy_price,  # Recommended buy price (breakeven × (1 - buy discount))
             breakeven_price=breakeven,
             list_price=list_price,
             inputs_used={

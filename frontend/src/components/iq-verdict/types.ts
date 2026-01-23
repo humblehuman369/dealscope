@@ -247,7 +247,7 @@ const DEFAULT_ASSUMPTIONS = {
   platformFeesPct: 0.15,        // 15%
   sellingCostsPct: 0.06,        // 6% (was 8%)
   rehabBudgetPct: 0.05,         // 5% of ARV
-  targetPurchasePct: 0.95,      // 95% of breakeven
+  buyDiscountPct: 0.05,         // 5% below breakeven
   refinanceRate: 0.06,          // 6%
   refinanceLtv: 0.75,           // 75%
 } as const;
@@ -306,8 +306,8 @@ function calculateTargetPurchasePrice(
 ): number {
   const breakeven = estimateBreakevenPrice(monthlyRent, propertyTaxes, insurance);
   if (breakeven <= 0) return listPrice;
-  const targetPrice = Math.round(breakeven * DEFAULT_ASSUMPTIONS.targetPurchasePct);
-  return Math.min(targetPrice, listPrice);
+  const buyPrice = Math.round(breakeven * (1 - DEFAULT_ASSUMPTIONS.buyDiscountPct));
+  return Math.min(buyPrice, listPrice);
 }
 
 /**

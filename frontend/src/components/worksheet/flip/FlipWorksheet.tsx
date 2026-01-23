@@ -7,7 +7,7 @@ import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
-import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_TARGET_PURCHASE_PCT } from '@/lib/iqTarget'
+import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_BUY_DISCOUNT_PCT } from '@/lib/iqTarget'
 import { useDealScore } from '@/hooks/useDealScore'
 
 // Section components for tab navigation
@@ -140,10 +140,10 @@ export function FlipWorksheet({
   const defaultRehabCosts = defaultArv * DEFAULT_RENOVATION_BUDGET_PCT // 5% of ARV
   
   // For flips, estimate breakeven using 70% rule: ARV * 0.70 - Rehab = MAO
-  // Then initial purchase price = MAO * 95% (DEFAULT_TARGET_PURCHASE_PCT)
+  // Then buy price = MAO * (1 - Buy Discount %)
   const mao = (defaultArv * 0.70) - defaultRehabCosts
   const initialPurchasePrice = Math.min(
-    Math.max(Math.round(mao * DEFAULT_TARGET_PURCHASE_PCT), listPrice * 0.50),
+    Math.max(Math.round(mao * (1 - DEFAULT_BUY_DISCOUNT_PCT)), listPrice * 0.50),
     listPrice
   )
   

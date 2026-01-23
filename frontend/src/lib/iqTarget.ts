@@ -77,11 +77,11 @@ export interface TargetAssumptions {
 // ============================================
 
 /**
- * Default target purchase price as percentage of breakeven
- * 95% of breakeven means buying 5% below the break-even point
+ * Default buy discount percentage below breakeven
+ * 5% means buying at 95% of breakeven (breakeven × (1 - 0.05))
  * ensuring immediate profitability
  */
-export const DEFAULT_TARGET_PURCHASE_PCT = 0.95
+export const DEFAULT_BUY_DISCOUNT_PCT = 0.05
 
 /**
  * Default insurance as percentage of purchase price
@@ -180,9 +180,10 @@ export function estimateLTRBreakeven(params: {
 }
 
 /**
- * Calculate initial purchase price as 95% of estimated breakeven
+ * Calculate buy price as breakeven minus the buy discount
+ * Formula: Buy Price = Breakeven × (1 - Buy Discount %)
  */
-export function calculateInitialPurchasePrice(params: {
+export function calculateBuyPrice(params: {
   monthlyRent: number
   propertyTaxes: number
   insurance: number
@@ -193,7 +194,9 @@ export function calculateInitialPurchasePrice(params: {
   downPaymentPct?: number
   interestRate?: number
   loanTermYears?: number
+  buyDiscountPct?: number
 }): number {
+  const discountPct = params.buyDiscountPct ?? DEFAULT_BUY_DISCOUNT_PCT
   const breakeven = estimateLTRBreakeven(params)
   
   if (breakeven <= 0) {
@@ -201,11 +204,11 @@ export function calculateInitialPurchasePrice(params: {
     return params.listPrice
   }
   
-  // Target purchase price is 95% of breakeven
-  const targetPurchase = Math.round(breakeven * DEFAULT_TARGET_PURCHASE_PCT)
+  // Buy price = Breakeven × (1 - Buy Discount %)
+  const buyPrice = Math.round(breakeven * (1 - discountPct))
   
-  // Return the target, but cap at list price (can't pay more than list)
-  return Math.min(targetPurchase, params.listPrice)
+  // Return the buy price, but cap at list price (can't pay more than list)
+  return Math.min(buyPrice, params.listPrice)
 }
 
 /**

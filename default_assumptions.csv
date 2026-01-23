@@ -3,7 +3,8 @@ Financing,Down Payment,20,%
 Financing,Interest Rate,6,%
 Financing,Loan Term,30,years
 Financing,Closing Costs,3,%
-Long-term Rental (LTR),Purchase Price,(Breakeven X 95%),$
+Financing,Buy Discount,5,%
+Long-term Rental (LTR),Buy Price,(Breakeven X (1 - Buy Discount %)),$
 Operating Expenses,Vacancy Rate,1,%
 Operating Expenses,Property Management,0,%
 Operating Expenses,Maintenance,5,%
@@ -11,7 +12,7 @@ Operating Expenses,Insurance (Annual),1,%
 Operating Expenses,Utilities (Monthly),100,$
 Operating Expenses,Landscaping (Annual),0,$
 Operating Expenses,Pest Control (Annual),200,$
-Short-Term Rental (STR),Purchase Price,(Breakeven X 95%),$
+Short-Term Rental (STR),Buy Price,(Breakeven X (1 - Buy Discount %)),$
 Short-Term Rental (STR),Platform Fees,15,%
 Short-Term Rental (STR),STR Management,10,%
 Short-Term Rental (STR),Cleaning Cost per Turnover,150,$
@@ -29,13 +30,13 @@ BRRRR,Refinance LTV,75,%
 BRRRR,Refinance Interest Rate,6,%
 BRRRR,Refinance Term,30,years
 BRRRR,Refinance Closing Costs,3,%
-BRRRR,Purchase Price,(Breakeven X 95%),$
+BRRRR,Buy Price,(Breakeven X (1 - Buy Discount %)),$
 BRRRR,Post-Rehab Rent Increase,10,%
 Fix & Flip,Hard Money LTV,90,%
 Fix & Flip,Hard Money Rate,12,%
 Fix & Flip,Selling Costs,6,%
 Fix & Flip,Holding Period,6,months
-House Hack,Purchase Price,(Breakeven X 95%),$
+House Hack,Buy Price,(Breakeven X (1 - Buy Discount %)),$
 House Hack,FHA Down Payment,3.5,%
 House Hack,FHA MIP Rate,0.85,%
 House Hack,Units Rented Out,2,units

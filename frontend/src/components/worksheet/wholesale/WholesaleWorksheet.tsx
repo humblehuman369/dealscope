@@ -7,7 +7,7 @@ import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
 import { ArrowLeft, ArrowLeftRight, ChevronDown, CheckCircle2 } from 'lucide-react'
-import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_TARGET_PURCHASE_PCT } from '@/lib/iqTarget'
+import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_BUY_DISCOUNT_PCT } from '@/lib/iqTarget'
 import { useDealScore } from '@/hooks/useDealScore'
 
 // Section components for tab navigation
@@ -91,7 +91,7 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
   // For wholesale, calculate initial contract price based on 70% rule MAO * 95%
   const mao = (defaultArv * 0.70) - defaultRehabCosts
   const initialContractPrice = Math.min(
-    Math.max(Math.round(mao * DEFAULT_TARGET_PURCHASE_PCT), listPrice * 0.50),
+    Math.max(Math.round(mao * (1 - DEFAULT_BUY_DISCOUNT_PCT)), listPrice * 0.50),
     listPrice
   )
   

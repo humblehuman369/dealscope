@@ -45,6 +45,16 @@
           "formula": "breakeven_price = NOI / (LTV * mortgage_constant); where NOI = effective_gross_income - operating_expenses; LTV = 1 - down_payment_pct; mortgage_constant = (monthly_rate * (1 + monthly_rate)^n) / ((1 + monthly_rate)^n - 1) * 12",
           "inputs": ["monthly_rent", "vacancy_rate", "property_taxes", "insurance", "maintenance_pct", "management_pct", "down_payment_pct", "interest_rate", "loan_term_years"],
           "description": "The purchase price at which monthly cash flow equals $0 (NOI = Annual Debt Service)"
+        },
+        "buy_discount_pct": {
+          "formula": "buy_discount_pct = input (default 0.05)",
+          "inputs": ["buy_discount_pct"],
+          "description": "The discount percentage below breakeven to ensure profitability (default 5%)"
+        },
+        "buy_price": {
+          "formula": "buy_price = breakeven_price * (1 - buy_discount_pct); capped at list_price",
+          "inputs": ["breakeven_price", "buy_discount_pct", "list_price"],
+          "description": "The recommended purchase price, calculated as breakeven minus the buy discount to ensure profitability"
         }
       }
     },
@@ -92,6 +102,16 @@
           "formula": "breakeven_price = NOI / (LTV * mortgage_constant); where NOI = total_gross_revenue - total_operating_expenses; uses same formula as LTR but with STR revenue assumptions",
           "inputs": ["average_daily_rate", "occupancy_rate", "total_operating_expenses", "down_payment_pct", "interest_rate", "loan_term_years"],
           "description": "The purchase price at which annual cash flow equals $0 at the given occupancy and ADR"
+        },
+        "buy_discount_pct": {
+          "formula": "buy_discount_pct = input (default 0.05)",
+          "inputs": ["buy_discount_pct"],
+          "description": "The discount percentage below breakeven to ensure profitability (default 5%)"
+        },
+        "buy_price": {
+          "formula": "buy_price = breakeven_price * (1 - buy_discount_pct); capped at list_price",
+          "inputs": ["breakeven_price", "buy_discount_pct", "list_price"],
+          "description": "The recommended purchase price, calculated as breakeven minus the buy discount to ensure profitability"
         },
         "total_cash_required": { "formula": "total_cash_required = down_payment + closing_costs + furniture_setup_cost", "inputs": ["down_payment", "closing_costs", "furniture_setup_cost"] },
         "down_payment": { "formula": "down_payment = purchase_price * down_payment_pct", "inputs": ["purchase_price", "down_payment_pct"] },
@@ -142,6 +162,16 @@
           "formula": "breakeven_price = NOI / (LTV * mortgage_constant); uses post-rehab rent and refinance terms; where NOI = (post_rehab_monthly_rent * 12 * (1 - vacancy_rate)) - operating_expenses",
           "inputs": ["post_rehab_monthly_rent", "vacancy_rate", "operating_expense_pct", "property_taxes_annual", "insurance_annual", "refinance_ltv", "refinance_interest_rate", "refinance_term_years"],
           "description": "The purchase price at which post-refinance monthly cash flow equals $0"
+        },
+        "buy_discount_pct": {
+          "formula": "buy_discount_pct = input (default 0.05)",
+          "inputs": ["buy_discount_pct"],
+          "description": "The discount percentage below breakeven to ensure profitability (default 5%)"
+        },
+        "buy_price": {
+          "formula": "buy_price = breakeven_price * (1 - buy_discount_pct); capped at list_price",
+          "inputs": ["breakeven_price", "buy_discount_pct", "list_price"],
+          "description": "The recommended purchase price, calculated as breakeven minus the buy discount to ensure profitability"
         }
       }
     },
@@ -235,6 +265,16 @@
           "formula": "breakeven achieved when effective_housing_cost <= 0; effective_housing_cost = total_monthly_expenses - total_monthly_income; alternatively: breakeven when housing_cost_offset_pct >= 100%",
           "inputs": ["total_monthly_expenses", "total_monthly_income", "monthly_piti", "monthly_mip", "utilities_shared", "maintenance"],
           "description": "Breakeven occurs when rental income from tenants covers 100% of your housing costs (you live for free)"
+        },
+        "buy_discount_pct": {
+          "formula": "buy_discount_pct = input (default 0.05)",
+          "inputs": ["buy_discount_pct"],
+          "description": "The discount percentage below breakeven to ensure profitability (default 5%)"
+        },
+        "buy_price": {
+          "formula": "buy_price = breakeven_price * (1 - buy_discount_pct); capped at list_price",
+          "inputs": ["breakeven_price", "buy_discount_pct", "list_price"],
+          "description": "The recommended purchase price, calculated as breakeven minus the buy discount to ensure profitability"
         }
       }
     },
