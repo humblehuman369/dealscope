@@ -303,11 +303,11 @@ export function LTRWorksheet({
   
   // Performance verdict based on CoC return
   const getPerformanceVerdict = (score: number): string => {
-    if (score >= 90) return 'Excellent Return'
-    if (score >= 75) return 'Good Return'
-    if (score >= 50) return 'Fair Return'
-    if (score >= 25) return 'Weak Return'
-    return 'Poor Return'
+    if (score >= 90) return 'Excellent'
+    if (score >= 75) return 'Good'
+    if (score >= 50) return 'Fair'
+    if (score >= 25) return 'Weak'
+    return 'Poor'
   }
   const performanceVerdict = getPerformanceVerdict(performanceScore)
   
@@ -580,22 +580,22 @@ export function LTRWorksheet({
     : 0
   let verdict: string, verdictSub: string
   if (discountNeeded <= 5) {
-    verdict = "Strong Opportunity"
+    verdict = "Strong"
     verdictSub = "Excellent deal - minimal negotiation needed"
   } else if (discountNeeded <= 10) {
-    verdict = "Great Opportunity"
+    verdict = "Great"
     verdictSub = "Very good deal - reasonable negotiation required"
   } else if (discountNeeded <= 15) {
-    verdict = "Moderate Opportunity"
+    verdict = "Moderate"
     verdictSub = "Good potential - negotiate firmly"
   } else if (discountNeeded <= 25) {
-    verdict = "Potential Opportunity"
+    verdict = "Potential"
     verdictSub = "Possible deal - significant discount needed"
   } else if (discountNeeded <= 35) {
-    verdict = "Mild Opportunity"
+    verdict = "Mild"
     verdictSub = "Challenging deal - major price reduction required"
   } else {
-    verdict = "Weak Opportunity"
+    verdict = "Weak"
     verdictSub = "Not recommended - unrealistic discount needed"
   }
 
@@ -835,12 +835,12 @@ export function LTRWorksheet({
                     <div className="text-[10px] text-slate-500 mt-0.5">Opportunity</div>
                     <div className="text-[9px] font-medium text-slate-400 truncate">{opportunityVerdict}</div>
                   </div>
-                  {/* Strategy Performance Score */}
+                  {/* Strategy Return Score */}
                   <div className="bg-white rounded-lg px-3 py-2 shadow-sm text-center">
                     <span className={`text-2xl font-extrabold tabular-nums ${
                       performanceScore >= 70 ? 'text-teal' : performanceScore >= 40 ? 'text-amber-500' : 'text-red-500'
                     }`}>{performanceScore}</span>
-                    <div className="text-[10px] text-slate-500 mt-0.5">Performance</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Return</div>
                     <div className="text-[9px] font-medium text-slate-400 truncate">{performanceVerdict}</div>
                   </div>
                 </div>
