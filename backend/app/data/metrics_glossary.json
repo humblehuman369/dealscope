@@ -1,6 +1,6 @@
 {
-  "version": "1.0",
-  "updatedAt": "2026-01-22",
+  "version": "1.1",
+  "updatedAt": "2026-01-23",
   "source": "backend/app/services/calculators.py",
   "strategies": [
     {
@@ -40,6 +40,11 @@
         "ten_year_projection": {
           "formula": "Per year: gross_rent = annual_gross_rent*(1+rent_growth_rate)^(year-1), expenses = total_operating_expenses*(1+expense_growth_rate)^(year-1), noi = gross_rent*(1-vacancy_rate)-expenses, cash_flow = noi - annual_debt_service, property_value = purchase_price*(1+appreciation_rate)^year, equity = property_value - (loan_amount*(1-(year/loan_term_years)*0.3))",
           "inputs": ["annual_gross_rent", "rent_growth_rate", "total_operating_expenses", "expense_growth_rate", "vacancy_rate", "annual_debt_service", "purchase_price", "appreciation_rate", "loan_amount", "loan_term_years"]
+        },
+        "breakeven_price": {
+          "formula": "breakeven_price = NOI / (LTV * mortgage_constant); where NOI = effective_gross_income - operating_expenses; LTV = 1 - down_payment_pct; mortgage_constant = (monthly_rate * (1 + monthly_rate)^n) / ((1 + monthly_rate)^n - 1) * 12",
+          "inputs": ["monthly_rent", "vacancy_rate", "property_taxes", "insurance", "maintenance_pct", "management_pct", "down_payment_pct", "interest_rate", "loan_term_years"],
+          "description": "The purchase price at which monthly cash flow equals $0 (NOI = Annual Debt Service)"
         }
       }
     },
@@ -80,7 +85,13 @@
         "revenue_per_available_night": { "formula": "revenue_per_available_night = total_gross_revenue / 365", "inputs": ["total_gross_revenue"] },
         "break_even_occupancy": {
           "formula": "break_even_occupancy = break_even_nights / 365; break_even_nights = fixed_costs / revenue_per_night_net; revenue_per_night_net = ADR - variable_cost_per_night",
-          "inputs": ["property_taxes_annual", "insurance_annual", "maintenance_annual", "landscaping_annual", "pest_control_annual", "hoa_monthly", "annual_debt_service", "average_daily_rate", "platform_fees_pct", "str_management_pct", "cleaning_cost_per_turnover", "avg_length_of_stay_days"]
+          "inputs": ["property_taxes_annual", "insurance_annual", "maintenance_annual", "landscaping_annual", "pest_control_annual", "hoa_monthly", "annual_debt_service", "average_daily_rate", "platform_fees_pct", "str_management_pct", "cleaning_cost_per_turnover", "avg_length_of_stay_days"],
+          "description": "The minimum occupancy rate needed to cover all fixed costs and debt service"
+        },
+        "breakeven_price": {
+          "formula": "breakeven_price = NOI / (LTV * mortgage_constant); where NOI = total_gross_revenue - total_operating_expenses; uses same formula as LTR but with STR revenue assumptions",
+          "inputs": ["average_daily_rate", "occupancy_rate", "total_operating_expenses", "down_payment_pct", "interest_rate", "loan_term_years"],
+          "description": "The purchase price at which annual cash flow equals $0 at the given occupancy and ADR"
         },
         "total_cash_required": { "formula": "total_cash_required = down_payment + closing_costs + furniture_setup_cost", "inputs": ["down_payment", "closing_costs", "furniture_setup_cost"] },
         "down_payment": { "formula": "down_payment = purchase_price * down_payment_pct", "inputs": ["purchase_price", "down_payment_pct"] },
@@ -126,6 +137,11 @@
           "formula": "operating_expenses = (annual_gross_rent * operating_expense_pct) + property_taxes_annual + insurance_annual",
           "inputs": ["annual_gross_rent", "operating_expense_pct", "property_taxes_annual", "insurance_annual"],
           "notes": "insurance_annual is referenced in code but not defined in function signature"
+        },
+        "breakeven_price": {
+          "formula": "breakeven_price = NOI / (LTV * mortgage_constant); uses post-rehab rent and refinance terms; where NOI = (post_rehab_monthly_rent * 12 * (1 - vacancy_rate)) - operating_expenses",
+          "inputs": ["post_rehab_monthly_rent", "vacancy_rate", "operating_expense_pct", "property_taxes_annual", "insurance_annual", "refinance_ltv", "refinance_interest_rate", "refinance_term_years"],
+          "description": "The purchase price at which post-refinance monthly cash flow equals $0"
         }
       }
     },
@@ -173,7 +189,11 @@
         "profit_margin": { "formula": "profit_margin = net_profit_before_tax / arv", "inputs": ["net_profit_before_tax", "arv"] },
         "seventy_pct_max_price": { "formula": "seventy_pct_max_price = (arv * 0.70) - renovation_budget", "inputs": ["arv", "renovation_budget"] },
         "meets_70_rule": { "formula": "meets_70_rule = purchase_price <= seventy_pct_max_price", "inputs": ["purchase_price", "seventy_pct_max_price"] },
-        "minimum_sale_for_breakeven": { "formula": "minimum_sale_for_breakeven = total_project_cost / (1 - selling_costs_pct)", "inputs": ["total_project_cost", "selling_costs_pct"] }
+        "minimum_sale_for_breakeven": {
+          "formula": "minimum_sale_for_breakeven = total_project_cost / (1 - selling_costs_pct)",
+          "inputs": ["total_project_cost", "selling_costs_pct"],
+          "description": "The minimum sale price needed to recover all project costs after paying selling costs (typically 8%)"
+        }
       }
     },
     {
@@ -210,7 +230,12 @@
         "savings_vs_renting_b": { "formula": "savings_vs_renting_b = owner_unit_market_rent - net_housing_cost_scenario_b", "inputs": ["owner_unit_market_rent", "net_housing_cost_scenario_b"] },
         "housing_cost_offset_pct": { "formula": "housing_cost_offset_pct = total_monthly_income / total_monthly_expenses", "inputs": ["total_monthly_income", "total_monthly_expenses"] },
         "live_free_threshold": { "formula": "live_free_threshold = total_monthly_expenses", "inputs": ["total_monthly_expenses"] },
-        "roi_on_savings": { "formula": "roi_on_savings = annual_savings_a / total_cash_required", "inputs": ["annual_savings_a", "total_cash_required"] }
+        "roi_on_savings": { "formula": "roi_on_savings = annual_savings_a / total_cash_required", "inputs": ["annual_savings_a", "total_cash_required"] },
+        "breakeven_effective_housing_cost": {
+          "formula": "breakeven achieved when effective_housing_cost <= 0; effective_housing_cost = total_monthly_expenses - total_monthly_income; alternatively: breakeven when housing_cost_offset_pct >= 100%",
+          "inputs": ["total_monthly_expenses", "total_monthly_income", "monthly_piti", "monthly_mip", "utilities_shared", "maintenance"],
+          "description": "Breakeven occurs when rental income from tenants covers 100% of your housing costs (you live for free)"
+        }
       }
     },
     {
@@ -239,7 +264,12 @@
         },
         "deals_needed_50k": { "formula": "deals_needed_50k = 50000 / net_profit", "inputs": ["net_profit"] },
         "deals_needed_100k": { "formula": "deals_needed_100k = 100000 / net_profit", "inputs": ["net_profit"] },
-        "timeline_days": { "formula": "timeline_days = days_to_close", "inputs": ["days_to_close"] }
+        "timeline_days": { "formula": "timeline_days = days_to_close", "inputs": ["days_to_close"] },
+        "breakeven_assignment_fee": {
+          "formula": "breakeven_assignment_fee = marketing_costs + closing_costs; net_profit = 0 when assignment_fee = marketing_costs + closing_costs",
+          "inputs": ["marketing_costs", "closing_costs"],
+          "description": "The minimum assignment fee needed to cover marketing and closing costs with $0 profit"
+        }
       }
     }
   ]
