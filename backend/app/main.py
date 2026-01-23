@@ -690,9 +690,9 @@ def _calculate_brrrr_strategy(
     else:
         display_coc = f"{coc * 100:.1f}%"
     
-    # Performance score: 50 + (cashRecoveryPct / 2)
-    # 0% recovery = 50, 100% recovery = 100, -100% = 0
-    score = _performance_score(recovery_pct, 0.5)
+    # Performance score: 50 + (cashRecoveryPct × 1)
+    # 0% recovery = 50, 50% recovery = 100, -50% = 0
+    score = _performance_score(recovery_pct, 1)
     
     return {
         "id": "brrrr",
@@ -765,9 +765,9 @@ def _calculate_house_hack_strategy(
     monthly_expenses = monthly_pi + monthly_taxes + monthly_insurance + pmi + maintenance + vacancy
     housing_offset = (rental_income / monthly_expenses * 100) if monthly_expenses > 0 else 0
     
-    # Performance score: 50 + (housingOffsetPct / 2)
-    # 0% offset = 50, 100% offset = 100, -100% offset = 0
-    score = _performance_score(housing_offset, 0.5)
+    # Performance score: 50 + (housingOffsetPct × 1)
+    # 0% offset = 50, 50% offset = 100, -50% offset = 0
+    score = _performance_score(housing_offset, 1)
     
     return {
         "id": "house-hack",
