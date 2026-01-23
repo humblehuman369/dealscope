@@ -6,7 +6,7 @@ import { SavedProperty } from '@/types/savedProperty'
 // Re-export for backward compatibility
 export type { SavedProperty } from '@/types/savedProperty'
 
-const API_BASE_URL = ''
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
 interface UseWorksheetPropertyOptions {
   onLoaded?: (property: SavedProperty) => void

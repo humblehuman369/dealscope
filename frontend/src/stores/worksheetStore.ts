@@ -8,7 +8,7 @@ import {
 } from '@/lib/projections'
 
 // Use relative paths for API calls to go through Next.js API routes
-const API_BASE_URL = ''
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 const WORKSHEET_API_URL = '/api/v1/worksheet/ltr/calculate'
 const CALC_DEBOUNCE_MS = 150
 

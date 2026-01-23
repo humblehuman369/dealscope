@@ -117,8 +117,8 @@ interface MetricsGlossary {
   }>
 }
 
-// Use relative paths for API calls to go through Next.js API routes
-const API_BASE_URL = ''
+// Use environment variable for API URL, fallback to Railway production URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
 // ===========================================
 // Formatting Helpers
