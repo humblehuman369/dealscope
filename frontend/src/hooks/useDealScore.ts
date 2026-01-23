@@ -22,6 +22,27 @@ export interface DealScoreInput {
   downPaymentPct?: number
   interestRate?: number
   loanTermYears?: number
+  // Enhanced Deal Opportunity Score - Listing Context (optional)
+  listingStatus?: string | null
+  sellerType?: string | null
+  isForeclosure?: boolean
+  isBankOwned?: boolean
+  isFsbo?: boolean
+  isAuction?: boolean
+  priceReductions?: number
+  daysOnMarket?: number | null
+}
+
+export interface DealScoreFactors {
+  dealGapScore: number
+  dealGapPercent: number
+  availabilityScore: number
+  availabilityStatus: string
+  availabilityLabel: string
+  availabilityMotivation: 'high' | 'medium' | 'low'
+  domScore: number
+  domLeverage: 'high' | 'medium' | 'low' | 'unknown'
+  daysOnMarket: number | null
 }
 
 export interface DealScoreResult {
@@ -31,6 +52,10 @@ export interface DealScoreResult {
   breakevenPrice: number
   purchasePrice: number
   listPrice: number
+  // Enhanced scoring (populated when listing context provided)
+  factors?: DealScoreFactors
+  grade?: string
+  color?: string
   calculationDetails?: {
     monthly_rent: number
     property_taxes: number
@@ -130,6 +155,15 @@ export function useDealScore(
           down_payment_pct: input.downPaymentPct,
           interest_rate: input.interestRate,
           loan_term_years: input.loanTermYears,
+          // Enhanced Deal Opportunity Score - Listing Context
+          listing_status: input.listingStatus,
+          seller_type: input.sellerType,
+          is_foreclosure: input.isForeclosure,
+          is_bank_owned: input.isBankOwned,
+          is_fsbo: input.isFsbo,
+          is_auction: input.isAuction,
+          price_reductions: input.priceReductions,
+          days_on_market: input.daysOnMarket,
         }),
         signal: abortControllerRef.current.signal,
       })
@@ -148,6 +182,19 @@ export function useDealScore(
         breakevenPrice: data.breakeven_price,
         purchasePrice: data.purchase_price,
         listPrice: data.list_price,
+        grade: data.grade,
+        color: data.color,
+        factors: data.factors ? {
+          dealGapScore: data.factors.deal_gap_score,
+          dealGapPercent: data.factors.deal_gap_percent,
+          availabilityScore: data.factors.availability_score,
+          availabilityStatus: data.factors.availability_status,
+          availabilityLabel: data.factors.availability_label,
+          availabilityMotivation: data.factors.availability_motivation,
+          domScore: data.factors.dom_score,
+          domLeverage: data.factors.dom_leverage,
+          daysOnMarket: data.factors.days_on_market,
+        } : undefined,
         calculationDetails: data.calculation_details,
       })
     } catch (err) {
@@ -172,6 +219,15 @@ export function useDealScore(
     input.downPaymentPct,
     input.interestRate,
     input.loanTermYears,
+    // Listing context dependencies
+    input.listingStatus,
+    input.sellerType,
+    input.isForeclosure,
+    input.isBankOwned,
+    input.isFsbo,
+    input.isAuction,
+    input.priceReductions,
+    input.daysOnMarket,
   ])
   
   // Debounced fetch when inputs change

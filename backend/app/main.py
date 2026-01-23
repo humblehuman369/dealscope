@@ -1019,6 +1019,28 @@ class DealScoreInput(BaseModel):
     down_payment_pct: Optional[float] = Field(None, description="Down payment %")
     interest_rate: Optional[float] = Field(None, description="Interest rate (e.g., 0.06 = 6%)")
     loan_term_years: Optional[int] = Field(None, description="Loan term in years")
+    # Enhanced Deal Opportunity Score - Listing Context (optional)
+    listing_status: Optional[str] = Field(None, description="Listing status (FOR_SALE, OFF_MARKET, etc.)")
+    seller_type: Optional[str] = Field(None, description="Seller type (Agent, FSBO, BankOwned, etc.)")
+    is_foreclosure: Optional[bool] = Field(False, description="Is foreclosure property")
+    is_bank_owned: Optional[bool] = Field(False, description="Is bank-owned/REO")
+    is_fsbo: Optional[bool] = Field(False, description="For Sale By Owner")
+    is_auction: Optional[bool] = Field(False, description="Auction listing")
+    price_reductions: Optional[int] = Field(0, description="Number of price reductions")
+    days_on_market: Optional[int] = Field(None, description="Days on market")
+
+
+class DealScoreFactors(BaseModel):
+    """Breakdown of Deal Opportunity Score factors."""
+    deal_gap_score: int = Field(..., description="Score based on discount needed (0-100)")
+    deal_gap_percent: float = Field(..., description="Discount % needed from list to breakeven")
+    availability_score: int = Field(..., description="Score based on listing status/seller motivation (0-100)")
+    availability_status: str = Field(..., description="Availability category (WITHDRAWN, FOR_SALE, etc.)")
+    availability_label: str = Field(..., description="Human-readable availability label")
+    availability_motivation: str = Field(..., description="Seller motivation level (high, medium, low)")
+    dom_score: int = Field(..., description="Score based on days on market (0-100)")
+    dom_leverage: str = Field(..., description="Negotiation leverage (high, medium, low, unknown)")
+    days_on_market: Optional[int] = Field(None, description="Days on market if available")
 
 
 class DealScoreResponse(BaseModel):
@@ -1029,6 +1051,11 @@ class DealScoreResponse(BaseModel):
     breakeven_price: float
     purchase_price: float
     list_price: float
+    # Enhanced scoring factors (populated when listing context provided)
+    factors: Optional[DealScoreFactors] = None
+    # Grade information
+    grade: str = Field("C", description="Letter grade (A+, A, B, C, D, F)")
+    color: str = Field("#f97316", description="UI color for the grade")
     # Calculation details for transparency
     calculation_details: dict
 
@@ -1044,17 +1071,22 @@ async def calculate_deal_score(input_data: DealScoreInput):
     The Deal Score is based on the discount from list price to breakeven:
     - Breakeven = price where cash flow = $0
     - Discount % = (list_price - breakeven) / list_price × 100
-    - Score = 100 - (discount % × 2)
+    
+    Enhanced Deal Opportunity Score (when listing context provided):
+    - Deal Gap (50%): Discount needed from list to breakeven
+    - Availability (30%): Listing status and seller motivation
+    - Days on Market (20%): Negotiation leverage context
     
     Scoring thresholds:
-    - 0-5% discount: Strong Opportunity (90-100)
-    - 5-10% discount: Great Opportunity (80-90)
-    - 10-15% discount: Moderate Opportunity (70-80)
-    - 15-25% discount: Potential Opportunity (50-70)
-    - 25-35% discount: Mild Opportunity (30-50)
-    - 35-45% discount: Weak Opportunity (10-30)
-    - 45%+ discount: Poor Opportunity (0-10)
+    - 85-100: Strong Opportunity (A+)
+    - 70-84: Great Opportunity (A)
+    - 55-69: Moderate Opportunity (B)
+    - 40-54: Potential Opportunity (C)
+    - 25-39: Weak Opportunity (D)
+    - 0-24: Poor Opportunity (F)
     """
+    from app.services.calculators import calculate_deal_opportunity_score
+    
     try:
         list_price = input_data.list_price
         purchase_price = input_data.purchase_price
@@ -1083,12 +1115,75 @@ async def calculate_deal_score(input_data: DealScoreInput):
             management_pct=mgmt_pct,
         )
         
-        # Calculate Deal Score based on discount from list to breakeven
-        deal_score, discount_pct, deal_verdict = _calculate_opportunity_score(breakeven, list_price)
+        # Check if listing context is provided for enhanced scoring
+        has_listing_context = (
+            input_data.listing_status is not None or
+            input_data.seller_type is not None or
+            input_data.is_foreclosure or
+            input_data.is_bank_owned or
+            input_data.is_fsbo or
+            input_data.days_on_market is not None or
+            input_data.price_reductions > 0
+        )
         
-        # Log for debugging
-        logger.info(f"Deal Score calculation: list=${list_price:,.0f}, purchase=${purchase_price:,.0f}, "
-                   f"breakeven=${breakeven:,.0f}, discount={discount_pct:.1f}%, score={deal_score}")
+        if has_listing_context:
+            # Use enhanced Deal Opportunity Score with listing context
+            enhanced_result = calculate_deal_opportunity_score(
+                breakeven_price=breakeven,
+                list_price=list_price,
+                listing_status=input_data.listing_status,
+                seller_type=input_data.seller_type,
+                is_foreclosure=input_data.is_foreclosure or False,
+                is_bank_owned=input_data.is_bank_owned or False,
+                is_fsbo=input_data.is_fsbo or False,
+                is_auction=input_data.is_auction or False,
+                price_reductions=input_data.price_reductions or 0,
+                days_on_market=input_data.days_on_market,
+            )
+            
+            deal_score = enhanced_result["score"]
+            discount_pct = enhanced_result["discount_percent"]
+            deal_verdict = enhanced_result["label"]
+            grade = enhanced_result["grade"]
+            color = enhanced_result["color"]
+            
+            # Build factors response
+            factors = DealScoreFactors(
+                deal_gap_score=enhanced_result["factors"]["deal_gap"]["score"],
+                deal_gap_percent=enhanced_result["factors"]["deal_gap"]["gap_percent"],
+                availability_score=enhanced_result["factors"]["availability"]["score"],
+                availability_status=enhanced_result["factors"]["availability"]["status"],
+                availability_label=enhanced_result["factors"]["availability"]["label"],
+                availability_motivation=enhanced_result["factors"]["availability"]["motivation"],
+                dom_score=enhanced_result["factors"]["days_on_market"]["score"],
+                dom_leverage=enhanced_result["factors"]["days_on_market"]["leverage"],
+                days_on_market=enhanced_result["factors"]["days_on_market"]["days"],
+            )
+            
+            logger.info(f"Enhanced Deal Score: list=${list_price:,.0f}, breakeven=${breakeven:,.0f}, "
+                       f"score={deal_score}, grade={grade}, availability={factors.availability_status}")
+        else:
+            # Use legacy Deal Score (Deal Gap only)
+            deal_score, discount_pct, deal_verdict = _calculate_opportunity_score(breakeven, list_price)
+            
+            # Determine grade from legacy score
+            if deal_score >= 90:
+                grade, color = "A+", "#22c55e"
+            elif deal_score >= 80:
+                grade, color = "A", "#22c55e"
+            elif deal_score >= 70:
+                grade, color = "B", "#84cc16"
+            elif deal_score >= 50:
+                grade, color = "C", "#f97316"
+            elif deal_score >= 30:
+                grade, color = "D", "#f97316"
+            else:
+                grade, color = "F", "#ef4444"
+            
+            factors = None
+            
+            logger.info(f"Legacy Deal Score: list=${list_price:,.0f}, purchase=${purchase_price:,.0f}, "
+                       f"breakeven=${breakeven:,.0f}, discount={discount_pct:.1f}%, score={deal_score}")
         
         return DealScoreResponse(
             deal_score=deal_score,
@@ -1097,6 +1192,9 @@ async def calculate_deal_score(input_data: DealScoreInput):
             breakeven_price=breakeven,
             purchase_price=purchase_price,
             list_price=list_price,
+            factors=factors,
+            grade=grade,
+            color=color,
             calculation_details={
                 "monthly_rent": monthly_rent,
                 "property_taxes": property_taxes,

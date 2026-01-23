@@ -173,6 +173,23 @@ function normalizePropertyData(
       property_taxes_annual?: number
       hoa_fees_monthly?: number
     }
+    listing?: {
+      listing_status?: string
+      is_off_market?: boolean
+      seller_type?: string
+      is_foreclosure?: boolean
+      is_bank_owned?: boolean
+      is_fsbo?: boolean
+      is_auction?: boolean
+      list_price?: number
+      days_on_market?: number
+      time_on_market?: string
+      last_sold_price?: number
+      date_sold?: string
+      brokerage_name?: string
+      listing_agent_name?: string
+      mls_id?: string
+    }
     description?: string
   }
 
@@ -249,12 +266,30 @@ function normalizePropertyData(
   // Kitchen appliances are common in most homes
   appliances.push('Dishwasher', 'Range/Oven', 'Refrigerator')
 
+  // Extract listing status from backend data
+  const listingStatus = (p.listing?.listing_status || 'OFF_MARKET') as 'FOR_SALE' | 'FOR_RENT' | 'SOLD' | 'PENDING' | 'OFF_MARKET'
+  const isOffMarket = p.listing?.is_off_market ?? (listingStatus === 'OFF_MARKET' || listingStatus === 'SOLD')
+  
+  // Use list price if available, otherwise use AVM/Zestimate
+  const displayPrice = p.listing?.list_price || price
+
   return {
     zpid: p.zpid || zpid,
     address: { streetAddress, city, state, zipcode },
-    price,
-    listingStatus: 'OFF_MARKET' as const,
-    isOffMarket: true,
+    price: displayPrice,
+    listingStatus,
+    isOffMarket,
+    // Listing info for Deal Opportunity Score
+    sellerType: p.listing?.seller_type,
+    isForeclosure: p.listing?.is_foreclosure,
+    isBankOwned: p.listing?.is_bank_owned,
+    isFsbo: p.listing?.is_fsbo,
+    isAuction: p.listing?.is_auction,
+    daysOnMarket: p.listing?.days_on_market,
+    timeOnMarket: p.listing?.time_on_market,
+    brokerageName: p.listing?.brokerage_name,
+    listingAgentName: p.listing?.listing_agent_name,
+    mlsId: p.listing?.mls_id,
     bedrooms: p.details?.bedrooms || 0,
     bathrooms: p.details?.bathrooms || 0,
     livingArea,
