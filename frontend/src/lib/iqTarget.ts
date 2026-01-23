@@ -225,92 +225,511 @@ export function calculateInitialRehabBudget(arv: number): number {
 }
 
 // ============================================
-// OPPORTUNITY SCORE CALCULATION
+// DEAL OPPORTUNITY SCORE CALCULATION
 // ============================================
+
+/**
+ * Deal Opportunity Score - Investment Price Indicator
+ * 
+ * The Deal Opportunity Score considers multiple factors to determine
+ * how attractive a property is as an investment opportunity:
+ * 
+ * 1. Deal Gap (50% weight) - ((List Price - Breakeven Price) / List Price) × 100
+ *    - Breakeven is calculated from LTR strategy (market rent less property costs)
+ *    - This is the primary factor as it indicates how much discount is needed
+ * 
+ * 2. Availability Ranking (30% weight) - Based on listing status and motivation:
+ *    - Withdrawn (best) - Seller motivation may be high
+ *    - For Sale – Price Reduced 2+ Times - Seller showing flexibility
+ *    - For Sale - Bank Owned/REO - Banks want to move properties
+ *    - For Sale – FSBO/Individual - More negotiation room
+ *    - For Sale - Agent Listed - Standard listing
+ *    - Off-Market - May find motivated sellers
+ *    - For Rent - Landlord may consider selling
+ *    - Pending – Under Contract - Unlikely to get
+ *    - Sold (Recently) - Not available
+ * 
+ * 3. Days on Market (20% weight) - Combined with Deal Gap:
+ *    - High Deal Gap + High DOM = More negotiation leverage
+ *    - High Deal Gap + Low DOM = Opportunity not yet recognized
+ *    - Low Deal Gap + High DOM = Price may already be fair
+ * 
+ * Note: Equity % is excluded as mortgage balance data is not available
+ * from the Axesso API. This would require public records data.
+ * 
+ * Note: BRRRR, Fix & Flip, and Wholesale strategies require physical
+ * inspection for repair estimates. The Deal Score is based on LTR
+ * breakeven since it can be calculated from available market data.
+ */
 
 export type OpportunityGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'
 
-export interface OpportunityScore {
-  score: number           // 0-100 (inverted from discount %)
-  discountPercent: number // How much below list needed to reach breakeven
+/**
+ * Availability status for opportunity ranking.
+ * Lower rank number = better opportunity.
+ */
+export type AvailabilityStatus = 
+  | 'WITHDRAWN'
+  | 'PRICE_REDUCED'
+  | 'BANK_OWNED'
+  | 'FSBO'
+  | 'AGENT_LISTED'
+  | 'OFF_MARKET'
+  | 'FOR_RENT'
+  | 'PENDING'
+  | 'SOLD'
+  | 'UNKNOWN'
+
+export interface AvailabilityInfo {
+  status: AvailabilityStatus
+  rank: number              // 1-9 (1 = best opportunity)
+  score: number             // 0-100 (inverted rank score)
+  label: string             // Human-readable label
+  motivationLevel: 'high' | 'medium' | 'low'
+}
+
+export interface DealOpportunityFactors {
+  // Deal Gap (LTR-based breakeven)
+  dealGap: {
+    breakevenPrice: number
+    listPrice: number
+    gapAmount: number       // List Price - Breakeven
+    gapPercent: number      // ((List - Breakeven) / List) × 100
+    score: number           // 0-100 (lower gap = higher score)
+  }
+  
+  // Availability/Listing Status
+  availability: AvailabilityInfo
+  
+  // Days on Market
+  daysOnMarket: {
+    days: number | null
+    score: number           // 0-100 (factors DOM with Deal Gap)
+    leverage: 'high' | 'medium' | 'low' | 'unknown'
+  }
+  
+  // Weights used in calculation
+  weights: {
+    dealGap: number
+    availability: number
+    daysOnMarket: number
+  }
+}
+
+export interface DealOpportunityScore {
+  // Overall composite score
+  score: number             // 0-100 weighted composite
   grade: OpportunityGrade
-  label: string           // "Strong Opportunity", etc.
-  color: string           // For UI display
+  label: string             // "Strong Opportunity", etc.
+  color: string             // For UI display
+  
+  // Component scores
+  factors: DealOpportunityFactors
+  
+  // Legacy compatibility
+  discountPercent: number   // Same as dealGap.gapPercent
   breakevenPrice: number
   listPrice: number
 }
 
+// Legacy type alias for backward compatibility
+export type OpportunityScore = DealOpportunityScore
+
 /**
- * Calculate Deal Score based on Investment Opportunity
+ * Get availability ranking based on listing status and seller type.
  * 
- * The score is based on how much discount from list price is needed
- * to reach breakeven. Lower discount = better opportunity.
- * 
- * Thresholds:
- * - 0-5% discount needed = Strong Opportunity (A+)
- * - 5-10% = Great Opportunity (A)
- * - 10-15% = Moderate Opportunity (B)
- * - 15-25% = Potential Opportunity (C)
- * - 25-35% = Mild Opportunity (D)
- * - 35-45%+ = Weak Opportunity (F)
+ * Ranking (best to worst opportunity):
+ * 1. Withdrawn - Was for sale but didn't sell (motivated seller)
+ * 2. Price Reduced 2+ Times - Seller showing flexibility
+ * 3. Bank Owned/REO - Banks want to move properties
+ * 4. FSBO/Individual - More negotiation room, no agent commission
+ * 5. Agent Listed - Standard listing
+ * 6. Off-Market - May find motivated sellers through outreach
+ * 7. For Rent - Landlord may consider selling
+ * 8. Pending/Under Contract - Unlikely to get
+ * 9. Sold - Not available
  */
-export function calculateOpportunityScore(
+export function getAvailabilityRanking(params: {
+  listingStatus?: string | null
+  sellerType?: string | null
+  isForeclosure?: boolean
+  isBankOwned?: boolean
+  isFsbo?: boolean
+  isAuction?: boolean
+  priceReductions?: number
+}): AvailabilityInfo {
+  const {
+    listingStatus,
+    sellerType,
+    isForeclosure = false,
+    isBankOwned = false,
+    isFsbo = false,
+    priceReductions = 0,
+  } = params
+  
+  const status = listingStatus?.toUpperCase() || ''
+  const seller = sellerType?.toUpperCase() || ''
+  
+  // Rank 1: Withdrawn listings
+  if (status === 'WITHDRAWN' || status.includes('WITHDRAWN')) {
+    return {
+      status: 'WITHDRAWN',
+      rank: 1,
+      score: 100,
+      label: 'Withdrawn - High Motivation',
+      motivationLevel: 'high'
+    }
+  }
+  
+  // Rank 2: Price reduced 2+ times (seller very motivated)
+  if ((status === 'FOR_SALE' || status.includes('SALE')) && priceReductions >= 2) {
+    return {
+      status: 'PRICE_REDUCED',
+      rank: 2,
+      score: 90,
+      label: `Price Reduced ${priceReductions}x`,
+      motivationLevel: 'high'
+    }
+  }
+  
+  // Rank 3: Bank Owned / REO / Foreclosure
+  if (isBankOwned || isForeclosure || seller.includes('BANK') || seller.includes('FORECLOSURE')) {
+    return {
+      status: 'BANK_OWNED',
+      rank: 3,
+      score: 80,
+      label: isBankOwned ? 'Bank Owned (REO)' : 'Foreclosure',
+      motivationLevel: 'high'
+    }
+  }
+  
+  // Rank 4: FSBO / Individual
+  if (isFsbo || seller === 'FSBO' || seller.includes('OWNER')) {
+    return {
+      status: 'FSBO',
+      rank: 4,
+      score: 70,
+      label: 'For Sale By Owner',
+      motivationLevel: 'medium'
+    }
+  }
+  
+  // Rank 5: Standard Agent Listed (For Sale)
+  if (status === 'FOR_SALE' || status.includes('SALE')) {
+    return {
+      status: 'AGENT_LISTED',
+      rank: 5,
+      score: 60,
+      label: 'For Sale - Agent Listed',
+      motivationLevel: 'medium'
+    }
+  }
+  
+  // Rank 6: Off-Market
+  if (status === 'OFF_MARKET' || status.includes('OFF')) {
+    return {
+      status: 'OFF_MARKET',
+      rank: 6,
+      score: 50,
+      label: 'Off-Market',
+      motivationLevel: 'low'
+    }
+  }
+  
+  // Rank 7: For Rent
+  if (status === 'FOR_RENT' || status.includes('RENT')) {
+    return {
+      status: 'FOR_RENT',
+      rank: 7,
+      score: 40,
+      label: 'For Rent',
+      motivationLevel: 'low'
+    }
+  }
+  
+  // Rank 8: Pending / Under Contract
+  if (status === 'PENDING' || status.includes('PENDING') || status.includes('CONTRACT')) {
+    return {
+      status: 'PENDING',
+      rank: 8,
+      score: 20,
+      label: 'Pending - Under Contract',
+      motivationLevel: 'low'
+    }
+  }
+  
+  // Rank 9: Sold
+  if (status === 'SOLD' || status.includes('SOLD')) {
+    return {
+      status: 'SOLD',
+      rank: 9,
+      score: 10,
+      label: 'Recently Sold',
+      motivationLevel: 'low'
+    }
+  }
+  
+  // Unknown status
+  return {
+    status: 'UNKNOWN',
+    rank: 6, // Default to off-market equivalent
+    score: 50,
+    label: 'Unknown Status',
+    motivationLevel: 'low'
+  }
+}
+
+/**
+ * Calculate Days on Market score with Deal Gap context.
+ * 
+ * The relationship between DOM and Deal Gap:
+ * - High Deal Gap + High DOM = Strong negotiation leverage (seller may be desperate)
+ * - High Deal Gap + Low DOM = Opportunity not yet recognized by market
+ * - Low Deal Gap + High DOM = Price may already be fair (not much room)
+ * - Low Deal Gap + Low DOM = Hot property, move fast if interested
+ */
+export function calculateDOMScore(params: {
+  daysOnMarket: number | null | undefined
+  dealGapPercent: number
+}): {
+  days: number | null
+  score: number
+  leverage: 'high' | 'medium' | 'low' | 'unknown'
+} {
+  const { daysOnMarket, dealGapPercent } = params
+  
+  if (daysOnMarket === null || daysOnMarket === undefined) {
+    return { days: null, score: 50, leverage: 'unknown' }
+  }
+  
+  const days = daysOnMarket
+  
+  // DOM thresholds (in days)
+  const lowDOM = 30
+  const mediumDOM = 60
+  const highDOM = 120
+  
+  // Deal Gap thresholds (in %)
+  const lowGap = 10
+  const highGap = 25
+  
+  let score: number
+  let leverage: 'high' | 'medium' | 'low'
+  
+  if (dealGapPercent >= highGap) {
+    // High Deal Gap - DOM increases leverage
+    if (days >= highDOM) {
+      score = 100  // Best: high gap + very long DOM
+      leverage = 'high'
+    } else if (days >= mediumDOM) {
+      score = 85
+      leverage = 'high'
+    } else if (days >= lowDOM) {
+      score = 70  // Good opportunity, may have more room
+      leverage = 'medium'
+    } else {
+      score = 60  // New listing with pricing issue - good if you move fast
+      leverage = 'medium'
+    }
+  } else if (dealGapPercent >= lowGap) {
+    // Medium Deal Gap
+    if (days >= highDOM) {
+      score = 70
+      leverage = 'medium'
+    } else if (days >= mediumDOM) {
+      score = 60
+      leverage = 'medium'
+    } else if (days >= lowDOM) {
+      score = 50
+      leverage = 'medium'
+    } else {
+      score = 45
+      leverage = 'low'
+    }
+  } else {
+    // Low Deal Gap - already close to fair price
+    if (days >= highDOM) {
+      score = 50  // Long DOM suggests market has priced it correctly
+      leverage = 'low'
+    } else if (days >= mediumDOM) {
+      score = 40
+      leverage = 'low'
+    } else {
+      score = 30  // Hot market, fair price
+      leverage = 'low'
+    }
+  }
+  
+  return { days, score, leverage }
+}
+
+/**
+ * Calculate the Deal Gap score from breakeven and list price.
+ * 
+ * Deal Gap = ((List Price - Breakeven Price) / List Price) × 100
+ * 
+ * A positive gap means the list price is above breakeven (need discount).
+ * A negative gap means property is already profitable at list price.
+ */
+export function calculateDealGapScore(
   breakevenPrice: number,
   listPrice: number
-): OpportunityScore {
-  // Calculate discount percentage needed to reach breakeven
-  // If breakeven > list price, that means the property is already profitable at list
-  const discountPercent = listPrice > 0 
-    ? Math.max(0, ((listPrice - breakevenPrice) / listPrice) * 100)
-    : 0
+): {
+  breakevenPrice: number
+  listPrice: number
+  gapAmount: number
+  gapPercent: number
+  score: number
+} {
+  if (listPrice <= 0) {
+    return {
+      breakevenPrice,
+      listPrice,
+      gapAmount: 0,
+      gapPercent: 0,
+      score: 0
+    }
+  }
   
-  // Score is inverse of discount (lower discount = higher score)
-  // 0% discount = 100 score, 45% discount = 0 score
-  const score = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))))
+  const gapAmount = listPrice - breakevenPrice
+  const gapPercent = Math.max(0, (gapAmount / listPrice) * 100)
   
+  // Score is inverse of gap (lower gap = higher score)
+  // 0% gap = 100 score
+  // 45%+ gap = 0 score
+  const score = Math.max(0, Math.min(100, Math.round(100 - (gapPercent * 100 / 45))))
+  
+  return {
+    breakevenPrice,
+    listPrice,
+    gapAmount,
+    gapPercent,
+    score
+  }
+}
+
+/**
+ * Calculate comprehensive Deal Opportunity Score.
+ * 
+ * Weights:
+ * - Deal Gap: 50% (primary factor - how much discount needed)
+ * - Availability: 30% (seller motivation and listing status)
+ * - Days on Market: 20% (negotiation leverage context)
+ * 
+ * @param breakevenPrice - LTR breakeven price (from market rent less costs)
+ * @param listPrice - Current list price (or estimated value if off-market)
+ * @param options - Additional context for availability and DOM scoring
+ */
+export function calculateDealOpportunityScore(
+  breakevenPrice: number,
+  listPrice: number,
+  options?: {
+    listingStatus?: string | null
+    sellerType?: string | null
+    isForeclosure?: boolean
+    isBankOwned?: boolean
+    isFsbo?: boolean
+    isAuction?: boolean
+    priceReductions?: number
+    daysOnMarket?: number | null
+  }
+): DealOpportunityScore {
+  // Weights for composite score
+  const weights = {
+    dealGap: 0.50,
+    availability: 0.30,
+    daysOnMarket: 0.20
+  }
+  
+  // Calculate Deal Gap score (50% weight)
+  const dealGap = calculateDealGapScore(breakevenPrice, listPrice)
+  
+  // Calculate Availability score (30% weight)
+  const availability = getAvailabilityRanking({
+    listingStatus: options?.listingStatus,
+    sellerType: options?.sellerType,
+    isForeclosure: options?.isForeclosure,
+    isBankOwned: options?.isBankOwned,
+    isFsbo: options?.isFsbo,
+    isAuction: options?.isAuction,
+    priceReductions: options?.priceReductions,
+  })
+  
+  // Calculate Days on Market score (20% weight)
+  const daysOnMarket = calculateDOMScore({
+    daysOnMarket: options?.daysOnMarket,
+    dealGapPercent: dealGap.gapPercent
+  })
+  
+  // Calculate weighted composite score
+  const compositeScore = Math.round(
+    (dealGap.score * weights.dealGap) +
+    (availability.score * weights.availability) +
+    (daysOnMarket.score * weights.daysOnMarket)
+  )
+  
+  // Determine grade and label based on composite score
   let grade: OpportunityGrade
   let label: string
   let color: string
   
-  if (discountPercent <= 5) {
+  if (compositeScore >= 85) {
     grade = 'A+'
     label = 'Strong Opportunity'
     color = '#22c55e' // green-500
-  } else if (discountPercent <= 10) {
+  } else if (compositeScore >= 70) {
     grade = 'A'
     label = 'Great Opportunity'
     color = '#22c55e' // green-500
-  } else if (discountPercent <= 15) {
+  } else if (compositeScore >= 55) {
     grade = 'B'
     label = 'Moderate Opportunity'
     color = '#84cc16' // lime-500
-  } else if (discountPercent <= 25) {
+  } else if (compositeScore >= 40) {
     grade = 'C'
     label = 'Potential Opportunity'
     color = '#f97316' // orange-500
-  } else if (discountPercent <= 35) {
+  } else if (compositeScore >= 25) {
     grade = 'D'
-    label = 'Mild Opportunity'
+    label = 'Weak Opportunity'
     color = '#f97316' // orange-500
   } else {
     grade = 'F'
-    label = 'Weak Opportunity'
+    label = 'Poor Opportunity'
     color = '#ef4444' // red-500
   }
   
   return {
-    score,
-    discountPercent,
+    score: compositeScore,
     grade,
     label,
     color,
+    factors: {
+      dealGap,
+      availability,
+      daysOnMarket,
+      weights
+    },
+    // Legacy compatibility
+    discountPercent: dealGap.gapPercent,
     breakevenPrice,
     listPrice
   }
 }
 
 /**
- * Get opportunity score from IQ Target result
+ * Legacy function for backward compatibility.
+ * Use calculateDealOpportunityScore for full functionality.
+ */
+export function calculateOpportunityScore(
+  breakevenPrice: number,
+  listPrice: number
+): OpportunityScore {
+  return calculateDealOpportunityScore(breakevenPrice, listPrice)
+}
+
+/**
+ * Get opportunity score from IQ Target result (legacy)
  * Convenience function that extracts breakeven and list price from IQ Target
  */
 export function getOpportunityScoreFromTarget(
@@ -318,6 +737,30 @@ export function getOpportunityScoreFromTarget(
   listPrice: number
 ): OpportunityScore {
   return calculateOpportunityScore(iqTarget.breakeven, listPrice)
+}
+
+/**
+ * Get full deal opportunity score from IQ Target with listing context
+ */
+export function getDealOpportunityScoreFromTarget(
+  iqTarget: IQTargetResult,
+  listPrice: number,
+  listingInfo?: {
+    listingStatus?: string | null
+    sellerType?: string | null
+    isForeclosure?: boolean
+    isBankOwned?: boolean
+    isFsbo?: boolean
+    isAuction?: boolean
+    priceReductions?: number
+    daysOnMarket?: number | null
+  }
+): DealOpportunityScore {
+  return calculateDealOpportunityScore(
+    iqTarget.breakeven,
+    listPrice,
+    listingInfo
+  )
 }
 
 // ============================================

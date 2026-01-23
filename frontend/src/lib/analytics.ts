@@ -3,7 +3,21 @@
  * 
  * Deal Score is based on Investment Opportunity - how much discount from 
  * list price is needed to reach breakeven. Lower discount = better opportunity.
+ * 
+ * Enhanced Deal Opportunity Score considers:
+ * 1. Deal Gap (50%) - ((List Price - Breakeven) / List Price) × 100
+ * 2. Availability (30%) - Listing status and seller motivation
+ * 3. Days on Market (20%) - Negotiation leverage context
  */
+
+import {
+  calculateDealOpportunityScore,
+  getAvailabilityRanking,
+  calculateDOMScore,
+  type DealOpportunityScore as IQTargetDealScore,
+  type AvailabilityInfo,
+  type OpportunityGrade as IQOpportunityGrade,
+} from './iqTarget'
 
 // ============================================
 // DEAL SCORE CALCULATION (Opportunity-Based)
@@ -21,6 +35,15 @@ export interface DealScoreBreakdown {
   verdict: string
   strengths: string[]
   weaknesses: string[]
+  // Enhanced scoring factors (optional - populated when listing info provided)
+  factors?: {
+    dealGapScore: number
+    availabilityScore: number
+    daysOnMarketScore: number
+    availability?: AvailabilityInfo
+    daysOnMarket?: number | null
+    leverage?: 'high' | 'medium' | 'low' | 'unknown'
+  }
 }
 
 export interface DealMetrics {
@@ -36,25 +59,151 @@ export interface DealMetrics {
 }
 
 /**
+ * Listing information for enhanced Deal Opportunity scoring
+ */
+export interface ListingInfo {
+  listingStatus?: string | null
+  sellerType?: string | null
+  isForeclosure?: boolean
+  isBankOwned?: boolean
+  isFsbo?: boolean
+  isAuction?: boolean
+  priceReductions?: number
+  daysOnMarket?: number | null
+}
+
+/**
  * Calculate Deal Score based on Investment Opportunity
  * 
- * The score is based on how much discount from list price is needed
- * to reach breakeven. Lower discount = better opportunity.
+ * Enhanced scoring considers multiple factors when listing info is provided:
+ * - Deal Gap (50% weight): Discount needed from list to breakeven
+ * - Availability (30% weight): Seller motivation based on listing status
+ * - Days on Market (20% weight): Negotiation leverage context
  * 
- * Thresholds:
- * - 0-5% discount needed = Strong Opportunity (A+)
- * - 5-10% = Great Opportunity (A)
- * - 10-15% = Moderate Opportunity (B)
- * - 15-25% = Potential Opportunity (C)
- * - 25-35% = Mild Opportunity (D)
- * - 35-45%+ = Weak Opportunity (F)
+ * Without listing info, uses Deal Gap only (legacy behavior).
+ * 
+ * Thresholds (with full scoring):
+ * - 85-100 = Strong Opportunity (A+)
+ * - 70-84 = Great Opportunity (A)
+ * - 55-69 = Moderate Opportunity (B)
+ * - 40-54 = Potential Opportunity (C)
+ * - 25-39 = Weak Opportunity (D)
+ * - 0-24 = Poor Opportunity (F)
  */
 export function calculateDealScore(
   breakevenPrice: number,
   listPrice: number,
-  metrics?: DealMetrics
+  metrics?: DealMetrics,
+  listingInfo?: ListingInfo
 ): DealScoreBreakdown {
-  // Calculate discount percentage needed to reach breakeven
+  // If listing info is provided, use enhanced scoring
+  if (listingInfo) {
+    const enhancedScore = calculateDealOpportunityScore(
+      breakevenPrice,
+      listPrice,
+      {
+        listingStatus: listingInfo.listingStatus,
+        sellerType: listingInfo.sellerType,
+        isForeclosure: listingInfo.isForeclosure,
+        isBankOwned: listingInfo.isBankOwned,
+        isFsbo: listingInfo.isFsbo,
+        isAuction: listingInfo.isAuction,
+        priceReductions: listingInfo.priceReductions,
+        daysOnMarket: listingInfo.daysOnMarket,
+      }
+    )
+    
+    // Generate insights based on enhanced factors
+    const strengths: string[] = []
+    const weaknesses: string[] = []
+    
+    // Deal Gap insights
+    if (enhancedScore.factors.dealGap.gapPercent <= 5) {
+      strengths.push('Profitable near list price')
+    } else if (enhancedScore.factors.dealGap.gapPercent <= 10) {
+      strengths.push('Achievable with typical negotiation')
+    }
+    
+    // Availability insights
+    if (enhancedScore.factors.availability.motivationLevel === 'high') {
+      strengths.push(`${enhancedScore.factors.availability.label}`)
+    } else if (enhancedScore.factors.availability.status === 'PENDING') {
+      weaknesses.push('Under contract - may need backup offer')
+    } else if (enhancedScore.factors.availability.status === 'SOLD') {
+      weaknesses.push('Recently sold - not available')
+    }
+    
+    // Days on Market insights
+    if (enhancedScore.factors.daysOnMarket.leverage === 'high') {
+      const days = enhancedScore.factors.daysOnMarket.days
+      strengths.push(`${days}+ days on market - negotiation leverage`)
+    } else if (enhancedScore.factors.daysOnMarket.days !== null && 
+               enhancedScore.factors.daysOnMarket.days < 14 &&
+               enhancedScore.factors.dealGap.gapPercent <= 10) {
+      strengths.push('New listing at reasonable price - act fast')
+    }
+    
+    // Metrics insights
+    if (metrics) {
+      if (metrics.monthlyCashFlow >= 300) {
+        strengths.push(`Strong cash flow potential ($${Math.round(metrics.monthlyCashFlow)}/mo)`)
+      }
+      if (metrics.dscr >= 1.25) {
+        strengths.push(`Good debt coverage (DSCR: ${metrics.dscr.toFixed(2)})`)
+      }
+      if (metrics.monthlyCashFlow < 0) {
+        weaknesses.push('Negative cash flow at list price')
+      }
+      if (metrics.dscr < 1.0) {
+        weaknesses.push('Income may not cover debt service')
+      }
+    }
+    
+    // Deal Gap warnings
+    if (enhancedScore.factors.dealGap.gapPercent > 25) {
+      weaknesses.push(`Requires ${enhancedScore.factors.dealGap.gapPercent.toFixed(0)}% discount - may be unrealistic`)
+    } else if (enhancedScore.factors.dealGap.gapPercent > 15) {
+      weaknesses.push(`Needs significant negotiation (${enhancedScore.factors.dealGap.gapPercent.toFixed(0)}% off)`)
+    }
+    
+    // Build verdict based on overall opportunity
+    let verdict: string
+    if (enhancedScore.score >= 85) {
+      verdict = 'Excellent deal - all factors align favorably'
+    } else if (enhancedScore.score >= 70) {
+      verdict = 'Very good deal - strong fundamentals'
+    } else if (enhancedScore.score >= 55) {
+      verdict = 'Decent opportunity - negotiate firmly'
+    } else if (enhancedScore.score >= 40) {
+      verdict = 'Possible deal - significant work needed'
+    } else if (enhancedScore.score >= 25) {
+      verdict = 'Challenging deal - major price reduction required'
+    } else {
+      verdict = 'Not recommended - unrealistic discount needed'
+    }
+    
+    return {
+      overall: enhancedScore.score,
+      discountPercent: enhancedScore.discountPercent,
+      breakevenPrice: enhancedScore.breakevenPrice,
+      listPrice: enhancedScore.listPrice,
+      grade: enhancedScore.grade as OpportunityGrade,
+      label: enhancedScore.label,
+      verdict,
+      strengths: strengths.slice(0, 4),
+      weaknesses: weaknesses.slice(0, 4),
+      factors: {
+        dealGapScore: enhancedScore.factors.dealGap.score,
+        availabilityScore: enhancedScore.factors.availability.score,
+        daysOnMarketScore: enhancedScore.factors.daysOnMarket.score,
+        availability: enhancedScore.factors.availability,
+        daysOnMarket: enhancedScore.factors.daysOnMarket.days,
+        leverage: enhancedScore.factors.daysOnMarket.leverage,
+      }
+    }
+  }
+  
+  // Legacy scoring (Deal Gap only)
   const discountPercent = listPrice > 0 
     ? Math.max(0, ((listPrice - breakevenPrice) / listPrice) * 100)
     : 0
@@ -86,11 +235,11 @@ export function calculateDealScore(
     verdict = 'Possible deal - significant discount needed'
   } else if (discountPercent <= 35) {
     grade = 'D'
-    label = 'Mild Opportunity'
+    label = 'Weak Opportunity'
     verdict = 'Challenging deal - major price reduction required'
   } else {
     grade = 'F'
-    label = 'Weak Opportunity'
+    label = 'Poor Opportunity'
     verdict = 'Not recommended - unrealistic discount needed'
   }
   
@@ -142,14 +291,26 @@ export function calculateDealScore(
  * Legacy function for backwards compatibility
  * Uses metrics to estimate breakeven internally
  */
-export function calculateDealScoreFromMetrics(metrics: DealMetrics): DealScoreBreakdown {
+export function calculateDealScoreFromMetrics(
+  metrics: DealMetrics,
+  listingInfo?: ListingInfo
+): DealScoreBreakdown {
   // Estimate breakeven as purchase price adjusted for cash flow
   // This is a simplified estimate - actual calculation should use binary search
   const monthlyDeficit = metrics.monthlyCashFlow < 0 ? Math.abs(metrics.monthlyCashFlow) : 0
   const annualDeficit = monthlyDeficit * 12
   const breakevenEstimate = metrics.purchasePrice - (annualDeficit * 10) // Rough estimate
   
-  return calculateDealScore(breakevenEstimate, metrics.purchasePrice, metrics)
+  return calculateDealScore(breakevenEstimate, metrics.purchasePrice, metrics, listingInfo)
+}
+
+// Re-export enhanced scoring functions for direct use
+export { 
+  calculateDealOpportunityScore,
+  getAvailabilityRanking,
+  calculateDOMScore,
+  type IQTargetDealScore,
+  type AvailabilityInfo 
 }
 
 // ============================================
