@@ -14,7 +14,7 @@ import { MultiYearProjections } from '../sections/MultiYearProjections'
 import { CashFlowChart } from '../charts/CashFlowChart'
 import { EquityChart } from '../charts/EquityChart'
 import { MobileCompressedView } from './MobileCompressedView'
-import { ArrowLeft, ChevronDown, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, ChevronDown, CheckCircle2, ChevronRight } from 'lucide-react'
 import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
 import { useDealScore, getDealScoreColor } from '@/hooks/useDealScore'
 
@@ -208,6 +208,36 @@ export function LTRWorksheet({
   const [currentSection, setCurrentSection] = useState<number | null>(0)
   const [completedSections, setCompletedSections] = useState<Set<number>>(new Set([0]))
   const [manualOverrides, setManualOverrides] = useState<Record<number, boolean>>({})
+  
+  // Mobile swipe panels state
+  const [activeMobilePanel, setActiveMobilePanel] = useState<'verdict' | 'worksheet'>('verdict')
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  
+  const minSwipeDistance = 50
+  
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+  
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+  
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+    
+    if (isLeftSwipe && activeMobilePanel === 'verdict') {
+      setActiveMobilePanel('worksheet')
+    }
+    if (isRightSwipe && activeMobilePanel === 'worksheet') {
+      setActiveMobilePanel('verdict')
+    }
+  }
 
   // ============================================
   // DEAL OPPORTUNITY SCORE FROM BACKEND API
@@ -840,7 +870,273 @@ export function LTRWorksheet({
               ← Back to Summary
             </button>
           )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+          
+          {/* Mobile: Swipeable panels */}
+          <div className="sm:hidden overflow-hidden">
+            <div 
+              className="flex transition-transform duration-300 ease-out"
+              style={{ transform: `translateX(${activeMobilePanel === 'worksheet' ? '-100%' : '0'})` }}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+            >
+              {/* Panel 1: IQ Verdict */}
+              <div className="w-full flex-shrink-0 px-1">
+                <div className="space-y-4">
+                  {/* IQ Verdict Card */}
+                  <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
+                    <div className="p-5" style={{ 
+                      background: dealScore >= 70 
+                        ? 'linear-gradient(180deg, rgba(8, 145, 178, 0.10) 0%, rgba(8, 145, 178, 0.02) 100%)'
+                        : dealScore >= 40
+                          ? 'linear-gradient(180deg, rgba(245, 158, 11, 0.10) 0%, rgba(245, 158, 11, 0.02) 100%)'
+                          : 'linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.02) 100%)'
+                    }}>
+                      <div className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${
+                        dealScore >= 70 ? 'text-teal' : dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
+                      }`}>IQ VERDICT: LONG-TERM RENTAL</div>
+                      
+                      {/* Two-Score Display */}
+                      <div className="grid grid-cols-2 gap-3 mb-3">
+                        {/* Deal Opportunity Score */}
+                        <div className="bg-white rounded-lg px-3 py-2 shadow-sm text-center">
+                          <span className={`text-2xl font-extrabold tabular-nums ${
+                            opportunityScore >= 70 ? 'text-teal' : opportunityScore >= 40 ? 'text-amber-500' : 'text-red-500'
+                          }`}>{opportunityScore}</span>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Opportunity</div>
+                          <div className="text-[9px] font-medium text-slate-400 truncate">{opportunityVerdict}</div>
+                        </div>
+                        {/* Strategy Return Score */}
+                        <div className="bg-white rounded-lg px-3 py-2 shadow-sm text-center">
+                          <span className={`text-2xl font-extrabold tabular-nums ${
+                            performanceScore >= 70 ? 'text-teal' : performanceScore >= 40 ? 'text-amber-500' : 'text-red-500'
+                          }`}>{performanceScore}</span>
+                          <div className="text-[10px] text-slate-500 mt-0.5">Return</div>
+                          <div className="text-[9px] font-medium text-slate-400 truncate">{performanceVerdict}</div>
+                        </div>
+                      </div>
+                      
+                      <p className="text-sm text-slate-500 text-center">{verdictSub}</p>
+                    </div>
+                    
+                    <div className="px-5 py-4 border-t border-slate-100">
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-800 mb-3">RETURNS VS TARGETS</div>
+                      {targets.map((t, i) => (
+                        <div key={i} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                          <span className="text-sm text-slate-500">{t.label}</span>
+                          <span className={`text-sm font-semibold tabular-nums ${t.met ? 'text-teal' : 'text-slate-800'}`}>
+                            {t.actual.toFixed(1)}{t.unit} / {t.target}{t.unit}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Price Position Card */}
+                  <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-800 mb-4">PRICE POSITION</div>
+                    
+                    {/* Gauge SVG */}
+                    <div className="flex justify-center mb-4">
+                      <div className="relative">
+                        <svg width="160" height="90" viewBox="0 0 160 90">
+                          <path d="M 15 80 A 65 65 0 0 1 145 80" fill="none" stroke="#E2E8F0" strokeWidth="14" strokeLinecap="round" />
+                          <path d="M 15 80 A 65 65 0 0 1 80 15" fill="none" stroke="rgba(239, 68, 68, 0.35)" strokeWidth="14" strokeLinecap="round" />
+                          <path d="M 80 15 A 65 65 0 0 1 145 80" fill="none" stroke="rgba(8, 145, 178, 0.35)" strokeWidth="14" strokeLinecap="round" />
+                          <line 
+                            x1="80" y1="80" 
+                            x2={needleX} y2={needleY} 
+                            stroke={dealScore >= 50 ? '#0891B2' : '#EF4444'} 
+                            strokeWidth="3" strokeLinecap="round"
+                            style={{ transition: 'all 0.3s ease-out' }}
+                          />
+                          <circle cx="80" cy="80" r="6" fill="#0f172a" />
+                          <circle cx="80" cy="80" r="3" fill="#fff" />
+                        </svg>
+                        <div className="absolute bottom-0 left-1 text-[9px] font-bold text-red-500">LOSS</div>
+                        <div className="absolute bottom-0 right-1 text-[9px] font-bold text-teal">PROFIT</div>
+                      </div>
+                    </div>
+                    
+                    {/* Price rows */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center py-2.5 px-3 rounded-lg">
+                        <span className="text-sm text-slate-500">List Price</span>
+                        <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(listPrice)}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2.5 px-3 rounded-lg">
+                        <span className="text-sm text-slate-500">Breakeven Price</span>
+                        <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(breakeven)}</span>
+                      </div>
+                      <div className={`flex justify-between items-center py-2.5 px-3 rounded-lg border ${
+                        purchasePrice <= breakeven 
+                          ? 'bg-teal/10 border-teal/20' 
+                          : 'bg-red-500/10 border-red-500/20'
+                      }`}>
+                        <span className={`text-sm font-medium ${purchasePrice <= breakeven ? 'text-teal' : 'text-red-500'}`}>
+                          Your Price
+                        </span>
+                        <span className={`text-sm font-bold tabular-nums ${purchasePrice <= breakeven ? 'text-teal' : 'text-red-500'}`}>
+                          {fmt.currency(purchasePrice)}
+                        </span>
+                      </div>
+                      {purchasePrice > breakeven && (
+                        <div className="mt-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                          <p className="text-xs text-amber-600 font-medium">
+                            Price is {fmt.currency(purchasePrice - breakeven)} above breakeven
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Key Numbers Card */}
+                  <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-5">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-800 mb-3">KEY NUMBERS</div>
+                    
+                    <div className="space-y-0 divide-y divide-slate-100">
+                      <div className="flex justify-between py-2.5">
+                        <span className="text-sm text-slate-500">Cash Required</span>
+                        <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(calc.totalCashNeeded)}</span>
+                      </div>
+                      <div className="flex justify-between py-2.5">
+                        <span className="text-sm text-slate-500">NOI</span>
+                        <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(calc.noi)}/yr</span>
+                      </div>
+                      <div className="flex justify-between py-2.5">
+                        <span className="text-sm text-slate-500">Debt Service</span>
+                        <span className="text-sm font-semibold text-slate-800 tabular-nums">{fmt.currency(calc.annualLoanPayments)}/yr</span>
+                      </div>
+                      <div className="flex justify-between py-2.5">
+                        <span className="text-sm text-slate-500">DSCR</span>
+                        <span className={`text-sm font-semibold tabular-nums ${calc.dscr >= 1.25 ? 'text-teal' : 'text-slate-800'}`}>{fmt.ratio(calc.dscr)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* CTA Button */}
+                  <button 
+                    onClick={onExportPDF}
+                    className="w-full py-4 px-6 bg-teal/10 hover:bg-teal/20 border border-teal/25 rounded-full text-slate-800 font-bold text-sm transition-colors"
+                  >
+                    Export PDF Report →
+                  </button>
+                </div>
+                
+                {/* Modify Hint - only on verdict panel */}
+                {activeMobilePanel === 'verdict' && (
+                  <div className="flex items-center justify-center gap-2 py-4 text-teal animate-bounce">
+                    <span className="text-sm font-medium">Modify</span>
+                    <ChevronRight className="w-5 h-5" />
+                  </div>
+                )}
+              </div>
+              
+              {/* Panel 2: Worksheet sections */}
+              <div className="w-full flex-shrink-0 px-1">
+                <div className="space-y-3">
+                  {/* Purchase */}
+                  <Section index={0} title="Purchase" iconKey="home">
+                    <InputRow label="Purchase Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={2000000} step={5000} format="currency" />
+                    <InputRow label="Down Payment" value={downPaymentPct} onChange={setDownPaymentPct} min={0} max={100} step={1} format="percent" subValue={fmt.currency(calc.downPayment)} />
+                    <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
+                    <InputRow label="Closing Costs" value={purchaseCostsPct} onChange={setPurchaseCostsPct} min={0} max={10} step={0.5} format="percent" subValue={fmt.currency(calc.purchaseCosts)} />
+                    <div className="mt-3 pt-3">
+                      <SummaryBox label="Total Cash Required" value={fmt.currency(calc.totalCashNeeded)} variant="teal" />
+                    </div>
+                  </Section>
+                  
+                  {/* Financing */}
+                  <Section index={1} title="Financing" iconKey="bank">
+                    <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
+                    <DisplayRow label="Loan Type" value="30-Year Fixed" variant="muted" />
+                    <InputRow label="Interest Rate" value={interestRate} onChange={setInterestRate} min={3} max={12} step={0.125} format="percent" />
+                    <InputRow label="Loan Term" value={loanTerm} onChange={setLoanTerm} min={10} max={30} step={5} format="years" />
+                    <div className="mt-3 pt-3">
+                      <SummaryBox label="Monthly Payment" value={fmt.currency(calc.monthlyPayment)} />
+                    </div>
+                  </Section>
+                  
+                  {/* Rehab & Valuation */}
+                  <Section index={2} title="Rehab & Valuation" iconKey="tool">
+                    <InputRow label="Rehab Budget" value={rehabCosts} onChange={setRehabCosts} min={0} max={200000} step={1000} format="currency" />
+                    <InputRow label="After Repair Value" value={arv} onChange={setArv} min={Math.round(listPrice * 0.7)} max={Math.round(listPrice * 1.8)} step={5000} format="currency" />
+                    <DisplayRow label="Price / Sq.Ft." value={`$${Math.round(calc.pricePerSqft)}`} />
+                    <DisplayRow label="ARV / Sq.Ft." value={`$${Math.round(calc.arvPerSqft)}`} />
+                    <div className="mt-3 pt-3">
+                      <SummaryBox label="Instant Equity" value={fmt.currency(calc.equityAtPurchase)} variant="success" />
+                    </div>
+                  </Section>
+                  
+                  {/* Income */}
+                  <Section index={3} title="Income" iconKey="income">
+                    <InputRow label="Monthly Rent" value={monthlyRent} onChange={setMonthlyRent} min={1000} max={20000} step={50} format="currency" subValue={`${fmt.currency(calc.annualGrossRent)}/yr`} />
+                    <InputRow label="Vacancy Rate" value={vacancyRate} onChange={setVacancyRate} min={0} max={20} step={1} format="percent" subValue={`−${fmt.currency(calc.vacancyLoss)}/yr`} />
+                    <div className="mt-3 pt-3">
+                      <SummaryBox label="Effective Gross Income" value={fmt.currency(calc.grossIncome)} variant="success" />
+                    </div>
+                  </Section>
+                  
+                  {/* Expenses */}
+                  <Section index={4} title="Expenses" iconKey="expense">
+                    <InputRow label="Property Taxes" value={propertyTaxes} onChange={setPropertyTaxes} min={0} max={30000} step={100} format="currency" />
+                    <InputRow label="Insurance" value={insurance} onChange={setInsurance} min={0} max={15000} step={100} format="currency" />
+                    <InputRow label="Management" value={propertyMgmtPct} onChange={setPropertyMgmtPct} min={0} max={15} step={1} format="percent" subValue={fmt.currency(calc.annualPropertyMgmt)} />
+                    <InputRow label="Maintenance" value={maintenancePct} onChange={setMaintenancePct} min={0} max={15} step={1} format="percent" subValue={fmt.currency(calc.annualMaintenance)} />
+                    <InputRow label="CapEx Reserve" value={capExPct} onChange={setCapExPct} min={0} max={15} step={1} format="percent" subValue={fmt.currency(calc.annualCapEx)} />
+                    <InputRow label="HOA" value={hoaFees} onChange={setHoaFees} min={0} max={1000} step={25} format="currency" />
+                    <div className="mt-3 pt-3">
+                      <SummaryBox label="Total Operating Expenses" value={fmt.currency(calc.grossExpenses)} variant="danger" />
+                    </div>
+                  </Section>
+                  
+                  {/* Cash Flow */}
+                  <Section index={5} title="Cash Flow" iconKey="cashflow">
+                    <DisplayRow label="Gross Income" value={fmt.currency(calc.grossIncome)} />
+                    <DisplayRow label="Operating Expenses" value={`−${fmt.currency(calc.grossExpenses)}`} variant="danger" />
+                    <DisplayRow label="Debt Service" value={`−${fmt.currency(calc.annualLoanPayments)}`} variant="danger" />
+                    <div className="mt-3 pt-3 space-y-2">
+                      <SummaryBox label="Monthly Cash Flow" value={fmt.currency(calc.monthlyCashFlow)} variant={calc.monthlyCashFlow >= 0 ? 'success' : 'danger'} />
+                      <SummaryBox label="Annual Cash Flow" value={fmt.currency(calc.annualCashFlow)} variant={calc.annualCashFlow >= 0 ? 'success' : 'danger'} />
+                    </div>
+                  </Section>
+                  
+                  {/* Returns */}
+                  <Section index={6} title="Returns" iconKey="returns">
+                    <MetricRow label="Cap Rate (Purchase)" value={fmt.percent2(calc.capRatePurchase)} target="8%" isGood={calc.capRatePurchase >= 8} />
+                    <MetricRow label="Cap Rate (ARV)" value={fmt.percent2(calc.capRateMarket)} target="8%" isGood={calc.capRateMarket >= 8} />
+                    <MetricRow label="Cash on Cash" value={fmt.percent2(calc.cashOnCash)} target="10%" isGood={calc.cashOnCash >= 10} />
+                    <MetricRow label="Return on Equity" value={fmt.percent2(calc.returnOnEquity)} />
+                    <MetricRow label="Total ROI (Year 1)" value={fmt.percent2(calc.returnOnInvestment)} />
+                  </Section>
+                  
+                  {/* Ratios */}
+                  <Section index={7} title="Ratios" iconKey="ratios">
+                    <MetricRow label="1% Rule (Rent/Value)" value={fmt.percent2(calc.rentToValue)} target="1%" isGood={calc.rentToValue >= 1} />
+                    <MetricRow label="Gross Rent Multiplier" value={fmt.ratio(calc.grossRentMultiplier)} target="12x" isGood={calc.grossRentMultiplier <= 12} />
+                    <MetricRow label="Break-Even Ratio" value={fmt.percent2(calc.breakEvenRatio)} target="85%" isGood={calc.breakEvenRatio <= 85} />
+                    <MetricRow label="DSCR" value={fmt.ratio(calc.dscr)} target="1.2x" isGood={calc.dscr >= 1.2} />
+                    <MetricRow label="Debt Yield" value={fmt.percent2(calc.debtYield)} />
+                  </Section>
+                </div>
+              </div>
+            </div>
+            
+            {/* Panel indicator dots */}
+            <div className="flex justify-center gap-2 mt-4">
+              <button 
+                className={`w-2 h-2 rounded-full transition-colors ${activeMobilePanel === 'verdict' ? 'bg-teal' : 'bg-slate-300'}`}
+                onClick={() => setActiveMobilePanel('verdict')}
+              />
+              <button 
+                className={`w-2 h-2 rounded-full transition-colors ${activeMobilePanel === 'worksheet' ? 'bg-teal' : 'bg-slate-300'}`}
+                onClick={() => setActiveMobilePanel('worksheet')}
+              />
+            </div>
+          </div>
+          
+          {/* Desktop: Side-by-side grid */}
+          <div className="hidden sm:grid sm:grid-cols-2 gap-6 items-start">
           
           {/* LEFT COLUMN - Insight Panel */}
           <div className="sm:sticky sm:top-20 space-y-4">
