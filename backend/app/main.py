@@ -690,8 +690,9 @@ def _calculate_brrrr_strategy(
     else:
         display_coc = f"{coc * 100:.1f}%"
     
-    # Score based on recovery percentage (0-100%)
-    score = _normalize_score(recovery_pct, 0, 100)
+    # Performance score: 50 + (cashRecoveryPct / 2)
+    # 0% recovery = 50, 100% recovery = 100, -100% = 0
+    score = _performance_score(recovery_pct, 0.5)
     
     return {
         "id": "brrrr",
@@ -722,7 +723,11 @@ def _calculate_flip_strategy(
     total_investment = price + purchase_costs + rehab_cost + holding_costs
     net_profit = arv - total_investment - selling_costs
     roi = net_profit / total_investment if total_investment > 0 else 0
-    score = _normalize_score(roi * 100, 0, 30)
+    roi_pct = roi * 100
+    
+    # Performance score: 50 + (ROI% × 2.5)
+    # 0% ROI = 50, 20% ROI = 100, -20% ROI = 0
+    score = _performance_score(roi_pct, 2.5)
     
     return {
         "id": "fix-and-flip",
@@ -759,7 +764,10 @@ def _calculate_house_hack_strategy(
     
     monthly_expenses = monthly_pi + monthly_taxes + monthly_insurance + pmi + maintenance + vacancy
     housing_offset = (rental_income / monthly_expenses * 100) if monthly_expenses > 0 else 0
-    score = _normalize_score(housing_offset, 0, 100)
+    
+    # Performance score: 50 + (housingOffsetPct / 2)
+    # 0% offset = 50, 100% offset = 100, -100% offset = 0
+    score = _performance_score(housing_offset, 0.5)
     
     return {
         "id": "house-hack",
