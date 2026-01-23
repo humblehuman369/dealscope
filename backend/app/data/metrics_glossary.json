@@ -1,7 +1,7 @@
 {
-  "version": "1.3",
-  "updatedAt": "2026-01-23",
-  "source": "backend/app/services/calculators.py, backend/app/services/data_normalizer.py",
+  "version": "1.5",
+  "updatedAt": "2026-01-22",
+  "source": "backend/app/services/calculators.py, backend/app/services/data_normalizer.py, frontend/src/lib/iqTarget.ts, backend/app/main.py",
   "market_statistics": {
     "description": "Market health indicators from RentCast saleData for buyer/seller market analysis",
     "source": "RentCast Markets API",
@@ -140,6 +140,90 @@
         "description": "Year-over-year percentage change in median rents. Positive values indicate rent growth, negative values indicate rent decline.",
         "source": "AXESSO Zillow Market Data API",
         "notes": "Calculated from Zillow's medianRentPriceOverTime which provides monthly rent data for current and previous year."
+      }
+    }
+  },
+  "deal_opportunity_score": {
+    "description": "Deal Opportunity Score - Investment Price Indicator. A composite weighted score that considers multiple factors to determine how attractive a property is as an investment opportunity.",
+    "source": "backend/app/services/calculators.py, frontend/src/lib/iqTarget.ts",
+    "notes": [
+      "Equity % is excluded as mortgage balance data is not available from the Axesso API (would require public records data).",
+      "BRRRR, Fix & Flip, and Wholesale strategies require physical inspection for repair estimates.",
+      "The Deal Score is based on LTR breakeven since it can be calculated from available market data."
+    ],
+    "metrics": {
+      "deal_opportunity_score": {
+        "formula": "deal_opportunity_score = (deal_gap_score × 0.50) + (availability_score × 0.30) + (dom_score × 0.20)",
+        "inputs": ["deal_gap_score", "availability_score", "dom_score"],
+        "description": "Composite weighted score (0-100) combining Deal Gap, Availability Ranking, and Days on Market factors.",
+        "weights": {
+          "deal_gap": 0.50,
+          "availability": 0.30,
+          "days_on_market": 0.20
+        },
+        "grading": {
+          "A+": { "min_score": 85, "label": "Strong Opportunity", "color": "#22c55e" },
+          "A": { "min_score": 70, "label": "Great Opportunity", "color": "#22c55e" },
+          "B": { "min_score": 55, "label": "Moderate Opportunity", "color": "#84cc16" },
+          "C": { "min_score": 40, "label": "Potential Opportunity", "color": "#f97316" },
+          "D": { "min_score": 25, "label": "Weak Opportunity", "color": "#f97316" },
+          "F": { "min_score": 0, "label": "Poor Opportunity", "color": "#ef4444" }
+        }
+      },
+      "deal_gap": {
+        "formula": "deal_gap_percent = ((list_price - breakeven_price) / list_price) × 100; deal_gap_score = max(0, min(100, 100 - (deal_gap_percent × 100 / 45)))",
+        "inputs": ["list_price", "breakeven_price"],
+        "description": "Primary factor (50% weight). Measures how much discount from list price is needed to reach breakeven. A positive gap means the list price is above breakeven (need discount). A negative gap means property is already profitable at list price.",
+        "interpretation": {
+          "0%_gap": "100 score - Property profitable at list price",
+          "45%+_gap": "0 score - Significant discount needed"
+        }
+      },
+      "ltr_breakeven_price": {
+        "formula": "breakeven_price = NOI / (LTV × mortgage_constant); where NOI = effective_gross_income - operating_expenses; effective_gross_income = monthly_rent × 12 × (1 - vacancy_rate); operating_expenses = property_taxes + insurance + (effective_gross_income × maintenance_pct) + (effective_gross_income × management_pct); LTV = 1 - down_payment_pct; mortgage_constant = (monthly_rate × (1 + monthly_rate)^n) / ((1 + monthly_rate)^n - 1) × 12",
+        "inputs": ["monthly_rent", "property_taxes", "insurance", "vacancy_rate", "maintenance_pct", "management_pct", "down_payment_pct", "interest_rate", "loan_term_years"],
+        "description": "The purchase price at which monthly cash flow equals $0 (NOI = Annual Debt Service). Used as the basis for Deal Gap calculation.",
+        "defaults": {
+          "vacancy_rate": 0.01,
+          "maintenance_pct": 0.05,
+          "management_pct": 0.00,
+          "down_payment_pct": 0.20,
+          "interest_rate": 0.06,
+          "loan_term_years": 30
+        }
+      },
+      "availability_ranking": {
+        "formula": "availability_score based on listing status rank (1-9, where 1 = best opportunity)",
+        "inputs": ["listing_status", "seller_type", "is_foreclosure", "is_bank_owned", "is_fsbo", "is_auction", "price_reductions"],
+        "description": "Seller motivation factor (30% weight). Ranks properties by likelihood of successful negotiation based on listing status and seller type.",
+        "rankings": {
+          "1_WITHDRAWN": { "score": 100, "label": "Withdrawn - High Motivation", "motivation": "high" },
+          "2_PRICE_REDUCED": { "score": 90, "label": "Price Reduced 2+ Times", "motivation": "high" },
+          "3_BANK_OWNED": { "score": 80, "label": "Bank Owned (REO) / Foreclosure", "motivation": "high" },
+          "4_FSBO": { "score": 70, "label": "For Sale By Owner", "motivation": "medium" },
+          "5_AGENT_LISTED": { "score": 60, "label": "For Sale - Agent Listed", "motivation": "medium" },
+          "6_OFF_MARKET": { "score": 50, "label": "Off-Market", "motivation": "low" },
+          "7_FOR_RENT": { "score": 40, "label": "For Rent", "motivation": "low" },
+          "8_PENDING": { "score": 20, "label": "Pending - Under Contract", "motivation": "low" },
+          "9_SOLD": { "score": 10, "label": "Recently Sold", "motivation": "low" }
+        }
+      },
+      "dom_score": {
+        "formula": "dom_score = f(days_on_market, deal_gap_percent); scoring varies based on DOM thresholds (30, 60, 120 days) and deal gap thresholds (10%, 25%)",
+        "inputs": ["days_on_market", "deal_gap_percent"],
+        "description": "Days on Market factor (20% weight). Score considers DOM in context of Deal Gap to assess negotiation leverage.",
+        "interpretation": {
+          "high_gap_high_dom": "100 score - Strong negotiation leverage (seller may be desperate)",
+          "high_gap_low_dom": "60 score - Opportunity not yet recognized by market",
+          "low_gap_high_dom": "50 score - Price may already be fair (not much room)",
+          "low_gap_low_dom": "30 score - Hot property, move fast if interested"
+        },
+        "leverage_levels": {
+          "high": "High Deal Gap (25%+) + High DOM (120+ days)",
+          "medium": "Medium Deal Gap (10-25%) or Medium DOM (30-120 days)",
+          "low": "Low Deal Gap (<10%) or Low DOM (<30 days)",
+          "unknown": "DOM data not available"
+        }
       }
     }
   },
