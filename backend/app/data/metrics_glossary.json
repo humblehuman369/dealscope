@@ -1,6 +1,6 @@
 {
   "version": "1.5",
-  "updatedAt": "2026-01-22",
+  "updatedAt": "2026-01-23",
   "source": "backend/app/services/calculators.py, backend/app/services/data_normalizer.py, frontend/src/lib/iqTarget.ts, backend/app/main.py",
   "market_statistics": {
     "description": "Market health indicators from RentCast saleData for buyer/seller market analysis",
