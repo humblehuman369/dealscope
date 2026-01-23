@@ -253,6 +253,8 @@ function normalizePropertyData(
     zpid: p.zpid || zpid,
     address: { streetAddress, city, state, zipcode },
     price,
+    listingStatus: 'OFF_MARKET' as const,
+    isOffMarket: true,
     bedrooms: p.details?.bedrooms || 0,
     bathrooms: p.details?.bathrooms || 0,
     livingArea,

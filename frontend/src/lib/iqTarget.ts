@@ -212,6 +212,12 @@ export function calculateBuyPrice(params: {
 }
 
 /**
+ * Alias for calculateBuyPrice - calculates initial purchase price
+ * as 95% of estimated breakeven (5% discount by default)
+ */
+export const calculateInitialPurchasePrice = calculateBuyPrice
+
+/**
  * Calculate initial rehab budget as 5% of ARV
  */
 export function calculateInitialRehabBudget(arv: number): number {
