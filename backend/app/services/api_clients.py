@@ -636,7 +636,7 @@ class DataNormalizer:
         # Check for stale data (simplified - would need timestamps in real implementation)
         stale_fields = []
         
-        completeness_score = (present_fields / total_fields) * 100 if total_fields > 0 else 0
+        completeness_score = min((present_fields / total_fields) * 100, 100.0) if total_fields > 0 else 0
         
         return {
             "completeness_score": round(completeness_score, 1),
