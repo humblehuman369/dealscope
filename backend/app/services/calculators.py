@@ -378,6 +378,7 @@ def calculate_brrrr(
     refinance_closing_costs: float = 3500,
     vacancy_rate: float = 0.05,
     operating_expense_pct: float = 0.35,
+    insurance_annual: float = 1500,
 ) -> Dict[str, Any]:
     """
     Calculate BRRRR Strategy metrics.
@@ -847,3 +848,408 @@ def run_sensitivity_analysis(
         results.append(result_row)
     
     return results
+
+
+# ============================================
+# DEAL OPPORTUNITY SCORE
+# ============================================
+
+"""
+Deal Opportunity Score - Investment Price Indicator
+
+The Deal Opportunity Score considers multiple factors to determine
+how attractive a property is as an investment opportunity:
+
+1. Deal Gap (50% weight) - ((List Price - Breakeven Price) / List Price) × 100
+   - Breakeven is calculated from LTR strategy (market rent less property costs)
+   - This is the primary factor as it indicates how much discount is needed
+
+2. Availability Ranking (30% weight) - Based on listing status and motivation:
+   - Withdrawn (best) - Seller motivation may be high
+   - For Sale – Price Reduced 2+ Times - Seller showing flexibility
+   - For Sale - Bank Owned/REO - Banks want to move properties
+   - For Sale – FSBO/Individual - More negotiation room
+   - For Sale - Agent Listed - Standard listing
+   - Off-Market - May find motivated sellers
+   - For Rent - Landlord may consider selling
+   - Pending – Under Contract - Unlikely to get
+   - Sold (Recently) - Not available
+
+3. Days on Market (20% weight) - Combined with Deal Gap:
+   - High Deal Gap + High DOM = More negotiation leverage
+   - High Deal Gap + Low DOM = Opportunity not yet recognized
+   - Low Deal Gap + High DOM = Price may already be fair
+
+Note: Equity % is excluded as mortgage balance data is not available
+from the Axesso API. This would require public records data.
+
+Note: BRRRR, Fix & Flip, and Wholesale strategies require physical
+inspection for repair estimates. The Deal Score is based on LTR
+breakeven since it can be calculated from available market data.
+"""
+
+
+# Availability status rankings (lower = better opportunity)
+AVAILABILITY_RANKINGS = {
+    "WITHDRAWN": {"rank": 1, "score": 100, "label": "Withdrawn - High Motivation", "motivation": "high"},
+    "PRICE_REDUCED": {"rank": 2, "score": 90, "label": "Price Reduced", "motivation": "high"},
+    "BANK_OWNED": {"rank": 3, "score": 80, "label": "Bank Owned (REO)", "motivation": "high"},
+    "FORECLOSURE": {"rank": 3, "score": 80, "label": "Foreclosure", "motivation": "high"},
+    "FSBO": {"rank": 4, "score": 70, "label": "For Sale By Owner", "motivation": "medium"},
+    "FOR_SALE": {"rank": 5, "score": 60, "label": "For Sale - Agent Listed", "motivation": "medium"},
+    "OFF_MARKET": {"rank": 6, "score": 50, "label": "Off-Market", "motivation": "low"},
+    "FOR_RENT": {"rank": 7, "score": 40, "label": "For Rent", "motivation": "low"},
+    "PENDING": {"rank": 8, "score": 20, "label": "Pending - Under Contract", "motivation": "low"},
+    "SOLD": {"rank": 9, "score": 10, "label": "Recently Sold", "motivation": "low"},
+    "UNKNOWN": {"rank": 6, "score": 50, "label": "Unknown Status", "motivation": "low"},
+}
+
+
+def get_availability_ranking(
+    listing_status: Optional[str] = None,
+    seller_type: Optional[str] = None,
+    is_foreclosure: bool = False,
+    is_bank_owned: bool = False,
+    is_fsbo: bool = False,
+    price_reductions: int = 0,
+) -> Dict[str, Any]:
+    """
+    Get availability ranking based on listing status and seller type.
+    
+    Returns dict with: status, rank, score, label, motivation_level
+    """
+    status = (listing_status or "").upper()
+    seller = (seller_type or "").upper()
+    
+    # Check for withdrawn
+    if "WITHDRAWN" in status:
+        ranking = AVAILABILITY_RANKINGS["WITHDRAWN"]
+        return {
+            "status": "WITHDRAWN",
+            **ranking
+        }
+    
+    # Check for price reductions (2+ times = motivated)
+    if ("FOR_SALE" in status or "SALE" in status) and price_reductions >= 2:
+        ranking = AVAILABILITY_RANKINGS["PRICE_REDUCED"]
+        return {
+            "status": "PRICE_REDUCED",
+            "rank": ranking["rank"],
+            "score": ranking["score"],
+            "label": f"Price Reduced {price_reductions}x",
+            "motivation": ranking["motivation"]
+        }
+    
+    # Check for bank owned / foreclosure
+    if is_bank_owned or "BANK" in seller:
+        ranking = AVAILABILITY_RANKINGS["BANK_OWNED"]
+        return {"status": "BANK_OWNED", **ranking}
+    
+    if is_foreclosure or "FORECLOSURE" in seller:
+        ranking = AVAILABILITY_RANKINGS["FORECLOSURE"]
+        return {"status": "FORECLOSURE", **ranking}
+    
+    # Check for FSBO
+    if is_fsbo or "FSBO" in seller or "OWNER" in seller:
+        ranking = AVAILABILITY_RANKINGS["FSBO"]
+        return {"status": "FSBO", **ranking}
+    
+    # Check for standard for sale
+    if "FOR_SALE" in status or "SALE" in status:
+        ranking = AVAILABILITY_RANKINGS["FOR_SALE"]
+        return {"status": "FOR_SALE", **ranking}
+    
+    # Check for off-market
+    if "OFF_MARKET" in status or "OFF" in status:
+        ranking = AVAILABILITY_RANKINGS["OFF_MARKET"]
+        return {"status": "OFF_MARKET", **ranking}
+    
+    # Check for rent
+    if "FOR_RENT" in status or "RENT" in status:
+        ranking = AVAILABILITY_RANKINGS["FOR_RENT"]
+        return {"status": "FOR_RENT", **ranking}
+    
+    # Check for pending
+    if "PENDING" in status or "CONTRACT" in status:
+        ranking = AVAILABILITY_RANKINGS["PENDING"]
+        return {"status": "PENDING", **ranking}
+    
+    # Check for sold
+    if "SOLD" in status:
+        ranking = AVAILABILITY_RANKINGS["SOLD"]
+        return {"status": "SOLD", **ranking}
+    
+    # Unknown
+    ranking = AVAILABILITY_RANKINGS["UNKNOWN"]
+    return {"status": "UNKNOWN", **ranking}
+
+
+def calculate_dom_score(
+    days_on_market: Optional[int],
+    deal_gap_percent: float,
+) -> Dict[str, Any]:
+    """
+    Calculate Days on Market score with Deal Gap context.
+    
+    The relationship between DOM and Deal Gap:
+    - High Deal Gap + High DOM = Strong negotiation leverage
+    - High Deal Gap + Low DOM = Opportunity not yet recognized
+    - Low Deal Gap + High DOM = Price may already be fair
+    - Low Deal Gap + Low DOM = Hot property, move fast
+    """
+    if days_on_market is None:
+        return {"days": None, "score": 50, "leverage": "unknown"}
+    
+    days = days_on_market
+    
+    # DOM thresholds (in days)
+    LOW_DOM = 30
+    MEDIUM_DOM = 60
+    HIGH_DOM = 120
+    
+    # Deal Gap thresholds (in %)
+    LOW_GAP = 10
+    HIGH_GAP = 25
+    
+    if deal_gap_percent >= HIGH_GAP:
+        # High Deal Gap - DOM increases leverage
+        if days >= HIGH_DOM:
+            return {"days": days, "score": 100, "leverage": "high"}
+        elif days >= MEDIUM_DOM:
+            return {"days": days, "score": 85, "leverage": "high"}
+        elif days >= LOW_DOM:
+            return {"days": days, "score": 70, "leverage": "medium"}
+        else:
+            return {"days": days, "score": 60, "leverage": "medium"}
+    elif deal_gap_percent >= LOW_GAP:
+        # Medium Deal Gap
+        if days >= HIGH_DOM:
+            return {"days": days, "score": 70, "leverage": "medium"}
+        elif days >= MEDIUM_DOM:
+            return {"days": days, "score": 60, "leverage": "medium"}
+        elif days >= LOW_DOM:
+            return {"days": days, "score": 50, "leverage": "medium"}
+        else:
+            return {"days": days, "score": 45, "leverage": "low"}
+    else:
+        # Low Deal Gap - already close to fair price
+        if days >= HIGH_DOM:
+            return {"days": days, "score": 50, "leverage": "low"}
+        elif days >= MEDIUM_DOM:
+            return {"days": days, "score": 40, "leverage": "low"}
+        else:
+            return {"days": days, "score": 30, "leverage": "low"}
+
+
+def calculate_deal_gap_score(
+    breakeven_price: float,
+    list_price: float,
+) -> Dict[str, Any]:
+    """
+    Calculate the Deal Gap score from breakeven and list price.
+    
+    Deal Gap = ((List Price - Breakeven Price) / List Price) × 100
+    """
+    if list_price <= 0:
+        return {
+            "breakeven_price": breakeven_price,
+            "list_price": list_price,
+            "gap_amount": 0,
+            "gap_percent": 0,
+            "score": 0
+        }
+    
+    gap_amount = list_price - breakeven_price
+    gap_percent = max(0, (gap_amount / list_price) * 100)
+    
+    # Score is inverse of gap (lower gap = higher score)
+    # 0% gap = 100 score, 45%+ gap = 0 score
+    score = max(0, min(100, round(100 - (gap_percent * 100 / 45))))
+    
+    return {
+        "breakeven_price": breakeven_price,
+        "list_price": list_price,
+        "gap_amount": gap_amount,
+        "gap_percent": gap_percent,
+        "score": score
+    }
+
+
+def calculate_deal_opportunity_score(
+    breakeven_price: float,
+    list_price: float,
+    listing_status: Optional[str] = None,
+    seller_type: Optional[str] = None,
+    is_foreclosure: bool = False,
+    is_bank_owned: bool = False,
+    is_fsbo: bool = False,
+    is_auction: bool = False,
+    price_reductions: int = 0,
+    days_on_market: Optional[int] = None,
+) -> Dict[str, Any]:
+    """
+    Calculate comprehensive Deal Opportunity Score.
+    
+    Weights:
+    - Deal Gap: 50% (primary factor - how much discount needed)
+    - Availability: 30% (seller motivation and listing status)
+    - Days on Market: 20% (negotiation leverage context)
+    
+    Args:
+        breakeven_price: LTR breakeven price (from market rent less costs)
+        list_price: Current list price (or estimated value if off-market)
+        listing_status: Property listing status (FOR_SALE, OFF_MARKET, etc.)
+        seller_type: Type of seller (Agent, FSBO, BankOwned, etc.)
+        is_foreclosure: Whether property is a foreclosure
+        is_bank_owned: Whether property is bank-owned/REO
+        is_fsbo: Whether property is for sale by owner
+        is_auction: Whether property is an auction listing
+        price_reductions: Number of price reductions
+        days_on_market: Days the property has been listed
+    
+    Returns:
+        Dict with score, grade, label, color, and factor breakdowns
+    """
+    # Weights for composite score
+    WEIGHTS = {
+        "deal_gap": 0.50,
+        "availability": 0.30,
+        "days_on_market": 0.20
+    }
+    
+    # Calculate Deal Gap score (50% weight)
+    deal_gap = calculate_deal_gap_score(breakeven_price, list_price)
+    
+    # Calculate Availability score (30% weight)
+    availability = get_availability_ranking(
+        listing_status=listing_status,
+        seller_type=seller_type,
+        is_foreclosure=is_foreclosure,
+        is_bank_owned=is_bank_owned,
+        is_fsbo=is_fsbo,
+        price_reductions=price_reductions,
+    )
+    
+    # Calculate Days on Market score (20% weight)
+    dom_score = calculate_dom_score(
+        days_on_market=days_on_market,
+        deal_gap_percent=deal_gap["gap_percent"]
+    )
+    
+    # Calculate weighted composite score
+    composite_score = round(
+        (deal_gap["score"] * WEIGHTS["deal_gap"]) +
+        (availability["score"] * WEIGHTS["availability"]) +
+        (dom_score["score"] * WEIGHTS["days_on_market"])
+    )
+    
+    # Determine grade and label based on composite score
+    if composite_score >= 85:
+        grade = "A+"
+        label = "Strong Opportunity"
+        color = "#22c55e"  # green-500
+    elif composite_score >= 70:
+        grade = "A"
+        label = "Great Opportunity"
+        color = "#22c55e"  # green-500
+    elif composite_score >= 55:
+        grade = "B"
+        label = "Moderate Opportunity"
+        color = "#84cc16"  # lime-500
+    elif composite_score >= 40:
+        grade = "C"
+        label = "Potential Opportunity"
+        color = "#f97316"  # orange-500
+    elif composite_score >= 25:
+        grade = "D"
+        label = "Weak Opportunity"
+        color = "#f97316"  # orange-500
+    else:
+        grade = "F"
+        label = "Poor Opportunity"
+        color = "#ef4444"  # red-500
+    
+    return {
+        "score": composite_score,
+        "grade": grade,
+        "label": label,
+        "color": color,
+        "factors": {
+            "deal_gap": deal_gap,
+            "availability": availability,
+            "days_on_market": dom_score,
+            "weights": WEIGHTS
+        },
+        # Legacy compatibility
+        "discount_percent": deal_gap["gap_percent"],
+        "breakeven_price": breakeven_price,
+        "list_price": list_price
+    }
+
+
+def calculate_ltr_breakeven(
+    monthly_rent: float,
+    property_taxes: float,
+    insurance: float,
+    vacancy_rate: float = 0.01,
+    maintenance_pct: float = 0.05,
+    management_pct: float = 0.0,
+    down_payment_pct: float = 0.20,
+    interest_rate: float = 0.06,
+    loan_term_years: int = 30,
+) -> float:
+    """
+    Estimate breakeven purchase price for LTR based on basic property data.
+    
+    Breakeven is where monthly cash flow = $0
+    At breakeven: NOI = Annual Debt Service
+    
+    Args:
+        monthly_rent: Expected monthly rental income
+        property_taxes: Annual property taxes
+        insurance: Annual insurance cost
+        vacancy_rate: Expected vacancy rate (default 1%)
+        maintenance_pct: Maintenance as % of rent (default 5%)
+        management_pct: Management as % of rent (default 0%)
+        down_payment_pct: Down payment percentage (default 20%)
+        interest_rate: Annual interest rate (default 6%)
+        loan_term_years: Loan term in years (default 30)
+    
+    Returns:
+        Breakeven purchase price
+    """
+    # Calculate annual gross income
+    annual_gross_rent = monthly_rent * 12
+    effective_gross_income = annual_gross_rent * (1 - vacancy_rate)
+    
+    # Calculate operating expenses (not including debt service)
+    annual_maintenance = effective_gross_income * maintenance_pct
+    annual_management = effective_gross_income * management_pct
+    operating_expenses = property_taxes + insurance + annual_maintenance + annual_management
+    
+    # NOI = Effective Gross Income - Operating Expenses
+    noi = effective_gross_income - operating_expenses
+    
+    if noi <= 0:
+        # Property can't break even at any price (negative NOI)
+        return 0
+    
+    # At breakeven: NOI = Annual Debt Service
+    # Monthly Payment = Loan Amount * (r * (1+r)^n) / ((1+r)^n - 1)
+    # Loan Amount = Purchase Price * (1 - Down Payment %)
+    
+    monthly_rate = interest_rate / 12
+    num_payments = loan_term_years * 12
+    ltv_ratio = 1 - down_payment_pct
+    
+    # Mortgage constant (annual payment per $ of loan)
+    mortgage_constant = (
+        (monthly_rate * ((1 + monthly_rate) ** num_payments)) /
+        (((1 + monthly_rate) ** num_payments) - 1) * 12
+    )
+    
+    # Solve for purchase price: NOI = PurchasePrice * LTV * MortgageConstant
+    # PurchasePrice = NOI / (LTV * MortgageConstant)
+    breakeven = noi / (ltv_ratio * mortgage_constant)
+    
+    return round(breakeven)
