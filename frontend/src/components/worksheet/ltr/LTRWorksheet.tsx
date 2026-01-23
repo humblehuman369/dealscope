@@ -840,10 +840,10 @@ export function LTRWorksheet({
               ← Back to Summary
             </button>
           )}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           
           {/* LEFT COLUMN - Insight Panel */}
-          <div className="lg:sticky lg:top-20 space-y-4">
+          <div className="md:sticky md:top-20 space-y-4">
             {/* IQ Verdict Card */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
               <div className="p-5" style={{ 
