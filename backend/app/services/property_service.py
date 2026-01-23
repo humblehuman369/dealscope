@@ -199,9 +199,13 @@ class PropertyService:
                     median_price=normalized.get("market_median_price"),
                     avg_price_per_sqft=normalized.get("market_avg_price_sqft"),
                 ) if any([
-                    normalized.get("market_days_on_market"),
-                    normalized.get("market_total_listings"),
-                    normalized.get("market_new_listings"),
+                    # Check all market stats fields to avoid losing extracted data
+                    normalized.get("market_days_on_market") is not None,
+                    normalized.get("market_avg_days_on_market") is not None,
+                    normalized.get("market_total_listings") is not None,
+                    normalized.get("market_new_listings") is not None,
+                    normalized.get("market_median_price") is not None,
+                    normalized.get("market_avg_price_sqft") is not None,
                 ]) else None,
             ),
             listing=ListingInfo(

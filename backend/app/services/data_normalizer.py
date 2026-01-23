@@ -864,7 +864,7 @@ class InvestIQNormalizer:
             # Warm market: 30-60 days median (balanced)
             # Cold market: > 60 days median (buyer's market - more negotiation power)
             median_dom = sale_data.get("medianDaysOnMarket")
-            if median_dom:
+            if median_dom is not None:  # Use 'is not None' to handle 0 as valid value
                 if median_dom < 30:
                     market_temp = "hot"
                 elif median_dom <= 60:
