@@ -227,6 +227,92 @@
       }
     }
   },
+  "performance_scores": {
+    "description": "Strategy Performance Scores - Measures how well a property performs for each investment strategy. Uses a unified formula: score = 50 + (metric × multiplier), centered at 50 for breakeven performance.",
+    "source": "backend/app/main.py, frontend/src/components/worksheet/*/Worksheet.tsx, frontend/src/components/iq-verdict/types.ts",
+    "notes": [
+      "All scores use the same base formula: score = 50 + (metric_value × multiplier)",
+      "Score of 50 represents breakeven (0% return or 0% benefit)",
+      "Score of 100 represents excellent performance (varies by strategy)",
+      "Score of 0 represents poor performance (significant losses)",
+      "All scores are clamped to 0-100 range",
+      "The IQ Verdict page and Worksheets now use identical formulas for consistency"
+    ],
+    "unified_formula": {
+      "formula": "performance_score = max(0, min(100, round(50 + (metric_value × multiplier))))",
+      "description": "Centers at 50 for breakeven, with positive/negative returns adjusting the score up/down"
+    },
+    "strategy_formulas": {
+      "long_term_rental": {
+        "formula": "performance_score = 50 + (cash_on_cash_pct × 5)",
+        "metric": "Cash-on-Cash Return %",
+        "multiplier": 5,
+        "interpretation": {
+          "0": "-10% CoC (losing money)",
+          "50": "0% CoC (breakeven)",
+          "100": "10% CoC (excellent return)"
+        },
+        "example": "At 1.1% CoC: score = 50 + (1.1 × 5) = 55.5 ≈ 56"
+      },
+      "short_term_rental": {
+        "formula": "performance_score = 50 + (cash_on_cash_pct × 3.33)",
+        "metric": "Cash-on-Cash Return %",
+        "multiplier": 3.33,
+        "interpretation": {
+          "0": "-15% CoC (losing money)",
+          "50": "0% CoC (breakeven)",
+          "100": "15% CoC (excellent return)"
+        },
+        "example": "At 6% CoC: score = 50 + (6 × 3.33) = 70"
+      },
+      "brrrr": {
+        "formula": "performance_score = 50 + (cash_recovery_pct × 1)",
+        "metric": "Cash Recovery %",
+        "multiplier": 1,
+        "interpretation": {
+          "0": "-50% recovery (left significant cash in deal)",
+          "50": "0% recovery (all cash still in deal)",
+          "100": "50% recovery (recovered half of investment)"
+        },
+        "example": "At 75% recovery: score = 50 + (75 × 1) = 125 → capped at 100",
+        "notes": "Higher multiplier (1.0) rewards strong cash recovery as this is the primary BRRRR goal"
+      },
+      "fix_and_flip": {
+        "formula": "performance_score = 50 + (roi_pct × 2.5)",
+        "metric": "ROI %",
+        "multiplier": 2.5,
+        "interpretation": {
+          "0": "-20% ROI (significant loss)",
+          "50": "0% ROI (breakeven)",
+          "100": "20% ROI (excellent flip)"
+        },
+        "example": "At 15% ROI: score = 50 + (15 × 2.5) = 87.5 ≈ 88"
+      },
+      "house_hack": {
+        "formula": "performance_score = 50 + (housing_offset_pct × 1)",
+        "metric": "Housing Cost Offset %",
+        "multiplier": 1,
+        "interpretation": {
+          "0": "-50% offset (paying extra above normal housing)",
+          "50": "0% offset (paying full housing costs)",
+          "100": "50% offset (tenants pay half your housing)"
+        },
+        "example": "At 75% offset: score = 50 + (75 × 1) = 125 → capped at 100",
+        "notes": "Higher multiplier (1.0) rewards strong housing cost reduction as this is the primary house hack goal"
+      },
+      "wholesale": {
+        "formula": "performance_score = 50 + (roi_on_emd_pct × 0.5)",
+        "metric": "ROI on Earnest Money Deposit %",
+        "multiplier": 0.5,
+        "interpretation": {
+          "0": "-100% ROI (lost EMD)",
+          "50": "0% ROI (recovered EMD only)",
+          "100": "100% ROI (doubled EMD)"
+        },
+        "example": "At $10K assignment fee on $5K EMD = 200% ROI: score = 50 + (200 × 0.5) = 150 → capped at 100"
+      }
+    }
+  },
   "strategies": [
     {
       "id": "ltr",

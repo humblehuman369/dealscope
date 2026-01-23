@@ -331,9 +331,9 @@ function normalizeScore(value: number, minValue: number, maxValue: number): numb
  * Each strategy uses a different multiplier based on typical return ranges:
  * - LTR: 5 (10% CoC = 100 score)
  * - STR: 3.33 (15% CoC = 100 score)
- * - BRRRR: 0.5 (100% recovery = 100 score)
+ * - BRRRR: 1 (50% recovery = 100 score)
  * - Flip: 2.5 (20% ROI = 100 score)
- * - House Hack: 0.5 (100% offset = 100 score)
+ * - House Hack: 1 (50% offset = 100 score)
  * - Wholesale: 0.5 (100% ROI = 100 score)
  */
 function performanceScore(metricValue: number, multiplier: number): number {
@@ -491,9 +491,9 @@ function calculateBRRRRStrategy(
     cashOnCash = annualCashFlow / minCashForCoC;
   }
   
-  // Performance score: 50 + (cashRecoveryPct × 0.5)
-  // 0% recovery = 50, 100% recovery = 100, -100% recovery = 0
-  const score = performanceScore(cashRecoveryPercent, 0.5);
+  // Performance score: 50 + (cashRecoveryPct × 1)
+  // 0% recovery = 50, 50% recovery = 100, -50% recovery = 0
+  const score = performanceScore(cashRecoveryPercent, 1);
   
   // Cap CoC display at reasonable limits (-100% to Infinite)
   let displayCoC: string;
@@ -579,9 +579,9 @@ function calculateHouseHackStrategy(
   const effectiveHousingCost = monthlyExpenses - monthlyRentalIncome;
   const housingCostOffset = monthlyExpenses > 0 ? (monthlyRentalIncome / monthlyExpenses) * 100 : 0;
   
-  // Performance score: 50 + (housingOffsetPct × 0.5)
-  // 0% offset = 50, 100% offset = 100, -100% offset = 0
-  const score = performanceScore(housingCostOffset, 0.5);
+  // Performance score: 50 + (housingOffsetPct × 1)
+  // 0% offset = 50, 50% offset = 100, -50% offset = 0
+  const score = performanceScore(housingCostOffset, 1);
   
   return {
     id: 'house-hack',
