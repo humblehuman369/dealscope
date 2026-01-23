@@ -167,6 +167,48 @@ class ValuationData(BaseModel):
     zestimate_low_pct: Optional[float] = None
 
 
+class RentTrend(str, Enum):
+    """Rental market trend indicator."""
+    UP = "up"          # Rents increasing year-over-year
+    DOWN = "down"      # Rents decreasing year-over-year
+    STABLE = "stable"  # Rents relatively flat (within +/- 2%)
+
+
+class RentalMarketStatistics(BaseModel):
+    """
+    Rental market statistics for investment analysis.
+    
+    Provides comprehensive rental data including:
+    - Property-specific estimates from multiple sources
+    - Market-wide rental statistics
+    - Trend indicators for rental market direction
+    """
+    # Property-specific estimates
+    rentcast_estimate: Optional[float] = None     # RentCast rent estimate
+    zillow_estimate: Optional[float] = None       # Zillow rentZestimate
+    iq_estimate: Optional[float] = None           # InvestIQ proprietary: avg of both
+    
+    # Estimate range (from RentCast)
+    estimate_low: Optional[float] = None
+    estimate_high: Optional[float] = None
+    
+    # Market-wide rental stats (from RentCast rentalData)
+    market_avg_rent: Optional[float] = None
+    market_median_rent: Optional[float] = None
+    market_min_rent: Optional[float] = None
+    market_max_rent: Optional[float] = None
+    market_rent_per_sqft: Optional[float] = None
+    
+    # Rental market velocity
+    rental_days_on_market: Optional[int] = None
+    rental_total_listings: Optional[int] = None
+    rental_new_listings: Optional[int] = None
+    
+    # Trend indicator
+    rent_trend: Optional[str] = None              # "up", "down", "stable"
+    trend_pct_change: Optional[float] = None      # Year-over-year % change
+
+
 class RentalData(BaseModel):
     """Rental income data for LTR and STR."""
     monthly_rent_ltr: Optional[float] = None
@@ -178,6 +220,8 @@ class RentalData(BaseModel):
     rent_per_sqft: Optional[float] = None
     # Raw Zillow rental data
     average_rent: Optional[float] = None
+    # Comprehensive rental market statistics
+    rental_stats: Optional[RentalMarketStatistics] = None
 
 
 class MarketTemperature(str, Enum):

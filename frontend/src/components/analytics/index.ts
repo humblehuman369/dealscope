@@ -215,6 +215,15 @@ export {
   type MarketStats
 } from './MarketTemperatureIndicator'
 
+// Rent Range Indicator - Rental market analysis with IQ estimate
+export {
+  RentRangeIndicator,
+  RentEstimateBadge,
+  RentTrendDot,
+  type RentTrend,
+  type RentalStats
+} from './RentRangeIndicator'
+
 // Property Premium Page - World-class property analysis landing page
 export { PropertyPremiumPage } from './PropertyPremiumPage'
 

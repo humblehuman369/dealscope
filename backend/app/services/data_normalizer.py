@@ -112,6 +112,21 @@ class NormalizedProperty:
     rent_zestimate: Optional[float] = None          # Zillow specific
     rentcast_rent: Optional[float] = None           # RentCast specific
     
+    # Rental Market Statistics - Extended for investor analysis
+    rental_rentcast_estimate: Optional[float] = None  # RentCast property estimate
+    rental_zillow_estimate: Optional[float] = None    # Zillow rentZestimate
+    rental_iq_estimate: Optional[float] = None        # InvestIQ proprietary (avg of both)
+    rental_market_avg: Optional[float] = None         # Market average rent
+    rental_market_median: Optional[float] = None      # Market median rent
+    rental_market_min: Optional[float] = None         # Market minimum rent
+    rental_market_max: Optional[float] = None         # Market maximum rent
+    rental_market_rent_per_sqft: Optional[float] = None  # Market avg rent/sqft
+    rental_days_on_market: Optional[int] = None       # Rental median DOM
+    rental_total_listings: Optional[int] = None       # Total rental listings
+    rental_new_listings: Optional[int] = None         # New rental listings
+    rent_trend: Optional[str] = None                  # "up", "down", "stable"
+    rent_trend_pct: Optional[float] = None            # YoY percentage change
+    
     # Transaction History
     last_sale_price: Optional[float] = None
     last_sale_date: Optional[datetime] = None
@@ -258,6 +273,7 @@ class InvestIQNormalizer:
         self._merge_scores(result, rc, zl)
         self._merge_schools(result, rc, zl)
         self._merge_market(result, rc, zl)
+        self._merge_rental_market(result, rc, zl)  # Rental market stats for investor analysis
         self._merge_comps_counts(result, rc, zl)
         self._merge_listing_status(result, rc, zl)  # Listing status for price display
         
@@ -874,6 +890,124 @@ class InvestIQNormalizer:
                 self._set_field(result, "market_temperature",
                               market_temp,
                               DataSource.RENTCAST, ConfidenceLevel.HIGH)
+    
+    def _merge_rental_market(self, result: NormalizedProperty, rc: Dict, zl: Dict):
+        """
+        Merge rental market statistics and calculate proprietary IQ estimate.
+        
+        Key metrics for rental investment analysis:
+        - IQ Estimate: Proprietary average of RentCast and Zillow estimates
+        - Market-wide rental stats (avg, median, min, max rent)
+        - Rental market velocity (days on market, listing counts)
+        - Rent trend based on year-over-year comparison
+        """
+        # Get property-specific estimates from both sources
+        rent = rc.get("rent", {}) or {}
+        zl_prop = zl.get("property", {}) or {}
+        zl_rent = zl.get("rent_estimate", {}) or {}
+        
+        # RentCast property-specific rent estimate
+        rc_rent = rent.get("rent") if rent else None
+        
+        # Zillow rentZestimate (check both locations)
+        zl_rent_val = (
+            (zl_rent.get("rentZestimate") if zl_rent else None) or 
+            (zl_prop.get("rentZestimate") if zl_prop else None)
+        )
+        
+        # Store individual estimates
+        if rc_rent:
+            self._set_field(result, "rental_rentcast_estimate", float(rc_rent),
+                          DataSource.RENTCAST, ConfidenceLevel.HIGH)
+        if zl_rent_val:
+            self._set_field(result, "rental_zillow_estimate", float(zl_rent_val),
+                          DataSource.ZILLOW, ConfidenceLevel.HIGH)
+        
+        # Calculate IQ proprietary estimate (average of both sources when available)
+        if rc_rent and zl_rent_val:
+            iq_estimate = (float(rc_rent) + float(zl_rent_val)) / 2
+            self._set_field(result, "rental_iq_estimate", round(iq_estimate, 2),
+                          DataSource.MERGED, ConfidenceLevel.HIGH)
+        elif rc_rent:
+            self._set_field(result, "rental_iq_estimate", float(rc_rent),
+                          DataSource.RENTCAST, ConfidenceLevel.MEDIUM)
+        elif zl_rent_val:
+            self._set_field(result, "rental_iq_estimate", float(zl_rent_val),
+                          DataSource.ZILLOW, ConfidenceLevel.MEDIUM)
+        
+        # Extract market-wide rental stats from rentalData
+        market = rc.get("market", {}) or {}
+        rental_data = market.get("rentalData", {}) or {}
+        
+        if rental_data:
+            # Market-wide rent metrics
+            if rental_data.get("averageRent"):
+                self._set_field(result, "rental_market_avg",
+                              float(rental_data["averageRent"]),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            if rental_data.get("medianRent"):
+                self._set_field(result, "rental_market_median",
+                              float(rental_data["medianRent"]),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            if rental_data.get("minRent"):
+                self._set_field(result, "rental_market_min",
+                              float(rental_data["minRent"]),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            if rental_data.get("maxRent"):
+                self._set_field(result, "rental_market_max",
+                              float(rental_data["maxRent"]),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            if rental_data.get("averageRentPerSquareFoot"):
+                self._set_field(result, "rental_market_rent_per_sqft",
+                              float(rental_data["averageRentPerSquareFoot"]),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            
+            # Rental market velocity metrics
+            if rental_data.get("medianDaysOnMarket"):
+                self._set_field(result, "rental_days_on_market",
+                              int(rental_data["medianDaysOnMarket"]),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            if rental_data.get("totalListings"):
+                self._set_field(result, "rental_total_listings",
+                              int(rental_data["totalListings"]),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+            if rental_data.get("newListings"):
+                self._set_field(result, "rental_new_listings",
+                              int(rental_data["newListings"]),
+                              DataSource.RENTCAST, ConfidenceLevel.HIGH)
+        
+        # Calculate rent trend from AXESSO medianRentPriceOverTime if available
+        zl_market = zl.get("market_data", {}) or {}
+        rent_over_time = zl_market.get("medianRentPriceOverTime", {}) or {}
+        
+        if rent_over_time:
+            current_year_data = rent_over_time.get("currentYear", [])
+            prev_year_data = rent_over_time.get("prevYear", [])
+            
+            # Calculate average rent for each year
+            if current_year_data and prev_year_data:
+                current_prices = [m.get("price", 0) for m in current_year_data if m.get("price")]
+                prev_prices = [m.get("price", 0) for m in prev_year_data if m.get("price")]
+                
+                if current_prices and prev_prices:
+                    current_avg = sum(current_prices) / len(current_prices)
+                    prev_avg = sum(prev_prices) / len(prev_prices)
+                    
+                    # Calculate YoY percentage change
+                    if prev_avg > 0:
+                        pct_change = (current_avg - prev_avg) / prev_avg
+                        self._set_field(result, "rent_trend_pct", round(pct_change, 4),
+                                      DataSource.ZILLOW, ConfidenceLevel.HIGH)
+                        
+                        # Determine trend direction (±2% threshold)
+                        if pct_change > 0.02:
+                            trend = "up"
+                        elif pct_change < -0.02:
+                            trend = "down"
+                        else:
+                            trend = "stable"
+                        self._set_field(result, "rent_trend", trend,
+                                      DataSource.ZILLOW, ConfidenceLevel.HIGH)
     
     def _merge_comps_counts(self, result: NormalizedProperty, rc: Dict, zl: Dict):
         """Count available comparables."""

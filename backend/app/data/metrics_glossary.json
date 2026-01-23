@@ -1,5 +1,5 @@
 {
-  "version": "1.2",
+  "version": "1.3",
   "updatedAt": "2026-01-23",
   "source": "backend/app/services/calculators.py, backend/app/services/data_normalizer.py",
   "market_statistics": {
@@ -61,6 +61,85 @@
         "formula": "avg_price_per_sqft = saleData.averagePricePerSquareFoot",
         "inputs": ["saleData.averagePricePerSquareFoot"],
         "description": "Average price per square foot in the market area. Useful for quick valuation comparisons."
+      }
+    }
+  },
+  "rental_market_statistics": {
+    "description": "Rental market statistics from RentCast rentalData and Zillow for rental investment analysis",
+    "source": "RentCast Markets API (rentalData), Zillow Property API (rentZestimate), Zillow Market API (medianRentPriceOverTime)",
+    "metrics": {
+      "rental_rentcast_estimate": {
+        "formula": "rental_rentcast_estimate = rent.rent",
+        "inputs": ["RentCast rent estimate"],
+        "description": "RentCast's property-specific rent estimate based on comparable rentals."
+      },
+      "rental_zillow_estimate": {
+        "formula": "rental_zillow_estimate = property.rentZestimate",
+        "inputs": ["Zillow rentZestimate"],
+        "description": "Zillow's estimated monthly rent (rentZestimate) for the property."
+      },
+      "iq_estimate": {
+        "formula": "iq_estimate = (rental_rentcast_estimate + rental_zillow_estimate) / 2; if only one source available, uses that value",
+        "inputs": ["rental_rentcast_estimate", "rental_zillow_estimate"],
+        "description": "InvestIQ proprietary rent estimate. Averages RentCast and Zillow estimates when both are available to provide a more balanced estimate. When only one source is available, uses that value with reduced confidence.",
+        "notes": "This is a unique InvestIQ metric that combines the best data from both sources."
+      },
+      "market_avg_rent": {
+        "formula": "market_avg_rent = rentalData.averageRent",
+        "inputs": ["rentalData.averageRent"],
+        "description": "Average rent in the market area across all rental listings."
+      },
+      "market_median_rent": {
+        "formula": "market_median_rent = rentalData.medianRent",
+        "inputs": ["rentalData.medianRent"],
+        "description": "Median rent in the market area. Less affected by outliers than average."
+      },
+      "market_min_rent": {
+        "formula": "market_min_rent = rentalData.minRent",
+        "inputs": ["rentalData.minRent"],
+        "description": "Minimum rent in the market area. Represents floor of rental market."
+      },
+      "market_max_rent": {
+        "formula": "market_max_rent = rentalData.maxRent",
+        "inputs": ["rentalData.maxRent"],
+        "description": "Maximum rent in the market area. Represents ceiling of rental market."
+      },
+      "market_rent_per_sqft": {
+        "formula": "market_rent_per_sqft = rentalData.averageRentPerSquareFoot",
+        "inputs": ["rentalData.averageRentPerSquareFoot"],
+        "description": "Average rent per square foot in the market. Useful for comparing rental efficiency."
+      },
+      "rental_days_on_market": {
+        "formula": "rental_days_on_market = rentalData.medianDaysOnMarket",
+        "inputs": ["rentalData.medianDaysOnMarket"],
+        "description": "Median number of days rental listings stay on market. Lower values indicate high rental demand."
+      },
+      "rental_total_listings": {
+        "formula": "rental_total_listings = rentalData.totalListings",
+        "inputs": ["rentalData.totalListings"],
+        "description": "Total number of active rental listings in the market area."
+      },
+      "rental_new_listings": {
+        "formula": "rental_new_listings = rentalData.newListings",
+        "inputs": ["rentalData.newListings"],
+        "description": "Number of new rental listings added in the most recent period."
+      },
+      "rent_trend": {
+        "formula": "if pct_change > 0.02: 'up'; elif pct_change < -0.02: 'down'; else: 'stable'",
+        "inputs": ["current_year_avg_rent", "prev_year_avg_rent"],
+        "description": "Direction of rental market trend based on year-over-year comparison. Uses ±2% threshold to filter noise.",
+        "interpretation": {
+          "up": "Rents are rising - favorable for landlords, may support higher rent assumptions",
+          "down": "Rents are falling - be conservative with rent projections",
+          "stable": "Rents are flat - use current market rates for projections"
+        }
+      },
+      "rent_trend_pct": {
+        "formula": "rent_trend_pct = (current_year_avg - prev_year_avg) / prev_year_avg; where current_year_avg = avg(medianRentPriceOverTime.currentYear[*].price); prev_year_avg = avg(medianRentPriceOverTime.prevYear[*].price)",
+        "inputs": ["medianRentPriceOverTime.currentYear", "medianRentPriceOverTime.prevYear"],
+        "description": "Year-over-year percentage change in median rents. Positive values indicate rent growth, negative values indicate rent decline.",
+        "source": "AXESSO Zillow Market Data API",
+        "notes": "Calculated from Zillow's medianRentPriceOverTime which provides monthly rent data for current and previous year."
       }
     }
   },

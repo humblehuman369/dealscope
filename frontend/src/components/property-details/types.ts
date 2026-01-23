@@ -14,6 +14,9 @@ export type SellerType = 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Aucti
 // Market Temperature - buyer/seller market indicator
 export type MarketTemperature = 'hot' | 'warm' | 'cold'
 
+// Rent Trend - year-over-year rental market direction
+export type RentTrend = 'up' | 'down' | 'stable'
+
 /**
  * Market statistics for investment analysis.
  * Helps determine buyer/seller market conditions and negotiation leverage.
@@ -36,6 +39,37 @@ export interface MarketStatistics {
   // Price metrics
   medianPrice?: number
   avgPricePerSqft?: number
+}
+
+/**
+ * Rental market statistics for investment analysis.
+ * Provides comprehensive rental data including proprietary IQ estimate.
+ */
+export interface RentalMarketStats {
+  // Property-specific estimates
+  rentcastEstimate?: number    // RentCast rent estimate
+  zillowEstimate?: number      // Zillow rentZestimate
+  iqEstimate?: number          // InvestIQ proprietary: avg of both
+  
+  // Estimate range
+  estimateLow?: number
+  estimateHigh?: number
+  
+  // Market-wide rental stats
+  marketAvgRent?: number
+  marketMedianRent?: number
+  marketMinRent?: number
+  marketMaxRent?: number
+  marketRentPerSqft?: number
+  
+  // Rental market velocity
+  rentalDaysOnMarket?: number
+  rentalTotalListings?: number
+  rentalNewListings?: number
+  
+  // Trend indicator
+  rentTrend?: RentTrend        // 'up' | 'down' | 'stable'
+  trendPctChange?: number      // Year-over-year percentage change
 }
 
 export interface PropertyAddress {
@@ -184,6 +218,9 @@ export interface PropertyData {
   
   // Market Statistics - buyer/seller market indicators
   marketStats?: MarketStatistics
+  
+  // Rental Market Statistics - rental investment analysis
+  rentalStats?: RentalMarketStats
 }
 
 // API Response types

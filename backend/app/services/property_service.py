@@ -20,7 +20,8 @@ from app.services.calculators import (
 from app.schemas import (
     PropertyResponse, AnalyticsResponse, AllAssumptions,
     StrategyType, Address, PropertyDetails, ValuationData,
-    RentalData, MarketData, MarketStatistics, ProvenanceMap, DataQuality,
+    RentalData, RentalMarketStatistics, MarketData, MarketStatistics,
+    ProvenanceMap, DataQuality,
     LTRResults, STRResults, BRRRRResults, FlipResults,
     HouseHackResults, WholesaleResults, FieldProvenance,
     ListingInfo
@@ -172,13 +173,41 @@ class PropertyService:
                 zestimate_low_pct=normalized.get("zestimate_low_pct")
             ),
             rentals=RentalData(
-                monthly_rent_ltr=normalized.get("monthly_rent_ltr"),
+                # Use IQ proprietary estimate as primary rent value
+                monthly_rent_ltr=normalized.get("rental_iq_estimate") or normalized.get("monthly_rent_ltr"),
                 rent_range_low=normalized.get("rent_range_low"),
                 rent_range_high=normalized.get("rent_range_high"),
                 average_daily_rate=normalized.get("average_daily_rate") or self._estimate_adr(normalized),
                 occupancy_rate=normalized.get("occupancy_rate") or 0.75,
                 # Raw Zillow averageRent for frontend
-                average_rent=normalized.get("average_rent")
+                average_rent=normalized.get("average_rent"),
+                # Comprehensive rental market statistics
+                rental_stats=RentalMarketStatistics(
+                    rentcast_estimate=normalized.get("rental_rentcast_estimate"),
+                    zillow_estimate=normalized.get("rental_zillow_estimate"),
+                    iq_estimate=normalized.get("rental_iq_estimate"),
+                    estimate_low=normalized.get("rent_range_low"),
+                    estimate_high=normalized.get("rent_range_high"),
+                    market_avg_rent=normalized.get("rental_market_avg"),
+                    market_median_rent=normalized.get("rental_market_median"),
+                    market_min_rent=normalized.get("rental_market_min"),
+                    market_max_rent=normalized.get("rental_market_max"),
+                    market_rent_per_sqft=normalized.get("rental_market_rent_per_sqft"),
+                    rental_days_on_market=normalized.get("rental_days_on_market"),
+                    rental_total_listings=normalized.get("rental_total_listings"),
+                    rental_new_listings=normalized.get("rental_new_listings"),
+                    rent_trend=normalized.get("rent_trend"),
+                    trend_pct_change=normalized.get("rent_trend_pct"),
+                ) if any([
+                    normalized.get("rental_rentcast_estimate") is not None,
+                    normalized.get("rental_zillow_estimate") is not None,
+                    normalized.get("rental_iq_estimate") is not None,
+                    normalized.get("rental_market_avg") is not None,
+                    normalized.get("rental_market_median") is not None,
+                    normalized.get("rental_market_min") is not None,
+                    normalized.get("rental_market_max") is not None,
+                    normalized.get("rent_trend") is not None,
+                ]) else None
             ),
             market=MarketData(
                 property_taxes_annual=normalized.get("property_taxes_annual") or self._estimate_taxes(normalized),

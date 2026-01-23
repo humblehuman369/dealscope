@@ -197,6 +197,23 @@ function normalizePropertyData(
       average_rent?: number
       average_daily_rate?: number
       occupancy_rate?: number
+      rental_stats?: {
+        rentcast_estimate?: number
+        zillow_estimate?: number
+        iq_estimate?: number
+        estimate_low?: number
+        estimate_high?: number
+        market_avg_rent?: number
+        market_median_rent?: number
+        market_min_rent?: number
+        market_max_rent?: number
+        market_rent_per_sqft?: number
+        rental_days_on_market?: number
+        rental_total_listings?: number
+        rental_new_listings?: number
+        rent_trend?: string
+        trend_pct_change?: number
+      }
     }
     market?: {
       property_taxes_annual?: number
@@ -378,6 +395,25 @@ function normalizePropertyData(
       marketTemperature: p.market.market_stats.market_temperature as 'hot' | 'warm' | 'cold' | undefined,
       medianPrice: p.market.market_stats.median_price,
       avgPricePerSqft: p.market.market_stats.avg_price_per_sqft,
+    } : undefined,
+    
+    // Rental Market Statistics for rental investment analysis
+    rentalStats: p.rentals?.rental_stats ? {
+      rentcastEstimate: p.rentals.rental_stats.rentcast_estimate,
+      zillowEstimate: p.rentals.rental_stats.zillow_estimate,
+      iqEstimate: p.rentals.rental_stats.iq_estimate,
+      estimateLow: p.rentals.rental_stats.estimate_low,
+      estimateHigh: p.rentals.rental_stats.estimate_high,
+      marketAvgRent: p.rentals.rental_stats.market_avg_rent,
+      marketMedianRent: p.rentals.rental_stats.market_median_rent,
+      marketMinRent: p.rentals.rental_stats.market_min_rent,
+      marketMaxRent: p.rentals.rental_stats.market_max_rent,
+      marketRentPerSqft: p.rentals.rental_stats.market_rent_per_sqft,
+      rentalDaysOnMarket: p.rentals.rental_stats.rental_days_on_market,
+      rentalTotalListings: p.rentals.rental_stats.rental_total_listings,
+      rentalNewListings: p.rentals.rental_stats.rental_new_listings,
+      rentTrend: p.rentals.rental_stats.rent_trend as 'up' | 'down' | 'stable' | undefined,
+      trendPctChange: p.rentals.rental_stats.trend_pct_change,
     } : undefined,
   }
 }
