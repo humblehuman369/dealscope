@@ -2,8 +2,8 @@
 builder = "nixpacks"
 
 [deploy]
-# Run migrations before starting the server
-startCommand = "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+# Fix alembic version mismatch, then start server
+startCommand = "python fix_alembic.py && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"

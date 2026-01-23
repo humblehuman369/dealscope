@@ -807,96 +807,9 @@ export function LTRWorksheet({
               ← Back to Summary
             </button>
           )}
-          <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">
+          <div className="grid grid-cols-[1.2fr,1.4fr] md:grid-cols-[1.2fr,1.5fr] lg:grid-cols-[1fr,1.2fr] gap-4 sm:gap-6 items-start">
           
-          {/* LEFT COLUMN - Worksheet sections */}
-          <div className="space-y-3">
-            {/* Purchase */}
-            <Section index={0} title="Purchase" iconKey="home">
-              <InputRow label="Purchase Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={2000000} step={5000} format="currency" />
-              <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
-              <InputRow label="Down Payment" value={downPaymentPct} onChange={setDownPaymentPct} min={0} max={100} step={1} format="percent" subValue={fmt.currency(calc.downPayment)} />
-              <InputRow label="Closing Costs" value={purchaseCostsPct} onChange={setPurchaseCostsPct} min={0} max={10} step={0.5} format="percent" subValue={fmt.currency(calc.purchaseCosts)} />
-              <div className="mt-3 pt-3">
-                <SummaryBox label="Total Cash Required" value={fmt.currency(calc.totalCashNeeded)} variant="teal" />
-              </div>
-            </Section>
-            
-            {/* Financing */}
-            <Section index={1} title="Financing" iconKey="bank">
-              <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
-              <DisplayRow label="Loan Type" value="30-Year Fixed" variant="muted" />
-              <InputRow label="Interest Rate" value={interestRate} onChange={setInterestRate} min={3} max={12} step={0.125} format="percent" />
-              <InputRow label="Loan Term" value={loanTerm} onChange={setLoanTerm} min={10} max={30} step={5} format="years" />
-              <div className="mt-3 pt-3">
-                <SummaryBox label="Monthly Payment" value={fmt.currency(calc.monthlyPayment)} />
-              </div>
-            </Section>
-            
-            {/* Rehab & Valuation */}
-            <Section index={2} title="Rehab & Valuation" iconKey="tool">
-              <InputRow label="Rehab Budget" value={rehabCosts} onChange={setRehabCosts} min={0} max={200000} step={1000} format="currency" />
-              <InputRow label="After Repair Value" value={arv} onChange={setArv} min={Math.round(listPrice * 0.7)} max={Math.round(listPrice * 1.8)} step={5000} format="currency" />
-              <DisplayRow label="Price / Sq.Ft." value={`$${Math.round(calc.pricePerSqft)}`} />
-              <DisplayRow label="ARV / Sq.Ft." value={`$${Math.round(calc.arvPerSqft)}`} />
-              <div className="mt-3 pt-3">
-                <SummaryBox label="Instant Equity" value={fmt.currency(calc.equityAtPurchase)} variant="success" />
-              </div>
-            </Section>
-            
-            {/* Income */}
-            <Section index={3} title="Income" iconKey="income">
-              <InputRow label="Monthly Rent" value={monthlyRent} onChange={setMonthlyRent} min={1000} max={20000} step={50} format="currency" subValue={`${fmt.currency(calc.annualGrossRent)}/yr`} />
-              <InputRow label="Vacancy Rate" value={vacancyRate} onChange={setVacancyRate} min={0} max={20} step={1} format="percent" subValue={`−${fmt.currency(calc.vacancyLoss)}/yr`} />
-              <div className="mt-3 pt-3">
-                <SummaryBox label="Effective Gross Income" value={fmt.currency(calc.grossIncome)} variant="success" />
-              </div>
-            </Section>
-            
-            {/* Expenses */}
-            <Section index={4} title="Expenses" iconKey="expense">
-              <InputRow label="Property Taxes" value={propertyTaxes} onChange={setPropertyTaxes} min={0} max={30000} step={100} format="currency" />
-              <InputRow label="Insurance" value={insurance} onChange={setInsurance} min={0} max={15000} step={100} format="currency" />
-              <InputRow label="Management" value={propertyMgmtPct} onChange={setPropertyMgmtPct} min={0} max={15} step={1} format="percent" subValue={fmt.currency(calc.annualPropertyMgmt)} />
-              <InputRow label="Maintenance" value={maintenancePct} onChange={setMaintenancePct} min={0} max={15} step={1} format="percent" subValue={fmt.currency(calc.annualMaintenance)} />
-              <InputRow label="CapEx Reserve" value={capExPct} onChange={setCapExPct} min={0} max={15} step={1} format="percent" subValue={fmt.currency(calc.annualCapEx)} />
-              <InputRow label="HOA" value={hoaFees} onChange={setHoaFees} min={0} max={1000} step={25} format="currency" />
-              <div className="mt-3 pt-3">
-                <SummaryBox label="Total Operating Expenses" value={fmt.currency(calc.grossExpenses)} variant="danger" />
-              </div>
-            </Section>
-            
-            {/* Cash Flow */}
-            <Section index={5} title="Cash Flow" iconKey="cashflow">
-              <DisplayRow label="Gross Income" value={fmt.currency(calc.grossIncome)} />
-              <DisplayRow label="Operating Expenses" value={`−${fmt.currency(calc.grossExpenses)}`} variant="danger" />
-              <DisplayRow label="Debt Service" value={`−${fmt.currency(calc.annualLoanPayments)}`} variant="danger" />
-              <div className="mt-3 pt-3 space-y-2">
-                <SummaryBox label="Monthly Cash Flow" value={fmt.currency(calc.monthlyCashFlow)} variant={calc.monthlyCashFlow >= 0 ? 'success' : 'danger'} />
-                <SummaryBox label="Annual Cash Flow" value={fmt.currency(calc.annualCashFlow)} variant={calc.annualCashFlow >= 0 ? 'success' : 'danger'} />
-              </div>
-            </Section>
-            
-            {/* Returns */}
-            <Section index={6} title="Returns" iconKey="returns">
-              <MetricRow label="Cap Rate (Purchase)" value={fmt.percent2(calc.capRatePurchase)} target="8%" isGood={calc.capRatePurchase >= 8} />
-              <MetricRow label="Cap Rate (ARV)" value={fmt.percent2(calc.capRateMarket)} target="8%" isGood={calc.capRateMarket >= 8} />
-              <MetricRow label="Cash on Cash" value={fmt.percent2(calc.cashOnCash)} target="10%" isGood={calc.cashOnCash >= 10} />
-              <MetricRow label="Return on Equity" value={fmt.percent2(calc.returnOnEquity)} />
-              <MetricRow label="Total ROI (Year 1)" value={fmt.percent2(calc.returnOnInvestment)} />
-            </Section>
-            
-            {/* Ratios */}
-            <Section index={7} title="Ratios" iconKey="ratios">
-              <MetricRow label="1% Rule (Rent/Value)" value={fmt.percent2(calc.rentToValue)} target="1%" isGood={calc.rentToValue >= 1} />
-              <MetricRow label="Gross Rent Multiplier" value={fmt.ratio(calc.grossRentMultiplier)} target="12x" isGood={calc.grossRentMultiplier <= 12} />
-              <MetricRow label="Break-Even Ratio" value={fmt.percent2(calc.breakEvenRatio)} target="85%" isGood={calc.breakEvenRatio <= 85} />
-              <MetricRow label="DSCR" value={fmt.ratio(calc.dscr)} target="1.2x" isGood={calc.dscr >= 1.2} />
-              <MetricRow label="Debt Yield" value={fmt.percent2(calc.debtYield)} />
-            </Section>
-          </div>
-          
-          {/* RIGHT COLUMN - Insight Panel */}
+          {/* LEFT COLUMN - Insight Panel */}
           <div className="sm:sticky sm:top-28 space-y-4 sm:max-h-[calc(100vh-8rem)] sm:overflow-y-auto">
             {/* IQ Verdict Card */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
@@ -1036,6 +949,93 @@ export function LTRWorksheet({
             >
               Export PDF Report →
             </button>
+          </div>
+          
+          {/* RIGHT COLUMN - Worksheet sections */}
+          <div className="space-y-3">
+            {/* Purchase */}
+            <Section index={0} title="Purchase" iconKey="home">
+              <InputRow label="Purchase Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={2000000} step={5000} format="currency" />
+              <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
+              <InputRow label="Down Payment" value={downPaymentPct} onChange={setDownPaymentPct} min={0} max={100} step={1} format="percent" subValue={fmt.currency(calc.downPayment)} />
+              <InputRow label="Closing Costs" value={purchaseCostsPct} onChange={setPurchaseCostsPct} min={0} max={10} step={0.5} format="percent" subValue={fmt.currency(calc.purchaseCosts)} />
+              <div className="mt-3 pt-3">
+                <SummaryBox label="Total Cash Required" value={fmt.currency(calc.totalCashNeeded)} variant="teal" />
+              </div>
+            </Section>
+            
+            {/* Financing */}
+            <Section index={1} title="Financing" iconKey="bank">
+              <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
+              <DisplayRow label="Loan Type" value="30-Year Fixed" variant="muted" />
+              <InputRow label="Interest Rate" value={interestRate} onChange={setInterestRate} min={3} max={12} step={0.125} format="percent" />
+              <InputRow label="Loan Term" value={loanTerm} onChange={setLoanTerm} min={10} max={30} step={5} format="years" />
+              <div className="mt-3 pt-3">
+                <SummaryBox label="Monthly Payment" value={fmt.currency(calc.monthlyPayment)} />
+              </div>
+            </Section>
+            
+            {/* Rehab & Valuation */}
+            <Section index={2} title="Rehab & Valuation" iconKey="tool">
+              <InputRow label="Rehab Budget" value={rehabCosts} onChange={setRehabCosts} min={0} max={200000} step={1000} format="currency" />
+              <InputRow label="After Repair Value" value={arv} onChange={setArv} min={Math.round(listPrice * 0.7)} max={Math.round(listPrice * 1.8)} step={5000} format="currency" />
+              <DisplayRow label="Price / Sq.Ft." value={`$${Math.round(calc.pricePerSqft)}`} />
+              <DisplayRow label="ARV / Sq.Ft." value={`$${Math.round(calc.arvPerSqft)}`} />
+              <div className="mt-3 pt-3">
+                <SummaryBox label="Instant Equity" value={fmt.currency(calc.equityAtPurchase)} variant="success" />
+              </div>
+            </Section>
+            
+            {/* Income */}
+            <Section index={3} title="Income" iconKey="income">
+              <InputRow label="Monthly Rent" value={monthlyRent} onChange={setMonthlyRent} min={1000} max={20000} step={50} format="currency" subValue={`${fmt.currency(calc.annualGrossRent)}/yr`} />
+              <InputRow label="Vacancy Rate" value={vacancyRate} onChange={setVacancyRate} min={0} max={20} step={1} format="percent" subValue={`−${fmt.currency(calc.vacancyLoss)}/yr`} />
+              <div className="mt-3 pt-3">
+                <SummaryBox label="Effective Gross Income" value={fmt.currency(calc.grossIncome)} variant="success" />
+              </div>
+            </Section>
+            
+            {/* Expenses */}
+            <Section index={4} title="Expenses" iconKey="expense">
+              <InputRow label="Property Taxes" value={propertyTaxes} onChange={setPropertyTaxes} min={0} max={30000} step={100} format="currency" />
+              <InputRow label="Insurance" value={insurance} onChange={setInsurance} min={0} max={15000} step={100} format="currency" />
+              <InputRow label="Management" value={propertyMgmtPct} onChange={setPropertyMgmtPct} min={0} max={15} step={1} format="percent" subValue={fmt.currency(calc.annualPropertyMgmt)} />
+              <InputRow label="Maintenance" value={maintenancePct} onChange={setMaintenancePct} min={0} max={15} step={1} format="percent" subValue={fmt.currency(calc.annualMaintenance)} />
+              <InputRow label="CapEx Reserve" value={capExPct} onChange={setCapExPct} min={0} max={15} step={1} format="percent" subValue={fmt.currency(calc.annualCapEx)} />
+              <InputRow label="HOA" value={hoaFees} onChange={setHoaFees} min={0} max={1000} step={25} format="currency" />
+              <div className="mt-3 pt-3">
+                <SummaryBox label="Total Operating Expenses" value={fmt.currency(calc.grossExpenses)} variant="danger" />
+              </div>
+            </Section>
+            
+            {/* Cash Flow */}
+            <Section index={5} title="Cash Flow" iconKey="cashflow">
+              <DisplayRow label="Gross Income" value={fmt.currency(calc.grossIncome)} />
+              <DisplayRow label="Operating Expenses" value={`−${fmt.currency(calc.grossExpenses)}`} variant="danger" />
+              <DisplayRow label="Debt Service" value={`−${fmt.currency(calc.annualLoanPayments)}`} variant="danger" />
+              <div className="mt-3 pt-3 space-y-2">
+                <SummaryBox label="Monthly Cash Flow" value={fmt.currency(calc.monthlyCashFlow)} variant={calc.monthlyCashFlow >= 0 ? 'success' : 'danger'} />
+                <SummaryBox label="Annual Cash Flow" value={fmt.currency(calc.annualCashFlow)} variant={calc.annualCashFlow >= 0 ? 'success' : 'danger'} />
+              </div>
+            </Section>
+            
+            {/* Returns */}
+            <Section index={6} title="Returns" iconKey="returns">
+              <MetricRow label="Cap Rate (Purchase)" value={fmt.percent2(calc.capRatePurchase)} target="8%" isGood={calc.capRatePurchase >= 8} />
+              <MetricRow label="Cap Rate (ARV)" value={fmt.percent2(calc.capRateMarket)} target="8%" isGood={calc.capRateMarket >= 8} />
+              <MetricRow label="Cash on Cash" value={fmt.percent2(calc.cashOnCash)} target="10%" isGood={calc.cashOnCash >= 10} />
+              <MetricRow label="Return on Equity" value={fmt.percent2(calc.returnOnEquity)} />
+              <MetricRow label="Total ROI (Year 1)" value={fmt.percent2(calc.returnOnInvestment)} />
+            </Section>
+            
+            {/* Ratios */}
+            <Section index={7} title="Ratios" iconKey="ratios">
+              <MetricRow label="1% Rule (Rent/Value)" value={fmt.percent2(calc.rentToValue)} target="1%" isGood={calc.rentToValue >= 1} />
+              <MetricRow label="Gross Rent Multiplier" value={fmt.ratio(calc.grossRentMultiplier)} target="12x" isGood={calc.grossRentMultiplier <= 12} />
+              <MetricRow label="Break-Even Ratio" value={fmt.percent2(calc.breakEvenRatio)} target="85%" isGood={calc.breakEvenRatio <= 85} />
+              <MetricRow label="DSCR" value={fmt.ratio(calc.dscr)} target="1.2x" isGood={calc.dscr >= 1.2} />
+              <MetricRow label="Debt Yield" value={fmt.percent2(calc.debtYield)} />
+            </Section>
           </div>
         </div>
         </>
