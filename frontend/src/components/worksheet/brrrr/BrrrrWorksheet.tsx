@@ -431,8 +431,8 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
             
             <Section index={1} title="Financing (Purchase)" iconKey="bank" badge="Hard Money">
               <InputRow label="Loan to Cost" value={loanToCostPct} onChange={setLoanToCostPct} min={50} max={100} step={5} format="percent" />
-              <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
               <DisplayRow label="Down Payment" value={fmt.currency(calc.downPayment)} />
+              <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
               <InputRow label="Interest Rate" value={interestRate} onChange={setInterestRate} min={8} max={18} step={0.5} format="percent" />
               <InputRow label="Points" value={loanPoints} onChange={setLoanPoints} min={0} max={5} step={0.5} format="number" subValue=" pts" />
               <DisplayRow label="Points Cost" value={fmt.currency(calc.pointsCost)} />

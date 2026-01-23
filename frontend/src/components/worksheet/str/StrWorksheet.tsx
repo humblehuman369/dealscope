@@ -743,7 +743,6 @@ export function StrWorksheet({
             
             {/* Financing */}
             <Section index={1} title="Financing" iconKey="bank">
-              <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
               <InputRow 
                 label="Down Payment" 
                 value={inputs.down_payment_pct} 
@@ -754,6 +753,7 @@ export function StrWorksheet({
                 format="percent" 
                 subValue={fmt.currency(inputs.purchase_price * inputs.down_payment_pct)}
               />
+              <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
               <InputRow 
                 label="Interest Rate" 
                 value={inputs.interest_rate} 

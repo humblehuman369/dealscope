@@ -958,8 +958,8 @@ export function LTRWorksheet({
             {/* Purchase */}
             <Section index={0} title="Purchase" iconKey="home">
               <InputRow label="Purchase Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={2000000} step={5000} format="currency" />
-              <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
               <InputRow label="Down Payment" value={downPaymentPct} onChange={setDownPaymentPct} min={0} max={100} step={1} format="percent" subValue={fmt.currency(calc.downPayment)} />
+              <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
               <InputRow label="Closing Costs" value={purchaseCostsPct} onChange={setPurchaseCostsPct} min={0} max={10} step={0.5} format="percent" subValue={fmt.currency(calc.purchaseCosts)} />
               <div className="mt-3 pt-3">
                 <SummaryBox label="Total Cash Required" value={fmt.currency(calc.totalCashNeeded)} variant="teal" />
