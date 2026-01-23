@@ -60,6 +60,10 @@ import {
 // TYPES
 // ============================================
 
+// Listing status types for price display
+export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
+export type SellerType = 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown'
+
 export interface PropertyData {
   address: string
   city: string
@@ -78,6 +82,24 @@ export interface PropertyData {
   thumbnailUrl?: string
   photos?: string[]
   photoCount?: number
+  // Listing status fields
+  listingStatus?: ListingStatus
+  isOffMarket?: boolean
+  sellerType?: SellerType
+  isForeclosure?: boolean
+  isBankOwned?: boolean
+}
+
+/**
+ * Get the appropriate price label based on listing status
+ */
+function getPriceLabel(listingStatus?: ListingStatus, isOffMarket?: boolean): string {
+  if (isOffMarket) return 'Est. Value'
+  if (listingStatus === 'FOR_RENT') return 'Rental Price'
+  if (listingStatus === 'FOR_SALE') return 'List Price'
+  if (listingStatus === 'PENDING') return 'List Price (Pending)'
+  if (listingStatus === 'SOLD') return 'Est. Value'
+  return 'Est. Value' // Default for unknown/off-market
 }
 
 interface StrategyAnalyticsContainerProps {
@@ -233,13 +255,19 @@ export function StrategyAnalyticsContainer({ property, onBack, initialStrategy }
           address={property.address}
           location={`${property.city}, ${property.state} ${property.zipCode}`}
           price={property.listPrice}
-          priceLabel="List Price"
+          priceLabel={getPriceLabel(property.listingStatus, property.isOffMarket)}
           specs={`${property.bedrooms} bd · ${property.bathrooms} ba · ${property.sqft?.toLocaleString()} sqft`}
           photos={property.photos}
           thumbnailUrl={property.thumbnailUrl}
           photoCount={property.photoCount}
           onSave={() => console.log('Save property')}
           onShare={() => console.log('Share property')}
+          // Listing status props
+          listingStatus={property.listingStatus}
+          isOffMarket={property.isOffMarket}
+          sellerType={property.sellerType}
+          isForeclosure={property.isForeclosure}
+          isBankOwned={property.isBankOwned}
         />
       </div>
 

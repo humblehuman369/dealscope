@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import { Camera, ChevronLeft, ChevronRight, Heart, Share2 } from 'lucide-react'
+import { ListingStatusBadge, ListingStatus, SellerType } from './ListingStatusBadge'
 
 interface PropertyHeroProps {
   address: string
@@ -14,6 +15,15 @@ interface PropertyHeroProps {
   photoCount?: number
   onSave?: () => void
   onShare?: () => void
+  // Listing status props
+  listingStatus?: ListingStatus
+  isOffMarket?: boolean
+  sellerType?: SellerType
+  isForeclosure?: boolean
+  isBankOwned?: boolean
+  isAuction?: boolean
+  isNewConstruction?: boolean
+  daysOnMarket?: number
 }
 
 /**
@@ -35,7 +45,16 @@ export function PropertyHero({
   thumbnailUrl,
   photoCount,
   onSave,
-  onShare
+  onShare,
+  // Listing status props
+  listingStatus,
+  isOffMarket,
+  sellerType,
+  isForeclosure,
+  isBankOwned,
+  isAuction,
+  isNewConstruction,
+  daysOnMarket
 }: PropertyHeroProps) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -175,6 +194,18 @@ export function PropertyHero({
         <div className="property-hero-card-content">
           {/* Left: Address & Specs */}
           <div className="property-hero-info">
+            {/* Listing Status Badge */}
+            <ListingStatusBadge
+              listingStatus={listingStatus}
+              isOffMarket={isOffMarket}
+              sellerType={sellerType}
+              isForeclosure={isForeclosure}
+              isBankOwned={isBankOwned}
+              isAuction={isAuction}
+              isNewConstruction={isNewConstruction}
+              daysOnMarket={daysOnMarket}
+              className="mb-2"
+            />
             <h1 className="property-hero-address">{address}</h1>
             <p className="property-hero-location">{location}</p>
             <p className="property-hero-specs">{specs}</p>

@@ -711,6 +711,115 @@ class ZillowDataExtractor:
             "transit_score": data.get("transitScore"),
             "bike_score": data.get("bikeScore"),
         }
+    
+    @staticmethod
+    def extract_listing_info(data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Extract listing status and seller type information.
+        
+        This determines:
+        - Whether property is actively listed (FOR_SALE, FOR_RENT) or OFF_MARKET/SOLD
+        - Seller type (Agent, FSBO, Foreclosure, BankOwned, Auction)
+        - Actual list price vs estimated value
+        
+        Returns:
+            Dict with listing status fields for investor analysis
+        """
+        # Get primary listing status from homeStatus field
+        home_status = data.get("homeStatus")  # FOR_SALE, FOR_RENT, SOLD, OFF_MARKET, PENDING
+        keystone_status = data.get("keystoneHomeStatus")  # RecentlySold, ForSale, etc.
+        
+        # Extract listingSubType flags for seller type determination
+        listing_sub_type = data.get("listingSubType", {}) or {}
+        is_foreclosure = listing_sub_type.get("isForeclosure", False)
+        is_bank_owned = listing_sub_type.get("isBankOwned", False)
+        is_fsbo = listing_sub_type.get("isFSBO", False)
+        is_fsba = listing_sub_type.get("isFSBA", False)
+        is_auction = listing_sub_type.get("isForAuction", False)
+        is_coming_soon = listing_sub_type.get("isComingSoon", False)
+        
+        # Also check resoFacts for new construction
+        reso_facts = data.get("resoFacts", {}) or {}
+        is_new_construction = reso_facts.get("isNewConstruction", False)
+        
+        # Determine seller type based on flags
+        seller_type = "Agent"  # Default
+        if is_foreclosure:
+            seller_type = "Foreclosure"
+        elif is_bank_owned:
+            seller_type = "BankOwned"
+        elif is_fsbo:
+            seller_type = "FSBO"
+        elif is_auction:
+            seller_type = "Auction"
+        elif is_new_construction:
+            seller_type = "NewConstruction"
+        elif is_fsba:
+            seller_type = "Agent"
+        
+        # Determine if property is off-market
+        # A property is off-market if:
+        # - homeStatus is SOLD, OFF_MARKET, or None
+        # - keystoneHomeStatus indicates recently sold
+        is_off_market = home_status in [None, "SOLD", "OFF_MARKET", "RECENTLY_SOLD"] or \
+                        keystone_status in ["RecentlySold", "OffMarket"]
+        
+        # If PENDING, it's still technically listed but under contract
+        if home_status == "PENDING":
+            is_off_market = False
+        
+        # Get price - this is list price if actively listed, or last sold price if sold
+        price = data.get("price")
+        
+        # Only set list_price if the property is actively listed
+        list_price = None
+        if not is_off_market and home_status in ["FOR_SALE", "FOR_RENT", "PENDING"]:
+            list_price = price
+        
+        # Time on market
+        days_on_zillow = data.get("daysOnZillow")
+        time_on_zillow = data.get("timeOnZillow")
+        
+        # Last sale info
+        last_sold_price = data.get("lastSoldPrice")
+        date_sold = data.get("dateSold")
+        
+        # Convert dateSold from timestamp to ISO string if it's a number
+        date_sold_str = None
+        if date_sold:
+            if isinstance(date_sold, (int, float)):
+                from datetime import datetime
+                try:
+                    date_sold_str = datetime.fromtimestamp(date_sold / 1000).isoformat()
+                except:
+                    date_sold_str = str(date_sold)
+            else:
+                date_sold_str = str(date_sold)
+        
+        # Listing agent/brokerage info
+        brokerage_name = data.get("brokerageName")
+        attribution_info = data.get("attributionInfo", {}) or {}
+        listing_agent_name = attribution_info.get("agentName")
+        mls_id = attribution_info.get("mlsId")
+        
+        return {
+            "listing_status": home_status,
+            "is_off_market": is_off_market,
+            "seller_type": seller_type,
+            "is_foreclosure": is_foreclosure,
+            "is_bank_owned": is_bank_owned,
+            "is_fsbo": is_fsbo,
+            "is_auction": is_auction,
+            "is_new_construction": is_new_construction,
+            "list_price": list_price,
+            "days_on_market": days_on_zillow,
+            "time_on_market": time_on_zillow,
+            "last_sold_price": last_sold_price,
+            "date_sold": date_sold_str,
+            "brokerage_name": brokerage_name,
+            "listing_agent_name": listing_agent_name,
+            "mls_id": mls_id,
+        }
 
 
 # Factory function

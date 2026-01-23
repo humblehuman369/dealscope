@@ -153,6 +153,23 @@ class NormalizedProperty:
     rent_comps_count: Optional[int] = None
     sold_comps_count: Optional[int] = None
     
+    # Listing Status - CRITICAL FOR PRICE DISPLAY
+    listing_status: Optional[str] = None          # FOR_SALE, FOR_RENT, OFF_MARKET, SOLD, PENDING
+    is_off_market: bool = True                    # Whether property is currently off-market
+    seller_type: Optional[str] = None             # Agent, FSBO, Foreclosure, BankOwned, Auction
+    is_foreclosure: bool = False
+    is_bank_owned: bool = False
+    is_fsbo: bool = False
+    is_auction: bool = False
+    is_new_construction: bool = False
+    list_price: Optional[float] = None            # Actual listing price if actively listed
+    days_on_market: Optional[int] = None
+    time_on_market: Optional[str] = None
+    date_sold: Optional[str] = None
+    brokerage_name: Optional[str] = None
+    listing_agent_name: Optional[str] = None
+    mls_id: Optional[str] = None
+    
     # Metadata
     data_fetched_at: datetime = field(default_factory=datetime.utcnow)
     provenance: Dict[str, FieldProvenance] = field(default_factory=dict)
@@ -236,6 +253,7 @@ class InvestIQNormalizer:
         self._merge_schools(result, rc, zl)
         self._merge_market(result, rc, zl)
         self._merge_comps_counts(result, rc, zl)
+        self._merge_listing_status(result, rc, zl)  # Listing status for price display
         
         # Calculate data quality
         self._calculate_quality_score(result)
@@ -816,6 +834,112 @@ class InvestIQNormalizer:
         if sold and isinstance(sold, list):
             self._set_field(result, "sold_comps_count", len(sold),
                           DataSource.ZILLOW, ConfidenceLevel.HIGH)
+    
+    def _merge_listing_status(self, result: NormalizedProperty, rc: Dict, zl: Dict):
+        """
+        Merge listing status data - Zillow is primary source.
+        
+        This determines:
+        - Whether to show "List Price", "Rental Price", or "Est. Value"
+        - Seller type (Agent, FSBO, Foreclosure, Bank Owned, Auction)
+        - Property availability status
+        """
+        zl_prop = zl.get("property", {}) or {}
+        
+        # Primary listing status from Zillow homeStatus field
+        home_status = zl_prop.get("homeStatus")  # FOR_SALE, FOR_RENT, SOLD, OFF_MARKET, PENDING
+        if home_status:
+            self._set_field(result, "listing_status", home_status,
+                          DataSource.ZILLOW, ConfidenceLevel.HIGH)
+        
+        # Extract listingSubType for seller type determination
+        listing_sub_type = zl_prop.get("listingSubType", {}) or {}
+        
+        # Seller type flags
+        is_foreclosure = listing_sub_type.get("isForeclosure", False)
+        is_bank_owned = listing_sub_type.get("isBankOwned", False)
+        is_fsbo = listing_sub_type.get("isFSBO", False)
+        is_auction = listing_sub_type.get("isForAuction", False)
+        
+        # Store individual flags
+        result.is_foreclosure = is_foreclosure
+        result.is_bank_owned = is_bank_owned
+        result.is_fsbo = is_fsbo
+        result.is_auction = is_auction
+        
+        # Check for new construction
+        reso_facts = zl_prop.get("resoFacts", {}) or {}
+        is_new_construction = reso_facts.get("isNewConstruction", False)
+        result.is_new_construction = is_new_construction
+        
+        # Determine seller type string
+        seller_type = "Agent"  # Default
+        if is_foreclosure:
+            seller_type = "Foreclosure"
+        elif is_bank_owned:
+            seller_type = "BankOwned"
+        elif is_fsbo:
+            seller_type = "FSBO"
+        elif is_auction:
+            seller_type = "Auction"
+        elif is_new_construction:
+            seller_type = "NewConstruction"
+        
+        self._set_field(result, "seller_type", seller_type,
+                      DataSource.ZILLOW, ConfidenceLevel.HIGH)
+        
+        # Determine if property is off-market
+        keystone_status = zl_prop.get("keystoneHomeStatus")
+        is_off_market = home_status in [None, "SOLD", "OFF_MARKET", "RECENTLY_SOLD"] or \
+                        keystone_status in ["RecentlySold", "OffMarket"]
+        
+        # PENDING is still technically listed
+        if home_status == "PENDING":
+            is_off_market = False
+        
+        result.is_off_market = is_off_market
+        
+        # List price - only set if actively listed
+        price = zl_prop.get("price")
+        if not is_off_market and home_status in ["FOR_SALE", "FOR_RENT", "PENDING"]:
+            self._set_field(result, "list_price", price,
+                          DataSource.ZILLOW, ConfidenceLevel.HIGH)
+        
+        # Days on market
+        days_on_zillow = zl_prop.get("daysOnZillow")
+        if days_on_zillow is not None:
+            self._set_field(result, "days_on_market", days_on_zillow,
+                          DataSource.ZILLOW, ConfidenceLevel.HIGH)
+        
+        time_on_zillow = zl_prop.get("timeOnZillow")
+        if time_on_zillow:
+            result.time_on_market = time_on_zillow
+        
+        # Date sold (if applicable)
+        date_sold = zl_prop.get("dateSold")
+        if date_sold:
+            # Convert from timestamp if needed
+            if isinstance(date_sold, (int, float)):
+                try:
+                    result.date_sold = datetime.fromtimestamp(date_sold / 1000).isoformat()
+                except:
+                    result.date_sold = str(date_sold)
+            else:
+                result.date_sold = str(date_sold)
+        
+        # Brokerage and agent info
+        brokerage = zl_prop.get("brokerageName")
+        if brokerage:
+            result.brokerage_name = brokerage
+        
+        attribution = zl_prop.get("attributionInfo", {}) or {}
+        agent_name = attribution.get("agentName")
+        if agent_name:
+            result.listing_agent_name = agent_name
+        
+        mls_id = attribution.get("mlsId")
+        if mls_id:
+            result.mls_id = mls_id
     
     def _calculate_quality_score(self, result: NormalizedProperty):
         """Calculate overall data quality score."""

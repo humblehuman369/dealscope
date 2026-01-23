@@ -202,6 +202,24 @@ function normalizePropertyData(
       property_taxes_annual?: number
       hoa_fees_monthly?: number
     }
+    listing?: {
+      listing_status?: string
+      is_off_market?: boolean
+      seller_type?: string
+      is_foreclosure?: boolean
+      is_bank_owned?: boolean
+      is_fsbo?: boolean
+      is_auction?: boolean
+      is_new_construction?: boolean
+      list_price?: number
+      days_on_market?: number
+      time_on_market?: string
+      last_sold_price?: number
+      date_sold?: string
+      brokerage_name?: string
+      listing_agent_name?: string
+      mls_id?: string
+    }
     fetched_at?: string
     // Legacy fields that might exist
     description?: string
@@ -247,9 +265,20 @@ function normalizePropertyData(
   const state = p.address?.state || ''
   const zipcode = p.address?.zip_code || ''
   
-  // Get price - prefer current_value_avm, fall back to zestimate
-  const price = p.valuations?.current_value_avm || p.valuations?.zestimate || 0
+  // Get price - prefer list_price if actively listed, otherwise use Zestimate
+  const listing = p.listing || {}
+  const isOffMarket = listing.is_off_market ?? true
+  const listPrice = listing.list_price
+  
+  // If actively listed, use list price; otherwise use estimated value
+  const price = (!isOffMarket && listPrice) 
+    ? listPrice 
+    : (p.valuations?.current_value_avm || p.valuations?.zestimate || 0)
+  
   const livingArea = p.details?.square_footage || 0
+  
+  // Determine listing status - default to OFF_MARKET if not provided
+  const listingStatus = listing.listing_status || (isOffMarket ? 'OFF_MARKET' : 'FOR_SALE')
 
   // Build normalized property object matching frontend PropertyData interface
   return {
@@ -261,8 +290,26 @@ function normalizePropertyData(
       zipcode,
     },
     price,
-    listingStatus: 'FOR_SALE',
-    daysOnZillow: undefined,
+    
+    // Listing status fields
+    listingStatus: listingStatus as 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER',
+    isOffMarket,
+    sellerType: listing.seller_type as 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown' | undefined,
+    listPrice,
+    isForeclosure: listing.is_foreclosure,
+    isBankOwned: listing.is_bank_owned,
+    isFsbo: listing.is_fsbo,
+    isAuction: listing.is_auction,
+    isNewConstruction: listing.is_new_construction,
+    daysOnMarket: listing.days_on_market,
+    timeOnMarket: listing.time_on_market,
+    dateSold: listing.date_sold,
+    lastSoldPrice: listing.last_sold_price,
+    brokerageName: listing.brokerage_name,
+    listingAgentName: listing.listing_agent_name,
+    
+    // Legacy fields
+    daysOnZillow: listing.days_on_market,
     views: undefined,
     saves: undefined,
     bedrooms: p.details?.bedrooms || 0,
@@ -300,8 +347,8 @@ function normalizePropertyData(
     description: p.description || `${p.details?.bedrooms || 0} bed, ${p.details?.bathrooms || 0} bath property in ${city}, ${state}.`,
     images,
     totalPhotos: images.length,
-    listingAgent: p.listing_agent,
-    mlsId: p.mls_id,
+    listingAgent: p.listing_agent || (listing.listing_agent_name ? { name: listing.listing_agent_name, brokerage: listing.brokerage_name } : undefined),
+    mlsId: listing.mls_id || p.mls_id,
     listDate: p.list_date,
     priceHistory: [],
     taxHistory: [],

@@ -11,6 +11,8 @@ from app.schemas.property import (
     Confidence,
     RiskLevel,
     StrategyType,
+    ListingStatus,
+    SellerType,
     # Provenance
     FieldProvenance,
     ProvenanceMap,
@@ -21,6 +23,7 @@ from app.schemas.property import (
     RentalData,
     MarketData,
     DataQuality,
+    ListingInfo,
     # Assumptions
     FinancingAssumptions,
     OperatingAssumptions,
@@ -98,6 +101,8 @@ __all__ = [
     "Confidence",
     "RiskLevel",
     "StrategyType",
+    "ListingStatus",
+    "SellerType",
     "FieldProvenance",
     "ProvenanceMap",
     "Address",
@@ -106,6 +111,7 @@ __all__ = [
     "RentalData",
     "MarketData",
     "DataQuality",
+    "ListingInfo",
     "FinancingAssumptions",
     "OperatingAssumptions",
     "STRAssumptions",

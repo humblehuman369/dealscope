@@ -22,7 +22,8 @@ from app.schemas import (
     StrategyType, Address, PropertyDetails, ValuationData,
     RentalData, MarketData, ProvenanceMap, DataQuality,
     LTRResults, STRResults, BRRRRResults, FlipResults,
-    HouseHackResults, WholesaleResults, FieldProvenance
+    HouseHackResults, WholesaleResults, FieldProvenance,
+    ListingInfo
 )
 from app.core.config import settings
 
@@ -185,6 +186,24 @@ class PropertyService:
                 # Mortgage rates for frontend
                 mortgage_rate_arm5=normalized.get("mortgage_rate_arm5"),
                 mortgage_rate_30yr=normalized.get("mortgage_rate_30yr")
+            ),
+            listing=ListingInfo(
+                listing_status=normalized.get("listing_status"),
+                is_off_market=normalized.get("is_off_market", True),
+                seller_type=normalized.get("seller_type"),
+                is_foreclosure=normalized.get("is_foreclosure", False),
+                is_bank_owned=normalized.get("is_bank_owned", False),
+                is_fsbo=normalized.get("is_fsbo", False),
+                is_auction=normalized.get("is_auction", False),
+                is_new_construction=normalized.get("is_new_construction", False),
+                list_price=normalized.get("list_price"),
+                days_on_market=normalized.get("days_on_market"),
+                time_on_market=normalized.get("time_on_market"),
+                last_sold_price=normalized.get("last_sold_price"),
+                date_sold=normalized.get("date_sold"),
+                brokerage_name=normalized.get("brokerage_name"),
+                listing_agent_name=normalized.get("listing_agent_name"),
+                mls_id=normalized.get("mls_id"),
             ),
             provenance=ProvenanceMap(fields={
                 k: FieldProvenance(**v) if isinstance(v, dict) else v 

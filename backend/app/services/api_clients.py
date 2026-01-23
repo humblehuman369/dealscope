@@ -390,6 +390,11 @@ class DataNormalizer:
         
         # Taxes
         "property_taxes_annual": ("propertyTaxes", "annualTaxAmount", "rentcast"),
+        
+        # Listing Status - AXESSO/Zillow primary
+        "listing_status": (None, "homeStatus", "axesso"),
+        "days_on_market": (None, "daysOnZillow", "axesso"),
+        "brokerage_name": (None, "brokerageName", "axesso"),
     }
     
     def __init__(self):
@@ -473,7 +478,122 @@ class DataNormalizer:
                 "conflict_flag": conflict
             }
         
+        # Extract complex listing info from AXESSO data
+        self._extract_listing_info(normalized, axesso_data, timestamp, provenance)
+        
         return normalized, provenance
+    
+    def _extract_listing_info(
+        self,
+        normalized: Dict[str, Any],
+        axesso_data: Optional[Dict[str, Any]],
+        timestamp: datetime,
+        provenance: Dict[str, Any]
+    ):
+        """
+        Extract listing status and seller type from AXESSO/Zillow data.
+        
+        This determines:
+        - Whether property is actively listed (FOR_SALE, FOR_RENT) or OFF_MARKET/SOLD
+        - Seller type (Agent, FSBO, Foreclosure, BankOwned, Auction)
+        - Actual list price vs estimated value
+        """
+        if not axesso_data:
+            normalized["is_off_market"] = True
+            normalized["seller_type"] = None
+            return
+        
+        # Get primary listing status
+        home_status = axesso_data.get("homeStatus")
+        keystone_status = axesso_data.get("keystoneHomeStatus")
+        
+        # Extract listingSubType for seller type determination
+        listing_sub_type = axesso_data.get("listingSubType", {}) or {}
+        is_foreclosure = listing_sub_type.get("isForeclosure", False)
+        is_bank_owned = listing_sub_type.get("isBankOwned", False)
+        is_fsbo = listing_sub_type.get("isFSBO", False)
+        is_auction = listing_sub_type.get("isForAuction", False)
+        
+        # Check for new construction
+        reso_facts = axesso_data.get("resoFacts", {}) or {}
+        is_new_construction = reso_facts.get("isNewConstruction", False)
+        
+        # Store individual seller type flags
+        normalized["is_foreclosure"] = is_foreclosure
+        normalized["is_bank_owned"] = is_bank_owned
+        normalized["is_fsbo"] = is_fsbo
+        normalized["is_auction"] = is_auction
+        normalized["is_new_construction"] = is_new_construction
+        
+        # Determine seller type string
+        seller_type = "Agent"  # Default
+        if is_foreclosure:
+            seller_type = "Foreclosure"
+        elif is_bank_owned:
+            seller_type = "BankOwned"
+        elif is_fsbo:
+            seller_type = "FSBO"
+        elif is_auction:
+            seller_type = "Auction"
+        elif is_new_construction:
+            seller_type = "NewConstruction"
+        
+        normalized["seller_type"] = seller_type
+        
+        # Determine if property is off-market
+        is_off_market = home_status in [None, "SOLD", "OFF_MARKET", "RECENTLY_SOLD"] or \
+                        keystone_status in ["RecentlySold", "OffMarket"]
+        
+        # PENDING is still technically listed
+        if home_status == "PENDING":
+            is_off_market = False
+        
+        normalized["is_off_market"] = is_off_market
+        
+        # List price - only set if actively listed
+        price = axesso_data.get("price")
+        if not is_off_market and home_status in ["FOR_SALE", "FOR_RENT", "PENDING"]:
+            normalized["list_price"] = price
+        else:
+            normalized["list_price"] = None
+        
+        # Time on market
+        normalized["time_on_market"] = axesso_data.get("timeOnZillow")
+        
+        # Date sold (if applicable)
+        date_sold = axesso_data.get("dateSold")
+        if date_sold:
+            if isinstance(date_sold, (int, float)):
+                try:
+                    normalized["date_sold"] = datetime.fromtimestamp(date_sold / 1000).isoformat()
+                except:
+                    normalized["date_sold"] = str(date_sold)
+            else:
+                normalized["date_sold"] = str(date_sold)
+        else:
+            normalized["date_sold"] = None
+        
+        # Last sold price
+        normalized["last_sold_price"] = axesso_data.get("lastSoldPrice")
+        
+        # Listing agent/brokerage info
+        attribution = axesso_data.get("attributionInfo", {}) or {}
+        normalized["listing_agent_name"] = attribution.get("agentName")
+        normalized["mls_id"] = attribution.get("mlsId")
+        
+        # Add provenance for listing fields
+        listing_fields = ["is_off_market", "seller_type", "list_price", "is_foreclosure", 
+                         "is_bank_owned", "is_fsbo", "is_auction", "is_new_construction",
+                         "date_sold", "last_sold_price", "listing_agent_name", "mls_id", 
+                         "time_on_market"]
+        for field in listing_fields:
+            provenance[field] = {
+                "source": "axesso",
+                "fetched_at": timestamp.isoformat(),
+                "confidence": "high",
+                "raw_values": None,
+                "conflict_flag": False
+            }
     
     def _get_nested_value(self, data: Optional[Dict], field: str) -> Any:
         """Get value from potentially nested dict using dot notation."""

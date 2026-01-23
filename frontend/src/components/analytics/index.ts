@@ -198,6 +198,14 @@ export {
 // Property Hero - Immersive property showcase
 export { PropertyHero } from './PropertyHero'
 
+// Listing Status Badge - Display listing status and seller type
+export {
+  ListingStatusBadge,
+  ListingStatusBadgeCompact,
+  type ListingStatus,
+  type SellerType
+} from './ListingStatusBadge'
+
 // Property Premium Page - World-class property analysis landing page
 export { PropertyPremiumPage } from './PropertyPremiumPage'
 

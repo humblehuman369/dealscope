@@ -52,6 +52,27 @@ class StrategyType(str, Enum):
     WHOLESALE = "wholesale"
 
 
+class ListingStatus(str, Enum):
+    """Property listing status from Zillow homeStatus field."""
+    FOR_SALE = "FOR_SALE"
+    FOR_RENT = "FOR_RENT"
+    OFF_MARKET = "OFF_MARKET"
+    SOLD = "SOLD"
+    PENDING = "PENDING"
+    OTHER = "OTHER"
+
+
+class SellerType(str, Enum):
+    """Type of seller/listing source derived from listingSubType fields."""
+    AGENT = "Agent"                  # Listed by agent (isFSBA = true or default)
+    FSBO = "FSBO"                    # For Sale By Owner (isFSBO = true)
+    FORECLOSURE = "Foreclosure"      # Bank foreclosure (isForeclosure = true)
+    BANK_OWNED = "BankOwned"         # REO/Bank owned (isBankOwned = true)
+    AUCTION = "Auction"              # Auction listing (isForAuction = true)
+    NEW_CONSTRUCTION = "NewConstruction"  # New construction
+    UNKNOWN = "Unknown"              # Unknown or not specified
+
+
 # ============================================
 # PROVENANCE
 # ============================================
@@ -176,6 +197,46 @@ class DataQuality(BaseModel):
     missing_fields: List[str] = []
     stale_fields: List[str] = []
     conflict_fields: List[str] = []
+
+
+class ListingInfo(BaseModel):
+    """
+    Listing status information for property display.
+    
+    This determines whether to show:
+    - "List Price" (FOR_SALE, active listing)
+    - "Rental Price" (FOR_RENT)
+    - "Est. Value" (OFF_MARKET, SOLD)
+    """
+    # Primary listing status
+    listing_status: Optional[str] = None  # FOR_SALE, FOR_RENT, OFF_MARKET, SOLD, PENDING
+    
+    # Is property currently off-market (not actively listed)
+    is_off_market: bool = True
+    
+    # Seller/listing type indicators
+    seller_type: Optional[str] = None  # Agent, FSBO, Foreclosure, BankOwned, Auction
+    is_foreclosure: bool = False
+    is_bank_owned: bool = False
+    is_fsbo: bool = False
+    is_auction: bool = False
+    is_new_construction: bool = False
+    
+    # Pricing - only set if property is actively listed
+    list_price: Optional[float] = None  # Actual asking price if listed
+    
+    # Time on market
+    days_on_market: Optional[int] = None
+    time_on_market: Optional[str] = None  # e.g., "45 days"
+    
+    # Last sale info (for sold/off-market properties)
+    last_sold_price: Optional[float] = None
+    date_sold: Optional[str] = None
+    
+    # Listing agent/brokerage
+    brokerage_name: Optional[str] = None
+    listing_agent_name: Optional[str] = None
+    mls_id: Optional[str] = None
 
 
 # ============================================
@@ -584,6 +645,7 @@ class PropertyResponse(BaseModel):
     valuations: ValuationData
     rentals: RentalData
     market: MarketData
+    listing: Optional[ListingInfo] = None  # Listing status, seller type, price display info
     provenance: ProvenanceMap
     data_quality: DataQuality
     fetched_at: datetime

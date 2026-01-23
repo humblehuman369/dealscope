@@ -2,6 +2,11 @@
 
 import React, { useState } from 'react'
 import { ChevronRight, ChevronLeft, Camera, Home } from 'lucide-react'
+import { ListingStatusBadgeCompact } from '../ListingStatusBadge'
+
+// Listing status types
+type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
+type SellerType = 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown'
 
 /**
  * DesktopPropertyMiniCard Component
@@ -21,6 +26,11 @@ interface DesktopPropertyMiniCardProps {
   photoCount?: number
   onExpand?: () => void
   showExpandButton?: boolean
+  // Listing status props
+  listingStatus?: ListingStatus
+  isOffMarket?: boolean
+  sellerType?: SellerType
+  isForeclosure?: boolean
 }
 
 export function DesktopPropertyMiniCard({
@@ -33,7 +43,12 @@ export function DesktopPropertyMiniCard({
   photos = [],
   photoCount,
   onExpand,
-  showExpandButton = true
+  showExpandButton = true,
+  // Listing status props
+  listingStatus,
+  isOffMarket,
+  sellerType,
+  isForeclosure
 }: DesktopPropertyMiniCardProps) {
   const photoList = photos.length > 0 ? photos : (thumbnailUrl ? [thumbnailUrl] : [])
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
@@ -127,6 +142,14 @@ export function DesktopPropertyMiniCard({
       {/* Property Info Bar */}
       <div className="desktop-property-info-bar">
         <div className="desktop-property-details">
+          {/* Listing Status Badge */}
+          <ListingStatusBadgeCompact
+            listingStatus={listingStatus}
+            isOffMarket={isOffMarket}
+            sellerType={sellerType}
+            isForeclosure={isForeclosure}
+            className="mb-1"
+          />
           <h2 className="desktop-property-mini-address">{address}</h2>
           <p className="desktop-property-mini-location">{location}</p>
           <p className="desktop-property-mini-specs">{specs}</p>

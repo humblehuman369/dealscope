@@ -5,6 +5,12 @@
  * aligned with AXESSO API response structure.
  */
 
+// Listing Status Types - determines price label display
+export type ListingStatus = 'FOR_SALE' | 'FOR_RENT' | 'OFF_MARKET' | 'SOLD' | 'PENDING' | 'OTHER'
+
+// Seller Type - identifies listing source
+export type SellerType = 'Agent' | 'FSBO' | 'Foreclosure' | 'BankOwned' | 'Auction' | 'NewConstruction' | 'Unknown'
+
 export interface PropertyAddress {
   streetAddress: string
   city: string
@@ -51,7 +57,26 @@ export interface PropertyData {
   zpid: number | string
   address: PropertyAddress
   price: number
-  listingStatus?: string
+  
+  // Listing Status - Critical for price display
+  listingStatus: ListingStatus
+  isOffMarket: boolean
+  sellerType?: SellerType
+  listPrice?: number           // Actual asking price if actively listed
+  
+  // Seller type flags
+  isForeclosure?: boolean
+  isBankOwned?: boolean
+  isFsbo?: boolean
+  isAuction?: boolean
+  isNewConstruction?: boolean
+  
+  // Timing
+  daysOnMarket?: number
+  timeOnMarket?: string
+  dateSold?: string
+  
+  // Legacy fields (still used)
   daysOnZillow?: number
   views?: number
   saves?: number
@@ -119,6 +144,9 @@ export interface PropertyData {
   listingAgent?: PropertyListingAgent
   mlsId?: string
   listDate?: string
+  brokerageName?: string
+  listingAgentName?: string
+  lastSoldPrice?: number
   
   // History
   priceHistory?: PriceHistoryItem[]
