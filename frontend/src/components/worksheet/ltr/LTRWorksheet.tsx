@@ -840,7 +840,7 @@ export function LTRWorksheet({
               ← Back to Summary
             </button>
           )}
-          <div className="grid grid-cols-[1.2fr,1.4fr] md:grid-cols-[1.2fr,1.5fr] lg:grid-cols-[1fr,1.2fr] gap-4 sm:gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start">
           
           {/* LEFT COLUMN - Insight Panel */}
           <div className="sm:sticky sm:top-28 space-y-4 sm:max-h-[calc(100vh-8rem)] sm:overflow-y-auto">

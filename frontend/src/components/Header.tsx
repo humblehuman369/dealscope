@@ -30,6 +30,10 @@ export default function Header() {
   
   const { currentProperty, recentSearches } = usePropertyStore()
   
+  // Strategy Analysis dropdown state - declared before useEffect that references them
+  const [showStrategyDropdown, setShowStrategyDropdown] = useState(false)
+  const strategyDropdownRef = useRef<HTMLDivElement>(null)
+  
   // Dynamic property analytics URL
   const propertyAnalyticsUrl = useMemo(() => {
     if (currentProperty?.address) {
@@ -76,10 +80,6 @@ export default function Header() {
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', auth: true },
     { href: '/search', icon: Search, label: 'Search', auth: false },
   ]
-  
-  // Strategy Analysis dropdown state
-  const [showStrategyDropdown, setShowStrategyDropdown] = useState(false)
-  const strategyDropdownRef = useRef<HTMLDivElement>(null)
 
   // User menu items
   const userMenuItems = [
