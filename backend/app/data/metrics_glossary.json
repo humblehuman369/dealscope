@@ -1,7 +1,69 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "updatedAt": "2026-01-23",
-  "source": "backend/app/services/calculators.py",
+  "source": "backend/app/services/calculators.py, backend/app/services/data_normalizer.py",
+  "market_statistics": {
+    "description": "Market health indicators from RentCast saleData for buyer/seller market analysis",
+    "source": "RentCast Markets API",
+    "metrics": {
+      "median_days_on_market": {
+        "formula": "median_days_on_market = saleData.medianDaysOnMarket",
+        "inputs": ["saleData.medianDaysOnMarket"],
+        "description": "The median number of days properties stay on market before selling. Key indicator of market velocity."
+      },
+      "avg_days_on_market": {
+        "formula": "avg_days_on_market = saleData.averageDaysOnMarket",
+        "inputs": ["saleData.averageDaysOnMarket"],
+        "description": "The average number of days properties stay on market. May be skewed by outliers."
+      },
+      "min_days_on_market": {
+        "formula": "min_days_on_market = saleData.minDaysOnMarket",
+        "inputs": ["saleData.minDaysOnMarket"],
+        "description": "The fastest sale in the market. Indicates demand for well-priced properties."
+      },
+      "max_days_on_market": {
+        "formula": "max_days_on_market = saleData.maxDaysOnMarket",
+        "inputs": ["saleData.maxDaysOnMarket"],
+        "description": "The longest time on market. Properties priced too high or with issues."
+      },
+      "total_listings": {
+        "formula": "total_listings = saleData.totalListings",
+        "inputs": ["saleData.totalListings"],
+        "description": "Total active inventory in the market area."
+      },
+      "new_listings": {
+        "formula": "new_listings = saleData.newListings",
+        "inputs": ["saleData.newListings"],
+        "description": "Number of new listings added in the most recent period."
+      },
+      "absorption_rate": {
+        "formula": "absorption_rate = new_listings / total_listings",
+        "inputs": ["new_listings", "total_listings"],
+        "description": "Rate at which new inventory enters the market relative to total inventory. Higher rate indicates faster-moving market (seller's market). Lower rate indicates slower market with aging inventory (buyer's market).",
+        "interpretation": "0.10+ = Fast absorption (seller's market), 0.05-0.10 = Normal, <0.05 = Slow absorption (buyer's market)"
+      },
+      "market_temperature": {
+        "formula": "if median_days_on_market < 30: 'hot' (seller's market); elif median_days_on_market <= 60: 'warm' (balanced); else: 'cold' (buyer's market)",
+        "inputs": ["median_days_on_market"],
+        "description": "Classification of market conditions based on days on market.",
+        "interpretation": {
+          "hot": "Seller's market - Properties sell quickly. Limited negotiation room. Expected discount: 0-3%.",
+          "warm": "Balanced market - Normal conditions. Moderate negotiation possible. Expected discount: 3-7%.",
+          "cold": "Buyer's market - High inventory, properties sit longer. Strong negotiation leverage. Expected discount: 7-15%."
+        }
+      },
+      "median_price": {
+        "formula": "median_price = saleData.medianPrice",
+        "inputs": ["saleData.medianPrice"],
+        "description": "Median sale price in the market area."
+      },
+      "avg_price_per_sqft": {
+        "formula": "avg_price_per_sqft = saleData.averagePricePerSquareFoot",
+        "inputs": ["saleData.averagePricePerSquareFoot"],
+        "description": "Average price per square foot in the market area. Useful for quick valuation comparisons."
+      }
+    }
+  },
   "strategies": [
     {
       "id": "ltr",
