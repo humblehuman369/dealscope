@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, ArrowLeft } from 'lucide-react'
 import {
   PropertyData,
   ImageGallery,
@@ -140,8 +140,15 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
       <style>{`.tabular-nums { font-variant-numeric: tabular-nums; }`}</style>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 mb-6" aria-label="Breadcrumb">
+        {/* Back Button and Breadcrumb */}
+        <nav className="flex items-center gap-3 mb-6" aria-label="Breadcrumb">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:text-teal-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-teal-400 dark:hover:bg-slate-800 transition-colors"
+            aria-label="Go back"
+          >
+            <ArrowLeft size={18} />
+          </button>
           <span className="text-[10px] font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wide">
             Property Details
           </span>
