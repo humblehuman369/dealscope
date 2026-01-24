@@ -6,7 +6,7 @@ import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
-import { ArrowLeft, ChevronDown, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { calculateInitialPurchasePrice } from '@/lib/iqTarget'
 import { useDealScore } from '@/hooks/useDealScore'
 
@@ -66,9 +66,8 @@ interface HouseHackWorksheetProps { property: SavedProperty; propertyId: string;
 export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseHackWorksheetProps) {
   const router = useRouter()
   
-  // Strategy switcher state
-  const [isStrategyDropdownOpen, setIsStrategyDropdownOpen] = useState(false)
-  const { activeStrategy, setActiveStrategy } = useUIStore()
+  // Strategy from UI store
+  const { activeStrategy } = useUIStore()
   
   // This worksheet's strategy - always House Hack
   const thisStrategy = { id: 'househack', label: 'House Hack' }
@@ -339,26 +338,6 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
                 const config = statusConfig[status || 'OFF_MARKET'] || statusConfig['OFF_MARKET']
                 return <span className={`px-2.5 py-1 text-xs font-semibold uppercase tracking-wide border-2 ${config.border} ${config.text} rounded`}>{config.label}</span>
               })()}
-            </div>
-            <div className="relative flex-shrink-0">
-              <button onClick={() => setIsStrategyDropdownOpen(!isStrategyDropdownOpen)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors text-white hover:opacity-90" style={{ backgroundColor: '#007ea7' }}>
-                <span className="hidden sm:inline">Strategy Analysis</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-white transition-transform ${isStrategyDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {isStrategyDropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setIsStrategyDropdownOpen(false)} />
-                  <div className="absolute top-full right-0 mt-1 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
-                    <div className="px-3 py-2 border-b border-slate-100"><span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Investment Strategies</span></div>
-                    {strategies.map((strategy) => (
-                      <button key={strategy.id} onClick={() => { setIsStrategyDropdownOpen(false); if (strategy.id !== thisStrategy.id) { setActiveStrategy(strategy.id); router.push(`/worksheet/${propertyId}/${strategy.id}`); } }} className={`w-full flex items-center gap-3 px-4 py-2 text-left text-sm hover:bg-slate-50 transition-colors ${thisStrategy.id === strategy.id ? 'bg-teal/10 text-teal' : 'text-slate-700'}`}>
-                        <span className="font-medium">{strategy.label}</span>
-                        {thisStrategy.id === strategy.id && <CheckCircle2 className="w-4 h-4 ml-auto text-teal" />}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </div>

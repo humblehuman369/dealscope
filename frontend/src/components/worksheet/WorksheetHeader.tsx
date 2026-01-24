@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useWorksheetStore, useWorksheetDerived } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
@@ -11,8 +10,6 @@ import {
   Loader2,
   Check,
   ArrowLeft,
-  ChevronDown,
-  CheckCircle2,
 } from 'lucide-react'
 import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { PropertyStatusPills } from './PropertyStatusPills'
@@ -22,7 +19,7 @@ interface WorksheetHeaderProps {
   propertyId: string
 }
 
-// Strategy definitions
+// Strategy definitions for display
 const strategies = [
   { id: 'ltr', label: 'Long-term Rental' },
   { id: 'str', label: 'Short-term Rental' },
@@ -34,12 +31,11 @@ const strategies = [
 
 export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) {
   const router = useRouter()
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   
   const { isDirty, isSaving, lastSaved, viewMode, setViewMode, isCalculating, calculationError, worksheetMetrics } =
     useWorksheetStore()
   const derived = useWorksheetDerived()
-  const { activeStrategy, setActiveStrategy } = useUIStore()
+  const { activeStrategy } = useUIStore()
 
   // Get current strategy label
   const currentStrategy = strategies.find(s => s.id === activeStrategy) || strategies[0]
@@ -134,60 +130,6 @@ export function WorksheetHeader({ property, propertyId }: WorksheetHeaderProps) 
             />
           </div>
           
-          {/* Right: Strategy Analysis Dropdown */}
-          <div className="relative flex-shrink-0">
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors text-white hover:opacity-90"
-              style={{ backgroundColor: '#007ea7' }}
-            >
-              <span className="hidden sm:inline">Strategy Analysis</span>
-              <ChevronDown 
-                className={`w-3.5 h-3.5 text-white transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-              />
-            </button>
-            
-            {/* Dropdown Menu */}
-            {isDropdownOpen && (
-              <>
-                {/* Backdrop to close dropdown */}
-                <div 
-                  className="fixed inset-0 z-40" 
-                  onClick={() => setIsDropdownOpen(false)}
-                />
-                <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-[var(--ws-border)] py-1 z-50">
-                  <div className="px-3 py-2 border-b border-[var(--ws-border-light)]">
-                    <span className="text-xs font-semibold text-[var(--ws-text-muted)] uppercase tracking-wider">
-                      Investment Strategies
-                    </span>
-                  </div>
-                  {strategies.map((strategy) => (
-                    <button
-                      key={strategy.id}
-                      onClick={() => {
-                        setIsDropdownOpen(false)
-                        // Only navigate if selecting a different strategy
-                        if (strategy.id !== activeStrategy) {
-                          setActiveStrategy(strategy.id)
-                          router.push(`/worksheet/${propertyId}/${strategy.id}`)
-                        }
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-[var(--ws-bg-alt)] transition-colors ${
-                        activeStrategy === strategy.id 
-                          ? 'bg-[var(--ws-accent-bg)] text-[var(--iq-teal)]' 
-                          : 'text-[var(--ws-text-primary)]'
-                      }`}
-                    >
-                      <span className="font-medium">{strategy.label}</span>
-                      {activeStrategy === strategy.id && (
-                        <CheckCircle2 className="w-4 h-4 ml-auto text-[var(--iq-teal)]" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
         </div>
       </div>
 
