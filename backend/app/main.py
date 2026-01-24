@@ -477,7 +477,13 @@ async def quick_analytics(
 # IQ VERDICT ANALYSIS ENDPOINT
 # ============================================
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
+
+
+def to_camel(string: str) -> str:
+    """Convert snake_case to camelCase for JSON serialization."""
+    components = string.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
 from app.core.defaults import (
     FINANCING, OPERATING, STR, REHAB, BRRRR, FLIP, HOUSE_HACK, WHOLESALE, GROWTH,
     DEFAULT_BUY_DISCOUNT_PCT, estimate_breakeven_price, calculate_buy_price,
@@ -509,6 +515,8 @@ class IQVerdictInput(BaseModel):
 
 class StrategyResult(BaseModel):
     """Result for a single strategy."""
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    
     id: str
     name: str
     metric: str
@@ -527,6 +535,8 @@ class StrategyResult(BaseModel):
 
 class OpportunityFactorsResponse(BaseModel):
     """Opportunity factors breakdown for IQ Verdict."""
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    
     deal_gap: float = Field(..., description="Discount % needed from list to breakeven")
     motivation: float = Field(..., description="Seller motivation score (0-100)")
     motivation_label: str = Field(..., description="Motivation level label")
@@ -537,6 +547,8 @@ class OpportunityFactorsResponse(BaseModel):
 
 class ReturnFactorsResponse(BaseModel):
     """Return factors breakdown for IQ Verdict (strategy-specific)."""
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    
     cap_rate: Optional[float] = Field(None, description="Capitalization rate %")
     cash_on_cash: Optional[float] = Field(None, description="Cash-on-Cash return %")
     dscr: Optional[float] = Field(None, description="Debt Service Coverage Ratio")
@@ -555,6 +567,8 @@ class ScoreDisplayResponse(BaseModel):
 
 class IQVerdictResponse(BaseModel):
     """Response from IQ Verdict analysis."""
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    
     # Legacy fields (kept for backward compatibility)
     deal_score: int
     deal_verdict: str

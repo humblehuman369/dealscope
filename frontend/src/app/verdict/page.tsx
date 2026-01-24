@@ -241,28 +241,34 @@ function VerdictContent() {
             console.log('[IQ Verdict] Backend response:', analysisData)
             
             // Convert backend response to frontend IQAnalysisResult format
+            // Backend now returns camelCase for new fields via Pydantic alias_generator
             const analysisResult: IQAnalysisResult = {
               analyzedAt: new Date().toISOString(),
-              dealScore: analysisData.deal_score,
-              dealVerdict: analysisData.deal_verdict as IQAnalysisResult['dealVerdict'],
-              verdictDescription: analysisData.verdict_description,
-              discountPercent: analysisData.discount_percent,
-              purchasePrice: analysisData.purchase_price,
-              breakevenPrice: analysisData.breakeven_price,
-              listPrice: analysisData.list_price,
+              dealScore: analysisData.deal_score ?? analysisData.dealScore,
+              dealVerdict: (analysisData.deal_verdict ?? analysisData.dealVerdict) as IQAnalysisResult['dealVerdict'],
+              verdictDescription: analysisData.verdict_description ?? analysisData.verdictDescription,
+              discountPercent: analysisData.discount_percent ?? analysisData.discountPercent,
+              purchasePrice: analysisData.purchase_price ?? analysisData.purchasePrice,
+              breakevenPrice: analysisData.breakeven_price ?? analysisData.breakevenPrice,
+              listPrice: analysisData.list_price ?? analysisData.listPrice,
               // Include inputs used for transparency
-              inputsUsed: analysisData.inputs_used,
+              inputsUsed: analysisData.inputs_used ?? analysisData.inputsUsed,
               strategies: analysisData.strategies.map((s: BackendAnalysisResponse['strategies'][0]) => ({
                 id: s.id as IQStrategy['id'],
                 name: s.name,
                 icon: getStrategyIcon(s.id),
                 metric: s.metric,
-                metricLabel: s.metric_label,
-                metricValue: s.metric_value,
+                metricLabel: s.metric_label ?? s.metricLabel,
+                metricValue: s.metric_value ?? s.metricValue,
                 score: s.score,
                 rank: s.rank,
                 badge: s.badge as IQStrategy['badge'],
               })),
+              // NEW: Grade-based display fields (backend returns camelCase)
+              opportunity: analysisData.opportunity,
+              opportunityFactors: analysisData.opportunity_factors ?? analysisData.opportunityFactors,
+              returnRating: analysisData.return_rating ?? analysisData.returnRating,
+              returnFactors: analysisData.return_factors ?? analysisData.returnFactors,
             }
             setAnalysis(analysisResult)
           } else {
