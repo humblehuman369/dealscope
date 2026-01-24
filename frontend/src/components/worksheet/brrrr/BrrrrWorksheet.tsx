@@ -357,7 +357,18 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
               {property.property_data_snapshot?.isBankOwned && <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide bg-slate-800 text-white rounded">Bank Owned</span>}
               {property.property_data_snapshot?.isForeclosure && !property.property_data_snapshot?.isBankOwned && <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide bg-amber-500 text-white rounded">Foreclosure</span>}
               {property.property_data_snapshot?.isAuction && <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide bg-purple-600 text-white rounded">Auction</span>}
-              {property.property_data_snapshot?.isOffMarket ? <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide border-2 border-red-500 text-red-500 rounded">Off-Market</span> : <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide border-2 border-teal text-teal rounded">Active</span>}
+              {(() => {
+                const status = property.property_data_snapshot?.listingStatus
+                const statusConfig: Record<string, { label: string; border: string; text: string }> = {
+                  'FOR_SALE': { label: 'For Sale', border: 'border-teal', text: 'text-teal' },
+                  'FOR_RENT': { label: 'For Rent', border: 'border-blue-500', text: 'text-blue-500' },
+                  'PENDING': { label: 'Pending', border: 'border-amber-500', text: 'text-amber-500' },
+                  'SOLD': { label: 'Sold', border: 'border-slate-500', text: 'text-slate-500' },
+                  'OFF_MARKET': { label: 'Off-Market', border: 'border-red-500', text: 'text-red-500' },
+                }
+                const config = statusConfig[status || 'OFF_MARKET'] || statusConfig['OFF_MARKET']
+                return <span className={`px-2.5 py-1 text-xs font-semibold uppercase tracking-wide border-2 ${config.border} ${config.text} rounded`}>{config.label}</span>
+              })()}
             </div>
             <div className="relative flex-shrink-0">
               <button onClick={() => setIsStrategyDropdownOpen(!isStrategyDropdownOpen)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors text-white hover:opacity-90" style={{ backgroundColor: '#007ea7' }}>
