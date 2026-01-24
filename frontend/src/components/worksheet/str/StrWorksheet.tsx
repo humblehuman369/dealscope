@@ -575,7 +575,7 @@ export function StrWorksheet({
             </div>
             
             {/* Center: Price + Status Badges */}
-            <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+            <div className="hidden md:flex items-center gap-5 flex-shrink-0">
               {/* Price Display */}
               <div className="text-right">
                 <div className="text-xl font-bold text-slate-900">

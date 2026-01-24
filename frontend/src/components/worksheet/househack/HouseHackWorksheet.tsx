@@ -318,7 +318,7 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
                 <p className="text-sm text-slate-500 truncate">{fullAddress}</p>
               </div>
             </div>
-            <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+            <div className="hidden md:flex items-center gap-5 flex-shrink-0">
               <div className="text-right">
                 <div className="text-xl font-bold text-slate-900">{fmt.currency(property.property_data_snapshot?.zestimate || property.property_data_snapshot?.listPrice || listPrice)}</div>
                 <div className="text-xs text-slate-500">Est. Value</div>
