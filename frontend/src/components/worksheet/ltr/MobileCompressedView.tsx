@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { ChevronUp, ChevronDown, Home, Landmark, Wrench, DollarSign, FileText, TrendingUp, Target } from 'lucide-react'
+import { scoreToGradeLabel } from '@/components/iq-verdict/types'
 
 // ============================================
 // TYPES
@@ -190,11 +191,21 @@ export function MobileCompressedView({
             Verdict
           </div>
           
-          {/* Score Display - Compact */}
+          {/* Score Display - Grade Based */}
           <div className="flex items-center gap-1.5 mb-1.5">
-            <span className={`text-2xl font-bold ${scoreRating.color}`}>{dealScore}</span>
+            <span 
+              className="text-2xl font-bold"
+              style={{ color: scoreToGradeLabel(dealScore).color }}
+            >
+              {scoreToGradeLabel(dealScore).grade}
+            </span>
             <div className="min-w-0">
-              <div className="text-[10px] font-semibold text-slate-900 leading-tight truncate">{scoreRating.label}</div>
+              <div 
+                className="text-[10px] font-semibold leading-tight truncate"
+                style={{ color: scoreToGradeLabel(dealScore).color }}
+              >
+                {scoreToGradeLabel(dealScore).label}
+              </div>
               <div className="text-[9px] text-slate-500 leading-tight">Deal Score</div>
             </div>
           </div>

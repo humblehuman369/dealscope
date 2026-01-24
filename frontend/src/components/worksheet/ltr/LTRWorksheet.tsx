@@ -16,7 +16,8 @@ import { EquityChart } from '../charts/EquityChart'
 import { MobileCompressedView } from './MobileCompressedView'
 import { ArrowLeft, ChevronRight } from 'lucide-react'
 import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
-import { useDealScore, getDealScoreColor } from '@/hooks/useDealScore'
+import { useDealScore, getDealScoreColor, getDealScoreGrade } from '@/hooks/useDealScore'
+import { scoreToGradeLabel } from '@/components/iq-verdict/types'
 
 // Strategy definitions for switcher
 const strategies = [
@@ -849,23 +850,39 @@ export function LTRWorksheet({
                         dealScore >= 70 ? 'text-teal' : dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
                       }`}>IQ VERDICT: LONG-TERM RENTAL</div>
                       
-                      {/* Two-Score Display */}
+                      {/* Two-Score Display - Grade Based */}
                       <div className="grid grid-cols-2 gap-3 mb-3">
                         {/* Deal Opportunity Score */}
                         <div className="bg-white rounded-lg px-3 py-2 shadow-sm text-center">
-                          <span className={`text-2xl font-extrabold tabular-nums ${
-                            opportunityScore >= 70 ? 'text-teal' : opportunityScore >= 40 ? 'text-amber-500' : 'text-red-500'
-                          }`}>{opportunityScore}</span>
+                          <span 
+                            className="text-2xl font-extrabold"
+                            style={{ color: scoreToGradeLabel(opportunityScore).color }}
+                          >
+                            {scoreToGradeLabel(opportunityScore).grade}
+                          </span>
                           <div className="text-[10px] text-slate-500 mt-0.5">Opportunity</div>
-                          <div className="text-[9px] font-medium text-slate-400 truncate">{opportunityVerdict}</div>
+                          <div 
+                            className="text-[9px] font-semibold"
+                            style={{ color: scoreToGradeLabel(opportunityScore).color }}
+                          >
+                            {scoreToGradeLabel(opportunityScore).label}
+                          </div>
                         </div>
                         {/* Strategy Return Score */}
                         <div className="bg-white rounded-lg px-3 py-2 shadow-sm text-center">
-                          <span className={`text-2xl font-extrabold tabular-nums ${
-                            performanceScore >= 70 ? 'text-teal' : performanceScore >= 40 ? 'text-amber-500' : 'text-red-500'
-                          }`}>{performanceScore}</span>
+                          <span 
+                            className="text-2xl font-extrabold"
+                            style={{ color: scoreToGradeLabel(performanceScore).color }}
+                          >
+                            {scoreToGradeLabel(performanceScore).grade}
+                          </span>
                           <div className="text-[10px] text-slate-500 mt-0.5">Return</div>
-                          <div className="text-[9px] font-medium text-slate-400 truncate">{performanceVerdict}</div>
+                          <div 
+                            className="text-[9px] font-semibold"
+                            style={{ color: scoreToGradeLabel(performanceScore).color }}
+                          >
+                            {scoreToGradeLabel(performanceScore).label}
+                          </div>
                         </div>
                       </div>
                       
@@ -1106,23 +1123,39 @@ export function LTRWorksheet({
                   dealScore >= 70 ? 'text-teal' : dealScore >= 40 ? 'text-amber-500' : 'text-red-500'
                 }`}>IQ VERDICT: LONG-TERM RENTAL</div>
                 
-                {/* Two-Score Display */}
+                {/* Two-Score Display - Grade Based */}
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   {/* Deal Opportunity Score */}
                   <div className="bg-white rounded-lg px-3 py-2 shadow-sm text-center">
-                    <span className={`text-2xl font-extrabold tabular-nums ${
-                      opportunityScore >= 70 ? 'text-teal' : opportunityScore >= 40 ? 'text-amber-500' : 'text-red-500'
-                    }`}>{opportunityScore}</span>
+                    <span 
+                      className="text-2xl font-extrabold"
+                      style={{ color: scoreToGradeLabel(opportunityScore).color }}
+                    >
+                      {scoreToGradeLabel(opportunityScore).grade}
+                    </span>
                     <div className="text-[10px] text-slate-500 mt-0.5">Opportunity</div>
-                    <div className="text-[9px] font-medium text-slate-400 truncate">{opportunityVerdict}</div>
+                    <div 
+                      className="text-[9px] font-semibold"
+                      style={{ color: scoreToGradeLabel(opportunityScore).color }}
+                    >
+                      {scoreToGradeLabel(opportunityScore).label}
+                    </div>
                   </div>
                   {/* Strategy Return Score */}
                   <div className="bg-white rounded-lg px-3 py-2 shadow-sm text-center">
-                    <span className={`text-2xl font-extrabold tabular-nums ${
-                      performanceScore >= 70 ? 'text-teal' : performanceScore >= 40 ? 'text-amber-500' : 'text-red-500'
-                    }`}>{performanceScore}</span>
+                    <span 
+                      className="text-2xl font-extrabold"
+                      style={{ color: scoreToGradeLabel(performanceScore).color }}
+                    >
+                      {scoreToGradeLabel(performanceScore).grade}
+                    </span>
                     <div className="text-[10px] text-slate-500 mt-0.5">Return</div>
-                    <div className="text-[9px] font-medium text-slate-400 truncate">{performanceVerdict}</div>
+                    <div 
+                      className="text-[9px] font-semibold"
+                      style={{ color: scoreToGradeLabel(performanceScore).color }}
+                    >
+                      {scoreToGradeLabel(performanceScore).label}
+                    </div>
                   </div>
                 </div>
                 
