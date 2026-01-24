@@ -175,7 +175,7 @@ export default function STRStrategyScreen() {
           <View style={styles.summaryGrid}>
             <View style={styles.summaryRow}>
               <Text style={[styles.summaryLabel, { color: theme.textSecondary }]}>
-                Purchase Price
+                Buy Price
               </Text>
               <Text style={[styles.summaryValue, { color: theme.text }]}>
                 {formatCurrency(inputs.purchasePrice)}

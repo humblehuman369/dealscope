@@ -1151,14 +1151,14 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
               </svg>
-              <span>Purchase Price</span>
+              <span>Buy Price</span>
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="50000" max="2000000" value="485000" aria-label="Purchase Price">
+                <input type="range" class="slider-input" min="50000" max="2000000" value="485000" aria-label="Buy Price">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$485,000" aria-label="Purchase Price value">
+            <input type="text" class="slider-value" value="$485,000" aria-label="Buy Price value">
           </div>
           
           <div class="data-row has-slider">
@@ -1781,7 +1781,7 @@
     
     async function doRecalculate() {
       // Get Purchase values
-      const purchasePrice = getSliderValue('Purchase Price', 485000);
+      const purchasePrice = getSliderValue('Buy Price', 485000);
       const downPaymentPct = getSliderValue('Down Payment', 25) / 100;
       const purchaseCosts = getSliderValue('Purchase Costs', 14550);
       const furnishingBudget = getSliderValue('Furnishing Budget', 20000);
@@ -2092,7 +2092,7 @@
         if (priceEl && property.listPrice) priceEl.textContent = formatCurrency(property.listPrice);
         
         // STR-specific data
-        updateSliderByLabel('Purchase Price', property.listPrice);
+        updateSliderByLabel('Buy Price', property.listPrice);
         if (property.averageDailyRate) updateSliderByLabel('Average Daily Rate', property.averageDailyRate);
         if (property.occupancyRate) updateSliderByLabel('Base Occupancy', property.occupancyRate);
         

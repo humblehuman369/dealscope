@@ -21,8 +21,8 @@ export function PurchaseRehabSection() {
 
   return (
     <SectionCard title="Purchase & Rehab">
-      {/* Purchase Price - Editable with slider */}
-      <DataRow label="Purchase Price" icon={<Home className="w-4 h-4" />} hasSlider>
+      {/* Buy Price - Editable with slider */}
+      <DataRow label="Buy Price" icon={<Home className="w-4 h-4" />} hasSlider>
         <EditableField
           value={assumptions.purchasePrice}
           onChange={(val) => updateAssumption('purchasePrice', val)}

@@ -195,7 +195,7 @@ export const CompareTab: React.FC<CompareTabProps> = ({
           <ComparisonTable
             scenarios={scenarios}
             rows={[
-              { label: 'Purchase Price', getValue: (s) => formatCurrency(s.inputs.purchasePrice) },
+              { label: 'Buy Price', getValue: (s) => formatCurrency(s.inputs.purchasePrice) },
               { label: 'Down Payment', getValue: (s) => formatPercent(s.inputs.downPaymentPercent * 100) },
               { label: 'Interest Rate', getValue: (s) => formatPercent(s.inputs.interestRate * 100) },
               { label: 'Monthly Rent', getValue: (s) => formatCurrency(s.inputs.monthlyRent) },

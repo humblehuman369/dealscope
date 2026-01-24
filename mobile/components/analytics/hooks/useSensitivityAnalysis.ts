@@ -278,7 +278,7 @@ export function useSensitivityAnalysis(inputs: AnalyticsInputs): UseSensitivityR
 
 function getVariableLabel(key: keyof AnalyticsInputs): string {
   const labels: Partial<Record<keyof AnalyticsInputs, string>> = {
-    purchasePrice: 'Purchase Price',
+    purchasePrice: 'Buy Price',
     monthlyRent: 'Monthly Rent',
     interestRate: 'Interest Rate',
     vacancyRate: 'Vacancy Rate',

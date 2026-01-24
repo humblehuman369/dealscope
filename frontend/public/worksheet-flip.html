@@ -1273,7 +1273,7 @@
               <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
               </svg>
-              <span>Purchase Price</span>
+              <span>Buy Price</span>
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
@@ -1365,7 +1365,7 @@
             <div class="data-label"><span>Financing Of</span></div>
             <div class="slider-container">
               <select class="select-input" id="financing-of" aria-label="Financing of selection">
-                <option value="price">Purchase Price</option>
+                <option value="price">Buy Price</option>
                 <option value="cost" selected>Price + Rehab (75%)</option>
                 <option value="arv">After Repair Value</option>
               </select>
@@ -1871,7 +1871,7 @@
     
     async function doRecalculate() {
       // Get values from sliders
-      const purchasePrice = getSliderValue('Purchase Price', 24000);
+      const purchasePrice = getSliderValue('Buy Price', 24000);
       const rehabCosts = getSliderValue('Rehab Costs', 18865);
       const downPaymentPct = getSliderValue('Down Payment', 25) / 100;
       const purchaseCosts = getSliderValue('Purchase Costs', 1225);
@@ -2139,7 +2139,7 @@
         
         if (priceEl && property.listPrice) priceEl.textContent = formatCurrency(property.listPrice);
         
-        updateSliderByLabel('Purchase Price', property.listPrice);
+        updateSliderByLabel('Buy Price', property.listPrice);
         if (property.arv) updateSliderByLabel('After Repair Value', property.arv);
         
       } catch (error) {

@@ -265,7 +265,7 @@ function PropertyCard({ property, onPress, onDelete, theme, isDark }: PropertyCa
 
       <View style={styles.cardMetrics}>
         <View style={styles.cardMetric}>
-          <Text style={[styles.cardMetricLabel, { color: theme.textMuted }]}>Purchase Price</Text>
+          <Text style={[styles.cardMetricLabel, { color: theme.textMuted }]}>Buy Price</Text>
           <Text style={[styles.cardMetricValue, { color: theme.text }]}>
             {property.purchase_price ? formatCurrency(property.purchase_price) : '—'}
           </Text>
@@ -470,9 +470,9 @@ function AddPropertyModal({ visible, onClose, onAdd, isLoading }: AddPropertyMod
               </View>
             </View>
 
-            {/* Purchase Price */}
+            {/* Buy Price */}
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, modalTheme.inputLabel]}>Purchase Price</Text>
+              <Text style={[styles.inputLabel, modalTheme.inputLabel]}>Buy Price</Text>
               <View style={[styles.priceInputContainer, modalTheme.textInput]}>
                 <Text style={[styles.pricePrefix, modalTheme.pricePrefix]}>$</Text>
                 <TextInput

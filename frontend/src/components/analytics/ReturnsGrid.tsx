@@ -7,7 +7,7 @@ import { ReturnsData, ReturnMetric } from './types'
 /**
  * ReturnsGrid Component
  * 
- * Displays a grid of return metrics at the IQ Target Price.
+ * Displays a grid of return metrics at the IQ Buy Price.
  * Shows 4 key metrics in a 2x2 grid with a profitability badge.
  * 
  * Common metrics by strategy:

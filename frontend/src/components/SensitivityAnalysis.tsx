@@ -340,7 +340,7 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
           metricLabel={selectedMetric === 'cashFlow' ? 'Cash Flow' : selectedMetric === 'cashOnCash' ? 'CoC' : 'Cap'}
         />
         <SensitivityCard
-          title="Purchase Price"
+          title="Buy Price"
           color="blue"
           data={analysis.purchasePrice}
           formatX={(v) => `$${(v / 1000).toFixed(0)}K`}
@@ -385,7 +385,7 @@ export default function SensitivityAnalysisView({ assumptions }: SensitivityAnal
             impactLabel="Impact"
           />
           <WhatIfSlider
-            label="Purchase Price"
+            label="Buy Price"
             value={whatIfPrice}
             min={assumptions.purchasePrice * 0.8}
             max={assumptions.purchasePrice * 1.2}

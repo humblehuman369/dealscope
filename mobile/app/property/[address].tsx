@@ -395,7 +395,7 @@ function StrategyDetails({ strategyKey, analytics }: StrategyDetailsProps) {
         const afterRepairValue = assumptions.arv || purchasePrice * 1.25;
         const equity = afterRepairValue - purchasePrice - assumptions.rehabCost;
         return [
-          { label: 'Purchase Price', value: formatCurrency(purchasePrice) },
+          { label: 'Buy Price', value: formatCurrency(purchasePrice) },
           { label: 'Rehab Cost', value: formatCurrency(assumptions.rehabCost) },
           { label: 'After Repair Value', value: formatCurrency(afterRepairValue) },
           { label: 'Total Investment', value: formatCurrency(purchasePrice + assumptions.rehabCost) },
@@ -415,7 +415,7 @@ function StrategyDetails({ strategyKey, analytics }: StrategyDetailsProps) {
         const estNetProfit = flipMargin - totalCosts;
         return [
           { label: 'After Repair Value (ARV)', value: formatCurrency(flipAfterRepairValue) },
-          { label: 'Purchase Price', value: `-${formatCurrency(purchasePrice)}` },
+          { label: 'Buy Price', value: `-${formatCurrency(purchasePrice)}` },
           { label: 'Rehab Budget', value: `-${formatCurrency(assumptions.rehabCost)}` },
           { label: 'FLIP MARGIN', value: formatCurrency(flipMargin), highlight: true },
           { label: 'Flip Margin %', value: formatPercent(flipMarginPct) },

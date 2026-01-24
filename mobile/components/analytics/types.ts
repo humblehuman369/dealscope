@@ -158,7 +158,7 @@ export const SLIDER_GROUPS: SliderGroup[] = [
     title: 'Purchase Terms',
     icon: '1',
     sliders: [
-      { id: 'purchasePrice', label: 'Purchase Price', min: 50000, max: 2000000, step: 5000, format: 'currency' },
+      { id: 'purchasePrice', label: 'Buy Price', min: 50000, max: 2000000, step: 5000, format: 'currency' },
       { id: 'downPaymentPercent', label: 'Down Payment', min: 0.05, max: 0.40, step: 0.05, format: 'percentage' },
       { id: 'closingCostsPercent', label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage' },
     ],

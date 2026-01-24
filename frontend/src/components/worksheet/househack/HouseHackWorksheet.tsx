@@ -380,7 +380,7 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
           <div className="space-y-3">
             <Section index={0} title="Property & Purchase" iconKey="home">
               <div className="py-3"><label className="text-sm text-slate-500">Property Type</label><select value={propertyType} onChange={(e) => setPropertyType(e.target.value as typeof propertyType)} className="mt-2 w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="duplex">Duplex (2 Units)</option><option value="triplex">Triplex (3 Units)</option><option value="fourplex">Fourplex (4 Units)</option></select></div>
-              <InputRow label="Purchase Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={1500000} step={5000} format="currency" />
+              <InputRow label="Buy Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={1500000} step={5000} format="currency" />
               <InputRow label="Down Payment" value={downPaymentPct} onChange={setDownPaymentPct} min={0} max={25} step={0.5} format="percent" subValue={fmt.currency(calc.downPayment)} />
               <InputRow label="Closing Costs" value={purchaseCostsPct} onChange={setPurchaseCostsPct} min={0} max={6} step={0.5} format="percent" subValue={fmt.currency(calc.purchaseCosts)} />
               <div className="mt-3 pt-3"><SummaryBox label="Total Cash Needed" value={fmt.currency(calc.totalCashNeeded)} variant="blue" /></div>

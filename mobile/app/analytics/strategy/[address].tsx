@@ -471,7 +471,7 @@ function getBreakdownData(strategy: StrategyType, metrics: any) {
       return {
         title: '🏗️ Investment Breakdown',
         items: [
-          { label: 'Purchase Price', value: fmt(metrics.purchaseCosts), color: '#3b82f6' },
+          { label: 'Buy Price', value: fmt(metrics.purchaseCosts), color: '#3b82f6' },
           { label: 'Rehab Costs', value: fmt(metrics.rehabCosts), color: '#f97316' },
           { label: 'Holding Costs', value: fmt(metrics.holdingCosts), color: '#eab308' },
           { label: 'Refinance Proceeds', value: fmt(metrics.cashOutAmount), color: '#22c55e', valueColor: '#22c55e' },

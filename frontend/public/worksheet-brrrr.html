@@ -1551,13 +1551,13 @@
         </div>
         <div class="section-content">
           <div class="data-row has-slider">
-            <div class="data-label"><span>Purchase Price</span></div>
+            <div class="data-label"><span>Buy Price</span></div>
             <div class="slider-container">
               <div class="slider-wrapper">
-                <input type="range" class="slider-input" min="25000" max="1500000" value="285000" aria-label="Purchase Price">
+                <input type="range" class="slider-input" min="25000" max="1500000" value="285000" aria-label="Buy Price">
               </div>
             </div>
-            <input type="text" class="slider-value" value="$285,000" aria-label="Purchase Price">
+            <input type="text" class="slider-value" value="$285,000" aria-label="Buy Price">
           </div>
           <div class="data-row has-slider">
             <div class="data-label"><span>Rehab Costs</span></div>
@@ -2322,7 +2322,7 @@
     
     async function doRecalculate() {
       // Get Purchase & Rehab values
-      const purchasePrice = getSliderValue('Purchase Price', 285000);
+      const purchasePrice = getSliderValue('Buy Price', 285000);
       const rehabCosts = getSliderValue('Rehab Costs', 55000);
       const purchaseCosts = getSliderValue('Purchase Costs', 8550);
       
@@ -2604,7 +2604,7 @@
         }
         
         // Update slider values based on property data
-        updateSliderByLabel('Purchase Price', property.listPrice);
+        updateSliderByLabel('Buy Price', property.listPrice);
         if (property.arv) {
           updateSliderByLabel('After Repair Value', property.arv);
         }

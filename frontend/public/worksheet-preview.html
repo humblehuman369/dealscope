@@ -1918,7 +1918,7 @@
   <div class="summary-cards-wrapper">
     <div class="summary-cards">
       <div class="summary-card target-price">
-        <div class="summary-card-label">Target Price</div>
+        <div class="summary-card-label">Buy Price</div>
         <div class="summary-card-value" id="target-price-value" style="color: var(--iq-teal);">$680,000</div>
         <div class="summary-card-subtitle">Max Allowable Offer</div>
       </div>
@@ -1960,13 +1960,13 @@
           </svg>
         </div>
         <div class="section-content">
-          <!-- Purchase Price with Slider -->
+          <!-- Buy Price with Slider -->
           <div class="data-row has-slider">
             <div class="data-label">
               <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
               </svg>
-              <span>Purchase Price</span>
+              <span>Buy Price</span>
             </div>
             <div class="slider-container">
               <div class="slider-wrapper">
@@ -2041,7 +2041,7 @@
             <div class="data-label"><span>Financing Of</span></div>
             <div class="slider-container">
               <select class="select-input" aria-label="Financing of">
-                <option value="price" selected>Purchase Price</option>
+                <option value="price" selected>Buy Price</option>
                 <option value="cost">Total Cost (Price + Rehab)</option>
                 <option value="arv">After Repair Value</option>
               </select>
@@ -2342,7 +2342,7 @@
         </div>
         <div class="section-content">
           <div class="data-row">
-            <div class="data-label"><span>Cap Rate (Purchase Price)</span></div>
+            <div class="data-label"><span>Cap Rate (Buy Price)</span></div>
             <div class="value-primary value-positive">8.816%</div>
           </div>
           <div class="data-row">
@@ -2727,7 +2727,7 @@
       if (!secondarySpan) return;
       
       // Get actual values from sliders for calculations
-      const purchasePrice = getSliderValue('Purchase Price', 723600);
+      const purchasePrice = getSliderValue('Buy Price', 723600);
       const grossRentMonthly = getSliderValue('Monthly Gross Rent', 8081);
       const grossRentAnnual = grossRentMonthly * 12;
       
@@ -2769,7 +2769,7 @@
     
     async function doRecalculate() {
       // Get key inputs from sliders
-      const purchasePrice = getSliderValue('Purchase Price', 723600);
+      const purchasePrice = getSliderValue('Buy Price', 723600);
       const downPaymentPct = getSliderValue('Down Payment', 20) / 100; // Convert to decimal
       const interestRate = getSliderValue('Interest Rate', 7) / 100; // Convert to decimal
       const loanTerm = getSliderValue('Loan Term', 30);
@@ -2950,7 +2950,7 @@
       const mao = result.mao;
       const monthlyCashFlow = result.monthly_cash_flow;
       
-      // 1. Target Price (MAO)
+      // 1. Buy Price (MAO)
       updateElement('target-price-value', formatCurrency(mao));
       
       // 2. Cash Needed
@@ -3134,7 +3134,7 @@
     
     // Calculate breakeven price from NOI and financing terms (NOT purchase price)
     // Breakeven is where: NOI = Annual Debt Service
-    // Solving: NOI = Purchase Price × (1 - Down Payment %) × Monthly Payment Factor × 12
+    // Solving: NOI = Buy Price × (1 - Down Payment %) × Monthly Payment Factor × 12
     function calculateBreakevenFromNOI(noi, downPaymentPct, interestRate, loanTermYears) {
       if (noi <= 0) return 0; // Can't have breakeven if NOI is negative
       
@@ -3145,8 +3145,8 @@
       if (monthlyRate === 0) {
         // Interest-free loan: Monthly Payment = Loan Amount / numPayments
         // NOI = Loan Amount / numPayments × 12
-        // NOI = Purchase Price × LTV / numPayments × 12
-        // Purchase Price = NOI × numPayments / (LTV × 12)
+        // NOI = Buy Price × LTV / numPayments × 12
+        // Buy Price = NOI × numPayments / (LTV × 12)
         return (noi * numPayments) / (ltvPct * 12);
       }
       
@@ -3157,7 +3157,7 @@
       // Annual Debt Service = Loan Amount × Monthly Payment Factor × 12
       // At breakeven: NOI = Loan Amount × Monthly Payment Factor × 12
       // So: Loan Amount = NOI / (Monthly Payment Factor × 12)
-      // And: Purchase Price = Loan Amount / LTV
+      // And: Buy Price = Loan Amount / LTV
       const loanAmount = noi / (monthlyPaymentFactor * 12);
       const purchasePrice = loanAmount / ltvPct;
       
@@ -3523,7 +3523,7 @@
         }
         
         // Update slider values based on property data (adjustRange=true to center sliders)
-        updateSliderByLabel('Purchase Price', property.listPrice, true);
+        updateSliderByLabel('Buy Price', property.listPrice, true);
         updateSliderByLabel('Monthly Gross Rent', property.monthlyRent, true);
         // Property taxes and insurance from API are annual - sliders expect annual
         updateSliderByLabel('Property Taxes', property.propertyTaxes, true);

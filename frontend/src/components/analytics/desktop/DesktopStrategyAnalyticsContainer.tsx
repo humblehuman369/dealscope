@@ -673,7 +673,7 @@ function DesktopStrategySpecificMetrics(props: DesktopStrategySpecificMetricsPro
         groups={tuneGroups}
         primarySlider={createSliderConfig(
           'listPrice',
-          'Purchase Price',
+          'Buy Price',
           assumptions.listPrice,
           originalListPrice * 0.60,  // Use original list price for stable min
           originalListPrice * 1.10,  // Use original list price for stable max (expanded range)
@@ -892,12 +892,12 @@ function DesktopWhatIfTabContent({ assumptions, updateAssumption, originalListPr
   const tuneGroups: TuneGroup[] = [
     {
       id: 'price',
-      title: 'Purchase Price Scenarios',
+      title: 'Buy Price Scenarios',
       isOpen: true,
       sliders: [
         createSliderConfig(
           'listPrice',
-          'Purchase Price',
+          'Buy Price',
           assumptions.listPrice,
           originalListPrice * 0.60,  // Use original list price for stable min
           originalListPrice * 1.10,  // Use original list price for stable max

@@ -15,7 +15,7 @@ interface DesktopTuneSectionProps {
   title?: string
   /** Array of tune groups with sliders */
   groups: TuneGroup[]
-  /** Always-visible slider (usually Purchase Price) */
+  /** Always-visible slider (usually Buy Price) */
   primarySlider?: SliderConfig
   /** Callback when any slider value changes */
   onSliderChange?: (sliderId: string, value: number) => void

@@ -6,7 +6,7 @@ import { Target, Pencil, X, Check } from 'lucide-react'
 /**
  * IQTargetHero Component
  * 
- * The hero element displaying the IQ Target Price - the recommended entry point
+ * The hero element displaying the IQ Buy Price - the recommended entry point
  * for a profitable investment. Features a two-column layout with:
  * - Left: Price info (title, price, savings, insight)
  * - Right: Assumptions card with editable inputs
@@ -28,7 +28,7 @@ interface IQTargetHeroProps {
   highlightedMetric?: string
   /** Secondary highlighted metric (e.g., "12.4% Cash-on-Cash") */
   secondaryMetric?: string
-  /** Custom badge text (defaults to "IQ Target Price") */
+  /** Custom badge text (defaults to "IQ Buy Price") */
   badgeText?: string
   /** Custom label above price (defaults to "Your Profitable Entry Point") */
   labelText?: string
@@ -49,7 +49,7 @@ export function IQTargetHero({
   rationale,
   highlightedMetric,
   secondaryMetric,
-  badgeText = 'IQ Target Price',
+  badgeText = 'IQ Buy Price',
   labelText = 'Your profitable entry point',
   monthlyRent = 2500,
   downPaymentPct = 0.20,
@@ -110,7 +110,7 @@ export function IQTargetHero({
             {labelText}
           </div>
 
-          {/* Target Price */}
+          {/* Buy Price */}
           <div className="text-[44px] font-extrabold text-slate-900 dark:text-white leading-none mb-2 tracking-[-2px]">
             {formatCurrency(targetPrice)}
           </div>
@@ -143,7 +143,7 @@ export function IQTargetHero({
         <div className={`w-full md:w-auto md:min-w-[200px] md:max-w-[280px] flex-shrink-0 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 transition-all duration-300 ${isEditing ? 'md:min-w-[260px]' : ''}`}>
           {/* Header */}
           <div className="text-[11px] font-medium text-slate-500 dark:text-white/40 mb-3.5 pb-2.5 border-b border-slate-200 dark:border-white/[0.06]">
-            Target Price based on these values
+            Buy Price based on these values
           </div>
 
           {/* Assumptions List (shown when not editing) */}

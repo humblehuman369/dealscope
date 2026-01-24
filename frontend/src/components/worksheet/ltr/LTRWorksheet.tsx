@@ -737,7 +737,7 @@ export function LTRWorksheet({
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
             <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-teal/10">
-              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Purchase Price</div>
+              <div className="text-[8px] sm:text-[9px] lg:text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5 sm:mb-1 truncate">Buy Price</div>
               <div className="text-xs sm:text-sm lg:text-base font-bold text-teal tabular-nums truncate">{fmt.currencyCompact(purchasePrice)}</div>
             </div>
             <div className="rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 text-center min-w-0 bg-slate-800/5">
@@ -990,7 +990,7 @@ export function LTRWorksheet({
                 <div className="space-y-3">
                   {/* Purchase */}
                   <Section index={0} title="Purchase" iconKey="home">
-                    <InputRow label="Purchase Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={2000000} step={5000} format="currency" />
+                    <InputRow label="Buy Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={2000000} step={5000} format="currency" />
                     <InputRow label="Down Payment" value={downPaymentPct} onChange={setDownPaymentPct} min={0} max={100} step={1} format="percent" subValue={fmt.currency(calc.downPayment)} />
                     <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
                     <InputRow label="Closing Costs" value={purchaseCostsPct} onChange={setPurchaseCostsPct} min={0} max={10} step={0.5} format="percent" subValue={fmt.currency(calc.purchaseCosts)} />
@@ -1237,7 +1237,7 @@ export function LTRWorksheet({
           <div className="space-y-3">
             {/* Purchase */}
             <Section index={0} title="Purchase" iconKey="home">
-              <InputRow label="Purchase Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={2000000} step={5000} format="currency" />
+              <InputRow label="Buy Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={2000000} step={5000} format="currency" />
               <InputRow label="Down Payment" value={downPaymentPct} onChange={setDownPaymentPct} min={0} max={100} step={1} format="percent" subValue={fmt.currency(calc.downPayment)} />
               <DisplayRow label="Loan Amount" value={fmt.currency(calc.loanAmount)} />
               <InputRow label="Closing Costs" value={purchaseCostsPct} onChange={setPurchaseCostsPct} min={0} max={10} step={0.5} format="percent" subValue={fmt.currency(calc.purchaseCosts)} />

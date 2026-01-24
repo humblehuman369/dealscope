@@ -30,7 +30,7 @@ export function ScanDemoSection({ onTryItNow }: ScanDemoSectionProps) {
                 
                 {/* IQ Target Card */}
                 <div className="app-target-card">
-                  <div className="app-target-badge">🎯 IQ TARGET PRICE</div>
+                  <div className="app-target-badge">🎯 IQ BUY PRICE</div>
                   <div className="app-target-label">Your Profitable Entry Point</div>
                   <div className="app-target-price">$280,000</div>
                   <div className="app-target-savings">$70K below list (20%)</div>

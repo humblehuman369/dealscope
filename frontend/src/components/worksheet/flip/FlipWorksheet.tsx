@@ -459,7 +459,7 @@ export function FlipWorksheet({
           {/* LEFT COLUMN */}
           <div className="space-y-3">
             <Section index={0} title="Purchase & Rehab" iconKey="home">
-              <InputRow label="Purchase Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={1000000} step={5000} format="currency" />
+              <InputRow label="Buy Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={1000000} step={5000} format="currency" />
               <InputRow label="Rehab Costs" value={rehabCosts} onChange={setRehabCosts} min={0} max={200000} step={1000} format="currency" />
               <InputRow label="Closing Costs" value={purchaseCostsPct} onChange={setPurchaseCostsPct} min={0} max={5} step={0.5} format="percent" subValue={fmt.currency(calc.purchaseCosts)} />
               <div className="mt-3 pt-3"><SummaryBox label="Total All-In Cost" value={fmt.currency(calc.allInCost)} variant="blue" /></div>

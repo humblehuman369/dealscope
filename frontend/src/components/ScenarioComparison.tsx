@@ -271,7 +271,7 @@ export default function ScenarioComparison({
                 </td>
               </tr>
               <ComparisonRow
-                label="Purchase Price"
+                label="Buy Price"
                 values={compareScenarios.map(s => s.assumptions.purchasePrice)}
                 format="compact"
               />

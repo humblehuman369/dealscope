@@ -268,7 +268,7 @@ export function MobileCompressedView({
         >
           <div className="pt-2 space-y-2 text-[11px]">
             <div className="flex justify-between">
-              <span className="text-slate-500">Purchase Price</span>
+              <span className="text-slate-500">Buy Price</span>
               <span className="font-semibold text-slate-900">{fmt.currency(purchasePrice)}</span>
             </div>
             <div className="flex justify-between">

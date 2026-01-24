@@ -7,7 +7,7 @@ import { NegotiationPlanData, OfferCard, LeveragePoint } from './types'
  * NegotiationPlan Component
  * 
  * Displays a game plan for negotiating the purchase price, including:
- * - Three offer cards: Opening Offer, Target Price, Walk-Away
+ * - Three offer cards: Opening Offer, Buy Price, Walk-Away
  * - Leverage points to use in negotiation
  * 
  * This component helps investors understand the negotiation range
@@ -135,7 +135,7 @@ export function generateNegotiationPlan(
       percentOfList: openingOfferPercent * 100
     },
     targetPrice: {
-      label: 'Target Price',
+      label: 'Buy Price',
       price: targetPrice,
       percentOfList: (targetPrice / listPrice) * 100,
       isRecommended: true

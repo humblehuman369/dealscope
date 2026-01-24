@@ -24,7 +24,7 @@ interface DesktopIQTargetHeroProps {
   highlightedMetric?: string
   /** Secondary highlighted metric (e.g., "12.4% Cash-on-Cash") */
   secondaryMetric?: string
-  /** Custom badge text (defaults to "IQ Target Price") */
+  /** Custom badge text (defaults to "IQ Buy Price") */
   badgeText?: string
   /** Custom label above price (defaults to "Your Profitable Entry Point") */
   labelText?: string
@@ -45,7 +45,7 @@ export function DesktopIQTargetHero({
   rationale,
   highlightedMetric,
   secondaryMetric,
-  badgeText = 'IQ Target Price',
+  badgeText = 'IQ Buy Price',
   labelText = 'Your profitable entry point',
   monthlyRent = 2500,
   downPaymentPct = 0.20,
@@ -106,7 +106,7 @@ export function DesktopIQTargetHero({
             {labelText}
           </div>
 
-          {/* Target Price */}
+          {/* Buy Price */}
           <div className="text-[52px] font-extrabold text-slate-900 dark:text-white leading-none mb-2 tracking-[-2px]">
             {formatCurrency(targetPrice)}
           </div>
@@ -139,7 +139,7 @@ export function DesktopIQTargetHero({
         <div className={`min-w-[220px] max-w-[300px] flex-shrink-0 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5 transition-all duration-300 ${isEditing ? 'min-w-[280px]' : ''}`}>
           {/* Header */}
           <div className="text-xs font-medium text-slate-500 dark:text-white/40 mb-4 pb-3 border-b border-slate-200 dark:border-white/[0.06]">
-            Target Price based on these values
+            Buy Price based on these values
           </div>
 
           {/* Assumptions List (shown when not editing) */}

@@ -1,6 +1,6 @@
 /**
  * IQTargetHero - The crown jewel hero component
- * Shows the IQ Target Price with animated glow and discount badge
+ * Shows the IQ Buy Price with animated glow and discount badge
  * Design matches: investiq-property-analytics-complete-redesign (final).html
  */
 
@@ -45,14 +45,14 @@ export function IQTargetHero({ iqTarget, strategy, isDark = true }: IQTargetHero
       <View style={styles.badgeContainer}>
         <View style={styles.badge}>
           <Text style={styles.badgeEmoji}>🎯</Text>
-          <Text style={styles.badgeText}>IQ TARGET PRICE</Text>
+          <Text style={styles.badgeText}>IQ BUY PRICE</Text>
         </View>
       </View>
 
       {/* Subtitle */}
       <Text style={styles.subtitle}>Your Profitable Entry Point</Text>
 
-      {/* Target Price - Large Green */}
+      {/* Buy Price - Large Green */}
       <Text style={styles.targetPrice}>{formatCurrency(iqTarget.targetPrice)}</Text>
 
       {/* Discount Info */}

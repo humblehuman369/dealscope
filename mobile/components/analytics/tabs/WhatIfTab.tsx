@@ -209,9 +209,9 @@ export function WhatIfTab({ baseInputs, baseMetrics, isDark = true }: WhatIfTabP
           </TouchableOpacity>
         </View>
         
-        {/* Purchase Price Slider */}
+        {/* Buy Price Slider */}
         <WhatIfSlider
-          label="Purchase Price"
+          label="Buy Price"
           baseValue={baseInputs.purchasePrice}
           value={scenarioInputs.purchasePrice}
           min={baseInputs.purchasePrice * 0.8}

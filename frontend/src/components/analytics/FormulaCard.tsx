@@ -95,7 +95,7 @@ export function createCapitalStackFormula(
   return {
     title: 'Capital Stack at IQ Target',
     rows: [
-      { label: 'Purchase Price', value: formatCurrency(purchasePrice) },
+      { label: 'Buy Price', value: formatCurrency(purchasePrice) },
       { label: '+ Rehab Costs', value: formatCurrency(rehabCost) },
       { label: '+ Closing/Holding', value: formatCurrency(closingCosts) },
       { label: '= All-In Cost', value: formatCurrency(allInCost), isTotal: true }
@@ -226,7 +226,7 @@ export function createFlipPLFormula(
     title: 'Fix & Flip P&L',
     rows: [
       { label: 'Sale Price (ARV)', value: formatCurrency(arv) },
-      { label: '− Purchase Price', value: `−${formatCurrency(purchasePrice)}`, isNegative: true },
+      { label: '− Buy Price', value: `−${formatCurrency(purchasePrice)}`, isNegative: true },
       { label: '− Rehab Costs', value: `−${formatCurrency(rehabCost)}`, isNegative: true },
       { label: '− Holding Costs', value: `−${formatCurrency(holdingCosts)}`, isNegative: true },
       { label: '− Selling Costs', value: `−${formatCurrency(sellingCosts)}`, isNegative: true },

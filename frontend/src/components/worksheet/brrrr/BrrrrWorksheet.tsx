@@ -409,7 +409,7 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
           <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">
           <div className="space-y-3">
             <Section index={0} title="Purchase & Rehab" iconKey="home">
-              <InputRow label="Purchase Price" value={purchasePrice} onChange={setPurchasePrice} min={50000} max={500000} step={5000} format="currency" />
+              <InputRow label="Buy Price" value={purchasePrice} onChange={setPurchasePrice} min={50000} max={500000} step={5000} format="currency" />
               <InputRow label="Rehab Costs" value={rehabCosts} onChange={setRehabCosts} min={0} max={150000} step={1000} format="currency" />
               <InputRow label="Purchase Costs" value={purchaseCostsPct} onChange={setPurchaseCostsPct} min={0} max={5} step={0.5} format="percent" subValue={fmt.currency(calc.purchaseCosts)} />
               <div className="mt-3 pt-3"><SummaryBox label="Total All-In Cost" value={fmt.currency(calc.allInCost)} variant="blue" /></div>

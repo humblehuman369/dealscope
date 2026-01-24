@@ -24,7 +24,7 @@ export function InvestmentReturns() {
 
   const metrics = [
     {
-      label: 'Cap Rate (Purchase Price)',
+      label: 'Cap Rate (Buy Price)',
       value: derived.capRate,
       threshold: { low: 4, good: 6 },
       icon: Percent,

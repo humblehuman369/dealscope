@@ -215,9 +215,9 @@ export function StrategyAnalyticsView({
     const baseGroups: TuneGroup[] = [
       {
         id: 'purchase',
-        title: 'Purchase Price',
+        title: 'Buy Price',
         sliders: [
-          createSliderConfig('listPrice', 'Purchase Price', assumptions.listPrice, 100000, 1000000, 5000, formatCurrency),
+          createSliderConfig('listPrice', 'Buy Price', assumptions.listPrice, 100000, 1000000, 5000, formatCurrency),
         ],
       },
       {

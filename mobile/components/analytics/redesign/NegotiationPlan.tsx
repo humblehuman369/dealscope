@@ -151,7 +151,7 @@ export function generateNegotiationPlan(
     },
     targetPrice: {
       id: 'target',
-      label: 'Target Price',
+      label: 'Buy Price',
       price: targetPrice,
       percentOfList: targetPrice / listPrice,
       isRecommended: true,

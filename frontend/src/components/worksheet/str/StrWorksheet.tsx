@@ -695,7 +695,7 @@ export function StrWorksheet({
             {/* Purchase & Setup */}
             <Section index={0} title="Purchase & Setup" iconKey="home">
               <InputRow 
-                label="Purchase Price" 
+                label="Buy Price" 
                 value={inputs.purchase_price} 
                 onChange={(val) => updateInput('purchase_price', val)} 
                 min={Math.round(originalPrice * 0.5)} 
