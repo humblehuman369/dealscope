@@ -497,6 +497,14 @@ class IQVerdictInput(BaseModel):
     arv: Optional[float] = Field(None, description="After Repair Value")
     average_daily_rate: Optional[float] = Field(None, description="STR average daily rate")
     occupancy_rate: Optional[float] = Field(None, description="STR occupancy rate (0.0-1.0)")
+    # Listing context for Opportunity Factors
+    listing_status: Optional[str] = Field(None, description="Listing status (FOR_SALE, OFF_MARKET, etc.)")
+    seller_type: Optional[str] = Field(None, description="Seller type (Agent, FSBO, BankOwned, etc.)")
+    is_foreclosure: Optional[bool] = Field(False, description="Is foreclosure property")
+    is_bank_owned: Optional[bool] = Field(False, description="Is bank-owned/REO")
+    is_fsbo: Optional[bool] = Field(False, description="For Sale By Owner")
+    days_on_market: Optional[int] = Field(None, description="Days on market")
+    market_temperature: Optional[str] = Field(None, description="Market temperature: cold, warm, hot")
 
 
 class StrategyResult(BaseModel):
@@ -509,10 +517,45 @@ class StrategyResult(BaseModel):
     score: int
     rank: int
     badge: Optional[str] = None
+    # Additional metrics for Return Factors (populated for top strategy)
+    cap_rate: Optional[float] = None
+    cash_on_cash: Optional[float] = None
+    dscr: Optional[float] = None
+    annual_cash_flow: Optional[float] = None
+    monthly_cash_flow: Optional[float] = None
+
+
+class OpportunityFactorsResponse(BaseModel):
+    """Opportunity factors breakdown for IQ Verdict."""
+    deal_gap: float = Field(..., description="Discount % needed from list to breakeven")
+    motivation: float = Field(..., description="Seller motivation score (0-100)")
+    motivation_label: str = Field(..., description="Motivation level label")
+    days_on_market: Optional[int] = Field(None, description="Days property has been listed")
+    buyer_market: Optional[str] = Field(None, description="Market temperature: cold, warm, hot")
+    distressed_sale: bool = Field(False, description="Is this a distressed sale (foreclosure/bank-owned)")
+
+
+class ReturnFactorsResponse(BaseModel):
+    """Return factors breakdown for IQ Verdict (strategy-specific)."""
+    cap_rate: Optional[float] = Field(None, description="Capitalization rate %")
+    cash_on_cash: Optional[float] = Field(None, description="Cash-on-Cash return %")
+    dscr: Optional[float] = Field(None, description="Debt Service Coverage Ratio")
+    annual_roi: Optional[float] = Field(None, description="Annual ROI/Cash Flow $")
+    annual_profit: Optional[float] = Field(None, description="Annual Profit $")
+    strategy_name: str = Field(..., description="Name of the top strategy")
+
+
+class ScoreDisplayResponse(BaseModel):
+    """Grade and label for score display."""
+    score: int = Field(..., description="Numeric score 0-100 (for internal use)")
+    grade: str = Field(..., description="Letter grade: A+, A, B, C, D, F")
+    label: str = Field(..., description="Word label: STRONG, GOOD, MODERATE, POTENTIAL, WEAK, POOR")
+    color: str = Field(..., description="UI color for the grade")
 
 
 class IQVerdictResponse(BaseModel):
     """Response from IQ Verdict analysis."""
+    # Legacy fields (kept for backward compatibility)
     deal_score: int
     deal_verdict: str
     verdict_description: str
@@ -524,6 +567,39 @@ class IQVerdictResponse(BaseModel):
     # Inputs used for calculation (for transparency/debugging)
     inputs_used: dict
     defaults_used: dict
+    # NEW: Grade-based display (replaces numeric scores in UI)
+    opportunity: ScoreDisplayResponse = Field(..., description="Opportunity score display")
+    opportunity_factors: OpportunityFactorsResponse = Field(..., description="Opportunity factors breakdown")
+    return_rating: ScoreDisplayResponse = Field(..., description="Return rating display (top strategy)")
+    return_factors: ReturnFactorsResponse = Field(..., description="Return factors breakdown")
+
+
+def _score_to_grade_label(score: int) -> tuple[str, str, str]:
+    """
+    Convert a numeric score (0-100) to grade, label, and color.
+    
+    Returns: (grade, label, color)
+    
+    Grade mapping:
+    - 85-100: A+ / STRONG / green
+    - 70-84:  A  / GOOD / green  
+    - 55-69:  B  / MODERATE / lime
+    - 40-54:  C  / POTENTIAL / orange
+    - 25-39:  D  / WEAK / orange
+    - 0-24:   F  / POOR / red
+    """
+    if score >= 85:
+        return ("A+", "STRONG", "#22c55e")
+    elif score >= 70:
+        return ("A", "GOOD", "#22c55e")
+    elif score >= 55:
+        return ("B", "MODERATE", "#84cc16")
+    elif score >= 40:
+        return ("C", "POTENTIAL", "#f97316")
+    elif score >= 25:
+        return ("D", "WEAK", "#f97316")
+    else:
+        return ("F", "POOR", "#ef4444")
 
 
 def _normalize_score(value: float, min_value: float, max_value: float) -> int:
@@ -593,8 +669,11 @@ def _calculate_ltr_strategy(
     op_ex = property_taxes + insurance + (annual_rent * OPERATING.property_management_pct) + (annual_rent * OPERATING.maintenance_pct)
     noi = effective_income - op_ex
     annual_cash_flow = noi - annual_debt
+    monthly_cash_flow = annual_cash_flow / 12
     coc = annual_cash_flow / total_cash if total_cash > 0 else 0
     coc_pct = coc * 100
+    cap_rate = (noi / price * 100) if price > 0 else 0
+    dscr = noi / annual_debt if annual_debt > 0 else 0
     
     # Performance score: 50 + (CoC% × 5)
     # 0% CoC = 50, 10% CoC = 100, -10% CoC = 0
@@ -607,6 +686,12 @@ def _calculate_ltr_strategy(
         "metric_label": "CoC Return",
         "metric_value": coc_pct,
         "score": score,
+        # Additional metrics for Return Factors
+        "cap_rate": round(cap_rate, 2),
+        "cash_on_cash": round(coc_pct, 2),
+        "dscr": round(dscr, 2),
+        "annual_cash_flow": round(annual_cash_flow, 0),
+        "monthly_cash_flow": round(monthly_cash_flow, 0),
     }
 
 
@@ -633,8 +718,11 @@ def _calculate_str_strategy(
     op_ex = property_taxes + insurance + mgmt_fee + platform_fees + utilities + supplies + maintenance
     noi = annual_revenue - op_ex
     annual_cash_flow = noi - annual_debt
+    monthly_cash_flow = annual_cash_flow / 12
     coc = annual_cash_flow / total_cash if total_cash > 0 else 0
     coc_pct = coc * 100
+    cap_rate = (noi / price * 100) if price > 0 else 0
+    dscr = noi / annual_debt if annual_debt > 0 else 0
     
     # Performance score: 50 + (CoC% × 3.33)
     # 0% CoC = 50, 15% CoC = 100, -15% CoC = 0
@@ -647,6 +735,12 @@ def _calculate_str_strategy(
         "metric_label": "CoC Return",
         "metric_value": coc_pct,
         "score": score,
+        # Additional metrics for Return Factors
+        "cap_rate": round(cap_rate, 2),
+        "cash_on_cash": round(coc_pct, 2),
+        "dscr": round(dscr, 2),
+        "annual_cash_flow": round(annual_cash_flow, 0),
+        "monthly_cash_flow": round(monthly_cash_flow, 0),
     }
 
 
@@ -690,6 +784,9 @@ def _calculate_brrrr_strategy(
     else:
         display_coc = f"{coc * 100:.1f}%"
     
+    cap_rate = (noi / price * 100) if price > 0 else 0
+    dscr_val = noi / annual_debt if annual_debt > 0 else 0
+    
     # Performance score: 50 + (cashRecoveryPct × 1)
     # 0% recovery = 50, 50% recovery = 100, -50% = 0
     score = _performance_score(recovery_pct, 1)
@@ -701,6 +798,12 @@ def _calculate_brrrr_strategy(
         "metric_label": "CoC Return",
         "metric_value": recovery_pct,
         "score": score,
+        # Additional metrics for Return Factors
+        "cap_rate": round(cap_rate, 2),
+        "cash_on_cash": round(coc * 100, 2) if coc < 100 else 999,
+        "dscr": round(dscr_val, 2),
+        "annual_cash_flow": round(annual_cash_flow, 0),
+        "monthly_cash_flow": round(annual_cash_flow / 12, 0),
     }
 
 
@@ -736,6 +839,12 @@ def _calculate_flip_strategy(
         "metric_label": "Profit",
         "metric_value": net_profit,
         "score": score,
+        # Additional metrics for Return Factors
+        "cap_rate": None,  # N/A for flip
+        "cash_on_cash": round(roi_pct, 2),
+        "dscr": None,  # N/A for flip
+        "annual_cash_flow": round(net_profit, 0),  # Use net profit as annual return
+        "monthly_cash_flow": None,  # N/A for flip
     }
 
 
@@ -765,6 +874,8 @@ def _calculate_house_hack_strategy(
     monthly_expenses = monthly_pi + monthly_taxes + monthly_insurance + pmi + maintenance + vacancy
     housing_offset = (rental_income / monthly_expenses * 100) if monthly_expenses > 0 else 0
     
+    annual_savings = rental_income * 12
+    
     # Performance score: 50 + (housingOffsetPct × 1)
     # 0% offset = 50, 50% offset = 100, -50% offset = 0
     score = _performance_score(housing_offset, 1)
@@ -776,6 +887,12 @@ def _calculate_house_hack_strategy(
         "metric_label": "Savings",
         "metric_value": housing_offset,
         "score": score,
+        # Additional metrics for Return Factors
+        "cap_rate": None,  # N/A for house hack
+        "cash_on_cash": round(housing_offset, 2),
+        "dscr": None,  # N/A for house hack
+        "annual_cash_flow": round(annual_savings, 0),
+        "monthly_cash_flow": round(rental_income, 0),
     }
 
 
@@ -803,6 +920,12 @@ def _calculate_wholesale_strategy(
         "metric_label": "Assignment",
         "metric_value": assignment_fee,
         "score": score,
+        # Additional metrics for Return Factors
+        "cap_rate": None,  # N/A for wholesale
+        "cash_on_cash": round(roi_pct, 2),
+        "dscr": None,  # N/A for wholesale
+        "annual_cash_flow": round(assignment_fee, 0),  # Use assignment fee as return
+        "monthly_cash_flow": None,  # N/A for wholesale
     }
 
 
@@ -962,7 +1085,32 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
         # Get highest-scoring strategy for description (display order is fixed, but description uses best)
         top_strategy = max(strategies, key=lambda x: x["score"])
         
+        # Calculate Opportunity factors
+        # Motivation score based on listing context (default to medium if not provided)
+        motivation_score = 50  # Default: medium motivation
+        motivation_label = "Medium"
+        is_distressed = input_data.is_foreclosure or input_data.is_bank_owned
+        
+        if input_data.listing_status or input_data.seller_type:
+            from app.services.calculators import get_availability_ranking
+            avail = get_availability_ranking(
+                listing_status=input_data.listing_status,
+                seller_type=input_data.seller_type,
+                is_foreclosure=input_data.is_foreclosure or False,
+                is_bank_owned=input_data.is_bank_owned or False,
+                is_fsbo=input_data.is_fsbo or False,
+            )
+            motivation_score = avail["score"]
+            motivation_label = avail["motivation"].capitalize()
+        
+        # Create grade/label for Opportunity Score
+        opp_grade, opp_label, opp_color = _score_to_grade_label(deal_score)
+        
+        # Create grade/label for Return Rating (top strategy)
+        ret_grade, ret_label, ret_color = _score_to_grade_label(top_strategy["score"])
+        
         return IQVerdictResponse(
+            # Legacy fields (kept for backward compatibility)
             deal_score=deal_score,
             deal_verdict=deal_verdict,
             verdict_description=_get_verdict_description(deal_score, top_strategy),
@@ -983,6 +1131,35 @@ async def calculate_iq_verdict(input_data: IQVerdictInput):
                 "provided_insurance": input_data.insurance,
             },
             defaults_used=get_all_defaults(),
+            # NEW: Grade-based display
+            opportunity=ScoreDisplayResponse(
+                score=deal_score,
+                grade=opp_grade,
+                label=opp_label,
+                color=opp_color,
+            ),
+            opportunity_factors=OpportunityFactorsResponse(
+                deal_gap=round(discount_pct, 1),
+                motivation=motivation_score,
+                motivation_label=motivation_label,
+                days_on_market=input_data.days_on_market,
+                buyer_market=input_data.market_temperature,
+                distressed_sale=is_distressed,
+            ),
+            return_rating=ScoreDisplayResponse(
+                score=top_strategy["score"],
+                grade=ret_grade,
+                label=ret_label,
+                color=ret_color,
+            ),
+            return_factors=ReturnFactorsResponse(
+                cap_rate=top_strategy.get("cap_rate"),
+                cash_on_cash=top_strategy.get("cash_on_cash"),
+                dscr=top_strategy.get("dscr"),
+                annual_roi=top_strategy.get("annual_cash_flow"),
+                annual_profit=top_strategy.get("annual_cash_flow"),  # Using same value for now
+                strategy_name=top_strategy["name"],
+            ),
         )
         
     except Exception as e:

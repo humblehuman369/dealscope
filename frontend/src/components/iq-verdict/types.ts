@@ -87,6 +87,11 @@ export interface IQAnalysisResult {
     provided_taxes: number | null;
     provided_insurance: number | null;
   };
+  // NEW: Grade-based display (replaces numeric scores in UI)
+  opportunity?: ScoreDisplay;
+  opportunityFactors?: OpportunityFactors;
+  returnRating?: ScoreDisplay;
+  returnFactors?: ReturnFactors;
 }
 
 export type IQDealVerdict = 
@@ -104,6 +109,54 @@ export type IQDealVerdict =
   | 'Fair Investment'
   | 'Weak Investment'
   | 'Poor Investment';
+
+// ===================
+// GRADE-BASED SCORING (NEW)
+// ===================
+
+/**
+ * Grade labels for score display
+ * Used instead of numeric scores to avoid confusion with percentages
+ */
+export type ScoreLabel = 'STRONG' | 'GOOD' | 'MODERATE' | 'POTENTIAL' | 'WEAK' | 'POOR';
+export type ScoreGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
+
+/**
+ * Score display with grade and label
+ * Replaces numeric scores in the UI
+ */
+export interface ScoreDisplay {
+  score: number;      // Internal 0-100 score (not displayed)
+  grade: ScoreGrade;  // Letter grade: A+, A, B, C, D, F
+  label: ScoreLabel;  // Word label: STRONG, GOOD, MODERATE, POTENTIAL, WEAK, POOR
+  color: string;      // UI color for the grade
+}
+
+/**
+ * Opportunity factors breakdown
+ * Shows the components that contribute to the Opportunity score
+ */
+export interface OpportunityFactors {
+  dealGap: number;             // Discount % from list to breakeven
+  motivation: number;          // Seller motivation score (0-100)
+  motivationLabel: string;     // "High", "Medium", "Low"
+  daysOnMarket: number | null; // Days property has been listed
+  buyerMarket: 'cold' | 'warm' | 'hot' | null;  // Market temperature
+  distressedSale: boolean;     // Is foreclosure/bank-owned
+}
+
+/**
+ * Return factors breakdown
+ * Shows the components that contribute to the Return rating
+ */
+export interface ReturnFactors {
+  capRate: number | null;      // Cap rate %
+  cashOnCash: number | null;   // Cash-on-Cash return %
+  dscr: number | null;         // Debt Service Coverage Ratio
+  annualRoi: number | null;    // Annual ROI/Cash Flow $
+  annualProfit: number | null; // Annual Profit $
+  strategyName: string;        // Name of the top strategy
+}
 
 // ===================
 // BRAND COLORS
@@ -194,6 +247,93 @@ export const getDealScoreColor = (score: number) => {
   if (score >= 60) return IQ_COLORS.pacificTeal;
   if (score >= 40) return IQ_COLORS.warning;
   return IQ_COLORS.danger;
+};
+
+/**
+ * Convert a numeric score (0-100) to grade, label, and color
+ * 
+ * Grade mapping:
+ * - 85-100: A+ / STRONG / green
+ * - 70-84:  A  / GOOD / green  
+ * - 55-69:  B  / MODERATE / lime
+ * - 40-54:  C  / POTENTIAL / orange
+ * - 25-39:  D  / WEAK / orange
+ * - 0-24:   F  / POOR / red
+ */
+export const scoreToGradeLabel = (score: number): ScoreDisplay => {
+  if (score >= 85) {
+    return { score, grade: 'A+', label: 'STRONG', color: '#22c55e' };
+  } else if (score >= 70) {
+    return { score, grade: 'A', label: 'GOOD', color: '#22c55e' };
+  } else if (score >= 55) {
+    return { score, grade: 'B', label: 'MODERATE', color: '#84cc16' };
+  } else if (score >= 40) {
+    return { score, grade: 'C', label: 'POTENTIAL', color: '#f97316' };
+  } else if (score >= 25) {
+    return { score, grade: 'D', label: 'WEAK', color: '#f97316' };
+  } else {
+    return { score, grade: 'F', label: 'POOR', color: '#ef4444' };
+  }
+};
+
+/**
+ * Get color for a grade
+ */
+export const getGradeColor = (grade: ScoreGrade): string => {
+  switch (grade) {
+    case 'A+':
+    case 'A':
+      return '#22c55e'; // green
+    case 'B':
+      return '#84cc16'; // lime
+    case 'C':
+    case 'D':
+      return '#f97316'; // orange
+    case 'F':
+      return '#ef4444'; // red
+    default:
+      return '#64748b'; // slate
+  }
+};
+
+/**
+ * Get background color class for a grade (for Tailwind)
+ */
+export const getGradeBgClass = (grade: ScoreGrade): string => {
+  switch (grade) {
+    case 'A+':
+    case 'A':
+      return 'bg-green-500/10 border-green-500/30';
+    case 'B':
+      return 'bg-lime-500/10 border-lime-500/30';
+    case 'C':
+    case 'D':
+      return 'bg-orange-500/10 border-orange-500/30';
+    case 'F':
+      return 'bg-red-500/10 border-red-500/30';
+    default:
+      return 'bg-slate-500/10 border-slate-500/30';
+  }
+};
+
+/**
+ * Get text color class for a grade (for Tailwind)
+ */
+export const getGradeTextClass = (grade: ScoreGrade): string => {
+  switch (grade) {
+    case 'A+':
+    case 'A':
+      return 'text-green-500';
+    case 'B':
+      return 'text-lime-500';
+    case 'C':
+    case 'D':
+      return 'text-orange-500';
+    case 'F':
+      return 'text-red-500';
+    default:
+      return 'text-slate-500';
+  }
 };
 
 /**

@@ -9,6 +9,9 @@
 
 export { IQAnalyzingScreen } from './IQAnalyzingScreen'
 export { IQVerdictScreen } from './IQVerdictScreen'
+export { OpportunityFactors } from './OpportunityFactors'
+export { ReturnFactors } from './ReturnFactors'
+export { ScoreGradeDisplay, ScoreGradeInline } from './ScoreGradeDisplay'
 
 export {
   // Types
@@ -18,6 +21,12 @@ export {
   type IQStrategyBadge,
   type IQAnalysisResult,
   type IQDealVerdict,
+  // NEW: Grade-based scoring types
+  type ScoreDisplay,
+  type ScoreLabel,
+  type ScoreGrade,
+  type OpportunityFactors as OpportunityFactorsType,
+  type ReturnFactors as ReturnFactorsType,
   
   // Constants
   IQ_COLORS,
@@ -32,6 +41,11 @@ export {
   getRankColor,
   getDealScoreColor,
   formatPrice,
+  // NEW: Grade-based helpers
+  scoreToGradeLabel,
+  getGradeColor,
+  getGradeBgClass,
+  getGradeTextClass,
   
   // @deprecated - Use backend API /api/v1/analysis/verdict instead
   // These are kept for backwards compatibility only

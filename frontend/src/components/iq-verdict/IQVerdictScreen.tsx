@@ -3,9 +3,13 @@
 /**
  * IQVerdictScreen - The key innovation screen for web/desktop
  * Two-column layout showing ranked strategy recommendations with Deal Score
+ * 
+ * NEW: Uses grade-based display (STRONG/A+) instead of numeric scores (85)
+ * to avoid confusion with percentages and provide clearer meaning.
  */
 
-import React from 'react'
+import React, { useState } from 'react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import {
   IQ_COLORS,
   IQProperty,
@@ -15,8 +19,12 @@ import {
   getRankColor,
   getDealScoreColor,
   formatPrice,
-  STRATEGY_ROUTE_MAP,
+  scoreToGradeLabel,
+  getGradeColor,
 } from './types'
+import { ScoreGradeDisplay } from './ScoreGradeDisplay'
+import { OpportunityFactors } from './OpportunityFactors'
+import { ReturnFactors } from './ReturnFactors'
 
 interface IQVerdictScreenProps {
   property: IQProperty
@@ -32,12 +40,39 @@ export function IQVerdictScreen({
   onCompareAll,
 }: IQVerdictScreenProps) {
   const topStrategy = analysis.strategies[0]
+  const [showOpportunityFactors, setShowOpportunityFactors] = useState(false)
+  const [showReturnFactors, setShowReturnFactors] = useState(false)
   
   // Build full address with city, state, zip
   const fullAddress = [
     property.address,
     [property.city, property.state, property.zip].filter(Boolean).join(' ')
   ].filter(Boolean).join(', ')
+  
+  // Get grade-based display for Opportunity and Return
+  // Use new fields if available, otherwise convert from numeric score
+  const opportunityDisplay = analysis.opportunity || scoreToGradeLabel(analysis.dealScore)
+  const returnDisplay = analysis.returnRating || scoreToGradeLabel(topStrategy.score)
+  
+  // Default opportunity factors if not provided by API
+  const opportunityFactors = analysis.opportunityFactors || {
+    dealGap: analysis.discountPercent || 0,
+    motivation: 50,
+    motivationLabel: 'Medium',
+    daysOnMarket: null,
+    buyerMarket: null,
+    distressedSale: false,
+  }
+  
+  // Default return factors if not provided by API
+  const returnFactors = analysis.returnFactors || {
+    capRate: null,
+    cashOnCash: topStrategy.metricLabel === 'CoC Return' ? topStrategy.metricValue : null,
+    dscr: null,
+    annualRoi: null,
+    annualProfit: topStrategy.metricLabel === 'Profit' ? topStrategy.metricValue : null,
+    strategyName: topStrategy.name,
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-navy-900">
@@ -99,56 +134,76 @@ export function IQVerdictScreen({
 
             {/* IQ Verdict Hero */}
             <div 
-              className="rounded-xl p-8 text-center"
+              className="rounded-xl p-8"
               style={{ 
                 background: `linear-gradient(180deg, ${IQ_COLORS.pacificTeal}15 0%, ${IQ_COLORS.pacificTeal}08 100%)`,
               }}
             >
               <p 
-                className="text-lg font-semibold tracking-widest mb-4"
+                className="text-lg font-semibold tracking-widest mb-6 text-center"
                 style={{ color: IQ_COLORS.pacificTeal }}
               >
                 IQ VERDICT
               </p>
               
-              {/* Two-Score Display */}
-              <div className="grid grid-cols-2 gap-4 mb-6 max-w-sm mx-auto">
+              {/* Two-Score Display - Grade Based */}
+              <div className="grid grid-cols-2 gap-4 mb-6 max-w-md mx-auto">
                 {/* Opportunity Score */}
-                <button
-                  onClick={() => onViewStrategy(topStrategy)}
-                  className="bg-white dark:bg-navy-800 rounded-xl p-4 shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] cursor-pointer text-center"
-                >
-                  <span 
-                    className="text-4xl font-extrabold block"
-                    style={{ color: getDealScoreColor(analysis.dealScore) }}
+                <div className="space-y-3">
+                  <ScoreGradeDisplay 
+                    display={opportunityDisplay}
+                    title="Opportunity"
+                    size="md"
+                  />
+                  {/* Expand/Collapse Factors */}
+                  <button
+                    onClick={() => setShowOpportunityFactors(!showOpportunityFactors)}
+                    className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                   >
-                    {analysis.dealScore}
-                  </span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Opportunity</p>
-                  <p className="text-[10px] font-medium text-gray-400 truncate">
-                    {analysis.dealVerdict}
-                  </p>
-                </button>
+                    <span>View Factors</span>
+                    {showOpportunityFactors ? (
+                      <ChevronUp className="w-3 h-3" />
+                    ) : (
+                      <ChevronDown className="w-3 h-3" />
+                    )}
+                  </button>
+                  {/* Opportunity Factors */}
+                  {showOpportunityFactors && (
+                    <div className="bg-white dark:bg-navy-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-navy-700">
+                      <OpportunityFactors factors={opportunityFactors} />
+                    </div>
+                  )}
+                </div>
                 
-                {/* Performance Score (Top Strategy) */}
-                <button
-                  onClick={() => onViewStrategy(topStrategy)}
-                  className="bg-white dark:bg-navy-800 rounded-xl p-4 shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] cursor-pointer text-center"
-                >
-                  <span 
-                    className="text-4xl font-extrabold block"
-                    style={{ color: getDealScoreColor(topStrategy.score) }}
+                {/* Return Rating */}
+                <div className="space-y-3">
+                  <ScoreGradeDisplay 
+                    display={returnDisplay}
+                    title="Return"
+                    size="md"
+                  />
+                  {/* Expand/Collapse Factors */}
+                  <button
+                    onClick={() => setShowReturnFactors(!showReturnFactors)}
+                    className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                   >
-                    {topStrategy.score}
-                  </span>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Performance</p>
-                  <p className="text-[10px] font-medium text-gray-400 truncate">
-                    {topStrategy.name}
-                  </p>
-                </button>
+                    <span>View Factors</span>
+                    {showReturnFactors ? (
+                      <ChevronUp className="w-3 h-3" />
+                    ) : (
+                      <ChevronDown className="w-3 h-3" />
+                    )}
+                  </button>
+                  {/* Return Factors */}
+                  {showReturnFactors && (
+                    <div className="bg-white dark:bg-navy-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-navy-700">
+                      <ReturnFactors factors={returnFactors} />
+                    </div>
+                  )}
+                </div>
               </div>
               
-              <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm mx-auto">
+              <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm mx-auto text-center">
                 {analysis.verdictDescription}
               </p>
             </div>
@@ -239,7 +294,7 @@ export function IQVerdictScreen({
                       </p>
                     </div>
 
-                    {/* Metric Value */}
+                    {/* Metric Value + Grade */}
                     <div className="text-right">
                       <p
                         className="text-xl font-bold"
@@ -249,7 +304,13 @@ export function IQVerdictScreen({
                       >
                         {strategy.metric}
                       </p>
-                      <p className="text-xs text-gray-400">Score: {strategy.score}</p>
+                      {/* Show grade instead of numeric score */}
+                      <p 
+                        className="text-xs font-semibold"
+                        style={{ color: getGradeColor(scoreToGradeLabel(strategy.score).grade) }}
+                      >
+                        {scoreToGradeLabel(strategy.score).label} {scoreToGradeLabel(strategy.score).grade}
+                      </p>
                     </div>
 
                     {/* Chevron */}
