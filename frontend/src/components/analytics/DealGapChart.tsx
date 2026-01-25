@@ -236,19 +236,8 @@ export function DealGapChart({
               </div>
             </div>
 
-            {/* Right: Ladder with Deal Gap Callout */}
-            <div className="flex-1 flex flex-col max-w-[300px] mx-auto px-8">
-              {/* Deal Gap Callout - Top Right */}
-              <div className="text-right mb-2">
-                <div className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-white/60">
-                  Deal Gap
-                </div>
-                <div className="text-2xl font-black text-orange-500">
-                  {dealGapText}
-                </div>
-              </div>
-              {/* Gradient Ladder */}
-              <div className="flex-1 flex justify-center">
+            {/* Right: Gradient Ladder */}
+            <div className="flex-1 flex justify-center max-w-[300px] mx-auto px-8">
                 <div 
                   className="h-full w-10 rounded-2xl relative shadow-lg"
               style={{
@@ -279,9 +268,14 @@ export function DealGapChart({
                 <div className="absolute left-[-2px] top-0 w-3 border-t-2 border-slate-600 dark:border-white/60" />
                 {/* Bottom tick */}
                 <div className="absolute left-[-2px] bottom-0 w-3 border-t-2 border-slate-600 dark:border-white/60" />
-                {/* Gap percentage label */}
-                <div className="absolute left-[-8px] top-1/2 -translate-x-full -translate-y-1/2 text-lg font-black text-slate-700 dark:text-white whitespace-nowrap">
-                  {dealGapText}
+                {/* Deal Gap label with percentage */}
+                <div className="absolute left-[-8px] top-1/2 -translate-x-full -translate-y-1/2 text-right whitespace-nowrap">
+                  <div className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-white/60">
+                    Deal Gap
+                  </div>
+                  <div className="text-lg font-black text-orange-500">
+                    {dealGapText}
+                  </div>
                 </div>
               </div>
 
@@ -331,7 +325,6 @@ export function DealGapChart({
               </div>
               </div>
             </div>
-          </div>
           </div>
         </div>
       </div>
