@@ -27,6 +27,12 @@ export {
   generatePriceLadder 
 } from './PriceLadder'
 
+// Deal Gap Chart - Interactive price ladder with deal gap visualization
+export {
+  DealGapChart,
+  DealGapChartCompact
+} from './DealGapChart'
+
 // Spectrum Bar - Visual gauge for benchmarks
 export { SpectrumBar, MiniSpectrum } from './SpectrumBar'
 
@@ -318,6 +324,7 @@ export {
 
 import { IQTargetHero, IQTargetHeroCompact } from './IQTargetHero'
 import { PriceLadder, PriceLadderCompact } from './PriceLadder'
+import { DealGapChart, DealGapChartCompact } from './DealGapChart'
 import { SpectrumBar, MiniSpectrum } from './SpectrumBar'
 import { PerformanceBenchmarks } from './PerformanceBenchmarks'
 import { ReturnsGrid, ReturnsGridCompact } from './ReturnsGrid'
@@ -351,6 +358,8 @@ const AnalyticsComponents = {
   IQTargetHeroCompact,
   PriceLadder,
   PriceLadderCompact,
+  DealGapChart,
+  DealGapChartCompact,
   SpectrumBar,
   MiniSpectrum,
   PerformanceBenchmarks,

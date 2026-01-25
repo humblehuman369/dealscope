@@ -284,3 +284,50 @@ export interface StrategyGrade {
   strategyId: StrategyId
   grade: GradeLevel
 }
+
+// ============================================
+// DEAL GAP CHART
+// ============================================
+
+export type DealZoneLabel = 'Loss Zone' | 'High Risk' | 'Breakeven / Negotiate' | 'Profit Zone' | 'Deep Value'
+export type SellerMotivationLevel = 'Low' | 'Moderate' | 'High'
+
+export interface DealGapData {
+  /** Current list/asking price */
+  listPrice: number
+  /** LTR breakeven purchase price (where cash flow = $0) */
+  breakevenPrice: number
+  /** Proposed or calculated buy price */
+  buyPrice: number
+  /** Deal gap percentage: ((listPrice - buyPrice) / listPrice) * 100 */
+  dealGapPercent: number
+  /** Buy price vs breakeven percentage */
+  buyVsBreakevenPercent: number
+  /** List price vs breakeven percentage */
+  listVsBreakevenPercent: number
+  /** Current deal zone based on buy position */
+  zone: DealZoneLabel
+  /** Seller motivation indicator */
+  sellerMotivation: SellerMotivationLevel
+  /** Deal opportunity score (0-100) */
+  dealScore?: number
+  /** Deal opportunity grade */
+  dealGrade?: OpportunityGrade
+}
+
+export interface DealGapChartProps {
+  /** Breakeven price (where cash flow = $0) */
+  breakeven: number
+  /** Current list/asking price */
+  listPrice: number
+  /** Initial buy price (defaults to calculated from breakeven) */
+  initialBuyPrice?: number
+  /** Threshold percentage for deal gap glow effect */
+  thresholdPct?: number
+  /** Whether to show the interactive slider */
+  showSlider?: boolean
+  /** Callback when buy price changes via slider */
+  onBuyPriceChange?: (buyPrice: number) => void
+  /** Optional class name */
+  className?: string
+}
