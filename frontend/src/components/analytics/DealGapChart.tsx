@@ -250,7 +250,7 @@ export function DealGapChart({
             </div>
 
             {/* Right: Gradient Ladder (centered in remaining space) */}
-            <div className="flex-1 flex justify-center max-w-[180px]">
+            <div className="flex-1 flex justify-center max-w-[180px] mx-auto">
               <div 
                 className="h-[360px] w-8 rounded-2xl relative shadow-lg"
               style={{
