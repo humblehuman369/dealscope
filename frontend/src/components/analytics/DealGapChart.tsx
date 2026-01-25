@@ -203,19 +203,28 @@ export function DealGapChart({
 
       {/* Main Card */}
       <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-lg overflow-hidden">
-        {/* Card Header */}
-        <div className="px-3 py-2.5 border-b border-slate-100 dark:border-white/5 bg-gradient-to-b from-slate-50 dark:from-black/20 to-transparent">
+        {/* Card Header with Deal Gap */}
+        <div className="px-3 py-2 border-b border-slate-100 dark:border-white/5 bg-gradient-to-b from-slate-50 dark:from-black/20 to-transparent flex items-center justify-between">
           <h2 className="text-lg font-black tracking-wider uppercase text-slate-700 dark:text-white">
             Decision Chart
           </h2>
+          {/* Deal Gap - Primary Callout */}
+          <div className="text-right">
+            <div className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-white/60">
+              Deal Gap
+            </div>
+            <div className="text-2xl font-black text-orange-500">
+              {dealGapText}
+            </div>
+          </div>
         </div>
 
         {/* Card Body */}
-        <div className="p-3">
+        <div className="p-2">
           {/* Ladder + Chips Layout */}
           <div className="flex gap-4 items-stretch">
             {/* Left: Metric Chips */}
-            <div className="flex flex-col justify-between h-[420px] py-0.5 gap-3 w-[160px] flex-shrink-0">
+            <div className="flex flex-col justify-between h-[480px] py-0.5 gap-3 w-[160px] flex-shrink-0">
               <Chip
                 label="List Price"
                 value={formatUSD(listPrice)}
@@ -237,9 +246,9 @@ export function DealGapChart({
             </div>
 
             {/* Right: Gradient Ladder (centered in remaining space) */}
-            <div className="flex-1 flex justify-center max-w-[280px] mx-auto px-12">
+            <div className="flex-1 flex justify-center max-w-[300px] mx-auto px-8">
               <div 
-                className="h-[420px] w-8 rounded-2xl relative shadow-lg"
+                className="h-[480px] w-10 rounded-2xl relative shadow-lg"
               style={{
                 background: `linear-gradient(to bottom, 
                   #ef4444 0%, 
@@ -261,17 +270,13 @@ export function DealGapChart({
 
               {/* Deal Gap Bracket (Left side) */}
               <div
-                className={`absolute left-[-30px] w-[22px] border-l-2 border-slate-600 dark:border-white/60 ${showGlow ? 'animate-pulse' : ''}`}
+                className={`absolute left-[-25px] w-[18px] border-l-2 border-slate-600 dark:border-white/60 ${showGlow ? 'animate-pulse' : ''}`}
                 style={bracketStyle(listPosOnLadder, buyPosOnLadder)}
               >
                 {/* Top tick */}
-                <div className="absolute left-[-2px] top-0 w-3.5 border-t-2 border-slate-600 dark:border-white/60" />
+                <div className="absolute left-[-2px] top-0 w-3 border-t-2 border-slate-600 dark:border-white/60" />
                 {/* Bottom tick */}
-                <div className="absolute left-[-2px] bottom-0 w-3.5 border-t-2 border-slate-600 dark:border-white/60" />
-                {/* Label */}
-                <div className="absolute left-[-10px] top-1/2 -translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-lg font-black whitespace-nowrap text-slate-900 dark:text-white">
-                  {dealGapText}
-                </div>
+                <div className="absolute left-[-2px] bottom-0 w-3 border-t-2 border-slate-600 dark:border-white/60" />
               </div>
 
               {/* Markers */}
@@ -286,9 +291,9 @@ export function DealGapChart({
                 title="Buy Price"
               />
 
-              {/* LIST Label - left of bracket, color matches position */}
+              {/* LIST Label - right of ladder, color matches position */}
               <div 
-                className="absolute left-[-65px] text-xs font-bold"
+                className="absolute right-[-40px] text-[11px] font-bold whitespace-nowrap"
                 style={{ 
                   top: `${listPosOnLadder * 100}%`,
                   transform: labelsOverlap ? 'translateY(-100%)' : 'translateY(-50%)',
@@ -298,9 +303,9 @@ export function DealGapChart({
                 LIST
               </div>
 
-              {/* BUY Label - left of bracket, color matches position */}
+              {/* BUY Label - right of ladder, color matches position */}
               <div 
-                className="absolute left-[-65px] text-xs font-bold"
+                className="absolute right-[-35px] text-[11px] font-bold whitespace-nowrap"
                 style={{ 
                   top: `${buyPosOnLadder * 100}%`,
                   transform: labelsOverlap ? 'translateY(0%)' : 'translateY(-50%)',
@@ -310,29 +315,19 @@ export function DealGapChart({
                 BUY
               </div>
 
-              {/* Breakeven label on right side */}
+              {/* Breakeven label on right side - further out */}
               <div 
-                className="absolute right-[-90px] text-xs font-semibold text-slate-600 dark:text-white/70 whitespace-nowrap"
+                className="absolute right-[-100px] text-xs font-semibold text-slate-600 dark:text-white/70 whitespace-nowrap text-center"
                 style={{ top: '50%', transform: 'translateY(-50%)' }}
               >
                 <div className="font-black text-sm">{formatUSD(breakeven)}</div>
-                <div className="text-[10px] uppercase tracking-wider">Breakeven</div>
+                <div className="text-[9px] uppercase tracking-wider opacity-70">Breakeven</div>
               </div>
               </div>
             </div>
           </div>
 
-          {/* Deal Gap Summary Card */}
-          <div className="mt-1 p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 w-[160px]">
-            <div className="text-[15px] font-black tracking-wider uppercase text-slate-500 dark:text-white/60 text-center">
-              Deal Gap
-            </div>
-            <div className="text-lg font-black text-slate-900 dark:text-white text-center">
-              {dealGapText}
-            </div>
-          </div>
-
-        </div>
+                  </div>
       </div>
 
     </div>
