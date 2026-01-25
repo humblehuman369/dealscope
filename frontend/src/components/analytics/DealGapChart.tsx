@@ -250,7 +250,7 @@ export function DealGapChart({
             </div>
 
             {/* Right: Gradient Ladder (centered in remaining space) */}
-            <div className="flex-1 flex justify-center">
+            <div className="flex-1 flex justify-center max-w-[180px]">
               <div 
                 className="h-[360px] w-8 rounded-2xl relative shadow-lg"
               style={{
@@ -282,7 +282,7 @@ export function DealGapChart({
                 {/* Bottom tick */}
                 <div className="absolute left-[-2px] bottom-0 w-3.5 border-t-2 border-slate-600 dark:border-white/60" />
                 {/* Label */}
-                <div className="absolute left-[-10px] top-1/2 -translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[11px] font-black whitespace-nowrap text-slate-700 dark:text-white">
+                <div className="absolute left-[-10px] top-1/2 -translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[22px] font-black whitespace-nowrap text-slate-700 dark:text-white">
                   {dealGapText}
                 </div>
               </div>
@@ -294,7 +294,7 @@ export function DealGapChart({
               >
                 <div className="absolute right-[-2px] top-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
                 <div className="absolute right-[-2px] bottom-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
-                <div className="absolute right-[-2px] top-1/2 translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[11px] font-black whitespace-nowrap text-orange-500">
+                <div className="absolute right-[-2px] top-1/2 translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[22px] font-black whitespace-nowrap text-orange-500">
                   {`${data.listVsBreakevenPercent >= 0 ? '+' : ''}${data.listVsBreakevenPercent.toFixed(0)}%`}
                 </div>
               </div>
@@ -306,7 +306,7 @@ export function DealGapChart({
               >
                 <div className="absolute right-[-2px] top-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
                 <div className="absolute right-[-2px] bottom-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
-                <div className="absolute right-[-2px] top-1/2 translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[11px] font-black whitespace-nowrap text-green-500">
+                <div className="absolute right-[-2px] top-1/2 translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[22px] font-black whitespace-nowrap text-green-500">
                   {`${data.buyVsBreakevenPercent >= 0 ? '+' : ''}${data.buyVsBreakevenPercent.toFixed(1)}%`}
                 </div>
               </div>
