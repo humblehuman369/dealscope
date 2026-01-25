@@ -203,28 +203,18 @@ export function DealGapChart({
 
       {/* Main Card */}
       <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-lg overflow-hidden">
-        {/* Card Header with Deal Gap */}
-        <div className="px-3 py-2 border-b border-slate-100 dark:border-white/5 bg-gradient-to-b from-slate-50 dark:from-black/20 to-transparent flex items-center justify-between">
-          <h2 className="text-lg font-black tracking-wider uppercase text-slate-700 dark:text-white">
-            Decision Chart
-          </h2>
-          {/* Deal Gap - Primary Callout */}
-          <div className="text-right">
-            <div className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-white/60">
-              Deal Gap
-            </div>
-            <div className="text-2xl font-black text-orange-500">
-              {dealGapText}
-            </div>
-          </div>
-        </div>
-
-        {/* Card Body */}
-        <div className="p-2">
+        {/* Card Body - No Header */}
+        <div className="p-3">
           {/* Ladder + Chips Layout */}
           <div className="flex gap-4 items-stretch">
-            {/* Left: Metric Chips */}
-            <div className="flex flex-col justify-between h-[480px] py-0.5 gap-3 w-[160px] flex-shrink-0">
+            {/* Left: Metric Chips with Title */}
+            <div className="flex flex-col h-[520px] w-[160px] flex-shrink-0">
+              {/* DECISION CHART Title */}
+              <h2 className="text-sm font-black tracking-wider uppercase text-slate-700 dark:text-white mb-2">
+                Decision Chart
+              </h2>
+              {/* Chips */}
+              <div className="flex flex-col justify-between flex-1 py-0.5 gap-3">
               <Chip
                 label="List Price"
                 value={formatUSD(listPrice)}
@@ -243,12 +233,24 @@ export function DealGapChart({
                 sub="Target"
                 accent={buyAccent}
               />
+              </div>
             </div>
 
-            {/* Right: Gradient Ladder (centered in remaining space) */}
-            <div className="flex-1 flex justify-center max-w-[300px] mx-auto px-8">
-              <div 
-                className="h-[480px] w-10 rounded-2xl relative shadow-lg"
+            {/* Right: Ladder with Deal Gap Callout */}
+            <div className="flex-1 flex flex-col max-w-[300px] mx-auto px-8">
+              {/* Deal Gap Callout - Top Right */}
+              <div className="text-right mb-2">
+                <div className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-white/60">
+                  Deal Gap
+                </div>
+                <div className="text-2xl font-black text-orange-500">
+                  {dealGapText}
+                </div>
+              </div>
+              {/* Gradient Ladder */}
+              <div className="flex-1 flex justify-center">
+                <div 
+                  className="h-full w-10 rounded-2xl relative shadow-lg"
               style={{
                 background: `linear-gradient(to bottom, 
                   #ef4444 0%, 
@@ -277,6 +279,10 @@ export function DealGapChart({
                 <div className="absolute left-[-2px] top-0 w-3 border-t-2 border-slate-600 dark:border-white/60" />
                 {/* Bottom tick */}
                 <div className="absolute left-[-2px] bottom-0 w-3 border-t-2 border-slate-600 dark:border-white/60" />
+                {/* Gap percentage label */}
+                <div className="absolute left-[-8px] top-1/2 -translate-x-full -translate-y-1/2 text-lg font-black text-slate-700 dark:text-white whitespace-nowrap">
+                  {dealGapText}
+                </div>
               </div>
 
               {/* Markers */}
@@ -293,7 +299,7 @@ export function DealGapChart({
 
               {/* LIST Label - right of ladder, color matches position */}
               <div 
-                className="absolute right-[-40px] text-[11px] font-bold whitespace-nowrap"
+                className="absolute right-[-45px] text-[22px] font-bold whitespace-nowrap"
                 style={{ 
                   top: `${listPosOnLadder * 100}%`,
                   transform: labelsOverlap ? 'translateY(-100%)' : 'translateY(-50%)',
@@ -305,7 +311,7 @@ export function DealGapChart({
 
               {/* BUY Label - right of ladder, color matches position */}
               <div 
-                className="absolute right-[-35px] text-[11px] font-bold whitespace-nowrap"
+                className="absolute right-[-40px] text-[22px] font-bold whitespace-nowrap"
                 style={{ 
                   top: `${buyPosOnLadder * 100}%`,
                   transform: labelsOverlap ? 'translateY(0%)' : 'translateY(-50%)',
@@ -326,8 +332,8 @@ export function DealGapChart({
               </div>
             </div>
           </div>
-
-                  </div>
+          </div>
+        </div>
       </div>
 
     </div>
