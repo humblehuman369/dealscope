@@ -226,7 +226,7 @@ export function DealGapChart({
         {/* Card Body */}
         <div className="p-3">
           {/* Ladder + Chips Layout */}
-          <div className="grid gap-2" style={{ gridTemplateColumns: 'minmax(0, 220px) 40px' }}>
+          <div className="grid gap-2 mx-auto" style={{ gridTemplateColumns: '160px 40px' }}>
             {/* Left: Metric Chips */}
             <div className="flex flex-col justify-between h-[360px] py-0.5 gap-3">
               <Chip
