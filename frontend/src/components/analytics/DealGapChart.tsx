@@ -232,7 +232,7 @@ export function DealGapChart({
               <Chip
                 label="List Price"
                 value={formatUSD(listPrice)}
-                sub={`${data.listVsBreakevenPercent >= 0 ? '+' : ''}${data.listVsBreakevenPercent.toFixed(0)}% vs Breakeven`}
+                sub={`${data.listVsBreakevenPercent >= 0 ? '+' : ''}${data.listVsBreakevenPercent.toFixed(0)}%`}
                 accent={listAccent}
               />
               <Chip
@@ -244,7 +244,7 @@ export function DealGapChart({
               <Chip
                 label="Buy Price"
                 value={formatUSD(buyPrice)}
-                sub={`${data.buyVsBreakevenPercent >= 0 ? '+' : ''}${data.buyVsBreakevenPercent.toFixed(1)}% vs Breakeven`}
+                sub={`${data.buyVsBreakevenPercent >= 0 ? '+' : ''}${data.buyVsBreakevenPercent.toFixed(1)}%`}
                 accent={buyAccent}
               />
             </div>
