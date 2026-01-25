@@ -20,6 +20,7 @@ import { useDealScore, getDealScoreColor, getDealScoreGrade } from '@/hooks/useD
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
 import { DealGapChart } from '@/components/analytics/DealGapChart'
 import { LTRMetricsChart, buildLTRMetricsData } from './LTRMetricsChart'
+import { DealMakerBadges } from './DealMakerBadges'
 
 // Strategy definitions for switcher
 const strategies = [
@@ -1030,6 +1031,14 @@ export function LTRWorksheet({
               {/* Panel 2: Worksheet sections */}
               <div className="w-full flex-shrink-0 px-1">
                 <div className="space-y-3">
+                  {/* Deal Maker Badges */}
+                  <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
+                    <DealMakerBadges 
+                      dealScore={opportunityScore} 
+                      profitQualityScore={performanceScore} 
+                    />
+                  </div>
+                  
                   {/* Purchase */}
                   <Section index={0} title="Purchase" iconKey="home">
                     <InputRow label="Buy Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={2000000} step={5000} format="currency" />
@@ -1293,6 +1302,14 @@ export function LTRWorksheet({
           
           {/* RIGHT COLUMN - Worksheet sections */}
           <div className="space-y-3">
+            {/* Deal Maker Badges */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden">
+              <DealMakerBadges 
+                dealScore={opportunityScore} 
+                profitQualityScore={performanceScore} 
+              />
+            </div>
+            
             {/* Purchase */}
             <Section index={0} title="Purchase" iconKey="home">
               <InputRow label="Buy Price" value={purchasePrice} onChange={setPurchasePrice} min={100000} max={2000000} step={5000} format="currency" />
