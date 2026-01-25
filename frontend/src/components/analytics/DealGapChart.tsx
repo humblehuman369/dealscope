@@ -226,9 +226,9 @@ export function DealGapChart({
         {/* Card Body */}
         <div className="p-3">
           {/* Ladder + Chips Layout */}
-          <div className="grid gap-2 mx-auto" style={{ gridTemplateColumns: '160px 40px' }}>
+          <div className="flex gap-4 items-stretch">
             {/* Left: Metric Chips */}
-            <div className="flex flex-col justify-between h-[360px] py-0.5 gap-3">
+            <div className="flex flex-col justify-between h-[360px] py-0.5 gap-3 w-[160px] flex-shrink-0">
               <Chip
                 label="List Price"
                 value={formatUSD(listPrice)}
@@ -249,9 +249,10 @@ export function DealGapChart({
               />
             </div>
 
-            {/* Right: Gradient Ladder */}
-            <div 
-              className="h-[360px] w-8 rounded-2xl relative shadow-lg"
+            {/* Right: Gradient Ladder (centered in remaining space) */}
+            <div className="flex-1 flex justify-center">
+              <div 
+                className="h-[360px] w-8 rounded-2xl relative shadow-lg"
               style={{
                 background: `linear-gradient(to bottom, 
                   #ef4444 0%, 
@@ -321,6 +322,7 @@ export function DealGapChart({
                 style={{ top: `${buyPosOnLadder * 100}%` }}
                 title="Buy Price"
               />
+              </div>
             </div>
           </div>
 
