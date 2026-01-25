@@ -379,7 +379,7 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
         ) : activeSection === 'metrics' ? (
           <HouseHackMetricsChart 
             data={buildHouseHackMetricsData({
-              actualHousingCost: calc.actualHousingCost,
+              actualHousingCost: calc.yourHousingCost,
               savingsVsRenting: calc.savingsVsRenting,
               housingOffsetPct: calc.housingOffsetPct,
               totalCashNeeded: calc.totalCashNeeded,
