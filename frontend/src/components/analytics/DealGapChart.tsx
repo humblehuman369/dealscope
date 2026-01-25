@@ -120,17 +120,17 @@ export function DealGapChart({
     buyPrice,
   })
 
-  // Determine if scale needs expansion (when list and buy are within 3% of each other)
+  // Determine if scale needs expansion (when list and buy are within 5% of each other)
   const needsExpandedScale = useMemo(() => {
     if (breakeven <= 0) return false
     const listPct = Math.abs((listPrice - breakeven) / breakeven)
     const buyPct = Math.abs((buyPrice - breakeven) / breakeven)
     const diff = Math.abs(listPct - buyPct)
-    return diff < 0.03 // Within 3%
+    return diff < 0.05 // Within 5%
   }, [listPrice, buyPrice, breakeven])
 
-  // Scale factor: normal is 0.40, expanded is 0.20 (spreads markers further apart)
-  const scaleFactor = needsExpandedScale ? 0.20 : 0.40
+  // Scale factor: normal is 0.40, expanded is 0.15 (spreads markers much further apart)
+  const scaleFactor = needsExpandedScale ? 0.15 : 0.40
 
   // Calculate dynamic ladder positions based on actual price relationships
   // The ladder range spans from highest price to lowest price
@@ -157,6 +157,9 @@ export function DealGapChart({
     const pos = 0.50 - (buyPct / scaleFactor) * 0.40
     return Math.max(0.05, Math.min(0.95, pos))
   }, [buyPrice, breakeven, scaleFactor])
+
+  // Detect if labels would overlap (positions within 8% of each other on ladder)
+  const labelsOverlap = Math.abs(listPosOnLadder - buyPosOnLadder) < 0.08
 
   // Colors for each position
   const listAccent = colorForPosition(listPosOnLadder)
@@ -277,30 +280,6 @@ export function DealGapChart({
                 </div>
               </div>
 
-              {/* List vs BE Bracket (Right side, upper) */}
-              <div
-                className="absolute right-[-18px] w-[22px] border-r-2 border-slate-400 dark:border-white/40 opacity-90"
-                style={bracketStyle(listPosOnLadder, bePos)}
-              >
-                <div className="absolute right-[-2px] top-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
-                <div className="absolute right-[-2px] bottom-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
-                <div className="absolute right-[-2px] top-1/2 translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[17px] font-black whitespace-nowrap text-orange-500">
-                  {`${data.listVsBreakevenPercent >= 0 ? '+' : ''}${data.listVsBreakevenPercent.toFixed(0)}%`}
-                </div>
-              </div>
-
-              {/* Buy vs BE Bracket (Right side, lower) */}
-              <div
-                className="absolute right-[-18px] w-[22px] border-r-2 border-slate-400 dark:border-white/40 opacity-90"
-                style={bracketStyle(bePos, buyPosOnLadder)}
-              >
-                <div className="absolute right-[-2px] top-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
-                <div className="absolute right-[-2px] bottom-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
-                <div className="absolute right-[-2px] top-1/2 translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[17px] font-black whitespace-nowrap text-green-500">
-                  {`${data.buyVsBreakevenPercent >= 0 ? '+' : ''}${data.buyVsBreakevenPercent.toFixed(1)}%`}
-                </div>
-              </div>
-
               {/* Markers */}
               <div 
                 className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-slate-600 opacity-95"
@@ -313,18 +292,24 @@ export function DealGapChart({
                 title="Buy Price"
               />
 
-              {/* LIST Label - left of list marker */}
+              {/* LIST Label - left of list marker (offset up if overlapping) */}
               <div 
-                className="absolute left-[-35px] -translate-y-1/2 text-xs font-bold text-slate-600 dark:text-white/70"
-                style={{ top: `${listPosOnLadder * 100}%` }}
+                className="absolute left-[-35px] text-xs font-bold text-slate-600 dark:text-white/70"
+                style={{ 
+                  top: `${listPosOnLadder * 100}%`,
+                  transform: labelsOverlap ? 'translateY(-100%)' : 'translateY(-50%)'
+                }}
               >
                 LIST
               </div>
 
-              {/* BUY Label - left of buy marker */}
+              {/* BUY Label - left of buy marker (offset down if overlapping) */}
               <div 
-                className="absolute left-[-35px] -translate-y-1/2 text-xs font-bold text-slate-600 dark:text-white/70"
-                style={{ top: `${buyPosOnLadder * 100}%` }}
+                className="absolute left-[-35px] text-xs font-bold text-slate-600 dark:text-white/70"
+                style={{ 
+                  top: `${buyPosOnLadder * 100}%`,
+                  transform: labelsOverlap ? 'translateY(0%)' : 'translateY(-50%)'
+                }}
               >
                 BUY
               </div>
