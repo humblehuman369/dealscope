@@ -112,14 +112,6 @@ export function WorksheetTabNav({
   const handleTabClick = (tab: TabItem) => {
     if (!isTabsEnabled || tab.disabled) return
     
-    // Navigate to analyzing page for analyze tab - pass address so it's preserved
-    if (tab.id === 'analyze') {
-      const fullAddress = propertyData?.full_address || ''
-      const addressParam = fullAddress ? `?address=${encodeURIComponent(fullAddress)}` : ''
-      router.push(`/analyzing${addressParam}`)
-      return
-    }
-    
     // Navigate to property details page for property-details tab
     if (tab.id === 'property-details') {
       // Use zpid for the property page route, include address as query param (required by the page)
