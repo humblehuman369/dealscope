@@ -185,12 +185,6 @@ export function DealGapChart({
   // Glow effect when deal gap exceeds threshold
   const showGlow = data.dealGapPercent >= thresholdPct
 
-  // Decision headline
-  const decisionHeadline = useMemo(() => {
-    if (buyPrice > breakeven) return 'Loss Zone'
-    return data.zone
-  }, [buyPrice, breakeven, data.zone])
-
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
       {/* Header - hidden when embedded in worksheet */}
@@ -221,11 +215,11 @@ export function DealGapChart({
           {/* Ladder + Chips Layout */}
           <div className="flex gap-4 items-stretch">
             {/* Left: Metric Chips */}
-            <div className="flex flex-col justify-between h-[360px] py-0.5 gap-3 w-[160px] flex-shrink-0">
+            <div className="flex flex-col justify-between h-[420px] py-0.5 gap-3 w-[160px] flex-shrink-0">
               <Chip
                 label="List Price"
                 value={formatUSD(listPrice)}
-                sub={`${data.listVsBreakevenPercent >= 0 ? '+' : ''}${data.listVsBreakevenPercent.toFixed(0)}%`}
+                sub="Asking"
                 accent={listAccent}
               />
               <Chip
@@ -237,15 +231,15 @@ export function DealGapChart({
               <Chip
                 label="Buy Price"
                 value={formatUSD(buyPrice)}
-                sub={`${data.buyVsBreakevenPercent >= 0 ? '+' : ''}${data.buyVsBreakevenPercent.toFixed(1)}%`}
+                sub="Target"
                 accent={buyAccent}
               />
             </div>
 
             {/* Right: Gradient Ladder (centered in remaining space) */}
-            <div className="flex-1 flex justify-center max-w-[200px] mx-auto pl-10">
+            <div className="flex-1 flex justify-center max-w-[280px] mx-auto px-12">
               <div 
-                className="h-[360px] w-8 rounded-2xl relative shadow-lg"
+                className="h-[420px] w-8 rounded-2xl relative shadow-lg"
               style={{
                 background: `linear-gradient(to bottom, 
                   #ef4444 0%, 
@@ -292,26 +286,37 @@ export function DealGapChart({
                 title="Buy Price"
               />
 
-              {/* LIST Label - left of list marker (offset up if overlapping) */}
+              {/* LIST Label - left of bracket, color matches position */}
               <div 
-                className="absolute left-[-35px] text-xs font-bold text-slate-600 dark:text-white/70"
+                className="absolute left-[-65px] text-xs font-bold"
                 style={{ 
                   top: `${listPosOnLadder * 100}%`,
-                  transform: labelsOverlap ? 'translateY(-100%)' : 'translateY(-50%)'
+                  transform: labelsOverlap ? 'translateY(-100%)' : 'translateY(-50%)',
+                  color: listAccent
                 }}
               >
                 LIST
               </div>
 
-              {/* BUY Label - left of buy marker (offset down if overlapping) */}
+              {/* BUY Label - left of bracket, color matches position */}
               <div 
-                className="absolute left-[-35px] text-xs font-bold text-slate-600 dark:text-white/70"
+                className="absolute left-[-65px] text-xs font-bold"
                 style={{ 
                   top: `${buyPosOnLadder * 100}%`,
-                  transform: labelsOverlap ? 'translateY(0%)' : 'translateY(-50%)'
+                  transform: labelsOverlap ? 'translateY(0%)' : 'translateY(-50%)',
+                  color: buyAccent
                 }}
               >
                 BUY
+              </div>
+
+              {/* Breakeven label on right side */}
+              <div 
+                className="absolute right-[-90px] text-xs font-semibold text-slate-600 dark:text-white/70 whitespace-nowrap"
+                style={{ top: '50%', transform: 'translateY(-50%)' }}
+              >
+                <div className="font-black text-sm">{formatUSD(breakeven)}</div>
+                <div className="text-[10px] uppercase tracking-wider">Breakeven</div>
               </div>
               </div>
             </div>
@@ -327,15 +332,6 @@ export function DealGapChart({
             </div>
           </div>
 
-          {/* Footer text */}
-          <p className="mt-2.5 text-[17px] text-slate-500 dark:text-white/60 leading-relaxed">
-            Buy is{' '}
-            <b className={data.buyVsBreakevenPercent <= 0 ? 'text-green-600' : 'text-red-500'}>
-              {Math.abs(data.buyVsBreakevenPercent).toFixed(1)}%
-            </b>{' '}
-            {data.buyVsBreakevenPercent <= 0 ? 'below' : 'above'} breakeven → <b>{decisionHeadline}</b>. 
-            Seller motivation: <b>{data.sellerMotivation}</b>.
-          </p>
         </div>
       </div>
 
