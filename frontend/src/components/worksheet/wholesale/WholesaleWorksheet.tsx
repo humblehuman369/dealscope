@@ -18,6 +18,7 @@ import { MarketDataSection } from '../sections/MarketDataSection'
 import { MultiYearProjections } from '../sections/MultiYearProjections'
 import { CashFlowChart } from '../charts/CashFlowChart'
 import { EquityChart } from '../charts/EquityChart'
+import { WholesaleMetricsChart, buildWholesaleMetricsData } from './WholesaleMetricsChart'
 
 // Strategy definitions for switcher
 const strategies = [
@@ -336,6 +337,23 @@ export function WholesaleWorksheet({ property, propertyId, onExportPDF }: Wholes
               <EquityChart />
             </div>
           </>
+        ) : activeSection === 'metrics' ? (
+          <WholesaleMetricsChart 
+            data={buildWholesaleMetricsData({
+              assignmentFee: assignmentFee,
+              yourNetProfit: calc.yourNetProfit,
+              yourCosts: calc.yourCosts,
+              earnestMoney: earnestMoney,
+              marketingCosts: marketingCosts,
+              arv: arv,
+              rehabCosts: rehabCosts,
+              mao: calc.mao,
+              contractPrice: contractPrice,
+              assignmentSalePrice: calc.assignmentSalePrice,
+              meets70Rule: calc.meets70Rule,
+              buyerRoi: calc.buyerRoi,
+            })}
+          />
         ) : (
         <>
           <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">

@@ -48,6 +48,9 @@ export default function Header() {
   const isWorksheetPage = pathname?.startsWith('/worksheet/')
   const worksheetPropertyId = isWorksheetPage ? pathname?.split('/')[2] : null
   
+  // Only show Strategy Analysis dropdown on worksheet pages (not on IQ Verdict or other pages)
+  const showStrategyAnalysis = isWorksheetPage
+  
   // Strategy Analysis dropdown state - declared before useEffect that references them
   const [showStrategyDropdown, setShowStrategyDropdown] = useState(false)
   const strategyDropdownRef = useRef<HTMLDivElement>(null)
@@ -124,78 +127,53 @@ export default function Header() {
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
-          {/* Strategy Analysis Dropdown */}
-          <div className="relative" ref={strategyDropdownRef}>
-            <button
-              onClick={() => setShowStrategyDropdown(!showStrategyDropdown)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white rounded-lg transition-all whitespace-nowrap hover:opacity-90"
-              style={{ backgroundColor: '#007ea7' }}
-            >
-              <BarChart3 className="w-4 h-4" />
-              <span>Strategy Analysis</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showStrategyDropdown ? 'rotate-180' : ''}`} />
-            </button>
-            
-            {showStrategyDropdown && (
-              <div className="absolute left-0 top-[calc(100%+8px)] w-[220px] bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-lg dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] overflow-hidden z-[100]">
-                {isWorksheetPage && worksheetPropertyId ? (
-                  <>
-                    {/* Investment Strategies - shown on worksheet pages */}
-                    <div className="px-3 py-2 border-b border-slate-100 dark:border-white/[0.06]">
-                      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Investment Strategies</span>
-                    </div>
-                    <div className="py-1">
-                      {strategies.map((strategy) => (
-                        <button
-                          key={strategy.id}
-                          onClick={() => {
-                            setShowStrategyDropdown(false)
-                            if (strategy.id !== activeStrategy) {
-                              setActiveStrategy(strategy.id)
-                              router.push(`/worksheet/${worksheetPropertyId}/${strategy.id}`)
-                            }
-                          }}
-                          className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-left text-[13px] hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors ${
-                            activeStrategy === strategy.id 
-                              ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400' 
-                              : 'text-slate-600 dark:text-slate-300'
-                          }`}
-                        >
-                          <span className="font-medium">{strategy.label}</span>
-                          {activeStrategy === strategy.id && (
-                            <CheckCircle2 className="w-4 h-4 ml-auto text-teal-600 dark:text-teal-400" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {/* Get Started - shown on non-worksheet pages */}
-                    <div className="px-3 py-2 border-b border-slate-100 dark:border-white/[0.06]">
-                      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Get Started</span>
-                    </div>
-                    <div className="py-1">
-                      <Link
-                        href="/analyzing"
-                        onClick={() => setShowStrategyDropdown(false)}
-                        className="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-[13px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors"
+          {/* Strategy Analysis Dropdown - Only show on worksheet pages */}
+          {showStrategyAnalysis && (
+            <div className="relative" ref={strategyDropdownRef}>
+              <button
+                onClick={() => setShowStrategyDropdown(!showStrategyDropdown)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white rounded-lg transition-all whitespace-nowrap hover:opacity-90"
+                style={{ backgroundColor: '#007ea7' }}
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>Strategy Analysis</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showStrategyDropdown ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {showStrategyDropdown && worksheetPropertyId && (
+                <div className="absolute left-0 top-[calc(100%+8px)] w-[220px] bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-lg dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] overflow-hidden z-[100]">
+                  {/* Investment Strategies - shown on worksheet pages */}
+                  <div className="px-3 py-2 border-b border-slate-100 dark:border-white/[0.06]">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Investment Strategies</span>
+                  </div>
+                  <div className="py-1">
+                    {strategies.map((strategy) => (
+                      <button
+                        key={strategy.id}
+                        onClick={() => {
+                          setShowStrategyDropdown(false)
+                          if (strategy.id !== activeStrategy) {
+                            setActiveStrategy(strategy.id)
+                            router.push(`/worksheet/${worksheetPropertyId}/${strategy.id}`)
+                          }
+                        }}
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-left text-[13px] hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors ${
+                          activeStrategy === strategy.id 
+                            ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400' 
+                            : 'text-slate-600 dark:text-slate-300'
+                        }`}
                       >
-                        Analyze New Property
-                      </Link>
-                      <Link
-                        href="/dashboard"
-                        onClick={() => setShowStrategyDropdown(false)}
-                        className="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-[13px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors"
-                      >
-                        View Saved Properties
-                      </Link>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+                        <span className="font-medium">{strategy.label}</span>
+                        {activeStrategy === strategy.id && (
+                          <CheckCircle2 className="w-4 h-4 ml-auto text-teal-600 dark:text-teal-400" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           
           {navItems.map((item) => {
             if (item.auth && !isAuthenticated) return null
@@ -341,15 +319,17 @@ export default function Header() {
       {showMobileMenu && (
         <div className="md:hidden border-t border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0b1426]">
           <nav className="px-4 py-3 flex flex-col gap-1">
-            {/* Strategy Analysis - prominent mobile button */}
-            <Link 
-              href="/analyzing"
-              className="flex items-center gap-3 px-3.5 py-3 text-[15px] font-medium rounded-[10px] transition-all text-white mb-2"
-              style={{ backgroundColor: '#007ea7' }}
-            >
-              <BarChart3 className="w-5 h-5" />
-              Strategy Analysis
-            </Link>
+            {/* Strategy Analysis - prominent mobile button - Only show on worksheet pages */}
+            {showStrategyAnalysis && (
+              <Link 
+                href="/analyzing"
+                className="flex items-center gap-3 px-3.5 py-3 text-[15px] font-medium rounded-[10px] transition-all text-white mb-2"
+                style={{ backgroundColor: '#007ea7' }}
+              >
+                <BarChart3 className="w-5 h-5" />
+                Strategy Analysis
+              </Link>
+            )}
             
             {navItems.map((item) => {
               if (item.auth && !isAuthenticated) return null

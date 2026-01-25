@@ -18,6 +18,7 @@ import { MarketDataSection } from '../sections/MarketDataSection'
 import { MultiYearProjections } from '../sections/MultiYearProjections'
 import { CashFlowChart } from '../charts/CashFlowChart'
 import { EquityChart } from '../charts/EquityChart'
+import { HouseHackMetricsChart, buildHouseHackMetricsData } from './HouseHackMetricsChart'
 
 // Strategy definitions for switcher
 const strategies = [
@@ -375,6 +376,25 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
               <EquityChart />
             </div>
           </>
+        ) : activeSection === 'metrics' ? (
+          <HouseHackMetricsChart 
+            data={buildHouseHackMetricsData({
+              actualHousingCost: calc.actualHousingCost,
+              savingsVsRenting: calc.savingsVsRenting,
+              housingOffsetPct: calc.housingOffsetPct,
+              totalCashNeeded: calc.totalCashNeeded,
+              downPayment: calc.downPayment,
+              purchaseCosts: calc.purchaseCosts,
+              monthlyPayment: calc.monthlyPayment,
+              totalExpenses: calc.totalExpenses,
+              rentalIncome: calc.grossRentalIncome,
+              marketRent: marketRent,
+              liveFree: calc.liveFree,
+              listPrice: listPrice,
+              purchasePrice: purchasePrice,
+              unitCount: unitCount,
+            }, unitRents, ownerUnit)}
+          />
         ) : (
         <>
           <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">

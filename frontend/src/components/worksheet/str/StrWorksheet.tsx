@@ -23,6 +23,7 @@ import { EquityChart } from '../charts/EquityChart'
 import { StrRevenueBreakdown } from '../charts/StrRevenueBreakdown'
 import { KeyMetricsGrid } from '../charts/KeyMetricsGrid'
 import { StrVsLtrComparison } from '../charts/StrVsLtrComparison'
+import { STRMetricsChart, buildSTRMetricsData } from './STRMetricsChart'
 
 // Strategy definitions for switcher
 const strategies = [
@@ -687,6 +688,25 @@ export function StrWorksheet({
               <EquityChart />
             </div>
           </>
+        ) : activeSection === 'metrics' ? (
+          <STRMetricsChart 
+            data={buildSTRMetricsData({
+              grossRevenue: calc.grossRevenue,
+              grossExpenses: calc.grossExpenses,
+              noi: calc.noi,
+              annualDebtService: calc.annualDebtService,
+              annualCashFlow: calc.annualCashFlow,
+              capRate: calc.capRate,
+              cashOnCash: calc.cashOnCash,
+              monthlyCashFlow: calc.monthlyCashFlow,
+              dscr: calc.dscr,
+              occupancyRate: inputs.occupancy_rate || 0.65,
+              adr: inputs.average_daily_rate || 200,
+              totalCashRequired: calc.totalCashNeeded,
+              listPrice: originalPrice,
+              purchasePrice: inputs.purchase_price,
+            })}
+          />
         ) : (
         <>
           <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">

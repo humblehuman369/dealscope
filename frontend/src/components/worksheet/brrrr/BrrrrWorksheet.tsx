@@ -18,6 +18,7 @@ import { MarketDataSection } from '../sections/MarketDataSection'
 import { MultiYearProjections } from '../sections/MultiYearProjections'
 import { CashFlowChart } from '../charts/CashFlowChart'
 import { EquityChart } from '../charts/EquityChart'
+import { BRRRRMetricsChart, buildBRRRRMetricsData } from './BRRRRMetricsChart'
 
 // Strategy definitions for switcher
 const strategies = [
@@ -405,6 +406,29 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
               <EquityChart />
             </div>
           </>
+        ) : activeSection === 'metrics' ? (
+          <BRRRRMetricsChart 
+            data={buildBRRRRMetricsData({
+              cashRecoveryPct: calc.cashRecoveryPct,
+              cashLeftInDeal: calc.cashLeftInDeal,
+              cashOnCash: calc.cashOnCash,
+              equityCreated: calc.equityCreated,
+              purchasePrice: purchasePrice,
+              rehabCosts: rehabCosts,
+              allInCost: calc.allInCost,
+              totalCashInvested: calc.totalCashInvested,
+              arv: arv,
+              refinanceLoanAmount: calc.refinanceLoanAmount,
+              cashOut: calc.cashOut,
+              refiLtvPct: refiLtvPct,
+              monthlyCashFlow: calc.monthlyCashFlow,
+              annualCashFlow: calc.annualCashFlow,
+              dscr: calc.dscr,
+              capRateRefi: calc.capRateRefi,
+              totalHoldingCosts: calc.totalHoldingCosts,
+              holdingMonths: holdingMonths,
+            })}
+          />
         ) : (
         <>
           <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">

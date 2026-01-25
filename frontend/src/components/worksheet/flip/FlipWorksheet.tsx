@@ -18,6 +18,7 @@ import { MarketDataSection } from '../sections/MarketDataSection'
 import { MultiYearProjections } from '../sections/MultiYearProjections'
 import { CashFlowChart } from '../charts/CashFlowChart'
 import { EquityChart } from '../charts/EquityChart'
+import { FlipMetricsChart, buildFlipMetricsData } from './FlipMetricsChart'
 
 // Strategy definitions for switcher
 const strategies = [
@@ -453,6 +454,25 @@ export function FlipWorksheet({
               <EquityChart />
             </div>
           </>
+        ) : activeSection === 'metrics' ? (
+          <FlipMetricsChart 
+            data={buildFlipMetricsData({
+              netProfit: calc.actualProfit,
+              roi: calc.roi,
+              profitMargin: calc.profitMargin,
+              meets70Rule: calc.meets70Rule,
+              purchaseCosts: calc.purchaseCosts,
+              downPayment: calc.downPayment,
+              rehabCosts: rehabCosts,
+              allInCost: calc.allInCost,
+              totalHoldingCosts: calc.totalHoldingCosts,
+              sellingCosts: calc.sellingCosts,
+              totalHoldingInterest: calc.totalInterest,
+              arv: arv,
+              netSaleProceeds: calc.netSaleProceeds,
+              mao: calc.mao,
+            })}
+          />
         ) : (
         <>
           <div className="grid grid-cols-[1.4fr,1.2fr] md:grid-cols-[1.5fr,1.2fr] lg:grid-cols-[1.2fr,1fr] gap-4 sm:gap-6 items-start">
