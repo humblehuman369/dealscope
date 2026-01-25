@@ -293,7 +293,7 @@ export function DealGapChart({
 
               {/* LIST Label - right of ladder, color matches position */}
               <div 
-                className="absolute right-[-45px] text-[22px] font-bold whitespace-nowrap"
+                className="absolute right-[-65px] text-[22px] font-bold whitespace-nowrap"
                 style={{ 
                   top: `${listPosOnLadder * 100}%`,
                   transform: labelsOverlap ? 'translateY(-100%)' : 'translateY(-50%)',
@@ -305,7 +305,7 @@ export function DealGapChart({
 
               {/* BUY Label - right of ladder, color matches position */}
               <div 
-                className="absolute right-[-40px] text-[22px] font-bold whitespace-nowrap"
+                className="absolute right-[-60px] text-[22px] font-bold whitespace-nowrap"
                 style={{ 
                   top: `${buyPosOnLadder * 100}%`,
                   transform: labelsOverlap ? 'translateY(0%)' : 'translateY(-50%)',
@@ -317,7 +317,7 @@ export function DealGapChart({
 
               {/* Breakeven label on right side - further out */}
               <div 
-                className="absolute right-[-100px] text-xs font-semibold text-slate-600 dark:text-white/70 whitespace-nowrap text-center"
+                className="absolute right-[-120px] text-xs font-semibold text-slate-600 dark:text-white/70 whitespace-nowrap text-center"
                 style={{ top: '50%', transform: 'translateY(-50%)' }}
               >
                 <div className="font-black text-sm">{formatUSD(breakeven)}</div>
