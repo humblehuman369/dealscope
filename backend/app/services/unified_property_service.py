@@ -20,6 +20,7 @@ from .zillow_client import ZillowClient, create_zillow_client, ZillowAPIResponse
 from .data_normalizer import (
     InvestIQNormalizer, NormalizedProperty, DataSource, ConfidenceLevel
 )
+from .calculators import calculate_seller_motivation, extract_condition_keywords
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +91,9 @@ class UnifiedPropertyService:
         # Calculate investment metrics
         investment_metrics = self._calculate_investment_metrics(normalized)
         
+        # Calculate seller motivation score
+        seller_motivation = self._calculate_seller_motivation(normalized)
+        
         # Build response
         elapsed_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
         
@@ -100,6 +104,7 @@ class UnifiedPropertyService:
                 "zillow": self._zillow_responses_to_dict(zillow_data)
             },
             "investment_metrics": investment_metrics,
+            "seller_motivation": seller_motivation,
             "data_quality": {
                 "score": normalized.data_quality_score,
                 "missing_fields": normalized.missing_fields,
@@ -170,6 +175,64 @@ class UnifiedPropertyService:
     ) -> Dict[str, Any]:
         """Fetch all Zillow data for an address using AXESSO API."""
         return await self.zillow.get_complete_property_data(address, include_photos)
+    
+    def _calculate_seller_motivation(self, prop: NormalizedProperty) -> Dict[str, Any]:
+        """
+        Calculate seller motivation score from normalized property data.
+        
+        Uses multiple indicators to determine seller motivation level:
+        - Days on Market
+        - Price reductions
+        - Listing status (withdrawn, foreclosure, etc.)
+        - Ownership type (absentee, out-of-state)
+        - Property condition (inferred from description)
+        """
+        # Extract condition keywords from description
+        condition_keywords = extract_condition_keywords(prop.property_description)
+        
+        # Determine if likely vacant (absentee + not listed for rent)
+        is_likely_vacant = None
+        if prop.is_non_owner_occupied and prop.listing_status not in ["FOR_RENT"]:
+            is_likely_vacant = True
+        
+        # Calculate seller motivation score
+        motivation_result = calculate_seller_motivation(
+            # Days on Market
+            days_on_market=prop.days_on_market,
+            market_median_dom=prop.market_days_on_market,
+            # Price History
+            price_reduction_count=prop.price_reduction_count,
+            total_price_reduction_pct=prop.total_price_reduction_pct,
+            # Listing Status
+            listing_status=prop.listing_status,
+            is_withdrawn=prop.is_withdrawn,
+            # Distress Indicators
+            is_foreclosure=prop.is_foreclosure,
+            is_pre_foreclosure=prop.is_pre_foreclosure,
+            is_bank_owned=prop.is_bank_owned,
+            is_auction=prop.is_auction,
+            # Ownership
+            is_owner_occupied=prop.owner_occupied,
+            is_absentee_owner=prop.is_non_owner_occupied,
+            owner_state=prop.owner_mailing_state,
+            property_state=prop.state,
+            # Vacancy
+            is_likely_vacant=is_likely_vacant,
+            # Condition
+            condition_keywords_found=condition_keywords if condition_keywords else None,
+            # Inheritance indicator
+            last_sale_price=prop.last_sale_price,
+            # Engagement metrics
+            favorite_count=prop.favorite_count,
+            page_view_count=prop.page_view_count,
+            selling_soon_percentile=prop.selling_soon_percentile,
+            # FSBO
+            is_fsbo=prop.is_fsbo,
+            # Market context
+            market_temperature=prop.market_temperature,
+        )
+        
+        return motivation_result
     
     def _calculate_investment_metrics(self, prop: NormalizedProperty) -> Dict[str, Any]:
         """

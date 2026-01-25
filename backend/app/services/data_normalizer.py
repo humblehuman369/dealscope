@@ -191,6 +191,18 @@ class NormalizedProperty:
     listing_agent_name: Optional[str] = None
     mls_id: Optional[str] = None
     
+    # Seller Motivation Indicators - Extended data for motivation scoring
+    is_pre_foreclosure: bool = False              # Pre-foreclosure status
+    is_withdrawn: bool = False                    # Was previously listed but withdrawn
+    price_reduction_count: int = 0                # Number of price reductions
+    total_price_reduction_pct: Optional[float] = None  # Total % reduced from original
+    is_non_owner_occupied: Optional[bool] = None  # Absentee ownership flag
+    owner_mailing_state: Optional[str] = None     # Owner's mailing address state (for out-of-state detection)
+    property_description: Optional[str] = None    # Full description for keyword analysis
+    selling_soon_percentile: Optional[float] = None  # Zillow's sell likelihood prediction
+    favorite_count: Optional[int] = None          # Number of users who favorited
+    page_view_count: Optional[int] = None         # Property page views
+    
     # Metadata
     data_fetched_at: datetime = field(default_factory=datetime.utcnow)
     provenance: Dict[str, FieldProvenance] = field(default_factory=dict)
@@ -276,6 +288,7 @@ class InvestIQNormalizer:
         self._merge_rental_market(result, rc, zl)  # Rental market stats for investor analysis
         self._merge_comps_counts(result, rc, zl)
         self._merge_listing_status(result, rc, zl)  # Listing status for price display
+        self._merge_owner_location(result, rc, zl)  # Owner location for out-of-state detection
         
         # Calculate data quality
         self._calculate_quality_score(result)
@@ -1050,11 +1063,14 @@ class InvestIQNormalizer:
         # Extract listingSubType for seller type determination
         listing_sub_type = zl_prop.get("listingSubType", {}) or {}
         
-        # Seller type flags
-        is_foreclosure = listing_sub_type.get("isForeclosure", False)
-        is_bank_owned = listing_sub_type.get("isBankOwned", False)
-        is_fsbo = listing_sub_type.get("isFSBO", False)
-        is_auction = listing_sub_type.get("isForAuction", False)
+        # Also check listing_sub_type (alternate format in API)
+        listing_sub_type_alt = zl_prop.get("listing_sub_type", {}) or {}
+        
+        # Seller type flags - check both formats
+        is_foreclosure = listing_sub_type.get("isForeclosure", False) or listing_sub_type_alt.get("is_foreclosure", False)
+        is_bank_owned = listing_sub_type.get("isBankOwned", False) or listing_sub_type_alt.get("is_bankOwned", False)
+        is_fsbo = listing_sub_type.get("isFSBO", False) or listing_sub_type_alt.get("is_FSBO", False)
+        is_auction = listing_sub_type.get("isForAuction", False) or listing_sub_type_alt.get("is_forAuction", False)
         
         # Store individual flags
         result.is_foreclosure = is_foreclosure
@@ -1062,14 +1078,55 @@ class InvestIQNormalizer:
         result.is_fsbo = is_fsbo
         result.is_auction = is_auction
         
+        # ========================================
+        # EXTENDED FORECLOSURE/DISTRESS DATA
+        # ========================================
+        foreclosure_types = zl_prop.get("foreclosureTypes", {}) or {}
+        
+        # Check for pre-foreclosure specifically
+        is_pre_foreclosure = foreclosure_types.get("isPreforeclosure", False)
+        result.is_pre_foreclosure = is_pre_foreclosure
+        
+        # Also check isPreforeclosureAuction
+        if zl_prop.get("isPreforeclosureAuction", False):
+            result.is_pre_foreclosure = True
+            result.is_auction = True
+        
+        # If any foreclosure type detected, ensure flags are set
+        if foreclosure_types.get("isAnyForeclosure", False):
+            if not result.is_foreclosure and not result.is_bank_owned:
+                result.is_foreclosure = True
+        
+        if foreclosure_types.get("isBankOwned", False):
+            result.is_bank_owned = True
+        
+        # ========================================
+        # WITHDRAWN/EXPIRED STATUS
+        # ========================================
+        if home_status and "WITHDRAWN" in home_status.upper():
+            result.is_withdrawn = True
+        # Also check keystoneHomeStatus
+        keystone_status = zl_prop.get("keystoneHomeStatus", "")
+        if keystone_status and "Withdrawn" in keystone_status:
+            result.is_withdrawn = True
+        
         # Check for new construction
         reso_facts = zl_prop.get("resoFacts", {}) or {}
         is_new_construction = reso_facts.get("isNewConstruction", False)
         result.is_new_construction = is_new_construction
         
+        # ========================================
+        # NON-OWNER OCCUPIED (ABSENTEE)
+        # ========================================
+        is_non_owner_occupied = zl_prop.get("isNonOwnerOccupied")
+        if is_non_owner_occupied is not None:
+            result.is_non_owner_occupied = is_non_owner_occupied
+        
         # Determine seller type string
         seller_type = "Agent"  # Default
-        if is_foreclosure:
+        if result.is_pre_foreclosure:
+            seller_type = "PreForeclosure"
+        elif is_foreclosure:
             seller_type = "Foreclosure"
         elif is_bank_owned:
             seller_type = "BankOwned"
@@ -1084,7 +1141,6 @@ class InvestIQNormalizer:
                       DataSource.ZILLOW, ConfidenceLevel.HIGH)
         
         # Determine if property is off-market
-        keystone_status = zl_prop.get("keystoneHomeStatus")
         is_off_market = home_status in [None, "SOLD", "OFF_MARKET", "RECENTLY_SOLD"] or \
                         keystone_status in ["RecentlySold", "OffMarket"]
         
@@ -1135,6 +1191,82 @@ class InvestIQNormalizer:
         mls_id = attribution.get("mlsId")
         if mls_id:
             result.mls_id = mls_id
+        
+        # ========================================
+        # PRICE HISTORY - Count reductions
+        # ========================================
+        price_history = zl_prop.get("priceHistory", []) or []
+        if price_history:
+            price_reductions = 0
+            original_price = None
+            current_price = None
+            
+            for event in price_history:
+                event_type = (event.get("event") or "").lower()
+                price_change_rate = event.get("priceChangeRate")
+                event_price = event.get("price")
+                
+                # Track original listing price
+                if "listed" in event_type and original_price is None:
+                    original_price = event_price
+                
+                # Count price reductions
+                if price_change_rate is not None and price_change_rate < 0:
+                    price_reductions += 1
+                    current_price = event_price
+                elif "price change" in event_type or "reduced" in event_type:
+                    price_reductions += 1
+                    current_price = event_price
+            
+            result.price_reduction_count = price_reductions
+            
+            # Calculate total reduction percentage
+            if original_price and current_price and original_price > 0:
+                total_reduction_pct = ((original_price - current_price) / original_price) * 100
+                if total_reduction_pct > 0:
+                    result.total_price_reduction_pct = round(total_reduction_pct, 2)
+        
+        # ========================================
+        # PROPERTY DESCRIPTION (for keyword analysis)
+        # ========================================
+        description = zl_prop.get("description")
+        if description:
+            result.property_description = description
+        
+        # ========================================
+        # ENGAGEMENT METRICS
+        # ========================================
+        favorite_count = zl_prop.get("favoriteCount")
+        if favorite_count is not None:
+            result.favorite_count = favorite_count
+        
+        page_view_count = zl_prop.get("pageViewCount")
+        if page_view_count is not None:
+            result.page_view_count = page_view_count
+        
+        # ========================================
+        # SELLING SOON PREDICTION
+        # ========================================
+        selling_soon = zl_prop.get("sellingSoon", [])
+        if selling_soon and isinstance(selling_soon, list) and len(selling_soon) > 0:
+            # Get the first prediction
+            first_prediction = selling_soon[0]
+            percentile = first_prediction.get("percentile")
+            if percentile is not None:
+                result.selling_soon_percentile = float(percentile)
+    
+    def _merge_owner_location(self, result: NormalizedProperty, rc: Dict, zl: Dict):
+        """
+        Extract owner mailing address state from RentCast for out-of-state detection.
+        """
+        prop = rc.get("property", {}) or {}
+        owner = prop.get("owner", {}) or {}
+        mailing_address = owner.get("mailingAddress", {}) or {}
+        
+        # Get owner's mailing state
+        owner_state = mailing_address.get("state")
+        if owner_state:
+            result.owner_mailing_state = owner_state
     
     def _calculate_quality_score(self, result: NormalizedProperty):
         """Calculate overall data quality score."""

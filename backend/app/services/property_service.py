@@ -17,6 +17,7 @@ from app.services.calculators import (
     calculate_ltr, calculate_str, calculate_brrrr,
     calculate_flip, calculate_house_hack, calculate_wholesale
 )
+from app.services.cache_service import get_cache_service, CacheService
 from app.schemas import (
     PropertyResponse, AnalyticsResponse, AllAssumptions,
     StrategyType, Address, PropertyDetails, ValuationData,
@@ -51,7 +52,10 @@ class PropertyService:
             base_url=settings.AXESSO_URL
         )
         
-        # In-memory cache (replace with Redis in production)
+        # Redis cache with in-memory fallback (24h TTL)
+        self._cache: CacheService = get_cache_service()
+        
+        # Legacy in-memory cache for backwards compatibility during transition
         self._property_cache: Dict[str, Dict] = {}
         self._calculation_cache: Dict[str, Dict] = {}
     
@@ -69,11 +73,22 @@ class PropertyService:
         """
         Search for property by address.
         Fetches from both APIs, normalizes, and returns unified response.
+        Uses Redis cache with 24h TTL when available.
         """
         property_id = self._generate_property_id(address)
         timestamp = datetime.utcnow()
         
-        # Check cache first
+        # Check Redis cache first
+        cached_data = await self._cache.get_property(address)
+        if cached_data:
+            logger.info(f"Cache hit for property: {address}")
+            try:
+                return PropertyResponse(**cached_data)
+            except Exception as e:
+                logger.warning(f"Failed to deserialize cached property: {e}")
+                # Continue to fetch fresh data
+        
+        # Legacy in-memory cache check (for backwards compatibility)
         if property_id in self._property_cache:
             cached = self._property_cache[property_id]
             cache_age = (timestamp - cached["fetched_at"]).total_seconds()
@@ -263,7 +278,14 @@ class PropertyService:
             fetched_at=timestamp
         )
         
-        # Cache result
+        # Cache result in Redis (24h TTL)
+        try:
+            await self._cache.set_property(address, response.model_dump())
+            logger.info(f"Cached property in Redis: {address}")
+        except Exception as e:
+            logger.warning(f"Failed to cache property in Redis: {e}")
+        
+        # Also cache in memory for backwards compatibility
         self._property_cache[property_id] = {
             "data": response,
             "fetched_at": timestamp

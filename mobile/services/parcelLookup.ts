@@ -14,6 +14,95 @@ const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 // Enable mock data in development when API is unreachable
 const USE_MOCK_DATA_ON_ERROR = false; // Disable mock data - use real Google Maps API
 
+// Geohash-based cache for geocoding results (reduces redundant API calls)
+// Cache TTL is 30 minutes (1800000ms)
+const GEOCODE_CACHE_TTL_MS = 30 * 60 * 1000;
+const geocodeCache = new Map<string, { data: ParcelData[]; timestamp: number }>();
+
+/**
+ * Calculate a geohash for caching purposes.
+ * Precision 8 gives ~38m x 19m cells which is appropriate for geocoding.
+ */
+function calculateGeohashForCache(lat: number, lng: number, precision: number = 8): string {
+  const base32 = '0123456789bcdefghjkmnpqrstuvwxyz';
+  let minLat = -90, maxLat = 90;
+  let minLng = -180, maxLng = 180;
+  let hash = '';
+  let bit = 0;
+  let ch = 0;
+  let isLng = true;
+
+  while (hash.length < precision) {
+    if (isLng) {
+      const mid = (minLng + maxLng) / 2;
+      if (lng >= mid) {
+        ch |= 1 << (4 - bit);
+        minLng = mid;
+      } else {
+        maxLng = mid;
+      }
+    } else {
+      const mid = (minLat + maxLat) / 2;
+      if (lat >= mid) {
+        ch |= 1 << (4 - bit);
+        minLat = mid;
+      } else {
+        maxLat = mid;
+      }
+    }
+    isLng = !isLng;
+    if (bit < 4) {
+      bit++;
+    } else {
+      hash += base32[ch];
+      bit = 0;
+      ch = 0;
+    }
+  }
+  return hash;
+}
+
+/**
+ * Get cached geocode result if available and not expired.
+ */
+function getCachedGeocode(lat: number, lng: number): ParcelData[] | null {
+  const geohash = calculateGeohashForCache(lat, lng);
+  const cached = geocodeCache.get(geohash);
+  
+  if (cached && (Date.now() - cached.timestamp) < GEOCODE_CACHE_TTL_MS) {
+    console.log(`[GeoCache] Cache hit for geohash ${geohash}`);
+    return cached.data;
+  }
+  
+  return null;
+}
+
+/**
+ * Store geocode result in cache.
+ */
+function setCachedGeocode(lat: number, lng: number, data: ParcelData[]): void {
+  const geohash = calculateGeohashForCache(lat, lng);
+  geocodeCache.set(geohash, { data, timestamp: Date.now() });
+  
+  // Clean up old entries if cache is too large (max 500 entries)
+  if (geocodeCache.size > 500) {
+    const now = Date.now();
+    for (const [key, value] of geocodeCache.entries()) {
+      if (now - value.timestamp > GEOCODE_CACHE_TTL_MS) {
+        geocodeCache.delete(key);
+      }
+    }
+  }
+}
+
+/**
+ * Clear the geocode cache.
+ */
+export function clearGeocodeCache(): void {
+  geocodeCache.clear();
+  console.log('[GeoCache] Cache cleared');
+}
+
 export interface ParcelData {
   apn: string;
   address: string;
@@ -121,8 +210,9 @@ export async function queryParcelsInArea(
 }
 
 /**
- * NEW: Query multiple properties along a scan direction.
- * Samples points at different distances and angles to find all nearby properties.
+ * Query multiple properties along a scan direction.
+ * OPTIMIZED: Reduced from 35 to 15 sample points (5 distances × 3 angles)
+ * Uses geohash-based caching to reduce redundant API calls.
  * Returns deduplicated list of properties with distance and confidence scores.
  * 
  * @param userLat - User's current latitude
@@ -139,67 +229,75 @@ export async function queryPropertiesAlongScanPath(
   estimatedDistance: number,
   coneAngle: number = 20
 ): Promise<ParcelData[]> {
-  // #region agent log
-  console.log('[DEBUG-H2-H4] queryPropertiesAlongScanPath:entry', JSON.stringify({userLat,userLng,heading,estimatedDistance,coneAngle}));
-  // #endregion
+  console.log('[ScanPath] Entry', JSON.stringify({userLat,userLng,heading,estimatedDistance,coneAngle}));
   
   const allProperties: Map<string, ParcelData> = new Map();
   const samplePromises: Promise<ParcelData[]>[] = [];
   
-  // Sample distances: closer together near estimated distance, spread out at extremes
-  // Focus 70% of samples around the estimated distance
-  const minDist = Math.max(10, estimatedDistance - 30);
-  const maxDist = estimatedDistance + 40;
-  
-  // Sample points at key distances
+  // OPTIMIZED: Reduced to 5 key distances (was 7)
+  // Focus samples around the estimated distance with wider spread
   const distances = [
-    minDist,
-    estimatedDistance - 15,
-    estimatedDistance - 5,
-    estimatedDistance,           // Primary target
-    estimatedDistance + 5,
-    estimatedDistance + 15,
-    maxDist,
+    Math.max(10, estimatedDistance - 20),   // Near bound
+    estimatedDistance - 5,                   // Slightly closer
+    estimatedDistance,                       // Primary target
+    estimatedDistance + 10,                  // Slightly farther
+    Math.min(250, estimatedDistance + 30),  // Far bound
   ].filter(d => d >= 10 && d <= 250);
   
-  // Sample angles: center, and slight left/right to catch adjacent properties
-  const angles = [0, -10, 10, -20, 20].slice(0, coneAngle >= 15 ? 5 : 3);
+  // OPTIMIZED: Reduced to 3 angles (was 5)
+  // Center + left/right to catch adjacent properties
+  const angles = [0, -15, 15];
   
-  console.log(`[ScanPath] Sampling ${distances.length * angles.length} points along heading ${heading}°`);
+  console.log(`[ScanPath] Sampling ${distances.length * angles.length} points along heading ${heading}° (optimized from 35)`);
   
-  // Create sample requests
+  // Track cache hits for logging
+  let cacheHits = 0;
+  
+  // Create sample requests with caching
   for (const dist of distances) {
     for (const angleOffset of angles) {
       const adjustedHeading = (heading + angleOffset + 360) % 360;
       const targetPoint = calculateTargetPoint(userLat, userLng, adjustedHeading, dist);
       
-      // Create geocoding request for this point
-      samplePromises.push(
-        googleReverseGeocode(targetPoint.lat, targetPoint.lng)
-          .then(parcels => {
-            // Attach distance and angle info to each result
-            return parcels.map(p => ({
-              ...p,
-              distanceFromUser: dist,
-              angleDeviation: Math.abs(angleOffset),
-            }));
-          })
-          .catch(err => {
-            console.log(`[ScanPath] Sample at ${dist}m/${angleOffset}° failed:`, err.message);
-            return [];
-          })
-      );
+      // Check cache first
+      const cached = getCachedGeocode(targetPoint.lat, targetPoint.lng);
+      if (cached !== null) {
+        cacheHits++;
+        // Use cached result directly
+        samplePromises.push(
+          Promise.resolve(cached.map(p => ({
+            ...p,
+            distanceFromUser: dist,
+            angleDeviation: Math.abs(angleOffset),
+          })))
+        );
+      } else {
+        // Create geocoding request for this point
+        samplePromises.push(
+          googleReverseGeocodeWithCache(targetPoint.lat, targetPoint.lng)
+            .then(parcels => {
+              // Attach distance and angle info to each result
+              return parcels.map(p => ({
+                ...p,
+                distanceFromUser: dist,
+                angleDeviation: Math.abs(angleOffset),
+              }));
+            })
+            .catch(err => {
+              console.log(`[ScanPath] Sample at ${dist}m/${angleOffset}° failed:`, err.message);
+              return [];
+            })
+        );
+      }
     }
   }
   
-  // Execute all requests in parallel (with some throttling to avoid rate limits)
+  // Execute all requests in parallel
   const results = await Promise.all(samplePromises);
   
-  // #region agent log
   const successCount = results.filter(r => r.length > 0).length;
   const failCount = results.filter(r => r.length === 0).length;
-  console.log('[DEBUG-H3-H5] queryPropertiesAlongScanPath:afterPromises', JSON.stringify({totalRequests:results.length,successCount,failCount}));
-  // #endregion
+  console.log(`[ScanPath] Results: ${successCount} success, ${failCount} fail, ${cacheHits} cache hits`);
   
   // Deduplicate by address and keep the best scoring version
   for (const propertyList of results) {
@@ -227,10 +325,6 @@ export async function queryPropertiesAlongScanPath(
   
   console.log(`[ScanPath] Found ${uniqueProperties.length} unique properties`);
   
-  // #region agent log
-  console.log('[DEBUG-H1-H5] queryPropertiesAlongScanPath:exit', JSON.stringify({totalSamples:samplePromises.length,uniquePropertiesFound:uniqueProperties.length,firstAddress:uniqueProperties[0]?.address}));
-  // #endregion
-  
   return uniqueProperties;
 }
 
@@ -246,6 +340,24 @@ function normalizeAddress(address: string): string {
 }
 
 /**
+ * Use Google Maps Reverse Geocoding API with caching.
+ * Checks cache first, then makes API call if needed.
+ */
+async function googleReverseGeocodeWithCache(lat: number, lng: number): Promise<ParcelData[]> {
+  // Check cache first
+  const cached = getCachedGeocode(lat, lng);
+  if (cached !== null) {
+    return cached;
+  }
+  
+  // Make API call and cache result
+  const result = await googleReverseGeocode(lat, lng);
+  setCachedGeocode(lat, lng, result);
+  
+  return result;
+}
+
+/**
  * Use Google Maps Reverse Geocoding API to convert coordinates to address.
  * Coordinates are passed with 6 decimal precision for ~0.11m accuracy.
  */
@@ -255,26 +367,16 @@ async function googleReverseGeocode(lat: number, lng: number): Promise<ParcelDat
   const lngStr = lng.toFixed(6);
   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latStr},${lngStr}&key=${GOOGLE_MAPS_API_KEY}`;
   
-  // #region agent log
-  console.log('[DEBUG-H1-H2] googleReverseGeocode:start', JSON.stringify({lat:latStr,lng:lngStr,hasApiKey:!!GOOGLE_MAPS_API_KEY,apiKeyLength:GOOGLE_MAPS_API_KEY?.length}));
-  // #endregion
-  
   let response;
   try {
     response = await axios.get(url, { timeout: 10000 });
   } catch (axiosErr: any) {
-    // #region agent log
-    console.log('[DEBUG-H5] googleReverseGeocode:error', JSON.stringify({error:axiosErr?.message,code:axiosErr?.code,lat:latStr,lng:lngStr}));
-    // #endregion
+    console.log('[Geocode] API error:', axiosErr?.message);
     throw axiosErr;
   }
   
-  // #region agent log
-  console.log('[DEBUG-H3] googleReverseGeocode:response', JSON.stringify({status:response.data.status,resultsCount:response.data.results?.length,errorMessage:response.data.error_message}));
-  // #endregion
-  
   if (response.data.status !== 'OK' || !response.data.results?.length) {
-    console.log('Google Maps response status:', response.data.status);
+    console.log('[Geocode] Response status:', response.data.status);
     return [];
   }
   

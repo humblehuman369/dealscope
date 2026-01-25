@@ -321,6 +321,77 @@ class ListingInfo(BaseModel):
 
 
 # ============================================
+# SELLER MOTIVATION INDICATORS
+# ============================================
+
+class MotivationSignalStrength(str, Enum):
+    """Signal strength for seller motivation indicators."""
+    HIGH = "high"           # Strong indicator of motivated seller
+    MEDIUM_HIGH = "medium-high"
+    MEDIUM = "medium"
+    LOW = "low"             # Weak indicator or counter-indicator
+
+
+class SellerMotivationIndicator(BaseModel):
+    """
+    Individual seller motivation indicator with score and metadata.
+    
+    Each indicator represents a signal that may indicate seller motivation
+    to accept below-market offers.
+    """
+    name: str                                    # e.g., "Days on Market"
+    detected: bool = False                       # Whether this indicator is present
+    score: int = 0                               # Individual score (0-100)
+    signal_strength: MotivationSignalStrength = MotivationSignalStrength.LOW
+    weight: float = 1.0                          # Weight in composite calculation
+    description: str = ""                        # Human-readable explanation
+    raw_value: Optional[Any] = None              # Raw data value (e.g., 145 days)
+    source: Optional[str] = None                 # Data source (AXESSO, RentCast)
+
+
+class SellerMotivationScore(BaseModel):
+    """
+    Comprehensive seller motivation analysis for a property.
+    
+    The Seller Motivation Score helps investors identify properties where
+    sellers may be more willing to negotiate, accept lower offers, or
+    close quickly.
+    
+    Score ranges:
+    - 80-100: Very High Motivation (excellent negotiation leverage)
+    - 60-79: High Motivation (strong leverage)
+    - 40-59: Moderate Motivation (some leverage)
+    - 20-39: Low Motivation (limited leverage)
+    - 0-19: Very Low Motivation (minimal leverage expected)
+    """
+    # Composite score
+    score: int = 0                               # Weighted composite score (0-100)
+    grade: str = "C"                             # Letter grade (A+, A, B, C, D, F)
+    label: str = "Unknown"                       # Human-readable label
+    color: str = "#9ca3af"                       # UI color for display
+    
+    # Individual indicators
+    indicators: List[SellerMotivationIndicator] = []
+    
+    # Summary counts
+    high_signals_count: int = 0                  # Count of HIGH strength signals detected
+    total_signals_detected: int = 0              # Total indicators that are detected=True
+    
+    # Key insights for negotiation
+    negotiation_leverage: str = "unknown"        # high, medium, low, unknown
+    recommended_discount_range: str = "0-5%"     # Suggested starting discount
+    key_leverage_points: List[str] = []          # Top 3 leverage points for negotiation
+    
+    # Market context (if available)
+    dom_vs_market_avg: Optional[float] = None    # Property DOM / Market median DOM
+    market_temperature: Optional[str] = None     # hot, warm, cold
+    
+    # Metadata
+    data_completeness: float = 0.0               # % of indicators with data
+    calculated_at: Optional[str] = None
+
+
+# ============================================
 # ASSUMPTIONS
 # ============================================
 
@@ -727,6 +798,7 @@ class PropertyResponse(BaseModel):
     rentals: RentalData
     market: MarketData
     listing: Optional[ListingInfo] = None  # Listing status, seller type, price display info
+    seller_motivation: Optional[SellerMotivationScore] = None  # Seller motivation analysis
     provenance: ProvenanceMap
     data_quality: DataQuality
     fetched_at: datetime

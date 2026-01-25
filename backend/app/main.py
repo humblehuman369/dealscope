@@ -123,6 +123,15 @@ except Exception as e:
     logger.warning(f"Billing router failed to load: {e}")
     billing_router = None
 
+# Import Sync router (bidirectional sync for mobile)
+sync_router = None
+try:
+    from app.routers.sync import router as sync_router
+    logger.info("Sync router loaded successfully")
+except Exception as e:
+    logger.warning(f"Sync router failed to load: {e}")
+    sync_router = None
+
 # Import database session for cleanup
 try:
     from app.db.session import close_db
@@ -255,6 +264,11 @@ if billing_router is not None:
     app.include_router(billing_router)
     logger.info("Billing router included")
 
+# Sync router (bidirectional sync for mobile)
+if sync_router is not None:
+    app.include_router(sync_router)
+    logger.info("Sync router included")
+
 
 # ============================================
 # HEALTH CHECK
@@ -365,6 +379,39 @@ async def get_demo_property():
         return property_service.get_mock_property()
     except Exception as e:
         logger.error(f"Demo property error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
+# MARKET ASSUMPTIONS ENDPOINT
+# ============================================
+
+@app.get("/api/v1/market/assumptions")
+async def get_market_assumptions(
+    zip_code: str = Query(..., description="ZIP code to get market-specific assumptions for")
+):
+    """
+    Get market-specific default assumptions based on zip code.
+    
+    Returns adjustment factors for:
+    - Property tax rate (varies by state/county)
+    - Insurance rate (higher in coastal/disaster-prone areas)
+    - Rent-to-price ratio (for estimating rent from property value)
+    - Appreciation rate (market-specific growth expectations)
+    - Vacancy rate (local market conditions)
+    
+    These values help the mobile app provide more accurate initial estimates
+    without requiring users to research local market data.
+    """
+    try:
+        from app.services.assumptions_service import get_market_adjustments
+        adjustments = get_market_adjustments(zip_code)
+        return {
+            "success": True,
+            "data": adjustments,
+        }
+    except Exception as e:
+        logger.error(f"Market assumptions error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

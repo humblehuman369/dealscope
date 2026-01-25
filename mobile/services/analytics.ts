@@ -74,6 +74,14 @@ export interface InvestmentAnalytics {
     rehabCost: number;
     arv: number;
   };
+  // Market-specific adjustment data (when available)
+  marketData?: {
+    region: string;
+    insuranceRate: number;
+    propertyTaxRate: number;
+    rentToPriceRatio: number;
+    appreciationRate: number;
+  };
 }
 
 /**
@@ -101,10 +109,12 @@ export function getLastApiError(): string | null {
  * 
  * @param address - Property address
  * @param parcelData - Optional parcel data from Google Maps for better estimates
+ * @param marketAssumptions - Optional market-specific assumptions from backend
  */
 export function generateEstimatedAnalytics(
   address: string, 
-  parcelData?: { city?: string; state?: string; zip?: string; lat?: number; lng?: number }
+  parcelData?: { city?: string; state?: string; zip?: string; lat?: number; lng?: number },
+  marketAssumptions?: MarketAssumptions
 ): InvestmentAnalytics {
   // Use location-based price estimation
   // These are rough median home price estimates by state (simplified)
@@ -119,8 +129,16 @@ export function generateEstimatedAnalytics(
   
   // Base median home price ~$350K, adjusted by state
   const listPrice = Math.floor(350000 * multiplier);
-  const rentEstimate = Math.floor(listPrice * 0.006); // ~0.6% price-to-rent ratio
+  
+  // Use market-specific rent-to-price ratio if available, otherwise default
+  const rentToPriceRatio = marketAssumptions?.rent_to_price_ratio || 0.006;
+  const rentEstimate = Math.floor(listPrice * rentToPriceRatio);
   const strEstimate = Math.floor(rentEstimate / 20);
+  
+  // Use market-specific rates if available
+  const vacancyRate = marketAssumptions?.vacancy_rate || 0.05;
+  const insuranceRate = marketAssumptions?.insurance_rate || 0.01;
+  const propertyTaxRate = marketAssumptions?.property_tax_rate || 0.012;
   
   return {
     property: {
@@ -218,12 +236,20 @@ export function generateEstimatedAnalytics(
       downPayment: 0.25,
       interestRate: 0.0725,
       loanTerm: 30,
-      vacancyRate: 0.05,
+      vacancyRate: vacancyRate,
       managementFee: 0.08,
       maintenance: 0.05,
       rehabCost: 25000,
-      arv: Math.floor(listPrice * 1.25),
+      arv: Math.floor(listPrice * (1 + (marketAssumptions?.appreciation_rate || 0.25))),
     },
+    // Include market assumptions metadata for UI display
+    marketData: marketAssumptions ? {
+      region: marketAssumptions.region,
+      insuranceRate: insuranceRate,
+      propertyTaxRate: propertyTaxRate,
+      rentToPriceRatio: rentToPriceRatio,
+      appreciationRate: marketAssumptions.appreciation_rate,
+    } : undefined,
   };
 }
 
@@ -307,7 +333,18 @@ export async function fetchPropertyAnalytics(
     // Use fallback analytics when API fails
     if (USE_FALLBACK_ON_ERROR) {
       console.log('[Analytics] Using fallback estimated analytics');
-      const estimated = generateEstimatedAnalytics(address, parcelData);
+      
+      // Try to get market-specific assumptions for better estimates
+      let marketAssumptions: MarketAssumptions | undefined;
+      if (parcelData?.zip) {
+        try {
+          marketAssumptions = await fetchMarketAssumptions(parcelData.zip);
+        } catch (e) {
+          console.log('[Analytics] Could not fetch market assumptions, using defaults');
+        }
+      }
+      
+      const estimated = generateEstimatedAnalytics(address, parcelData, marketAssumptions);
       
       // Mark the analytics as estimated (for UI indication)
       (estimated as any).isEstimated = true;
@@ -460,6 +497,76 @@ export async function recalculateAnalytics(
   } catch (error) {
     console.error('Recalculation error:', error);
     throw new Error('Unable to recalculate. Please try again.');
+  }
+}
+
+/**
+ * Market assumptions returned from the backend.
+ * These are location-specific adjustment factors.
+ */
+export interface MarketAssumptions {
+  zip_code: string;
+  region: string;
+  insurance_rate: number;  // Annual rate as decimal (e.g., 0.015 = 1.5%)
+  property_tax_rate: number;  // Annual rate as decimal
+  rent_to_price_ratio: number;  // Monthly rent / price ratio (e.g., 0.008 = 0.8%)
+  appreciation_rate: number;  // Annual appreciation rate
+  vacancy_rate: number;  // Expected vacancy rate
+}
+
+// Cache for market assumptions to avoid redundant API calls
+const marketAssumptionsCache = new Map<string, { data: MarketAssumptions; timestamp: number }>();
+const MARKET_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+/**
+ * Fetch market-specific default assumptions based on zip code.
+ * These help provide more accurate initial estimates without user research.
+ * 
+ * @param zipCode - Property zip code
+ * @returns Market-specific assumption factors
+ */
+export async function fetchMarketAssumptions(zipCode: string): Promise<MarketAssumptions> {
+  // Check cache first
+  const cached = marketAssumptionsCache.get(zipCode);
+  if (cached && (Date.now() - cached.timestamp) < MARKET_CACHE_TTL_MS) {
+    console.log(`[Analytics] Market assumptions cache hit for ${zipCode}`);
+    return cached.data;
+  }
+  
+  try {
+    console.log(`[Analytics] Fetching market assumptions for ${zipCode}`);
+    const response = await axios.get(
+      `${API_BASE_URL}/api/v1/market/assumptions`,
+      { 
+        params: { zip_code: zipCode },
+        timeout: 10000 
+      }
+    );
+
+    if (response.data?.success && response.data?.data) {
+      const data = response.data.data as MarketAssumptions;
+      
+      // Cache the result
+      marketAssumptionsCache.set(zipCode, { data, timestamp: Date.now() });
+      
+      console.log(`[Analytics] Market assumptions loaded for ${zipCode}:`, data.region);
+      return data;
+    }
+    
+    throw new Error('Invalid response format');
+  } catch (error) {
+    console.error(`[Analytics] Market assumptions error for ${zipCode}:`, error);
+    
+    // Return defaults if API unavailable
+    return {
+      zip_code: zipCode,
+      region: 'DEFAULT',
+      insurance_rate: 0.01,  // 1%
+      property_tax_rate: 0.012,  // 1.2%
+      rent_to_price_ratio: 0.008,  // 0.8% (near 1% rule)
+      appreciation_rate: 0.04,  // 4%
+      vacancy_rate: 0.07,  // 7%
+    };
   }
 }
 

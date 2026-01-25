@@ -188,8 +188,8 @@ export function useAllStrategies(baseInputs: AnalyticsInputs): AllStrategiesResu
       },
     };
 
-    // Fixed strategy order: LTR, STR, BRRRR, Fix & Flip, House Hack, Wholesale
-    const rankings: StrategyType[] = [
+    // Sort strategies by deal score descending (highest score = rank 1)
+    const allStrategyTypes: StrategyType[] = [
       'longTermRental',
       'shortTermRental',
       'brrrr',
@@ -198,13 +198,26 @@ export function useAllStrategies(baseInputs: AnalyticsInputs): AllStrategiesResu
       'wholesale',
     ];
 
-    // Assign ranks
+    // Rank by score: viable strategies first, then by score descending
+    const rankings: StrategyType[] = [...allStrategyTypes].sort((a, b) => {
+      const stratA = strategies[a];
+      const stratB = strategies[b];
+      
+      // Viable strategies rank higher than non-viable
+      if (stratA.viable && !stratB.viable) return -1;
+      if (!stratA.viable && stratB.viable) return 1;
+      
+      // Within same viability group, sort by score descending
+      return stratB.score - stratA.score;
+    });
+
+    // Assign ranks based on sorted order
     rankings.forEach((strategy, index) => {
       strategies[strategy].rank = index + 1;
     });
 
     const viableStrategies = rankings.filter(s => strategies[s].viable);
-    const bestStrategy = rankings[0];
+    const bestStrategy = rankings[0]; // Now the highest-scoring viable strategy
 
     return {
       strategies,

@@ -4,22 +4,52 @@
  */
 
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import {
   getOfflineQueue,
   removeFromOfflineQueue,
   markQueueItemFailed,
   getOfflineQueueCount,
   OfflineQueueItem,
+  getSetting,
+  setSetting,
 } from '../database';
+import { getDatabase } from '../database/db';
 import { getAccessToken } from './authService';
+
+// Types for pull sync response
+interface SyncRecord {
+  id: string;
+  table_name: string;
+  action: 'create' | 'update' | 'delete';
+  data: Record<string, any> | null;
+  updated_at: number;
+  created_at: number;
+}
+
+interface PullSyncResponse {
+  scanned_properties: SyncRecord[];
+  portfolio_properties: SyncRecord[];
+  settings: SyncRecord[];
+  server_time: number;
+  has_more: boolean;
+  next_since?: number;
+}
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
 const MAX_RETRY_ATTEMPTS = 3;
 const SYNC_INTERVAL_MS = 30000; // 30 seconds
 
-type SyncEventType = 'started' | 'completed' | 'failed' | 'progress' | 'network_change';
+type SyncEventType = 'started' | 'completed' | 'failed' | 'progress' | 'network_change' | 'conflict';
 type SyncEventHandler = (event: SyncEvent) => void;
+
+interface ConflictInfo {
+  recordId: string;
+  tableName: string;
+  localTimestamp: number;
+  serverTimestamp: number;
+  resolution: 'local_wins' | 'server_wins';
+}
 
 interface SyncEvent {
   type: SyncEventType;
@@ -27,6 +57,7 @@ interface SyncEvent {
   processed?: number;
   total?: number;
   error?: string;
+  conflict?: ConflictInfo;
 }
 
 class SyncManager {
@@ -36,6 +67,7 @@ class SyncManager {
   private unsubscribeNetInfo: (() => void) | null = null;
   private eventHandlers: Set<SyncEventHandler> = new Set();
   private lastSyncTime: Date | null = null;
+  private lastPullTimestamp: number = 0; // Unix timestamp of last successful pull
 
   /**
    * Initialize the sync manager.
@@ -156,7 +188,8 @@ class SyncManager {
   }
 
   /**
-   * Trigger a manual sync.
+   * Trigger a manual sync (bidirectional).
+   * First pushes local changes, then pulls server changes.
    */
   async sync(): Promise<void> {
     if (this.isSyncing) {
@@ -173,51 +206,51 @@ class SyncManager {
     this.emit({ type: 'started' });
     
     try {
-      // Get pending items
+      // PHASE 1: Push local changes to server
       const queue = await getOfflineQueue();
+      let pushProcessed = 0;
       
-      if (queue.length === 0) {
-        console.log('[SyncManager] No pending changes');
-        this.lastSyncTime = new Date();
-        this.emit({ type: 'completed', processed: 0, total: 0 });
-        return;
-      }
-      
-      console.log(`[SyncManager] Processing ${queue.length} queued items`);
-      
-      let processed = 0;
-      
-      for (const item of queue) {
-        // Skip items that have exceeded retry attempts
-        if (item.attempts >= MAX_RETRY_ATTEMPTS) {
-          console.log(`[SyncManager] Skipping item ${item.id}, max retries exceeded`);
-          continue;
+      if (queue.length > 0) {
+        console.log(`[SyncManager] Phase 1: Pushing ${queue.length} local changes`);
+        
+        for (const item of queue) {
+          // Skip items that have exceeded retry attempts
+          if (item.attempts >= MAX_RETRY_ATTEMPTS) {
+            console.log(`[SyncManager] Skipping item ${item.id}, max retries exceeded`);
+            continue;
+          }
+          
+          try {
+            await this.processQueueItem(item);
+            await removeFromOfflineQueue(item.id);
+            pushProcessed++;
+            
+            this.emit({
+              type: 'progress',
+              processed: pushProcessed,
+              total: queue.length,
+            });
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            console.warn(`[SyncManager] Failed to process item ${item.id}:`, errorMessage);
+            await markQueueItemFailed(item.id, errorMessage);
+          }
         }
         
-        try {
-          await this.processQueueItem(item);
-          await removeFromOfflineQueue(item.id);
-          processed++;
-          
-          this.emit({
-            type: 'progress',
-            processed,
-            total: queue.length,
-          });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          console.warn(`[SyncManager] Failed to process item ${item.id}:`, errorMessage);
-          await markQueueItemFailed(item.id, errorMessage);
-        }
+        console.log(`[SyncManager] Push completed: ${pushProcessed}/${queue.length}`);
       }
       
+      // PHASE 2: Pull changes from server
+      console.log('[SyncManager] Phase 2: Pulling server changes');
+      const pullCount = await this.pullFromServer();
+      console.log(`[SyncManager] Pull completed: ${pullCount} records merged`);
+      
       this.lastSyncTime = new Date();
-      console.log(`[SyncManager] Sync completed, processed ${processed}/${queue.length}`);
       
       this.emit({
         type: 'completed',
-        processed,
-        total: queue.length,
+        processed: pushProcessed + pullCount,
+        total: queue.length + pullCount,
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Sync failed';
@@ -233,7 +266,172 @@ class SyncManager {
   }
 
   /**
-   * Process a single queue item.
+   * Pull changes from server and merge into local database.
+   * Uses last pull timestamp to fetch only new/modified records.
+   */
+  async pullFromServer(): Promise<number> {
+    try {
+      const token = await getAccessToken();
+      if (!token) {
+        console.log('[SyncManager] No auth token, skipping pull');
+        return 0;
+      }
+      
+      // Load last pull timestamp from settings
+      const lastPullStr = await getSetting('sync_last_pull_timestamp');
+      this.lastPullTimestamp = lastPullStr ? parseInt(lastPullStr, 10) : 0;
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      };
+      
+      let totalMerged = 0;
+      let hasMore = true;
+      let since = this.lastPullTimestamp;
+      
+      // Paginate through all changes
+      while (hasMore) {
+        const response = await axios.post<PullSyncResponse>(
+          `${API_BASE_URL}/api/v1/sync/pull`,
+          {
+            since: since > 0 ? since : null,
+            tables: ['scanned_properties', 'portfolio_properties'],
+            limit: 100,
+          },
+          { headers, timeout: 30000 }
+        );
+        
+        const data = response.data;
+        
+        // Merge scanned properties
+        for (const record of data.scanned_properties) {
+          await this.mergeRecord('scanned_properties', record);
+          totalMerged++;
+        }
+        
+        // Merge portfolio properties
+        for (const record of data.portfolio_properties) {
+          await this.mergeRecord('portfolio_properties', record);
+          totalMerged++;
+        }
+        
+        hasMore = data.has_more;
+        since = data.next_since || data.server_time;
+        
+        // Update last pull timestamp
+        this.lastPullTimestamp = data.server_time;
+      }
+      
+      // Save last pull timestamp
+      await setSetting('sync_last_pull_timestamp', String(this.lastPullTimestamp));
+      
+      return totalMerged;
+    } catch (error) {
+      console.error('[SyncManager] Pull sync error:', error);
+      // Don't throw - pull errors shouldn't fail the entire sync
+      return 0;
+    }
+  }
+
+  /**
+   * Merge a single record from server into local database.
+   * Uses last-write-wins strategy based on updated_at timestamp.
+   */
+  private async mergeRecord(tableName: string, record: SyncRecord): Promise<void> {
+    const db = await getDatabase();
+    
+    if (record.action === 'delete') {
+      // Delete the local record
+      await db.runAsync(`DELETE FROM ${tableName} WHERE id = ?`, record.id);
+      console.log(`[SyncManager] Deleted ${tableName}/${record.id}`);
+      return;
+    }
+    
+    // Check if local record exists and its timestamp
+    const localRecord = await db.getFirstAsync<{ id: string; updated_at: number }>(
+      `SELECT id, updated_at FROM ${tableName} WHERE id = ?`,
+      record.id
+    );
+    
+    if (localRecord) {
+      // Record exists - check timestamps (last-write-wins)
+      if (record.updated_at > localRecord.updated_at) {
+        // Server is newer - update local
+        await this.updateLocalRecord(tableName, record);
+        console.log(`[SyncManager] Updated ${tableName}/${record.id} from server`);
+      } else {
+        console.log(`[SyncManager] Skipping ${tableName}/${record.id} - local is newer`);
+      }
+    } else {
+      // Record doesn't exist - insert
+      await this.insertLocalRecord(tableName, record);
+      console.log(`[SyncManager] Inserted ${tableName}/${record.id} from server`);
+    }
+  }
+
+  /**
+   * Insert a new record from server into local database.
+   */
+  private async insertLocalRecord(tableName: string, record: SyncRecord): Promise<void> {
+    if (!record.data) return;
+    
+    const db = await getDatabase();
+    const data = record.data;
+    
+    if (tableName === 'scanned_properties') {
+      await db.runAsync(
+        `INSERT OR REPLACE INTO scanned_properties 
+         (id, address, city, state, zip, lat, lng, geohash, property_data, analytics_data, scanned_at, is_favorite, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        record.id,
+        data.address || '',
+        data.city || null,
+        data.state || null,
+        data.zip || null,
+        data.lat || null,
+        data.lng || null,
+        data.geohash || null,
+        data.property_data ? JSON.stringify(data.property_data) : null,
+        data.analytics_data ? JSON.stringify(data.analytics_data) : null,
+        data.scanned_at || record.created_at,
+        data.is_favorite ? 1 : 0,
+        record.created_at,
+        record.updated_at
+      );
+    } else if (tableName === 'portfolio_properties') {
+      await db.runAsync(
+        `INSERT OR REPLACE INTO portfolio_properties 
+         (id, address, city, state, zip, purchase_price, purchase_date, current_value, strategy, property_data, monthly_cash_flow, notes, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        record.id,
+        data.address || '',
+        data.city || null,
+        data.state || null,
+        data.zip || null,
+        data.purchase_price || null,
+        data.purchase_date || null,
+        data.current_value || null,
+        data.strategy || null,
+        data.property_data ? JSON.stringify(data.property_data) : null,
+        data.monthly_cash_flow || null,
+        data.notes || null,
+        record.created_at,
+        record.updated_at
+      );
+    }
+  }
+
+  /**
+   * Update an existing local record with server data.
+   */
+  private async updateLocalRecord(tableName: string, record: SyncRecord): Promise<void> {
+    // Use the same logic as insert with REPLACE
+    await this.insertLocalRecord(tableName, record);
+  }
+
+  /**
+   * Process a single queue item with conflict resolution.
    */
   private async processQueueItem(item: OfflineQueueItem): Promise<void> {
     const token = await getAccessToken();
@@ -253,7 +451,7 @@ class SyncManager {
         break;
         
       case 'update':
-        await this.syncUpdate(item.table_name, item.record_id, payload, headers);
+        await this.syncUpdateWithConflictResolution(item.table_name, item.record_id, payload, headers, item);
         break;
         
       case 'delete':
@@ -280,18 +478,101 @@ class SyncManager {
   }
 
   /**
-   * Sync an update action.
+   * Sync an update action with last-write-wins conflict resolution.
+   * Fetches server timestamp and compares with local timestamp.
    */
-  private async syncUpdate(
+  private async syncUpdateWithConflictResolution(
     tableName: string,
     recordId: string | null,
     payload: any,
-    headers: Record<string, string>
+    headers: Record<string, string>,
+    queueItem: OfflineQueueItem
   ): Promise<void> {
     const endpoint = this.getEndpoint(tableName);
     if (!endpoint || !recordId) return;
     
-    await axios.patch(`${API_BASE_URL}${endpoint}/${recordId}`, payload, { headers });
+    const localTimestamp = payload?.updated_at || queueItem.created_at;
+    
+    try {
+      // First, try to get the server's current version to check for conflicts
+      const serverResponse = await axios.get(
+        `${API_BASE_URL}${endpoint}/${recordId}`,
+        { headers, validateStatus: (status) => status < 500 }
+      );
+      
+      if (serverResponse.status === 200) {
+        const serverData = serverResponse.data;
+        const serverTimestamp = serverData?.updated_at || serverData?.created_at || 0;
+        
+        // Check for conflict: server was modified after local change was queued
+        if (serverTimestamp > localTimestamp) {
+          // Conflict detected - server has newer data
+          // Using last-write-wins: local wins since user explicitly made this change
+          console.log(`[SyncManager] Conflict detected for ${tableName}/${recordId}. Local timestamp: ${localTimestamp}, Server timestamp: ${serverTimestamp}. Applying local changes (last-write-wins).`);
+          
+          this.emit({
+            type: 'conflict',
+            conflict: {
+              recordId,
+              tableName,
+              localTimestamp,
+              serverTimestamp,
+              resolution: 'local_wins',
+            },
+          });
+        }
+      }
+      
+      // Apply the local update (last-write-wins)
+      await axios.patch(`${API_BASE_URL}${endpoint}/${recordId}`, payload, { headers });
+      
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+        
+        // 404 means record doesn't exist on server - create it instead
+        if (axiosError.response?.status === 404) {
+          console.log(`[SyncManager] Record ${recordId} not found on server, creating instead of updating`);
+          await this.syncCreate(tableName, { id: recordId, ...payload }, headers);
+          return;
+        }
+        
+        // 409 Conflict - server explicitly reports conflict
+        if (axiosError.response?.status === 409) {
+          const serverData = axiosError.response?.data as any;
+          const serverTimestamp = serverData?.updated_at || 0;
+          
+          console.log(`[SyncManager] Server reported conflict for ${tableName}/${recordId}. Resolving with last-write-wins.`);
+          
+          this.emit({
+            type: 'conflict',
+            conflict: {
+              recordId,
+              tableName,
+              localTimestamp,
+              serverTimestamp,
+              resolution: 'local_wins',
+            },
+          });
+          
+          // Force update with local data (add conflict resolution header)
+          await axios.patch(
+            `${API_BASE_URL}${endpoint}/${recordId}`,
+            payload,
+            { 
+              headers: { 
+                ...headers, 
+                'X-Force-Update': 'true',
+                'X-Local-Timestamp': String(localTimestamp),
+              } 
+            }
+          );
+          return;
+        }
+      }
+      
+      throw error;
+    }
   }
 
   /**
@@ -305,7 +586,16 @@ class SyncManager {
     const endpoint = this.getEndpoint(tableName);
     if (!endpoint || !recordId) return;
     
-    await axios.delete(`${API_BASE_URL}${endpoint}/${recordId}`, { headers });
+    try {
+      await axios.delete(`${API_BASE_URL}${endpoint}/${recordId}`, { headers });
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        // Already deleted on server - not an error
+        console.log(`[SyncManager] Record ${recordId} already deleted on server`);
+        return;
+      }
+      throw error;
+    }
   }
 
   /**
@@ -333,6 +623,8 @@ export function useSyncStatus() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [pendingChanges, setPendingChanges] = useState(0);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const [conflictCount, setConflictCount] = useState(0);
+  const [lastConflict, setLastConflict] = useState<ConflictInfo | null>(null);
 
   useEffect(() => {
     // Get initial status
@@ -350,6 +642,7 @@ export function useSyncStatus() {
           break;
         case 'started':
           setIsSyncing(true);
+          setConflictCount(0); // Reset conflict count on new sync
           break;
         case 'completed':
         case 'failed':
@@ -357,6 +650,12 @@ export function useSyncStatus() {
           getOfflineQueueCount().then(setPendingChanges);
           if (event.type === 'completed') {
             setLastSyncTime(new Date());
+          }
+          break;
+        case 'conflict':
+          if (event.conflict) {
+            setConflictCount(prev => prev + 1);
+            setLastConflict(event.conflict);
           }
           break;
       }
@@ -369,12 +668,20 @@ export function useSyncStatus() {
     syncManager.sync();
   }, []);
 
+  const clearConflicts = useCallback(() => {
+    setConflictCount(0);
+    setLastConflict(null);
+  }, []);
+
   return {
     isOnline,
     isSyncing,
     pendingChanges,
     lastSyncTime,
     triggerSync,
+    conflictCount,
+    lastConflict,
+    clearConflicts,
   };
 }
 

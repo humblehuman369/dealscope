@@ -69,6 +69,7 @@ function calculateGeohash(lat: number, lng: number, precision: number = 7): stri
 
 /**
  * Save a scanned property to the database.
+ * Automatically queues the property for server sync.
  */
 export async function saveScannedProperty(
   address: string,
@@ -103,6 +104,24 @@ export async function saveScannedProperty(
     now,
     now
   );
+
+  // Queue for server sync
+  await queueOfflineAction('create', 'scanned_properties', id, {
+    id,
+    address,
+    city,
+    state,
+    zip,
+    lat,
+    lng,
+    geohash,
+    property_data: propertyData,
+    analytics_data: analyticsData,
+    scanned_at: now,
+    is_favorite: false,
+    created_at: now,
+    updated_at: now,
+  });
 
   return id;
 }
@@ -169,6 +188,7 @@ export async function getScannedPropertyById(id: string): Promise<ScannedPropert
 
 /**
  * Toggle favorite status for a scanned property.
+ * Automatically queues the update for server sync.
  */
 export async function togglePropertyFavorite(id: string): Promise<boolean> {
   const db = await getDatabase();
@@ -185,11 +205,20 @@ export async function togglePropertyFavorite(id: string): Promise<boolean> {
     id
   );
   
-  return result?.is_favorite === 1;
+  const isFavorite = result?.is_favorite === 1;
+  
+  // Queue for server sync
+  await queueOfflineAction('update', 'scanned_properties', id, {
+    is_favorite: isFavorite,
+    updated_at: now,
+  });
+  
+  return isFavorite;
 }
 
 /**
  * Update notes for a scanned property.
+ * Automatically queues the update for server sync.
  */
 export async function updatePropertyNotes(id: string, notes: string): Promise<void> {
   const db = await getDatabase();
@@ -201,14 +230,24 @@ export async function updatePropertyNotes(id: string, notes: string): Promise<vo
     now,
     id
   );
+  
+  // Queue for server sync
+  await queueOfflineAction('update', 'scanned_properties', id, {
+    notes,
+    updated_at: now,
+  });
 }
 
 /**
  * Delete a scanned property.
+ * Automatically queues the deletion for server sync.
  */
 export async function deleteScannedProperty(id: string): Promise<void> {
   const db = await getDatabase();
   await db.runAsync('DELETE FROM scanned_properties WHERE id = ?', id);
+  
+  // Queue for server sync
+  await queueOfflineAction('delete', 'scanned_properties', id, null);
 }
 
 /**
@@ -228,6 +267,7 @@ export async function getScannedPropertyCount(): Promise<number> {
 
 /**
  * Add a property to the portfolio.
+ * Automatically queues the property for server sync.
  */
 export async function addPortfolioProperty(
   address: string,
@@ -260,6 +300,21 @@ export async function addPortfolioProperty(
     now
   );
 
+  // Queue for server sync
+  await queueOfflineAction('create', 'portfolio_properties', id, {
+    id,
+    address,
+    city,
+    state,
+    zip,
+    purchase_price: purchasePrice,
+    purchase_date: purchaseDate,
+    strategy,
+    property_data: propertyData,
+    created_at: now,
+    updated_at: now,
+  });
+
   return id;
 }
 
@@ -286,6 +341,7 @@ export async function getPortfolioPropertyById(id: string): Promise<PortfolioPro
 
 /**
  * Update a portfolio property.
+ * Automatically queues the update for server sync.
  */
 export async function updatePortfolioProperty(
   id: string,
@@ -314,14 +370,24 @@ export async function updatePortfolioProperty(
     `UPDATE portfolio_properties SET ${fields.join(', ')} WHERE id = ?`,
     ...values
   );
+  
+  // Queue for server sync
+  await queueOfflineAction('update', 'portfolio_properties', id, {
+    ...updates,
+    updated_at: now,
+  });
 }
 
 /**
  * Delete a portfolio property.
+ * Automatically queues the deletion for server sync.
  */
 export async function deletePortfolioProperty(id: string): Promise<void> {
   const db = await getDatabase();
   await db.runAsync('DELETE FROM portfolio_properties WHERE id = ?', id);
+  
+  // Queue for server sync
+  await queueOfflineAction('delete', 'portfolio_properties', id, null);
 }
 
 /**

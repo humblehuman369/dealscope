@@ -1,6 +1,6 @@
 {
-  "version": "1.5",
-  "updatedAt": "2026-01-23",
+  "version": "1.6",
+  "updatedAt": "2026-01-24",
   "source": "backend/app/services/calculators.py, backend/app/services/data_normalizer.py, frontend/src/lib/iqTarget.ts, backend/app/main.py",
   "market_statistics": {
     "description": "Market health indicators from RentCast saleData for buyer/seller market analysis",
@@ -310,6 +310,161 @@
           "100": "100% ROI (doubled EMD)"
         },
         "example": "At $10K assignment fee on $5K EMD = 200% ROI: score = 50 + (200 × 0.5) = 150 → capped at 100"
+      }
+    }
+  },
+  "seller_motivation_score": {
+    "description": "Seller Motivation Score - Investment Negotiation Leverage. Analyzes multiple data signals to determine seller motivation level and potential negotiation leverage for investors. Higher score = more motivated seller = better negotiation leverage.",
+    "source": "backend/app/services/calculators.py (calculate_seller_motivation), backend/app/services/data_normalizer.py",
+    "data_sources": ["AXESSO Property Details v2", "RentCast Properties API"],
+    "notes": [
+      "Indicators are weighted by signal strength: HIGH (3.0), MEDIUM-HIGH (2.5), MEDIUM (2.0), LOW (1.0)",
+      "Only detected indicators are included in the composite score calculation",
+      "Some indicators are partially available or inferred from available data",
+      "Estate/Probate Sale and Tenant Issues indicators are NOT AVAILABLE (require external data sources)"
+    ],
+    "metrics": {
+      "seller_motivation_score": {
+        "formula": "seller_motivation_score = Σ(indicator_score × indicator_weight) / Σ(indicator_weight) for all detected indicators",
+        "inputs": ["detected_indicators[]", "indicator_scores[]", "indicator_weights[]"],
+        "description": "Composite weighted score (0-100) combining all detected motivation indicators. Only indicators with detected=true are included in the calculation.",
+        "grading": {
+          "A+": { "min_score": 80, "label": "Very High Motivation", "color": "#22c55e", "negotiation_leverage": "high", "discount_range": "10-20%" },
+          "A": { "min_score": 65, "label": "High Motivation", "color": "#22c55e", "negotiation_leverage": "high", "discount_range": "10-20%" },
+          "B": { "min_score": 50, "label": "Moderate Motivation", "color": "#84cc16", "negotiation_leverage": "medium", "discount_range": "5-10%" },
+          "C": { "min_score": 35, "label": "Low Motivation", "color": "#f97316", "negotiation_leverage": "low", "discount_range": "2-5%" },
+          "D": { "min_score": 20, "label": "Very Low Motivation", "color": "#f97316", "negotiation_leverage": "minimal", "discount_range": "0-3%" },
+          "F": { "min_score": 0, "label": "Minimal Motivation", "color": "#ef4444", "negotiation_leverage": "minimal", "discount_range": "0-3%" }
+        }
+      },
+      "days_on_market": {
+        "signal_strength": "HIGH",
+        "weight": 3.0,
+        "formula": "if days >= 180: score=100; elif days >= 120: score=85; elif days >= 90: score=70; elif days >= 60: score=55; elif days >= 30: score=35; else: score=15; // Boost +15 if DOM >= 2× market_median_dom",
+        "inputs": ["days_on_market (AXESSO daysOnZillow)", "market_median_dom (RentCast saleData.medianDaysOnMarket)"],
+        "description": "Longer days on market indicates seller fatigue and increased negotiation leverage. Score is boosted if property DOM significantly exceeds market average.",
+        "interpretation": {
+          "180+_days": "Extreme seller fatigue - maximum leverage",
+          "120-179_days": "Very high seller fatigue",
+          "90-119_days": "High seller fatigue",
+          "60-89_days": "Moderate seller fatigue",
+          "30-59_days": "Some seller fatigue",
+          "0-29_days": "Fresh listing - limited leverage"
+        }
+      },
+      "price_reductions": {
+        "signal_strength": "HIGH",
+        "weight": 3.0,
+        "formula": "if price_reduction_count >= 3: score=100; elif count == 2: score=80; elif count == 1: score=50; // Boost +10 if total_price_reduction_pct > 10%",
+        "inputs": ["price_reduction_count (AXESSO priceHistory analysis)", "total_price_reduction_pct"],
+        "description": "Multiple price reductions indicate failed pricing strategy and seller flexibility. Extracted by analyzing AXESSO priceHistory events.",
+        "data_extraction": "Loop through priceHistory[].priceChangeRate < 0 or event contains 'price change'/'reduced'"
+      },
+      "withdrawn_expired_listing": {
+        "signal_strength": "HIGH",
+        "weight": 3.0,
+        "formula": "if is_withdrawn OR listing_status contains 'WITHDRAWN' OR 'EXPIRED': score=95",
+        "inputs": ["listing_status (AXESSO homeStatus)", "keystoneHomeStatus"],
+        "description": "Previously listed but didn't sell publicly - high motivation likely as seller has already tried conventional methods."
+      },
+      "foreclosure_distress": {
+        "signal_strength": "HIGH",
+        "weight": 3.0,
+        "formula": "if is_pre_foreclosure: score=100; elif is_foreclosure: score=95; elif is_bank_owned: score=85; elif is_auction: score=80",
+        "inputs": [
+          "foreclosureTypes.isPreforeclosure (AXESSO)",
+          "foreclosureTypes.isAnyForeclosure (AXESSO)",
+          "foreclosureTypes.isBankOwned (AXESSO)",
+          "listingSubType.isForeclosure (AXESSO)",
+          "listingSubType.isBankOwned (AXESSO)",
+          "listingSubType.isForAuction (AXESSO)"
+        ],
+        "description": "Financial distress indicators provide maximum negotiation leverage. Pre-foreclosure has urgent timeline. Bank-owned properties (REO) are typically priced to move inventory.",
+        "interpretation": {
+          "pre-foreclosure": "Urgent timeline, owner facing foreclosure - maximum leverage",
+          "foreclosure": "Bank motivated to sell quickly",
+          "bank-owned": "Institution wants to clear inventory",
+          "auction": "Seller seeking quick sale through competitive bidding"
+        }
+      },
+      "absentee_ownership": {
+        "signal_strength": "MEDIUM-HIGH",
+        "weight": 2.5,
+        "formula": "if is_non_owner_occupied == true OR owner_occupied == false: score=70",
+        "inputs": ["isNonOwnerOccupied (AXESSO)", "ownerOccupied (RentCast)"],
+        "description": "Non-owner occupied properties are treated as investments rather than homes. Sellers are typically less emotionally attached and more willing to negotiate on numbers."
+      },
+      "out_of_state_owner": {
+        "signal_strength": "MEDIUM",
+        "weight": 2.0,
+        "formula": "if owner_mailing_state != property_state: score=65",
+        "inputs": ["owner.mailingAddress.state (RentCast)", "property.state"],
+        "description": "Distance reduces emotional attachment. Out-of-state owners may be more motivated to sell to reduce management burden.",
+        "data_source": "RentCast Properties API - owner.mailingAddress.state compared to property.state"
+      },
+      "likely_vacant": {
+        "signal_strength": "MEDIUM",
+        "weight": 2.0,
+        "formula": "if is_non_owner_occupied == true AND listing_status != 'FOR_RENT': score=60",
+        "inputs": ["is_non_owner_occupied", "listing_status"],
+        "description": "Inferred vacancy - property is not owner-occupied and not listed for rent, suggesting it may be vacant. Vacant properties incur carrying costs without income.",
+        "notes": "This is an INFERRED indicator, not directly available from API data"
+      },
+      "poor_condition": {
+        "signal_strength": "HIGH",
+        "weight": 3.0,
+        "formula": "if condition_keywords_found.length > 0: score = min(100, 50 + (keyword_count × 15))",
+        "inputs": ["property_description (AXESSO description field)"],
+        "description": "Property condition inferred from listing description text analysis. Keywords like 'as-is', 'fixer', 'TLC', 'investor special' indicate properties that need work and have limited buyer pools.",
+        "condition_keywords": [
+          "as-is", "fixer", "fixer-upper", "handyman", "tlc", "needs work", "needs updating",
+          "investor special", "investor opportunity", "cash only", "cash buyers",
+          "estate sale", "probate", "motivated seller", "must sell",
+          "bring your contractor", "deferred maintenance", "priced to sell",
+          "diamond in the rough", "foreclosure", "bank owned", "vacant"
+        ],
+        "notes": "PARTIAL indicator - relies on text analysis of description field"
+      },
+      "possibly_inherited": {
+        "signal_strength": "MEDIUM",
+        "weight": 2.0,
+        "formula": "if last_sale_price <= 100: score=55",
+        "inputs": ["lastSalePrice (RentCast/AXESSO)"],
+        "description": "A last sale price of $0 or $1 often indicates a gift or inheritance transfer. Inherited properties may be sold by heirs who are not emotionally attached.",
+        "notes": "PARTIAL indicator - $0/$1 sale is a common pattern for inheritance but not definitive"
+      },
+      "fsbo": {
+        "signal_strength": "MEDIUM-HIGH",
+        "weight": 2.5,
+        "formula": "if is_fsbo == true: score=65",
+        "inputs": ["listingSubType.isFSBO (AXESSO)"],
+        "description": "For Sale By Owner - more direct negotiation without agent buffer. FSBO sellers are sometimes more flexible to avoid paying commission."
+      },
+      "owner_occupied": {
+        "signal_strength": "LOW (Counter-indicator)",
+        "weight": 1.0,
+        "formula": "if owner_occupied == true: score=20",
+        "inputs": ["ownerOccupied (RentCast)", "isNonOwnerOccupied (AXESSO)"],
+        "description": "COUNTER-INDICATOR: Owner-occupied properties typically have emotional pricing and harder negotiation. Low score reflects reduced motivation.",
+        "notes": "This indicator REDUCES the overall motivation score when detected"
+      },
+      "selling_soon_prediction": {
+        "signal_strength": "VARIES",
+        "weight": 2.0,
+        "formula": "score = selling_soon_percentile",
+        "inputs": ["sellingSoon[0].percentile (AXESSO)"],
+        "description": "Zillow's proprietary prediction of likelihood the property will sell soon. Higher percentile indicates higher likelihood.",
+        "notes": "BONUS indicator - only included when data is available from AXESSO"
+      }
+    },
+    "unavailable_indicators": {
+      "estate_probate_sale": {
+        "description": "Estate or probate sales indicate inherited property being sold by executor. Would require court records or MLS probate flag.",
+        "data_needed": "Court records, MLS probate indicator"
+      },
+      "tenant_issues": {
+        "description": "Properties with difficult tenants or eviction history may have motivated landlord sellers.",
+        "data_needed": "Property management records, eviction court records"
       }
     }
   },

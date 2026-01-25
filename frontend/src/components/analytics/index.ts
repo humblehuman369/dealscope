@@ -224,6 +224,12 @@ export {
   type RentalStats
 } from './RentRangeIndicator'
 
+// Seller Motivation Indicator - Negotiation leverage analysis
+export {
+  SellerMotivationIndicator,
+  SellerMotivationBadge
+} from './SellerMotivationIndicator'
+
 // Property Premium Page - World-class property analysis landing page
 export { PropertyPremiumPage } from './PropertyPremiumPage'
 
@@ -337,6 +343,7 @@ import {
   ErrorCard,
   EmptyState 
 } from './LoadingStates'
+import { SellerMotivationIndicator, SellerMotivationBadge } from './SellerMotivationIndicator'
 
 const AnalyticsComponents = {
   // Core Metrics
@@ -403,7 +410,11 @@ const AnalyticsComponents = {
   LoadingSpinner,
   LoadingOverlay,
   ErrorCard,
-  EmptyState
+  EmptyState,
+  
+  // Seller Motivation
+  SellerMotivationIndicator,
+  SellerMotivationBadge
 }
 
 export default AnalyticsComponents

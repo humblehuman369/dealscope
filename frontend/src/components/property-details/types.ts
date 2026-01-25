@@ -17,6 +17,12 @@ export type MarketTemperature = 'hot' | 'warm' | 'cold'
 // Rent Trend - year-over-year rental market direction
 export type RentTrend = 'up' | 'down' | 'stable'
 
+// Motivation Signal Strength - for seller motivation indicators
+export type MotivationSignalStrength = 'high' | 'medium-high' | 'medium' | 'low'
+
+// Negotiation Leverage Level
+export type NegotiationLeverage = 'high' | 'medium' | 'low' | 'minimal' | 'unknown'
+
 /**
  * Market statistics for investment analysis.
  * Helps determine buyer/seller market conditions and negotiation leverage.
@@ -70,6 +76,54 @@ export interface RentalMarketStats {
   // Trend indicator
   rentTrend?: RentTrend        // 'up' | 'down' | 'stable'
   trendPctChange?: number      // Year-over-year percentage change
+}
+
+/**
+ * Individual seller motivation indicator
+ */
+export interface SellerMotivationIndicator {
+  name: string                    // e.g., "Days on Market"
+  detected: boolean               // Whether this indicator is present
+  score: number                   // Individual score (0-100)
+  signalStrength: MotivationSignalStrength
+  weight: number                  // Weight in composite calculation
+  description: string             // Human-readable explanation
+  rawValue?: unknown              // Raw data value
+  source?: string                 // Data source (AXESSO, RentCast)
+}
+
+/**
+ * Comprehensive seller motivation score
+ * 
+ * Helps investors identify properties where sellers may be more
+ * willing to negotiate, accept lower offers, or close quickly.
+ */
+export interface SellerMotivationScore {
+  // Composite score
+  score: number                   // Weighted composite score (0-100)
+  grade: string                   // Letter grade (A+, A, B, C, D, F)
+  label: string                   // Human-readable label
+  color: string                   // UI color for display
+  
+  // Individual indicators
+  indicators: SellerMotivationIndicator[]
+  
+  // Summary counts
+  highSignalsCount: number        // Count of HIGH strength signals detected
+  totalSignalsDetected: number    // Total indicators that are detected
+  
+  // Key insights for negotiation
+  negotiationLeverage: NegotiationLeverage
+  recommendedDiscountRange: string  // e.g., "10-20%"
+  keyLeveragePoints: string[]     // Top 3 leverage points for negotiation
+  
+  // Market context
+  domVsMarketAvg?: number         // Property DOM / Market median DOM
+  marketTemperature?: MarketTemperature
+  
+  // Metadata
+  dataCompleteness: number        // % of indicators with data
+  calculatedAt?: string
 }
 
 export interface PropertyAddress {
@@ -221,6 +275,9 @@ export interface PropertyData {
   
   // Rental Market Statistics - rental investment analysis
   rentalStats?: RentalMarketStats
+  
+  // Seller Motivation Score - negotiation leverage analysis
+  sellerMotivation?: SellerMotivationScore
 }
 
 // API Response types
