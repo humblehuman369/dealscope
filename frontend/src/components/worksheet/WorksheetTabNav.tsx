@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Home,
   Search,
+  Activity,
 } from 'lucide-react'
 
 interface TabItem {
@@ -33,6 +34,7 @@ const tabs: TabItem[] = [
   { id: 'analyze', label: 'Analyze Property', shortLabel: 'Analyze', icon: Search, section: 'analyze' },
   { id: 'property-details', label: 'Photos & Details', shortLabel: 'Photos & Details', icon: Home, section: 'property-details' },
   { id: 'deal-gap', label: 'Deal Gap', shortLabel: 'Deal Gap', icon: TrendingDown, section: 'deal-gap' },
+  { id: 'metrics', label: 'LTR Metrics', shortLabel: 'Metrics', icon: Activity, section: 'metrics' },
   { id: 'market-data', label: 'Market Data', shortLabel: 'Market Data', icon: BarChart3, section: 'market-data' },
   { id: 'projections', label: 'Buy & Hold Projections', shortLabel: 'Projections', icon: TrendingUp, section: 'projections' },
   { id: 'sales-comps', label: 'Sales Comps & ARV', shortLabel: 'Comps', icon: Building2, section: 'sales-comps' },

@@ -19,6 +19,7 @@ import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/
 import { useDealScore, getDealScoreColor, getDealScoreGrade } from '@/hooks/useDealScore'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
 import { DealGapChart } from '@/components/analytics/DealGapChart'
+import { LTRMetricsChart, buildLTRMetricsData } from './LTRMetricsChart'
 
 // Strategy definitions for switcher
 const strategies = [
@@ -825,6 +826,20 @@ export function LTRWorksheet({
               onBuyPriceChange={setPurchasePrice}
             />
           </div>
+        ) : activeSection === 'metrics' ? (
+          <LTRMetricsChart 
+            data={buildLTRMetricsData({
+              capRatePurchase: calc.capRatePurchase,
+              cashOnCash: calc.cashOnCash,
+              dscr: calc.dscr,
+              noi: calc.noi,
+              grossExpenses: calc.grossExpenses,
+              grossIncome: calc.grossIncome,
+              breakEvenRatio: calc.breakEvenRatio,
+              equityAtPurchase: calc.equityAtPurchase,
+              totalCashNeeded: calc.totalCashNeeded,
+            })}
+          />
         ) : (
         <>
           {/* Mobile: Back to compressed view button */}
