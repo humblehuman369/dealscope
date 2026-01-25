@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, Calculator, BarChart3, LineChart } from 'lucide-react'
+import { Search, Calculator, BarChart3, LineChart, TrendingDown } from 'lucide-react'
 import Link from 'next/link'
 
 interface QuickAction {
@@ -46,10 +46,17 @@ export function QuickActions({ onSearchClick }: QuickActionsProps) {
       href: '/strategies',
       shortcut: '⌘M' 
     },
+    { 
+      label: 'Deal Gap', 
+      description: 'Buy price vs breakeven', 
+      icon: TrendingDown, 
+      href: '/deal-gap',
+      shortcut: '⌘G' 
+    },
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       {actions.map((action, i) => {
         const content = (
           <>

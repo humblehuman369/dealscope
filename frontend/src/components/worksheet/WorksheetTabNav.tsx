@@ -7,6 +7,7 @@ import { WorksheetStrategyId } from '@/constants/worksheetStrategies'
 import {
   BarChart3,
   TrendingUp,
+  TrendingDown,
   DollarSign,
   Building2,
   FileSearch,
