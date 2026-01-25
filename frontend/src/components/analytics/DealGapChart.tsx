@@ -88,15 +88,15 @@ function Chip({ label, value, sub, accent }: ChipProps) {
       />
       <div className="pl-2.5">
         <div 
-          className="text-[20px] font-black tracking-wider uppercase"
+          className="text-[15px] font-black tracking-wider uppercase"
           style={{ color: accent }}
         >
           {label}
         </div>
-        <div className="text-2xl font-black text-slate-900 dark:text-white leading-tight">
+        <div className="text-lg font-black text-slate-900 dark:text-white leading-tight">
           {value}
         </div>
-        <div className="text-[22px] font-semibold text-slate-500 dark:text-white/50">
+        <div className="text-[17px] font-semibold text-slate-500 dark:text-white/50">
           {sub}
         </div>
       </div>
@@ -211,14 +211,14 @@ export function DealGapChart({
         {/* Card Header */}
         <div className="px-3 py-2.5 flex items-start justify-between gap-2.5 border-b border-slate-100 dark:border-white/5 bg-gradient-to-b from-slate-50 dark:from-black/20 to-transparent">
           <div>
-            <h2 className="text-2xl font-black tracking-wider uppercase text-slate-700 dark:text-white">
+            <h2 className="text-lg font-black tracking-wider uppercase text-slate-700 dark:text-white">
               Decision Chart
             </h2>
-            <p className="text-[22px] text-slate-500 dark:text-white/60 mt-0.5">
+            <p className="text-[17px] text-slate-500 dark:text-white/60 mt-0.5">
               Buy Price vs List Price + Breakeven
             </p>
           </div>
-          <span className={`text-[20px] px-2 py-1 rounded-full border font-bold tracking-wide ${getZoneBadgeStyles(decisionHeadline as DealZoneLabel)}`}>
+          <span className={`text-[15px] px-2 py-1 rounded-full border font-bold tracking-wide ${getZoneBadgeStyles(decisionHeadline as DealZoneLabel)}`}>
             {decisionHeadline}
           </span>
         </div>
@@ -282,7 +282,7 @@ export function DealGapChart({
                 {/* Bottom tick */}
                 <div className="absolute left-[-2px] bottom-0 w-3.5 border-t-2 border-slate-600 dark:border-white/60" />
                 {/* Label */}
-                <div className="absolute left-[-10px] top-1/2 -translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[22px] font-black whitespace-nowrap text-slate-700 dark:text-white">
+                <div className="absolute left-[-10px] top-1/2 -translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[17px] font-black whitespace-nowrap text-slate-700 dark:text-white">
                   {dealGapText}
                 </div>
               </div>
@@ -294,7 +294,7 @@ export function DealGapChart({
               >
                 <div className="absolute right-[-2px] top-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
                 <div className="absolute right-[-2px] bottom-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
-                <div className="absolute right-[-2px] top-1/2 translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[22px] font-black whitespace-nowrap text-orange-500">
+                <div className="absolute right-[-2px] top-1/2 translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[17px] font-black whitespace-nowrap text-orange-500">
                   {`${data.listVsBreakevenPercent >= 0 ? '+' : ''}${data.listVsBreakevenPercent.toFixed(0)}%`}
                 </div>
               </div>
@@ -306,7 +306,7 @@ export function DealGapChart({
               >
                 <div className="absolute right-[-2px] top-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
                 <div className="absolute right-[-2px] bottom-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
-                <div className="absolute right-[-2px] top-1/2 translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[22px] font-black whitespace-nowrap text-green-500">
+                <div className="absolute right-[-2px] top-1/2 translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[17px] font-black whitespace-nowrap text-green-500">
                   {`${data.buyVsBreakevenPercent >= 0 ? '+' : ''}${data.buyVsBreakevenPercent.toFixed(1)}%`}
                 </div>
               </div>
@@ -329,20 +329,20 @@ export function DealGapChart({
           {/* Deal Gap Summary Card */}
           <div className="mt-3 p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 flex items-center justify-between gap-3">
             <div className="flex flex-col gap-0.5">
-              <div className="text-[20px] font-black tracking-wider uppercase text-slate-500 dark:text-white/60">
+              <div className="text-[15px] font-black tracking-wider uppercase text-slate-500 dark:text-white/60">
                 Deal Gap
               </div>
-              <div className="text-[22px] font-semibold text-slate-500 dark:text-white/50 whitespace-nowrap overflow-hidden text-ellipsis">
+              <div className="text-[17px] font-semibold text-slate-500 dark:text-white/50 whitespace-nowrap overflow-hidden text-ellipsis">
                 Buy Price vs List Price
               </div>
             </div>
-            <div className="text-4xl font-black text-orange-500">
+            <div className="text-[27px] font-black text-orange-500">
               {dealGapText}
             </div>
           </div>
 
           {/* Footer text */}
-          <p className="mt-2.5 text-[22px] text-slate-500 dark:text-white/60 leading-relaxed">
+          <p className="mt-2.5 text-[17px] text-slate-500 dark:text-white/60 leading-relaxed">
             Buy is{' '}
             <b className={data.buyVsBreakevenPercent <= 0 ? 'text-green-600' : 'text-red-500'}>
               {Math.abs(data.buyVsBreakevenPercent).toFixed(1)}%
@@ -357,10 +357,10 @@ export function DealGapChart({
       {showSlider && (
         <div className="flex items-center justify-between gap-2.5 p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-lg">
           <div>
-            <label htmlFor="buyPosSlider" className="text-[22px] font-black tracking-wider uppercase text-slate-500 dark:text-white/60">
+            <label htmlFor="buyPosSlider" className="text-[17px] font-black tracking-wider uppercase text-slate-500 dark:text-white/60">
               Buy Price Position
             </label>
-            <div className="text-[22px] text-slate-500 dark:text-white/50 mt-1">
+            <div className="text-[17px] text-slate-500 dark:text-white/50 mt-1">
               Slide to move Buy marker (Deal Gap pulses at ≥{thresholdPct}%).
             </div>
           </div>
