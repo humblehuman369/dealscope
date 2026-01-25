@@ -120,6 +120,18 @@ export function DealGapChart({
     buyPrice,
   })
 
+  // Determine if scale needs expansion (when list and buy are within 3% of each other)
+  const needsExpandedScale = useMemo(() => {
+    if (breakeven <= 0) return false
+    const listPct = Math.abs((listPrice - breakeven) / breakeven)
+    const buyPct = Math.abs((buyPrice - breakeven) / breakeven)
+    const diff = Math.abs(listPct - buyPct)
+    return diff < 0.03 // Within 3%
+  }, [listPrice, buyPrice, breakeven])
+
+  // Scale factor: normal is 0.40, expanded is 0.20 (spreads markers further apart)
+  const scaleFactor = needsExpandedScale ? 0.20 : 0.40
+
   // Calculate dynamic ladder positions based on actual price relationships
   // The ladder range spans from highest price to lowest price
   // Breakeven is always at 0.50 (center)
@@ -132,19 +144,19 @@ export function DealGapChart({
   const listPosOnLadder = useMemo(() => {
     if (breakeven <= 0) return 0.15
     const listPct = (listPrice - breakeven) / breakeven // % difference from breakeven
-    // Map to ladder: +20% above breakeven → 0.10, at breakeven → 0.50, -20% below → 0.90
-    const pos = 0.50 - (listPct / 0.40) * 0.40 // Scale: ±20% maps to ±0.40 on ladder
+    // Map to ladder using dynamic scale factor
+    const pos = 0.50 - (listPct / scaleFactor) * 0.40
     return Math.max(0.05, Math.min(0.95, pos))
-  }, [listPrice, breakeven])
+  }, [listPrice, breakeven, scaleFactor])
   
   // Calculate buy price position relative to breakeven
   const buyPosOnLadder = useMemo(() => {
     if (breakeven <= 0) return 0.65
     const buyPct = (buyPrice - breakeven) / breakeven // % difference from breakeven
-    // Map to ladder: +20% above breakeven → 0.10, at breakeven → 0.50, -20% below → 0.90
-    const pos = 0.50 - (buyPct / 0.40) * 0.40
+    // Map to ladder using dynamic scale factor
+    const pos = 0.50 - (buyPct / scaleFactor) * 0.40
     return Math.max(0.05, Math.min(0.95, pos))
-  }, [buyPrice, breakeven])
+  }, [buyPrice, breakeven, scaleFactor])
 
   // Colors for each position
   const listAccent = colorForPosition(listPosOnLadder)
@@ -228,7 +240,7 @@ export function DealGapChart({
             </div>
 
             {/* Right: Gradient Ladder (centered in remaining space) */}
-            <div className="flex-1 flex justify-center max-w-[180px] mx-auto">
+            <div className="flex-1 flex justify-center max-w-[200px] mx-auto pl-10">
               <div 
                 className="h-[360px] w-8 rounded-2xl relative shadow-lg"
               style={{
@@ -300,6 +312,22 @@ export function DealGapChart({
                 style={{ top: `${buyPosOnLadder * 100}%` }}
                 title="Buy Price"
               />
+
+              {/* LIST Label - left of list marker */}
+              <div 
+                className="absolute left-[-35px] -translate-y-1/2 text-xs font-bold text-slate-600 dark:text-white/70"
+                style={{ top: `${listPosOnLadder * 100}%` }}
+              >
+                LIST
+              </div>
+
+              {/* BUY Label - left of buy marker */}
+              <div 
+                className="absolute left-[-35px] -translate-y-1/2 text-xs font-bold text-slate-600 dark:text-white/70"
+                style={{ top: `${buyPosOnLadder * 100}%` }}
+              >
+                BUY
+              </div>
               </div>
             </div>
           </div>
