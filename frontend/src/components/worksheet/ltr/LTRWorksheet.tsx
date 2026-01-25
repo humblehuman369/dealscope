@@ -821,9 +821,7 @@ export function LTRWorksheet({
               breakeven={breakeven}
               listPrice={listPrice}
               initialBuyPrice={purchasePrice}
-              showSlider={true}
               showHeader={false}
-              onBuyPriceChange={setPurchasePrice}
             />
           </div>
         ) : activeSection === 'metrics' ? (

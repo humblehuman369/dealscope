@@ -320,16 +320,12 @@ export interface DealGapChartProps {
   breakeven: number
   /** Current list/asking price */
   listPrice: number
-  /** Initial buy price (defaults to calculated from breakeven) */
+  /** Buy price from worksheet (defaults to 90% of breakeven) */
   initialBuyPrice?: number
   /** Threshold percentage for deal gap glow effect */
   thresholdPct?: number
-  /** Whether to show the interactive slider */
-  showSlider?: boolean
   /** Whether to show the header card (default: true, set false when embedded) */
   showHeader?: boolean
-  /** Callback when buy price changes via slider */
-  onBuyPriceChange?: (buyPrice: number) => void
   /** Optional class name */
   className?: string
 }

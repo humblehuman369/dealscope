@@ -1,12 +1,8 @@
 'use client'
 
-import React, { useMemo, useState, useCallback } from 'react'
+import React, { useMemo } from 'react'
 import { DealGapChartProps, DealZoneLabel } from './types'
-import { 
-  useDealGap, 
-  buyPriceFromSliderPosition, 
-  sliderPositionFromBuyPrice 
-} from '@/hooks/useDealGap'
+import { useDealGap } from '@/hooks/useDealGap'
 
 /**
  * DealGapChart Component
@@ -93,10 +89,10 @@ function Chip({ label, value, sub, accent }: ChipProps) {
         >
           {label}
         </div>
-        <div className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+        <div className="text-lg font-black text-slate-900 dark:text-white leading-tight text-center">
           {value}
         </div>
-        <div className="text-[17px] font-semibold text-slate-500 dark:text-white/50">
+        <div className="text-[17px] font-semibold text-slate-500 dark:text-white/50 text-center">
           {sub}
         </div>
       </div>
@@ -109,59 +105,49 @@ export function DealGapChart({
   listPrice,
   initialBuyPrice,
   thresholdPct = 10,
-  showSlider = true,
   showHeader = true,
-  onBuyPriceChange,
   className = '',
 }: DealGapChartProps) {
-  // Calculate initial slider position
-  const initialPosition = useMemo(() => {
-    const buyPrice = initialBuyPrice ?? Math.round(breakeven * 0.9)
-    return sliderPositionFromBuyPrice(breakeven, buyPrice)
+  // Use the actual buy price from props (default to 90% of breakeven if not provided)
+  const buyPrice = useMemo(() => {
+    return initialBuyPrice ?? Math.round(breakeven * 0.9)
   }, [breakeven, initialBuyPrice])
 
-  const [sliderPosition, setSliderPosition] = useState(initialPosition)
-
-  // Bug fix: Sync slider state when initialPosition changes (e.g., when breakeven updates from backend)
-  React.useEffect(() => {
-    setSliderPosition(initialPosition)
-  }, [initialPosition])
-
-  // Calculate buy price from slider
-  const buyPrice = useMemo(() => {
-    return buyPriceFromSliderPosition(breakeven, sliderPosition)
-  }, [breakeven, sliderPosition])
-
-  // Get deal gap data
+  // Get deal gap data with actual worksheet values
   const { data } = useDealGap({
     listPrice,
     breakevenPrice: breakeven,
     buyPrice,
   })
 
-  // Handle slider change
-  const handleSliderChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newPosition = Number(e.target.value)
-    setSliderPosition(newPosition)
-    if (onBuyPriceChange) {
-      const newBuyPrice = buyPriceFromSliderPosition(breakeven, newPosition)
-      onBuyPriceChange(newBuyPrice)
-    }
-  }, [breakeven, onBuyPriceChange])
-
-  // Fixed positions on ladder (0 = top, 1 = bottom)
-  const listPosFixed = 0.15  // List price near top (red zone)
-  const bePos = 0.50         // Breakeven at center
+  // Calculate dynamic ladder positions based on actual price relationships
+  // The ladder range spans from highest price to lowest price
+  // Breakeven is always at 0.50 (center)
+  // Other positions are calculated relative to breakeven
+  const bePos = 0.50 // Breakeven always at center
   
-  // Buy position mapped from slider (0-100 → 0.20-0.80 on ladder)
-  // Bug fix: Slider 50 must align with breakeven at 0.50
-  // Formula: 0.20 + (position/100) * 0.60 gives: 0→0.20, 50→0.50, 100→0.80
+  // Calculate list price position relative to breakeven
+  // If list > breakeven: position above center (< 0.50)
+  // If list < breakeven: position below center (> 0.50)
+  const listPosOnLadder = useMemo(() => {
+    if (breakeven <= 0) return 0.15
+    const listPct = (listPrice - breakeven) / breakeven // % difference from breakeven
+    // Map to ladder: +20% above breakeven → 0.10, at breakeven → 0.50, -20% below → 0.90
+    const pos = 0.50 - (listPct / 0.40) * 0.40 // Scale: ±20% maps to ±0.40 on ladder
+    return Math.max(0.05, Math.min(0.95, pos))
+  }, [listPrice, breakeven])
+  
+  // Calculate buy price position relative to breakeven
   const buyPosOnLadder = useMemo(() => {
-    return 0.20 + (sliderPosition / 100) * 0.60
-  }, [sliderPosition])
+    if (breakeven <= 0) return 0.65
+    const buyPct = (buyPrice - breakeven) / breakeven // % difference from breakeven
+    // Map to ladder: +20% above breakeven → 0.10, at breakeven → 0.50, -20% below → 0.90
+    const pos = 0.50 - (buyPct / 0.40) * 0.40
+    return Math.max(0.05, Math.min(0.95, pos))
+  }, [buyPrice, breakeven])
 
   // Colors for each position
-  const listAccent = colorForPosition(listPosFixed)
+  const listAccent = colorForPosition(listPosOnLadder)
   const beAccent = colorForPosition(bePos)
   const buyAccent = colorForPosition(buyPosOnLadder)
 
@@ -267,14 +253,14 @@ export function DealGapChart({
               {/* Deal Gap Bracket (Left side) */}
               <div
                 className={`absolute left-[-30px] w-[22px] border-l-2 border-slate-600 dark:border-white/60 ${showGlow ? 'animate-pulse' : ''}`}
-                style={bracketStyle(listPosFixed, buyPosOnLadder)}
+                style={bracketStyle(listPosOnLadder, buyPosOnLadder)}
               >
                 {/* Top tick */}
                 <div className="absolute left-[-2px] top-0 w-3.5 border-t-2 border-slate-600 dark:border-white/60" />
                 {/* Bottom tick */}
                 <div className="absolute left-[-2px] bottom-0 w-3.5 border-t-2 border-slate-600 dark:border-white/60" />
                 {/* Label */}
-                <div className="absolute left-[-10px] top-1/2 -translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-[17px] font-black whitespace-nowrap text-slate-700 dark:text-white">
+                <div className="absolute left-[-10px] top-1/2 -translate-x-full -translate-y-1/2 px-2 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-lg font-black whitespace-nowrap text-slate-900 dark:text-white">
                   {dealGapText}
                 </div>
               </div>
@@ -282,7 +268,7 @@ export function DealGapChart({
               {/* List vs BE Bracket (Right side, upper) */}
               <div
                 className="absolute right-[-18px] w-[22px] border-r-2 border-slate-400 dark:border-white/40 opacity-90"
-                style={bracketStyle(listPosFixed, bePos)}
+                style={bracketStyle(listPosOnLadder, bePos)}
               >
                 <div className="absolute right-[-2px] top-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
                 <div className="absolute right-[-2px] bottom-0 w-3.5 border-t-2 border-slate-400 dark:border-white/40" />
@@ -306,7 +292,7 @@ export function DealGapChart({
               {/* Markers */}
               <div 
                 className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-slate-600 opacity-95"
-                style={{ top: `${listPosFixed * 100}%` }}
+                style={{ top: `${listPosOnLadder * 100}%` }}
                 title="List Price"
               />
               <div 
@@ -319,11 +305,11 @@ export function DealGapChart({
           </div>
 
           {/* Deal Gap Summary Card */}
-          <div className="mt-1 p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 flex items-center justify-between gap-3">
-            <div className="text-[15px] font-black tracking-wider uppercase text-slate-500 dark:text-white/60">
+          <div className="mt-1 p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 w-[160px]">
+            <div className="text-[15px] font-black tracking-wider uppercase text-slate-500 dark:text-white/60 text-center">
               Deal Gap
             </div>
-            <div className="text-[27px] font-black text-orange-500">
+            <div className="text-lg font-black text-slate-900 dark:text-white text-center">
               {dealGapText}
             </div>
           </div>
