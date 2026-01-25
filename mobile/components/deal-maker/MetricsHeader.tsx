@@ -197,12 +197,14 @@ const styles = StyleSheet.create({
   badgesColumn: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingLeft: 12,
+    paddingLeft: 16,
+    marginLeft: 8,
     borderLeftWidth: 1,
     borderLeftColor: 'rgba(255,255,255,0.1)',
+    minWidth: 80,
   },
   badgeSpacer: {
-    height: 8,
+    height: 12,
   },
 });
 

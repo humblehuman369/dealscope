@@ -1,11 +1,12 @@
 /**
  * ScoreBadge - Circular score/grade badge component for Deal Maker header
  * Displays either a numeric score (0-100) or a letter grade (A+, A, B, C, D, F)
+ * 
+ * Uses simple View-based circular design for reliability
  */
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Svg, { Circle, G } from 'react-native-svg';
 
 import { colors } from '../../theme/colors';
 import { ScoreBadgeProps, DealGrade, ProfitGrade } from './types';
@@ -54,9 +55,9 @@ export function getScoreGrade(score: number): DealGrade {
 // =============================================================================
 
 const SIZES = {
-  small: { outer: 56, strokeWidth: 4, fontSize: 16, labelSize: 8 },
-  medium: { outer: 72, strokeWidth: 5, fontSize: 22, labelSize: 10 },
-  large: { outer: 90, strokeWidth: 6, fontSize: 28, labelSize: 12 },
+  small: { outer: 50, border: 3, fontSize: 16, labelSize: 8 },
+  medium: { outer: 64, border: 3, fontSize: 20, labelSize: 9 },
+  large: { outer: 80, border: 4, fontSize: 26, labelSize: 11 },
 };
 
 // =============================================================================
@@ -70,59 +71,35 @@ export function ScoreBadge({
   size = 'medium',
 }: ScoreBadgeProps) {
   const sizeConfig = SIZES[size];
-  const { outer, strokeWidth, fontSize, labelSize } = sizeConfig;
-  const radius = (outer - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
+  const { outer, border, fontSize, labelSize } = sizeConfig;
 
   // Determine display value and color
   const isScoreType = type === 'dealScore';
   const displayValue = isScoreType ? (score ?? 0) : (grade ?? 'B');
-  const progressValue = isScoreType ? (score ?? 0) : gradeToProgress(grade ?? 'B');
   const accentColor = isScoreType 
     ? getScoreColor(score ?? 0)
     : getGradeColor(grade ?? 'B');
   
-  const progress = (progressValue / 100) * circumference;
   const label = isScoreType ? 'DEAL\nSCORE' : 'Profit\nQuality';
 
   return (
     <View style={styles.container}>
-      {/* Circular ring */}
-      <View style={[styles.ringWrapper, { width: outer, height: outer }]}>
-        <Svg width={outer} height={outer}>
-          <G rotation="-90" origin={`${outer / 2}, ${outer / 2}`}>
-            {/* Background circle */}
-            <Circle
-              cx={outer / 2}
-              cy={outer / 2}
-              r={radius}
-              stroke="rgba(255,255,255,0.1)"
-              strokeWidth={strokeWidth}
-              fill="none"
-            />
-            {/* Progress circle */}
-            <Circle
-              cx={outer / 2}
-              cy={outer / 2}
-              r={radius}
-              stroke={accentColor}
-              strokeWidth={strokeWidth}
-              fill="none"
-              strokeDasharray={`${progress}, ${circumference}`}
-              strokeLinecap="round"
-            />
-          </G>
-        </Svg>
-
-        {/* Center content */}
-        <View style={styles.centerContent}>
-          <Text style={[
-            styles.scoreText,
-            { fontSize, color: accentColor }
-          ]}>
-            {displayValue}
-          </Text>
-        </View>
+      {/* Circular badge */}
+      <View 
+        style={[
+          styles.circle, 
+          { 
+            width: outer, 
+            height: outer, 
+            borderRadius: outer / 2,
+            borderWidth: border,
+            borderColor: accentColor,
+          }
+        ]}
+      >
+        <Text style={[styles.scoreText, { fontSize, color: accentColor }]}>
+          {displayValue}
+        </Text>
       </View>
 
       {/* Label below */}
@@ -134,22 +111,6 @@ export function ScoreBadge({
 }
 
 // =============================================================================
-// HELPERS
-// =============================================================================
-
-function gradeToProgress(grade: DealGrade | ProfitGrade): number {
-  switch (grade) {
-    case 'A+': return 95;
-    case 'A': return 85;
-    case 'B': return 70;
-    case 'C': return 55;
-    case 'D': return 40;
-    case 'F': return 20;
-    default: return 50;
-  }
-}
-
-// =============================================================================
 // STYLES
 // =============================================================================
 
@@ -157,25 +118,21 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
   },
-  ringWrapper: {
-    position: 'relative',
+  circle: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  centerContent: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   scoreText: {
     fontWeight: '800',
+    textAlign: 'center',
   },
   label: {
     color: 'rgba(255,255,255,0.6)',
     fontWeight: '600',
     textAlign: 'center',
     marginTop: 4,
-    lineHeight: 12,
+    lineHeight: 11,
   },
 });
 
