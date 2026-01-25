@@ -121,6 +121,11 @@ export function DealGapChart({
 
   const [sliderPosition, setSliderPosition] = useState(initialPosition)
 
+  // Bug fix: Sync slider state when initialPosition changes (e.g., when breakeven updates from backend)
+  React.useEffect(() => {
+    setSliderPosition(initialPosition)
+  }, [initialPosition])
+
   // Calculate buy price from slider
   const buyPrice = useMemo(() => {
     return buyPriceFromSliderPosition(breakeven, sliderPosition)
@@ -147,9 +152,11 @@ export function DealGapChart({
   const listPosFixed = 0.15  // List price near top (red zone)
   const bePos = 0.50         // Breakeven at center
   
-  // Buy position mapped from slider (0-100 → 0.3-0.9 on ladder)
+  // Buy position mapped from slider (0-100 → 0.20-0.80 on ladder)
+  // Bug fix: Slider 50 must align with breakeven at 0.50
+  // Formula: 0.20 + (position/100) * 0.60 gives: 0→0.20, 50→0.50, 100→0.80
   const buyPosOnLadder = useMemo(() => {
-    return 0.3 + (sliderPosition / 100) * 0.6
+    return 0.20 + (sliderPosition / 100) * 0.60
   }, [sliderPosition])
 
   // Colors for each position
