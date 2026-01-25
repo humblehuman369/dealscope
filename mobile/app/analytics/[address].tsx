@@ -94,6 +94,24 @@ export default function PropertyAnalyticsScreen() {
           <View style={styles.headerActions}>
             <TouchableOpacity 
               style={[styles.iconBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.05)' }]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push({
+                  pathname: '/deal-maker/[address]',
+                  params: {
+                    address: encodeURIComponent(decodedAddress),
+                    listPrice: String(property.listPrice),
+                    rent: String(property.monthlyRent),
+                    tax: String(property.propertyTaxes),
+                    insurance: String(property.insurance),
+                  },
+                });
+              }}
+            >
+              <Ionicons name="calculator-outline" size={18} color={textColor} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.iconBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.05)' }]}
             >
               <Text style={{ fontSize: 16 }}>{isDark ? '☀️' : '🌙'}</Text>
             </TouchableOpacity>

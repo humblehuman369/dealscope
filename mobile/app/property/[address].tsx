@@ -178,6 +178,38 @@ export default function PropertyDetailScreen() {
           onAssumptionsChange={setAssumptions}
         />
 
+        {/* Deal Maker CTA */}
+        <TouchableOpacity
+          style={styles.dealMakerCard}
+          onPress={() => {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            router.push({
+              pathname: '/deal-maker/[address]',
+              params: {
+                address: encodeURIComponent(decodedAddress),
+                listPrice: String(analytics.pricing.listPrice),
+                rent: String(analytics.pricing.rentEstimate),
+                tax: String(analytics.property.yearBuilt ? 3600 : 3600), // Default tax
+                insurance: String(1500),
+              },
+            });
+          }}
+          activeOpacity={0.8}
+        >
+          <View style={styles.dealMakerContent}>
+            <View style={styles.dealMakerIcon}>
+              <Ionicons name="calculator" size={24} color={colors.white} />
+            </View>
+            <View style={styles.dealMakerText}>
+              <Text style={styles.dealMakerTitle}>Open Deal Maker</Text>
+              <Text style={styles.dealMakerSubtitle}>
+                Adjust terms & see impact on returns
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.accent[500]} />
+          </View>
+        </TouchableOpacity>
+
         {/* Strategy Cards */}
         <Text style={[styles.sectionTitle, { marginHorizontal: 16, marginTop: 8 }]}>
           Investment Strategies
@@ -938,6 +970,46 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.white,
+  },
+  // Deal Maker Card
+  dealMakerCard: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    backgroundColor: colors.navy[900],
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: colors.navy[900],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  dealMakerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  dealMakerIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: colors.primary[600],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dealMakerText: {
+    flex: 1,
+  },
+  dealMakerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.white,
+  },
+  dealMakerSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 2,
   },
 });
 
