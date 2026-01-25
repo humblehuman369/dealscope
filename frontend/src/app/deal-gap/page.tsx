@@ -216,8 +216,6 @@ export default function DealGapPage() {
             listPrice={listPrice}
             initialBuyPrice={buyPrice}
             thresholdPct={10}
-            showSlider={true}
-            onBuyPriceChange={setBuyPrice}
           />
         </section>
 
