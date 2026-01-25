@@ -209,18 +209,10 @@ export function DealGapChart({
       {/* Main Card */}
       <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-lg overflow-hidden">
         {/* Card Header */}
-        <div className="px-3 py-2.5 flex items-start justify-between gap-2.5 border-b border-slate-100 dark:border-white/5 bg-gradient-to-b from-slate-50 dark:from-black/20 to-transparent">
-          <div>
-            <h2 className="text-lg font-black tracking-wider uppercase text-slate-700 dark:text-white">
-              Decision Chart
-            </h2>
-            <p className="text-[17px] text-slate-500 dark:text-white/60 mt-0.5">
-              Buy Price vs List Price + Breakeven
-            </p>
-          </div>
-          <span className={`text-[15px] px-2 py-1 rounded-full border font-bold tracking-wide ${getZoneBadgeStyles(decisionHeadline as DealZoneLabel)}`}>
-            {decisionHeadline}
-          </span>
+        <div className="px-3 py-2.5 border-b border-slate-100 dark:border-white/5 bg-gradient-to-b from-slate-50 dark:from-black/20 to-transparent">
+          <h2 className="text-lg font-black tracking-wider uppercase text-slate-700 dark:text-white">
+            Decision Chart
+          </h2>
         </div>
 
         {/* Card Body */}
@@ -327,14 +319,9 @@ export function DealGapChart({
           </div>
 
           {/* Deal Gap Summary Card */}
-          <div className="mt-3 p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 flex items-center justify-between gap-3">
-            <div className="flex flex-col gap-0.5">
-              <div className="text-[15px] font-black tracking-wider uppercase text-slate-500 dark:text-white/60">
-                Deal Gap
-              </div>
-              <div className="text-[17px] font-semibold text-slate-500 dark:text-white/50 whitespace-nowrap overflow-hidden text-ellipsis">
-                Buy Price vs List Price
-              </div>
+          <div className="mt-1 p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 flex items-center justify-between gap-3">
+            <div className="text-[15px] font-black tracking-wider uppercase text-slate-500 dark:text-white/60">
+              Deal Gap
             </div>
             <div className="text-[27px] font-black text-orange-500">
               {dealGapText}
@@ -353,28 +340,6 @@ export function DealGapChart({
         </div>
       </div>
 
-      {/* Slider Section */}
-      {showSlider && (
-        <div className="flex items-center justify-between gap-2.5 p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-lg">
-          <div>
-            <label htmlFor="buyPosSlider" className="text-[17px] font-black tracking-wider uppercase text-slate-500 dark:text-white/60">
-              Buy Price Position
-            </label>
-            <div className="text-[17px] text-slate-500 dark:text-white/50 mt-1">
-              Slide to move Buy marker (Deal Gap pulses at ≥{thresholdPct}%).
-            </div>
-          </div>
-          <input
-            id="buyPosSlider"
-            type="range"
-            min="0"
-            max="100"
-            value={sliderPosition}
-            onChange={handleSliderChange}
-            className="w-48 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500"
-          />
-        </div>
-      )}
     </div>
   )
 }
