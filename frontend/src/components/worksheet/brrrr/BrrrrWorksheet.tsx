@@ -424,7 +424,7 @@ export function BrrrrWorksheet({ property, propertyId, onExportPDF }: BrrrrWorks
               monthlyCashFlow: calc.monthlyCashFlow,
               annualCashFlow: calc.annualCashFlow,
               dscr: calc.dscr,
-              capRateRefi: calc.capRateRefi,
+              capRateRefi: calc.capRate,
               totalHoldingCosts: calc.totalHoldingCosts,
               holdingMonths: holdingMonths,
             })}
