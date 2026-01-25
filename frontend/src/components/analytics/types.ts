@@ -326,6 +326,8 @@ export interface DealGapChartProps {
   thresholdPct?: number
   /** Whether to show the interactive slider */
   showSlider?: boolean
+  /** Whether to show the header card (default: true, set false when embedded) */
+  showHeader?: boolean
   /** Callback when buy price changes via slider */
   onBuyPriceChange?: (buyPrice: number) => void
   /** Optional class name */

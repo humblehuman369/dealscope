@@ -18,6 +18,7 @@ import { ArrowLeft, ChevronRight } from 'lucide-react'
 import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
 import { useDealScore, getDealScoreColor, getDealScoreGrade } from '@/hooks/useDealScore'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
+import { DealGapChart } from '@/components/analytics/DealGapChart'
 
 // Strategy definitions for switcher
 const strategies = [
@@ -813,6 +814,17 @@ export function LTRWorksheet({
               <EquityChart />
             </div>
           </>
+        ) : activeSection === 'deal-gap' ? (
+          <div className="max-w-xl mx-auto">
+            <DealGapChart
+              breakeven={breakeven}
+              listPrice={listPrice}
+              initialBuyPrice={purchasePrice}
+              showSlider={true}
+              showHeader={false}
+              onBuyPriceChange={setPurchasePrice}
+            />
+          </div>
         ) : (
         <>
           {/* Mobile: Back to compressed view button */}

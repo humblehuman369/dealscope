@@ -110,6 +110,7 @@ export function DealGapChart({
   initialBuyPrice,
   thresholdPct = 10,
   showSlider = true,
+  showHeader = true,
   onBuyPriceChange,
   className = '',
 }: DealGapChartProps) {
@@ -191,17 +192,19 @@ export function DealGapChart({
 
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between gap-2.5 p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-lg">
-        <div>
-          <div className="text-xs font-black tracking-wider uppercase text-slate-700 dark:text-white">
-            Price Ladder
-          </div>
-          <div className="text-[11px] text-slate-500 dark:text-white/60 mt-0.5">
-            Deal Gap (Buy vs List) + Delta brackets vs Breakeven
+      {/* Header - hidden when embedded in worksheet */}
+      {showHeader && (
+        <div className="flex items-center justify-between gap-2.5 p-3 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-lg">
+          <div>
+            <div className="text-xs font-black tracking-wider uppercase text-slate-700 dark:text-white">
+              Price Ladder
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-white/60 mt-0.5">
+              Deal Gap (Buy vs List) + Delta brackets vs Breakeven
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Card */}
       <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-lg overflow-hidden">
