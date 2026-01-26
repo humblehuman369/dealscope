@@ -242,6 +242,13 @@ export function DealMakerPage({
     setActiveTab(prev => prev === tabId ? null : tabId)
   }, [])
 
+  const handleFinish = useCallback(() => {
+    // TODO: Save deal to database or navigate to summary
+    console.log('Deal saved:', { state, metrics })
+    // For now, navigate back
+    router.back()
+  }, [state, metrics, router])
+
   const handleContinue = useCallback((currentTabId: TabId) => {
     // Mark current tab as completed
     setCompletedTabs(prev => new Set(prev).add(currentTabId))
@@ -257,13 +264,6 @@ export function DealMakerPage({
       handleFinish()
     }
   }, [handleFinish])
-
-  const handleFinish = useCallback(() => {
-    // TODO: Save deal to database or navigate to summary
-    console.log('Deal saved:', { state, metrics })
-    // For now, navigate back
-    router.back()
-  }, [state, metrics, router])
 
   const handleBack = useCallback(() => {
     router.back()
