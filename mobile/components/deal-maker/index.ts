@@ -1,8 +1,9 @@
 /**
- * Deal Maker Component Exports
+ * Deal Maker Pro Component Exports
  */
 
 export * from './types';
+export * from './icons';
 export * from './DealMakerSlider';
 export * from './ScoreBadge';
 export * from './MetricsHeader';

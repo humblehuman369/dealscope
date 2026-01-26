@@ -1,6 +1,6 @@
 /**
- * WorksheetTab - Accordion tab component for Deal Maker worksheet
- * Features: Expand/collapse, status indicators, derived output box, continue button
+ * WorksheetTab - Deal Maker Pro accordion card component
+ * Features: SVG icons, chevron rotation, teal accent colors, modern styling
  */
 
 import React from 'react';
@@ -11,13 +11,13 @@ import {
   TouchableOpacity, 
   LayoutAnimation, 
   Platform, 
-  UIManager 
+  UIManager,
+  Animated,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
-import { colors } from '../../theme/colors';
-import { WorksheetTabProps, TabStatus } from './types';
+import { WorksheetTabProps, DEAL_MAKER_PRO_COLORS } from './types';
+import { ChevronDownIcon, ArrowRightIcon } from './icons';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -37,7 +37,7 @@ export function WorksheetTab({
   derivedOutput,
   isLastTab = false,
 }: WorksheetTabProps) {
-  const { title, icon, status, order } = config;
+  const { title, icon: IconComponent } = config;
 
   const handleToggle = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -51,37 +51,30 @@ export function WorksheetTab({
   };
 
   return (
-    <View style={styles.container}>
-      {/* Tab Header */}
+    <View style={[
+      styles.container,
+      isExpanded && styles.containerActive,
+    ]}>
+      {/* Accordion Header */}
       <TouchableOpacity 
-        style={[
-          styles.header,
-          isExpanded && styles.headerExpanded,
-          status === 'completed' && styles.headerCompleted,
-        ]} 
+        style={styles.header} 
         onPress={handleToggle}
         activeOpacity={0.7}
       >
-        <View style={styles.headerLeft}>
-          {/* Status Indicator */}
-          <StatusIndicator status={status} order={order} />
-          
-          {/* Icon and Title */}
-          <Text style={styles.icon}>{icon}</Text>
-          <Text style={[
-            styles.title,
-            status === 'pending' && styles.titlePending,
-          ]}>
-            {title}
-          </Text>
+        {/* Icon */}
+        <View style={styles.iconWrapper}>
+          <IconComponent size={24} color={DEAL_MAKER_PRO_COLORS.iconTeal} />
         </View>
-
-        <View style={styles.headerRight}>
-          <Ionicons 
-            name={isExpanded ? 'chevron-up' : 'chevron-down'} 
-            size={20} 
-            color={status === 'pending' ? colors.gray[400] : colors.gray[600]} 
-          />
+        
+        {/* Title */}
+        <Text style={styles.title}>{title}</Text>
+        
+        {/* Chevron - rotates when expanded */}
+        <View style={[
+          styles.chevronWrapper,
+          isExpanded && styles.chevronRotated,
+        ]}>
+          <ChevronDownIcon size={20} color={DEAL_MAKER_PRO_COLORS.chevron} />
         </View>
       </TouchableOpacity>
 
@@ -93,23 +86,26 @@ export function WorksheetTab({
             {children}
           </View>
 
-          {/* Derived Output Box */}
+          {/* Summary/Derived Output Box */}
           {derivedOutput && (
-            <View style={styles.derivedBox}>
-              <Text style={styles.derivedLabel}>{derivedOutput.label}</Text>
-              <Text style={styles.derivedValue}>{derivedOutput.value}</Text>
+            <View style={styles.summaryBox}>
+              <Text style={styles.summaryLabel}>{derivedOutput.label}</Text>
+              <Text style={styles.summaryValue}>{derivedOutput.value}</Text>
             </View>
           )}
 
-          {/* Continue Button */}
+          {/* CTA Button */}
           <TouchableOpacity 
-            style={styles.continueButton} 
+            style={styles.ctaButton} 
             onPress={handleContinue}
             activeOpacity={0.8}
           >
-            <Text style={styles.continueText}>
-              {isLastTab ? 'Finish & Save Deal' : `Continue to Next →`}
+            <Text style={styles.ctaText}>
+              {isLastTab ? 'Finish & Save Deal' : 'Continue to Next'}
             </Text>
+            {!isLastTab && (
+              <ArrowRightIcon size={20} color={DEAL_MAKER_PRO_COLORS.ctaText} />
+            )}
           </TouchableOpacity>
         </View>
       )}
@@ -118,163 +114,107 @@ export function WorksheetTab({
 }
 
 // =============================================================================
-// STATUS INDICATOR
-// =============================================================================
-
-interface StatusIndicatorProps {
-  status: TabStatus;
-  order: number;
-}
-
-function StatusIndicator({ status, order }: StatusIndicatorProps) {
-  if (status === 'completed') {
-    return (
-      <View style={[styles.statusCircle, styles.statusCompleted]}>
-        <Ionicons name="checkmark" size={14} color={colors.white} />
-      </View>
-    );
-  }
-
-  return (
-    <View style={[
-      styles.statusCircle,
-      status === 'active' && styles.statusActive,
-      status === 'pending' && styles.statusPending,
-    ]}>
-      <Text style={[
-        styles.statusNumber,
-        status === 'active' && styles.statusNumberActive,
-      ]}>
-        {order}
-      </Text>
-    </View>
-  );
-}
-
-// =============================================================================
-// STYLES
+// STYLES - Exact match to design specification
 // =============================================================================
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.white,
+    backgroundColor: DEAL_MAKER_PRO_COLORS.cardBg,
     borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 8,
-    shadowColor: colors.black,
+    marginBottom: 10,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: DEAL_MAKER_PRO_COLORS.cardBorder,
     overflow: 'hidden',
+  },
+  containerActive: {
+    shadowColor: '#0891B2',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 0,
+    elevation: 0,
+    borderWidth: 2,
+    borderColor: DEAL_MAKER_PRO_COLORS.activeRing,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderBottomWidth: 0,
+    gap: 12,
   },
-  headerExpanded: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[100],
-  },
-  headerCompleted: {
-    backgroundColor: colors.gray[50],
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusCircle: {
+  iconWrapper: {
     width: 24,
     height: 24,
-    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-  },
-  statusActive: {
-    borderColor: colors.primary[500],
-    backgroundColor: colors.primary[50],
-  },
-  statusCompleted: {
-    borderColor: colors.profit.main,
-    backgroundColor: colors.profit.main,
-    borderWidth: 0,
-  },
-  statusPending: {
-    borderColor: colors.gray[300],
-    backgroundColor: colors.gray[50],
-  },
-  statusNumber: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.gray[500],
-  },
-  statusNumberActive: {
-    color: colors.primary[600],
-  },
-  icon: {
-    fontSize: 18,
   },
   title: {
-    fontSize: 16,
+    flex: 1,
+    fontSize: 15,
     fontWeight: '600',
-    color: colors.gray[900],
+    color: DEAL_MAKER_PRO_COLORS.inputLabel,
   },
-  titlePending: {
-    color: colors.gray[400],
+  chevronWrapper: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chevronRotated: {
+    transform: [{ rotate: '180deg' }],
   },
   content: {
-    padding: 16,
-    paddingTop: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: DEAL_MAKER_PRO_COLORS.cardBorder,
   },
   slidersContainer: {
-    marginBottom: 16,
+    marginTop: 16,
   },
-  derivedBox: {
-    backgroundColor: colors.gray[50],
-    borderRadius: 10,
-    padding: 16,
-    marginBottom: 16,
+  summaryBox: {
+    backgroundColor: DEAL_MAKER_PRO_COLORS.summaryBg,
     borderWidth: 1,
-    borderColor: colors.gray[200],
+    borderColor: DEAL_MAKER_PRO_COLORS.summaryBorder,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 16,
   },
-  derivedLabel: {
-    fontSize: 11,
+  summaryLabel: {
+    fontSize: 10,
     fontWeight: '600',
-    color: colors.gray[500],
+    color: DEAL_MAKER_PRO_COLORS.summaryLabel,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.05 * 10,
     marginBottom: 4,
   },
-  derivedValue: {
+  summaryValue: {
     fontSize: 24,
-    fontWeight: '800',
-    color: colors.gray[900],
-  },
-  continueButton: {
-    backgroundColor: colors.primary[600],
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-    shadowColor: colors.primary[900],
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  continueText: {
-    fontSize: 16,
     fontWeight: '700',
-    color: colors.white,
+    color: DEAL_MAKER_PRO_COLORS.summaryValue,
+    fontVariant: ['tabular-nums'],
+  },
+  ctaButton: {
+    backgroundColor: DEAL_MAKER_PRO_COLORS.ctaButton,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 16,
+  },
+  ctaText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: DEAL_MAKER_PRO_COLORS.ctaText,
   },
 });
 

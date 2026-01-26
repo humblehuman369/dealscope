@@ -1,23 +1,20 @@
 /**
- * DealMakerPage - Deal Maker worksheet page
+ * DealMakerPage - Deal Maker Pro worksheet page
  * Route: /deal-maker/[address]
  * 
  * Mobile-friendly worksheet for adjusting deal terms and viewing metric impacts
  */
 
-import React, { useMemo, useCallback } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
-import { colors } from '../../theme/colors';
+import { DEAL_MAKER_PRO_COLORS } from '../../components/deal-maker/types';
 import { DealMakerScreen } from '../../components/deal-maker';
 
 export default function DealMakerPage() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     address: string;
     listPrice?: string;
@@ -50,32 +47,14 @@ export default function DealMakerPage() {
       />
       
       <View style={styles.container}>
-        {/* Back Button Overlay */}
-        <TouchableOpacity 
-          style={[
-            styles.backButton, 
-            { top: insets.top + 8 }
-          ]}
-          onPress={handleBack}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <Ionicons name="arrow-back" size={20} color={colors.white} />
-        </TouchableOpacity>
-
-        {/* Address Display */}
-        <View style={[styles.addressContainer, { top: insets.top + 8 }]}>
-          <Text style={styles.addressText} numberOfLines={1}>
-            {decodedAddress || 'New Deal'}
-          </Text>
-        </View>
-
-        {/* Main Deal Maker Screen */}
+        {/* Main Deal Maker Pro Screen */}
         <DealMakerScreen
-          propertyAddress={decodedAddress}
+          propertyAddress={decodedAddress || 'New Deal'}
           listPrice={listPrice}
           rentEstimate={rentEstimate}
           propertyTax={propertyTax}
           insurance={insurance}
+          onBackPress={handleBack}
         />
       </View>
     </>
@@ -85,30 +64,6 @@ export default function DealMakerPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[100],
-  },
-  backButton: {
-    position: 'absolute',
-    left: 16,
-    zIndex: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addressContainer: {
-    position: 'absolute',
-    left: 60,
-    right: 60,
-    zIndex: 10,
-    alignItems: 'center',
-  },
-  addressText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: 'rgba(255,255,255,0.7)',
-    textAlign: 'center',
+    backgroundColor: DEAL_MAKER_PRO_COLORS.contentBg,
   },
 });

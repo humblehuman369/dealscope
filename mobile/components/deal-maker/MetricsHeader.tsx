@@ -1,76 +1,89 @@
 /**
- * MetricsHeader - Fixed header with 6 key metrics and 2 score badges
- * Layout matches the Deal Maker mockup design
+ * MetricsHeader - Deal Maker Pro header with title, address, and 2x3 metrics grid
+ * Matches the exact design specification with precise colors and typography
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-import { colors } from '../../theme/colors';
-import { MetricsHeaderProps, DealMakerMetrics, DealMakerState } from './types';
-import { ScoreBadge, getScoreGrade } from './ScoreBadge';
-import { formatSliderValue } from './DealMakerSlider';
+import { MetricsHeaderProps, DEAL_MAKER_PRO_COLORS } from './types';
+import { BackIcon } from './icons';
 
 // =============================================================================
 // COMPONENT
 // =============================================================================
 
-export function MetricsHeader({ state, metrics, listPrice }: MetricsHeaderProps) {
-  // Derive profit quality grade from COC Return
-  const profitGrade = getProfitQualityGrade(metrics.cocReturn);
-
+export function MetricsHeader({ 
+  state, 
+  metrics, 
+  listPrice,
+  propertyAddress,
+  onBackPress,
+}: MetricsHeaderProps) {
   return (
     <View style={styles.container}>
-      {/* Title */}
-      <View style={styles.titleRow}>
-        <Text style={styles.titleDeal}>DEAL</Text>
-        <Text style={styles.titleMaker}>MAKER</Text>
+      {/* Top Row: Back button + Title Area */}
+      <View style={styles.headerTop}>
+        {onBackPress && (
+          <TouchableOpacity 
+            style={styles.backBtn} 
+            onPress={onBackPress}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <BackIcon size={20} color="white" />
+          </TouchableOpacity>
+        )}
+        
+        <View style={styles.headerTitleArea}>
+          {/* Address */}
+          {propertyAddress && (
+            <Text style={styles.address} numberOfLines={1}>
+              {propertyAddress}
+            </Text>
+          )}
+          
+          {/* DEAL MAKER PRO Title */}
+          <View style={styles.titleRow}>
+            <Text style={styles.titleDeal}>DEAL </Text>
+            <Text style={styles.titleMaker}>MAKER </Text>
+            <Text style={styles.titlePro}>PRO</Text>
+          </View>
+        </View>
       </View>
 
-      {/* Metrics + Badges Row */}
+      {/* Metrics Grid - 2 columns, 3 rows */}
       <View style={styles.metricsRow}>
-        {/* Left: 6 Metrics */}
+        {/* Left Column */}
         <View style={styles.metricsColumn}>
           <MetricRow 
             label="Buy Price" 
             value={formatCurrency(state.buyPrice)} 
           />
           <MetricRow 
-            label="Cash Needed" 
-            value={formatCurrency(metrics.cashNeeded)} 
-          />
-          <MetricRow 
             label="Deal Gap" 
             value={formatPercentWithSign(metrics.dealGap)} 
-            valueColor={metrics.dealGap >= 0 ? colors.profit.main : colors.loss.main}
-          />
-          <MetricRow 
-            label="Annual Profit" 
-            value={formatCurrency(metrics.annualProfit)} 
-            valueColor={metrics.annualProfit >= 0 ? colors.profit.main : colors.loss.main}
+            valueColor={DEAL_MAKER_PRO_COLORS.dealGapCyan}
           />
           <MetricRow 
             label="CAP Rate" 
             value={formatPercent(metrics.capRate)} 
           />
+        </View>
+
+        {/* Right Column */}
+        <View style={styles.metricsColumn}>
+          <MetricRow 
+            label="Cash Needed" 
+            value={formatCurrency(metrics.cashNeeded)} 
+          />
+          <MetricRow 
+            label="Annual Profit" 
+            value={formatCurrency(metrics.annualProfit)} 
+            valueColor={DEAL_MAKER_PRO_COLORS.annualProfitTeal}
+          />
           <MetricRow 
             label="COC Return" 
             value={formatPercent(metrics.cocReturn)} 
-          />
-        </View>
-
-        {/* Right: 2 Score Badges */}
-        <View style={styles.badgesColumn}>
-          <ScoreBadge 
-            type="dealScore" 
-            score={metrics.dealScore} 
-            size="medium" 
-          />
-          <View style={styles.badgeSpacer} />
-          <ScoreBadge 
-            type="profitQuality" 
-            grade={profitGrade} 
-            size="medium" 
           />
         </View>
       </View>
@@ -90,7 +103,7 @@ interface MetricRowProps {
 
 function MetricRow({ label, value, valueColor }: MetricRowProps) {
   return (
-    <View style={styles.metricRow}>
+    <View style={styles.metricItem}>
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={[styles.metricValue, valueColor && { color: valueColor }]}>
         {value}
@@ -130,81 +143,87 @@ function formatPercentWithSign(value: number): string {
   return `${sign}${(value * 100).toFixed(0)}%`;
 }
 
-function getProfitQualityGrade(cocReturn: number): 'A+' | 'A' | 'B' | 'C' | 'D' | 'F' {
-  const cocPercent = cocReturn * 100;
-  if (cocPercent >= 12) return 'A+';
-  if (cocPercent >= 10) return 'A';
-  if (cocPercent >= 8) return 'B';
-  if (cocPercent >= 5) return 'C';
-  if (cocPercent >= 2) return 'D';
-  return 'F';
-}
-
 // =============================================================================
-// STYLES
+// STYLES - Exact match to design specification
 // =============================================================================
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.navy[900],
-    paddingHorizontal: 16,
-    paddingTop: 8,
+    backgroundColor: DEAL_MAKER_PRO_COLORS.header,
+    paddingHorizontal: 20,
+    paddingTop: 12,
     paddingBottom: 16,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 8,
+  },
+  backBtn: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0.8,
+  },
+  headerTitleArea: {
+    flex: 1,
+    alignItems: 'center',
+    marginRight: 32, // Balance for back button
+  },
+  address: {
+    fontSize: 11,
+    color: DEAL_MAKER_PRO_COLORS.metricLabel,
+    marginBottom: 2,
+    letterSpacing: 0.02 * 11,
   },
   titleRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
-    gap: 8,
   },
   titleDeal: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
-    color: colors.white,
-    letterSpacing: 1,
+    color: DEAL_MAKER_PRO_COLORS.titleWhite,
+    letterSpacing: 0.05 * 22,
   },
   titleMaker: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
-    color: colors.accent[500],
-    letterSpacing: 1,
+    color: DEAL_MAKER_PRO_COLORS.titleCyan,
+    letterSpacing: 0.05 * 22,
+  },
+  titlePro: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: DEAL_MAKER_PRO_COLORS.titleWhite,
+    letterSpacing: 0.05 * 22,
   },
   metricsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 24,
+    marginTop: 12,
   },
   metricsColumn: {
     flex: 1,
-    paddingRight: 12,
+    gap: 6,
   },
-  metricRow: {
+  metricItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 3,
   },
   metricLabel: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.6)',
-    fontWeight: '500',
+    fontSize: 12,
+    color: DEAL_MAKER_PRO_COLORS.metricLabel,
   },
   metricValue: {
-    fontSize: 14,
-    color: colors.white,
-    fontWeight: '700',
-  },
-  badgesColumn: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingLeft: 16,
-    marginLeft: 8,
-    borderLeftWidth: 1,
-    borderLeftColor: 'rgba(255,255,255,0.1)',
-    minWidth: 80,
-  },
-  badgeSpacer: {
-    height: 12,
+    fontSize: 13,
+    fontWeight: '600',
+    color: DEAL_MAKER_PRO_COLORS.metricValue,
+    fontVariant: ['tabular-nums'],
   },
 });
 

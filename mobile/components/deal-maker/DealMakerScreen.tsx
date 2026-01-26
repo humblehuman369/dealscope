@@ -1,5 +1,5 @@
 /**
- * DealMakerScreen - Main container component for the Deal Maker worksheet
+ * DealMakerScreen - Deal Maker Pro main container component
  * Orchestrates state management, calculations, and all child components
  */
 
@@ -16,7 +16,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 
-import { colors } from '../../theme/colors';
 import { calculateMortgagePayment } from '../analytics/calculations';
 
 import { MetricsHeader } from './MetricsHeader';
@@ -36,6 +35,7 @@ import {
   INCOME_SLIDERS,
   EXPENSES_SLIDERS,
   LoanType,
+  DEAL_MAKER_PRO_COLORS,
 } from './types';
 
 // =============================================================================
@@ -49,6 +49,7 @@ export function DealMakerScreen({
   propertyTax,
   insurance,
   rentEstimate,
+  onBackPress,
 }: DealMakerScreenProps) {
   const insets = useSafeAreaInsets();
 
@@ -154,14 +155,16 @@ export function DealMakerScreen({
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.navy[900]} />
+      <StatusBar barStyle="light-content" backgroundColor={DEAL_MAKER_PRO_COLORS.header} />
 
       {/* Fixed Header with Metrics */}
-      <View style={{ paddingTop: insets.top }}>
+      <View style={{ paddingTop: insets.top, backgroundColor: DEAL_MAKER_PRO_COLORS.header }}>
         <MetricsHeader 
           state={state} 
           metrics={metrics} 
           listPrice={listPrice}
+          propertyAddress={propertyAddress}
+          onBackPress={onBackPress}
         />
       </View>
 
@@ -224,7 +227,7 @@ export function DealMakerScreen({
                 selectedIndex={loanTypeIndex}
                 onChange={(event) => handleLoanTypeChange(event.nativeEvent.selectedSegmentIndex)}
                 style={styles.segmentedControl}
-                tintColor={colors.primary[500]}
+                tintColor={DEAL_MAKER_PRO_COLORS.ctaButton}
                 fontStyle={{ fontSize: 13 }}
                 activeFontStyle={{ fontSize: 13, fontWeight: '600' }}
               />
@@ -471,7 +474,7 @@ function getProfitQualityGrade(cocReturn: number): 'A+' | 'A' | 'B' | 'C' | 'D' 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.gray[100],
+    backgroundColor: DEAL_MAKER_PRO_COLORS.contentBg,
   },
   scrollContainer: {
     flex: 1,
@@ -480,7 +483,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingTop: 12,
+    padding: 16,
+    paddingTop: 16,
   },
   calculatedRow: {
     flexDirection: 'row',
@@ -490,25 +494,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     marginBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray[200],
+    borderBottomColor: DEAL_MAKER_PRO_COLORS.summaryBorder,
   },
   calculatedLabel: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: colors.gray[700],
+    fontSize: 14,
+    fontWeight: '600',
+    color: DEAL_MAKER_PRO_COLORS.inputLabel,
   },
   calculatedValue: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
-    color: colors.gray[900],
+    color: DEAL_MAKER_PRO_COLORS.inputValue,
   },
   segmentedContainer: {
     marginBottom: 20,
   },
   segmentedLabel: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: colors.gray[700],
+    fontSize: 14,
+    fontWeight: '600',
+    color: DEAL_MAKER_PRO_COLORS.inputLabel,
     marginBottom: 8,
   },
   segmentedControl: {

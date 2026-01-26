@@ -1,7 +1,58 @@
 /**
- * DEAL MAKER Worksheet Types
- * TypeScript interfaces for the Deal Maker worksheet system
+ * DEAL MAKER PRO Worksheet Types
+ * TypeScript interfaces for the Deal Maker Pro worksheet system
  */
+
+import React from 'react';
+import { HomeIcon, BankIcon, WrenchIcon, DollarIcon, ChartIcon } from './icons';
+
+// =============================================================================
+// DESIGN CONSTANTS (exact from design spec)
+// =============================================================================
+
+export const DEAL_MAKER_PRO_COLORS = {
+  // Header
+  header: '#0A1628',
+  titleWhite: '#FFFFFF',
+  titleCyan: '#00D4FF',
+  
+  // Metrics
+  metricLabel: '#94A3B8',
+  metricValue: '#FFFFFF',
+  dealGapCyan: '#00D4FF',
+  annualProfitTeal: '#06B6D4',
+  
+  // Content
+  contentBg: '#F1F5F9',
+  cardBg: '#FFFFFF',
+  cardBorder: '#F1F5F9',
+  activeRing: 'rgba(8, 145, 178, 0.2)',
+  
+  // Accents
+  iconTeal: '#0891B2',
+  chevron: '#94A3B8',
+  
+  // Slider
+  sliderTrack: '#E2E8F0',
+  sliderFill: '#0891B2',
+  sliderThumb: '#0891B2',
+  
+  // Summary box
+  summaryBg: '#F8FAFC',
+  summaryBorder: '#E2E8F0',
+  summaryLabel: '#64748B',
+  summaryValue: '#0A1628',
+  
+  // Labels
+  inputLabel: '#0A1628',
+  inputValue: '#0891B2',
+  rangeText: '#94A3B8',
+  
+  // CTA Button
+  ctaButton: '#0891B2',
+  ctaButtonActive: '#0E7490',
+  ctaText: '#FFFFFF',
+};
 
 // =============================================================================
 // DEAL MAKER STATE
@@ -88,17 +139,17 @@ export type TabStatus = 'active' | 'completed' | 'pending';
 export interface TabConfig {
   id: TabId;
   title: string;
-  icon: string;
+  icon: React.ComponentType<{ size?: number; color?: string }>;
   status: TabStatus;
   order: number;
 }
 
 export const TAB_CONFIGS: TabConfig[] = [
-  { id: 'buyPrice', title: 'Buy Price', icon: '🏠', status: 'active', order: 1 },
-  { id: 'financing', title: 'Financing', icon: '🏛', status: 'pending', order: 2 },
-  { id: 'rehabValuation', title: 'Rehab & Valuation', icon: '🔧', status: 'pending', order: 3 },
-  { id: 'income', title: 'Income', icon: '💰', status: 'pending', order: 4 },
-  { id: 'expenses', title: 'Expenses', icon: '📊', status: 'pending', order: 5 },
+  { id: 'buyPrice', title: 'Buy Price', icon: HomeIcon, status: 'active', order: 1 },
+  { id: 'financing', title: 'Financing', icon: BankIcon, status: 'pending', order: 2 },
+  { id: 'rehabValuation', title: 'Rehab & Valuation', icon: WrenchIcon, status: 'pending', order: 3 },
+  { id: 'income', title: 'Income', icon: DollarIcon, status: 'pending', order: 4 },
+  { id: 'expenses', title: 'Expenses', icon: ChartIcon, status: 'pending', order: 5 },
 ];
 
 // =============================================================================
@@ -207,6 +258,8 @@ export interface MetricsHeaderProps {
   state: DealMakerState;
   metrics: DealMakerMetrics;
   listPrice?: number;
+  propertyAddress?: string;
+  onBackPress?: () => void;
 }
 
 export interface WorksheetTabProps {
@@ -229,6 +282,7 @@ export interface DealMakerScreenProps {
   propertyTax?: number;
   insurance?: number;
   rentEstimate?: number;
+  onBackPress?: () => void;
 }
 
 // =============================================================================

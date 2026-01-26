@@ -1,6 +1,6 @@
 /**
- * DealMakerSlider - Reusable slider component for Deal Maker worksheet
- * Features: Label, value display, range indicators, haptic feedback
+ * DealMakerSlider - Deal Maker Pro slider component
+ * Features: Teal accent colors, exact design spec typography, haptic feedback
  */
 
 import React, { useState, useCallback } from 'react';
@@ -8,8 +8,7 @@ import { View, Text, StyleSheet, Platform } from 'react-native';
 import Slider from '@react-native-community/slider';
 import * as Haptics from 'expo-haptics';
 
-import { colors } from '../../theme/colors';
-import { DealMakerSliderProps, SliderFormat } from './types';
+import { DealMakerSliderProps, SliderFormat, DEAL_MAKER_PRO_COLORS } from './types';
 
 // =============================================================================
 // FORMATTERS
@@ -91,16 +90,10 @@ export function DealMakerSlider({
     <View style={styles.container}>
       {/* Header: Label and Value */}
       <View style={styles.header}>
-        <Text style={[
-          styles.label,
-          { color: isDark ? 'rgba(255,255,255,0.8)' : colors.gray[700] }
-        ]}>
+        <Text style={styles.label}>
           {config.label}
         </Text>
-        <Text style={[
-          styles.value,
-          { color: isDark ? colors.accent[500] : colors.primary[600] }
-        ]}>
+        <Text style={styles.value}>
           {formattedValue}
         </Text>
       </View>
@@ -115,10 +108,10 @@ export function DealMakerSlider({
           value={localValue}
           onValueChange={handleValueChange}
           onSlidingComplete={handleSlidingComplete}
-          minimumTrackTintColor={isDark ? colors.accent[500] : colors.primary[500]}
-          maximumTrackTintColor={isDark ? 'rgba(255,255,255,0.15)' : colors.gray[200]}
+          minimumTrackTintColor={DEAL_MAKER_PRO_COLORS.sliderFill}
+          maximumTrackTintColor={DEAL_MAKER_PRO_COLORS.sliderTrack}
           thumbTintColor={Platform.OS === 'android' 
-            ? (isDark ? colors.accent[500] : colors.primary[500])
+            ? DEAL_MAKER_PRO_COLORS.sliderThumb
             : undefined
           }
           tapToSeek={true}
@@ -127,16 +120,10 @@ export function DealMakerSlider({
 
       {/* Range Labels */}
       <View style={styles.rangeContainer}>
-        <Text style={[
-          styles.rangeText,
-          { color: isDark ? 'rgba(255,255,255,0.4)' : colors.gray[400] }
-        ]}>
+        <Text style={styles.rangeText}>
           {formattedMin}
         </Text>
-        <Text style={[
-          styles.rangeText,
-          { color: isDark ? 'rgba(255,255,255,0.4)' : colors.gray[400] }
-        ]}>
+        <Text style={styles.rangeText}>
           {formattedMax}
         </Text>
       </View>
@@ -145,7 +132,7 @@ export function DealMakerSlider({
 }
 
 // =============================================================================
-// STYLES
+// STYLES - Exact match to design specification
 // =============================================================================
 
 const styles = StyleSheet.create({
@@ -159,29 +146,33 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   label: {
-    fontSize: 15,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
+    color: DEAL_MAKER_PRO_COLORS.inputLabel,
   },
   value: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
+    color: DEAL_MAKER_PRO_COLORS.inputValue,
+    fontVariant: ['tabular-nums'],
   },
   sliderWrapper: {
-    paddingVertical: 8,
-    marginHorizontal: -8,
-    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginHorizontal: -4,
+    paddingHorizontal: 4,
   },
   slider: {
     width: '100%',
-    height: 44,
+    height: 24,
   },
   rangeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: -4,
+    marginTop: 6,
   },
   rangeText: {
-    fontSize: 12,
+    fontSize: 11,
+    color: DEAL_MAKER_PRO_COLORS.rangeText,
   },
 });
 
