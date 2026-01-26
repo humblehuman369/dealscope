@@ -630,8 +630,8 @@ export function StrWorksheet({
                   const params = new URLSearchParams({
                     listPrice: String(originalPrice),
                     rentEstimate: String(Math.round(estimatedMonthlyRent)),
-                    propertyTax: String(propertyTaxes),
-                    insurance: String(insurance),
+                    propertyTax: String(inputs.property_taxes_annual || 6000),
+                    insurance: String(inputs.insurance_annual || 1500),
                   })
                   router.push(`/deal-maker/${encodedAddress}?${params.toString()}`)
                 }}
