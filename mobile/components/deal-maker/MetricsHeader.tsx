@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 3,
-    paddingRight: 12,
+    paddingRight: 24,
   },
   metricLabel: {
     fontSize: 12,
