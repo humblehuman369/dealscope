@@ -216,7 +216,7 @@ export function DealMakerPage({
     ...initialState,
   }))
 
-  const [activeTab, setActiveTab] = useState<TabId>('buyPrice')
+  const [activeTab, setActiveTab] = useState<TabId | null>('buyPrice')
   const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set())
 
   // ==========================================================================
@@ -239,7 +239,7 @@ export function DealMakerPage({
   }, [])
 
   const handleTabToggle = useCallback((tabId: TabId) => {
-    setActiveTab(prev => prev === tabId ? tabId : tabId)
+    setActiveTab(prev => prev === tabId ? null : tabId)
   }, [])
 
   const handleContinue = useCallback((currentTabId: TabId) => {
@@ -256,7 +256,7 @@ export function DealMakerPage({
       // Last tab - handle finish
       handleFinish()
     }
-  }, [])
+  }, [handleFinish])
 
   const handleFinish = useCallback(() => {
     // TODO: Save deal to database or navigate to summary

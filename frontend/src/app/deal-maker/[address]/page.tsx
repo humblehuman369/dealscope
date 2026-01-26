@@ -24,22 +24,18 @@ export default function DealMakerRoutePage() {
   const encodedAddress = params.address as string
   const propertyAddress = decodeURIComponent(encodedAddress.replace(/-/g, ' '))
 
-  // Parse optional query params
-  const listPrice = searchParams.get('listPrice')
-    ? parseFloat(searchParams.get('listPrice')!)
-    : undefined
+  // Parse optional query params - helper to avoid NaN values
+  const parseNumericParam = (name: string): number | undefined => {
+    const value = searchParams.get(name)
+    if (!value) return undefined
+    const parsed = parseFloat(value)
+    return isNaN(parsed) ? undefined : parsed
+  }
 
-  const propertyTax = searchParams.get('propertyTax')
-    ? parseFloat(searchParams.get('propertyTax')!)
-    : undefined
-
-  const insurance = searchParams.get('insurance')
-    ? parseFloat(searchParams.get('insurance')!)
-    : undefined
-
-  const rentEstimate = searchParams.get('rentEstimate')
-    ? parseFloat(searchParams.get('rentEstimate')!)
-    : undefined
+  const listPrice = parseNumericParam('listPrice')
+  const propertyTax = parseNumericParam('propertyTax')
+  const insurance = parseNumericParam('insurance')
+  const rentEstimate = parseNumericParam('rentEstimate')
 
   return (
     <DealMakerPage
