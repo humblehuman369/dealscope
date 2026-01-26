@@ -1,6 +1,6 @@
 /**
- * ScoreBadge - Circular score/grade badge component for Deal Maker header
- * Displays either a numeric score (0-100) or a letter grade (A+, A, B, C, D, F)
+ * ScoreBadge - Premium circular score/grade badge component
+ * Features: Gradient rings, glow effects, softer color treatment
  */
 
 'use client'
@@ -9,33 +9,36 @@ import React from 'react'
 import { ScoreBadgeProps, DealGrade, ProfitGrade } from './types'
 
 // =============================================================================
-// GRADE COLORS
+// GRADE COLORS - Softer palette that's less harsh
 // =============================================================================
 
-export function getGradeColor(grade: DealGrade | ProfitGrade): string {
+export function getGradeColors(grade: DealGrade | ProfitGrade): { primary: string; glow: string; bg: string } {
   switch (grade) {
     case 'A+':
+      return { primary: '#22c55e', glow: 'rgba(34, 197, 94, 0.4)', bg: 'rgba(34, 197, 94, 0.15)' }
     case 'A':
-      return '#22c55e' // green-500
+      return { primary: '#4ade80', glow: 'rgba(74, 222, 128, 0.35)', bg: 'rgba(74, 222, 128, 0.12)' }
     case 'B':
-      return '#84cc16' // lime-500
+      return { primary: '#a3e635', glow: 'rgba(163, 230, 53, 0.35)', bg: 'rgba(163, 230, 53, 0.12)' }
     case 'C':
-      return '#f59e0b' // amber-500
+      return { primary: '#fbbf24', glow: 'rgba(251, 191, 36, 0.35)', bg: 'rgba(251, 191, 36, 0.12)' }
     case 'D':
-      return '#f97316' // orange-500
+      return { primary: '#fb923c', glow: 'rgba(251, 146, 60, 0.3)', bg: 'rgba(251, 146, 60, 0.1)' }
     case 'F':
-      return '#ef4444' // red-500
+      return { primary: '#f87171', glow: 'rgba(248, 113, 113, 0.25)', bg: 'rgba(248, 113, 113, 0.08)' }
     default:
-      return '#94a3b8' // slate-400
+      return { primary: '#94a3b8', glow: 'rgba(148, 163, 184, 0.2)', bg: 'rgba(148, 163, 184, 0.1)' }
   }
 }
 
-export function getScoreColor(score: number): string {
-  if (score >= 85) return '#22c55e'
-  if (score >= 70) return '#84cc16'
-  if (score >= 55) return '#f59e0b'
-  if (score >= 40) return '#f97316'
-  return '#ef4444'
+export function getScoreColors(score: number): { primary: string; glow: string; bg: string } {
+  if (score >= 85) return { primary: '#22c55e', glow: 'rgba(34, 197, 94, 0.4)', bg: 'rgba(34, 197, 94, 0.15)' }
+  if (score >= 70) return { primary: '#4ade80', glow: 'rgba(74, 222, 128, 0.35)', bg: 'rgba(74, 222, 128, 0.12)' }
+  if (score >= 55) return { primary: '#fbbf24', glow: 'rgba(251, 191, 36, 0.35)', bg: 'rgba(251, 191, 36, 0.12)' }
+  if (score >= 40) return { primary: '#fb923c', glow: 'rgba(251, 146, 60, 0.3)', bg: 'rgba(251, 146, 60, 0.1)' }
+  if (score >= 25) return { primary: '#f87171', glow: 'rgba(248, 113, 113, 0.25)', bg: 'rgba(248, 113, 113, 0.08)' }
+  // Very low scores - muted red instead of harsh red
+  return { primary: '#ef4444', glow: 'rgba(239, 68, 68, 0.2)', bg: 'rgba(239, 68, 68, 0.06)' }
 }
 
 export function getScoreGrade(score: number): DealGrade {
@@ -47,14 +50,23 @@ export function getScoreGrade(score: number): DealGrade {
   return 'F'
 }
 
+// Legacy exports for compatibility
+export function getGradeColor(grade: DealGrade | ProfitGrade): string {
+  return getGradeColors(grade).primary
+}
+
+export function getScoreColor(score: number): string {
+  return getScoreColors(score).primary
+}
+
 // =============================================================================
 // SIZE CONFIG
 // =============================================================================
 
 const SIZES = {
-  small: { outer: 50, border: 3, fontSize: 16, labelSize: 8 },
-  medium: { outer: 64, border: 3, fontSize: 20, labelSize: 9 },
-  large: { outer: 80, border: 4, fontSize: 26, labelSize: 11 },
+  small: { outer: 48, border: 2.5, fontSize: 15, labelSize: 8, gap: 2 },
+  medium: { outer: 56, border: 3, fontSize: 18, labelSize: 9, gap: 3 },
+  large: { outer: 72, border: 3.5, fontSize: 24, labelSize: 11, gap: 4 },
 }
 
 // =============================================================================
@@ -68,34 +80,47 @@ export function ScoreBadge({
   size = 'medium',
 }: ScoreBadgeProps) {
   const sizeConfig = SIZES[size]
-  const { outer, border, fontSize, labelSize } = sizeConfig
+  const { outer, border, fontSize, labelSize, gap } = sizeConfig
 
-  // Determine display value and color
+  // Determine display value and colors
   const isScoreType = type === 'dealScore'
   const displayValue = isScoreType ? (score ?? 0) : (grade ?? 'B')
-  const accentColor = isScoreType 
-    ? getScoreColor(score ?? 0)
-    : getGradeColor(grade ?? 'B')
+  const colors = isScoreType 
+    ? getScoreColors(score ?? 0)
+    : getGradeColors(grade ?? 'B')
   
-  const label = isScoreType ? 'DEAL\nSCORE' : 'Profit\nQuality'
+  const label = isScoreType ? 'DEAL SCORE' : 'PROFIT QUALITY'
 
   return (
     <div className="flex flex-col items-center">
-      {/* Circular badge */}
+      {/* Circular badge with glow effect */}
       <div 
-        className="flex items-center justify-center bg-white/5"
+        className="relative flex items-center justify-center transition-all duration-300"
         style={{ 
           width: outer, 
           height: outer, 
           borderRadius: outer / 2,
-          borderWidth: border,
-          borderStyle: 'solid',
-          borderColor: accentColor,
+          background: colors.bg,
+          boxShadow: `0 0 ${outer / 4}px ${colors.glow}, inset 0 0 ${outer / 6}px ${colors.glow}`,
         }}
       >
+        {/* Outer ring */}
+        <div 
+          className="absolute inset-0 rounded-full"
+          style={{ 
+            border: `${border}px solid ${colors.primary}`,
+            opacity: 0.9,
+          }}
+        />
+        
+        {/* Score/Grade value */}
         <span 
-          className="font-extrabold text-center"
-          style={{ fontSize, color: accentColor }}
+          className="font-extrabold text-center relative z-10"
+          style={{ 
+            fontSize, 
+            color: colors.primary,
+            textShadow: `0 0 8px ${colors.glow}`,
+          }}
         >
           {displayValue}
         </span>
@@ -103,8 +128,12 @@ export function ScoreBadge({
 
       {/* Label below */}
       <span 
-        className="text-white/60 font-semibold text-center mt-1 whitespace-pre-line leading-tight"
-        style={{ fontSize: labelSize }}
+        className="text-white/50 font-semibold text-center uppercase tracking-wider"
+        style={{ 
+          fontSize: labelSize,
+          marginTop: gap,
+          letterSpacing: '0.05em',
+        }}
       >
         {label}
       </span>

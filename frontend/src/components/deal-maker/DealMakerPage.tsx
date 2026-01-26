@@ -307,32 +307,36 @@ export function DealMakerPage({
   // ==========================================================================
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-900">
-      {/* Back Button */}
-      <div className="bg-[#0A1628] px-4 pt-4 pb-2">
-        <button 
-          onClick={handleBack}
-          className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm font-medium">Back</span>
-        </button>
-        
-        {/* Property Address */}
-        <div className="mt-2 text-white/60 text-sm truncate">
-          {propertyAddress}
+    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-800">
+      {/* Top Bar with Back Button and Address */}
+      <div className="bg-[#0A1628] px-4 py-3">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleBack}
+            className="w-9 h-9 rounded-lg flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </button>
+          
+          <div className="flex-1 min-w-0">
+            <p className="text-white/80 text-sm font-medium truncate">
+              {propertyAddress}
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Fixed Header with Metrics */}
-      <MetricsHeader 
-        state={state} 
-        metrics={metrics} 
-        listPrice={listPrice}
-      />
+      <div className="sticky top-0 z-40">
+        <MetricsHeader 
+          state={state} 
+          metrics={metrics} 
+          listPrice={listPrice}
+        />
+      </div>
 
       {/* Scrollable Worksheet Tabs */}
-      <div className="pb-8 pt-3">
+      <div className="pb-10 pt-4">
         {/* Tab 1: Buy Price */}
         <WorksheetTab
           config={tabConfigs[0]}
