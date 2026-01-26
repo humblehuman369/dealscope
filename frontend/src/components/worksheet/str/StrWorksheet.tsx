@@ -629,7 +629,7 @@ export function StrWorksheet({
                   const encodedAddress = encodeURIComponent(fullAddress.replace(/\s+/g, '-'))
                   const params = new URLSearchParams({
                     listPrice: String(originalPrice),
-                    rentEstimate: String(calc.effectiveMonthlyRent || 0),
+                    rentEstimate: String(Math.round(estimatedMonthlyRent)),
                     propertyTax: String(propertyTaxes),
                     insurance: String(insurance),
                   })
