@@ -6,7 +6,7 @@ import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Calculator } from 'lucide-react'
 import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_BUY_DISCOUNT_PCT } from '@/lib/iqTarget'
 import { useDealScore } from '@/hooks/useDealScore'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
@@ -411,6 +411,23 @@ export function FlipWorksheet({
                 const config = statusConfig[status || 'OFF_MARKET'] || statusConfig['OFF_MARKET']
                 return <span className={`px-2.5 py-1 text-xs font-semibold uppercase tracking-wide border-2 ${config.border} ${config.text} rounded`}>{config.label}</span>
               })()}
+            </div>
+            {/* Right: Deal Maker Button */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => {
+                  const encodedAddress = encodeURIComponent(fullAddress.replace(/\s+/g, '-'))
+                  const params = new URLSearchParams({
+                    listPrice: String(listPrice),
+                  })
+                  router.push(`/deal-maker/${encodedAddress}?${params.toString()}`)
+                }}
+                className="flex items-center gap-2 px-3 py-2 bg-teal/10 hover:bg-teal/20 border border-teal/30 text-teal rounded-lg transition-colors"
+                title="Open Deal Maker"
+              >
+                <Calculator className="w-4 h-4" />
+                <span className="hidden sm:inline text-sm font-semibold">Deal Maker</span>
+              </button>
             </div>
           </div>
         </div>

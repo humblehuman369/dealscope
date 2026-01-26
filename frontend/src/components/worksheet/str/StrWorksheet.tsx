@@ -7,7 +7,7 @@ import { SavedProperty, getDisplayAddress } from '@/types/savedProperty'
 import { WorksheetTabNav } from '../WorksheetTabNav'
 import { useWorksheetStore } from '@/stores/worksheetStore'
 import { useUIStore } from '@/stores'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Calculator } from 'lucide-react'
 import { useDealScore } from '@/hooks/useDealScore'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
 
@@ -622,6 +622,26 @@ export function StrWorksheet({
               })()}
             </div>
             
+            {/* Right: Deal Maker Button */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => {
+                  const encodedAddress = encodeURIComponent(fullAddress.replace(/\s+/g, '-'))
+                  const params = new URLSearchParams({
+                    listPrice: String(originalPrice),
+                    rentEstimate: String(calc.effectiveMonthlyRent || 0),
+                    propertyTax: String(propertyTaxes),
+                    insurance: String(insurance),
+                  })
+                  router.push(`/deal-maker/${encodedAddress}?${params.toString()}`)
+                }}
+                className="flex items-center gap-2 px-3 py-2 bg-teal/10 hover:bg-teal/20 border border-teal/30 text-teal rounded-lg transition-colors"
+                title="Open Deal Maker"
+              >
+                <Calculator className="w-4 h-4" />
+                <span className="hidden sm:inline text-sm font-semibold">Deal Maker</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

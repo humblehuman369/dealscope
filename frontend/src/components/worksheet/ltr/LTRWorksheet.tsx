@@ -14,7 +14,7 @@ import { MultiYearProjections } from '../sections/MultiYearProjections'
 import { CashFlowChart } from '../charts/CashFlowChart'
 import { EquityChart } from '../charts/EquityChart'
 import { MobileCompressedView } from './MobileCompressedView'
-import { ArrowLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Calculator } from 'lucide-react'
 import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
 import { useDealScore, getDealScoreColor, getDealScoreGrade } from '@/hooks/useDealScore'
 import { scoreToGradeLabel } from '@/components/iq-verdict/types'
@@ -725,6 +725,27 @@ export function LTRWorksheet({
               })()}
             </div>
             
+            {/* Right: Deal Maker Button */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => {
+                  // Encode address for URL
+                  const encodedAddress = encodeURIComponent(fullAddress.replace(/\s+/g, '-'))
+                  const params = new URLSearchParams({
+                    listPrice: String(listPrice),
+                    rentEstimate: String(monthlyRent),
+                    propertyTax: String(propertyTaxes),
+                    insurance: String(insurance),
+                  })
+                  router.push(`/deal-maker/${encodedAddress}?${params.toString()}`)
+                }}
+                className="flex items-center gap-2 px-3 py-2 bg-teal/10 hover:bg-teal/20 border border-teal/30 text-teal rounded-lg transition-colors"
+                title="Open Deal Maker"
+              >
+                <Calculator className="w-4 h-4" />
+                <span className="hidden sm:inline text-sm font-semibold">Deal Maker</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
