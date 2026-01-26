@@ -1,6 +1,10 @@
 /**
- * DealMakerScreen - Deal Maker Pro main container component
- * Orchestrates state management, calculations, and all child components
+ * DealMakerScreen - Deal Maker Pro main container
+ * EXACT implementation from design files - no modifications
+ * 
+ * Design specs:
+ * - Content background: #F1F5F9
+ * - Content padding: 16px
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -35,12 +39,7 @@ import {
   INCOME_SLIDERS,
   EXPENSES_SLIDERS,
   LoanType,
-  DEAL_MAKER_PRO_COLORS,
 } from './types';
-
-// =============================================================================
-// MAIN COMPONENT
-// =============================================================================
 
 export function DealMakerScreen({
   propertyAddress,
@@ -53,10 +52,7 @@ export function DealMakerScreen({
 }: DealMakerScreenProps) {
   const insets = useSafeAreaInsets();
 
-  // ==========================================================================
-  // STATE
-  // ==========================================================================
-
+  // State
   const [state, setState] = useState<DealMakerState>(() => ({
     ...DEFAULT_DEAL_MAKER_STATE,
     buyPrice: listPrice ?? DEFAULT_DEAL_MAKER_STATE.buyPrice,
@@ -70,18 +66,12 @@ export function DealMakerScreen({
   const [activeTab, setActiveTab] = useState<TabId>('buyPrice');
   const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set());
 
-  // ==========================================================================
-  // CALCULATIONS
-  // ==========================================================================
-
+  // Calculations
   const metrics = useMemo<DealMakerMetrics>(() => {
     return calculateDealMakerMetrics(state, listPrice);
   }, [state, listPrice]);
 
-  // ==========================================================================
-  // HANDLERS
-  // ==========================================================================
-
+  // Handlers
   const updateState = useCallback(<K extends keyof DealMakerState>(
     key: K,
     value: DealMakerState[K]
@@ -94,30 +84,23 @@ export function DealMakerScreen({
   }, []);
 
   const handleContinue = useCallback((currentTabId: TabId) => {
-    // Mark current tab as completed
     setCompletedTabs(prev => new Set(prev).add(currentTabId));
 
-    // Move to next tab
     const tabOrder: TabId[] = ['buyPrice', 'financing', 'rehabValuation', 'income', 'expenses'];
     const currentIndex = tabOrder.indexOf(currentTabId);
     
     if (currentIndex < tabOrder.length - 1) {
       setActiveTab(tabOrder[currentIndex + 1]);
     } else {
-      // Last tab - handle finish
       handleFinish();
     }
   }, []);
 
   const handleFinish = useCallback(() => {
-    // TODO: Save deal to database or navigate to summary
     console.log('Deal saved:', { state, metrics });
   }, [state, metrics]);
 
-  // ==========================================================================
-  // TAB CONFIGS WITH STATUS
-  // ==========================================================================
-
+  // Tab configs with status
   const tabConfigs = useMemo<TabConfig[]>(() => {
     return TAB_CONFIGS.map(config => ({
       ...config,
@@ -129,10 +112,7 @@ export function DealMakerScreen({
     }));
   }, [activeTab, completedTabs]);
 
-  // ==========================================================================
-  // LOAN TYPE HANDLER
-  // ==========================================================================
-
+  // Loan type
   const loanTypeOptions = ['15-Year Fixed', '30-Year Fixed', 'ARM'];
   const loanTypeIndex = state.loanType === '15-year' ? 0 : state.loanType === '30-year' ? 1 : 2;
 
@@ -141,7 +121,6 @@ export function DealMakerScreen({
     const newType = loanTypes[index];
     updateState('loanType', newType);
     
-    // Also update loan term based on type
     if (newType === '15-year') {
       updateState('loanTermYears', 15);
     } else if (newType === '30-year') {
@@ -149,16 +128,12 @@ export function DealMakerScreen({
     }
   }, [updateState]);
 
-  // ==========================================================================
-  // RENDER
-  // ==========================================================================
-
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={DEAL_MAKER_PRO_COLORS.header} />
+      <StatusBar barStyle="light-content" backgroundColor="#0A1628" />
 
-      {/* Fixed Header with Metrics */}
-      <View style={{ paddingTop: insets.top, backgroundColor: DEAL_MAKER_PRO_COLORS.header }}>
+      {/* Header */}
+      <View style={{ paddingTop: insets.top, backgroundColor: '#0A1628' }}>
         <MetricsHeader 
           state={state} 
           metrics={metrics} 
@@ -168,14 +143,14 @@ export function DealMakerScreen({
         />
       </View>
 
-      {/* Scrollable Worksheet Tabs */}
+      {/* Scrollable Content */}
       <KeyboardAvoidingView 
         style={styles.scrollContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -211,7 +186,7 @@ export function DealMakerScreen({
               value: formatSliderValue(metrics.monthlyPayment, 'currency'),
             }}
           >
-            {/* Loan Amount (calculated, display only) */}
+            {/* Loan Amount */}
             <View style={styles.calculatedRow}>
               <Text style={styles.calculatedLabel}>Loan Amount</Text>
               <Text style={styles.calculatedValue}>
@@ -219,7 +194,7 @@ export function DealMakerScreen({
               </Text>
             </View>
 
-            {/* Loan Type Segmented Control */}
+            {/* Loan Type */}
             <View style={styles.segmentedContainer}>
               <Text style={styles.segmentedLabel}>Loan Type</Text>
               <SegmentedControl
@@ -227,13 +202,12 @@ export function DealMakerScreen({
                 selectedIndex={loanTypeIndex}
                 onChange={(event) => handleLoanTypeChange(event.nativeEvent.selectedSegmentIndex)}
                 style={styles.segmentedControl}
-                tintColor={DEAL_MAKER_PRO_COLORS.ctaButton}
+                tintColor="#0891B2"
                 fontStyle={{ fontSize: 13 }}
                 activeFontStyle={{ fontSize: 13, fontWeight: '600' }}
               />
             </View>
 
-            {/* Interest Rate and Loan Term Sliders */}
             {FINANCING_SLIDERS.map(slider => (
               <DealMakerSlider
                 key={slider.id}
@@ -260,7 +234,6 @@ export function DealMakerScreen({
                 key={slider.id}
                 config={{
                   ...slider,
-                  // Dynamic ARV range based on buy price
                   ...(slider.id === 'arv' && {
                     min: state.buyPrice,
                     max: state.buyPrice * 2,
@@ -323,10 +296,7 @@ export function DealMakerScreen({
   );
 }
 
-// =============================================================================
-// CALCULATIONS
-// =============================================================================
-
+// Calculations
 function calculateDealMakerMetrics(
   state: DealMakerState,
   listPrice?: number
@@ -349,23 +319,18 @@ function calculateDealMakerMetrics(
     monthlyHoa,
   } = state;
 
-  // Buy Price calculations
   const downPaymentAmount = buyPrice * downPaymentPercent;
   const closingCostsAmount = buyPrice * closingCostsPercent;
   const cashNeeded = downPaymentAmount + closingCostsAmount;
 
-  // Financing calculations
   const loanAmount = buyPrice - downPaymentAmount;
   const monthlyPayment = calculateMortgagePayment(loanAmount, interestRate, loanTermYears);
 
-  // Rehab & Valuation calculations
   const totalInvestment = buyPrice + rehabBudget;
   const equityCreated = arv - totalInvestment;
 
-  // Income calculations
   const grossMonthlyIncome = monthlyRent + otherIncome;
 
-  // Expenses calculations
   const vacancy = grossMonthlyIncome * vacancyRate;
   const maintenance = grossMonthlyIncome * maintenanceRate;
   const management = grossMonthlyIncome * managementRate;
@@ -376,7 +341,6 @@ function calculateDealMakerMetrics(
     propertyTaxMonthly + insuranceMonthly + monthlyHoa;
   const totalMonthlyExpenses = monthlyOperatingExpenses + monthlyPayment;
 
-  // Key metrics
   const annualNOI = (grossMonthlyIncome - monthlyOperatingExpenses) * 12;
   const annualCashFlow = (grossMonthlyIncome - totalMonthlyExpenses) * 12;
   const annualProfit = annualCashFlow;
@@ -384,14 +348,12 @@ function calculateDealMakerMetrics(
   const capRate = buyPrice > 0 ? annualNOI / buyPrice : 0;
   const cocReturn = cashNeeded > 0 ? annualCashFlow / cashNeeded : 0;
 
-  // Deal Gap calculation (how much discount needed to breakeven)
   const effectiveListPrice = listPrice ?? buyPrice;
   const discountFromList = effectiveListPrice > 0 
     ? (effectiveListPrice - buyPrice) / effectiveListPrice 
     : 0;
-  const dealGap = discountFromList; // positive = buying below list
+  const dealGap = discountFromList;
 
-  // Deal Score (0-100 based on profitability)
   const dealScore = calculateDealScore(cocReturn, capRate, annualCashFlow);
   const dealGrade = getDealGrade(dealScore);
   const profitQuality = getProfitQualityGrade(cocReturn);
@@ -418,10 +380,8 @@ function calculateDealMakerMetrics(
 }
 
 function calculateDealScore(cocReturn: number, capRate: number, annualCashFlow: number): number {
-  // Weighted scoring based on key metrics
   let score = 0;
 
-  // Cash on Cash (40 points max)
   const cocPercent = cocReturn * 100;
   if (cocPercent >= 15) score += 40;
   else if (cocPercent >= 10) score += 35;
@@ -430,7 +390,6 @@ function calculateDealScore(cocReturn: number, capRate: number, annualCashFlow: 
   else if (cocPercent >= 2) score += 10;
   else if (cocPercent > 0) score += 5;
 
-  // CAP Rate (30 points max)
   const capPercent = capRate * 100;
   if (capPercent >= 10) score += 30;
   else if (capPercent >= 8) score += 25;
@@ -438,7 +397,6 @@ function calculateDealScore(cocReturn: number, capRate: number, annualCashFlow: 
   else if (capPercent >= 4) score += 10;
   else if (capPercent > 0) score += 5;
 
-  // Cash Flow (30 points max)
   if (annualCashFlow >= 12000) score += 30;
   else if (annualCashFlow >= 6000) score += 25;
   else if (annualCashFlow >= 3000) score += 20;
@@ -467,14 +425,11 @@ function getProfitQualityGrade(cocReturn: number): 'A+' | 'A' | 'B' | 'C' | 'D' 
   return 'F';
 }
 
-// =============================================================================
-// STYLES
-// =============================================================================
-
+// Styles - EXACT from design files
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: DEAL_MAKER_PRO_COLORS.contentBg,
+    backgroundColor: '#F1F5F9',
   },
   scrollContainer: {
     flex: 1,
@@ -482,37 +437,37 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  scrollContent: {
+  content: {
     padding: 16,
-    paddingTop: 16,
   },
   calculatedRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 4,
-    marginBottom: 16,
+    marginTop: 16,
+    marginBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: DEAL_MAKER_PRO_COLORS.summaryBorder,
+    borderBottomColor: '#E2E8F0',
   },
   calculatedLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: DEAL_MAKER_PRO_COLORS.inputLabel,
+    color: '#0A1628',
   },
   calculatedValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: DEAL_MAKER_PRO_COLORS.inputValue,
+    color: '#0891B2',
   },
   segmentedContainer: {
-    marginBottom: 20,
+    marginTop: 16,
+    marginBottom: 8,
   },
   segmentedLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: DEAL_MAKER_PRO_COLORS.inputLabel,
+    color: '#0A1628',
     marginBottom: 8,
   },
   segmentedControl: {
