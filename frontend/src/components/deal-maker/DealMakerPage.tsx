@@ -1,12 +1,11 @@
 /**
- * DealMakerPage - Main container component for the Deal Maker worksheet
- * Orchestrates state management, calculations, and all child components
+ * DealMakerPage - Deal Maker Pro main container
+ * EXACT implementation from design files
  */
 
 'use client'
 
 import React, { useState, useMemo, useCallback } from 'react'
-import { ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 import { MetricsHeader } from './MetricsHeader'
@@ -28,10 +27,6 @@ import {
   LoanType,
 } from './types'
 
-// =============================================================================
-// MORTGAGE CALCULATION
-// =============================================================================
-
 function calculateMortgagePayment(principal: number, annualRate: number, years: number): number {
   if (principal <= 0 || annualRate <= 0 || years <= 0) return 0
   
@@ -43,10 +38,6 @@ function calculateMortgagePayment(principal: number, annualRate: number, years: 
   
   return isFinite(payment) ? payment : 0
 }
-
-// =============================================================================
-// DEAL MAKER METRICS CALCULATION
-// =============================================================================
 
 function calculateDealMakerMetrics(
   state: DealMakerState,
@@ -70,23 +61,18 @@ function calculateDealMakerMetrics(
     monthlyHoa,
   } = state
 
-  // Buy Price calculations
   const downPaymentAmount = buyPrice * downPaymentPercent
   const closingCostsAmount = buyPrice * closingCostsPercent
   const cashNeeded = downPaymentAmount + closingCostsAmount
 
-  // Financing calculations
   const loanAmount = buyPrice - downPaymentAmount
   const monthlyPayment = calculateMortgagePayment(loanAmount, interestRate, loanTermYears)
 
-  // Rehab & Valuation calculations
   const totalInvestment = buyPrice + rehabBudget
   const equityCreated = arv - totalInvestment
 
-  // Income calculations
   const grossMonthlyIncome = monthlyRent + otherIncome
 
-  // Expenses calculations
   const vacancy = grossMonthlyIncome * vacancyRate
   const maintenance = grossMonthlyIncome * maintenanceRate
   const management = grossMonthlyIncome * managementRate
@@ -97,7 +83,6 @@ function calculateDealMakerMetrics(
     propertyTaxMonthly + insuranceMonthly + monthlyHoa
   const totalMonthlyExpenses = monthlyOperatingExpenses + monthlyPayment
 
-  // Key metrics
   const annualNOI = (grossMonthlyIncome - monthlyOperatingExpenses) * 12
   const annualCashFlow = (grossMonthlyIncome - totalMonthlyExpenses) * 12
   const annualProfit = annualCashFlow
@@ -105,14 +90,12 @@ function calculateDealMakerMetrics(
   const capRate = buyPrice > 0 ? annualNOI / buyPrice : 0
   const cocReturn = cashNeeded > 0 ? annualCashFlow / cashNeeded : 0
 
-  // Deal Gap calculation (how much discount needed to breakeven)
   const effectiveListPrice = listPrice ?? buyPrice
   const discountFromList = effectiveListPrice > 0 
     ? (effectiveListPrice - buyPrice) / effectiveListPrice 
     : 0
-  const dealGap = discountFromList // positive = buying below list
+  const dealGap = discountFromList
 
-  // Deal Score (0-100 based on profitability)
   const dealScore = calculateDealScore(cocReturn, capRate, annualCashFlow)
   const dealGrade = getDealGrade(dealScore)
   const profitQuality = getProfitQualityGrade(cocReturn)
@@ -139,10 +122,8 @@ function calculateDealMakerMetrics(
 }
 
 function calculateDealScore(cocReturn: number, capRate: number, annualCashFlow: number): number {
-  // Weighted scoring based on key metrics
   let score = 0
 
-  // Cash on Cash (40 points max)
   const cocPercent = cocReturn * 100
   if (cocPercent >= 15) score += 40
   else if (cocPercent >= 10) score += 35
@@ -151,7 +132,6 @@ function calculateDealScore(cocReturn: number, capRate: number, annualCashFlow: 
   else if (cocPercent >= 2) score += 10
   else if (cocPercent > 0) score += 5
 
-  // CAP Rate (30 points max)
   const capPercent = capRate * 100
   if (capPercent >= 10) score += 30
   else if (capPercent >= 8) score += 25
@@ -159,7 +139,6 @@ function calculateDealScore(cocReturn: number, capRate: number, annualCashFlow: 
   else if (capPercent >= 4) score += 10
   else if (capPercent > 0) score += 5
 
-  // Cash Flow (30 points max)
   if (annualCashFlow >= 12000) score += 30
   else if (annualCashFlow >= 6000) score += 25
   else if (annualCashFlow >= 3000) score += 20
@@ -188,10 +167,6 @@ function getProfitQualityGrade(cocReturn: number): 'A+' | 'A' | 'B' | 'C' | 'D' 
   return 'F'
 }
 
-// =============================================================================
-// MAIN COMPONENT
-// =============================================================================
-
 export function DealMakerPage({
   propertyAddress,
   listPrice,
@@ -201,10 +176,6 @@ export function DealMakerPage({
   rentEstimate,
 }: DealMakerPageProps) {
   const router = useRouter()
-
-  // ==========================================================================
-  // STATE
-  // ==========================================================================
 
   const [state, setState] = useState<DealMakerState>(() => ({
     ...DEFAULT_DEAL_MAKER_STATE,
@@ -219,17 +190,9 @@ export function DealMakerPage({
   const [activeTab, setActiveTab] = useState<TabId | null>('buyPrice')
   const [completedTabs, setCompletedTabs] = useState<Set<TabId>>(new Set())
 
-  // ==========================================================================
-  // CALCULATIONS
-  // ==========================================================================
-
   const metrics = useMemo<DealMakerMetrics>(() => {
     return calculateDealMakerMetrics(state, listPrice)
   }, [state, listPrice])
-
-  // ==========================================================================
-  // HANDLERS
-  // ==========================================================================
 
   const updateState = useCallback(<K extends keyof DealMakerState>(
     key: K,
@@ -243,24 +206,19 @@ export function DealMakerPage({
   }, [])
 
   const handleFinish = useCallback(() => {
-    // TODO: Save deal to database or navigate to summary
     console.log('Deal saved:', { state, metrics })
-    // For now, navigate back
     router.back()
   }, [state, metrics, router])
 
   const handleContinue = useCallback((currentTabId: TabId) => {
-    // Mark current tab as completed
     setCompletedTabs(prev => new Set(prev).add(currentTabId))
 
-    // Move to next tab
     const tabOrder: TabId[] = ['buyPrice', 'financing', 'rehabValuation', 'income', 'expenses']
     const currentIndex = tabOrder.indexOf(currentTabId)
     
     if (currentIndex < tabOrder.length - 1) {
       setActiveTab(tabOrder[currentIndex + 1])
     } else {
-      // Last tab - handle finish
       handleFinish()
     }
   }, [handleFinish])
@@ -268,10 +226,6 @@ export function DealMakerPage({
   const handleBack = useCallback(() => {
     router.back()
   }, [router])
-
-  // ==========================================================================
-  // TAB CONFIGS WITH STATUS
-  // ==========================================================================
 
   const tabConfigs = useMemo<TabConfig[]>(() => {
     return TAB_CONFIGS.map(config => ({
@@ -284,17 +238,12 @@ export function DealMakerPage({
     }))
   }, [activeTab, completedTabs])
 
-  // ==========================================================================
-  // LOAN TYPE HANDLER
-  // ==========================================================================
-
   const loanTypeOptions: LoanType[] = ['15-year', '30-year', 'arm']
   const loanTypeLabels = ['15-Year Fixed', '30-Year Fixed', 'ARM']
 
   const handleLoanTypeChange = useCallback((newType: LoanType) => {
     updateState('loanType', newType)
     
-    // Also update loan term based on type
     if (newType === '15-year') {
       updateState('loanTermYears', 15)
     } else if (newType === '30-year') {
@@ -302,41 +251,21 @@ export function DealMakerPage({
     }
   }, [updateState])
 
-  // ==========================================================================
-  // RENDER
-  // ==========================================================================
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-50 dark:from-slate-900 dark:to-slate-800">
-      {/* Top Bar with Back Button and Address */}
-      <div className="bg-[#0A1628] px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={handleBack}
-            className="w-9 h-9 rounded-lg flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-white" />
-          </button>
-          
-          <div className="flex-1 min-w-0">
-            <p className="text-white/80 text-sm font-medium truncate">
-              {propertyAddress}
-            </p>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen" style={{ background: '#F1F5F9' }}>
       {/* Fixed Header with Metrics */}
       <div className="sticky top-0 z-40">
         <MetricsHeader 
           state={state} 
           metrics={metrics} 
           listPrice={listPrice}
+          propertyAddress={propertyAddress}
+          onBackPress={handleBack}
         />
       </div>
 
       {/* Scrollable Worksheet Tabs */}
-      <div className="pb-10 pt-4">
+      <div style={{ padding: '16px 0', paddingBottom: '40px' }}>
         {/* Tab 1: Buy Price */}
         <WorksheetTab
           config={tabConfigs[0]}
@@ -369,29 +298,42 @@ export function DealMakerPage({
             value: formatSliderValue(metrics.monthlyPayment, 'currency'),
           }}
         >
-          {/* Loan Amount (calculated, display only) */}
-          <div className="flex justify-between items-center py-3 px-1 mb-4 border-b border-slate-200 dark:border-slate-700">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Loan Amount</span>
-            <span className="text-lg font-bold text-slate-900 dark:text-white">
+          {/* Loan Amount */}
+          <div 
+            className="flex justify-between items-center"
+            style={{ 
+              padding: '12px 0', 
+              marginTop: '16px',
+              marginBottom: '8px',
+              borderBottom: '1px solid #E2E8F0',
+            }}
+          >
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#0A1628' }}>
+              Loan Amount
+            </span>
+            <span 
+              className="tabular-nums"
+              style={{ fontSize: '16px', fontWeight: 700, color: '#0891B2' }}
+            >
               {formatSliderValue(metrics.loanAmount, 'currency')}
             </span>
           </div>
 
-          {/* Loan Type Segmented Control */}
-          <div className="mb-5">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-2">
+          {/* Loan Type */}
+          <div style={{ marginTop: '16px', marginBottom: '8px' }}>
+            <label style={{ fontSize: '14px', fontWeight: 600, color: '#0A1628', display: 'block', marginBottom: '8px' }}>
               Loan Type
             </label>
-            <div className="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1">
+            <div className="flex rounded-lg p-1" style={{ background: '#F1F5F9' }}>
               {loanTypeOptions.map((type, idx) => (
                 <button
                   key={type}
                   onClick={() => handleLoanTypeChange(type)}
-                  className={`flex-1 py-2 px-3 text-sm font-semibold rounded-md transition-all ${
-                    state.loanType === type
-                      ? 'bg-teal text-white shadow-sm'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
+                  className="flex-1 py-2 px-3 text-sm font-semibold rounded-md transition-all"
+                  style={{
+                    background: state.loanType === type ? '#0891B2' : 'transparent',
+                    color: state.loanType === type ? 'white' : '#64748B',
+                  }}
                 >
                   {loanTypeLabels[idx]}
                 </button>
@@ -399,7 +341,6 @@ export function DealMakerPage({
             </div>
           </div>
 
-          {/* Interest Rate and Loan Term Sliders */}
           {FINANCING_SLIDERS.map(slider => (
             <DealMakerSlider
               key={slider.id}
@@ -426,7 +367,6 @@ export function DealMakerPage({
               key={slider.id}
               config={{
                 ...slider,
-                // Dynamic ARV range based on buy price
                 ...(slider.id === 'arv' && {
                   min: state.buyPrice,
                   max: state.buyPrice * 2,

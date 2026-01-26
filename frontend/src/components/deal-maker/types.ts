@@ -207,6 +207,8 @@ export interface MetricsHeaderProps {
   state: DealMakerState
   metrics: DealMakerMetrics
   listPrice?: number
+  propertyAddress?: string
+  onBackPress?: () => void
 }
 
 export interface WorksheetTabProps {

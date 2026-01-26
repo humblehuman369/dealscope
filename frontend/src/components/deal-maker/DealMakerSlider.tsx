@@ -1,16 +1,19 @@
 /**
- * DealMakerSlider - Premium slider component with gradient track
- * Features: Larger touch target, gradient fill, refined thumb, smooth animations
+ * DealMakerSlider - Deal Maker Pro slider component
+ * EXACT implementation from design files
+ * 
+ * Design specs:
+ * - Input label: 14px, font-weight 600, color #0A1628
+ * - Input value: 16px, font-weight 700, color #0891B2
+ * - Slider track: #E2E8F0
+ * - Slider fill: #0891B2
+ * - Range text: 11px, color #94A3B8
  */
 
 'use client'
 
-import React, { useState, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { SliderFormat, DealMakerSliderProps } from './types'
-
-// =============================================================================
-// FORMATTERS
-// =============================================================================
 
 export function formatSliderValue(value: number, format: SliderFormat): string {
   switch (format) {
@@ -49,10 +52,6 @@ export function formatSliderValue(value: number, format: SliderFormat): string {
   }
 }
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
-
 export function DealMakerSlider({
   config,
   value,
@@ -60,8 +59,6 @@ export function DealMakerSlider({
   onChangeComplete,
 }: DealMakerSliderProps) {
   const [localValue, setLocalValue] = useState(value)
-  const [isDragging, setIsDragging] = useState(false)
-  const trackRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setLocalValue(value)
@@ -74,12 +71,7 @@ export function DealMakerSlider({
     onChange(rounded)
   }, [config.step, onChange])
 
-  const handleMouseDown = useCallback(() => {
-    setIsDragging(true)
-  }, [])
-
   const handleMouseUp = useCallback(() => {
-    setIsDragging(false)
     const rounded = Math.round(localValue / config.step) * config.step
     onChangeComplete?.(rounded)
   }, [config.step, localValue, onChangeComplete])
@@ -90,40 +82,52 @@ export function DealMakerSlider({
   const fillPercent = ((localValue - config.min) / (config.max - config.min)) * 100
 
   return (
-    <div className="mb-5">
-      {/* Header: Label and Value */}
-      <div className="flex justify-between items-center mb-3">
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+    <div style={{ marginTop: '16px' }}>
+      {/* Label and Value */}
+      <div className="flex justify-between items-center" style={{ marginBottom: '8px' }}>
+        <span style={{ fontSize: '14px', fontWeight: 600, color: '#0A1628' }}>
           {config.label}
         </span>
         <span 
-          className={`text-base font-bold tabular-nums transition-all duration-150 ${
-            isDragging ? 'text-teal scale-105' : 'text-teal'
-          }`}
+          className="tabular-nums"
+          style={{ fontSize: '16px', fontWeight: 700, color: '#0891B2' }}
         >
           {formattedValue}
         </span>
       </div>
 
-      {/* Slider Track Container */}
-      <div 
-        ref={trackRef}
-        className="relative h-10 flex items-center group cursor-pointer"
-      >
-        {/* Track background with subtle gradient */}
-        <div className="absolute inset-x-0 h-2 rounded-full bg-gradient-to-r from-slate-200 via-slate-200 to-slate-100 dark:from-slate-700 dark:via-slate-700 dark:to-slate-600" />
-        
-        {/* Filled track with gradient */}
+      {/* Slider */}
+      <div className="relative" style={{ height: '24px' }}>
+        {/* Track background */}
         <div 
-          className="absolute left-0 h-2 rounded-full transition-all duration-75"
+          className="absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full"
+          style={{ height: '6px', background: '#E2E8F0' }}
+        />
+        
+        {/* Filled track */}
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 left-0 rounded-full"
           style={{ 
+            height: '6px', 
             width: `${fillPercent}%`,
-            background: 'linear-gradient(90deg, #0891b2 0%, #06b6d4 50%, #22d3ee 100%)',
-            boxShadow: isDragging ? '0 0 12px rgba(8, 145, 178, 0.5)' : 'none',
+            background: '#0891B2',
           }}
         />
         
-        {/* Hidden native input for accessibility */}
+        {/* Custom thumb */}
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 rounded-full bg-[#0891B2]"
+          style={{ 
+            left: `calc(${fillPercent}% - 8px)`,
+            width: '16px',
+            height: '16px',
+            border: '2px solid white',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
+            pointerEvents: 'none',
+          }}
+        />
+        
+        {/* Hidden native input */}
         <input
           type="range"
           min={config.min}
@@ -131,53 +135,19 @@ export function DealMakerSlider({
           step={config.step}
           value={localValue}
           onChange={handleValueChange}
-          onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
-          onTouchStart={handleMouseDown}
           onTouchEnd={handleMouseUp}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           aria-label={config.label}
         />
-        
-        {/* Custom thumb */}
-        <div 
-          className={`absolute pointer-events-none z-10 transition-all duration-150 ${
-            isDragging ? 'scale-125' : 'group-hover:scale-110'
-          }`}
-          style={{ 
-            left: `calc(${fillPercent}% - 10px)`,
-          }}
-        >
-          {/* Thumb outer glow */}
-          <div 
-            className={`absolute inset-0 rounded-full transition-opacity duration-150 ${
-              isDragging ? 'opacity-100' : 'opacity-0'
-            }`}
-            style={{
-              width: 20,
-              height: 20,
-              background: 'radial-gradient(circle, rgba(8, 145, 178, 0.4) 0%, transparent 70%)',
-              transform: 'scale(2)',
-            }}
-          />
-          {/* Thumb body */}
-          <div 
-            className="w-5 h-5 rounded-full bg-white border-[3px] border-teal shadow-lg"
-            style={{
-              boxShadow: isDragging 
-                ? '0 2px 8px rgba(8, 145, 178, 0.5), 0 4px 16px rgba(0,0,0,0.15)'
-                : '0 2px 6px rgba(0,0,0,0.15)',
-            }}
-          />
-        </div>
       </div>
 
       {/* Range Labels */}
-      <div className="flex justify-between mt-1.5">
-        <span className="text-[11px] text-slate-400 dark:text-slate-500 tabular-nums">
+      <div className="flex justify-between" style={{ marginTop: '6px' }}>
+        <span style={{ fontSize: '11px', color: '#94A3B8' }}>
           {formattedMin}
         </span>
-        <span className="text-[11px] text-slate-400 dark:text-slate-500 tabular-nums">
+        <span style={{ fontSize: '11px', color: '#94A3B8' }}>
           {formattedMax}
         </span>
       </div>
