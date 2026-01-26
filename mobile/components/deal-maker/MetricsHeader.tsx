@@ -1,28 +1,33 @@
 /**
- * MetricsHeader - Deal Maker Pro header with title, address, and 2x3 metrics grid
- * Matches the exact design specification with precise colors and typography
+ * MetricsHeader - Deal Maker Pro header
+ * EXACT implementation from design files - no modifications
+ * 
+ * Design specs:
+ * - Header bg: #0A1628
+ * - Address: 11px, color #94A3B8, letter-spacing 0.02em
+ * - Title: 22px, font-weight 800, letter-spacing 0.05em
+ *   - DEAL: white, MAKER: #00D4FF, PRO: white
+ * - Metrics grid: 2 columns, gap 6px 24px
+ * - Metric label: 12px, color #94A3B8
+ * - Metric value: 13px, font-weight 600, white
+ *   - Deal Gap: #00D4FF, Annual Profit: #06B6D4
  */
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-import { MetricsHeaderProps, DEAL_MAKER_PRO_COLORS } from './types';
+import { MetricsHeaderProps } from './types';
 import { BackIcon } from './icons';
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function MetricsHeader({ 
   state, 
   metrics, 
-  listPrice,
   propertyAddress,
   onBackPress,
 }: MetricsHeaderProps) {
   return (
-    <View style={styles.container}>
-      {/* Top Row: Back button + Title Area */}
+    <View style={styles.header}>
+      {/* Header Top: Back button + Title Area */}
       <View style={styles.headerTop}>
         {onBackPress && (
           <TouchableOpacity 
@@ -43,89 +48,56 @@ export function MetricsHeader({
           )}
           
           {/* DEAL MAKER PRO Title */}
-          <View style={styles.titleRow}>
+          <Text style={styles.title}>
             <Text style={styles.titleDeal}>DEAL </Text>
             <Text style={styles.titleMaker}>MAKER </Text>
             <Text style={styles.titlePro}>PRO</Text>
-          </View>
+          </Text>
         </View>
       </View>
 
-      {/* Metrics Grid - 2 columns, 3 rows */}
+      {/* Metrics Grid - 2 columns */}
       <View style={styles.metricsRow}>
-        {/* Left Column */}
-        <View style={styles.metricsColumn}>
-          <MetricRow 
-            label="Buy Price" 
-            value={formatCurrency(state.buyPrice)} 
-          />
-          <MetricRow 
-            label="Deal Gap" 
-            value={formatPercentWithSign(metrics.dealGap)} 
-            valueColor={DEAL_MAKER_PRO_COLORS.dealGapCyan}
-          />
-          <MetricRow 
-            label="CAP Rate" 
-            value={formatPercent(metrics.capRate)} 
-          />
+        {/* Row 1 */}
+        <View style={styles.metricItem}>
+          <Text style={styles.metricLabel}>Buy Price</Text>
+          <Text style={styles.metricValue}>{formatCurrency(state.buyPrice)}</Text>
         </View>
-
-        {/* Right Column */}
-        <View style={styles.metricsColumn}>
-          <MetricRow 
-            label="Cash Needed" 
-            value={formatCurrency(metrics.cashNeeded)} 
-          />
-          <MetricRow 
-            label="Annual Profit" 
-            value={formatCurrency(metrics.annualProfit)} 
-            valueColor={DEAL_MAKER_PRO_COLORS.annualProfitTeal}
-          />
-          <MetricRow 
-            label="COC Return" 
-            value={formatPercent(metrics.cocReturn)} 
-          />
+        <View style={styles.metricItem}>
+          <Text style={styles.metricLabel}>Cash Needed</Text>
+          <Text style={styles.metricValue}>{formatCurrency(metrics.cashNeeded)}</Text>
+        </View>
+        
+        {/* Row 2 */}
+        <View style={styles.metricItem}>
+          <Text style={styles.metricLabel}>Deal Gap</Text>
+          <Text style={[styles.metricValue, styles.metricValueCyan]}>
+            {formatPercentWithSign(metrics.dealGap)}
+          </Text>
+        </View>
+        <View style={styles.metricItem}>
+          <Text style={styles.metricLabel}>Annual Profit</Text>
+          <Text style={[styles.metricValue, styles.metricValueTeal]}>
+            {formatCurrency(metrics.annualProfit)}
+          </Text>
+        </View>
+        
+        {/* Row 3 */}
+        <View style={styles.metricItem}>
+          <Text style={styles.metricLabel}>CAP Rate</Text>
+          <Text style={styles.metricValue}>{formatPercent(metrics.capRate)}</Text>
+        </View>
+        <View style={styles.metricItem}>
+          <Text style={styles.metricLabel}>COC Return</Text>
+          <Text style={styles.metricValue}>{formatPercent(metrics.cocReturn)}</Text>
         </View>
       </View>
     </View>
   );
 }
 
-// =============================================================================
-// METRIC ROW
-// =============================================================================
-
-interface MetricRowProps {
-  label: string;
-  value: string;
-  valueColor?: string;
-}
-
-function MetricRow({ label, value, valueColor }: MetricRowProps) {
-  return (
-    <View style={styles.metricItem}>
-      <Text style={styles.metricLabel}>{label}</Text>
-      <Text style={[styles.metricValue, valueColor && { color: valueColor }]}>
-        {value}
-      </Text>
-    </View>
-  );
-}
-
-// =============================================================================
-// FORMATTERS
-// =============================================================================
-
+// Formatters
 function formatCurrency(value: number): string {
-  if (Math.abs(value) >= 1000000) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 1,
-      notation: 'compact',
-    }).format(value);
-  }
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -143,13 +115,10 @@ function formatPercentWithSign(value: number): string {
   return `${sign}${(value * 100).toFixed(0)}%`;
 }
 
-// =============================================================================
-// STYLES - Exact match to design specification
-// =============================================================================
-
+// Styles - EXACT from design files
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: DEAL_MAKER_PRO_COLORS.header,
+  header: {
+    backgroundColor: '#0A1628',
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 16,
@@ -170,60 +139,56 @@ const styles = StyleSheet.create({
   headerTitleArea: {
     flex: 1,
     alignItems: 'center',
-    marginRight: 32, // Balance for back button
+    marginRight: 32,
   },
   address: {
     fontSize: 11,
-    color: DEAL_MAKER_PRO_COLORS.metricLabel,
+    color: '#94A3B8',
     marginBottom: 2,
-    letterSpacing: 0.02 * 11,
+    letterSpacing: 0.22, // 0.02em * 11
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  title: {
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: 1.1, // 0.05em * 22
   },
   titleDeal: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: DEAL_MAKER_PRO_COLORS.titleWhite,
-    letterSpacing: 0.05 * 22,
+    color: 'white',
   },
   titleMaker: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: DEAL_MAKER_PRO_COLORS.titleCyan,
-    letterSpacing: 0.05 * 22,
+    color: '#00D4FF',
   },
   titlePro: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: DEAL_MAKER_PRO_COLORS.titleWhite,
-    letterSpacing: 0.05 * 22,
+    color: 'white',
   },
   metricsRow: {
     flexDirection: 'row',
-    gap: 24,
+    flexWrap: 'wrap',
     marginTop: 12,
   },
-  metricsColumn: {
-    flex: 1,
-    gap: 6,
-  },
   metricItem: {
+    width: '50%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 3,
+    paddingRight: 12,
   },
   metricLabel: {
     fontSize: 12,
-    color: DEAL_MAKER_PRO_COLORS.metricLabel,
+    color: '#94A3B8',
   },
   metricValue: {
     fontSize: 13,
     fontWeight: '600',
-    color: DEAL_MAKER_PRO_COLORS.metricValue,
+    color: 'white',
     fontVariant: ['tabular-nums'],
+  },
+  metricValueCyan: {
+    color: '#00D4FF',
+  },
+  metricValueTeal: {
+    color: '#06B6D4',
   },
 });
 

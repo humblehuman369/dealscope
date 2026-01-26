@@ -1,6 +1,14 @@
 /**
  * DealMakerSlider - Deal Maker Pro slider component
- * Features: Teal accent colors, exact design spec typography, haptic feedback
+ * EXACT implementation from design files - no modifications
+ * 
+ * Design specs:
+ * - Input label: 14px, font-weight 600, color #0A1628
+ * - Input value: 16px, font-weight 700, color #0891B2
+ * - Slider track: #E2E8F0, height 6px
+ * - Slider fill: #0891B2
+ * - Slider thumb: #0891B2 with 2px white border
+ * - Range text: 11px, color #94A3B8
  */
 
 import React, { useState, useCallback } from 'react';
@@ -8,12 +16,9 @@ import { View, Text, StyleSheet, Platform } from 'react-native';
 import Slider from '@react-native-community/slider';
 import * as Haptics from 'expo-haptics';
 
-import { DealMakerSliderProps, SliderFormat, DEAL_MAKER_PRO_COLORS } from './types';
+import { DealMakerSliderProps, SliderFormat } from './types';
 
-// =============================================================================
-// FORMATTERS
-// =============================================================================
-
+// Formatters
 export function formatSliderValue(value: number, format: SliderFormat): string {
   switch (format) {
     case 'currency':
@@ -51,16 +56,11 @@ export function formatSliderValue(value: number, format: SliderFormat): string {
   }
 }
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
-
 export function DealMakerSlider({
   config,
   value,
   onChange,
   onChangeComplete,
-  isDark = false,
 }: DealMakerSliderProps) {
   const [localValue, setLocalValue] = useState(value);
 
@@ -70,7 +70,6 @@ export function DealMakerSlider({
   }, [value]);
 
   const handleValueChange = useCallback((newValue: number) => {
-    // Round to step
     const rounded = Math.round(newValue / config.step) * config.step;
     setLocalValue(rounded);
   }, [config.step]);
@@ -87,19 +86,15 @@ export function DealMakerSlider({
   const formattedMax = formatSliderValue(config.max, config.format);
 
   return (
-    <View style={styles.container}>
-      {/* Header: Label and Value */}
-      <View style={styles.header}>
-        <Text style={styles.label}>
-          {config.label}
-        </Text>
-        <Text style={styles.value}>
-          {formattedValue}
-        </Text>
+    <View style={styles.inputRow}>
+      {/* Label and Value */}
+      <View style={styles.inputLabel}>
+        <Text style={styles.inputLabelText}>{config.label}</Text>
+        <Text style={styles.inputValue}>{formattedValue}</Text>
       </View>
 
-      {/* Slider Track */}
-      <View style={styles.sliderWrapper}>
+      {/* Slider */}
+      <View style={styles.sliderContainer}>
         <Slider
           style={styles.slider}
           minimumValue={config.min}
@@ -108,71 +103,60 @@ export function DealMakerSlider({
           value={localValue}
           onValueChange={handleValueChange}
           onSlidingComplete={handleSlidingComplete}
-          minimumTrackTintColor={DEAL_MAKER_PRO_COLORS.sliderFill}
-          maximumTrackTintColor={DEAL_MAKER_PRO_COLORS.sliderTrack}
-          thumbTintColor={Platform.OS === 'android' 
-            ? DEAL_MAKER_PRO_COLORS.sliderThumb
-            : undefined
-          }
+          minimumTrackTintColor="#0891B2"
+          maximumTrackTintColor="#E2E8F0"
+          thumbTintColor={Platform.OS === 'android' ? '#0891B2' : undefined}
           tapToSeek={true}
         />
       </View>
 
       {/* Range Labels */}
-      <View style={styles.rangeContainer}>
-        <Text style={styles.rangeText}>
-          {formattedMin}
-        </Text>
-        <Text style={styles.rangeText}>
-          {formattedMax}
-        </Text>
+      <View style={styles.sliderRange}>
+        <Text style={styles.rangeText}>{formattedMin}</Text>
+        <Text style={styles.rangeText}>{formattedMax}</Text>
       </View>
     </View>
   );
 }
 
-// =============================================================================
-// STYLES - Exact match to design specification
-// =============================================================================
-
+// Styles - EXACT from design files
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
+  inputRow: {
+    marginTop: 16,
   },
-  header: {
+  inputLabel: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
-  label: {
+  inputLabelText: {
     fontSize: 14,
     fontWeight: '600',
-    color: DEAL_MAKER_PRO_COLORS.inputLabel,
+    color: '#0A1628',
   },
-  value: {
+  inputValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: DEAL_MAKER_PRO_COLORS.inputValue,
+    color: '#0891B2',
     fontVariant: ['tabular-nums'],
   },
-  sliderWrapper: {
-    paddingVertical: 4,
-    marginHorizontal: -4,
-    paddingHorizontal: 4,
+  sliderContainer: {
+    height: 24,
+    justifyContent: 'center',
   },
   slider: {
     width: '100%',
     height: 24,
   },
-  rangeContainer: {
+  sliderRange: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 6,
   },
   rangeText: {
     fontSize: 11,
-    color: DEAL_MAKER_PRO_COLORS.rangeText,
+    color: '#94A3B8',
   },
 });
 

@@ -1,6 +1,15 @@
 /**
- * WorksheetTab - Deal Maker Pro accordion card component
- * Features: SVG icons, chevron rotation, teal accent colors, modern styling
+ * WorksheetTab - Deal Maker Pro accordion card
+ * EXACT implementation from design files - no modifications
+ * 
+ * Design specs:
+ * - Card: white bg, border-radius 12px, border 1px solid #F1F5F9
+ * - Active card: box-shadow 0 0 0 2px rgba(8, 145, 178, 0.2), border transparent
+ * - Header: padding 14px 16px, gap 12px
+ * - Icon: 24x24, color #0891B2
+ * - Title: 15px, font-weight 600, color #0A1628
+ * - Chevron: 20x20, color #94A3B8, rotates 180deg when active
+ * - NO numbered indicators
  */
 
 import React from 'react';
@@ -12,21 +21,16 @@ import {
   LayoutAnimation, 
   Platform, 
   UIManager,
-  Animated,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
-import { WorksheetTabProps, DEAL_MAKER_PRO_COLORS } from './types';
+import { WorksheetTabProps } from './types';
 import { ChevronDownIcon, ArrowRightIcon } from './icons';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function WorksheetTab({
   config,
@@ -52,41 +56,39 @@ export function WorksheetTab({
 
   return (
     <View style={[
-      styles.container,
-      isExpanded && styles.containerActive,
+      styles.accordionCard,
+      isExpanded && styles.accordionCardActive,
     ]}>
-      {/* Accordion Header */}
+      {/* Accordion Header - just icon, title, chevron */}
       <TouchableOpacity 
-        style={styles.header} 
+        style={styles.accordionHeader} 
         onPress={handleToggle}
         activeOpacity={0.7}
       >
-        {/* Icon */}
-        <View style={styles.iconWrapper}>
-          <IconComponent size={24} color={DEAL_MAKER_PRO_COLORS.iconTeal} />
+        {/* Step Icon */}
+        <View style={styles.stepIcon}>
+          <IconComponent size={24} color="#0891B2" />
         </View>
         
-        {/* Title */}
-        <Text style={styles.title}>{title}</Text>
+        {/* Step Title */}
+        <Text style={styles.stepTitle}>{title}</Text>
         
-        {/* Chevron - rotates when expanded */}
+        {/* Chevron */}
         <View style={[
-          styles.chevronWrapper,
+          styles.chevron,
           isExpanded && styles.chevronRotated,
         ]}>
-          <ChevronDownIcon size={20} color={DEAL_MAKER_PRO_COLORS.chevron} />
+          <ChevronDownIcon size={20} color="#94A3B8" />
         </View>
       </TouchableOpacity>
 
-      {/* Expanded Content */}
+      {/* Accordion Content */}
       {isExpanded && (
-        <View style={styles.content}>
+        <View style={styles.accordionContent}>
           {/* Slider inputs */}
-          <View style={styles.slidersContainer}>
-            {children}
-          </View>
+          {children}
 
-          {/* Summary/Derived Output Box */}
+          {/* Summary Box */}
           {derivedOutput && (
             <View style={styles.summaryBox}>
               <Text style={styles.summaryLabel}>{derivedOutput.label}</Text>
@@ -100,11 +102,11 @@ export function WorksheetTab({
             onPress={handleContinue}
             activeOpacity={0.8}
           >
-            <Text style={styles.ctaText}>
+            <Text style={styles.ctaButtonText}>
               {isLastTab ? 'Finish & Save Deal' : 'Continue to Next'}
             </Text>
             {!isLastTab && (
-              <ArrowRightIcon size={20} color={DEAL_MAKER_PRO_COLORS.ctaText} />
+              <ArrowRightIcon size={20} color="white" />
             )}
           </TouchableOpacity>
         </View>
@@ -113,74 +115,63 @@ export function WorksheetTab({
   );
 }
 
-// =============================================================================
-// STYLES - Exact match to design specification
-// =============================================================================
-
+// Styles - EXACT from design files
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: DEAL_MAKER_PRO_COLORS.cardBg,
+  accordionCard: {
+    backgroundColor: 'white',
     borderRadius: 12,
     marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
-    elevation: 2,
+    elevation: 1,
     borderWidth: 1,
-    borderColor: DEAL_MAKER_PRO_COLORS.cardBorder,
+    borderColor: '#F1F5F9',
     overflow: 'hidden',
   },
-  containerActive: {
-    shadowColor: '#0891B2',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 0,
-    elevation: 0,
+  accordionCardActive: {
     borderWidth: 2,
-    borderColor: DEAL_MAKER_PRO_COLORS.activeRing,
+    borderColor: 'rgba(8, 145, 178, 0.2)',
+    shadowColor: 'rgba(8, 145, 178, 0.2)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
   },
-  header: {
+  accordionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
     gap: 12,
   },
-  iconWrapper: {
+  stepIcon: {
     width: 24,
     height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  title: {
+  stepTitle: {
     flex: 1,
     fontSize: 15,
     fontWeight: '600',
-    color: DEAL_MAKER_PRO_COLORS.inputLabel,
+    color: '#0A1628',
   },
-  chevronWrapper: {
+  chevron: {
     width: 20,
     height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   chevronRotated: {
     transform: [{ rotate: '180deg' }],
   },
-  content: {
+  accordionContent: {
     paddingHorizontal: 16,
     paddingBottom: 16,
     borderTopWidth: 1,
-    borderTopColor: DEAL_MAKER_PRO_COLORS.cardBorder,
-  },
-  slidersContainer: {
-    marginTop: 16,
+    borderTopColor: '#F1F5F9',
   },
   summaryBox: {
-    backgroundColor: DEAL_MAKER_PRO_COLORS.summaryBg,
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: DEAL_MAKER_PRO_COLORS.summaryBorder,
+    borderColor: '#E2E8F0',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -189,19 +180,19 @@ const styles = StyleSheet.create({
   summaryLabel: {
     fontSize: 10,
     fontWeight: '600',
-    color: DEAL_MAKER_PRO_COLORS.summaryLabel,
+    color: '#64748B',
     textTransform: 'uppercase',
-    letterSpacing: 0.05 * 10,
+    letterSpacing: 0.5, // 0.05em * 10
     marginBottom: 4,
   },
   summaryValue: {
     fontSize: 24,
     fontWeight: '700',
-    color: DEAL_MAKER_PRO_COLORS.summaryValue,
+    color: '#0A1628',
     fontVariant: ['tabular-nums'],
   },
   ctaButton: {
-    backgroundColor: DEAL_MAKER_PRO_COLORS.ctaButton,
+    backgroundColor: '#0891B2',
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 16,
@@ -211,10 +202,10 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 16,
   },
-  ctaText: {
+  ctaButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: DEAL_MAKER_PRO_COLORS.ctaText,
+    color: 'white',
   },
 });
 

@@ -1,6 +1,6 @@
 /**
- * Deal Maker Pro Icons
- * SVG icon components for the Deal Maker Pro accordion tabs
+ * Deal Maker Pro Icons - EXACT from design files
+ * SVG icon components matching the HTML/JSX design specification
  */
 
 import React from 'react';
@@ -11,14 +11,11 @@ interface IconProps {
   color?: string;
 }
 
-// Default icon color matches the design spec
-const DEFAULT_COLOR = '#0891B2';
-const DEFAULT_SIZE = 24;
-
 /**
  * Home icon for Buy Price tab
+ * Color: #0891B2
  */
-export function HomeIcon({ size = DEFAULT_SIZE, color = DEFAULT_COLOR }: IconProps) {
+export function HomeIcon({ size = 24, color = '#0891B2' }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -33,9 +30,10 @@ export function HomeIcon({ size = DEFAULT_SIZE, color = DEFAULT_COLOR }: IconPro
 }
 
 /**
- * Bank/Building icon for Financing tab
+ * Bank icon for Financing tab
+ * Color: #0891B2
  */
-export function BankIcon({ size = DEFAULT_SIZE, color = DEFAULT_COLOR }: IconProps) {
+export function BankIcon({ size = 24, color = '#0891B2' }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -50,9 +48,10 @@ export function BankIcon({ size = DEFAULT_SIZE, color = DEFAULT_COLOR }: IconPro
 }
 
 /**
- * Wrench/Tools icon for Rehab & Valuation tab
+ * Wrench icon for Rehab & Valuation tab
+ * Color: #0891B2
  */
-export function WrenchIcon({ size = DEFAULT_SIZE, color = DEFAULT_COLOR }: IconProps) {
+export function WrenchIcon({ size = 24, color = '#0891B2' }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -67,9 +66,10 @@ export function WrenchIcon({ size = DEFAULT_SIZE, color = DEFAULT_COLOR }: IconP
 }
 
 /**
- * Dollar/Currency icon for Income tab
+ * Dollar icon for Income tab
+ * Color: #0891B2
  */
-export function DollarIcon({ size = DEFAULT_SIZE, color = DEFAULT_COLOR }: IconProps) {
+export function DollarIcon({ size = 24, color = '#0891B2' }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -84,9 +84,10 @@ export function DollarIcon({ size = DEFAULT_SIZE, color = DEFAULT_COLOR }: IconP
 }
 
 /**
- * Chart/Bars icon for Expenses tab
+ * Chart icon for Expenses tab
+ * Color: #0891B2
  */
-export function ChartIcon({ size = DEFAULT_SIZE, color = DEFAULT_COLOR }: IconProps) {
+export function ChartIcon({ size = 24, color = '#0891B2' }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -101,7 +102,8 @@ export function ChartIcon({ size = DEFAULT_SIZE, color = DEFAULT_COLOR }: IconPr
 }
 
 /**
- * Chevron Down icon for accordion toggle
+ * Chevron Down icon for accordion
+ * Color: #94A3B8
  */
 export function ChevronDownIcon({ size = 20, color = '#94A3B8' }: IconProps) {
   return (
@@ -119,6 +121,7 @@ export function ChevronDownIcon({ size = 20, color = '#94A3B8' }: IconProps) {
 
 /**
  * Arrow Right icon for CTA button
+ * Color: white
  */
 export function ArrowRightIcon({ size = 20, color = '#FFFFFF' }: IconProps) {
   return (
@@ -135,7 +138,8 @@ export function ArrowRightIcon({ size = 20, color = '#FFFFFF' }: IconProps) {
 }
 
 /**
- * Back/Chevron Left icon for header
+ * Back icon for header
+ * Color: white (opacity 0.8)
  */
 export function BackIcon({ size = 20, color = '#FFFFFF' }: IconProps) {
   return (
