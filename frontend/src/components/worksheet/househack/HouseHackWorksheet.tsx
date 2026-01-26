@@ -348,7 +348,7 @@ export function HouseHackWorksheet({ property, propertyId, onExportPDF }: HouseH
                   const encodedAddress = encodeURIComponent(fullAddress.replace(/\s+/g, '-'))
                   const params = new URLSearchParams({
                     listPrice: String(listPrice),
-                    rentEstimate: String(totalRent),
+                    rentEstimate: String(defaultMonthlyRent),
                     propertyTax: String(propertyTaxes),
                     insurance: String(insurance),
                   })
