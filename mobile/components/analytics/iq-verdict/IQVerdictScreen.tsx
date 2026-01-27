@@ -26,10 +26,6 @@ import {
   getRankColor,
   getDealScoreColor,
   formatPrice,
-  calculateProfitScoreFromStrategy,
-  scoreToProfitGrade,
-  getProfitGradeColor,
-  scoreToDealGrade,
 } from './types';
 import { IQButton } from './IQButton';
 
@@ -51,11 +47,6 @@ export function IQVerdictScreen({
   isDark = false,
 }: IQVerdictScreenProps) {
   const topStrategy = analysis.strategies[0];
-  
-  // Calculate profit score and grade from top strategy
-  const profitScore = analysis.profitScore ?? calculateProfitScoreFromStrategy(topStrategy);
-  const profitGrade = analysis.profitGrade ?? scoreToProfitGrade(profitScore);
-  const dealGrade = scoreToDealGrade(analysis.dealScore);
 
   const handleViewStrategy = useCallback(
     (strategy: IQStrategy) => {
@@ -138,50 +129,26 @@ export function IQVerdictScreen({
         >
           <Text style={styles.verdictLabel}>IQ VERDICT</Text>
 
-          {/* Two-Score Display - Deal Score & Profit Score */}
-          <View style={styles.twoScoreContainer}>
-            {/* Deal Score */}
-            <TouchableOpacity 
-              style={[styles.scoreBadge, { backgroundColor: theme.cardBg }]}
-              onPress={handleViewTopStrategy}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.scoreBadgeRing, { borderColor: getDealScoreColor(analysis.dealScore) }]}>
-                <Text
-                  style={[
-                    styles.scoreBadgeNumber,
-                    { color: getDealScoreColor(analysis.dealScore) },
-                  ]}
-                >
-                  {analysis.dealScore}
-                </Text>
-              </View>
-              <Text style={[styles.scoreBadgeLabel, { color: theme.textSecondary }]}>
-                DEAL SCORE
+          {/* Deal Score Badge - Single Score Display */}
+          <TouchableOpacity 
+            style={[styles.scoreBadge, { backgroundColor: theme.cardBg }]}
+            onPress={handleViewTopStrategy}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.scoreBadgeRing, { borderColor: getDealScoreColor(analysis.dealScore) }]}>
+              <Text
+                style={[
+                  styles.scoreBadgeNumber,
+                  { color: getDealScoreColor(analysis.dealScore) },
+                ]}
+              >
+                {analysis.dealScore}
               </Text>
-            </TouchableOpacity>
-
-            {/* Profit Score */}
-            <TouchableOpacity 
-              style={[styles.scoreBadge, { backgroundColor: theme.cardBg }]}
-              onPress={handleViewTopStrategy}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.scoreBadgeRing, { borderColor: getProfitGradeColor(profitGrade) }]}>
-                <Text
-                  style={[
-                    styles.scoreBadgeGrade,
-                    { color: getProfitGradeColor(profitGrade) },
-                  ]}
-                >
-                  {profitGrade}
-                </Text>
-              </View>
-              <Text style={[styles.scoreBadgeLabel, { color: theme.textSecondary }]}>
-                PROFIT QUALITY
-              </Text>
-            </TouchableOpacity>
-          </View>
+            </View>
+            <Text style={[styles.scoreBadgeLabel, { color: theme.textSecondary }]}>
+              DEAL SCORE
+            </Text>
+          </TouchableOpacity>
 
           <Text style={[styles.verdictDescription, { color: theme.textSecondary }]}>
             {analysis.verdictDescription}
@@ -394,17 +361,12 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 14,
   },
-  // Two-Score Display
-  twoScoreContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 24,
-    marginBottom: 14,
-  },
+  // Deal Score Badge
   scoreBadge: {
     alignItems: 'center',
     padding: 12,
     borderRadius: 16,
+    marginBottom: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
