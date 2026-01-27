@@ -219,42 +219,42 @@ export function IQVerdictScreen({
         contentContainerStyle={[styles.scrollContent, { padding: rsp(12) }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Property Card */}
-        <View style={[styles.propertyCard, { padding: rsp(12), marginBottom: rsp(12) }]}>
-          <View style={styles.propertyHeader}>
+        {/* Property Card - Dark banner style matching DEAL MAKER IQ */}
+        <View style={[styles.propertyCardDark, { paddingHorizontal: rsp(20), paddingVertical: rsp(16), marginBottom: rsp(12), marginHorizontal: rsp(-12) }]}>
+          {/* Top Row: Photo, OFF-MARKET, Est. Value */}
+          <View style={[styles.propertyTopRow, { marginBottom: rsp(8) }]}>
             {/* Property Image */}
-            <View style={[styles.propertyImageContainer, { width: rs(56), height: rs(56), borderRadius: rs(6) }]}>
+            <View style={[styles.propertyImageContainerDark, { width: rs(40), height: rs(40), borderRadius: rs(8) }]}>
               {property.imageUrl ? (
                 <Image 
                   source={{ uri: property.imageUrl }} 
-                  style={{ width: rs(56), height: rs(56) }}
+                  style={{ width: rs(40), height: rs(40), borderRadius: rs(8) }}
                 />
               ) : (
-                <Ionicons name="home" size={rs(22)} color={COLORS.surface400} />
+                <Ionicons name="home" size={rs(18)} color={COLORS.cyan} />
               )}
             </View>
 
-            {/* Property Info */}
-            <View style={styles.propertyInfo}>
-              <Text style={[styles.propertyAddress, { fontSize: rf(14) }]} numberOfLines={1}>
-                {addressLine1}
-              </Text>
-              <Text style={[styles.propertyLocation, { fontSize: rf(12) }]} numberOfLines={1}>
-                {addressLine2}
-              </Text>
-              <Text style={[styles.propertyDetails, { fontSize: rf(11) }]}>
-                {property.beds} bd · {Math.round(property.baths * 10) / 10} ba · {property.sqft?.toLocaleString() || '—'} sqft
-              </Text>
+            {/* OFF-MARKET Badge */}
+            <View style={[styles.marketBadgeDark, { paddingHorizontal: rsp(8), paddingVertical: rsp(4) }]}>
+              <Text style={[styles.marketBadgeTextDark, { fontSize: rf(9) }]}>OFF-MARKET</Text>
             </View>
 
-            {/* Property Value */}
-            <View style={styles.propertyValue}>
-              <View style={[styles.marketBadge, { paddingHorizontal: rsp(6), paddingVertical: rsp(3) }]}>
-                <Text style={[styles.marketBadgeText, { fontSize: rf(8) }]}>OFF-MARKET</Text>
-              </View>
-              <Text style={[styles.estValue, { fontSize: rf(16) }]}>{formatPrice(estValue)}</Text>
-              <Text style={[styles.estLabel, { fontSize: rf(10) }]}>Est. Value</Text>
+            {/* Est. Value */}
+            <View style={styles.propertyValueDark}>
+              <Text style={[styles.estValueDark, { fontSize: rf(18) }]}>{formatPrice(estValue)}</Text>
+              <Text style={[styles.estLabelDark, { fontSize: rf(10) }]}>Est. Value</Text>
             </View>
+          </View>
+
+          {/* Bottom: Address and Details */}
+          <View style={styles.propertyInfoDark}>
+            <Text style={[styles.propertyAddressDark, { fontSize: rf(15) }]} numberOfLines={1}>
+              {addressLine1}
+            </Text>
+            <Text style={[styles.propertyDetailsDark, { fontSize: rf(12) }]}>
+              {property.beds} bd · {Math.round(property.baths * 10) / 10} ba | {property.sqft?.toLocaleString() || '—'} sqft
+            </Text>
           </View>
         </View>
 
@@ -459,59 +459,51 @@ const styles = StyleSheet.create({
     paddingBottom: staticRsp(24),
   },
 
-  // Property Card
-  propertyCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: staticRs(10),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
+  // Property Card - Dark banner style
+  propertyCardDark: {
+    backgroundColor: COLORS.navy,
+    borderRadius: 0,
   },
-  propertyHeader: {
+  propertyTopRow: {
     flexDirection: 'row',
-    gap: staticRsp(10),
+    alignItems: 'center',
+    gap: staticRsp(12),
   },
-  propertyImageContainer: {
-    backgroundColor: COLORS.surface200,
+  propertyImageContainerDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  propertyInfo: {
+  propertyInfoDark: {
     flex: 1,
   },
-  propertyAddress: {
+  propertyAddressDark: {
     fontWeight: '600',
-    color: COLORS.navy,
-    marginBottom: 1,
-  },
-  propertyLocation: {
-    color: COLORS.surface500,
+    color: COLORS.white,
     marginBottom: staticRsp(2),
   },
-  propertyDetails: {
+  propertyDetailsDark: {
     color: COLORS.surface400,
   },
-  propertyValue: {
+  propertyValueDark: {
+    flex: 1,
     alignItems: 'flex-end',
   },
-  marketBadge: {
-    backgroundColor: COLORS.navy,
-    borderRadius: staticRs(3),
-    marginBottom: staticRsp(2),
+  marketBadgeDark: {
+    backgroundColor: COLORS.teal,
+    borderRadius: staticRs(4),
   },
-  marketBadgeText: {
+  marketBadgeTextDark: {
     fontWeight: '700',
     color: COLORS.white,
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
   },
-  estValue: {
+  estValueDark: {
     fontWeight: '700',
-    color: COLORS.teal,
+    color: COLORS.cyan,
   },
-  estLabel: {
+  estLabelDark: {
     color: COLORS.surface400,
   },
 
