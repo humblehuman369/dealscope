@@ -60,6 +60,7 @@ export const ID_TO_STRATEGY_TYPE: Record<IQStrategyId, StrategyType> = {
 export interface IQStrategy {
   id: IQStrategyId;
   name: string;
+  type?: string;            // Optional type label: "Annual", "Vacation"
   metric: string;           // Display value: "18.1%", "$52K", "75%"
   metricLabel: string;      // "CoC Return", "Profit", "Savings"
   metricValue: number;      // Raw value for sorting/calculations

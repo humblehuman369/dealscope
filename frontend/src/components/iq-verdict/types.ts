@@ -50,6 +50,7 @@ export interface IQStrategy {
   id: IQStrategyId;
   name: string;
   icon: string;
+  type?: string;            // Optional type label: "Annual", "Vacation"
   metric: string;           // Display value: "18.1%", "$52K", "75%"
   metricLabel: string;      // "CoC Return", "Profit", "Savings"
   metricValue: number;      // Raw value for sorting/calculations
