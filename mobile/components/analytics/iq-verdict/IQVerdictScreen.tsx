@@ -1,9 +1,10 @@
 /**
  * IQVerdictScreen - Redesigned IQ Verdict page for Mobile
- * Exact implementation from design files
+ * Fully responsive implementation with dynamic font sizes
  * 
  * Design specs:
- * - Max width: 480px centered (on tablets)
+ * - Responsive font scaling based on device screen size
+ * - Compact IQ Verdict section
  * - Background: #F1F5F9
  * - Font: Inter / System
  */
@@ -16,6 +17,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  Dimensions,
+  PixelRatio,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -30,6 +33,41 @@ import {
   formatPrice,
 } from './types';
 import { IQButton } from './IQButton';
+
+// =============================================================================
+// RESPONSIVE SCALING - Dynamic font sizes based on screen dimensions
+// =============================================================================
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// Base design dimensions (iPhone 14 Pro)
+const BASE_WIDTH = 393;
+const BASE_HEIGHT = 852;
+
+// Scale factor based on screen width
+const widthScale = SCREEN_WIDTH / BASE_WIDTH;
+const heightScale = SCREEN_HEIGHT / BASE_HEIGHT;
+
+// Use the smaller scale to ensure content fits
+const scale = Math.min(widthScale, heightScale);
+
+// Responsive size function - scales with screen size
+const rs = (size: number): number => {
+  const newSize = size * scale;
+  // Use PixelRatio to ensure crisp rendering
+  return Math.round(PixelRatio.roundToNearestPixel(newSize));
+};
+
+// Responsive font size - slightly more conservative scaling for readability
+const rf = (size: number): number => {
+  const newSize = size * Math.min(scale, 1.15); // Cap scaling at 115% for readability
+  return Math.round(PixelRatio.roundToNearestPixel(newSize));
+};
+
+// Moderate scale for spacing (less aggressive than font scaling)
+const rsp = (size: number): number => {
+  const newSize = size * Math.min(scale, 1.1);
+  return Math.round(PixelRatio.roundToNearestPixel(newSize));
+};
 
 // =============================================================================
 // BRAND COLORS - From design files
@@ -138,6 +176,10 @@ export function IQVerdictScreen({
   const wholesalePrice = breakevenPrice * 0.70;
   const estValue = property.price;
 
+  // Dynamic sizes for score ring
+  const scoreRingSize = rs(72);
+  const scoreRingBorder = rs(3);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
@@ -145,10 +187,10 @@ export function IQVerdictScreen({
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={20} color={COLORS.surface400} />
-          <Text style={styles.backText}>Back</Text>
+          <Ionicons name="arrow-back" size={rs(18)} color={COLORS.surface400} />
+          <Text style={[styles.backText, { fontSize: rf(13) }]}>Back</Text>
         </TouchableOpacity>
-        <Text style={styles.logo}>
+        <Text style={[styles.logo, { fontSize: rf(18) }]}>
           <Text style={styles.logoInvest}>Invest</Text>
           <Text style={styles.logoIQ}>IQ</Text>
         </Text>
@@ -157,57 +199,68 @@ export function IQVerdictScreen({
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { padding: rsp(12) }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Property Card */}
-        <View style={styles.propertyCard}>
+        <View style={[styles.propertyCard, { padding: rsp(12), marginBottom: rsp(12) }]}>
           <View style={styles.propertyHeader}>
             {/* Property Image */}
-            <View style={styles.propertyImageContainer}>
+            <View style={[styles.propertyImageContainer, { width: rs(56), height: rs(56), borderRadius: rs(6) }]}>
               {property.imageUrl ? (
                 <Image 
                   source={{ uri: property.imageUrl }} 
-                  style={styles.propertyImage}
+                  style={{ width: rs(56), height: rs(56) }}
                 />
               ) : (
-                <Ionicons name="home" size={24} color={COLORS.surface400} />
+                <Ionicons name="home" size={rs(22)} color={COLORS.surface400} />
               )}
             </View>
 
             {/* Property Info */}
             <View style={styles.propertyInfo}>
-              <Text style={styles.propertyAddress} numberOfLines={1}>
+              <Text style={[styles.propertyAddress, { fontSize: rf(14) }]} numberOfLines={1}>
                 {addressLine1}
               </Text>
-              <Text style={styles.propertyLocation} numberOfLines={1}>
+              <Text style={[styles.propertyLocation, { fontSize: rf(12) }]} numberOfLines={1}>
                 {addressLine2}
               </Text>
-              <Text style={styles.propertyDetails}>
+              <Text style={[styles.propertyDetails, { fontSize: rf(11) }]}>
                 {property.beds} bd · {Math.round(property.baths * 10) / 10} ba · {property.sqft?.toLocaleString() || '—'} sqft
               </Text>
             </View>
 
             {/* Property Value */}
             <View style={styles.propertyValue}>
-              <View style={styles.marketBadge}>
-                <Text style={styles.marketBadgeText}>OFF-MARKET</Text>
+              <View style={[styles.marketBadge, { paddingHorizontal: rsp(6), paddingVertical: rsp(3) }]}>
+                <Text style={[styles.marketBadgeText, { fontSize: rf(8) }]}>OFF-MARKET</Text>
               </View>
-              <Text style={styles.estValue}>{formatPrice(estValue)}</Text>
-              <Text style={styles.estLabel}>Est. Value</Text>
+              <Text style={[styles.estValue, { fontSize: rf(16) }]}>{formatPrice(estValue)}</Text>
+              <Text style={[styles.estLabel, { fontSize: rf(10) }]}>Est. Value</Text>
             </View>
           </View>
         </View>
 
-        {/* IQ Verdict Card */}
-        <View style={styles.verdictCard}>
+        {/* IQ Verdict Card - Compact spacing */}
+        <View style={[styles.verdictCard, { padding: rsp(16), marginBottom: rsp(12) }]}>
           {/* Verdict Header - Score LEFT, Prices RIGHT */}
-          <View style={styles.verdictHeader}>
+          <View style={[styles.verdictHeader, { gap: rsp(12), marginBottom: rsp(12) }]}>
             {/* Score Container */}
             <View style={styles.scoreContainer}>
-              <Text style={styles.verdictLabel}>IQ VERDICT</Text>
-              <View style={[styles.scoreRing, { borderColor: getScoreColor(analysis.dealScore), backgroundColor: `${getScoreColor(analysis.dealScore)}14` }]}>
-                <Text style={[styles.scoreValue, { color: getScoreColor(analysis.dealScore) }]}>
+              <Text style={[styles.verdictLabel, { fontSize: rf(9), marginBottom: rsp(4) }]}>IQ VERDICT</Text>
+              <View style={[
+                styles.scoreRing, 
+                { 
+                  width: scoreRingSize, 
+                  height: scoreRingSize, 
+                  borderRadius: scoreRingSize / 2,
+                  borderWidth: scoreRingBorder,
+                  borderColor: getScoreColor(analysis.dealScore), 
+                  backgroundColor: `${getScoreColor(analysis.dealScore)}14`,
+                  marginBottom: rsp(4),
+                }
+              ]}>
+                <Text style={[styles.scoreValue, { fontSize: rf(24), color: getScoreColor(analysis.dealScore) }]}>
                   {analysis.dealScore}
                 </Text>
               </View>
@@ -215,61 +268,61 @@ export function IQVerdictScreen({
                 onPress={() => setShowFactors(!showFactors)}
                 style={styles.viewFactors}
               >
-                <Text style={styles.viewFactorsText}>View Factors</Text>
+                <Text style={[styles.viewFactorsText, { fontSize: rf(11) }]}>View Factors</Text>
                 <Ionicons 
                   name={showFactors ? "chevron-up" : "chevron-down"} 
-                  size={12} 
+                  size={rs(10)} 
                   color={COLORS.surface400} 
                 />
               </TouchableOpacity>
             </View>
 
             {/* Prices */}
-            <View style={styles.verdictPrices}>
+            <View style={[styles.verdictPrices, { gap: rsp(8) }]}>
               {/* Breakeven Price */}
-              <View style={styles.priceRow}>
-                <Text style={styles.priceLabel}>Breakeven Price</Text>
-                <Text style={styles.priceValue}>{formatPrice(Math.round(breakevenPrice))}</Text>
+              <View style={[styles.priceRow, { gap: rsp(10) }]}>
+                <Text style={[styles.priceLabel, { fontSize: rf(12) }]}>Breakeven Price</Text>
+                <Text style={[styles.priceValue, { fontSize: rf(14) }]}>{formatPrice(Math.round(breakevenPrice))}</Text>
               </View>
 
               {/* Buy Price - Highlighted */}
-              <View style={styles.priceRow}>
-                <Text style={[styles.priceLabel, styles.priceLabelHighlight]}>Buy Price</Text>
-                <Text style={[styles.priceValue, styles.priceValueHighlight]}>{formatPrice(Math.round(buyPrice))}</Text>
+              <View style={[styles.priceRow, { gap: rsp(10) }]}>
+                <Text style={[styles.priceLabel, styles.priceLabelHighlight, { fontSize: rf(12) }]}>Buy Price</Text>
+                <Text style={[styles.priceValue, styles.priceValueHighlight, { fontSize: rf(14) }]}>{formatPrice(Math.round(buyPrice))}</Text>
               </View>
 
               {/* Wholesale Price */}
-              <View style={styles.priceRow}>
-                <Text style={styles.priceLabel}>Wholesale Price</Text>
-                <Text style={styles.priceValue}>{formatPrice(Math.round(wholesalePrice))}</Text>
+              <View style={[styles.priceRow, { gap: rsp(10) }]}>
+                <Text style={[styles.priceLabel, { fontSize: rf(12) }]}>Wholesale Price</Text>
+                <Text style={[styles.priceValue, { fontSize: rf(14) }]}>{formatPrice(Math.round(wholesalePrice))}</Text>
               </View>
             </View>
           </View>
 
           {/* Verdict Description */}
-          <View style={styles.verdictDescriptionContainer}>
-            <Text style={styles.verdictDescription}>
+          <View style={[styles.verdictDescriptionContainer, { paddingTop: rsp(12) }]}>
+            <Text style={[styles.verdictDescription, { fontSize: rf(13), lineHeight: rf(19) }]}>
               {analysis.verdictDescription || 'Excellent potential across multiple strategies.'}
             </Text>
           </View>
         </View>
 
         {/* CTA Section */}
-        <View style={styles.ctaSection}>
+        <View style={[styles.ctaSection, { marginBottom: rsp(16) }]}>
           <TouchableOpacity 
-            style={styles.ctaButton}
+            style={[styles.ctaButton, { paddingVertical: rsp(14), marginBottom: rsp(10) }]}
             onPress={handleContinue}
             activeOpacity={0.8}
           >
-            <Text style={styles.ctaButtonText}>Continue to Analysis</Text>
-            <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+            <Text style={[styles.ctaButtonText, { fontSize: rf(15) }]}>Continue to Analysis</Text>
+            <Ionicons name="arrow-forward" size={rs(18)} color={COLORS.white} />
           </TouchableOpacity>
-          <Text style={styles.ctaDivider}>or</Text>
-          <Text style={styles.ctaSubtitle}>Select a Strategy</Text>
+          <Text style={[styles.ctaDivider, { fontSize: rf(12) }]}>or</Text>
+          <Text style={[styles.ctaSubtitle, { fontSize: rf(14), marginTop: rsp(3) }]}>Select a Strategy</Text>
         </View>
 
         {/* Strategy List */}
-        <View style={styles.strategySection}>
+        <View style={[styles.strategySection, { marginBottom: rsp(16) }]}>
           {analysis.strategies.map((strategy) => {
             const isTopPick = strategy.id === topStrategy.id && strategy.score >= 70;
             const gradeDisplay = scoreToGradeLabel(strategy.score);
@@ -280,23 +333,28 @@ export function IQVerdictScreen({
                 key={strategy.id}
                 style={[
                   styles.strategyCard,
+                  { marginBottom: rsp(6) },
                   isTopPick && styles.strategyCardTopPick,
                 ]}
                 onPress={() => handleViewStrategy(strategy)}
                 activeOpacity={0.7}
               >
-                <View style={styles.strategyContent}>
+                <View style={[styles.strategyContent, { padding: rsp(12), paddingHorizontal: rsp(14) }]}>
                   {/* Strategy Info */}
                   <View style={styles.strategyInfo}>
-                    <Text style={styles.strategyName}>{strategy.name}</Text>
+                    <Text style={[styles.strategyName, { fontSize: rf(14) }]}>{strategy.name}</Text>
                     {strategy.badge && (
                       <View style={[
                         styles.strategyBadge,
-                        { backgroundColor: strategy.badge === 'Strong' ? `${COLORS.green}1F` : `${COLORS.teal}1F` }
+                        { 
+                          backgroundColor: strategy.badge === 'Strong' ? `${COLORS.green}1F` : `${COLORS.teal}1F`,
+                          paddingHorizontal: rsp(5),
+                          paddingVertical: rsp(2),
+                        }
                       ]}>
                         <Text style={[
                           styles.strategyBadgeText,
-                          { color: strategy.badge === 'Strong' ? COLORS.green : COLORS.teal }
+                          { color: strategy.badge === 'Strong' ? COLORS.green : COLORS.teal, fontSize: rf(8) }
                         ]}>
                           {strategy.badge}
                         </Text>
@@ -306,16 +364,16 @@ export function IQVerdictScreen({
 
                   {/* Metrics */}
                   <View style={styles.strategyMetrics}>
-                    <Text style={[styles.strategyReturn, { color: getReturnColor(metricValue) }]}>
+                    <Text style={[styles.strategyReturn, { color: getReturnColor(metricValue), fontSize: rf(15) }]}>
                       {strategy.metric}
                     </Text>
-                    <Text style={[styles.strategyGrade, { color: getGradeColor(gradeDisplay.grade) }]}>
+                    <Text style={[styles.strategyGrade, { color: getGradeColor(gradeDisplay.grade), fontSize: rf(9) }]}>
                       {gradeDisplay.label} {gradeDisplay.grade}
                     </Text>
                   </View>
 
                   {/* Chevron */}
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.surface300} />
+                  <Ionicons name="chevron-forward" size={rs(18)} color={COLORS.surface300} />
                 </View>
               </TouchableOpacity>
             );
@@ -323,9 +381,9 @@ export function IQVerdictScreen({
         </View>
 
         {/* Export Link */}
-        <TouchableOpacity style={styles.exportLink}>
-          <Ionicons name="download-outline" size={18} color={COLORS.surface500} />
-          <Text style={styles.exportLinkText}>Export PDF Report</Text>
+        <TouchableOpacity style={[styles.exportLink, { paddingVertical: rsp(10) }]}>
+          <Ionicons name="download-outline" size={rs(16)} color={COLORS.surface500} />
+          <Text style={[styles.exportLinkText, { fontSize: rf(13) }]}>Export PDF Report</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -333,7 +391,7 @@ export function IQVerdictScreen({
 }
 
 // =============================================================================
-// STYLES - Exact from design files
+// STYLES - Base styles (sizes applied dynamically via inline styles)
 // =============================================================================
 const styles = StyleSheet.create({
   container: {
@@ -347,23 +405,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: rsp(16),
+    paddingVertical: rsp(10),
     borderBottomWidth: 1,
     borderBottomColor: COLORS.surface200,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: rsp(4),
   },
   backText: {
-    fontSize: 14,
     fontWeight: '500',
     color: COLORS.surface400,
   },
   logo: {
-    fontSize: 20,
     fontWeight: '800',
   },
   logoInvest: {
@@ -373,7 +429,7 @@ const styles = StyleSheet.create({
     color: COLORS.teal,
   },
   headerSpacer: {
-    width: 60,
+    width: rs(50),
   },
 
   // Scroll
@@ -381,16 +437,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    paddingBottom: rsp(24),
   },
 
   // Property Card
   propertyCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: rs(10),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -399,37 +452,27 @@ const styles = StyleSheet.create({
   },
   propertyHeader: {
     flexDirection: 'row',
-    gap: 12,
+    gap: rsp(10),
   },
   propertyImageContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
     backgroundColor: COLORS.surface200,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  propertyImage: {
-    width: 64,
-    height: 64,
-  },
   propertyInfo: {
     flex: 1,
   },
   propertyAddress: {
-    fontSize: 15,
     fontWeight: '600',
     color: COLORS.navy,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   propertyLocation: {
-    fontSize: 13,
     color: COLORS.surface500,
-    marginBottom: 4,
+    marginBottom: rsp(2),
   },
   propertyDetails: {
-    fontSize: 12,
     color: COLORS.surface400,
   },
   propertyValue: {
@@ -437,33 +480,26 @@ const styles = StyleSheet.create({
   },
   marketBadge: {
     backgroundColor: COLORS.navy,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginBottom: 4,
+    borderRadius: rs(3),
+    marginBottom: rsp(2),
   },
   marketBadgeText: {
-    fontSize: 9,
     fontWeight: '700',
     color: COLORS.white,
-    letterSpacing: 0.45,
+    letterSpacing: 0.4,
   },
   estValue: {
-    fontSize: 18,
     fontWeight: '700',
     color: COLORS.teal,
   },
   estLabel: {
-    fontSize: 11,
     color: COLORS.surface400,
   },
 
-  // Verdict Card
+  // Verdict Card - Compact
   verdictCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 16,
+    borderRadius: rs(12),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -472,8 +508,6 @@ const styles = StyleSheet.create({
   },
   verdictHeader: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 20,
   },
   scoreContainer: {
     flex: 35,
@@ -481,47 +515,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   verdictLabel: {
-    fontSize: 10,
     fontWeight: '700',
-    letterSpacing: 1,
+    letterSpacing: 0.8,
     color: COLORS.teal,
-    marginBottom: 8,
   },
   scoreRing: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 4,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
   },
   scoreValue: {
-    fontSize: 28,
     fontWeight: '800',
   },
   viewFactors: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: rsp(3),
   },
   viewFactorsText: {
-    fontSize: 12,
     color: COLORS.surface400,
   },
   verdictPrices: {
     flex: 65,
     justifyContent: 'center',
-    gap: 12,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    gap: 16,
   },
   priceLabel: {
-    fontSize: 13,
     color: COLORS.surface500,
   },
   priceLabelHighlight: {
@@ -529,7 +551,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   priceValue: {
-    fontSize: 16,
     fontWeight: '700',
     color: COLORS.navy,
     fontVariant: ['tabular-nums'],
@@ -538,58 +559,44 @@ const styles = StyleSheet.create({
     color: COLORS.teal,
   },
   verdictDescriptionContainer: {
-    paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: COLORS.surface100,
   },
   verdictDescription: {
-    fontSize: 14,
     color: COLORS.surface500,
     textAlign: 'center',
-    lineHeight: 22,
   },
 
   // CTA Section
-  ctaSection: {
-    marginBottom: 20,
-  },
+  ctaSection: {},
   ctaButton: {
     backgroundColor: COLORS.teal,
-    paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: rs(10),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginBottom: 12,
+    gap: rsp(6),
   },
   ctaButtonText: {
-    fontSize: 16,
     fontWeight: '600',
     color: COLORS.white,
   },
   ctaDivider: {
-    fontSize: 13,
     color: COLORS.surface400,
     textAlign: 'center',
     fontStyle: 'italic',
   },
   ctaSubtitle: {
-    fontSize: 15,
     fontWeight: '600',
     color: COLORS.navy,
     textAlign: 'center',
-    marginTop: 4,
   },
 
   // Strategy Cards
-  strategySection: {
-    marginBottom: 20,
-  },
+  strategySection: {},
   strategyCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    marginBottom: 8,
+    borderRadius: rs(10),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -605,56 +612,46 @@ const styles = StyleSheet.create({
   strategyContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    paddingHorizontal: 16,
-    gap: 12,
+    gap: rsp(10),
   },
   strategyInfo: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: rsp(6),
   },
   strategyName: {
-    fontSize: 15,
     fontWeight: '600',
     color: COLORS.navy,
   },
   strategyBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
+    borderRadius: rs(3),
   },
   strategyBadgeText: {
-    fontSize: 9,
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.27,
+    letterSpacing: 0.25,
   },
   strategyMetrics: {
     alignItems: 'flex-end',
   },
   strategyReturn: {
-    fontSize: 16,
     fontWeight: '700',
     fontVariant: ['tabular-nums'],
   },
   strategyGrade: {
-    fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0.25,
   },
 
   // Export Link
   exportLink: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 12,
+    gap: rsp(6),
   },
   exportLinkText: {
-    fontSize: 14,
     color: COLORS.surface500,
   },
 });
