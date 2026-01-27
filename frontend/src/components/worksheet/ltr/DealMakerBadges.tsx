@@ -3,28 +3,22 @@
 import React from 'react'
 
 /**
- * DealMakerBadges - Two circular score badges for Deal Score and Profit Quality
+ * DealMakerBadges - Single circular Deal Score badge
  * Displays prominently at the top of the worksheet panel
  */
 
 interface DealMakerBadgesProps {
   dealScore: number
-  profitQualityScore: number // Based on Cash-on-Cash return
+  profitQualityScore?: number // Deprecated - kept for backwards compatibility
   className?: string
 }
 
-export function DealMakerBadges({ dealScore, profitQualityScore, className = '' }: DealMakerBadgesProps) {
+export function DealMakerBadges({ dealScore, className = '' }: DealMakerBadgesProps) {
   return (
-    <div className={`flex items-center justify-center gap-6 py-4 ${className}`}>
+    <div className={`flex items-center justify-center py-4 ${className}`}>
       <ScoreBadge
-        type="dealScore"
         score={dealScore}
         label="DEAL SCORE"
-      />
-      <ScoreBadge
-        type="profitQuality"
-        score={profitQualityScore}
-        label="Profit Quality"
       />
     </div>
   )
@@ -35,14 +29,12 @@ export function DealMakerBadges({ dealScore, profitQualityScore, className = '' 
 // =============================================================================
 
 interface ScoreBadgeProps {
-  type: 'dealScore' | 'profitQuality'
   score: number
   label: string
 }
 
-function ScoreBadge({ type, score, label }: ScoreBadgeProps) {
-  const isScoreType = type === 'dealScore'
-  const displayValue = isScoreType ? score : getGrade(score)
+function ScoreBadge({ score, label }: ScoreBadgeProps) {
+  const displayValue = score
   const color = getScoreColor(score)
   
   // SVG ring parameters
