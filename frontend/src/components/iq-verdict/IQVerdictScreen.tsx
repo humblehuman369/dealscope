@@ -129,74 +129,80 @@ export function IQVerdictScreen({
             padding: '16px 20px 20px',
           }}
         >
-          {/* Top Row: Image + Est. Value */}
-          <div className="flex items-start justify-between mb-3">
+          <div className="flex gap-4">
             {/* Left: Property Image */}
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center"
-                style={{ 
-                  background: '#1E293B',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                }}
-              >
-                {property.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img 
-                    src={property.imageUrl} 
-                    alt={property.address}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke={COLORS.cyan} strokeWidth="1.5" viewBox="0 0 24 24">
+            <div 
+              className="w-[88px] h-[88px] rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center"
+              style={{ 
+                background: '#1E293B',
+                border: '2px solid rgba(255, 255, 255, 0.2)',
+              }}
+            >
+              {property.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img 
+                  src={property.imageUrl} 
+                  alt={property.address}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="text-center">
+                  <svg className="w-6 h-6 mx-auto mb-1" fill="none" stroke={COLORS.cyan} strokeWidth="1.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
                   </svg>
-                )}
+                  <div className="text-[10px] font-medium" style={{ color: COLORS.surface400 }}>HOUSE</div>
+                  <div className="text-[10px] font-medium" style={{ color: COLORS.surface400 }}>PHOTO</div>
+                </div>
+              )}
+            </div>
+            
+            {/* Middle: Address & Details */}
+            <div className="flex-1 flex flex-col justify-center">
+              <div 
+                className="text-lg font-bold mb-0.5"
+                style={{ color: 'white' }}
+              >
+                {property.address}
+              </div>
+              <div 
+                className="text-[15px] font-semibold mb-2"
+                style={{ color: COLORS.tealLight }}
+              >
+                {[property.city, [property.state, property.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
+              </div>
+              <div 
+                className="text-[13px]"
+                style={{ color: COLORS.surface400 }}
+              >
+                {property.beds} bd * {property.baths} ba * {property.sqft?.toLocaleString() || '—'} sqft
               </div>
             </div>
             
-            {/* Right: Est. Value */}
-            <div className="text-right">
-              <div 
-                className="text-xl font-bold tabular-nums"
-                style={{ color: COLORS.cyan }}
-              >
-                {formatPrice(estValue)}
+            {/* Right: Est. Value & Badge */}
+            <div className="flex flex-col items-end justify-between flex-shrink-0">
+              <div className="text-right">
+                <div 
+                  className="text-xl font-bold tabular-nums"
+                  style={{ color: COLORS.cyan }}
+                >
+                  {formatPrice(estValue)}
+                </div>
+                <div 
+                  className="text-[11px] italic"
+                  style={{ color: COLORS.surface400 }}
+                >
+                  Est. Value
+                </div>
               </div>
               <div 
-                className="text-[11px]"
-                style={{ color: COLORS.surface400 }}
+                className="text-[10px] font-bold tracking-wider px-3 py-1"
+                style={{ 
+                  color: COLORS.surface400,
+                  letterSpacing: '0.08em',
+                }}
               >
-                Est. Value
+                OFF-MARKET
               </div>
-            </div>
-          </div>
-          
-          {/* Address */}
-          <div 
-            className="text-[15px] font-semibold mb-1"
-            style={{ color: 'white' }}
-          >
-            {fullAddress}
-          </div>
-          
-          {/* Bottom Row: Details + Badge */}
-          <div className="flex items-center justify-between">
-            <div 
-              className="text-xs"
-              style={{ color: COLORS.surface500 }}
-            >
-              {property.beds} bd · {property.baths} ba · {property.sqft?.toLocaleString() || '—'} sqft
-            </div>
-            <div 
-              className="text-[9px] font-bold tracking-wide px-2.5 py-1 rounded"
-              style={{ 
-                background: 'rgba(255, 255, 255, 0.15)',
-                color: 'white',
-                letterSpacing: '0.05em',
-              }}
-            >
-              OFF-MARKET
             </div>
           </div>
         </div>
