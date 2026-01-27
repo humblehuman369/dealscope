@@ -1,18 +1,26 @@
 /**
  * DealMakerSlider - Deal Maker Pro slider component
- * EXACT implementation from design files - no modifications
+ * EXACT implementation from design files
  * 
  * Design specs:
  * - Input label: 14px, font-weight 600, color #0A1628
- * - Input value: 16px, font-weight 700, color #0891B2
+ * - Input value: 16px, font-weight 700, color #0891B2 (tappable to edit)
  * - Slider track: #E2E8F0, height 6px
  * - Slider fill: #0891B2
  * - Slider thumb: #0891B2 with 2px white border
  * - Range text: 11px, color #94A3B8
  */
 
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import React, { useState, useCallback, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Platform, 
+  TextInput, 
+  TouchableOpacity,
+  Keyboard,
+} from 'react-native';
 import Slider from '@react-native-community/slider';
 import * as Haptics from 'expo-haptics';
 
@@ -56,6 +64,28 @@ export function formatSliderValue(value: number, format: SliderFormat): string {
   }
 }
 
+// Parse input string back to number based on format
+function parseInputValue(input: string, format: SliderFormat): number | null {
+  // Remove currency symbols, commas, %, /mo, /yr, yr
+  const cleaned = input
+    .replace(/[$,]/g, '')
+    .replace(/\/mo$/i, '')
+    .replace(/\/yr$/i, '')
+    .replace(/\s*yr$/i, '')
+    .replace(/%$/g, '')
+    .trim();
+  
+  const num = parseFloat(cleaned);
+  if (isNaN(num)) return null;
+  
+  // Convert percentage back to decimal
+  if (format === 'percentage') {
+    return num / 100;
+  }
+  
+  return num;
+}
+
 export function DealMakerSlider({
   config,
   value,
@@ -63,6 +93,9 @@ export function DealMakerSlider({
   onChangeComplete,
 }: DealMakerSliderProps) {
   const [localValue, setLocalValue] = useState(value);
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputText, setInputText] = useState('');
+  const inputRef = useRef<TextInput>(null);
 
   // Update local value when prop changes
   React.useEffect(() => {
@@ -81,16 +114,90 @@ export function DealMakerSlider({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, [config.step, onChange, onChangeComplete]);
 
+  const handleValuePress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // Set initial input text based on format
+    let initialText = '';
+    if (config.format === 'percentage') {
+      initialText = (localValue * 100).toFixed(localValue < 0.1 ? 2 : 1);
+    } else if (config.format === 'years') {
+      initialText = String(localValue);
+    } else {
+      initialText = String(Math.round(localValue));
+    }
+    setInputText(initialText);
+    setIsEditing(true);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  }, [localValue, config.format]);
+
+  const handleInputSubmit = useCallback(() => {
+    const parsed = parseInputValue(inputText, config.format);
+    if (parsed !== null) {
+      // Clamp to min/max
+      const clamped = Math.max(config.min, Math.min(config.max, parsed));
+      // Round to step
+      const rounded = Math.round(clamped / config.step) * config.step;
+      setLocalValue(rounded);
+      onChange(rounded);
+      onChangeComplete?.(rounded);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    setIsEditing(false);
+    Keyboard.dismiss();
+  }, [inputText, config, onChange, onChangeComplete]);
+
+  const handleInputBlur = useCallback(() => {
+    handleInputSubmit();
+  }, [handleInputSubmit]);
+
   const formattedValue = formatSliderValue(localValue, config.format);
   const formattedMin = formatSliderValue(config.min, config.format);
   const formattedMax = formatSliderValue(config.max, config.format);
+
+  // Determine keyboard type based on format
+  const keyboardType = config.format === 'percentage' ? 'decimal-pad' : 'numeric';
 
   return (
     <View style={styles.inputRow}>
       {/* Label and Value */}
       <View style={styles.inputLabel}>
         <Text style={styles.inputLabelText}>{config.label}</Text>
-        <Text style={styles.inputValue}>{formattedValue}</Text>
+        
+        {isEditing ? (
+          <View style={styles.inputContainer}>
+            {config.format === 'currency' || config.format === 'currencyPerMonth' || config.format === 'currencyPerYear' ? (
+              <Text style={styles.inputPrefix}>$</Text>
+            ) : null}
+            <TextInput
+              ref={inputRef}
+              style={styles.textInput}
+              value={inputText}
+              onChangeText={setInputText}
+              onSubmitEditing={handleInputSubmit}
+              onBlur={handleInputBlur}
+              keyboardType={keyboardType}
+              returnKeyType="done"
+              selectTextOnFocus
+              autoFocus
+            />
+            {config.format === 'percentage' && (
+              <Text style={styles.inputSuffix}>%</Text>
+            )}
+            {config.format === 'currencyPerMonth' && (
+              <Text style={styles.inputSuffix}>/mo</Text>
+            )}
+            {config.format === 'currencyPerYear' && (
+              <Text style={styles.inputSuffix}>/yr</Text>
+            )}
+            {config.format === 'years' && (
+              <Text style={styles.inputSuffix}>yr</Text>
+            )}
+          </View>
+        ) : (
+          <TouchableOpacity onPress={handleValuePress} activeOpacity={0.6}>
+            <Text style={styles.inputValue}>{formattedValue}</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Slider */}
@@ -139,6 +246,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#0891B2',
+    fontVariant: ['tabular-nums'],
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#0891B2',
+  },
+  inputPrefix: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0891B2',
+    marginRight: 2,
+  },
+  inputSuffix: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748B',
+    marginLeft: 2,
+  },
+  textInput: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0891B2',
+    minWidth: 60,
+    textAlign: 'right',
+    padding: 0,
     fontVariant: ['tabular-nums'],
   },
   sliderContainer: {

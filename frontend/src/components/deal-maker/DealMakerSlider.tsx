@@ -4,7 +4,7 @@
  * 
  * Design specs:
  * - Input label: 14px, font-weight 600, color #0A1628
- * - Input value: 16px, font-weight 700, color #0891B2
+ * - Input value: 16px, font-weight 700, color #0891B2 (clickable to edit)
  * - Slider track: #E2E8F0
  * - Slider fill: #0891B2
  * - Range text: 11px, color #94A3B8
@@ -12,7 +12,7 @@
 
 'use client'
 
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { SliderFormat, DealMakerSliderProps } from './types'
 
 export function formatSliderValue(value: number, format: SliderFormat): string {
@@ -52,6 +52,28 @@ export function formatSliderValue(value: number, format: SliderFormat): string {
   }
 }
 
+// Parse input string back to number based on format
+function parseInputValue(input: string, format: SliderFormat): number | null {
+  // Remove currency symbols, commas, %, /mo, /yr, yr
+  const cleaned = input
+    .replace(/[$,]/g, '')
+    .replace(/\/mo$/i, '')
+    .replace(/\/yr$/i, '')
+    .replace(/\s*yr$/i, '')
+    .replace(/%$/g, '')
+    .trim()
+  
+  const num = parseFloat(cleaned)
+  if (isNaN(num)) return null
+  
+  // Convert percentage back to decimal
+  if (format === 'percentage') {
+    return num / 100
+  }
+  
+  return num
+}
+
 export function DealMakerSlider({
   config,
   value,
@@ -59,6 +81,9 @@ export function DealMakerSlider({
   onChangeComplete,
 }: DealMakerSliderProps) {
   const [localValue, setLocalValue] = useState(value)
+  const [isEditing, setIsEditing] = useState(false)
+  const [inputText, setInputText] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setLocalValue(value)
@@ -76,10 +101,54 @@ export function DealMakerSlider({
     onChangeComplete?.(rounded)
   }, [config.step, localValue, onChangeComplete])
 
+  const handleValueClick = useCallback(() => {
+    // Set initial input text based on format
+    let initialText = ''
+    if (config.format === 'percentage') {
+      initialText = (localValue * 100).toFixed(localValue < 0.1 ? 2 : 1)
+    } else if (config.format === 'years') {
+      initialText = String(localValue)
+    } else {
+      initialText = String(Math.round(localValue))
+    }
+    setInputText(initialText)
+    setIsEditing(true)
+    setTimeout(() => inputRef.current?.select(), 50)
+  }, [localValue, config.format])
+
+  const handleInputSubmit = useCallback(() => {
+    const parsed = parseInputValue(inputText, config.format)
+    if (parsed !== null) {
+      // Clamp to min/max
+      const clamped = Math.max(config.min, Math.min(config.max, parsed))
+      // Round to step
+      const rounded = Math.round(clamped / config.step) * config.step
+      setLocalValue(rounded)
+      onChange(rounded)
+      onChangeComplete?.(rounded)
+    }
+    setIsEditing(false)
+  }, [inputText, config, onChange, onChangeComplete])
+
+  const handleInputKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleInputSubmit()
+    } else if (e.key === 'Escape') {
+      setIsEditing(false)
+    }
+  }, [handleInputSubmit])
+
+  const handleInputBlur = useCallback(() => {
+    handleInputSubmit()
+  }, [handleInputSubmit])
+
   const formattedValue = formatSliderValue(localValue, config.format)
   const formattedMin = formatSliderValue(config.min, config.format)
   const formattedMax = formatSliderValue(config.max, config.format)
   const fillPercent = ((localValue - config.min) / (config.max - config.min)) * 100
+
+  // Determine input type
+  const inputType = config.format === 'percentage' ? 'number' : 'number'
 
   return (
     <div style={{ marginTop: '16px' }}>
@@ -88,12 +157,63 @@ export function DealMakerSlider({
         <span style={{ fontSize: '14px', fontWeight: 600, color: '#0A1628' }}>
           {config.label}
         </span>
-        <span 
-          className="tabular-nums"
-          style={{ fontSize: '16px', fontWeight: 700, color: '#0891B2' }}
-        >
-          {formattedValue}
-        </span>
+        
+        {isEditing ? (
+          <div 
+            className="flex items-center"
+            style={{ 
+              backgroundColor: '#F1F5F9',
+              borderRadius: '6px',
+              padding: '4px 8px',
+              border: '1px solid #0891B2',
+            }}
+          >
+            {(config.format === 'currency' || config.format === 'currencyPerMonth' || config.format === 'currencyPerYear') && (
+              <span style={{ fontSize: '16px', fontWeight: 700, color: '#0891B2', marginRight: '2px' }}>$</span>
+            )}
+            <input
+              ref={inputRef}
+              type={inputType}
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleInputKeyDown}
+              onBlur={handleInputBlur}
+              autoFocus
+              style={{
+                fontSize: '16px',
+                fontWeight: 700,
+                color: '#0891B2',
+                width: '80px',
+                textAlign: 'right',
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            />
+            {config.format === 'percentage' && (
+              <span style={{ fontSize: '14px', fontWeight: 600, color: '#64748B', marginLeft: '2px' }}>%</span>
+            )}
+            {config.format === 'currencyPerMonth' && (
+              <span style={{ fontSize: '14px', fontWeight: 600, color: '#64748B', marginLeft: '2px' }}>/mo</span>
+            )}
+            {config.format === 'currencyPerYear' && (
+              <span style={{ fontSize: '14px', fontWeight: 600, color: '#64748B', marginLeft: '2px' }}>/yr</span>
+            )}
+            {config.format === 'years' && (
+              <span style={{ fontSize: '14px', fontWeight: 600, color: '#64748B', marginLeft: '2px' }}>yr</span>
+            )}
+          </div>
+        ) : (
+          <button
+            onClick={handleValueClick}
+            className="tabular-nums hover:bg-slate-100 rounded px-2 py-1 transition-colors cursor-pointer"
+            style={{ fontSize: '16px', fontWeight: 700, color: '#0891B2', background: 'transparent', border: 'none' }}
+            title="Click to edit value directly"
+          >
+            {formattedValue}
+          </button>
+        )}
       </div>
 
       {/* Slider */}
