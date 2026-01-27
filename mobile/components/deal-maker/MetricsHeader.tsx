@@ -1,5 +1,5 @@
 /**
- * MetricsHeader - Deal Maker Pro header
+ * MetricsHeader - Deal Maker IQ header
  * EXACT implementation from design files - no modifications
  * 
  * Design specs:
@@ -47,11 +47,11 @@ export function MetricsHeader({
             </Text>
           )}
           
-          {/* DEAL MAKER PRO Title */}
+          {/* DEAL MAKER IQ Title */}
           <Text style={styles.title}>
             <Text style={styles.titleDeal}>DEAL </Text>
             <Text style={styles.titleMaker}>MAKER </Text>
-            <Text style={styles.titlePro}>PRO</Text>
+            <Text style={styles.titleIQ}>IQ</Text>
           </Text>
         </View>
       </View>
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   titleMaker: {
     color: '#00D4FF',
   },
-  titlePro: {
+  titleIQ: {
     color: 'white',
   },
   metricsRow: {

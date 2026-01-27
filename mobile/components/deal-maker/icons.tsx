@@ -1,5 +1,5 @@
 /**
- * Deal Maker Pro Icons - EXACT from design files
+ * Deal Maker IQ Icons - EXACT from design files
  * SVG icon components matching the HTML/JSX design specification
  */
 

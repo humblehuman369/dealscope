@@ -1,6 +1,6 @@
 /**
- * DEAL MAKER PRO Worksheet Types
- * TypeScript interfaces for the Deal Maker Pro worksheet system
+ * DEAL MAKER IQ Worksheet Types
+ * TypeScript interfaces for the Deal Maker IQ worksheet system
  */
 
 import React from 'react';

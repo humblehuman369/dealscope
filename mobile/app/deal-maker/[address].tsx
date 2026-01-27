@@ -1,5 +1,5 @@
 /**
- * DealMakerPage - Deal Maker Pro worksheet page
+ * DealMakerPage - Deal Maker IQ worksheet page
  * Route: /deal-maker/[address]
  */
 

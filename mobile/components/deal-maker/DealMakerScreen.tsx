@@ -1,5 +1,5 @@
 /**
- * DealMakerScreen - Deal Maker Pro main container
+ * DealMakerScreen - Deal Maker IQ main container
  * EXACT implementation from design files - no modifications
  * 
  * Design specs:

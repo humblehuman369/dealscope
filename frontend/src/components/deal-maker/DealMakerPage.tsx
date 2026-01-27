@@ -1,5 +1,5 @@
 /**
- * DealMakerPage - Deal Maker Pro main container
+ * DealMakerPage - Deal Maker IQ main container
  * EXACT implementation from design files
  */
 

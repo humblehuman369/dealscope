@@ -1,5 +1,5 @@
 /**
- * MetricsHeader - Deal Maker Pro header
+ * MetricsHeader - Deal Maker IQ header
  * EXACT implementation from design files
  * 
  * Design specs:
@@ -83,11 +83,11 @@ export function MetricsHeader({
             </p>
           )}
           
-          {/* DEAL MAKER PRO Title */}
+          {/* DEAL MAKER IQ Title */}
           <div style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '0.05em' }}>
             <span className="text-white">DEAL </span>
             <span style={{ color: '#00D4FF' }}>MAKER </span>
-            <span className="text-white">PRO</span>
+            <span className="text-white">IQ</span>
           </div>
         </div>
       </div>

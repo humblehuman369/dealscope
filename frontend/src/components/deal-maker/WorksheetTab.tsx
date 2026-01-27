@@ -1,5 +1,5 @@
 /**
- * WorksheetTab - Deal Maker Pro accordion card
+ * WorksheetTab - Deal Maker IQ accordion card
  * EXACT implementation from design files
  * 
  * Design specs:

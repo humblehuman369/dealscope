@@ -1,5 +1,5 @@
 /**
- * Deal Maker Pro Component Exports
+ * Deal Maker IQ Component Exports
  */
 
 export * from './types';

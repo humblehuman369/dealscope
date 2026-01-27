@@ -1,5 +1,5 @@
 /**
- * DealMakerSlider - Deal Maker Pro slider component
+ * DealMakerSlider - Deal Maker IQ slider component
  * EXACT implementation from design files
  * 
  * Design specs:
