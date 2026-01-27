@@ -127,28 +127,54 @@ export function IQVerdictScreen({
           locations={[0, 0.3, 0.7, 1]}
           style={styles.verdictHero}
         >
-          <Text style={styles.verdictLabel}>IQ VERDICT</Text>
-
-          {/* Deal Score Badge - Single Score Display */}
-          <TouchableOpacity 
-            style={[styles.scoreBadge, { backgroundColor: theme.cardBg }]}
-            onPress={handleViewTopStrategy}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.scoreBadgeRing, { borderColor: getDealScoreColor(analysis.dealScore) }]}>
-              <Text
-                style={[
-                  styles.scoreBadgeNumber,
-                  { color: getDealScoreColor(analysis.dealScore) },
-                ]}
-              >
-                {analysis.dealScore}
-              </Text>
+          {/* Two-column layout: Prices on left, Score on right */}
+          <View style={styles.verdictContent}>
+            {/* Left: Price Breakdown */}
+            <View style={styles.priceBreakdown}>
+              <View style={styles.priceRow}>
+                <Text style={[styles.priceLabel, { color: theme.textSecondary }]}>Breakeven Price</Text>
+                <Text style={[styles.priceValue, { color: theme.text }]}>
+                  {formatPrice(analysis.dealScore ? Math.round(property.price * 1.1) : property.price)}
+                </Text>
+              </View>
+              <View style={styles.priceRow}>
+                <Text style={[styles.priceLabel, { color: IQ_COLORS.pacificTeal }]}>Buy Price</Text>
+                <Text style={[styles.priceValue, { color: IQ_COLORS.pacificTeal, fontWeight: '700' }]}>
+                  {formatPrice(property.price)}
+                </Text>
+              </View>
+              <View style={styles.priceRow}>
+                <Text style={[styles.priceLabel, { color: theme.textSecondary }]}>Wholesale Price</Text>
+                <Text style={[styles.priceValue, { color: theme.text }]}>
+                  {formatPrice(Math.round(property.price * 0.70))}
+                </Text>
+              </View>
             </View>
-            <Text style={[styles.scoreBadgeLabel, { color: theme.textSecondary }]}>
-              DEAL SCORE
-            </Text>
-          </TouchableOpacity>
+            
+            {/* Right: IQ Verdict + Deal Score */}
+            <View style={styles.verdictScoreSection}>
+              <Text style={styles.verdictLabel}>IQ VERDICT</Text>
+              <TouchableOpacity 
+                style={[styles.scoreBadge, { backgroundColor: theme.cardBg }]}
+                onPress={handleViewTopStrategy}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.scoreBadgeRing, { borderColor: getDealScoreColor(analysis.dealScore) }]}>
+                  <Text
+                    style={[
+                      styles.scoreBadgeNumber,
+                      { color: getDealScoreColor(analysis.dealScore) },
+                    ]}
+                  >
+                    {analysis.dealScore}
+                  </Text>
+                </View>
+                <Text style={[styles.scoreBadgeLabel, { color: theme.textSecondary }]}>
+                  DEAL SCORE
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
 
           <Text style={[styles.verdictDescription, { color: theme.textSecondary }]}>
             {analysis.verdictDescription}
@@ -255,18 +281,16 @@ export function IQVerdictScreen({
       {/* Bottom CTAs - Fixed */}
       <View style={[styles.bottomCTA, { backgroundColor: theme.headerBg, borderTopColor: theme.border }]}>
         <IQButton
-          title={`View ${topStrategy.name} Analysis →`}
+          title="NEXT"
           onPress={handleViewTopStrategy}
           variant="primary"
           isDark={isDark}
           style={styles.primaryButtonStyle}
         />
-        <IQButton
-          title="Compare All Strategies"
-          onPress={handleCompareAll}
-          variant="text"
-          isDark={isDark}
-        />
+        <Text style={[styles.selectStrategyText, { color: theme.textSecondary }]}>
+          or{'\n'}
+          <Text style={{ fontWeight: '600', color: theme.text }}>Select a Strategy</Text>
+        </Text>
       </View>
     </SafeAreaView>
   );
@@ -350,16 +374,42 @@ const styles = StyleSheet.create({
 
   // Verdict Hero - Gradient Fade
   verdictHero: {
-    paddingVertical: 28,
+    paddingVertical: 20,
     paddingHorizontal: 20,
+  },
+  verdictContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    width: '100%',
+    marginBottom: 14,
+  },
+  priceBreakdown: {
+    flex: 1,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  priceLabel: {
+    fontSize: 13,
+  },
+  priceValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+  },
+  verdictScoreSection: {
     alignItems: 'center',
   },
   verdictLabel: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
     color: IQ_COLORS.pacificTeal,
     letterSpacing: 1,
-    marginBottom: 14,
+    marginBottom: 10,
   },
   // Deal Score Badge
   scoreBadge: {
@@ -517,6 +567,13 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingBottom: 24,
     borderTopWidth: 1,
+    alignItems: 'center',
+  },
+  selectStrategyText: {
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 18,
   },
   primaryButtonStyle: {
     marginBottom: 10,

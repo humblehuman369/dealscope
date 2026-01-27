@@ -102,17 +102,19 @@ export function IQVerdictScreen({
                   </p>
                 </div>
                 <div className="text-right flex-shrink-0">
+                  {/* Status Badge */}
+                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide border-2 border-red-500 text-red-500 rounded mb-1 inline-block">
+                    Off-Market
+                  </span>
                   <div 
                     className="text-xl font-bold"
                     style={{ color: IQ_COLORS.pacificTeal }}
                   >
-                    {formatPrice(analysis.purchasePrice || property.price)}
+                    {formatPrice(analysis.listPrice || property.price)}
                   </div>
-                  {analysis.purchasePrice && analysis.listPrice && analysis.purchasePrice < analysis.listPrice && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      List: {formatPrice(analysis.listPrice)}
-                    </p>
-                  )}
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Est. Value
+                  </p>
                 </div>
               </div>
             </div>
@@ -124,40 +126,65 @@ export function IQVerdictScreen({
                 background: `linear-gradient(180deg, ${IQ_COLORS.pacificTeal}15 0%, ${IQ_COLORS.pacificTeal}08 100%)`,
               }}
             >
-              <p 
-                className="text-lg font-semibold tracking-widest mb-6 text-center"
-                style={{ color: IQ_COLORS.pacificTeal }}
-              >
-                IQ VERDICT
-              </p>
-              
-              {/* Deal Score Display - Single Score */}
-              <div className="flex flex-col items-center mb-6">
-                <ScoreBadge 
-                  type="dealScore"
-                  score={analysis.dealScore}
-                  grade={dealGrade}
-                  size="large"
-                />
-                {/* Expand/Collapse Factors */}
-                <button
-                  onClick={() => setShowDealScoreFactors(!showDealScoreFactors)}
-                  className="mt-3 flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                >
-                  <span>View Factors</span>
-                  {showDealScoreFactors ? (
-                    <ChevronUp className="w-3 h-3" />
-                  ) : (
-                    <ChevronDown className="w-3 h-3" />
-                  )}
-                </button>
-                {/* Deal Score Factors */}
-                {showDealScoreFactors && (
-                  <div className="mt-3 bg-white dark:bg-navy-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-navy-700 w-full max-w-xs">
-                    <OpportunityFactors factors={opportunityFactors} />
+              {/* Two-column layout: Prices on left, Score on right */}
+              <div className="flex items-start justify-between gap-6 mb-6">
+                {/* Left: Price Breakdown */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Breakeven Price</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
+                      {formatPrice(analysis.breakevenPrice || 0)}
+                    </span>
                   </div>
-                )}
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm font-medium" style={{ color: IQ_COLORS.pacificTeal }}>Buy Price</span>
+                    <span className="text-sm font-bold tabular-nums" style={{ color: IQ_COLORS.pacificTeal }}>
+                      {formatPrice(analysis.purchasePrice || 0)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Wholesale Price</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
+                      {formatPrice(Math.round((analysis.breakevenPrice || 0) * 0.70))}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Right: IQ Verdict + Deal Score */}
+                <div className="flex flex-col items-center">
+                  <p 
+                    className="text-sm font-semibold tracking-widest mb-3"
+                    style={{ color: IQ_COLORS.pacificTeal }}
+                  >
+                    IQ VERDICT
+                  </p>
+                  <ScoreBadge 
+                    type="dealScore"
+                    score={analysis.dealScore}
+                    grade={dealGrade}
+                    size="large"
+                  />
+                  {/* Expand/Collapse Factors */}
+                  <button
+                    onClick={() => setShowDealScoreFactors(!showDealScoreFactors)}
+                    className="mt-2 flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                  >
+                    <span>View Factors</span>
+                    {showDealScoreFactors ? (
+                      <ChevronUp className="w-3 h-3" />
+                    ) : (
+                      <ChevronDown className="w-3 h-3" />
+                    )}
+                  </button>
+                </div>
               </div>
+              
+              {/* Deal Score Factors (expanded) */}
+              {showDealScoreFactors && (
+                <div className="mb-4 bg-white dark:bg-navy-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-navy-700">
+                  <OpportunityFactors factors={opportunityFactors} />
+                </div>
+              )}
               
               <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm mx-auto text-center">
                 {analysis.verdictDescription}
@@ -173,16 +200,13 @@ export function IQVerdictScreen({
                 border: `1px solid ${IQ_COLORS.pacificTeal}40`,
               }}
             >
-              View {topStrategy.name} Analysis →
+              NEXT
             </button>
             
-            <button
-              onClick={onCompareAll}
-              className="w-full py-3 text-center font-semibold transition-colors"
-              style={{ color: IQ_COLORS.pacificTeal }}
-            >
-              Compare All Strategies
-            </button>
+            <p className="w-full py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+              or<br />
+              <span className="font-semibold text-gray-700 dark:text-gray-300">Select a Strategy</span>
+            </p>
           </div>
 
           {/* Right Column - Strategy Rankings */}
