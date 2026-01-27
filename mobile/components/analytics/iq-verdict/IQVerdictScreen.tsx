@@ -1,10 +1,10 @@
 /**
  * IQVerdictScreen - Redesigned IQ Verdict page for Mobile
- * Fully responsive implementation with dynamic font sizes
+ * Fully responsive implementation with dynamic font sizes (v2)
  * 
  * Design specs:
  * - Responsive font scaling based on device screen size
- * - Compact IQ Verdict section
+ * - Dark property header banner
  * - Background: #F1F5F9
  * - Font: Inter / System
  */
@@ -74,12 +74,6 @@ function useResponsiveScaling() {
 }
 
 // Static versions for StyleSheet (uses initial dimensions, acceptable for base styles)
-const getStaticScale = () => {
-  // These are only used in StyleSheet which is static anyway
-  // Dynamic values are applied via inline styles using the hook
-  return Math.min(1, 1); // Default to 1 for base styles
-};
-
 const staticRs = (size: number): number => Math.round(size);
 const staticRsp = (size: number): number => Math.round(size);
 
@@ -183,9 +177,12 @@ export function IQVerdictScreen({
     onBack();
   }, [onBack]);
 
-  // Build address parts
-  const addressLine1 = property.address;
-  const addressLine2 = [property.city, property.state, property.zip].filter(Boolean).join(', ');
+  // Build full address
+  const fullAddress = [
+    property.address,
+    property.city,
+    [property.state, property.zip].filter(Boolean).join(' ')
+  ].filter(Boolean).join(', ');
 
   // Calculate prices
   const breakevenPrice = property.price * 1.1;
@@ -194,8 +191,8 @@ export function IQVerdictScreen({
   const estValue = property.price;
 
   // Dynamic sizes for score ring
-  const scoreRingSize = rs(72);
-  const scoreRingBorder = rs(3);
+  const scoreRingSize = rs(80);
+  const scoreRingBorder = rs(4);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -216,192 +213,198 @@ export function IQVerdictScreen({
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { padding: rsp(12) }]}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Property Card - Dark banner style matching DEAL MAKER IQ */}
-        <View style={[styles.propertyCardDark, { paddingHorizontal: rsp(20), paddingVertical: rsp(16), marginBottom: rsp(12), marginHorizontal: rsp(-12) }]}>
-          {/* Top Row: Photo, OFF-MARKET, Est. Value */}
-          <View style={[styles.propertyTopRow, { marginBottom: rsp(8) }]}>
-            {/* Property Image */}
-            <View style={[styles.propertyImageContainerDark, { width: rs(40), height: rs(40), borderRadius: rs(8) }]}>
+        {/* Property Card - Dark Header Style */}
+        <View style={[styles.propertyCard, { paddingHorizontal: rsp(20), paddingTop: rsp(16), paddingBottom: rsp(20) }]}>
+          {/* Top Row: Image + Est. Value */}
+          <View style={[styles.propertyTopRow, { marginBottom: rsp(12) }]}>
+            {/* Left: Property Image */}
+            <View style={[styles.propertyImageContainer, { width: rs(48), height: rs(48), borderRadius: rs(8) }]}>
               {property.imageUrl ? (
                 <Image 
                   source={{ uri: property.imageUrl }} 
-                  style={{ width: rs(40), height: rs(40), borderRadius: rs(8) }}
+                  style={{ width: rs(48), height: rs(48), borderRadius: rs(8) }}
                 />
               ) : (
-                <Ionicons name="home" size={rs(18)} color={COLORS.cyan} />
+                <Ionicons name="home" size={rs(20)} color={COLORS.cyan} />
               )}
             </View>
-
-            {/* OFF-MARKET Badge */}
-            <View style={[styles.marketBadgeDark, { paddingHorizontal: rsp(8), paddingVertical: rsp(4) }]}>
-              <Text style={[styles.marketBadgeTextDark, { fontSize: rf(9) }]}>OFF-MARKET</Text>
-            </View>
-
-            {/* Est. Value */}
-            <View style={styles.propertyValueDark}>
-              <Text style={[styles.estValueDark, { fontSize: rf(18) }]}>{formatPrice(estValue)}</Text>
-              <Text style={[styles.estLabelDark, { fontSize: rf(10) }]}>Est. Value</Text>
+            
+            {/* Right: Est. Value */}
+            <View style={styles.propertyValueRight}>
+              <Text style={[styles.estValue, { fontSize: rf(20) }]}>{formatPrice(estValue)}</Text>
+              <Text style={[styles.estLabel, { fontSize: rf(11) }]}>Est. Value</Text>
             </View>
           </View>
 
-          {/* Bottom: Address and Details */}
-          <View style={styles.propertyInfoDark}>
-            <Text style={[styles.propertyAddressDark, { fontSize: rf(15) }]} numberOfLines={1}>
-              {addressLine1}
+          {/* Address */}
+          <Text style={[styles.propertyAddress, { fontSize: rf(15), marginBottom: rsp(4) }]} numberOfLines={1}>
+            {fullAddress}
+          </Text>
+
+          {/* Bottom Row: Details + Badge */}
+          <View style={styles.propertyBottomRow}>
+            <Text style={[styles.propertyDetails, { fontSize: rf(12) }]}>
+              {property.beds} bd · {Math.round(property.baths * 10) / 10} ba · {property.sqft?.toLocaleString() || '—'} sqft
             </Text>
-            <Text style={[styles.propertyDetailsDark, { fontSize: rf(12) }]}>
-              {property.beds} bd · {Math.round(property.baths * 10) / 10} ba | {property.sqft?.toLocaleString() || '—'} sqft
-            </Text>
+            <View style={[styles.marketBadge, { paddingHorizontal: rsp(10), paddingVertical: rsp(4) }]}>
+              <Text style={[styles.marketBadgeText, { fontSize: rf(9) }]}>OFF-MARKET</Text>
+            </View>
           </View>
         </View>
 
-        {/* IQ Verdict Card - Compact spacing */}
-        <View style={[styles.verdictCard, { padding: rsp(16), marginBottom: rsp(12) }]}>
-          {/* Verdict Header - Score LEFT, Prices RIGHT */}
-          <View style={[styles.verdictHeader, { gap: rsp(12), marginBottom: rsp(12) }]}>
-            {/* Score Container */}
-            <View style={styles.scoreContainer}>
-              <Text style={[styles.verdictLabel, { fontSize: rf(9), marginBottom: rsp(4) }]}>IQ VERDICT</Text>
-              <View style={[
-                styles.scoreRing, 
-                { 
-                  width: scoreRingSize, 
-                  height: scoreRingSize, 
-                  borderRadius: Math.round(scoreRingSize / 2),
-                  borderWidth: scoreRingBorder,
-                  borderColor: getScoreColor(analysis.dealScore), 
-                  backgroundColor: `${getScoreColor(analysis.dealScore)}14`,
-                  marginBottom: rsp(4),
-                }
-              ]}>
-                <Text style={[styles.scoreValue, { fontSize: rf(24), color: getScoreColor(analysis.dealScore) }]}>
-                  {analysis.dealScore}
-                </Text>
-              </View>
-              <TouchableOpacity 
-                onPress={() => setShowFactors(!showFactors)}
-                style={styles.viewFactors}
-              >
-                <Text style={[styles.viewFactorsText, { fontSize: rf(11) }]}>View Factors</Text>
-                <Ionicons 
-                  name={showFactors ? "chevron-up" : "chevron-down"} 
-                  size={rs(10)} 
-                  color={COLORS.surface400} 
-                />
-              </TouchableOpacity>
-            </View>
-
-            {/* Prices */}
-            <View style={[styles.verdictPrices, { gap: rsp(8) }]}>
-              {/* Breakeven Price */}
-              <View style={[styles.priceRow, { gap: rsp(10) }]}>
-                <Text style={[styles.priceLabel, { fontSize: rf(12) }]}>Breakeven Price</Text>
-                <Text style={[styles.priceValue, { fontSize: rf(14) }]}>{formatPrice(Math.round(breakevenPrice))}</Text>
-              </View>
-
-              {/* Buy Price - Highlighted */}
-              <View style={[styles.priceRow, { gap: rsp(10) }]}>
-                <Text style={[styles.priceLabel, styles.priceLabelHighlight, { fontSize: rf(12) }]}>Buy Price</Text>
-                <Text style={[styles.priceValue, styles.priceValueHighlight, { fontSize: rf(14) }]}>{formatPrice(Math.round(buyPrice))}</Text>
-              </View>
-
-              {/* Wholesale Price */}
-              <View style={[styles.priceRow, { gap: rsp(10) }]}>
-                <Text style={[styles.priceLabel, { fontSize: rf(12) }]}>Wholesale Price</Text>
-                <Text style={[styles.priceValue, { fontSize: rf(14) }]}>{formatPrice(Math.round(wholesalePrice))}</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Verdict Description */}
-          <View style={[styles.verdictDescriptionContainer, { paddingTop: rsp(12) }]}>
-            <Text style={[styles.verdictDescription, { fontSize: rf(13), lineHeight: rf(19) }]}>
-              {analysis.verdictDescription || 'Excellent potential across multiple strategies.'}
-            </Text>
-          </View>
-        </View>
-
-        {/* CTA Section */}
-        <View style={[styles.ctaSection, { marginBottom: rsp(16) }]}>
-          <TouchableOpacity 
-            style={[styles.ctaButton, { paddingVertical: rsp(14), marginBottom: rsp(10) }]}
-            onPress={handleContinue}
-            activeOpacity={0.8}
-          >
-            <Text style={[styles.ctaButtonText, { fontSize: rf(15) }]}>Continue to Analysis</Text>
-            <Ionicons name="arrow-forward" size={rs(18)} color={COLORS.white} />
-          </TouchableOpacity>
-          <Text style={[styles.ctaDivider, { fontSize: rf(12) }]}>or</Text>
-          <Text style={[styles.ctaSubtitle, { fontSize: rf(14), marginTop: rsp(3) }]}>Select a Strategy</Text>
-        </View>
-
-        {/* Strategy List */}
-        <View style={[styles.strategySection, { marginBottom: rsp(16) }]}>
-          {analysis.strategies.map((strategy) => {
-            const isTopPick = strategy.id === topStrategy.id && strategy.score >= 70;
-            const gradeDisplay = scoreToGradeLabel(strategy.score);
-            const metricValue = strategy.metricValue;
-
-            return (
-              <TouchableOpacity
-                key={strategy.id}
-                style={[
-                  styles.strategyCard,
-                  { marginBottom: rsp(6) },
-                  isTopPick && styles.strategyCardTopPick,
-                ]}
-                onPress={() => handleViewStrategy(strategy)}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.strategyContent, { padding: rsp(12), paddingHorizontal: rsp(14) }]}>
-                  {/* Strategy Info */}
-                  <View style={styles.strategyInfo}>
-                    <Text style={[styles.strategyName, { fontSize: rf(14) }]}>{strategy.name}</Text>
-                    {strategy.badge && (
-                      <View style={[
-                        styles.strategyBadge,
-                        { 
-                          backgroundColor: strategy.badge === 'Strong' ? `${COLORS.green}1F` : `${COLORS.teal}1F`,
-                          paddingHorizontal: rsp(5),
-                          paddingVertical: rsp(2),
-                        }
-                      ]}>
-                        <Text style={[
-                          styles.strategyBadgeText,
-                          { color: strategy.badge === 'Strong' ? COLORS.green : COLORS.teal, fontSize: rf(8) }
-                        ]}>
-                          {strategy.badge}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-
-                  {/* Metrics */}
-                  <View style={styles.strategyMetrics}>
-                    <Text style={[styles.strategyReturn, { color: getReturnColor(metricValue), fontSize: rf(15) }]}>
-                      {strategy.metric}
-                    </Text>
-                    <Text style={[styles.strategyGrade, { color: getGradeColor(gradeDisplay.grade), fontSize: rf(9) }]}>
-                      {gradeDisplay.label} {gradeDisplay.grade}
-                    </Text>
-                  </View>
-
-                  {/* Chevron */}
-                  <Ionicons name="chevron-forward" size={rs(18)} color={COLORS.surface300} />
+        {/* Content Area with padding */}
+        <View style={[styles.contentArea, { padding: rsp(16) }]}>
+          {/* IQ Verdict Card */}
+          <View style={[styles.verdictCard, { padding: rsp(24), marginBottom: rsp(16) }]}>
+            {/* Verdict Header - Score LEFT, Prices RIGHT */}
+            <View style={[styles.verdictHeader, { gap: rsp(16), marginBottom: rsp(20) }]}>
+              {/* Score Container */}
+              <View style={styles.scoreContainer}>
+                <Text style={[styles.verdictLabel, { fontSize: rf(10), marginBottom: rsp(8) }]}>IQ VERDICT</Text>
+                <View style={[
+                  styles.scoreRing, 
+                  { 
+                    width: scoreRingSize, 
+                    height: scoreRingSize, 
+                    borderRadius: Math.round(scoreRingSize / 2),
+                    borderWidth: scoreRingBorder,
+                    borderColor: getScoreColor(analysis.dealScore), 
+                    backgroundColor: `${getScoreColor(analysis.dealScore)}14`,
+                    marginBottom: rsp(8),
+                  }
+                ]}>
+                  <Text style={[styles.scoreValue, { fontSize: rf(28), color: getScoreColor(analysis.dealScore) }]}>
+                    {analysis.dealScore}
+                  </Text>
                 </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                <TouchableOpacity 
+                  onPress={() => setShowFactors(!showFactors)}
+                  style={styles.viewFactors}
+                >
+                  <Text style={[styles.viewFactorsText, { fontSize: rf(12) }]}>View Factors</Text>
+                  <Ionicons 
+                    name={showFactors ? "chevron-up" : "chevron-down"} 
+                    size={rs(12)} 
+                    color={COLORS.surface400} 
+                  />
+                </TouchableOpacity>
+              </View>
 
-        {/* Export Link */}
-        <TouchableOpacity style={[styles.exportLink, { paddingVertical: rsp(10) }]}>
-          <Ionicons name="download-outline" size={rs(16)} color={COLORS.surface500} />
-          <Text style={[styles.exportLinkText, { fontSize: rf(13) }]}>Export PDF Report</Text>
-        </TouchableOpacity>
+              {/* Prices */}
+              <View style={[styles.verdictPrices, { gap: rsp(12) }]}>
+                {/* Breakeven */}
+                <View style={[styles.priceRow, { gap: rsp(16) }]}>
+                  <Text style={[styles.priceLabel, { fontSize: rf(13) }]}>Breakeven</Text>
+                  <Text style={[styles.priceValue, { fontSize: rf(16) }]}>{formatPrice(Math.round(breakevenPrice))}</Text>
+                </View>
+
+                {/* Buy Price - Highlighted */}
+                <View style={[styles.priceRow, { gap: rsp(16) }]}>
+                  <Text style={[styles.priceLabel, styles.priceLabelHighlight, { fontSize: rf(13) }]}>Buy Price</Text>
+                  <Text style={[styles.priceValue, styles.priceValueHighlight, { fontSize: rf(16) }]}>{formatPrice(Math.round(buyPrice))}</Text>
+                </View>
+
+                {/* Wholesale */}
+                <View style={[styles.priceRow, { gap: rsp(16) }]}>
+                  <Text style={[styles.priceLabel, { fontSize: rf(13) }]}>Wholesale</Text>
+                  <Text style={[styles.priceValue, { fontSize: rf(16) }]}>{formatPrice(Math.round(wholesalePrice))}</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Verdict Description */}
+            <View style={[styles.verdictDescriptionContainer, { paddingTop: rsp(16) }]}>
+              <Text style={[styles.verdictDescription, { fontSize: rf(14), lineHeight: rf(22) }]}>
+                {analysis.verdictDescription || 'Excellent potential across multiple strategies.'}
+              </Text>
+            </View>
+          </View>
+
+          {/* CTA Section */}
+          <View style={[styles.ctaSection, { marginBottom: rsp(20) }]}>
+            <TouchableOpacity 
+              style={[styles.ctaButton, { paddingVertical: rsp(16), marginBottom: rsp(12) }]}
+              onPress={handleContinue}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.ctaButtonText, { fontSize: rf(16) }]}>Continue to Analysis</Text>
+              <Ionicons name="arrow-forward" size={rs(20)} color={COLORS.white} />
+            </TouchableOpacity>
+            <Text style={[styles.ctaDivider, { fontSize: rf(13) }]}>or</Text>
+            <Text style={[styles.ctaSubtitle, { fontSize: rf(15), marginTop: rsp(4) }]}>Select a Strategy</Text>
+          </View>
+
+          {/* Strategy List */}
+          <View style={styles.strategySection}>
+            {analysis.strategies.map((strategy) => {
+              const isTopPick = strategy.id === topStrategy.id && strategy.score >= 70;
+              const gradeDisplay = scoreToGradeLabel(strategy.score);
+              const metricValue = strategy.metricValue;
+
+              return (
+                <TouchableOpacity
+                  key={strategy.id}
+                  style={[
+                    styles.strategyCard,
+                    { marginBottom: rsp(8) },
+                    isTopPick && styles.strategyCardTopPick,
+                  ]}
+                  onPress={() => handleViewStrategy(strategy)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.strategyContent, { padding: rsp(14), paddingHorizontal: rsp(16) }]}>
+                    {/* Strategy Info */}
+                    <View style={styles.strategyInfo}>
+                      <Text style={[styles.strategyName, { fontSize: rf(15) }]}>{strategy.name}</Text>
+                      {strategy.type && (
+                        <Text style={[styles.strategyType, { fontSize: rf(12) }]}>{strategy.type}</Text>
+                      )}
+                      {strategy.badge && (
+                        <View style={[
+                          styles.strategyBadge,
+                          { 
+                            backgroundColor: strategy.badge === 'Strong' ? `${COLORS.green}1F` : `${COLORS.teal}1F`,
+                            paddingHorizontal: rsp(6),
+                            paddingVertical: rsp(3),
+                          }
+                        ]}>
+                          <Text style={[
+                            styles.strategyBadgeText,
+                            { color: strategy.badge === 'Strong' ? COLORS.green : COLORS.teal, fontSize: rf(9) }
+                          ]}>
+                            {strategy.badge}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Metrics */}
+                    <View style={styles.strategyMetrics}>
+                      <Text style={[styles.strategyReturn, { color: getReturnColor(metricValue), fontSize: rf(16) }]}>
+                        {strategy.metric}
+                      </Text>
+                      <Text style={[styles.strategyGrade, { color: getGradeColor(gradeDisplay.grade), fontSize: rf(10) }]}>
+                        {gradeDisplay.label} {gradeDisplay.grade}
+                      </Text>
+                    </View>
+
+                    {/* Chevron */}
+                    <Ionicons name="chevron-forward" size={rs(20)} color={COLORS.surface300} />
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Export Link */}
+          <TouchableOpacity style={[styles.exportLink, { paddingVertical: rsp(12) }]}>
+            <Ionicons name="download-outline" size={rs(18)} color={COLORS.surface500} />
+            <Text style={[styles.exportLinkText, { fontSize: rf(14) }]}>Export PDF Report</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -409,8 +412,6 @@ export function IQVerdictScreen({
 
 // =============================================================================
 // STYLES - Base styles (sizes applied dynamically via inline styles)
-// Note: Using staticRs/staticRsp for StyleSheet since it's evaluated once at module load.
-// Dynamic responsive sizing is applied via inline styles using the hook.
 // =============================================================================
 const styles = StyleSheet.create({
   container: {
@@ -459,58 +460,63 @@ const styles = StyleSheet.create({
     paddingBottom: staticRsp(24),
   },
 
-  // Property Card - Dark banner style
-  propertyCardDark: {
+  // Property Card - Dark Header Style
+  propertyCard: {
     backgroundColor: COLORS.navy,
-    borderRadius: 0,
   },
   propertyTopRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: staticRsp(12),
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
   },
-  propertyImageContainerDark: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  propertyImageContainer: {
+    backgroundColor: '#1E293B',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  propertyInfoDark: {
-    // No flex - sizes to content
-  },
-  propertyAddressDark: {
-    fontWeight: '600',
-    color: COLORS.white,
-    marginBottom: staticRsp(2),
-  },
-  propertyDetailsDark: {
-    color: COLORS.surface400,
-  },
-  propertyValueDark: {
-    flex: 1,
+  propertyValueRight: {
     alignItems: 'flex-end',
   },
-  marketBadgeDark: {
-    backgroundColor: COLORS.teal,
-    borderRadius: staticRs(4),
-  },
-  marketBadgeTextDark: {
-    fontWeight: '700',
-    color: COLORS.white,
-    letterSpacing: 0.5,
-  },
-  estValueDark: {
+  estValue: {
     fontWeight: '700',
     color: COLORS.cyan,
+    fontVariant: ['tabular-nums'],
   },
-  estLabelDark: {
+  estLabel: {
     color: COLORS.surface400,
   },
+  propertyAddress: {
+    fontWeight: '600',
+    color: COLORS.white,
+  },
+  propertyBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  propertyDetails: {
+    color: COLORS.surface500,
+  },
+  marketBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: staticRs(4),
+  },
+  marketBadgeText: {
+    fontWeight: '700',
+    color: COLORS.white,
+    letterSpacing: 0.45,
+  },
 
-  // Verdict Card - Compact
+  // Content Area
+  contentArea: {},
+
+  // Verdict Card
   verdictCard: {
     backgroundColor: COLORS.white,
-    borderRadius: staticRs(12),
+    borderRadius: staticRs(16),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -527,7 +533,7 @@ const styles = StyleSheet.create({
   },
   verdictLabel: {
     fontWeight: '700',
-    letterSpacing: 0.8,
+    letterSpacing: 1,
     color: COLORS.teal,
   },
   scoreRing: {
@@ -540,7 +546,7 @@ const styles = StyleSheet.create({
   viewFactors: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: staticRsp(3),
+    gap: staticRsp(4),
   },
   viewFactorsText: {
     color: COLORS.surface400,
@@ -582,11 +588,11 @@ const styles = StyleSheet.create({
   ctaSection: {},
   ctaButton: {
     backgroundColor: COLORS.teal,
-    borderRadius: staticRs(10),
+    borderRadius: staticRs(12),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: staticRsp(6),
+    gap: staticRsp(8),
   },
   ctaButtonText: {
     fontWeight: '600',
@@ -607,7 +613,7 @@ const styles = StyleSheet.create({
   strategySection: {},
   strategyCard: {
     backgroundColor: COLORS.white,
-    borderRadius: staticRs(10),
+    borderRadius: staticRs(12),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -623,25 +629,28 @@ const styles = StyleSheet.create({
   strategyContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: staticRsp(10),
+    gap: staticRsp(12),
   },
   strategyInfo: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: staticRsp(6),
+    gap: staticRsp(8),
   },
   strategyName: {
     fontWeight: '600',
     color: COLORS.navy,
   },
+  strategyType: {
+    color: COLORS.surface400,
+  },
   strategyBadge: {
-    borderRadius: staticRs(3),
+    borderRadius: staticRs(4),
   },
   strategyBadgeText: {
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.25,
+    letterSpacing: 0.27,
   },
   strategyMetrics: {
     alignItems: 'flex-end',
@@ -653,14 +662,14 @@ const styles = StyleSheet.create({
   strategyGrade: {
     fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 0.25,
+    letterSpacing: 0.27,
   },
 
   // Export Link
   exportLink: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: staticRsp(6),
+    gap: staticRsp(8),
   },
   exportLinkText: {
     color: COLORS.surface500,
