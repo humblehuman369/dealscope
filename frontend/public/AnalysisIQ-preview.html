@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analysis IQ - Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    /* Phone Frame */
+    .phone-frame {
+      width: 390px;
+      height: 844px;
+      background: #F1F5F9;
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Header Styles */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    
+    .app-bar {
+      background: white;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #E2E8F0;
+    }
+    
+    .logo {
+      font-size: 18px;
+      font-weight: 800;
+    }
+    
+    .logo-invest { color: #0A1628; }
+    .logo-iq { color: #0891B2; }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .icon-btn {
+      padding: 4px;
+      color: #94A3B8;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    
+    .icon-btn:hover { color: #475569; }
+    
+    .avatar {
+      width: 28px;
+      height: 28px;
+      background: #0891B2;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    
+    /* Dark Header */
+    .dark-header {
+      background: #0A1628;
+      padding: 12px 16px;
+      position: relative;
+    }
+    
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    
+    .back-btn {
+      width: 20px;
+      height: 20px;
+      color: rgba(255, 255, 255, 0.7);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    
+    .back-btn:hover { color: white; }
+    
+    .title-center {
+      flex: 1;
+      text-align: center;
+    }
+    
+    .title-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .page-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    
+    .page-title-text { color: white; }
+    .page-title-accent { color: #00D4FF; }
+    
+    .strategy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0891B2;
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+      transition: background 0.2s;
+    }
+    
+    .strategy-btn:hover { background: #0e7490; }
+    
+    .strategy-btn svg {
+      width: 12px;
+      height: 12px;
+      transition: transform 0.2s;
+    }
+    
+    .strategy-btn.open svg { transform: rotate(180deg); }
+    
+    /* Strategy Dropdown */
+    .strategy-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 16px;
+      right: 16px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      z-index: 50;
+      overflow: hidden;
+      display: none;
+    }
+    
+    .strategy-dropdown.open { display: block; }
+    
+    .dropdown-label {
+      padding: 10px 14px 4px;
+      font-size: 9px;
+      font-weight: 600;
+      color: #94A3B8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #0A1628;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .dropdown-item:hover { background: #F8FAFC; }
+    .dropdown-item.active { color: #0891B2; font-weight: 600; }
+    .dropdown-item.active svg { display: block; }
+    .dropdown-item svg { display: none; color: #0891B2; }
+    
+    /* Address Selector */
+    .address-selector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      margin: 0 auto;
+      transition: background 0.2s;
+    }
+    
+    .address-selector:hover { background: rgba(255, 255, 255, 0.1); }
+    .address-selector.open { background: rgba(255, 255, 255, 0.1); }
+    
+    .address-text {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
+    }
+    
+    .address-selector svg {
+      width: 14px;
+      height: 14px;
+      color: #0891B2;
+      transition: transform 0.3s;
+    }
+    
+    .address-selector.open svg { transform: rotate(180deg); }
+    
+    /* Property Accordion */
+    .property-accordion {
+      overflow: hidden;
+      max-height: 0;
+      padding: 0;
+      margin-top: 0;
+      background: #0F1D32;
+      border-radius: 12px;
+      transition: all 0.3s ease-in-out;
+    }
+    
+    .property-accordion.open {
+      max-height: 150px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+    
+    .property-content {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .property-image {
+      width: 90px;
+      height: 68px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #1e293b;
+    }
+    
+    .property-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    
+    .property-stat-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: white;
+    }
+    
+    .property-stat-value.cyan { color: #00D4FF; }
+    
+    .property-stat-label {
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+    
+    /* Icon Navigation */
+    .icon-nav {
+      background: white;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      border-bottom: 1px solid #E2E8F0;
+    }
+    
+    .nav-icon-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .nav-icon-btn:hover { background: #F1F5F9; }
+    .nav-icon-btn.active { background: rgba(8, 145, 178, 0.1); }
+    .nav-icon-btn svg { color: #94A3B8; }
+    .nav-icon-btn.active svg { color: #0891B2; }
+    
+    /* Scrollable Content */
+    .scroll-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      padding-bottom: 140px;
+    }
+    
+    /* Profit Quality Card */
+    .profit-quality-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #0891B2;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+    
+    .profit-quality-content {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    /* Circular Progress */
+    .circular-progress {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+    
+    .circular-progress svg {
+      transform: rotate(-90deg);
+    }
+    
+    .circular-progress .bg-circle {
+      stroke: #E2E8F0;
+    }
+    
+    .circular-progress .progress-circle {
+      stroke: #0891B2;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s;
+    }
+    
+    .score-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .score-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0A1628;
+    }
+    
+    .score-max {
+      font-size: 12px;
+      font-weight: 500;
+      color: #94A3B8;
+      margin-top: -4px;
+    }
+    
+    /* Metrics Column */
+    .metrics-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .metric-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #64748B;
+    }
+    
+    .metric-value {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .metric-value.green { color: #22c55e; }
+    .metric-value.teal { color: #0891B2; }
+    
+    /* View Factors */
+    .view-factors-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 16px;
+      padding: 4px 0;
+      color: #64748B;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    
+    .view-factors-btn:hover { opacity: 0.8; }
+    
+    .view-factors-btn svg {
+      width: 14px;
+      height: 14px;
+      transition: transform 0.2s;
+    }
+    
+    .view-factors-btn.open svg { transform: rotate(180deg); }
+    
+    /* Factors List */
+    .factors-list {
+      margin-top: 12px;
+      display: none;
+    }
+    
+    .factors-list.open { display: block; }
+    
+    .factor-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+    }
+    
+    .factor-icon { width: 16px; height: 16px; }
+    .factor-icon.positive { color: #22c55e; }
+    .factor-icon.negative { color: #ef4444; }
+    
+    .factor-label {
+      flex: 1;
+      font-size: 12px;
+      color: #475569;
+    }
+    
+    .factor-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: #0A1628;
+    }
+    
+    /* Insight */
+    .insight {
+      margin-top: 16px;
+      padding-left: 12px;
+      border-left: 3px solid #0891B2;
+    }
+    
+    .insight p {
+      font-size: 13px;
+      line-height: 18px;
+      color: #475569;
+    }
+    
+    /* Metrics Accordion */
+    .metrics-accordion {
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    
+    .accordion-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    
+    .accordion-header:hover { opacity: 0.9; }
+    
+    .accordion-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .accordion-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(8, 145, 178, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .accordion-icon svg {
+      color: #0891B2;
+    }
+    
+    .accordion-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #0A1628;
+      text-align: left;
+    }
+    
+    .accordion-subtitle {
+      font-size: 11px;
+      color: #94A3B8;
+      margin-top: 2px;
+    }
+    
+    .accordion-header .chevron {
+      width: 20px;
+      height: 20px;
+      color: #94A3B8;
+      transition: transform 0.2s;
+    }
+    
+    .accordion-header.open .chevron { transform: rotate(180deg); }
+    
+    /* Accordion Content */
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.2s ease-in-out;
+    }
+    
+    .accordion-content.open { max-height: 500px; }
+    
+    .accordion-content-inner {
+      padding: 0 16px 8px;
+    }
+    
+    .metric-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #F1F5F9;
+    }
+    
+    .metric-item:last-child { border-bottom: none; }
+    
+    .metric-item-left {
+      flex: 1;
+    }
+    
+    .metric-item-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #0A1628;
+    }
+    
+    .metric-item-sublabel {
+      font-size: 11px;
+      color: #94A3B8;
+      margin-top: 2px;
+    }
+    
+    .metric-item-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .metric-item-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0A1628;
+    }
+    
+    .grade-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    
+    .grade-badge.a { background: #dcfce7; color: #16a34a; }
+    .grade-badge.b { background: #dbeafe; color: #2563eb; }
+    .grade-badge.c { background: #fef3c7; color: #d97706; }
+    .grade-badge.d { background: #fee2e2; color: #dc2626; }
+    
+    /* Bottom CTAs */
+    .bottom-ctas {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      padding: 16px 16px 24px;
+      border-top: 1px solid #E2E8F0;
+    }
+    
+    .primary-cta {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(to right, #0891B2, #0e7490);
+      color: white;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: opacity 0.2s;
+    }
+    
+    .primary-cta:hover { opacity: 0.9; }
+    
+    .secondary-cta {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: none;
+      color: #64748B;
+      padding: 12px;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    
+    .secondary-cta:hover { color: #475569; }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <!-- Header -->
+    <header class="header">
+      <!-- App Bar -->
+      <div class="app-bar">
+        <div class="logo">
+          <span class="logo-invest">Invest</span><span class="logo-iq">IQ</span>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" title="Theme">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+            </svg>
+          </button>
+          <button class="icon-btn" title="Notifications">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
+            </svg>
+          </button>
+          <div class="avatar">H</div>
+          <button class="icon-btn" title="Menu">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dark Header -->
+      <div class="dark-header">
+        <!-- Title Row -->
+        <div class="title-row">
+          <button class="back-btn" onclick="history.back()">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <div class="title-center">
+            <div class="title-group">
+              <div class="page-title">
+                <span class="page-title-text">ANALYSIS </span><span class="page-title-accent">IQ</span>
+              </div>
+              <button class="strategy-btn" id="strategyBtn" onclick="toggleDropdown()">
+                <span id="currentStrategy">Long-term</span>
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div style="width: 20px;"></div>
+        </div>
+
+        <!-- Address Selector -->
+        <button class="address-selector" id="addressBtn" onclick="toggleProperty()">
+          <span class="address-text">1451 Sw 10th St, Boca Raton, FL 33486</span>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+
+        <!-- Property Accordion -->
+        <div class="property-accordion" id="propertyAccordion">
+          <div class="property-content">
+            <img class="property-image" src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=200&h=150&fit=crop" alt="Property">
+            <div class="property-grid">
+              <div>
+                <div class="property-stat-value">4</div>
+                <div class="property-stat-label">Beds</div>
+              </div>
+              <div>
+                <div class="property-stat-value">2</div>
+                <div class="property-stat-label">Baths</div>
+              </div>
+              <div>
+                <div class="property-stat-value">1,722</div>
+                <div class="property-stat-label">Sqft</div>
+              </div>
+              <div>
+                <div class="property-stat-value cyan">$821,000</div>
+                <div class="property-stat-label">Est. Value</div>
+              </div>
+              <div>
+                <div class="property-stat-value cyan">$3,200</div>
+                <div class="property-stat-label">Est. Rent</div>
+              </div>
+              <div>
+                <div class="property-stat-value">Off-Market</div>
+                <div class="property-stat-label">Status</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Strategy Dropdown -->
+        <div class="strategy-dropdown" id="strategyDropdown">
+          <div class="dropdown-label">Strategy</div>
+          <button class="dropdown-item active" onclick="selectStrategy('Long-term')">
+            Long-term Rental
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </button>
+          <button class="dropdown-item" onclick="selectStrategy('Short-term')">Short-term Rental</button>
+          <button class="dropdown-item" onclick="selectStrategy('BRRRR')">BRRRR</button>
+          <button class="dropdown-item" onclick="selectStrategy('Fix & Flip')">Fix & Flip</button>
+          <button class="dropdown-item" onclick="selectStrategy('House Hack')">House Hack</button>
+          <button class="dropdown-item" onclick="selectStrategy('Wholesale')">Wholesale</button>
+        </div>
+      </div>
+
+      <!-- Icon Navigation -->
+      <nav class="icon-nav">
+        <button class="nav-icon-btn" title="Search">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+          </svg>
+        </button>
+        <button class="nav-icon-btn" title="Home">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+          </svg>
+        </button>
+        <button class="nav-icon-btn" title="Trends">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>
+          </svg>
+        </button>
+        <button class="nav-icon-btn active" title="Analysis">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+          </svg>
+        </button>
+        <button class="nav-icon-btn" title="Compare">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/>
+          </svg>
+        </button>
+        <button class="nav-icon-btn" title="Reports">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+          </svg>
+        </button>
+        <button class="nav-icon-btn" title="Deals">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Scrollable Content -->
+    <div class="scroll-content">
+      <!-- Profit Quality Card -->
+      <div class="profit-quality-card">
+        <h3 class="card-title">PROFIT QUALITY</h3>
+        <div class="profit-quality-content">
+          <!-- Circular Progress -->
+          <div class="circular-progress">
+            <svg width="100" height="100">
+              <circle class="bg-circle" cx="50" cy="50" r="42" fill="transparent" stroke-width="8"/>
+              <circle class="progress-circle" cx="50" cy="50" r="42" fill="transparent" stroke-width="8" 
+                stroke-dasharray="264" stroke-dashoffset="58"/>
+            </svg>
+            <div class="score-text">
+              <span class="score-value">78</span>
+              <span class="score-max">/100</span>
+            </div>
+          </div>
+          
+          <!-- Metrics Column -->
+          <div class="metrics-column">
+            <div class="metric-row">
+              <span class="metric-label">Strategy Fit</span>
+              <span class="metric-value green">Good Fit</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Risk Level</span>
+              <span class="metric-value green">Low</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Protection</span>
+              <span class="metric-value teal">Fair</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- View Factors Button -->
+        <button class="view-factors-btn" id="factorsBtn" onclick="toggleFactors()">
+          <span>View Factors</span>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        
+        <!-- Factors List -->
+        <div class="factors-list" id="factorsList">
+          <div class="factor-item">
+            <svg class="factor-icon positive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="factor-label">Cap Rate vs Market</span>
+            <span class="factor-value">+0.8%</span>
+          </div>
+          <div class="factor-item">
+            <svg class="factor-icon positive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="factor-label">Cash Flow Margin</span>
+            <span class="factor-value">$285/mo</span>
+          </div>
+          <div class="factor-item">
+            <svg class="factor-icon negative" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="factor-label">DSCR Threshold</span>
+            <span class="factor-value">1.05x</span>
+          </div>
+          <div class="factor-item">
+            <svg class="factor-icon positive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="factor-label">Price vs Comps</span>
+            <span class="factor-value">-4%</span>
+          </div>
+        </div>
+        
+        <!-- Insight -->
+        <div class="insight">
+          <p>This deal shows strong fundamentals with healthy returns.</p>
+        </div>
+      </div>
+
+      <!-- Return Metrics Accordion -->
+      <div class="metrics-accordion">
+        <button class="accordion-header open" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>
+              </svg>
+            </div>
+            <div class="accordion-title">Return Metrics</div>
+          </div>
+          <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+          </svg>
+        </button>
+        <div class="accordion-content open">
+          <div class="accordion-content-inner">
+            <div class="metric-item">
+              <div class="metric-item-left">
+                <div class="metric-item-label">Cap Rate</div>
+                <div class="metric-item-sublabel">Acceptable</div>
+              </div>
+              <div class="metric-item-right">
+                <span class="metric-item-value">6.1%</span>
+                <span class="grade-badge b">MODERATE B</span>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-item-left">
+                <div class="metric-item-label">Cash-on-Cash</div>
+                <div class="metric-item-sublabel">Weak</div>
+              </div>
+              <div class="metric-item-right">
+                <span class="metric-item-value">1.1%</span>
+                <span class="grade-badge d">WEAK D</span>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-item-left">
+                <div class="metric-item-label">Equity Capture</div>
+                <div class="metric-item-sublabel">Fair Value</div>
+              </div>
+              <div class="metric-item-right">
+                <span class="metric-item-value">6%</span>
+                <span class="grade-badge c">POTENTIAL C</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cash Flow & Risk Accordion -->
+      <div class="metrics-accordion">
+        <button class="accordion-header open" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="accordion-title">Cash Flow & Risk</div>
+          </div>
+          <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+          </svg>
+        </button>
+        <div class="accordion-content open">
+          <div class="accordion-content-inner">
+            <div class="metric-item">
+              <div class="metric-item-left">
+                <div class="metric-item-label">Cash Flow Yield</div>
+                <div class="metric-item-sublabel">Weak</div>
+              </div>
+              <div class="metric-item-right">
+                <span class="metric-item-value">1.1%</span>
+                <span class="grade-badge d">WEAK D</span>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-item-left">
+                <div class="metric-item-label">DSCR</div>
+                <div class="metric-item-sublabel">Tight</div>
+              </div>
+              <div class="metric-item-right">
+                <span class="metric-item-value">1.05</span>
+                <span class="grade-badge c">POTENTIAL C</span>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-item-left">
+                <div class="metric-item-label">Expense Ratio</div>
+                <div class="metric-item-sublabel">Efficient</div>
+              </div>
+              <div class="metric-item-right">
+                <span class="metric-item-value">27%</span>
+                <span class="grade-badge a">STRONG A</span>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-item-left">
+                <div class="metric-item-label">Breakeven Occ.</div>
+                <div class="metric-item-sublabel">Tight</div>
+              </div>
+              <div class="metric-item-right">
+                <span class="metric-item-value">95%</span>
+                <span class="grade-badge c">POTENTIAL C</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- At-a-Glance Accordion (Collapsed) -->
+      <div class="metrics-accordion">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-header-left">
+            <div class="accordion-icon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="accordion-title">At-a-Glance</div>
+              <div class="accordion-subtitle">Performance breakdown</div>
+            </div>
+          </div>
+          <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+          </svg>
+        </button>
+        <div class="accordion-content">
+          <div class="accordion-content-inner">
+            <div class="metric-item">
+              <div class="metric-item-left">
+                <div class="metric-item-label">Monthly Cash Flow</div>
+                <div class="metric-item-sublabel">Net Operating</div>
+              </div>
+              <div class="metric-item-right">
+                <span class="metric-item-value">$285</span>
+                <span class="grade-badge b">MODERATE B</span>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-item-left">
+                <div class="metric-item-label">Annual ROI</div>
+                <div class="metric-item-sublabel">Year 1</div>
+              </div>
+              <div class="metric-item-right">
+                <span class="metric-item-value">8.2%</span>
+                <span class="grade-badge b">MODERATE B</span>
+              </div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-item-left">
+                <div class="metric-item-label">5-Year Equity</div>
+                <div class="metric-item-sublabel">Projected</div>
+              </div>
+              <div class="metric-item-right">
+                <span class="metric-item-value">$124K</span>
+                <span class="grade-badge a">STRONG A</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom CTAs -->
+    <div class="bottom-ctas">
+      <button class="primary-cta">
+        <span>Continue to Analysis</span>
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+        </svg>
+      </button>
+      <button class="secondary-cta">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+        </svg>
+        <span>Export PDF Report</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function toggleDropdown() {
+      const btn = document.getElementById('strategyBtn');
+      const dropdown = document.getElementById('strategyDropdown');
+      btn.classList.toggle('open');
+      dropdown.classList.toggle('open');
+    }
+
+    function selectStrategy(strategy) {
+      document.getElementById('currentStrategy').textContent = strategy;
+      
+      // Update active state
+      document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.textContent.includes(strategy) || 
+            (strategy === 'Long-term' && item.textContent.includes('Long-term Rental'))) {
+          item.classList.add('active');
+        }
+      });
+      
+      toggleDropdown();
+    }
+
+    function toggleProperty() {
+      const btn = document.getElementById('addressBtn');
+      const accordion = document.getElementById('propertyAccordion');
+      btn.classList.toggle('open');
+      accordion.classList.toggle('open');
+    }
+
+    function toggleFactors() {
+      const btn = document.getElementById('factorsBtn');
+      const list = document.getElementById('factorsList');
+      btn.classList.toggle('open');
+      list.classList.toggle('open');
+    }
+
+    function toggleAccordion(header) {
+      header.classList.toggle('open');
+      const content = header.nextElementSibling;
+      content.classList.toggle('open');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('strategyDropdown');
+      const btn = document.getElementById('strategyBtn');
+      if (!dropdown.contains(e.target) && !btn.contains(e.target) && dropdown.classList.contains('open')) {
+        toggleDropdown();
+      }
+    });
+  </script>
+</body>
+</html>
