@@ -117,6 +117,24 @@ function AppContent({
             animation: 'slide_from_right',
           }} 
         />
+        {/* New Analysis IQ Page */}
+        <Stack.Screen 
+          name="analysis-iq/[address]" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
+        {/* New Verdict IQ Page */}
+        <Stack.Screen 
+          name="verdict-iq/[address]" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
       </Stack>
       
       {/* Animated Splash Screen with pulsating logo */}
