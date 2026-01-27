@@ -9,7 +9,7 @@
  * - Font: Inter / System
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -17,8 +17,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Dimensions,
   PixelRatio,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -37,37 +37,51 @@ import { IQButton } from './IQButton';
 // =============================================================================
 // RESPONSIVE SCALING - Dynamic font sizes based on screen dimensions
 // =============================================================================
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Base design dimensions (iPhone 14 Pro)
 const BASE_WIDTH = 393;
 const BASE_HEIGHT = 852;
 
-// Scale factor based on screen width
-const widthScale = SCREEN_WIDTH / BASE_WIDTH;
-const heightScale = SCREEN_HEIGHT / BASE_HEIGHT;
+// Responsive scaling hook that updates on dimension changes (e.g., rotation)
+function useResponsiveScaling() {
+  const { width, height } = useWindowDimensions();
+  
+  return useMemo(() => {
+    const widthScale = width / BASE_WIDTH;
+    const heightScale = height / BASE_HEIGHT;
+    const scale = Math.min(widthScale, heightScale);
+    
+    // Responsive size function - scales with screen size
+    const rs = (size: number): number => {
+      const newSize = size * scale;
+      return Math.round(PixelRatio.roundToNearestPixel(newSize));
+    };
 
-// Use the smaller scale to ensure content fits
-const scale = Math.min(widthScale, heightScale);
+    // Responsive font size - slightly more conservative scaling for readability
+    const rf = (size: number): number => {
+      const newSize = size * Math.min(scale, 1.15); // Cap scaling at 115% for readability
+      return Math.round(PixelRatio.roundToNearestPixel(newSize));
+    };
 
-// Responsive size function - scales with screen size
-const rs = (size: number): number => {
-  const newSize = size * scale;
-  // Use PixelRatio to ensure crisp rendering
-  return Math.round(PixelRatio.roundToNearestPixel(newSize));
+    // Moderate scale for spacing (less aggressive than font scaling)
+    const rsp = (size: number): number => {
+      const newSize = size * Math.min(scale, 1.1);
+      return Math.round(PixelRatio.roundToNearestPixel(newSize));
+    };
+    
+    return { rs, rf, rsp, scale };
+  }, [width, height]);
+}
+
+// Static versions for StyleSheet (uses initial dimensions, acceptable for base styles)
+const getStaticScale = () => {
+  // These are only used in StyleSheet which is static anyway
+  // Dynamic values are applied via inline styles using the hook
+  return Math.min(1, 1); // Default to 1 for base styles
 };
 
-// Responsive font size - slightly more conservative scaling for readability
-const rf = (size: number): number => {
-  const newSize = size * Math.min(scale, 1.15); // Cap scaling at 115% for readability
-  return Math.round(PixelRatio.roundToNearestPixel(newSize));
-};
-
-// Moderate scale for spacing (less aggressive than font scaling)
-const rsp = (size: number): number => {
-  const newSize = size * Math.min(scale, 1.1);
-  return Math.round(PixelRatio.roundToNearestPixel(newSize));
-};
+const staticRs = (size: number): number => Math.round(size);
+const staticRsp = (size: number): number => Math.round(size);
 
 // =============================================================================
 // BRAND COLORS - From design files
@@ -146,6 +160,9 @@ export function IQVerdictScreen({
   onCompareAll,
   isDark = false,
 }: IQVerdictScreenProps) {
+  // Use dynamic responsive scaling that updates on dimension changes
+  const { rs, rf, rsp } = useResponsiveScaling();
+  
   const [showFactors, setShowFactors] = useState(false);
   const topStrategy = analysis.strategies.reduce((best, s) => s.score > best.score ? s : best, analysis.strategies[0]);
 
@@ -253,7 +270,7 @@ export function IQVerdictScreen({
                 { 
                   width: scoreRingSize, 
                   height: scoreRingSize, 
-                  borderRadius: scoreRingSize / 2,
+                  borderRadius: Math.round(scoreRingSize / 2),
                   borderWidth: scoreRingBorder,
                   borderColor: getScoreColor(analysis.dealScore), 
                   backgroundColor: `${getScoreColor(analysis.dealScore)}14`,
@@ -392,6 +409,8 @@ export function IQVerdictScreen({
 
 // =============================================================================
 // STYLES - Base styles (sizes applied dynamically via inline styles)
+// Note: Using staticRs/staticRsp for StyleSheet since it's evaluated once at module load.
+// Dynamic responsive sizing is applied via inline styles using the hook.
 // =============================================================================
 const styles = StyleSheet.create({
   container: {
@@ -405,15 +424,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: rsp(16),
-    paddingVertical: rsp(10),
+    paddingHorizontal: staticRsp(16),
+    paddingVertical: staticRsp(10),
     borderBottomWidth: 1,
     borderBottomColor: COLORS.surface200,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: rsp(4),
+    gap: staticRsp(4),
   },
   backText: {
     fontWeight: '500',
@@ -429,7 +448,7 @@ const styles = StyleSheet.create({
     color: COLORS.teal,
   },
   headerSpacer: {
-    width: rs(50),
+    width: staticRs(50),
   },
 
   // Scroll
@@ -437,13 +456,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: rsp(24),
+    paddingBottom: staticRsp(24),
   },
 
   // Property Card
   propertyCard: {
     backgroundColor: COLORS.white,
-    borderRadius: rs(10),
+    borderRadius: staticRs(10),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -452,7 +471,7 @@ const styles = StyleSheet.create({
   },
   propertyHeader: {
     flexDirection: 'row',
-    gap: rsp(10),
+    gap: staticRsp(10),
   },
   propertyImageContainer: {
     backgroundColor: COLORS.surface200,
@@ -470,7 +489,7 @@ const styles = StyleSheet.create({
   },
   propertyLocation: {
     color: COLORS.surface500,
-    marginBottom: rsp(2),
+    marginBottom: staticRsp(2),
   },
   propertyDetails: {
     color: COLORS.surface400,
@@ -480,8 +499,8 @@ const styles = StyleSheet.create({
   },
   marketBadge: {
     backgroundColor: COLORS.navy,
-    borderRadius: rs(3),
-    marginBottom: rsp(2),
+    borderRadius: staticRs(3),
+    marginBottom: staticRsp(2),
   },
   marketBadgeText: {
     fontWeight: '700',
@@ -499,7 +518,7 @@ const styles = StyleSheet.create({
   // Verdict Card - Compact
   verdictCard: {
     backgroundColor: COLORS.white,
-    borderRadius: rs(12),
+    borderRadius: staticRs(12),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -529,7 +548,7 @@ const styles = StyleSheet.create({
   viewFactors: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: rsp(3),
+    gap: staticRsp(3),
   },
   viewFactorsText: {
     color: COLORS.surface400,
@@ -571,11 +590,11 @@ const styles = StyleSheet.create({
   ctaSection: {},
   ctaButton: {
     backgroundColor: COLORS.teal,
-    borderRadius: rs(10),
+    borderRadius: staticRs(10),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: rsp(6),
+    gap: staticRsp(6),
   },
   ctaButtonText: {
     fontWeight: '600',
@@ -596,7 +615,7 @@ const styles = StyleSheet.create({
   strategySection: {},
   strategyCard: {
     backgroundColor: COLORS.white,
-    borderRadius: rs(10),
+    borderRadius: staticRs(10),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -612,20 +631,20 @@ const styles = StyleSheet.create({
   strategyContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: rsp(10),
+    gap: staticRsp(10),
   },
   strategyInfo: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: rsp(6),
+    gap: staticRsp(6),
   },
   strategyName: {
     fontWeight: '600',
     color: COLORS.navy,
   },
   strategyBadge: {
-    borderRadius: rs(3),
+    borderRadius: staticRs(3),
   },
   strategyBadgeText: {
     fontWeight: '700',
@@ -649,7 +668,7 @@ const styles = StyleSheet.create({
   exportLink: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: rsp(6),
+    gap: staticRsp(6),
   },
   exportLinkText: {
     color: COLORS.surface500,
