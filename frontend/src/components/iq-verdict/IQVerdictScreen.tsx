@@ -8,7 +8,7 @@
  * to avoid confusion with percentages and provide clearer meaning.
  */
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import {
   IQ_COLORS,
@@ -21,8 +21,10 @@ import {
   formatPrice,
   scoreToGradeLabel,
   getGradeColor,
+  calculateProfitScore,
+  scoreToProfitGrade,
 } from './types'
-import { ScoreGradeDisplay } from './ScoreGradeDisplay'
+import { ScoreBadge } from '../deal-maker/ScoreBadge'
 import { OpportunityFactors } from './OpportunityFactors'
 import { ReturnFactors } from './ReturnFactors'
 
@@ -40,19 +42,14 @@ export function IQVerdictScreen({
   onCompareAll,
 }: IQVerdictScreenProps) {
   const topStrategy = analysis.strategies[0]
-  const [showOpportunityFactors, setShowOpportunityFactors] = useState(false)
-  const [showReturnFactors, setShowReturnFactors] = useState(false)
+  const [showDealScoreFactors, setShowDealScoreFactors] = useState(false)
+  const [showProfitScoreFactors, setShowProfitScoreFactors] = useState(false)
   
   // Build full address with city, state, zip
   const fullAddress = [
     property.address,
     [property.city, property.state, property.zip].filter(Boolean).join(' ')
   ].filter(Boolean).join(', ')
-  
-  // Get grade-based display for Opportunity and Return
-  // Use new fields if available, otherwise convert from numeric score
-  const opportunityDisplay = analysis.opportunity || scoreToGradeLabel(analysis.dealScore)
-  const returnDisplay = analysis.returnRating || scoreToGradeLabel(topStrategy.score)
   
   // Default opportunity factors if not provided by API
   const opportunityFactors = analysis.opportunityFactors || {
@@ -73,6 +70,16 @@ export function IQVerdictScreen({
     annualProfit: topStrategy.metricLabel === 'Profit' ? topStrategy.metricValue : null,
     strategyName: topStrategy.name,
   }
+  
+  // Calculate profit score and grade from return factors
+  const { profitScore, profitGrade } = useMemo(() => {
+    const score = analysis.profitScore ?? calculateProfitScore(returnFactors)
+    const grade = analysis.profitGrade ?? scoreToProfitGrade(score)
+    return { profitScore: score, profitGrade: grade }
+  }, [analysis.profitScore, analysis.profitGrade, returnFactors])
+  
+  // Get deal score grade from deal score
+  const dealGrade = scoreToGradeLabel(analysis.dealScore).grade
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-navy-900">
@@ -146,56 +153,58 @@ export function IQVerdictScreen({
                 IQ VERDICT
               </p>
               
-              {/* Two-Score Display - Grade Based */}
-              <div className="grid grid-cols-2 gap-4 mb-6 max-w-md mx-auto">
-                {/* Opportunity Score */}
-                <div className="space-y-3">
-                  <ScoreGradeDisplay 
-                    display={opportunityDisplay}
-                    title="Opportunity"
-                    size="md"
+              {/* Two-Score Display - Deal Score & Profit Score */}
+              <div className="grid grid-cols-2 gap-6 mb-6 max-w-md mx-auto">
+                {/* Deal Score */}
+                <div className="flex flex-col items-center space-y-3">
+                  <ScoreBadge 
+                    type="dealScore"
+                    score={analysis.dealScore}
+                    grade={dealGrade}
+                    size="large"
                   />
                   {/* Expand/Collapse Factors */}
                   <button
-                    onClick={() => setShowOpportunityFactors(!showOpportunityFactors)}
+                    onClick={() => setShowDealScoreFactors(!showDealScoreFactors)}
                     className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                   >
                     <span>View Factors</span>
-                    {showOpportunityFactors ? (
+                    {showDealScoreFactors ? (
                       <ChevronUp className="w-3 h-3" />
                     ) : (
                       <ChevronDown className="w-3 h-3" />
                     )}
                   </button>
-                  {/* Opportunity Factors */}
-                  {showOpportunityFactors && (
+                  {/* Deal Score Factors */}
+                  {showDealScoreFactors && (
                     <div className="bg-white dark:bg-navy-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-navy-700">
                       <OpportunityFactors factors={opportunityFactors} />
                     </div>
                   )}
                 </div>
                 
-                {/* Return Rating */}
-                <div className="space-y-3">
-                  <ScoreGradeDisplay 
-                    display={returnDisplay}
-                    title="Return"
-                    size="md"
+                {/* Profit Score */}
+                <div className="flex flex-col items-center space-y-3">
+                  <ScoreBadge 
+                    type="profitQuality"
+                    score={profitScore}
+                    grade={profitGrade}
+                    size="large"
                   />
                   {/* Expand/Collapse Factors */}
                   <button
-                    onClick={() => setShowReturnFactors(!showReturnFactors)}
+                    onClick={() => setShowProfitScoreFactors(!showProfitScoreFactors)}
                     className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                   >
                     <span>View Factors</span>
-                    {showReturnFactors ? (
+                    {showProfitScoreFactors ? (
                       <ChevronUp className="w-3 h-3" />
                     ) : (
                       <ChevronDown className="w-3 h-3" />
                     )}
                   </button>
-                  {/* Return Factors */}
-                  {showReturnFactors && (
+                  {/* Profit Score Factors */}
+                  {showProfitScoreFactors && (
                     <div className="bg-white dark:bg-navy-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-navy-700">
                       <ReturnFactors factors={returnFactors} />
                     </div>

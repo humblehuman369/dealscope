@@ -10,9 +10,9 @@ interface ReturnFactorsProps {
 }
 
 /**
- * ReturnFactors Component
+ * ReturnFactors Component (Profit Score Factors)
  * 
- * Displays the breakdown of factors contributing to the Return rating:
+ * Displays the breakdown of factors contributing to the Profit Score:
  * - Cap Rate: Capitalization rate %
  * - Cash on Cash: Cash-on-Cash return %
  * - DSCR: Debt Service Coverage Ratio
@@ -72,7 +72,7 @@ export function ReturnFactors({ factors, className = '' }: ReturnFactorsProps) {
   return (
     <div className={`space-y-2 ${className}`}>
       <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-        Return Factors ({factors.strategyName})
+        Profit Score Factors ({factors.strategyName})
       </h4>
       
       <div className="space-y-2.5">

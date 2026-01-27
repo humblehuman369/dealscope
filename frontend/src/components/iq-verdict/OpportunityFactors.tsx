@@ -10,9 +10,9 @@ interface OpportunityFactorsProps {
 }
 
 /**
- * OpportunityFactors Component
+ * OpportunityFactors Component (Deal Score Factors)
  * 
- * Displays the breakdown of factors contributing to the Opportunity score:
+ * Displays the breakdown of factors contributing to the Deal Score:
  * - Deal Gap: Discount % needed from list to breakeven
  * - Motivation: Seller motivation score
  * - Days on Market: How long the property has been listed
@@ -49,7 +49,7 @@ export function OpportunityFactors({ factors, className = '' }: OpportunityFacto
   return (
     <div className={`space-y-2 ${className}`}>
       <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-        Opportunity Factors
+        Deal Score Factors
       </h4>
       
       <div className="space-y-2.5">

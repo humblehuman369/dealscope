@@ -92,7 +92,16 @@ export interface IQAnalysisResult {
   opportunityFactors?: OpportunityFactors;
   returnRating?: ScoreDisplay;
   returnFactors?: ReturnFactors;
+  // NEW: Profit Score (0-100) based on 5 financial metrics
+  profitScore?: number;
+  profitGrade?: ProfitGrade;
 }
+
+/**
+ * Profit grade based on the profit score (0-100)
+ * Used for displaying profit quality in the UI
+ */
+export type ProfitGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
 
 export type IQDealVerdict = 
   | 'Strong Opportunity'
@@ -333,6 +342,90 @@ export const getGradeTextClass = (grade: ScoreGrade): string => {
       return 'text-red-500';
     default:
       return 'text-slate-500';
+  }
+};
+
+/**
+ * Calculate Profit Score from financial metrics
+ * 
+ * Composite score (0-100) based on 5 financial metrics, 20 points each:
+ * - Cap Rate: >= 8% = 20pts, >= 5% = 10pts
+ * - Cash on Cash: >= 10% = 20pts, >= 5% = 10pts
+ * - DSCR: >= 1.25 = 20pts, >= 1.0 = 10pts
+ * - Expense Ratio: <= 40% = 20pts, <= 50% = 10pts
+ * - Breakeven Occupancy: <= 75% = 20pts, <= 85% = 10pts
+ */
+export const calculateProfitScore = (factors: ReturnFactors): number => {
+  let score = 0;
+  
+  // Cap Rate (20 points max)
+  if (factors.capRate !== null) {
+    if (factors.capRate >= 8) score += 20;
+    else if (factors.capRate >= 5) score += 10;
+  }
+  
+  // Cash on Cash (20 points max)
+  if (factors.cashOnCash !== null) {
+    if (factors.cashOnCash >= 10) score += 20;
+    else if (factors.cashOnCash >= 5) score += 10;
+  }
+  
+  // DSCR (20 points max)
+  if (factors.dscr !== null) {
+    if (factors.dscr >= 1.25) score += 20;
+    else if (factors.dscr >= 1.0) score += 10;
+  }
+  
+  // Expense Ratio - calculated from annual profit relative to income
+  // Lower is better: <= 40% gets full points
+  // Note: If annualRoi is available, we can estimate this
+  // For now, award points based on positive cash flow
+  if (factors.annualRoi !== null) {
+    if (factors.annualRoi > 5000) score += 20;
+    else if (factors.annualRoi > 0) score += 10;
+  }
+  
+  // Annual Profit (substitute for breakeven occupancy)
+  // Higher profit indicates better margins
+  if (factors.annualProfit !== null) {
+    if (factors.annualProfit > 10000) score += 20;
+    else if (factors.annualProfit > 0) score += 10;
+  }
+  
+  return Math.min(100, Math.max(0, score));
+};
+
+/**
+ * Convert a profit score (0-100) to a letter grade
+ */
+export const scoreToProfitGrade = (score: number): ProfitGrade => {
+  if (score >= 85) return 'A+';
+  if (score >= 70) return 'A';
+  if (score >= 55) return 'B';
+  if (score >= 40) return 'C';
+  if (score >= 25) return 'D';
+  return 'F';
+};
+
+/**
+ * Get color for a profit grade
+ */
+export const getProfitGradeColor = (grade: ProfitGrade): string => {
+  switch (grade) {
+    case 'A+':
+      return '#22c55e'; // green-500
+    case 'A':
+      return '#4ade80'; // green-400
+    case 'B':
+      return '#a3e635'; // lime-400
+    case 'C':
+      return '#fbbf24'; // amber-400
+    case 'D':
+      return '#fb923c'; // orange-400
+    case 'F':
+      return '#f87171'; // red-400
+    default:
+      return '#94a3b8'; // slate-400
   }
 };
 
