@@ -114,13 +114,27 @@ export function MetricsHeader({
         {/* Row 2 */}
         <div className="flex justify-between items-center py-[3px]">
           <span style={{ fontSize: '12px', color: '#94A3B8' }}>Deal Gap</span>
-          <span className="tabular-nums" style={{ fontSize: '13px', fontWeight: 600, color: '#00D4FF' }}>
+          <span 
+            className="tabular-nums" 
+            style={{ 
+              fontSize: '13px', 
+              fontWeight: 600, 
+              color: metrics.dealGap < 0 ? '#E11D48' : '#00D4FF' 
+            }}
+          >
             {formatPercentWithSign(metrics.dealGap)}
           </span>
         </div>
         <div className="flex justify-between items-center py-[3px]">
           <span style={{ fontSize: '12px', color: '#94A3B8' }}>Annual Profit</span>
-          <span className="tabular-nums" style={{ fontSize: '13px', fontWeight: 600, color: '#06B6D4' }}>
+          <span 
+            className="tabular-nums" 
+            style={{ 
+              fontSize: '13px', 
+              fontWeight: 600, 
+              color: metrics.annualProfit < 0 ? '#E11D48' : '#06B6D4' 
+            }}
+          >
             {formatCurrency(metrics.annualProfit)}
           </span>
         </div>

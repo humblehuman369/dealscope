@@ -71,13 +71,19 @@ export function MetricsHeader({
         {/* Row 2 */}
         <View style={styles.metricItem}>
           <Text style={styles.metricLabel}>Deal Gap</Text>
-          <Text style={[styles.metricValue, styles.metricValueCyan]}>
+          <Text style={[
+            styles.metricValue, 
+            metrics.dealGap < 0 ? styles.metricValueNegative : styles.metricValueCyan
+          ]}>
             {formatPercentWithSign(metrics.dealGap)}
           </Text>
         </View>
         <View style={styles.metricItem}>
           <Text style={styles.metricLabel}>Annual Profit</Text>
-          <Text style={[styles.metricValue, styles.metricValueTeal]}>
+          <Text style={[
+            styles.metricValue, 
+            metrics.annualProfit < 0 ? styles.metricValueNegative : styles.metricValueTeal
+          ]}>
             {formatCurrency(metrics.annualProfit)}
           </Text>
         </View>
@@ -189,6 +195,9 @@ const styles = StyleSheet.create({
   },
   metricValueTeal: {
     color: '#06B6D4',
+  },
+  metricValueNegative: {
+    color: '#E11D48', // Rose 600
   },
 });
 
