@@ -119,15 +119,16 @@ export function IQVerdictScreen({
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
-      {/* Main Content - Max 480px centered */}
-      <main className="max-w-[480px] mx-auto">
-        
-        {/* Property Card - Dark Header Style */}
+      {/* Property Card - Dark Header Style (Full Width Background) */}
+      <div 
+        style={{ 
+          background: COLORS.navy,
+          width: '100%',
+        }}
+      >
         <div 
-          style={{ 
-            background: COLORS.navy,
-            padding: '16px 20px 20px',
-          }}
+          className="max-w-[480px] mx-auto"
+          style={{ padding: '16px 20px 20px' }}
         >
           <div className="flex gap-4">
             {/* Left: Property Image */}
@@ -172,9 +173,9 @@ export function IQVerdictScreen({
               </div>
               <div 
                 className="text-[13px]"
-                style={{ color: COLORS.surface400 }}
+                style={{ color: 'white' }}
               >
-                {property.beds} bd * {property.baths} ba * {property.sqft?.toLocaleString() || '—'} sqft
+                {property.beds} bd · {property.baths} ba · {property.sqft?.toLocaleString() || '—'} sqft
               </div>
             </div>
             
@@ -206,7 +207,10 @@ export function IQVerdictScreen({
             </div>
           </div>
         </div>
+      </div>
 
+      {/* Main Content - Max 480px centered */}
+      <main className="max-w-[480px] mx-auto">
         {/* Content Area with padding */}
         <div className="p-4">
           {/* IQ Verdict Card */}

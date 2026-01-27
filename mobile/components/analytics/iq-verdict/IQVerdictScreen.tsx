@@ -243,8 +243,8 @@ export function IQVerdictScreen({
               <Text style={[styles.propertyCity, { fontSize: rf(15), marginBottom: rsp(8) }]} numberOfLines={1}>
                 {[property.city, [property.state, property.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
               </Text>
-              <Text style={[styles.propertyDetails, { fontSize: rf(13) }]}>
-                {property.beds} bd * {Math.round(property.baths * 10) / 10} ba * {property.sqft?.toLocaleString() || '—'} sqft
+              <Text style={[styles.propertyDetailsWhite, { fontSize: rf(13) }]}>
+                {property.beds} bd · {Math.round(property.baths * 10) / 10} ba · {property.sqft?.toLocaleString() || '—'} sqft
               </Text>
             </View>
             
@@ -516,6 +516,9 @@ const styles = StyleSheet.create({
   },
   propertyDetails: {
     color: COLORS.surface400,
+  },
+  propertyDetailsWhite: {
+    color: COLORS.white,
   },
   offMarketText: {
     color: COLORS.surface400,
