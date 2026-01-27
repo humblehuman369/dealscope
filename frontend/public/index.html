@@ -3,82 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="InvestIQ - Know the Real Return Before You Invest. Scan any property and get instant analysis across 6 investment strategies in 60 seconds.">
-  <title>InvestIQ - Real Estate Investment Intelligence</title>
+  <title>InvestIQ - Point. Scan. Invest Smarter.</title>
+  <meta name="description" content="Point your phone at any property and get professional-grade investment analysis across 6 strategies in 60 seconds. Start free, no credit card required.">
   
-  <!-- Prevent theme flash - runs before page renders -->
-  <script>
-    (function() {
-      var theme = localStorage.getItem('theme') || 'dark';
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      }
-    })();
-  </script>
-  
-  <!-- Google Fonts - Plus Jakarta Sans -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/favicon.ico">
   
   <style>
-    /* Reset */
+    /* =====================================================
+       CSS RESET & BASE
+       ===================================================== */
     *, *::before, *::after {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
     }
-
+    
     html {
       scroll-behavior: smooth;
     }
-
-    /* ============================================ */
-    /* CSS VARIABLES - Dark Mode (Default) */
-    /* ============================================ */
-    :root {
-      --deep-navy: #07172e;
-      --dark-bg: #0a0a12;
-      --electric-cyan: #4dd0e1;
-      --iq-blue: #1976d2;
-      --teal: #007ea7;
+    
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    button {
+      font-family: inherit;
+      cursor: pointer;
+    }
+    
+    ul, ol {
+      list-style: none;
+    }
+    
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    /* =====================================================
+       CSS VARIABLES
+       ===================================================== */
+    .landing-page {
+      --electric-cyan: #0891b2;
+      --iq-blue: #0369a1;
+      --teal: #0e7490;
+      --deep-navy: #0f172a;
       --white: #ffffff;
       --gray-100: #f7f8fa;
       --gray-200: #e5e7eb;
       --gray-400: #9ca3af;
       --gray-600: #6b7280;
       
-      /* Primary accent color */
-      --accent-red: #ff5a5f;
-      
-      /* Theme-aware colors (dark mode defaults) */
-      --bg-primary: #0a0a12;
-      --bg-secondary: #07172e;
-      --bg-card: rgba(255, 255, 255, 0.02);
-      --bg-card-hover: rgba(255, 255, 255, 0.05);
-      --text-primary: #ffffff;
-      --text-secondary: #9ca3af;
-      --text-muted: #6b7280;
-      --border-color: rgba(255, 255, 255, 0.06);
-      --border-hover: rgba(255, 255, 255, 0.12);
-      --shadow-color: rgba(0, 0, 0, 0.3);
-      --header-bg: rgba(10, 10, 18, 0.85);
-      --scan-glow: rgba(77, 208, 225, 0.3);
-      
-      /* Strategy Colors */
-      --long-rental: #0465f2;
-      --short-rental: #8b5cf6;
-      --brrrr: #f97316;
-      --flip: #ec4899;
-      --hack: #14b8a6;
-      --wholesale: #84cc16;
-    }
-
-    /* Light Mode */
-    html:not(.dark) {
       --bg-primary: #f8fafc;
       --bg-secondary: #ffffff;
       --bg-card: rgba(0, 0, 0, 0.02);
@@ -89,50 +78,35 @@
       --border-color: rgba(0, 0, 0, 0.08);
       --border-hover: rgba(0, 0, 0, 0.15);
       --shadow-color: rgba(0, 0, 0, 0.1);
-      --header-bg: rgba(255, 255, 255, 0.9);
-      --scan-glow: rgba(0, 126, 167, 0.3);
-      --electric-cyan: #0891b2;
-      --teal: #0e7490;
-    }
-
-    /* Light mode - House SVG adjustments (inside dark phone) */
-    html:not(.dark) .phone-house-container svg path,
-    html:not(.dark) .phone-house-container svg rect,
-    html:not(.dark) .phone-house-container svg line,
-    html:not(.dark) .phone-house-container svg circle {
-      stroke: rgba(77, 208, 225, 0.7);
-    }
-
-    html:not(.dark) .phone-house-container svg path[fill],
-    html:not(.dark) .phone-house-container svg rect[fill] {
-      fill: rgba(77, 208, 225, 0.08);
-    }
-
-    html:not(.dark) .phone-scan-bracket {
-      border-color: var(--electric-cyan);
-    }
-
-    body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --header-bg: rgba(255, 255, 255, 0.92);
+      --scan-glow: rgba(8, 145, 178, 0.2);
+      
+      --long-rental: #0465f2;
+      --short-rental: #7c3aed;
+      --brrrr: #ea580c;
+      --flip: #db2777;
+      --hack: #0d9488;
+      --wholesale: #65a30d;
+      
       background: var(--bg-primary);
       color: var(--text-primary);
-      line-height: 1.6;
       overflow-x: hidden;
-      min-height: 100vh;
     }
-
-    /* Container */
+    
+    /* =====================================================
+       CONTAINER
+       ===================================================== */
     .container {
       width: 100%;
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 24px;
     }
-
-    /* ============================================ */
-    /* HEADER */
-    /* ============================================ */
-    .header {
+    
+    /* =====================================================
+       HEADER
+       ===================================================== */
+    .landing-header {
       position: fixed;
       top: 0;
       left: 0;
@@ -140,68 +114,56 @@
       z-index: 1000;
       padding: 16px 0;
       background: var(--header-bg);
-      backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border-color);
-      transition: all 0.3s ease;
     }
-
-    .header.scrolled {
-      padding: 12px 0;
-      box-shadow: 0 4px 30px var(--shadow-color);
-    }
-
+    
     .header-inner {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-
+    
     .logo {
       font-size: 1.5rem;
       font-weight: 800;
       color: var(--text-primary);
-      text-decoration: none;
       letter-spacing: -0.5px;
       flex-shrink: 0;
       margin-right: auto;
     }
-
+    
     .logo span {
       color: var(--electric-cyan);
     }
-
+    
     .nav-links {
       display: none;
       gap: 32px;
       align-items: center;
     }
-
-    @media (min-width: 1024px) {
-      .nav-links {
-        display: flex;
-      }
-    }
-
+    
     .nav-links a {
       color: var(--text-secondary);
-      text-decoration: none;
       font-size: 0.9rem;
       font-weight: 500;
       transition: color 0.2s;
     }
-
+    
     .nav-links a:hover {
       color: var(--text-primary);
     }
-
+    
     .header-cta {
       display: flex;
       gap: 12px;
       align-items: center;
     }
-
-    /* Buttons */
+    
+    /* =====================================================
+       BUTTONS
+       ===================================================== */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -211,137 +173,56 @@
       border-radius: 12px;
       font-size: 0.9rem;
       font-weight: 600;
-      text-decoration: none;
       transition: all 0.3s ease;
-      cursor: pointer;
       border: none;
-      font-family: inherit;
     }
-
+    
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-primary);
+    }
+    
+    .btn-ghost:hover {
+      background: var(--bg-card-hover);
+    }
+    
     .btn-primary {
       background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
       color: var(--deep-navy);
       box-shadow: 0 4px 20px rgba(77, 208, 225, 0.3);
     }
-
+    
     .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 30px rgba(77, 208, 225, 0.4);
     }
-
-    .btn-secondary {
-      background: transparent;
-      border: 1px solid var(--electric-cyan);
-      color: var(--electric-cyan);
-    }
-
-    .btn-secondary:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--teal);
-    }
-
-    .btn-ghost {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
-    }
-
-    .btn-ghost:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--border-hover);
-    }
-
+    
     .btn-large {
       padding: 18px 40px;
       font-size: 1.05rem;
     }
-
-    .btn-small {
-      padding: 8px 16px;
-      font-size: 0.8rem;
-    }
-
-    /* Header Get Started button - smaller with gradient */
-    .btn-header {
+    
+    .header-cta .btn-primary {
       padding: 6px 14px;
       font-size: 0.75rem;
       background: linear-gradient(90deg, var(--electric-cyan) 0%, var(--deep-navy) 100%);
       color: #ffffff;
       box-shadow: 0 2px 12px rgba(77, 208, 225, 0.25);
     }
-
-    .btn-header:hover {
+    
+    .header-cta .btn-primary:hover {
       box-shadow: 0 4px 16px rgba(77, 208, 225, 0.35);
-      transform: translateY(-1px);
     }
-
-    /* Header ghost button - smaller */
-    .header-cta .btn-ghost {
-      padding: 6px 14px;
-      font-size: 0.75rem;
-    }
-
-    /* Mobile Menu */
-    .mobile-menu-btn {
-      display: flex;
-      padding: 8px;
-      background: transparent;
-      border: none;
-      color: var(--text-primary);
-      cursor: pointer;
-    }
-
-    @media (min-width: 1024px) {
-      .mobile-menu-btn {
-        display: none;
-      }
-    }
-
-    .mobile-menu {
-      position: fixed;
-      top: 70px;
-      left: 0;
-      right: 0;
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border-color);
-      padding: 20px;
-      transform: translateY(-100%);
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-      z-index: 999;
-    }
-
-    .mobile-menu.open {
-      transform: translateY(0);
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .mobile-menu a {
-      display: block;
-      padding: 12px 16px;
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-weight: 500;
-      border-radius: 8px;
-      transition: all 0.2s;
-    }
-
-    .mobile-menu a:hover {
-      background: var(--bg-card-hover);
-      color: var(--text-primary);
-    }
-
-    /* ============================================ */
-    /* HERO SECTION */
-    /* ============================================ */
+    
+    /* =====================================================
+       HERO SECTION
+       ===================================================== */
     .hero {
       padding: 140px 0 100px;
       position: relative;
       overflow: hidden;
     }
-
+    
     .hero::before {
       content: '';
       position: absolute;
@@ -353,190 +234,150 @@
       background: radial-gradient(ellipse at center top, var(--scan-glow) 0%, transparent 60%);
       pointer-events: none;
     }
-
-    .hero-content {
-      position: relative;
-      z-index: 10;
-    }
-
+    
     .hero-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 60px;
       align-items: center;
     }
-
-    @media (min-width: 1024px) {
-      .hero-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 80px;
-      }
-    }
-
+    
     .hero-text {
       text-align: center;
     }
-
-    @media (min-width: 1024px) {
-      .hero-text {
-        text-align: left;
-      }
-    }
-
+    
     .hero-eyebrow {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      background: rgba(77, 208, 225, 0.1);
-      border: 1px solid rgba(77, 208, 225, 0.25);
-      padding: 12px 24px;
+      gap: 8px;
+      background: rgba(8, 145, 178, 0.08);
+      border: 1px solid rgba(8, 145, 178, 0.2);
+      padding: 10px 24px;
       border-radius: 100px;
-      margin-bottom: 32px;
+      margin-bottom: 56px;
       animation: fadeInDown 0.6s ease-out;
     }
-
-    .hero-eyebrow-icon {
-      width: 18px;
-      height: 18px;
-      color: var(--electric-cyan);
-    }
-
+    
     .hero-eyebrow-text {
       font-size: 13px;
       font-weight: 600;
       color: var(--electric-cyan);
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
     }
-
+    
     @keyframes fadeInDown {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-
+    
     .hero h1 {
-      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
       font-weight: 800;
       line-height: 1.1;
-      margin-bottom: 24px;
-      letter-spacing: -1.5px;
+      margin-bottom: 32px;
+      letter-spacing: -1px;
     }
-
-    .hero h1 .highlight {
+    
+    .highlight {
       background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-
+    
     .hero-subtitle {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       color: var(--text-secondary);
-      max-width: 480px;
-      margin: 0 auto 40px;
-      line-height: 1.7;
+      max-width: 520px;
+      margin: 0 auto 56px;
+      line-height: 1.6;
     }
-
-    @media (min-width: 1024px) {
-      .hero-subtitle {
-        margin: 0 0 40px;
-      }
-    }
-
+    
     .hero-cta {
       display: flex;
       flex-direction: column;
       gap: 16px;
       align-items: center;
-      margin-bottom: 32px;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 0;
     }
-
-    @media (min-width: 640px) {
-      .hero-cta {
-        flex-direction: row;
-        justify-content: center;
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .hero-cta {
-        justify-content: flex-start;
-      }
-    }
-
+    
     .hero-cta .btn-primary {
       padding: 16px 32px;
       font-size: 1rem;
     }
-
+    
     .trust-signals {
       display: flex;
-      flex-wrap: wrap;
-      gap: 24px;
+      gap: 32px;
       justify-content: center;
+      margin-top: 24px;
       font-size: 0.875rem;
       color: var(--text-muted);
+      flex-wrap: wrap;
     }
-
-    @media (min-width: 1024px) {
-      .trust-signals {
-        justify-content: flex-start;
-      }
-    }
-
+    
     .trust-signals span {
       display: flex;
       align-items: center;
       gap: 6px;
     }
-
+    
     .trust-signals .icon {
-      width: 16px;
-      height: 16px;
-      color: var(--electric-cyan);
+      color: #10b981;
     }
-
-    /* Phone Mockup */
+    
+    /* =====================================================
+       HERO VISUAL / PHONE MOCKUP
+       ===================================================== */
     .hero-visual {
       display: flex;
       justify-content: center;
+      perspective: 1000px;
       position: relative;
     }
-
+    
+    .phone-glow {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(77, 208, 225, 0.2) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+    }
+    
     .phone-mockup {
       width: 280px;
       height: 560px;
-      background: linear-gradient(145deg, #1a2d45 0%, #0d1a2d 100%);
+      background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
       border-radius: 40px;
       padding: 10px;
       box-shadow: 
-        0 30px 60px rgba(0,0,0,0.5),
-        0 0 0 1px rgba(77, 208, 225, 0.2),
-        inset 0 0 0 1px rgba(255,255,255,0.05);
+        0 30px 60px rgba(0, 0, 0, 0.25),
+        0 10px 30px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(0, 0, 0, 0.1);
       position: relative;
       animation: phoneFloat 4s ease-in-out infinite;
     }
-
+    
     @keyframes phoneFloat {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-15px); }
     }
-
+    
     .phone-screen {
       width: 100%;
       height: 100%;
-      background: linear-gradient(180deg, var(--deep-navy) 0%, #0a1e38 100%);
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
       border-radius: 30px;
       position: relative;
       overflow: hidden;
     }
-
+    
     .phone-notch {
       position: absolute;
       top: 0;
@@ -544,25 +385,25 @@
       transform: translateX(-50%);
       width: 100px;
       height: 28px;
-      background: #0d1a2d;
+      background: #0f172a;
       border-radius: 0 0 18px 18px;
       z-index: 20;
     }
-
+    
     .phone-content {
       padding: 50px 16px 16px;
       height: 100%;
       display: flex;
       flex-direction: column;
     }
-
+    
     .phone-header {
       display: flex;
       align-items: center;
       gap: 8px;
       margin-bottom: 20px;
     }
-
+    
     .phone-logo {
       width: 28px;
       height: 28px;
@@ -575,13 +416,13 @@
       font-size: 0.7rem;
       color: var(--deep-navy);
     }
-
+    
     .phone-title {
       font-size: 0.9rem;
       font-weight: 700;
       color: white;
     }
-
+    
     .scan-animation {
       flex: 1;
       display: flex;
@@ -590,27 +431,25 @@
       justify-content: center;
       gap: 12px;
     }
-
-    /* House Being Scanned Inside Phone */
+    
     .phone-house-scan {
       width: 180px;
       height: 180px;
       position: relative;
     }
-
+    
     .phone-house-container {
       width: 100%;
       height: 100%;
       position: relative;
     }
-
+    
     .phone-house-container svg {
       width: 100%;
       height: 100%;
       filter: drop-shadow(0 4px 20px rgba(77, 208, 225, 0.3));
     }
-
-    /* Scan Line Effect */
+    
     .phone-scan-line-overlay {
       position: absolute;
       top: 0;
@@ -620,7 +459,7 @@
       overflow: hidden;
       pointer-events: none;
     }
-
+    
     .phone-scan-line {
       position: absolute;
       left: 0;
@@ -630,70 +469,46 @@
       box-shadow: 0 0 10px var(--electric-cyan), 0 0 20px var(--electric-cyan);
       animation: phoneScanSweep 2.5s ease-in-out infinite;
     }
-
+    
     @keyframes phoneScanSweep {
       0% { top: 0; opacity: 1; }
       100% { top: 100%; opacity: 0.5; }
     }
-
-    /* Corner Brackets */
+    
     .phone-scan-brackets {
       position: absolute;
       inset: 8px;
       pointer-events: none;
     }
-
+    
     .phone-scan-bracket {
       position: absolute;
       width: 20px;
       height: 20px;
       border: 2px solid var(--electric-cyan);
     }
-
-    .phone-scan-bracket.tl {
-      top: 0;
-      left: 0;
-      border-right: none;
-      border-bottom: none;
-    }
-
-    .phone-scan-bracket.tr {
-      top: 0;
-      right: 0;
-      border-left: none;
-      border-bottom: none;
-    }
-
-    .phone-scan-bracket.bl {
-      bottom: 0;
-      left: 0;
-      border-right: none;
-      border-top: none;
-    }
-
-    .phone-scan-bracket.br {
-      bottom: 0;
-      right: 0;
-      border-left: none;
-      border-top: none;
-    }
-
+    
+    .phone-scan-bracket.tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+    .phone-scan-bracket.tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+    .phone-scan-bracket.bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+    .phone-scan-bracket.br { bottom: 0; right: 0; border-left: none; border-top: none; }
+    
     .scan-status {
       text-align: center;
     }
-
+    
     .scan-status-text {
       font-size: 0.9rem;
       font-weight: 600;
       color: var(--electric-cyan);
       margin-bottom: 4px;
     }
-
+    
     .scan-status-address {
       font-size: 0.75rem;
       color: var(--text-muted);
     }
-
+    
     .phone-results {
       background: rgba(255,255,255,0.03);
       border: 1px solid var(--border-color);
@@ -701,19 +516,19 @@
       padding: 14px;
       margin-top: auto;
     }
-
+    
     .phone-results-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
     }
-
+    
     .phone-results-label {
       font-size: 0.7rem;
       color: var(--text-muted);
     }
-
+    
     .phone-results-badge {
       font-size: 0.65rem;
       font-weight: 600;
@@ -722,55 +537,43 @@
       padding: 4px 10px;
       border-radius: 20px;
     }
-
+    
     .phone-results-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
     }
-
+    
     .phone-result-item {
       text-align: center;
     }
-
+    
     .phone-result-value {
       font-size: 1.1rem;
       font-weight: 700;
     }
-
+    
     .phone-result-value.green { color: #10b981; }
     .phone-result-value.cyan { color: var(--electric-cyan); }
     .phone-result-value.blue { color: var(--iq-blue); }
-
+    
     .phone-result-label {
       font-size: 0.6rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-
-    /* Decorative glow behind phone */
-    .phone-glow {
-      position: absolute;
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, rgba(77, 208, 225, 0.2) 0%, transparent 70%);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: -1;
-    }
-
-    /* ============================================ */
-    /* SOCIAL PROOF BAR */
-    /* ============================================ */
+    
+    /* =====================================================
+       SOCIAL PROOF BAR
+       ===================================================== */
     .social-proof {
       padding: 24px 0;
       background: var(--bg-secondary);
       border-top: 1px solid var(--border-color);
       border-bottom: 1px solid var(--border-color);
     }
-
+    
     .social-proof-inner {
       display: flex;
       flex-direction: column;
@@ -778,26 +581,19 @@
       align-items: center;
       justify-content: center;
     }
-
-    @media (min-width: 768px) {
-      .social-proof-inner {
-        flex-direction: row;
-        gap: 48px;
-      }
-    }
-
+    
     .social-proof-item {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-
+    
     .social-proof-live {
       position: relative;
       width: 10px;
       height: 10px;
     }
-
+    
     .social-proof-live::before {
       content: '';
       position: absolute;
@@ -806,7 +602,7 @@
       border-radius: 50%;
       animation: livePulse 2s ease-in-out infinite;
     }
-
+    
     .social-proof-live::after {
       content: '';
       position: absolute;
@@ -814,66 +610,49 @@
       background: #10b981;
       border-radius: 50%;
     }
-
+    
     @keyframes livePulse {
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(2); opacity: 0; }
     }
-
+    
     .social-proof-number {
       font-size: 1.5rem;
       font-weight: 800;
       color: var(--text-primary);
     }
-
+    
     .social-proof-label {
       font-size: 0.875rem;
       color: var(--text-secondary);
     }
-
+    
     .social-proof-divider {
       display: none;
       width: 1px;
       height: 32px;
       background: var(--border-color);
     }
-
-    @media (min-width: 768px) {
-      .social-proof-divider {
-        display: block;
-      }
-    }
-
+    
     .social-proof-stars {
       display: flex;
       gap: 2px;
       align-items: center;
     }
-
-    .social-proof-stars svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    .social-proof-icon {
-      width: 20px;
-      height: 20px;
-      color: var(--electric-cyan);
-    }
-
-    /* ============================================ */
-    /* HOW IT WORKS SECTION */
-    /* ============================================ */
+    
+    /* =====================================================
+       HOW IT WORKS SECTION
+       ===================================================== */
     .how-it-works {
       padding: 100px 0;
       background: var(--bg-secondary);
     }
-
+    
     .section-header {
       text-align: center;
       margin-bottom: 60px;
     }
-
+    
     .section-label {
       font-size: 0.8rem;
       font-weight: 600;
@@ -882,41 +661,27 @@
       letter-spacing: 2px;
       margin-bottom: 16px;
     }
-
+    
     .section-title {
       font-size: clamp(1.8rem, 4vw, 2.5rem);
       font-weight: 800;
       margin-bottom: 16px;
       letter-spacing: -0.5px;
     }
-
-    .section-title .highlight {
-      background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
+    
     .section-subtitle {
       font-size: 1rem;
       color: var(--text-secondary);
       max-width: 600px;
       margin: 0 auto;
     }
-
+    
     .steps-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 32px;
     }
-
-    @media (min-width: 768px) {
-      .steps-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 40px;
-      }
-    }
-
+    
     .step-card {
       position: relative;
       background: var(--bg-card);
@@ -926,8 +691,7 @@
       transition: all 0.3s ease;
       overflow: hidden;
     }
-
-    /* Colored top border for each step */
+    
     .step-card::before {
       content: '';
       position: absolute;
@@ -937,18 +701,17 @@
       height: 4px;
       border-radius: 24px 24px 0 0;
     }
-
+    
     .step-card.step-1::before { background: var(--electric-cyan); }
     .step-card.step-2::before { background: #8b5cf6; }
     .step-card.step-3::before { background: #14b8a6; }
-
+    
     .step-card:hover {
       border-color: var(--border-hover);
       background: var(--bg-card-hover);
       transform: translateY(-4px);
     }
-
-    /* Large background number - top right, subtle */
+    
     .step-bg-number {
       position: absolute;
       right: 20px;
@@ -960,23 +723,11 @@
       pointer-events: none;
       z-index: 0;
     }
-
-    /* Different colors for each step number */
+    
     .step-card.step-1 .step-bg-number { color: var(--electric-cyan); }
     .step-card.step-2 .step-bg-number { color: #8b5cf6; }
     .step-card.step-3 .step-bg-number { color: #14b8a6; }
-
-    /* Icon container backgrounds to match */
-    .step-card.step-1 .step-icon { 
-      background: linear-gradient(135deg, rgba(77, 208, 225, 0.15) 0%, rgba(0, 126, 167, 0.15) 100%); 
-    }
-    .step-card.step-2 .step-icon { 
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(124, 58, 237, 0.15) 100%); 
-    }
-    .step-card.step-3 .step-icon { 
-      background: linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(13, 148, 136, 0.15) 100%); 
-    }
-
+    
     .step-icon {
       width: 56px;
       height: 56px;
@@ -988,19 +739,20 @@
       position: relative;
       z-index: 1;
     }
-
-    /* Step icon SVG styling */
-    .step-icon svg {
-      width: 28px;
-      height: 28px;
-      flex-shrink: 0;
+    
+    .step-card.step-1 .step-icon { 
+      background: linear-gradient(135deg, rgba(77, 208, 225, 0.15) 0%, rgba(0, 126, 167, 0.15) 100%);
+      color: var(--electric-cyan);
     }
-
-    /* Icon colors for each step */
-    .step-card.step-1 .step-icon { color: var(--electric-cyan); }
-    .step-card.step-2 .step-icon { color: #8b5cf6; }
-    .step-card.step-3 .step-icon { color: #14b8a6; }
-
+    .step-card.step-2 .step-icon { 
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(124, 58, 237, 0.15) 100%);
+      color: #8b5cf6;
+    }
+    .step-card.step-3 .step-icon { 
+      background: linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(13, 148, 136, 0.15) 100%);
+      color: #14b8a6;
+    }
+    
     .step-title {
       font-size: 1.2rem;
       font-weight: 700;
@@ -1008,7 +760,7 @@
       position: relative;
       z-index: 1;
     }
-
+    
     .step-description {
       font-size: 0.9rem;
       color: var(--text-secondary);
@@ -1017,13 +769,12 @@
       position: relative;
       z-index: 1;
     }
-
+    
     .step-features {
-      list-style: none;
       position: relative;
       z-index: 1;
     }
-
+    
     .step-features li {
       display: flex;
       align-items: center;
@@ -1032,23 +783,16 @@
       color: var(--text-muted);
       padding: 6px 0;
     }
-
-    .step-features .icon {
-      width: 16px;
-      height: 16px;
-    }
-
-    /* Checkmark colors for each step */
+    
     .step-card.step-1 .step-features .icon { color: var(--electric-cyan); }
     .step-card.step-2 .step-features .icon { color: #8b5cf6; }
     .step-card.step-3 .step-features .icon { color: #14b8a6; }
-
-    /* Video CTA */
+    
     .video-cta {
       text-align: center;
       margin-top: 50px;
     }
-
+    
     .video-btn {
       display: inline-flex;
       align-items: center;
@@ -1057,15 +801,14 @@
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 20px;
-      cursor: pointer;
       transition: all 0.3s ease;
     }
-
+    
     .video-btn:hover {
       background: var(--bg-card-hover);
       border-color: var(--border-hover);
     }
-
+    
     .video-btn-icon {
       width: 48px;
       height: 48px;
@@ -1076,70 +819,54 @@
       justify-content: center;
       box-shadow: 0 4px 15px rgba(77, 208, 225, 0.3);
       transition: transform 0.3s ease;
+      color: var(--deep-navy);
     }
-
+    
     .video-btn:hover .video-btn-icon {
       transform: scale(1.1);
     }
-
-    .video-btn-icon .icon {
-      width: 20px;
-      height: 20px;
-      color: var(--deep-navy);
-      margin-left: 2px;
-    }
-
+    
     .video-btn-text {
       text-align: left;
     }
-
+    
     .video-btn-title {
       font-size: 1rem;
       font-weight: 600;
       color: var(--text-primary);
     }
-
+    
     .video-btn-subtitle {
       font-size: 0.8rem;
       color: var(--text-muted);
     }
-
-    /* ============================================ */
-    /* STRATEGIES SECTION */
-    /* ============================================ */
-    .strategies {
+    
+    /* =====================================================
+       STRATEGIES SECTION
+       ===================================================== */
+    .strategies-section {
       padding: 100px 0;
+      position: relative;
     }
-
-    .strategies-grid {
+    
+    .strategy-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 20px;
     }
-
-    @media (min-width: 640px) {
-      .strategies-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .strategies-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
+    
     .strategy-card {
-      position: relative;
+      display: block;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 20px;
-      padding: 28px;
+      padding: 24px;
       cursor: pointer;
       transition: all 0.3s ease;
+      position: relative;
       overflow: hidden;
     }
-
+    
     .strategy-card::before {
       content: '';
       position: absolute;
@@ -1147,239 +874,178 @@
       left: 0;
       width: 4px;
       height: 100%;
-      opacity: 0.9;
+      opacity: 0.8;
     }
-
+    
     .strategy-card:hover {
       transform: translateY(-4px);
       border-color: var(--border-hover);
       box-shadow: 0 20px 60px var(--shadow-color);
     }
-
-    /* Strategy accent colors */
+    
     .strategy-card.long::before { background: var(--long-rental); }
     .strategy-card.short::before { background: var(--short-rental); }
     .strategy-card.brrrr::before { background: var(--brrrr); }
     .strategy-card.flip::before { background: var(--flip); }
     .strategy-card.hack::before { background: var(--hack); }
     .strategy-card.wholesale::before { background: var(--wholesale); }
-
-    .strategy-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
+    
+    .strategy-card-header {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-
-    .strategy-icon svg {
-      width: 26px;
-      height: 26px;
-    }
-
-    .strategy-card.long .strategy-icon { background: linear-gradient(135deg, var(--long-rental) 0%, #0352c9 100%); }
-    .strategy-card.short .strategy-icon { background: linear-gradient(135deg, var(--short-rental) 0%, #7c3aed 100%); }
-    .strategy-card.brrrr .strategy-icon { background: linear-gradient(135deg, var(--brrrr) 0%, #ea580c 100%); }
-    .strategy-card.flip .strategy-icon { background: linear-gradient(135deg, var(--flip) 0%, #db2777 100%); }
-    .strategy-card.hack .strategy-icon { background: linear-gradient(135deg, var(--hack) 0%, #0d9488 100%); }
-    .strategy-card.wholesale .strategy-icon { background: linear-gradient(135deg, var(--wholesale) 0%, #65a30d 100%); }
-
-    .strategy-name {
-      font-size: 1.15rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .strategy-tagline {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
+      justify-content: space-between;
+      align-items: flex-start;
       margin-bottom: 12px;
-      line-height: 1.5;
     }
-
-    .strategy-benefit {
-      font-size: 0.85rem;
-      font-weight: 500;
-      font-style: italic;
-      margin-bottom: 20px;
-      line-height: 1.4;
+    
+    .strategy-name {
+      font-size: 1.1rem;
+      font-weight: 700;
     }
-
-    /* Benefit colors matching each strategy */
-    .strategy-card.long .strategy-benefit { color: var(--long-rental); }
-    .strategy-card.short .strategy-benefit { color: var(--short-rental); }
-    .strategy-card.brrrr .strategy-benefit { color: var(--brrrr); }
-    .strategy-card.flip .strategy-benefit { color: var(--flip); }
-    .strategy-card.hack .strategy-benefit { color: var(--hack); }
-    .strategy-card.wholesale .strategy-benefit { color: var(--wholesale); }
-
-    .strategy-metrics {
-      margin-bottom: 20px;
+    
+    .strategy-stat {
+      text-align: right;
     }
-
-    .strategy-metrics-label {
+    
+    .strategy-stat-value {
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+    
+    .strategy-stat-label {
       font-size: 0.7rem;
-      font-weight: 600;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 8px;
     }
-
-    .strategy-metrics-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .strategy-metrics-tag {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      background: var(--bg-card-hover);
-      padding: 5px 10px;
-      border-radius: 8px;
-    }
-
-    .strategy-ideal {
-      padding-top: 16px;
-      border-top: 1px solid var(--border-color);
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .strategy-ideal strong {
-      color: var(--text-secondary);
-    }
-
-    /* Strategies CTA */
-    .strategies-cta {
-      margin-top: 50px;
-      text-align: center;
-    }
-
-    .strategies-cta-box {
-      display: inline-flex;
-      flex-direction: column;
-      gap: 20px;
-      align-items: center;
-      padding: 32px 48px;
-      background: linear-gradient(135deg, rgba(77, 208, 225, 0.08) 0%, rgba(0, 126, 167, 0.08) 100%);
-      border: 1px solid var(--border-color);
-      border-radius: 24px;
-    }
-
-    @media (min-width: 640px) {
-      .strategies-cta-box {
-        flex-direction: row;
-        gap: 40px;
-      }
-    }
-
-    .strategies-cta-text h3 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .strategies-cta-text p {
+    
+    .strategy-tagline {
       font-size: 0.9rem;
       color: var(--text-secondary);
+      margin-bottom: 16px;
     }
-
-    /* ============================================ */
-    /* FEATURES SECTION */
-    /* ============================================ */
-    .features {
+    
+    .strategy-description {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    
+    .growth-icon {
+      width: 24px;
+      height: 24px;
+    }
+    
+    /* =====================================================
+       STATS SECTION
+       ===================================================== */
+    .stats-section {
+      padding: 60px 0;
+      background: linear-gradient(180deg, #ecfeff 0%, #cffafe 100%);
+      border-top: 1px solid rgba(8, 145, 178, 0.1);
+      border-bottom: 1px solid rgba(8, 145, 178, 0.1);
+    }
+    
+    .stats-grid {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 80px;
+      text-align: center;
+      flex-wrap: wrap;
+    }
+    
+    .stat-item {
+      padding: 20px 0;
+      transition: all 0.3s ease;
+    }
+    
+    .stat-item:hover {
+      transform: translateY(-2px);
+    }
+    
+    .stat-value {
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      font-weight: 800;
+      color: #0891b2;
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+    }
+    
+    .stat-label {
+      font-size: 1rem;
+      color: #0f172a;
+      font-weight: 500;
+    }
+    
+    /* =====================================================
+       FEATURES SECTION
+       ===================================================== */
+    .features-section {
       padding: 100px 0;
-      background: var(--bg-secondary);
     }
-
+    
     .features-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 20px;
+      gap: 24px;
     }
-
-    @media (min-width: 640px) {
-      .features-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .features-grid {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-
+    
     .feature-card {
-      padding: 28px;
+      padding: 32px;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 20px;
       transition: all 0.3s ease;
     }
-
+    
     .feature-card:hover {
       border-color: var(--electric-cyan);
       background: var(--bg-card-hover);
     }
-
+    
     .feature-icon {
       width: 48px;
       height: 48px;
-      background: linear-gradient(135deg, rgba(77, 208, 225, 0.15) 0%, rgba(0, 126, 167, 0.15) 100%);
+      background: linear-gradient(135deg, rgba(77,208,225,0.15) 0%, rgba(0,126,167,0.15) 100%);
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 20px;
-      transition: transform 0.3s ease;
     }
-
-    .feature-card:hover .feature-icon {
-      transform: scale(1.1);
-    }
-
-    .feature-icon .icon {
+    
+    .feature-icon svg {
       width: 24px;
       height: 24px;
-      color: var(--electric-cyan);
+      stroke: var(--electric-cyan);
+      stroke-width: 2;
+      fill: none;
     }
-
+    
     .feature-title {
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: 700;
       margin-bottom: 8px;
     }
-
+    
     .feature-description {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       color: var(--text-secondary);
-      line-height: 1.5;
     }
-
-    /* ============================================ */
-    /* TESTIMONIALS SECTION */
-    /* ============================================ */
+    
+    /* =====================================================
+       TESTIMONIALS SECTION
+       ===================================================== */
     .testimonials {
       padding: 100px 0;
     }
-
+    
     .testimonials-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 24px;
     }
-
-    @media (min-width: 768px) {
-      .testimonials-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
+    
     .testimonial-card {
       position: relative;
       background: var(--bg-card);
@@ -1388,11 +1054,11 @@
       padding: 32px;
       transition: all 0.3s ease;
     }
-
+    
     .testimonial-card:hover {
       border-color: var(--border-hover);
     }
-
+    
     .testimonial-quote-icon {
       position: absolute;
       top: -14px;
@@ -1405,27 +1071,22 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 4px 15px rgba(77, 208, 225, 0.3);
-    }
-
-    .testimonial-quote-icon .icon {
-      width: 16px;
-      height: 16px;
       color: var(--deep-navy);
     }
-
+    
     .testimonial-text {
       font-size: 0.95rem;
       color: var(--text-secondary);
       line-height: 1.7;
       margin: 20px 0 24px;
     }
-
+    
     .testimonial-author {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-
+    
     .testimonial-avatar {
       width: 44px;
       height: 44px;
@@ -1438,84 +1099,59 @@
       font-size: 0.9rem;
       color: var(--text-primary);
     }
-
+    
     .testimonial-info h4 {
       font-size: 0.95rem;
       font-weight: 600;
+      margin: 0;
     }
-
+    
     .testimonial-info p {
       font-size: 0.8rem;
       color: var(--text-muted);
+      margin: 0;
     }
-
-    /* Stats row */
+    
     .testimonials-stats {
       margin-top: 60px;
       padding-top: 60px;
       border-top: 1px solid var(--border-color);
     }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 40px;
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: clamp(2rem, 4vw, 3rem);
-      font-weight: 800;
-      color: var(--electric-cyan);
-      margin-bottom: 8px;
-      letter-spacing: -1px;
-    }
-
-    .stat-label {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-    }
-
-    /* ============================================ */
-    /* ABOUT SECTION */
-    /* ============================================ */
+    
+    /* =====================================================
+       ABOUT SECTION
+       ===================================================== */
     .about {
       padding: 100px 0;
       background: var(--bg-secondary);
     }
-
+    
     .about-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 60px;
       align-items: center;
     }
-
-    @media (min-width: 1024px) {
-      .about-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    .about-content .section-label {
-      text-align: left;
-    }
-
+    
+    .about-content .section-label,
     .about-content .section-title {
       text-align: left;
+    }
+    
+    .about-content .section-title {
       margin-bottom: 24px;
     }
-
+    
     .about-text {
       color: var(--text-secondary);
       line-height: 1.8;
       margin-bottom: 20px;
     }
-
+    
     .about-text strong {
       color: var(--text-primary);
     }
-
+    
     .about-author {
       display: flex;
       align-items: center;
@@ -1524,7 +1160,7 @@
       margin-top: 24px;
       border-top: 1px solid var(--border-color);
     }
-
+    
     .about-author-avatar {
       width: 56px;
       height: 56px;
@@ -1537,23 +1173,25 @@
       font-size: 1.2rem;
       color: var(--deep-navy);
     }
-
+    
     .about-author-info h4 {
       font-size: 1rem;
       font-weight: 600;
+      margin: 0;
     }
-
+    
     .about-author-info p {
       font-size: 0.85rem;
       color: var(--text-muted);
+      margin: 0;
     }
-
+    
     .about-cards {
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
-
+    
     .about-card {
       display: flex;
       gap: 16px;
@@ -1563,11 +1201,11 @@
       border-radius: 16px;
       transition: all 0.3s ease;
     }
-
+    
     .about-card:hover {
       border-color: var(--border-hover);
     }
-
+    
     .about-card-icon {
       width: 48px;
       height: 48px;
@@ -1577,26 +1215,22 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-    }
-
-    .about-card-icon .icon {
-      width: 24px;
-      height: 24px;
       color: var(--electric-cyan);
     }
-
+    
     .about-card-content h4 {
       font-size: 1rem;
       font-weight: 600;
-      margin-bottom: 6px;
+      margin: 0 0 6px 0;
     }
-
+    
     .about-card-content p {
       font-size: 0.85rem;
       color: var(--text-muted);
       line-height: 1.5;
+      margin: 0;
     }
-
+    
     .about-link {
       display: inline-flex;
       align-items: center;
@@ -1604,30 +1238,24 @@
       color: var(--electric-cyan);
       font-weight: 500;
       font-size: 0.9rem;
-      text-decoration: none;
       margin-top: 16px;
       transition: gap 0.2s ease;
     }
-
+    
     .about-link:hover {
       gap: 10px;
     }
-
-    .about-link .icon {
-      width: 16px;
-      height: 16px;
-    }
-
-    /* ============================================ */
-    /* FINAL CTA SECTION */
-    /* ============================================ */
-    .final-cta {
+    
+    /* =====================================================
+       CTA SECTION
+       ===================================================== */
+    .cta-section {
       padding: 100px 0;
-      position: relative;
       text-align: center;
+      position: relative;
     }
-
-    .final-cta::before {
+    
+    .cta-section::before {
       content: '';
       position: absolute;
       bottom: 0;
@@ -1638,95 +1266,45 @@
       background: radial-gradient(ellipse at center bottom, var(--scan-glow) 0%, transparent 60%);
       pointer-events: none;
     }
-
-    .final-cta-content {
+    
+    .cta-content {
       position: relative;
       z-index: 1;
-      max-width: 700px;
-      margin: 0 auto;
     }
-
-    .final-cta-title {
+    
+    .cta-title {
       font-size: clamp(2rem, 4vw, 3rem);
       font-weight: 800;
       margin-bottom: 16px;
       letter-spacing: -0.5px;
     }
-
-    .final-cta-subtitle {
+    
+    .cta-subtitle {
       font-size: 1.1rem;
       color: var(--text-secondary);
-      margin-bottom: 40px;
+      margin-bottom: 32px;
       max-width: 550px;
       margin-left: auto;
       margin-right: auto;
     }
-
-    .final-cta-input {
+    
+    .cta-buttons {
       display: flex;
       flex-direction: column;
       gap: 16px;
-      max-width: 500px;
-      margin: 0 auto 24px;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
     }
-
-    @media (min-width: 640px) {
-      .final-cta-input {
-        flex-direction: row;
-      }
-    }
-
-    .final-cta-input input {
-      flex: 1;
-      padding: 16px 20px 16px 48px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      color: var(--text-primary);
-      font-size: 1rem;
-      font-family: inherit;
-      transition: all 0.3s ease;
-    }
-
-    .final-cta-input input:focus {
-      outline: none;
-      border-color: var(--electric-cyan);
-      box-shadow: 0 0 0 3px rgba(77, 208, 225, 0.15);
-    }
-
-    .final-cta-input input::placeholder {
-      color: var(--text-muted);
-    }
-
-    .input-wrapper {
-      position: relative;
-      flex: 1;
-    }
-
-    .input-wrapper .icon {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 20px;
-      height: 20px;
-      color: var(--text-muted);
-    }
-
-    .final-cta-divider {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      margin-bottom: 16px;
-    }
-
+    
     .app-badges {
       display: flex;
       gap: 16px;
-      justify-content: center;
+      margin-top: 24px;
       flex-wrap: wrap;
-      margin-top: 32px;
+      justify-content: center;
     }
-
+    
     .app-badge {
       display: flex;
       align-items: center;
@@ -1735,374 +1313,389 @@
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 12px;
-      text-decoration: none;
-      color: var(--text-primary);
       transition: all 0.3s ease;
     }
-
+    
     .app-badge:hover {
       background: var(--bg-card-hover);
       border-color: var(--border-hover);
     }
-
-    .app-badge .icon {
+    
+    .app-badge svg {
       width: 24px;
       height: 24px;
+      fill: var(--text-primary);
     }
-
+    
     .app-badge-text {
       text-align: left;
     }
-
+    
     .app-badge-small {
       font-size: 0.65rem;
       color: var(--text-muted);
     }
-
+    
     .app-badge-large {
       font-size: 0.9rem;
       font-weight: 600;
     }
-
-    /* ============================================ */
-    /* FOOTER */
-    /* ============================================ */
-    .footer {
+    
+    /* =====================================================
+       FOOTER
+       ===================================================== */
+    .landing-footer {
       padding: 60px 0 40px;
       border-top: 1px solid var(--border-color);
       background: var(--bg-secondary);
     }
-
+    
     .footer-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 40px;
       margin-bottom: 40px;
     }
-
-    @media (min-width: 640px) {
-      .footer-grid {
-        grid-template-columns: 2fr 1fr 1fr 1fr;
-      }
-    }
-
+    
     .footer-brand .logo {
       margin-bottom: 16px;
+      display: inline-block;
     }
-
+    
     .footer-tagline {
       font-size: 0.9rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
+      color: var(--text-muted);
+      max-width: 300px;
     }
-
+    
     .footer-links h4 {
-      font-size: 0.9rem;
-      font-weight: 600;
+      font-size: 0.85rem;
+      font-weight: 700;
       margin-bottom: 16px;
+      color: var(--text-primary);
     }
-
+    
     .footer-links ul {
       list-style: none;
     }
-
+    
     .footer-links li {
       margin-bottom: 10px;
     }
-
+    
     .footer-links a {
       font-size: 0.85rem;
-      color: var(--text-secondary);
-      text-decoration: none;
+      color: var(--text-muted);
       transition: color 0.2s;
     }
-
+    
     .footer-links a:hover {
-      color: var(--text-primary);
+      color: var(--electric-cyan);
     }
-
+    
     .footer-bottom {
       display: flex;
       flex-direction: column;
       gap: 16px;
       align-items: center;
-      padding-top: 24px;
+      padding-top: 40px;
       border-top: 1px solid var(--border-color);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
     }
-
+    
+    .footer-legal {
+      display: flex;
+      gap: 24px;
+    }
+    
+    .footer-legal a {
+      color: var(--text-muted);
+    }
+    
+    .footer-legal a:hover {
+      color: var(--electric-cyan);
+    }
+    
+    /* =====================================================
+       RESPONSIVE BREAKPOINTS
+       ===================================================== */
+    @media (max-width: 768px) {
+      .stats-grid {
+        flex-wrap: wrap;
+        gap: 40px;
+      }
+      
+      .stat-item {
+        flex: 0 0 calc(50% - 20px);
+        min-width: 140px;
+      }
+      
+      .stat-item:last-child {
+        flex: 0 0 100%;
+      }
+    }
+    
     @media (min-width: 640px) {
+      .hero-cta {
+        flex-direction: row;
+        justify-content: center;
+      }
+      
+      .cta-buttons {
+        flex-direction: row;
+        justify-content: center;
+      }
+      
+      .strategy-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (min-width: 768px) {
+      .nav-links {
+        display: flex;
+      }
+      
+      .social-proof-inner {
+        flex-direction: row;
+        gap: 48px;
+      }
+      
+      .social-proof-divider {
+        display: block;
+      }
+      
+      .steps-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 40px;
+      }
+      
+      .testimonials-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .footer-grid {
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+      }
+      
       .footer-bottom {
         flex-direction: row;
         justify-content: space-between;
       }
     }
-
-    .footer-legal {
-      display: flex;
-      gap: 24px;
-    }
-
-    .footer-legal a {
-      color: var(--text-muted);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
-    .footer-legal a:hover {
-      color: var(--text-primary);
-    }
-
-    .footer-contact {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .footer-contact .icon {
-      width: 16px;
-      height: 16px;
-      color: var(--text-muted);
-    }
-
-    .footer-contact a {
-      color: var(--text-muted);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
-    .footer-contact a:hover {
-      color: var(--text-primary);
-    }
-
-    /* ============================================ */
-    /* THEME TOGGLE */
-    /* ============================================ */
-    .theme-toggle {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 48px;
-      height: 48px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 1.2rem;
-      z-index: 1000;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .theme-toggle:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--border-hover);
-      transform: scale(1.1);
-    }
-
-    /* ============================================ */
-    /* UTILITIES */
-    /* ============================================ */
-    .highlight {
-      background: linear-gradient(135deg, var(--electric-cyan) 0%, var(--teal) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    
+    @media (min-width: 1024px) {
+      .hero-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 80px;
+      }
+      
+      .hero-text {
+        text-align: left;
+      }
+      
+      .hero-text .trust-signals {
+        justify-content: flex-start;
+      }
+      
+      .hero-text .hero-cta {
+        justify-content: flex-start;
+      }
+      
+      .hero-text .hero-eyebrow {
+        margin-left: 0;
+        margin-right: auto;
+      }
+      
+      .strategy-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .features-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      
+      .about-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .phone-mockup {
+        width: 320px;
+        height: 660px;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- ============================================ -->
-  <!-- HEADER -->
-  <!-- ============================================ -->
-  <header class="header" id="header">
-    <div class="container">
-      <div class="header-inner">
-        <a href="#" class="logo">
+  <div class="landing-page">
+    <!-- Header -->
+    <header class="landing-header">
+      <div class="container header-inner">
+        <a href="/" class="logo">
           Invest<span>IQ</span>
         </a>
-
+        
         <nav class="nav-links">
           <a href="#demo">Demo</a>
           <a href="#strategies">Strategies</a>
           <a href="#features">Features</a>
         </nav>
-
+        
         <div class="header-cta">
           <button class="btn btn-ghost">Sign In</button>
-          <button class="btn btn-primary btn-header">Get Started</button>
-          <button class="mobile-menu-btn" id="mobileMenuBtn">
-            <i data-lucide="menu" class="icon" style="width:24px;height:24px;"></i>
-          </button>
+          <button class="btn btn-primary">Get Started</button>
         </div>
       </div>
-    </div>
+    </header>
 
-    <!-- Mobile Menu -->
-    <nav class="mobile-menu" id="mobileMenu">
-      <a href="#demo">Demo</a>
-      <a href="#strategies">Strategies</a>
-      <a href="#features">Features</a>
-      <a href="#cta" class="btn btn-primary" style="margin-top:16px;text-align:center;">Get Started</a>
-    </nav>
-  </header>
-
-  <!-- ============================================ -->
-  <!-- HERO SECTION -->
-  <!-- ============================================ -->
-  <section class="hero" id="demo">
-    <div class="container">
-      <div class="hero-content">
-        <div class="hero-grid">
-          <!-- Text Content -->
-          <div class="hero-text">
-            <div class="hero-eyebrow">
-              <span class="hero-eyebrow-text">Intel for Real Estate Investors</span>
+    <!-- Hero Section -->
+    <section class="hero" id="demo">
+      <div class="container">
+        <div class="hero-content">
+          <div class="hero-grid">
+            <!-- Text Content -->
+            <div class="hero-text">
+              <div class="hero-eyebrow">
+                <span class="hero-eyebrow-text">Intel for Real Estate Investors</span>
+              </div>
+              
+              <h1>
+                Point. Scan.<br>
+                <span class="highlight">Invest Smarter.</span>
+              </h1>
+              <p class="hero-subtitle">
+                Just point your phone at a property, IQ collects<br>
+                real-time multi-source market info and analyzes across<br>
+                <strong>six investment strategies</strong> in 60 seconds.
+              </p>
+              <div class="hero-cta">
+                <button class="btn btn-primary btn-large">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                  Try It Now Free
+                </button>
+                <button class="btn btn-ghost">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  Enter Address
+                </button>
+              </div>
+              <div class="trust-signals">
+                <span>
+                  <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Start Free
+                </span>
+                <span>
+                  <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  No Credit Card
+                </span>
+                <span>
+                  <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Instant Results
+                </span>
+              </div>
             </div>
 
-            <h1>
-              Point. Scan.<br>
-              <span class="highlight">Invest Smarter.</span>
-            </h1>
+            <!-- Phone Visual -->
+            <div class="hero-visual">
+              <div class="phone-glow"></div>
+              <div class="phone-mockup">
+                <div class="phone-screen">
+                  <div class="phone-notch"></div>
+                  <div class="phone-content">
+                    <div class="phone-header">
+                      <div class="phone-logo">IQ</div>
+                      <span class="phone-title">InvestIQ</span>
+                    </div>
 
-            <p class="hero-subtitle">
-              Just point your phone at a property, IQ collects<br>real-time multi-source market info and analyzes across<br><strong>six investment strategies</strong> in 60 seconds.
-            </p>
-
-            <div class="hero-cta">
-              <a href="#cta" class="btn btn-primary btn-large">
-                <!-- Camera icon -->
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-                </svg>
-                Try It Now Free
-              </a>
-              <a href="#cta" class="btn btn-ghost">
-                <!-- Map pin icon -->
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                </svg>
-                Enter Address
-              </a>
-            </div>
-
-            <div class="trust-signals">
-              <span>
-                <!-- Check circle icon -->
-                <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                Start Free
-              </span>
-              <span>
-                <!-- Check circle icon -->
-                <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                No Credit Card
-              </span>
-              <span>
-                <!-- Check circle icon -->
-                <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                Instant Results
-              </span>
-            </div>
-          </div>
-
-          <!-- Phone Visual -->
-          <div class="hero-visual">
-            <div class="phone-glow"></div>
-            <div class="phone-mockup">
-              <div class="phone-screen">
-                <div class="phone-notch"></div>
-                <div class="phone-content">
-                  <div class="phone-header">
-                    <div class="phone-logo">IQ</div>
-                    <span class="phone-title">InvestIQ</span>
-                  </div>
-
-                  <div class="scan-animation">
-                    <!-- House Being Scanned -->
-                    <div class="phone-house-scan">
-                      <div class="phone-house-container">
-                        <svg viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <!-- House body fill -->
-                          <path d="M150 50 L260 130 L260 290 L40 290 L40 130 Z" fill="rgba(77, 208, 225, 0.03)" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5"/>
+                    <div class="scan-animation">
+                      <!-- House Being Scanned -->
+                      <div class="phone-house-scan">
+                        <div class="phone-house-container">
+                          <svg viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- House body fill -->
+                            <path d="M150 50 L260 130 L260 290 L40 290 L40 130 Z" fill="rgba(77, 208, 225, 0.03)" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5"/>
+                            <!-- Roof -->
+                            <path d="M150 30 L20 120 L40 120 L40 130 L150 50 L260 130 L260 120 L280 120 Z" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.7)" stroke-width="2"/>
+                            <!-- Chimney -->
+                            <rect x="195" y="65" width="25" height="45" fill="rgba(77, 208, 225, 0.03)" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5"/>
+                            <!-- Front Door -->
+                            <rect x="130" y="195" width="40" height="75" rx="3" fill="rgba(77, 208, 225, 0.08)" stroke="rgba(77, 208, 225, 0.7)" stroke-width="2"/>
+                            <circle cx="160" cy="235" r="3" fill="rgba(77, 208, 225, 0.9)"/>
+                            <!-- Door frame top -->
+                            <path d="M125 195 L150 180 L175 195" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5" fill="none"/>
+                            <!-- Left Window -->
+                            <rect x="60" y="155" width="45" height="40" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.7)" stroke-width="1.5"/>
+                            <line x1="82.5" y1="155" x2="82.5" y2="195" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
+                            <line x1="60" y1="175" x2="105" y2="175" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
+                            <!-- Right Window -->
+                            <rect x="195" y="155" width="45" height="40" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.7)" stroke-width="1.5"/>
+                            <line x1="217.5" y1="155" x2="217.5" y2="195" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
+                            <line x1="195" y1="175" x2="240" y2="175" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
+                            <!-- Garage Door -->
+                            <rect x="60" y="225" width="50" height="45" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5"/>
+                            <line x1="60" y1="238" x2="110" y2="238" stroke="rgba(77, 208, 225, 0.3)" stroke-width="1"/>
+                            <line x1="60" y1="252" x2="110" y2="252" stroke="rgba(77, 208, 225, 0.3)" stroke-width="1"/>
+                            <!-- Ground line -->
+                            <line x1="20" y1="290" x2="280" y2="290" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
+                          </svg>
                           
-                          <!-- Roof -->
-                          <path d="M150 30 L20 120 L40 120 L40 130 L150 50 L260 130 L260 120 L280 120 Z" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.7)" stroke-width="2"/>
+                          <!-- Scan line overlay -->
+                          <div class="phone-scan-line-overlay">
+                            <div class="phone-scan-line"></div>
+                          </div>
                           
-                          <!-- Chimney -->
-                          <rect x="195" y="65" width="25" height="45" fill="rgba(77, 208, 225, 0.03)" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5"/>
-                          
-                          <!-- Front Door -->
-                          <rect x="130" y="195" width="40" height="75" rx="3" fill="rgba(77, 208, 225, 0.08)" stroke="rgba(77, 208, 225, 0.7)" stroke-width="2"/>
-                          <circle cx="160" cy="235" r="3" fill="rgba(77, 208, 225, 0.9)"/>
-                          
-                          <!-- Door frame top -->
-                          <path d="M125 195 L150 180 L175 195" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5" fill="none"/>
-                          
-                          <!-- Left Window -->
-                          <rect x="60" y="155" width="45" height="40" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.7)" stroke-width="1.5"/>
-                          <line x1="82.5" y1="155" x2="82.5" y2="195" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
-                          <line x1="60" y1="175" x2="105" y2="175" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
-                          
-                          <!-- Right Window -->
-                          <rect x="195" y="155" width="45" height="40" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.7)" stroke-width="1.5"/>
-                          <line x1="217.5" y1="155" x2="217.5" y2="195" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
-                          <line x1="195" y1="175" x2="240" y2="175" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
-                          
-                          <!-- Garage Door -->
-                          <rect x="60" y="225" width="50" height="45" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.5)" stroke-width="1.5"/>
-                          <line x1="60" y1="238" x2="110" y2="238" stroke="rgba(77, 208, 225, 0.3)" stroke-width="1"/>
-                          <line x1="60" y1="252" x2="110" y2="252" stroke="rgba(77, 208, 225, 0.3)" stroke-width="1"/>
-                          
-                          <!-- Ground line -->
-                          <line x1="20" y1="290" x2="280" y2="290" stroke="rgba(77, 208, 225, 0.4)" stroke-width="1"/>
-                        </svg>
-                        
-                        <!-- Scan line overlay -->
-                        <div class="phone-scan-line-overlay">
-                          <div class="phone-scan-line"></div>
-                        </div>
-                        
-                        <!-- Corner brackets -->
-                        <div class="phone-scan-brackets">
-                          <div class="phone-scan-bracket tl"></div>
-                          <div class="phone-scan-bracket tr"></div>
-                          <div class="phone-scan-bracket bl"></div>
-                          <div class="phone-scan-bracket br"></div>
+                          <!-- Corner brackets -->
+                          <div class="phone-scan-brackets">
+                            <div class="phone-scan-bracket tl"></div>
+                            <div class="phone-scan-bracket tr"></div>
+                            <div class="phone-scan-bracket bl"></div>
+                            <div class="phone-scan-bracket br"></div>
+                          </div>
                         </div>
                       </div>
+                      <div class="scan-status">
+                        <div class="scan-status-text">Scanning Property...</div>
+                        <div class="scan-status-address">1842 Investor Lane, Denver</div>
+                      </div>
                     </div>
-                    <div class="scan-status">
-                      <div class="scan-status-text">Scanning Property...</div>
-                      <div class="scan-status-address">1842 Investor Lane, Denver</div>
-                    </div>
-                  </div>
 
-                  <div class="phone-results">
-                    <div class="phone-results-header">
-                      <span class="phone-results-label">Analysis Complete</span>
-                      <span class="phone-results-badge">✓ 6 Strategies</span>
-                    </div>
-                    <div class="phone-results-grid">
-                      <div class="phone-result-item">
-                        <div class="phone-result-value green">14.3%</div>
-                        <div class="phone-result-label">ROI</div>
+                    <div class="phone-results">
+                      <div class="phone-results-header">
+                        <span class="phone-results-label">Analysis Complete</span>
+                        <span class="phone-results-badge">✓ 6 Strategies</span>
                       </div>
-                      <div class="phone-result-item">
-                        <div class="phone-result-value cyan">$187</div>
-                        <div class="phone-result-label">Cash Flow</div>
-                      </div>
-                      <div class="phone-result-item">
-                        <div class="phone-result-value blue">8.2%</div>
-                        <div class="phone-result-label">Cap Rate</div>
+                      <div class="phone-results-grid">
+                        <div class="phone-result-item">
+                          <div class="phone-result-value green">14.3%</div>
+                          <div class="phone-result-label">ROI</div>
+                        </div>
+                        <div class="phone-result-item">
+                          <div class="phone-result-value cyan">$187</div>
+                          <div class="phone-result-label">Cash Flow</div>
+                        </div>
+                        <div class="phone-result-item">
+                          <div class="phone-result-value blue">8.2%</div>
+                          <div class="phone-result-label">Cap Rate</div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2112,648 +1705,509 @@
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============================================ -->
-  <!-- SOCIAL PROOF BAR -->
-  <!-- ============================================ -->
-  <section class="social-proof">
-    <div class="container">
-      <div class="social-proof-inner">
-        <div class="social-proof-item">
-          <div class="social-proof-live"></div>
-          <span class="social-proof-number" id="analysisCounter">23,847</span>
-          <span class="social-proof-label">properties analyzed</span>
-        </div>
-
-        <div class="social-proof-divider"></div>
-
-        <div class="social-proof-item">
-          <span class="social-proof-number">4.9</span>
-          <div class="social-proof-stars">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+    <!-- Social Proof Bar -->
+    <section class="social-proof">
+      <div class="container">
+        <div class="social-proof-inner">
+          <div class="social-proof-item">
+            <div class="social-proof-live"></div>
+            <span class="social-proof-number">23,847</span>
+            <span class="social-proof-label">properties analyzed</span>
           </div>
-          <span class="social-proof-label">from 2,400+ investors</span>
-        </div>
-
-        <div class="social-proof-divider"></div>
-
-        <div class="social-proof-item">
-          <svg class="social-proof-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
-          <span class="social-proof-number">60 sec</span>
-          <span class="social-proof-label">avg. analysis time</span>
+          <div class="social-proof-divider"></div>
+          <div class="social-proof-item">
+            <span class="social-proof-number">4.9</span>
+            <div class="social-proof-stars">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+            </div>
+            <span class="social-proof-label">from 2,400+ investors</span>
+          </div>
+          <div class="social-proof-divider"></div>
+          <div class="social-proof-item">
+            <span class="social-proof-number">60 sec</span>
+            <span class="social-proof-label">avg. analysis time</span>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============================================ -->
-  <!-- HOW IT WORKS -->
-  <!-- ============================================ -->
-  <section class="how-it-works" id="how-it-works">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-label">Simple 3-Step Process</div>
-        <h2 class="section-title">How <span class="highlight">Point & Scan</span> Works</h2>
-        <p class="section-subtitle">
-          No more spreadsheets. No more guesswork. Get professional-grade investment analysis in the time it takes to snap a photo.
-        </p>
-      </div>
-
-      <div class="steps-grid">
-        <!-- Step 1 -->
-        <div class="step-card step-1">
-          <div class="step-bg-number">1</div>
-          <div class="step-icon">
-            <!-- Point & Scan Icon - Camera with scan lines -->
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="7" width="22" height="16" rx="3" stroke="currentColor" stroke-width="2" fill="none"/>
-              <circle cx="14" cy="15" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
-              <path d="M10 7V5C10 4.44772 10.4477 4 11 4H17C17.5523 4 18 4.44772 18 5V7" stroke="currentColor" stroke-width="2"/>
-              <line x1="1" y1="11" x2="3" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="1" y1="15" x2="3" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="1" y1="19" x2="3" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="25" y1="11" x2="27" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="25" y1="15" x2="27" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="25" y1="19" x2="27" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h3 class="step-title">Point & Scan</h3>
-          <p class="step-description">Open InvestIQ and point your camera at any property address, For Sale sign, or MLS listing. Our AI reads it instantly.</p>
-          <ul class="step-features">
-            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Street addresses</li>
-            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> For Sale signs</li>
-            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> MLS sheets</li>
-            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Property listings</li>
-          </ul>
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="how-it-works">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-label">Simple 3-Step Process</div>
+          <h2 class="section-title">How <span class="highlight">Point & Scan</span> Works</h2>
+          <p class="section-subtitle">
+            No more spreadsheets. No more guesswork. Get professional-grade investment analysis in the time it takes to snap a photo.
+          </p>
         </div>
 
-        <!-- Step 2 -->
-        <div class="step-card step-2">
-          <div class="step-bg-number">2</div>
-          <div class="step-icon">
-            <!-- Analyze Icon - Chart with magnifying glass -->
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
-              <line x1="6" y1="16" x2="6" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="10" y1="16" x2="10" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="14" y1="16" x2="14" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="21" cy="21" r="5" stroke="currentColor" stroke-width="2" fill="none"/>
-              <line x1="24.5" y1="24.5" x2="27" y2="27" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+        <div class="steps-grid">
+          <!-- Step 1 -->
+          <div class="step-card step-1">
+            <div class="step-bg-number">1</div>
+            <div class="step-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
+            <h3 class="step-title">Point & Scan</h3>
+            <p class="step-description">Open InvestIQ and point your camera at any property address, For Sale sign, or MLS listing. Our AI reads it instantly.</p>
+            <ul class="step-features">
+              <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Street addresses</li>
+              <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> For Sale signs</li>
+              <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> MLS sheets</li>
+              <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Property listings</li>
+            </ul>
           </div>
-          <h3 class="step-title">Analyze</h3>
-          <p class="step-description">InvestIQ pulls real-time data and runs comprehensive analysis across all six investment strategies automatically.</p>
-          <ul class="step-features">
-            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Real-time market data</li>
-            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Rental estimates</li>
-            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Expense calculations</li>
-            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ROI projections</li>
-          </ul>
+
+          <!-- Step 2 -->
+          <div class="step-card step-2">
+            <div class="step-bg-number">2</div>
+            <div class="step-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+            </div>
+            <h3 class="step-title">Analyze</h3>
+            <p class="step-description">InvestIQ pulls real-time data and runs comprehensive analysis across all six investment strategies automatically.</p>
+            <ul class="step-features">
+              <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Real-time market data</li>
+              <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Rental estimates</li>
+              <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Expense calculations</li>
+              <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> ROI projections</li>
+            </ul>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step-card step-3">
+            <div class="step-bg-number">3</div>
+            <div class="step-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </div>
+            <h3 class="step-title">Decide</h3>
+            <p class="step-description">Get clear recommendations on the best strategy for each property. Compare deals, save favorites, and invest with confidence.</p>
+            <ul class="step-features">
+              <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Strategy comparison</li>
+              <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Risk assessment</li>
+              <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Market benchmarks</li>
+              <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Action recommendations</li>
+            </ul>
+          </div>
         </div>
 
-        <!-- Step 3 -->
-        <div class="step-card step-3">
-          <div class="step-bg-number">3</div>
-          <div class="step-icon">
-            <!-- Decide Icon - Lightbulb with checkmark -->
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 2C9.58 2 6 5.58 6 10C6 12.76 7.36 15.18 9.5 16.6V19C9.5 19.55 9.95 20 10.5 20H17.5C18.05 20 18.5 19.55 18.5 19V16.6C20.64 15.18 22 12.76 22 10C22 5.58 18.42 2 14 2Z" stroke="currentColor" stroke-width="2" fill="none"/>
-              <line x1="10" y1="23" x2="18" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="11" y1="26" x2="17" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M11 11L13 13L17 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h3 class="step-title">Decide</h3>
-          <p class="step-description">Get clear recommendations on the best strategy for each property. Compare deals, save favorites, and invest with confidence.</p>
-          <ul class="step-features">
-            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Strategy comparison</li>
-            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Risk assessment</li>
-            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Market benchmarks</li>
-            <li><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Action recommendations</li>
-          </ul>
+        <div class="video-cta">
+          <button class="video-btn">
+            <div class="video-btn-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+            </div>
+            <div class="video-btn-text">
+              <div class="video-btn-title">Watch Demo</div>
+              <div class="video-btn-subtitle">See Point & Scan in action (30 sec)</div>
+            </div>
+          </button>
         </div>
       </div>
+    </section>
 
-      <div class="video-cta">
-        <button class="video-btn">
-          <div class="video-btn-icon">
-            <!-- Play icon -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-          </div>
-          <div class="video-btn-text">
-            <div class="video-btn-title">Watch Demo</div>
-            <div class="video-btn-subtitle">See Point & Scan in action (30 sec)</div>
-          </div>
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================ -->
-  <!-- STRATEGIES SECTION -->
-  <!-- ============================================ -->
-  <section class="strategies" id="strategies">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-label">One Property. Six Strategies.</div>
-        <h2 class="section-title">Every Strategy, <span class="highlight">Analyzed Automatically</span></h2>
-        <p class="section-subtitle">
-          InvestIQ analyzes every property for all six investment strategies simultaneously—so you never miss the best opportunity.
-        </p>
-      </div>
-
-      <div class="strategies-grid">
-        <!-- Long-Term Rental -->
-        <div class="strategy-card long">
-          <div class="strategy-icon">
-            <!-- Building icon -->
-            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="6" width="20" height="18" rx="2" stroke="white" stroke-width="2" fill="none"/>
-              <line x1="13" y1="6" x2="13" y2="24" stroke="white" stroke-width="2"/>
-              <rect x="6" y="10" width="3" height="3" fill="white"/>
-              <rect x="6" y="16" width="3" height="3" fill="white"/>
-              <rect x="17" y="10" width="3" height="3" fill="white"/>
-              <rect x="17" y="16" width="3" height="3" fill="white"/>
-              <path d="M3 6L13 2L23 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h3 class="strategy-name">Long-Term Rental</h3>
-          <p class="strategy-tagline">Rent your property to tenants on yearly leases and collect monthly income</p>
-          <p class="strategy-benefit">Build wealth while you sleep with predictable passive income every month!</p>
-          <div class="strategy-metrics">
-            <div class="strategy-metrics-label">Key Metrics</div>
-            <div class="strategy-metrics-tags">
-              <span class="strategy-metrics-tag">Monthly Cash Flow</span>
-              <span class="strategy-metrics-tag">Cap Rate</span>
-              <span class="strategy-metrics-tag">Annual ROI</span>
-            </div>
-          </div>
-          <div class="strategy-ideal"><strong>Ideal for:</strong> Passive investors seeking consistent income</div>
+    <!-- Strategies Section -->
+    <section class="strategies-section" id="strategies">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-label">6 Investment Strategies</div>
+          <h2 class="section-title">One Property, Multiple Opportunities</h2>
+          <p class="section-subtitle">
+            Instantly see how any property performs across all major real estate investment strategies.
+          </p>
         </div>
-
-        <!-- Short-Term Rental -->
-        <div class="strategy-card short">
-          <div class="strategy-icon">
-            <!-- Star icon -->
-            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M13 2L15.9 9.2L24 10L18 15.5L19.8 24L13 19.5L6.2 24L8 15.5L2 10L10.1 9.2L13 2Z" stroke="white" stroke-width="2" stroke-linejoin="round" fill="none"/>
-            </svg>
-          </div>
-          <h3 class="strategy-name">Short-Term Rental</h3>
-          <p class="strategy-tagline">List your property on Airbnb or VRBO and earn nightly income from travelers</p>
-          <p class="strategy-benefit">Earn 2-3x more income than traditional rentals in the right markets!</p>
-          <div class="strategy-metrics">
-            <div class="strategy-metrics-label">Key Metrics</div>
-            <div class="strategy-metrics-tags">
-              <span class="strategy-metrics-tag">Nightly Rate</span>
-              <span class="strategy-metrics-tag">Occupancy Rate</span>
-              <span class="strategy-metrics-tag">Annual Revenue</span>
+        <div class="strategy-grid">
+          <!-- Long-Term Rental -->
+          <a href="#" class="strategy-card long">
+            <div class="strategy-card-header">
+              <div class="strategy-name">Long-Term Rental</div>
+              <div class="strategy-stat">
+                <div class="strategy-stat-value" style="color: #0465f2;">8-12%</div>
+                <div class="strategy-stat-label">Cash-on-Cash</div>
+              </div>
             </div>
-          </div>
-          <div class="strategy-ideal"><strong>Ideal for:</strong> Active investors in tourist markets</div>
-        </div>
+            <div class="strategy-tagline">Steady income & build equity</div>
+            <div class="strategy-description">Buy and hold properties for consistent monthly rental income. Build long-term wealth through appreciation and mortgage paydown.</div>
+          </a>
 
-        <!-- BRRRR -->
-        <div class="strategy-card brrrr">
-          <div class="strategy-icon">
-            <!-- Circular arrows / repeat icon -->
-            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 8L23 5L20 2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M3 13C3 7.477 7.477 3 13 3H23" stroke="white" stroke-width="2" stroke-linecap="round"/>
-              <path d="M6 18L3 21L6 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M23 13C23 18.523 18.523 23 13 23H3" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h3 class="strategy-name">BRRRR</h3>
-          <p class="strategy-tagline">Buy a fixer-upper, renovate it, rent it out, then refinance to get your cash back and repeat</p>
-          <p class="strategy-benefit">Recycle the same capital to build an entire portfolio—infinite scaling potential!</p>
-          <div class="strategy-metrics">
-            <div class="strategy-metrics-label">Key Metrics</div>
-            <div class="strategy-metrics-tags">
-              <span class="strategy-metrics-tag">ARV</span>
-              <span class="strategy-metrics-tag">Rehab Costs</span>
-              <span class="strategy-metrics-tag">Cash-Out Potential</span>
+          <!-- Short-Term Rental -->
+          <a href="#" class="strategy-card short">
+            <div class="strategy-card-header">
+              <div class="strategy-name">Short-Term Rental</div>
+              <div class="strategy-stat">
+                <div class="strategy-stat-value" style="color: #8b5cf6;">15-25%</div>
+                <div class="strategy-stat-label">Cash-on-Cash</div>
+              </div>
             </div>
-          </div>
-          <div class="strategy-ideal"><strong>Ideal for:</strong> Growth-focused investors building portfolios</div>
-        </div>
+            <div class="strategy-tagline">Vacation & business rental income</div>
+            <div class="strategy-description">Maximize income through Airbnb or VRBO rentals. Higher returns with more active management and seasonal demand.</div>
+          </a>
 
-        <!-- Fix & Flip -->
-        <div class="strategy-card flip">
-          <div class="strategy-icon">
-            <!-- Hammer icon -->
-            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 10L22 2L24 4L16 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M15 11L4 22C3.4 22.6 3.4 23.6 4 24.2C4.6 24.8 5.6 24.8 6.2 24.2L17 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M19 5L21 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h3 class="strategy-name">Fix & Flip</h3>
-          <p class="strategy-tagline">Buy an undervalued property, renovate it, and sell it quickly for a profit</p>
-          <p class="strategy-benefit">Turn sweat equity into big paydays—some flippers make a year's salary in one deal!</p>
-          <div class="strategy-metrics">
-            <div class="strategy-metrics-label">Key Metrics</div>
-            <div class="strategy-metrics-tags">
-              <span class="strategy-metrics-tag">Buy Price</span>
-              <span class="strategy-metrics-tag">Repair Estimate</span>
-              <span class="strategy-metrics-tag">Profit Margin</span>
+          <!-- BRRRR -->
+          <a href="#" class="strategy-card brrrr">
+            <div class="strategy-card-header">
+              <div class="strategy-name">BRRRR</div>
+              <div class="strategy-stat">
+                <div class="strategy-stat-value">
+                  <svg class="growth-icon" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                    <polyline points="17 6 23 6 23 12"/>
+                  </svg>
+                </div>
+                <div class="strategy-stat-label">Scale</div>
+              </div>
             </div>
-          </div>
-          <div class="strategy-ideal"><strong>Ideal for:</strong> Active investors with renovation expertise</div>
-        </div>
-
-        <!-- House Hack -->
-        <div class="strategy-card hack">
-          <div class="strategy-icon">
-            <!-- House with people icon -->
-            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 12L13 3L23 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M5 10V22H21V10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="10" cy="15" r="2" stroke="white" stroke-width="1.5" fill="none"/>
-              <circle cx="16" cy="15" r="2" stroke="white" stroke-width="1.5" fill="none"/>
-              <path d="M7 22V20C7 18.5 8.5 17.5 10 17.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-              <path d="M19 22V20C19 18.5 17.5 17.5 16 17.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h3 class="strategy-name">House Hack</h3>
-          <p class="strategy-tagline">Live in one unit of a multi-unit property and rent out the others to cover your mortgage</p>
-          <p class="strategy-benefit">Live for free (or even get paid!) while building equity in your own home!</p>
-          <div class="strategy-metrics">
-            <div class="strategy-metrics-label">Key Metrics</div>
-            <div class="strategy-metrics-tags">
-              <span class="strategy-metrics-tag">Owner Unit Cost</span>
-              <span class="strategy-metrics-tag">Rental Income</span>
-              <span class="strategy-metrics-tag">Net Housing Cost</span>
+            <div class="strategy-tagline">Buy-Rehab-Rent-Refi-Repeat wealth builder</div>
+            <div class="strategy-description">
+              <span style="color: #f97316; font-weight: 600;">B</span>uy a fixer-upper, 
+              <span style="color: #f97316; font-weight: 600;">R</span>enovate it, 
+              <span style="color: #f97316; font-weight: 600;">R</span>ent it out, then 
+              <span style="color: #f97316; font-weight: 600;">R</span>efinance to get your cash back and 
+              <span style="color: #f97316; font-weight: 600;">R</span>epeat
             </div>
-          </div>
-          <div class="strategy-ideal"><strong>Ideal for:</strong> First-time investors reducing living expenses</div>
-        </div>
+          </a>
 
-        <!-- Wholesale -->
-        <div class="strategy-card wholesale">
-          <div class="strategy-icon">
-            <!-- Document/Contract icon -->
-            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 3H16L21 8V23H6V3Z" stroke="white" stroke-width="2" stroke-linejoin="round" fill="none"/>
-              <path d="M15 3V9H21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <line x1="9" y1="13" x2="17" y2="13" stroke="white" stroke-width="2" stroke-linecap="round"/>
-              <line x1="9" y1="17" x2="17" y2="17" stroke="white" stroke-width="2" stroke-linecap="round"/>
-              <path d="M9 21L11 19L13 21L15 19L17 21" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h3 class="strategy-name">Wholesale</h3>
-          <p class="strategy-tagline">Find discounted deals and sell the contract to another investor for a fee—no purchase required</p>
-          <p class="strategy-benefit">Start investing with little to no money—perfect for building capital fast!</p>
-          <div class="strategy-metrics">
-            <div class="strategy-metrics-label">Key Metrics</div>
-            <div class="strategy-metrics-tags">
-              <span class="strategy-metrics-tag">ARV</span>
-              <span class="strategy-metrics-tag">Repair Estimate</span>
-              <span class="strategy-metrics-tag">Assignment Fee</span>
+          <!-- Fix & Flip -->
+          <a href="#" class="strategy-card flip">
+            <div class="strategy-card-header">
+              <div class="strategy-name">Fix & Flip</div>
+              <div class="strategy-stat">
+                <div class="strategy-stat-value" style="color: #ec4899;">$50K+</div>
+                <div class="strategy-stat-label">Profit</div>
+              </div>
             </div>
-          </div>
-          <div class="strategy-ideal"><strong>Ideal for:</strong> Beginners with limited capital</div>
-        </div>
-      </div>
+            <div class="strategy-tagline">Buy low, fix up, sell high</div>
+            <div class="strategy-description">Purchase undervalued properties, renovate strategically, and sell for profit. Quick returns with active project management.</div>
+          </a>
 
-      <div class="strategies-cta">
-        <div class="strategies-cta-box">
-          <div class="strategies-cta-text">
-            <h3>Check out any property, anywhere, anytime!</h3>
-            <p>It's fast, informative, fun and free—no credit card required</p>
-          </div>
-          <a href="#cta" class="btn btn-primary">
-            <!-- Scan icon -->
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/>
-            </svg>
-            Try It Free
+          <!-- House Hack -->
+          <a href="#" class="strategy-card hack">
+            <div class="strategy-card-header">
+              <div class="strategy-name">House Hack</div>
+              <div class="strategy-stat">
+                <div class="strategy-stat-value" style="color: #14b8a6;">75%</div>
+                <div class="strategy-stat-label">Cost Savings</div>
+              </div>
+            </div>
+            <div class="strategy-tagline">Cut your housing costs up to 100%</div>
+            <div class="strategy-description">Live in one unit while renting others. Eliminate your housing payment and start building wealth from day one.</div>
+          </a>
+
+          <!-- Wholesale -->
+          <a href="#" class="strategy-card wholesale">
+            <div class="strategy-card-header">
+              <div class="strategy-name">Wholesale</div>
+              <div class="strategy-stat">
+                <div class="strategy-stat-value" style="color: #84cc16;">$10K+</div>
+                <div class="strategy-stat-label">Per Deal</div>
+              </div>
+            </div>
+            <div class="strategy-tagline">Find deals, assign contracts, profit</div>
+            <div class="strategy-description">Find properties under market value, get them under contract, then assign to other investors for a fee. Zero capital required.</div>
           </a>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============================================ -->
-  <!-- FEATURES SECTION -->
-  <!-- ============================================ -->
-  <section class="features" id="features">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-label">Everything You Need</div>
-        <h2 class="section-title">What You Get with <span class="highlight">InvestIQ</span></h2>
-        <p class="section-subtitle">
-          Professional-grade investment analysis tools designed for modern real estate investors.
-        </p>
-      </div>
-
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">
-            <!-- Scan icon -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Point & Scan</h3>
-          <p class="feature-description">Analyze any property with your phone camera</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <!-- Trending up icon -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Instant ROI</h3>
-          <p class="feature-description">Real-time return calculations</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <!-- Dollar sign icon -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Cash Flow Analysis</h3>
-          <p class="feature-description">Monthly income vs. expenses</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <!-- Percent icon -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Cap Rate</h3>
-          <p class="feature-description">Market-accurate capitalization rates</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <!-- Layers icon -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">6-Strategy Analysis</h3>
-          <p class="feature-description">Every strategy, automatically</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <!-- Calculator icon -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/><line x1="16" y1="18" x2="16" y2="18"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Expense Calculator</h3>
-          <p class="feature-description">Taxes, insurance, maintenance</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <!-- Smartphone icon -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Mobile First</h3>
-          <p class="feature-description">Analyze properties on the go</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">
-            <!-- Folder icon -->
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-            </svg>
-          </div>
-          <h3 class="feature-title">Portfolio Tracking</h3>
-          <p class="feature-description">Save and compare your deals</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================ -->
-  <!-- TESTIMONIALS SECTION -->
-  <!-- ============================================ -->
-  <section class="testimonials">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-label">Trusted by Investors</div>
-        <h2 class="section-title">What Investors Are <span class="highlight">Saying</span></h2>
-      </div>
-
-      <div class="testimonials-grid">
-        <div class="testimonial-card">
-          <div class="testimonial-quote-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
-            </svg>
-          </div>
-          <p class="testimonial-text">"I analyzed 47 properties during a single Saturday driving around neighborhoods. InvestIQ found me a BRRRR deal that everyone else missed."</p>
-          <div class="testimonial-author">
-            <div class="testimonial-avatar">MC</div>
-            <div class="testimonial-info">
-              <h4>Marcus Chen</h4>
-              <p>Portfolio Investor • Denver, CO</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="testimonial-card">
-          <div class="testimonial-quote-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
-            </svg>
-          </div>
-          <p class="testimonial-text">"The six-strategy comparison saved me from making a huge mistake. What I thought was a flip was actually a perfect long-term hold."</p>
-          <div class="testimonial-author">
-            <div class="testimonial-avatar">SW</div>
-            <div class="testimonial-info">
-              <h4>Sarah Williams</h4>
-              <p>First-Time Investor • Austin, TX</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="testimonial-card">
-          <div class="testimonial-quote-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V21c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
-            </svg>
-          </div>
-          <p class="testimonial-text">"Finally, a tool built for how I actually find deals—in my car, driving past properties. Point, scan, done."</p>
-          <div class="testimonial-author">
-            <div class="testimonial-avatar">DR</div>
-            <div class="testimonial-info">
-              <h4>David Rodriguez</h4>
-              <p>Real Estate Agent • Phoenix, AZ</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="testimonials-stats">
+    <!-- Stats Section -->
+    <section class="stats-section">
+      <div class="container">
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-value">23,847+</div>
+            <div class="stat-value">10K+</div>
             <div class="stat-label">Properties Analyzed</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">6</div>
-            <div class="stat-label">Investment Strategies</div>
+            <div class="stat-value">$2.4M</div>
+            <div class="stat-label">Profit Discovered</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">60 sec</div>
+            <div class="stat-value">60s</div>
             <div class="stat-label">Average Analysis Time</div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============================================ -->
-  <!-- ABOUT SECTION -->
-  <!-- ============================================ -->
-  <section class="about" id="about">
-    <div class="container">
-      <div class="about-grid">
-        <div class="about-content">
-          <div class="section-label">Built by Investors, For Investors</div>
-          <h2 class="section-title">Why We Built <span class="highlight">InvestIQ</span></h2>
-          
-          <p class="about-text">
-            I analyzed over 200 properties before my first purchase—each one taking 30+ minutes to run the numbers in spreadsheets. That's more than 100 hours of tedious calculations.
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-label">Everything You Need</div>
+          <h2 class="section-title">What You Get with <span class="highlight">InvestIQ</span></h2>
+          <p class="section-subtitle">
+            Professional-grade investment analysis tools designed for modern real estate investors.
           </p>
-          <p class="about-text">
-            InvestIQ was born from that frustration. I knew there had to be a faster way to screen deals without sacrificing accuracy. A way to analyze properties on the go, in real-time, as I drove past them.
-          </p>
-          <p class="about-text">
-            <strong>Now, thousands of investors use InvestIQ to screen properties in seconds, not hours. Because the best deals don't wait.</strong>
-          </p>
-
-          <div class="about-author">
-            <div class="about-author-avatar">H</div>
-            <div class="about-author-info">
-              <h4>Humble</h4>
-              <p>Founder, InvestIQ</p>
-            </div>
-          </div>
         </div>
-
-        <div class="about-cards">
-          <div class="about-card">
-            <div class="about-card-icon">
-              <!-- Database icon -->
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+        <div class="features-grid">
+          <!-- Feature 1 -->
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
               </svg>
             </div>
-            <div class="about-card-content">
-              <h4>Data Sources</h4>
-              <p>We aggregate data from public records, MLS feeds, and proprietary rental estimates to ensure accuracy.</p>
-            </div>
+            <h3 class="feature-title">Point & Scan</h3>
+            <p class="feature-description">Just point your camera at any property. Our AI instantly identifies it and pulls comprehensive data.</p>
           </div>
 
-          <div class="about-card">
-            <div class="about-card-icon">
-              <!-- Calculator icon -->
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/><line x1="16" y1="18" x2="16" y2="18"/>
+          <!-- Feature 2 -->
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
               </svg>
             </div>
-            <div class="about-card-content">
-              <h4>Calculation Methods</h4>
-              <p>Every metric follows industry-standard formulas used by professional investors and lenders.</p>
-            </div>
+            <h3 class="feature-title">6 Strategies Compared</h3>
+            <p class="feature-description">See how each property performs across all major investment strategies, side by side, instantly.</p>
           </div>
 
-          <div class="about-card">
-            <div class="about-card-icon">
-              <!-- Shield check icon -->
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
+          <!-- Feature 3 -->
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 7v5l3 3M12 3a9 9 0 110 18 9 9 0 010-18z"/>
               </svg>
             </div>
-            <div class="about-card-content">
-              <h4>Accuracy Commitment</h4>
-              <p>Our estimates are designed for initial screening. We always recommend verifying with local data before making offers.</p>
-            </div>
+            <h3 class="feature-title">60-Second Analysis</h3>
+            <p class="feature-description">From address to investment decision in under a minute. Stop wasting hours on spreadsheets.</p>
           </div>
 
-          <a href="#methodology" class="about-link">
-            Read our full methodology
-            <!-- External link icon -->
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-            </svg>
-          </a>
+          <!-- Feature 4 -->
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Accurate Projections</h3>
+            <p class="feature-description">Real market data, local comps, and proven formulas power every calculation.</p>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Portfolio Tracking</h3>
+            <p class="feature-description">Save properties, track performance, and monitor your entire portfolio from one dashboard.</p>
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Bank-Level Security</h3>
+            <p class="feature-description">Your data is encrypted and secure. We never share your information with third parties.</p>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============================================ -->
-  <!-- FINAL CTA SECTION -->
-  <!-- ============================================ -->
-  <section class="final-cta" id="cta">
-    <div class="container">
-      <div class="final-cta-content">
-        <div class="section-label">Get Started Today</div>
-        <h2 class="final-cta-title">
-          Let IQ Analyze Your First Property <span class="highlight">Free</span>
-        </h2>
-        <p class="final-cta-subtitle">
-          Point your camera at any property and IQ will deliver genius-level analysis across 6 investment strategies. No credit card required.
-        </p>
-
-        <div class="final-cta-input">
-          <div class="input-wrapper">
-            <!-- Map pin icon -->
-            <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-            <input type="text" placeholder="Enter property address...">
-          </div>
-          <button class="btn btn-primary">
-            <!-- Scan icon -->
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/>
-            </svg>
-            Analyze
-          </button>
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-label">Trusted by Investors</div>
+          <h2 class="section-title">What Investors Are <span class="highlight">Saying</span></h2>
         </div>
 
-        <div class="final-cta-divider">or</div>
+        <div class="testimonials-grid">
+          <!-- Testimonial 1 -->
+          <div class="testimonial-card">
+            <div class="testimonial-quote-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-10zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
+              </svg>
+            </div>
+            <p class="testimonial-text">"I analyzed 47 properties during a single Saturday driving around neighborhoods. InvestIQ found me a BRRRR deal that everyone else missed."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">MC</div>
+              <div class="testimonial-info">
+                <h4>Marcus Chen</h4>
+                <p>Portfolio Investor • Denver, CO</p>
+              </div>
+            </div>
+          </div>
 
-        <button class="btn btn-ghost">
-          <!-- Camera icon -->
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-          </svg>
-          Open Camera to Scan
-        </button>
+          <!-- Testimonial 2 -->
+          <div class="testimonial-card">
+            <div class="testimonial-quote-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-10zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
+              </svg>
+            </div>
+            <p class="testimonial-text">"The six-strategy comparison saved me from making a huge mistake. What I thought was a flip was actually a perfect long-term hold."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">SW</div>
+              <div class="testimonial-info">
+                <h4>Sarah Williams</h4>
+                <p>First-Time Investor • Austin, TX</p>
+              </div>
+            </div>
+          </div>
 
+          <!-- Testimonial 3 -->
+          <div class="testimonial-card">
+            <div class="testimonial-quote-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-10zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
+              </svg>
+            </div>
+            <p class="testimonial-text">"Finally, a tool built for how I actually find deals—in my car, driving past properties. Point, scan, done."</p>
+            <div class="testimonial-author">
+              <div class="testimonial-avatar">DR</div>
+              <div class="testimonial-info">
+                <h4>David Rodriguez</h4>
+                <p>Real Estate Agent • Phoenix, AZ</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonials-stats">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value">23,847+</div>
+              <div class="stat-label">Properties Analyzed</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">6</div>
+              <div class="stat-label">Investment Strategies</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">60 sec</div>
+              <div class="stat-label">Average Analysis Time</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+      <div class="container">
+        <div class="about-grid">
+          <div class="about-content">
+            <div class="section-label">Built by Investors, For Investors</div>
+            <h2 class="section-title">Why We Built <span class="highlight">InvestIQ</span></h2>
+            
+            <p class="about-text">
+              I analyzed over 200 properties before my first purchase—each one taking 30+ minutes to run the numbers in spreadsheets. That's more than 100 hours of tedious calculations.
+            </p>
+            <p class="about-text">
+              InvestIQ was born from that frustration. I knew there had to be a faster way to screen deals without sacrificing accuracy. A way to analyze properties on the go, in real-time, as I drove past them.
+            </p>
+            <p class="about-text">
+              <strong>Now, thousands of investors use InvestIQ to screen properties in seconds, not hours. Because the best deals don't wait.</strong>
+            </p>
+
+            <div class="about-author">
+              <div class="about-author-avatar">H</div>
+              <div class="about-author-info">
+                <h4>Humble</h4>
+                <p>Founder, InvestIQ</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="about-cards">
+            <div class="about-card">
+              <div class="about-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                  <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                  <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                </svg>
+              </div>
+              <div class="about-card-content">
+                <h4>Data Sources</h4>
+                <p>We aggregate data from public records, MLS feeds, and proprietary rental estimates to ensure accuracy.</p>
+              </div>
+            </div>
+
+            <div class="about-card">
+              <div class="about-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="4" y="2" width="16" height="20" rx="2"/>
+                  <line x1="8" y1="6" x2="16" y2="6"/>
+                  <line x1="8" y1="10" x2="16" y2="10"/>
+                  <line x1="8" y1="14" x2="12" y2="14"/>
+                </svg>
+              </div>
+              <div class="about-card-content">
+                <h4>Calculation Methods</h4>
+                <p>Every metric follows industry-standard formulas used by professional investors and lenders.</p>
+              </div>
+            </div>
+
+            <div class="about-card">
+              <div class="about-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              <div class="about-card-content">
+                <h4>Accuracy Commitment</h4>
+                <p>Our estimates are designed for initial screening. We always recommend verifying with local data before making offers.</p>
+              </div>
+            </div>
+
+            <a href="#methodology" class="about-link">
+              Read our full methodology
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+      <div class="container cta-content">
+        <div class="section-label">Get Started Today</div>
+        <h2 class="cta-title">
+          Let IQ Analyze Your First Property <span class="highlight">Free</span>
+        </h2>
+        <p class="cta-subtitle">
+          Point your camera at any property and IQ will deliver genius-level analysis across 6 investment strategies. No credit card required.
+        </p>
+        <div class="cta-buttons">
+          <button class="btn btn-primary btn-large">
+            Try It Now
+          </button>
+        </div>
         <div class="app-badges">
           <a href="#" class="app-badge">
-            <svg viewBox="0 0 24 24" fill="currentColor" style="width:24px;height:24px;">
+            <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
             </svg>
             <div class="app-badge-text">
@@ -2762,7 +2216,7 @@
             </div>
           </a>
           <a href="#" class="app-badge">
-            <svg viewBox="0 0 24 24" fill="currentColor" style="width:24px;height:24px;">
+            <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M3 20.5v-17c0-.59.34-1.11.84-1.35L13.69 12l-9.85 9.85c-.5-.25-.84-.76-.84-1.35zm13.81-5.38L6.05 21.34l8.49-8.49 2.27 2.27zm3.35-4.31c.34.27.59.69.59 1.19s-.22.9-.57 1.18l-2.29 1.32-2.5-2.5 2.5-2.5 2.27 1.31zM6.05 2.66l10.76 6.22-2.27 2.27-8.49-8.49z"/>
             </svg>
             <div class="app-badge-text">
@@ -2772,154 +2226,65 @@
           </a>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ============================================ -->
-  <!-- FOOTER -->
-  <!-- ============================================ -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <a href="#" class="logo">
-            Invest<span>IQ</span>
-          </a>
-          <p class="footer-tagline">
-            The fastest path from address to investable decision. Analyze any property in 60 seconds.
-          </p>
+    <!-- Footer -->
+    <footer class="landing-footer">
+      <div class="container">
+        <div class="footer-grid">
+          <!-- Brand -->
+          <div class="footer-brand">
+            <a href="/" class="logo">
+              Invest<span>IQ</span>
+            </a>
+            <p class="footer-tagline">
+              The fastest path from address to investable decision. Analyze any property in 60 seconds.
+            </p>
+          </div>
+
+          <!-- Product Links -->
+          <div class="footer-links">
+            <h4>Product</h4>
+            <ul>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#pricing">Pricing</a></li>
+              <li><a href="#strategies">Strategies</a></li>
+              <li><a href="#">API</a></li>
+            </ul>
+          </div>
+
+          <!-- Company Links -->
+          <div class="footer-links">
+            <h4>Company</h4>
+            <ul>
+              <li><a href="#">About</a></li>
+              <li><a href="#">Blog</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+          </div>
+
+          <!-- Support Links -->
+          <div class="footer-links">
+            <h4>Support</h4>
+            <ul>
+              <li><a href="#">Help Center</a></li>
+              <li><a href="#">Documentation</a></li>
+              <li><a href="#">Community</a></li>
+              <li><a href="#">Status</a></li>
+            </ul>
+          </div>
         </div>
 
-        <div class="footer-links">
-          <h4>Product</h4>
-          <ul>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-            <li><a href="#strategies">Strategies</a></li>
-            <li><a href="#">API</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-links">
-          <h4>Company</h4>
-          <ul>
-            <li><a href="#about">About</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Careers</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-links">
-          <h4>Support</h4>
-          <ul>
-            <li><a href="#">Help Center</a></li>
-            <li><a href="#">FAQ</a></li>
-            <li><a href="#">Community</a></li>
-            <li><a href="#">Status</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="footer-bottom">
-        <div>© 2026 InvestIQ. All rights reserved.</div>
-        <div class="footer-contact">
-          <!-- Mail icon -->
-          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
-          </svg>
-          <a href="/cdn-cgi/l/email-protection#4c24292020230c25223a293f38253d622b393e39"><span class="__cf_email__" data-cfemail="78101d1414173811160e1d0b0c1109561f0d0a0d">[email&#160;protected]</span></a>
-        </div>
-        <div class="footer-legal">
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/terms">Terms of Service</a>
+        <div class="footer-bottom">
+          <div>© 2026 InvestIQ. All rights reserved.</div>
+          <div class="footer-legal">
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
+          </div>
         </div>
       </div>
-    </div>
-  </footer>
-
-  <!-- Theme Toggle Button -->
-  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-    🌙
-  </button>
-
-  <!-- ============================================ -->
-  <!-- SCRIPTS -->
-  <!-- ============================================ -->
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-    // Initialize Lucide icons
-    lucide.createIcons();
-
-    // Header scroll effect
-    const header = document.getElementById('header');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 50) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
-    });
-
-    // Mobile menu toggle
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const mobileMenu = document.getElementById('mobileMenu');
-    
-    mobileMenuBtn.addEventListener('click', () => {
-      mobileMenu.classList.toggle('open');
-      const icon = mobileMenuBtn.querySelector('.icon');
-      if (mobileMenu.classList.contains('open')) {
-        icon.setAttribute('data-lucide', 'x');
-      } else {
-        icon.setAttribute('data-lucide', 'menu');
-      }
-      lucide.createIcons();
-    });
-
-    // Close mobile menu when clicking a link
-    mobileMenu.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileMenu.classList.remove('open');
-        const icon = mobileMenuBtn.querySelector('.icon');
-        icon.setAttribute('data-lucide', 'menu');
-        lucide.createIcons();
-      });
-    });
-
-    // Theme toggle with null checking
-    const themeToggle = document.getElementById('themeToggle');
-    const html = document.documentElement;
-    
-    if (themeToggle) {
-      // Check for saved theme preference or default to dark
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      if (savedTheme === 'light') {
-        html.classList.remove('dark');
-        themeToggle.textContent = '☀️';
-      }
-      
-      themeToggle.addEventListener('click', () => {
-        if (html.classList.contains('dark')) {
-          html.classList.remove('dark');
-          themeToggle.textContent = '☀️';
-          localStorage.setItem('theme', 'light');
-        } else {
-          html.classList.add('dark');
-          themeToggle.textContent = '🌙';
-          localStorage.setItem('theme', 'dark');
-        }
-      });
-    }
-
-    // Live counter animation
-    const counter = document.getElementById('analysisCounter');
-    if (counter) {
-      const baseCount = 23847;
-      let currentCount = baseCount;
-      setInterval(() => {
-        currentCount += Math.floor(Math.random() * 3);
-        counter.textContent = currentCount.toLocaleString();
-      }, 5000);
-    }
-  </script>
+    </footer>
+  </div>
 </body>
 </html>
