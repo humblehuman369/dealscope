@@ -8,7 +8,7 @@
  * to avoid confusion with percentages and provide clearer meaning.
  */
 
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import {
   IQ_COLORS,
@@ -17,16 +17,12 @@ import {
   IQStrategy,
   getBadgeColors,
   getRankColor,
-  getDealScoreColor,
   formatPrice,
   scoreToGradeLabel,
   getGradeColor,
-  calculateProfitScore,
-  scoreToProfitGrade,
 } from './types'
 import { ScoreBadge } from '../deal-maker/ScoreBadge'
 import { OpportunityFactors } from './OpportunityFactors'
-import { ReturnFactors } from './ReturnFactors'
 
 interface IQVerdictScreenProps {
   property: IQProperty
@@ -43,7 +39,6 @@ export function IQVerdictScreen({
 }: IQVerdictScreenProps) {
   const topStrategy = analysis.strategies[0]
   const [showDealScoreFactors, setShowDealScoreFactors] = useState(false)
-  const [showProfitScoreFactors, setShowProfitScoreFactors] = useState(false)
   
   // Build full address with city, state, zip
   const fullAddress = [
@@ -60,23 +55,6 @@ export function IQVerdictScreen({
     buyerMarket: null,
     distressedSale: false,
   }
-  
-  // Default return factors if not provided by API
-  const returnFactors = analysis.returnFactors || {
-    capRate: null,
-    cashOnCash: topStrategy.metricLabel === 'CoC Return' ? topStrategy.metricValue : null,
-    dscr: null,
-    annualRoi: null,
-    annualProfit: topStrategy.metricLabel === 'Profit' ? topStrategy.metricValue : null,
-    strategyName: topStrategy.name,
-  }
-  
-  // Calculate profit score and grade from return factors
-  const { profitScore, profitGrade } = useMemo(() => {
-    const score = analysis.profitScore ?? calculateProfitScore(returnFactors)
-    const grade = analysis.profitGrade ?? scoreToProfitGrade(score)
-    return { profitScore: score, profitGrade: grade }
-  }, [analysis.profitScore, analysis.profitGrade, returnFactors])
   
   // Get deal score grade from deal score
   const dealGrade = scoreToGradeLabel(analysis.dealScore).grade
@@ -153,63 +131,32 @@ export function IQVerdictScreen({
                 IQ VERDICT
               </p>
               
-              {/* Two-Score Display - Deal Score & Profit Score */}
-              <div className="grid grid-cols-2 gap-6 mb-6 max-w-md mx-auto">
-                {/* Deal Score */}
-                <div className="flex flex-col items-center space-y-3">
-                  <ScoreBadge 
-                    type="dealScore"
-                    score={analysis.dealScore}
-                    grade={dealGrade}
-                    size="large"
-                  />
-                  {/* Expand/Collapse Factors */}
-                  <button
-                    onClick={() => setShowDealScoreFactors(!showDealScoreFactors)}
-                    className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                  >
-                    <span>View Factors</span>
-                    {showDealScoreFactors ? (
-                      <ChevronUp className="w-3 h-3" />
-                    ) : (
-                      <ChevronDown className="w-3 h-3" />
-                    )}
-                  </button>
-                  {/* Deal Score Factors */}
-                  {showDealScoreFactors && (
-                    <div className="bg-white dark:bg-navy-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-navy-700">
-                      <OpportunityFactors factors={opportunityFactors} />
-                    </div>
+              {/* Deal Score Display - Single Score */}
+              <div className="flex flex-col items-center mb-6">
+                <ScoreBadge 
+                  type="dealScore"
+                  score={analysis.dealScore}
+                  grade={dealGrade}
+                  size="large"
+                />
+                {/* Expand/Collapse Factors */}
+                <button
+                  onClick={() => setShowDealScoreFactors(!showDealScoreFactors)}
+                  className="mt-3 flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                >
+                  <span>View Factors</span>
+                  {showDealScoreFactors ? (
+                    <ChevronUp className="w-3 h-3" />
+                  ) : (
+                    <ChevronDown className="w-3 h-3" />
                   )}
-                </div>
-                
-                {/* Profit Score */}
-                <div className="flex flex-col items-center space-y-3">
-                  <ScoreBadge 
-                    type="profitQuality"
-                    score={profitScore}
-                    grade={profitGrade}
-                    size="large"
-                  />
-                  {/* Expand/Collapse Factors */}
-                  <button
-                    onClick={() => setShowProfitScoreFactors(!showProfitScoreFactors)}
-                    className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                  >
-                    <span>View Factors</span>
-                    {showProfitScoreFactors ? (
-                      <ChevronUp className="w-3 h-3" />
-                    ) : (
-                      <ChevronDown className="w-3 h-3" />
-                    )}
-                  </button>
-                  {/* Profit Score Factors */}
-                  {showProfitScoreFactors && (
-                    <div className="bg-white dark:bg-navy-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-navy-700">
-                      <ReturnFactors factors={returnFactors} />
-                    </div>
-                  )}
-                </div>
+                </button>
+                {/* Deal Score Factors */}
+                {showDealScoreFactors && (
+                  <div className="mt-3 bg-white dark:bg-navy-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-navy-700 w-full max-w-xs">
+                    <OpportunityFactors factors={opportunityFactors} />
+                  </div>
+                )}
               </div>
               
               <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm mx-auto text-center">

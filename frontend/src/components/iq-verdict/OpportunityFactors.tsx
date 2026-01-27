@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { TrendingDown, Clock, Thermometer, AlertTriangle } from 'lucide-react'
+import { TrendingDown, Clock, Thermometer, AlertTriangle, Target } from 'lucide-react'
 import { OpportunityFactors as OpportunityFactorsType } from './types'
 
 interface OpportunityFactorsProps {
@@ -70,11 +70,11 @@ export function OpportunityFactors({ factors, className = '' }: OpportunityFacto
         {/* Motivation */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 text-center text-xs">💪</span>
+            <Target className="w-3.5 h-3.5 text-gray-400" />
             <span className="text-sm text-gray-600 dark:text-gray-300">Motivation</span>
           </div>
           <span className={`text-sm font-semibold ${getMotivationColor(factors.motivation)}`}>
-            {factors.motivationLabel} ({factors.motivation}%)
+            {factors.motivationLabel}
           </span>
         </div>
         
