@@ -346,10 +346,10 @@ export const STRATEGY_INFO: Record<IQStrategyId, { name: string; icon: string }>
 // ===================
 
 export const STRATEGY_SCREEN_MAP: Record<IQStrategyId, string> = {
-  'long-term-rental': '/analytics',
-  'short-term-rental': '/strategy/str',
-  'brrrr': '/strategy/brrrr',
-  'fix-and-flip': '/strategy/flip',
-  'house-hack': '/strategy/househack',
-  'wholesale': '/strategy/wholesale',
+  'long-term-rental': '/analysis-iq',
+  'short-term-rental': '/analysis-iq',
+  'brrrr': '/analysis-iq',
+  'fix-and-flip': '/analysis-iq',
+  'house-hack': '/analysis-iq',
+  'wholesale': '/analysis-iq',
 };

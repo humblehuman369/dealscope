@@ -107,17 +107,50 @@ export default function AnalysisIQScreen() {
   const handleNavChange = useCallback((navId: NavItemId) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setActiveNav(navId);
-    // Navigation will be connected in Step 2
-  }, []);
+    
+    // Navigate based on nav item
+    const encodedAddress = encodeURIComponent(property.address);
+    switch (navId) {
+      case 'search':
+        router.push('/search');
+        break;
+      case 'home':
+        router.push('/(tabs)/home');
+        break;
+      case 'analysis':
+        // Already on analysis page
+        break;
+      case 'deals':
+        router.push({
+          pathname: '/deal-maker/[address]',
+          params: { address: encodedAddress },
+        });
+        break;
+      // Other nav items to be connected later
+      default:
+        break;
+    }
+  }, [router, property.address]);
 
   const handleContinueToAnalysis = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // Navigate to full analysis (to be connected later)
+    // Navigate to full analytics view with all strategy details
+    const strategyMap: Record<string, string> = {
+      'Long-term': 'ltr',
+      'Short-term': 'str',
+      'BRRRR': 'brrrr',
+      'Fix & Flip': 'flip',
+      'House Hack': 'house_hack',
+      'Wholesale': 'wholesale',
+    };
     router.push({
       pathname: '/analytics/[address]',
-      params: { address: encodeURIComponent(property.address) },
+      params: { 
+        address: encodeURIComponent(property.address),
+        strategy: strategyMap[currentStrategy] || 'ltr',
+      },
     });
-  }, [router, property.address]);
+  }, [router, property.address, currentStrategy]);
 
   const handleExportPDF = useCallback(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

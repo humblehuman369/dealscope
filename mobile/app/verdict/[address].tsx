@@ -67,10 +67,8 @@ export default function VerdictScreen() {
   }, [router]);
 
   const handleViewStrategy = useCallback((strategy: IQStrategy) => {
-    const basePath = STRATEGY_SCREEN_MAP[strategy.id];
     const encodedAddress = encodeURIComponent(property.address);
-    const queryParams = `?price=${property.price}&beds=${property.beds}&baths=${property.baths}&sqft=${property.sqft}`;
-
+    
     const redesignStrategyMap: Record<IQStrategy['id'], StrategyId> = {
       'long-term-rental': 'ltr',
       'short-term-rental': 'str',
@@ -80,18 +78,35 @@ export default function VerdictScreen() {
       'wholesale': 'wholesale',
     };
     
-    // Navigate to the strategy worksheet
+    // Navigate to the Analysis IQ page with selected strategy
     const redesignStrategy = redesignStrategyMap[strategy.id];
-    const redesignQuery = basePath === '/analytics' ? `${queryParams}&strategy=${redesignStrategy}` : queryParams;
-    const route = `${basePath}/${encodedAddress}${redesignQuery}`;
-    router.push(route as any);
+    router.push({
+      pathname: '/analysis-iq/[address]',
+      params: {
+        address: encodedAddress,
+        strategy: redesignStrategy,
+        price: String(property.price),
+        beds: String(property.beds),
+        baths: String(property.baths),
+        sqft: String(property.sqft),
+      },
+    } as any);
   }, [property, router]);
 
   const handleCompareAll = useCallback(() => {
-    // Navigate to analytics page which has strategy comparison
+    // Navigate to Analysis IQ page for strategy comparison
     const encodedAddress = encodeURIComponent(property.address);
-    const route = `/analytics/${encodedAddress}?price=${property.price}&beds=${property.beds}&baths=${property.baths}&sqft=${property.sqft}&tab=compare`;
-    router.push(route as any);
+    router.push({
+      pathname: '/analysis-iq/[address]',
+      params: {
+        address: encodedAddress,
+        price: String(property.price),
+        beds: String(property.beds),
+        baths: String(property.baths),
+        sqft: String(property.sqft),
+        tab: 'compare',
+      },
+    } as any);
   }, [property, router]);
 
   return (
