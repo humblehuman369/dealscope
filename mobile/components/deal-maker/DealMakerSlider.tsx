@@ -96,6 +96,7 @@ export function DealMakerSlider({
   const [isEditing, setIsEditing] = useState(false);
   const [inputText, setInputText] = useState('');
   const inputRef = useRef<TextInput>(null);
+  const hasSubmittedRef = useRef(false);
 
   // Update local value when prop changes
   React.useEffect(() => {
@@ -116,6 +117,8 @@ export function DealMakerSlider({
 
   const handleValuePress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // Reset submission flag when starting to edit
+    hasSubmittedRef.current = false;
     // Set initial input text based on format
     let initialText = '';
     if (config.format === 'percentage') {
@@ -131,6 +134,10 @@ export function DealMakerSlider({
   }, [localValue, config.format]);
 
   const handleInputSubmit = useCallback(() => {
+    // Prevent double submission (onSubmitEditing + onBlur both fire)
+    if (hasSubmittedRef.current) return;
+    hasSubmittedRef.current = true;
+
     const parsed = parseInputValue(inputText, config.format);
     if (parsed !== null) {
       // Clamp to min/max
@@ -147,7 +154,10 @@ export function DealMakerSlider({
   }, [inputText, config, onChange, onChangeComplete]);
 
   const handleInputBlur = useCallback(() => {
-    handleInputSubmit();
+    // Only submit if not already submitted via onSubmitEditing
+    if (!hasSubmittedRef.current) {
+      handleInputSubmit();
+    }
   }, [handleInputSubmit]);
 
   const formattedValue = formatSliderValue(localValue, config.format);
