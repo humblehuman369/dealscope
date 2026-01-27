@@ -8,10 +8,10 @@
  * - Max width: 480px centered
  * - Background: #F1F5F9
  * - Font: Inter
- * - Dark property header banner
+ * - Uses new CompactHeader design
  */
 
-import React, { useState } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { ChevronDown, ChevronUp, ChevronRight, ArrowRight, Download } from 'lucide-react'
 import {
   IQProperty,
@@ -21,6 +21,7 @@ import {
   scoreToGradeLabel,
 } from './types'
 import { OpportunityFactors } from './OpportunityFactors'
+import { CompactHeader, PropertyData, NavItemId, Strategy } from '../layout/CompactHeader'
 
 // =============================================================================
 // BRAND COLORS - From design files
@@ -74,7 +75,19 @@ interface IQVerdictScreenProps {
   analysis: IQAnalysisResult
   onViewStrategy: (strategy: IQStrategy) => void
   onCompareAll: () => void
+  onNavChange?: (navId: NavItemId) => void
+  isDark?: boolean
 }
+
+// Default strategies for the dropdown
+const HEADER_STRATEGIES: Strategy[] = [
+  { id: 'long-term-rental', label: 'Long-Term Rental', icon: 'home' },
+  { id: 'short-term-rental', label: 'Short-Term Rental', icon: 'calendar' },
+  { id: 'brrrr', label: 'BRRRR', icon: 'repeat' },
+  { id: 'fix-and-flip', label: 'Fix & Flip', icon: 'hammer' },
+  { id: 'house-hack', label: 'House Hack', icon: 'people' },
+  { id: 'wholesale', label: 'Wholesale', icon: 'swap-horizontal' },
+]
 
 // =============================================================================
 // COMPONENT
@@ -84,16 +97,44 @@ export function IQVerdictScreen({
   analysis,
   onViewStrategy,
   onCompareAll,
+  onNavChange,
+  isDark = false,
 }: IQVerdictScreenProps) {
   const [showFactors, setShowFactors] = useState(false)
+  const [currentStrategy, setCurrentStrategy] = useState<Strategy>(HEADER_STRATEGIES[0])
   const topStrategy = analysis.strategies.reduce((best, s) => s.score > best.score ? s : best, analysis.strategies[0])
   
-  // Build full address
-  const fullAddress = [
-    property.address,
-    property.city,
-    [property.state, property.zip].filter(Boolean).join(' ')
-  ].filter(Boolean).join(', ')
+  // Build property data for CompactHeader
+  const headerPropertyData: PropertyData = useMemo(() => ({
+    address: property.address,
+    city: property.city || '',
+    state: property.state || '',
+    zip: property.zip || '',
+    beds: property.beds,
+    baths: property.baths,
+    sqft: property.sqft || 0,
+    price: property.price,
+    rent: property.monthlyRent || Math.round(property.price * 0.007),
+    status: 'OFF-MARKET',
+    image: property.imageUrl,
+  }), [property])
+
+  // Handle strategy change from header dropdown
+  const handleHeaderStrategyChange = useCallback((strategy: Strategy) => {
+    setCurrentStrategy(strategy)
+    // Find matching IQStrategy and trigger navigation
+    const matchingStrategy = analysis.strategies.find(s => s.id === strategy.id)
+    if (matchingStrategy) {
+      onViewStrategy(matchingStrategy)
+    }
+  }, [analysis.strategies, onViewStrategy])
+
+  // Handle navigation from header
+  const handleNavChange = useCallback((navId: NavItemId) => {
+    if (onNavChange) {
+      onNavChange(navId)
+    }
+  }, [onNavChange])
   
   // Calculate prices
   const breakevenPrice = analysis.breakevenPrice || Math.round(property.price * 1.1)
@@ -113,104 +154,27 @@ export function IQVerdictScreen({
 
   return (
     <div 
-      className="min-h-screen"
+      className="min-h-screen flex flex-col"
       style={{ 
         background: COLORS.surface100,
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       }}
     >
-      {/* Property Card - Dark Header Style (Full Width Background) */}
-      <div 
-        style={{ 
-          background: COLORS.navy,
-          width: '100%',
-        }}
-      >
-        <div 
-          className="max-w-[480px] mx-auto"
-          style={{ padding: '16px 20px 20px' }}
-        >
-          <div className="flex gap-4">
-            {/* Left: Property Image */}
-            <div 
-              className="w-[88px] h-[88px] rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center"
-              style={{ 
-                background: '#1E293B',
-                border: '2px solid rgba(255, 255, 255, 0.2)',
-              }}
-            >
-              {property.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img 
-                  src={property.imageUrl} 
-                  alt={property.address}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="text-center">
-                  <svg className="w-6 h-6 mx-auto mb-1" fill="none" stroke={COLORS.cyan} strokeWidth="1.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
-                  </svg>
-                  <div className="text-[10px] font-medium" style={{ color: COLORS.surface400 }}>HOUSE</div>
-                  <div className="text-[10px] font-medium" style={{ color: COLORS.surface400 }}>PHOTO</div>
-                </div>
-              )}
-            </div>
-            
-            {/* Middle: Address & Details */}
-            <div className="flex-1 flex flex-col justify-center">
-              <div 
-                className="text-lg font-bold mb-0.5"
-                style={{ color: 'white' }}
-              >
-                {property.address}
-              </div>
-              <div 
-                className="text-[15px] font-semibold mb-2"
-                style={{ color: COLORS.tealLight }}
-              >
-                {[property.city, [property.state, property.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
-              </div>
-              <div 
-                className="text-[13px]"
-                style={{ color: 'white' }}
-              >
-                {property.beds} bd · {property.baths} ba · {property.sqft?.toLocaleString() || '—'} sqft
-              </div>
-            </div>
-            
-            {/* Right: Est. Value & Badge */}
-            <div className="flex flex-col items-end justify-between flex-shrink-0">
-              <div className="text-right">
-                <div 
-                  className="text-xl font-bold tabular-nums"
-                  style={{ color: COLORS.cyan }}
-                >
-                  {formatPrice(estValue)}
-                </div>
-                <div 
-                  className="text-[11px] italic"
-                  style={{ color: COLORS.surface400 }}
-                >
-                  Est. Value
-                </div>
-              </div>
-              <div 
-                className="text-[10px] font-bold tracking-wider px-3 py-1"
-                style={{ 
-                  color: COLORS.surface400,
-                  letterSpacing: '0.08em',
-                }}
-              >
-                OFF-MARKET
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* New Compact Header */}
+      <CompactHeader
+        property={headerPropertyData}
+        currentNavId="verdict"
+        currentStrategy={currentStrategy}
+        strategies={HEADER_STRATEGIES}
+        pageTitle="VERDICT"
+        pageTitleAccent="IQ"
+        onNavChange={handleNavChange}
+        onStrategyChange={handleHeaderStrategyChange}
+        isDark={isDark}
+      />
 
       {/* Main Content - Max 480px centered */}
-      <main className="max-w-[480px] mx-auto">
+      <main className="max-w-[480px] mx-auto flex-1 w-full">
         {/* Content Area with padding */}
         <div className="p-4">
           {/* IQ Verdict Card */}

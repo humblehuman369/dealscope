@@ -18,6 +18,7 @@ import {
   STRATEGY_SCREEN_MAP,
   ID_TO_STRATEGY_TYPE,
 } from '../../components/analytics/iq-verdict';
+import type { NavItemId } from '../../components/header';
 import { StrategyId } from '../../components/analytics/redesign/types';
 
 export default function VerdictScreen() {
@@ -109,6 +110,37 @@ export default function VerdictScreen() {
     } as any);
   }, [property, router]);
 
+  // Handle navigation from CompactHeader
+  const handleNavChange = useCallback((navId: NavItemId) => {
+    const encodedAddress = encodeURIComponent(property.address);
+    switch (navId) {
+      case 'search':
+        router.push('/(tabs)/search');
+        break;
+      case 'home':
+        router.push('/(tabs)');
+        break;
+      case 'analysis':
+        router.push({
+          pathname: '/analysis-iq/[address]',
+          params: {
+            address: encodedAddress,
+            price: String(property.price),
+            beds: String(property.beds),
+            baths: String(property.baths),
+            sqft: String(property.sqft),
+          },
+        } as any);
+        break;
+      case 'deal-maker':
+        router.push({
+          pathname: '/deal-maker/[address]',
+          params: { address: encodedAddress },
+        } as any);
+        break;
+    }
+  }, [property, router]);
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -118,6 +150,7 @@ export default function VerdictScreen() {
         onBack={handleBack}
         onViewStrategy={handleViewStrategy}
         onCompareAll={handleCompareAll}
+        onNavChange={handleNavChange}
         isDark={isDark}
       />
     </>

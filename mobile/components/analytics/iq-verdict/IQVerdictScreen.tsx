@@ -20,7 +20,7 @@ import {
   PixelRatio,
   useWindowDimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// SafeAreaView no longer needed - CompactHeader handles safe area
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -33,6 +33,7 @@ import {
   formatPrice,
 } from './types';
 import { IQButton } from './IQButton';
+import { CompactHeader, PropertyData, NavItemId, Strategy } from '../../header';
 
 // =============================================================================
 // RESPONSIVE SCALING - Dynamic font sizes based on screen dimensions
@@ -140,8 +141,19 @@ interface IQVerdictScreenProps {
   onBack: () => void;
   onViewStrategy: (strategy: IQStrategy) => void;
   onCompareAll: () => void;
+  onNavChange?: (navId: NavItemId) => void;
   isDark?: boolean;
 }
+
+// Default strategies for the dropdown
+const HEADER_STRATEGIES: Strategy[] = [
+  { id: 'long-term-rental', label: 'Long-Term Rental', icon: 'home' },
+  { id: 'short-term-rental', label: 'Short-Term Rental', icon: 'calendar' },
+  { id: 'brrrr', label: 'BRRRR', icon: 'repeat' },
+  { id: 'fix-and-flip', label: 'Fix & Flip', icon: 'hammer' },
+  { id: 'house-hack', label: 'House Hack', icon: 'people' },
+  { id: 'wholesale', label: 'Wholesale', icon: 'swap-horizontal' },
+];
 
 // =============================================================================
 // COMPONENT
@@ -152,13 +164,47 @@ export function IQVerdictScreen({
   onBack,
   onViewStrategy,
   onCompareAll,
+  onNavChange,
   isDark = false,
 }: IQVerdictScreenProps) {
   // Use dynamic responsive scaling that updates on dimension changes
   const { rs, rf, rsp } = useResponsiveScaling();
   
   const [showFactors, setShowFactors] = useState(false);
+  const [currentStrategy, setCurrentStrategy] = useState<Strategy>(HEADER_STRATEGIES[0]);
   const topStrategy = analysis.strategies.reduce((best, s) => s.score > best.score ? s : best, analysis.strategies[0]);
+
+  // Build property data for CompactHeader
+  const headerPropertyData: PropertyData = useMemo(() => ({
+    address: property.address,
+    city: property.city || '',
+    state: property.state || '',
+    zip: property.zip || '',
+    beds: property.beds,
+    baths: property.baths,
+    sqft: property.sqft || 0,
+    price: property.price,
+    rent: property.monthlyRent || Math.round(property.price * 0.007),
+    status: 'OFF-MARKET',
+    image: property.imageUrl,
+  }), [property]);
+
+  // Handle strategy change from header dropdown
+  const handleHeaderStrategyChange = useCallback((strategy: Strategy) => {
+    setCurrentStrategy(strategy);
+    // Find matching IQStrategy and trigger navigation
+    const matchingStrategy = analysis.strategies.find(s => s.id === strategy.id);
+    if (matchingStrategy) {
+      onViewStrategy(matchingStrategy);
+    }
+  }, [analysis.strategies, onViewStrategy]);
+
+  // Handle navigation from header
+  const handleNavChange = useCallback((navId: NavItemId) => {
+    if (onNavChange) {
+      onNavChange(navId);
+    }
+  }, [onNavChange]);
 
   const handleViewStrategy = useCallback(
     (strategy: IQStrategy) => {
@@ -195,69 +241,27 @@ export function IQVerdictScreen({
   const scoreRingBorder = rs(4);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
+    <View style={styles.container}>
+      <StatusBar style="light" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={rs(18)} color={COLORS.surface400} />
-          <Text style={[styles.backText, { fontSize: rf(13) }]}>Back</Text>
-        </TouchableOpacity>
-        <Text style={[styles.logo, { fontSize: rf(18) }]}>
-          <Text style={styles.logoInvest}>Invest</Text>
-          <Text style={styles.logoIQ}>IQ</Text>
-        </Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      {/* New Compact Header */}
+      <CompactHeader
+        property={headerPropertyData}
+        currentNavId="verdict"
+        currentStrategy={currentStrategy}
+        strategies={HEADER_STRATEGIES}
+        pageTitle="VERDICT"
+        pageTitleAccent="IQ"
+        onNavChange={handleNavChange}
+        onStrategyChange={handleHeaderStrategyChange}
+        isDark={isDark}
+      />
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Property Card - Dark Header Style */}
-        <View style={[styles.propertyCard, { paddingHorizontal: rsp(20), paddingTop: rsp(16), paddingBottom: rsp(20) }]}>
-          <View style={[styles.propertyRow, { gap: rsp(16) }]}>
-            {/* Left: Property Image */}
-            <View style={[styles.propertyImageContainer, { width: rs(88), height: rs(88), borderRadius: rs(12), borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.2)' }]}>
-              {property.imageUrl ? (
-                <Image 
-                  source={{ uri: property.imageUrl }} 
-                  style={{ width: rs(88), height: rs(88), borderRadius: rs(10) }}
-                />
-              ) : (
-                <View style={styles.placeholderContent}>
-                  <Ionicons name="home" size={rs(24)} color={COLORS.cyan} />
-                  <Text style={[styles.placeholderText, { fontSize: rf(10) }]}>HOUSE</Text>
-                  <Text style={[styles.placeholderText, { fontSize: rf(10) }]}>PHOTO</Text>
-                </View>
-              )}
-            </View>
-            
-            {/* Middle: Address & Details */}
-            <View style={styles.propertyMiddle}>
-              <Text style={[styles.propertyAddressMain, { fontSize: rf(18) }]} numberOfLines={1}>
-                {property.address}
-              </Text>
-              <Text style={[styles.propertyCity, { fontSize: rf(15), marginBottom: rsp(8) }]} numberOfLines={1}>
-                {[property.city, [property.state, property.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
-              </Text>
-              <Text style={[styles.propertyDetailsWhite, { fontSize: rf(13) }]}>
-                {property.beds} bd · {Math.round(property.baths * 10) / 10} ba · {property.sqft?.toLocaleString() || '—'} sqft
-              </Text>
-            </View>
-            
-            {/* Right: Est. Value & Badge */}
-            <View style={styles.propertyRight}>
-              <View style={styles.propertyValueRight}>
-                <Text style={[styles.estValue, { fontSize: rf(20) }]}>{formatPrice(estValue)}</Text>
-                <Text style={[styles.estLabel, { fontSize: rf(11) }]}>Est. Value</Text>
-              </View>
-              <Text style={[styles.offMarketText, { fontSize: rf(10) }]}>OFF-MARKET</Text>
-            </View>
-          </View>
-        </View>
 
         {/* Content Area with padding */}
         <View style={[styles.contentArea, { padding: rsp(16) }]}>
@@ -410,7 +414,7 @@ export function IQVerdictScreen({
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

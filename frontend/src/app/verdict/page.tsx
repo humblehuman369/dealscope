@@ -20,6 +20,7 @@ import {
   IQAnalysisResult,
   STRATEGY_ROUTE_MAP,
 } from '@/components/iq-verdict'
+import type { NavItemId } from '@/components/layout/CompactHeader'
 import { parseAddressString } from '@/utils/formatters'
 import { useAuth } from '@/context/AuthContext'
 
@@ -436,6 +437,29 @@ function VerdictContent() {
     router.push(`/compare?address=${encodedAddress}`)
   }, [property, router])
 
+  // Handle navigation from CompactHeader
+  const handleNavChange = useCallback((navId: NavItemId) => {
+    if (!property) return
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+    const encodedAddress = encodeURIComponent(fullAddress)
+    
+    switch (navId) {
+      case 'search':
+        router.push('/search')
+        break
+      case 'home':
+        router.push('/')
+        break
+      case 'analysis':
+        router.push(`/analysis-iq?address=${encodedAddress}`)
+        break
+      case 'deal-maker':
+        router.push(`/deal-maker?address=${encodedAddress}`)
+        break
+    }
+  }, [property, router])
+
   // Loading state
   if (isLoading) {
     return (
@@ -493,6 +517,7 @@ function VerdictContent() {
       analysis={analysis}
       onViewStrategy={handleViewStrategy}
       onCompareAll={handleCompareAll}
+      onNavChange={handleNavChange}
     />
   )
 }
