@@ -368,6 +368,7 @@ export function LTRWorksheet({
         top: 0,
         zIndex: 20
       }}>
+        <div style={{ maxWidth: '480px', margin: '0 auto' }}>
         {/* Back + Title Row */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
           <button 
@@ -513,6 +514,7 @@ export function LTRWorksheet({
             </div>
           )}
         </div>
+        </div>
       </header>
 
       {/* Overlay when dropdown is open */}
@@ -529,7 +531,7 @@ export function LTRWorksheet({
       )}
 
       {/* Content Area */}
-      <main style={{ padding: '16px' }}>
+      <main style={{ padding: '16px', maxWidth: '480px', margin: '0 auto' }}>
         
         {/* Profit Quality Card */}
         <div style={{
