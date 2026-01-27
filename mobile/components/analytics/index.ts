@@ -21,6 +21,10 @@ export * from './strategies';
 // Components
 export { DealScoreCard } from './DealScoreCard';
 export { MetricsGrid } from './MetricsGrid';
+export { ProfitQualityCard } from './ProfitQualityCard';
+export type { ProfitQualityData, ProfitFactor } from './ProfitQualityCard';
+export { MetricsAccordion } from './MetricsAccordion';
+export type { MetricItem, MetricGrade, MetricGradeLabel, MetricsAccordionProps } from './MetricsAccordion';
 export { SmartInsights } from './SmartInsights';
 export { TuneSliders } from './TuneSliders';
 export { BestStrategyCard, STRATEGIES } from './BestStrategyCard';

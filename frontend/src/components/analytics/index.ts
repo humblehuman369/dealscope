@@ -169,6 +169,26 @@ export {
   calculateDealScoreData
 } from './DealScoreDisplay'
 
+// Profit Quality Card - Score gauge with strategy fit metrics
+export {
+  ProfitQualityCard,
+  type ProfitQualityData,
+  type ProfitFactor
+} from './ProfitQualityCard'
+
+// Metrics Accordion - Collapsible metrics display with grades
+export {
+  MetricsAccordion,
+  MetricsAccordionIcons,
+  type MetricItem,
+  type MetricGrade,
+  type MetricGradeLabel,
+  type MetricsAccordionProps
+} from './MetricsAccordion'
+
+// Analysis IQ Page - New analysis page with CompactHeader and metrics
+export { AnalysisIQPage } from './AnalysisIQPage'
+
 // ============================================
 // FUNDING & LOAN COMPONENTS
 // ============================================
