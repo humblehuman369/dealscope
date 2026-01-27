@@ -218,39 +218,43 @@ export function IQVerdictScreen({
       >
         {/* Property Card - Dark Header Style */}
         <View style={[styles.propertyCard, { paddingHorizontal: rsp(20), paddingTop: rsp(16), paddingBottom: rsp(20) }]}>
-          {/* Top Row: Image + Est. Value */}
-          <View style={[styles.propertyTopRow, { marginBottom: rsp(12) }]}>
+          <View style={[styles.propertyRow, { gap: rsp(16) }]}>
             {/* Left: Property Image */}
-            <View style={[styles.propertyImageContainer, { width: rs(48), height: rs(48), borderRadius: rs(8) }]}>
+            <View style={[styles.propertyImageContainer, { width: rs(88), height: rs(88), borderRadius: rs(12), borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.2)' }]}>
               {property.imageUrl ? (
                 <Image 
                   source={{ uri: property.imageUrl }} 
-                  style={{ width: rs(48), height: rs(48), borderRadius: rs(8) }}
+                  style={{ width: rs(88), height: rs(88), borderRadius: rs(10) }}
                 />
               ) : (
-                <Ionicons name="home" size={rs(20)} color={COLORS.cyan} />
+                <View style={styles.placeholderContent}>
+                  <Ionicons name="home" size={rs(24)} color={COLORS.cyan} />
+                  <Text style={[styles.placeholderText, { fontSize: rf(10) }]}>HOUSE</Text>
+                  <Text style={[styles.placeholderText, { fontSize: rf(10) }]}>PHOTO</Text>
+                </View>
               )}
             </View>
             
-            {/* Right: Est. Value */}
-            <View style={styles.propertyValueRight}>
-              <Text style={[styles.estValue, { fontSize: rf(20) }]}>{formatPrice(estValue)}</Text>
-              <Text style={[styles.estLabel, { fontSize: rf(11) }]}>Est. Value</Text>
+            {/* Middle: Address & Details */}
+            <View style={styles.propertyMiddle}>
+              <Text style={[styles.propertyAddressMain, { fontSize: rf(18) }]} numberOfLines={1}>
+                {property.address}
+              </Text>
+              <Text style={[styles.propertyCity, { fontSize: rf(15), marginBottom: rsp(8) }]} numberOfLines={1}>
+                {[property.city, [property.state, property.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
+              </Text>
+              <Text style={[styles.propertyDetails, { fontSize: rf(13) }]}>
+                {property.beds} bd * {Math.round(property.baths * 10) / 10} ba * {property.sqft?.toLocaleString() || '—'} sqft
+              </Text>
             </View>
-          </View>
-
-          {/* Address */}
-          <Text style={[styles.propertyAddress, { fontSize: rf(15), marginBottom: rsp(4) }]} numberOfLines={1}>
-            {fullAddress}
-          </Text>
-
-          {/* Bottom Row: Details + Badge */}
-          <View style={styles.propertyBottomRow}>
-            <Text style={[styles.propertyDetails, { fontSize: rf(12) }]}>
-              {property.beds} bd · {Math.round(property.baths * 10) / 10} ba · {property.sqft?.toLocaleString() || '—'} sqft
-            </Text>
-            <View style={[styles.marketBadge, { paddingHorizontal: rsp(10), paddingVertical: rsp(4) }]}>
-              <Text style={[styles.marketBadgeText, { fontSize: rf(9) }]}>OFF-MARKET</Text>
+            
+            {/* Right: Est. Value & Badge */}
+            <View style={styles.propertyRight}>
+              <View style={styles.propertyValueRight}>
+                <Text style={[styles.estValue, { fontSize: rf(20) }]}>{formatPrice(estValue)}</Text>
+                <Text style={[styles.estLabel, { fontSize: rf(11) }]}>Est. Value</Text>
+              </View>
+              <Text style={[styles.offMarketText, { fontSize: rf(10) }]}>OFF-MARKET</Text>
             </View>
           </View>
         </View>
@@ -464,18 +468,39 @@ const styles = StyleSheet.create({
   propertyCard: {
     backgroundColor: COLORS.navy,
   },
-  propertyTopRow: {
+  propertyRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    alignItems: 'stretch',
   },
   propertyImageContainer: {
     backgroundColor: '#1E293B',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+  },
+  placeholderContent: {
+    alignItems: 'center',
+  },
+  placeholderText: {
+    color: COLORS.surface400,
+    fontWeight: '500',
+  },
+  propertyMiddle: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  propertyAddressMain: {
+    fontWeight: '700',
+    color: COLORS.white,
+    marginBottom: 2,
+  },
+  propertyCity: {
+    fontWeight: '600',
+    color: COLORS.tealLight,
+  },
+  propertyRight: {
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
   },
   propertyValueRight: {
     alignItems: 'flex-end',
@@ -487,27 +512,15 @@ const styles = StyleSheet.create({
   },
   estLabel: {
     color: COLORS.surface400,
-  },
-  propertyAddress: {
-    fontWeight: '600',
-    color: COLORS.white,
-  },
-  propertyBottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    fontStyle: 'italic',
   },
   propertyDetails: {
-    color: COLORS.surface500,
+    color: COLORS.surface400,
   },
-  marketBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: staticRs(4),
-  },
-  marketBadgeText: {
+  offMarketText: {
+    color: COLORS.surface400,
     fontWeight: '700',
-    color: COLORS.white,
-    letterSpacing: 0.45,
+    letterSpacing: 0.8,
   },
 
   // Content Area
