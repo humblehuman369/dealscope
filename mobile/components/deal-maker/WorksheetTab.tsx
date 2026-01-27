@@ -177,6 +177,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginTop: 16,
+    alignItems: 'flex-end',
   },
   summaryLabel: {
     fontSize: 10,

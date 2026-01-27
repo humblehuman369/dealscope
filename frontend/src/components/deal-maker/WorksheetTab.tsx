@@ -115,6 +115,7 @@ export function WorksheetTab({
                 borderRadius: '8px',
                 padding: '12px 16px',
                 marginTop: '16px',
+                textAlign: 'right',
               }}
             >
               <div style={{ 
