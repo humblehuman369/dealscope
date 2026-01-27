@@ -14,46 +14,32 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 
 import { MetricsHeaderProps } from './types';
-import { BackIcon } from './icons';
 
 export function MetricsHeader({ 
   state, 
   metrics, 
   propertyAddress,
-  onBackPress,
 }: MetricsHeaderProps) {
   return (
     <View style={styles.header}>
-      {/* Header Top: Back button + Title Area */}
-      <View style={styles.headerTop}>
-        {onBackPress && (
-          <TouchableOpacity 
-            style={styles.backBtn} 
-            onPress={onBackPress}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <BackIcon size={20} color="white" />
-          </TouchableOpacity>
+      {/* Header Title Area - centered */}
+      <View style={styles.headerTitleArea}>
+        {/* Address */}
+        {propertyAddress && (
+          <Text style={styles.address} numberOfLines={1}>
+            {propertyAddress}
+          </Text>
         )}
         
-        <View style={styles.headerTitleArea}>
-          {/* Address */}
-          {propertyAddress && (
-            <Text style={styles.address} numberOfLines={1}>
-              {propertyAddress}
-            </Text>
-          )}
-          
-          {/* DEAL MAKER IQ Title */}
-          <Text style={styles.title}>
-            <Text style={styles.titleDeal}>DEAL </Text>
-            <Text style={styles.titleMaker}>MAKER </Text>
-            <Text style={styles.titleIQ}>IQ</Text>
-          </Text>
-        </View>
+        {/* DEAL MAKER IQ Title */}
+        <Text style={styles.title}>
+          <Text style={styles.titleDeal}>DEAL </Text>
+          <Text style={styles.titleMaker}>MAKER </Text>
+          <Text style={styles.titleIQ}>IQ</Text>
+        </Text>
       </View>
 
       {/* Metrics Grid - 2 columns */}
@@ -126,26 +112,11 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#0A1628',
     paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 16,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 8,
-  },
-  backBtn: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: 0.8,
+    paddingTop: 16,
+    paddingBottom: 20,
   },
   headerTitleArea: {
-    flex: 1,
     alignItems: 'center',
-    marginRight: 32,
   },
   address: {
     fontSize: 11,

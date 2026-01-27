@@ -17,7 +17,6 @@
 'use client'
 
 import React from 'react'
-import { ArrowLeft } from 'lucide-react'
 
 interface MetricsHeaderProps {
   state: {
@@ -32,7 +31,6 @@ interface MetricsHeaderProps {
   }
   listPrice?: number
   propertyAddress?: string
-  onBackPress?: () => void
 }
 
 function formatCurrency(value: number): string {
@@ -57,38 +55,26 @@ export function MetricsHeader({
   state, 
   metrics,
   propertyAddress,
-  onBackPress,
 }: MetricsHeaderProps) {
   return (
-    <div className="bg-[#0A1628]" style={{ padding: '12px 20px 16px' }}>
-      {/* Header Top: Back button + Title Area */}
-      <div className="flex items-center gap-3 mb-2">
-        {onBackPress && (
-          <button 
-            onClick={onBackPress}
-            className="w-8 h-8 flex items-center justify-center opacity-80"
+    <div className="bg-[#0A1628]" style={{ padding: '16px 20px 20px' }}>
+      {/* Title Area - centered */}
+      <div className="text-center">
+        {/* Address */}
+        {propertyAddress && (
+          <p 
+            className="text-[#94A3B8] truncate"
+            style={{ fontSize: '11px', marginBottom: '2px', letterSpacing: '0.02em' }}
           >
-            <ArrowLeft className="w-5 h-5 text-white" />
-          </button>
+            {propertyAddress}
+          </p>
         )}
         
-        <div className="flex-1 text-center" style={{ marginRight: onBackPress ? '32px' : '0' }}>
-          {/* Address */}
-          {propertyAddress && (
-            <p 
-              className="text-[#94A3B8] truncate"
-              style={{ fontSize: '11px', marginBottom: '2px', letterSpacing: '0.02em' }}
-            >
-              {propertyAddress}
-            </p>
-          )}
-          
-          {/* DEAL MAKER IQ Title */}
-          <div style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '0.05em' }}>
-            <span className="text-white">DEAL </span>
-            <span style={{ color: '#00D4FF' }}>MAKER </span>
-            <span className="text-white">IQ</span>
-          </div>
+        {/* DEAL MAKER IQ Title */}
+        <div style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '0.05em' }}>
+          <span className="text-white">DEAL </span>
+          <span style={{ color: '#00D4FF' }}>MAKER </span>
+          <span className="text-white">IQ</span>
         </div>
       </div>
 

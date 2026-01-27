@@ -16,9 +16,11 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
+import Svg, { Path } from 'react-native-svg';
 
 import { calculateMortgagePayment } from '../analytics/calculations';
 
@@ -130,16 +132,36 @@ export function DealMakerScreen({
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0A1628" />
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
 
-      {/* Header */}
-      <View style={{ paddingTop: insets.top, backgroundColor: '#0A1628' }}>
+      {/* InvestIQ Header */}
+      <View style={[styles.investIQHeader, { paddingTop: insets.top }]}>
+        <TouchableOpacity 
+          style={styles.investIQBackBtn} 
+          onPress={onBackPress}
+          activeOpacity={0.7}
+        >
+          <Svg width={18} height={18} fill="none" stroke="#0891B2" strokeWidth={2} viewBox="0 0 24 24">
+            <Path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </Svg>
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
+        
+        <View style={styles.investIQLogo}>
+          <Text style={styles.logoInvest}>Invest</Text>
+          <Text style={styles.logoIQ}>IQ</Text>
+        </View>
+        
+        <View style={styles.headerSpacer} />
+      </View>
+
+      {/* Deal Maker IQ Header */}
+      <View style={{ backgroundColor: '#0A1628' }}>
         <MetricsHeader 
           state={state} 
           metrics={metrics} 
           listPrice={listPrice}
           propertyAddress={propertyAddress}
-          onBackPress={onBackPress}
         />
       </View>
 
@@ -430,6 +452,42 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F1F5F9',
+  },
+  investIQHeader: {
+    backgroundColor: 'white',
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    paddingTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  investIQBackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  backText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#0891B2',
+  },
+  investIQLogo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoInvest: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#0A1628',
+  },
+  logoIQ: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#0891B2',
+  },
+  headerSpacer: {
+    width: 60,
   },
   scrollContainer: {
     flex: 1,

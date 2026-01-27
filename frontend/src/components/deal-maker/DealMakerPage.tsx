@@ -253,14 +253,40 @@ export function DealMakerPage({
 
   return (
     <div className="min-h-screen" style={{ background: '#F1F5F9' }}>
-      {/* Fixed Header with Metrics */}
-      <div className="sticky top-0 z-40">
+      {/* InvestIQ Header */}
+      <div 
+        className="sticky top-0 z-50 flex items-center justify-between"
+        style={{ 
+          background: 'white', 
+          padding: '8px 20px 12px',
+        }}
+      >
+        <button 
+          onClick={handleBack}
+          className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+          style={{ cursor: 'pointer', background: 'none', border: 'none' }}
+        >
+          <svg width="18" height="18" fill="none" stroke="#0891B2" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          <span style={{ fontSize: '16px', fontWeight: 500, color: '#0891B2' }}>Back</span>
+        </button>
+        
+        <div style={{ fontSize: '22px', fontWeight: 700 }}>
+          <span style={{ color: '#0A1628' }}>Invest</span>
+          <span style={{ color: '#0891B2' }}>IQ</span>
+        </div>
+        
+        <div style={{ width: '60px' }} />
+      </div>
+
+      {/* Deal Maker IQ Header with Metrics */}
+      <div className="sticky top-[52px] z-40">
         <MetricsHeader 
           state={state} 
           metrics={metrics} 
           listPrice={listPrice}
           propertyAddress={propertyAddress}
-          onBackPress={handleBack}
         />
       </div>
 
