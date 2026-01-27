@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   propertyInfoDark: {
-    flex: 1,
+    // No flex - sizes to content
   },
   propertyAddressDark: {
     fontWeight: '600',
