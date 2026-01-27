@@ -26,6 +26,10 @@ import {
   getRankColor,
   getDealScoreColor,
   formatPrice,
+  calculateProfitScoreFromStrategy,
+  scoreToProfitGrade,
+  getProfitGradeColor,
+  scoreToDealGrade,
 } from './types';
 import { IQButton } from './IQButton';
 
@@ -47,6 +51,11 @@ export function IQVerdictScreen({
   isDark = false,
 }: IQVerdictScreenProps) {
   const topStrategy = analysis.strategies[0];
+  
+  // Calculate profit score and grade from top strategy
+  const profitScore = analysis.profitScore ?? calculateProfitScoreFromStrategy(topStrategy);
+  const profitGrade = analysis.profitGrade ?? scoreToProfitGrade(profitScore);
+  const dealGrade = scoreToDealGrade(analysis.dealScore);
 
   const handleViewStrategy = useCallback(
     (strategy: IQStrategy) => {
@@ -129,28 +138,50 @@ export function IQVerdictScreen({
         >
           <Text style={styles.verdictLabel}>IQ VERDICT</Text>
 
-          <TouchableOpacity 
-            style={[styles.scoreContainer, { backgroundColor: theme.cardBg }]}
-            onPress={handleViewTopStrategy}
-            activeOpacity={0.8}
-          >
-            <Text
-              style={[
-                styles.scoreNumber,
-                { color: getDealScoreColor(topStrategy.score) },
-              ]}
+          {/* Two-Score Display - Deal Score & Profit Score */}
+          <View style={styles.twoScoreContainer}>
+            {/* Deal Score */}
+            <TouchableOpacity 
+              style={[styles.scoreBadge, { backgroundColor: theme.cardBg }]}
+              onPress={handleViewTopStrategy}
+              activeOpacity={0.8}
             >
-              {topStrategy.score}
-            </Text>
-            <View style={styles.scoreTextContainer}>
-              <Text style={[styles.scoreVerdict, { color: theme.text }]}>
-                {analysis.dealVerdict}
+              <View style={[styles.scoreBadgeRing, { borderColor: getDealScoreColor(analysis.dealScore) }]}>
+                <Text
+                  style={[
+                    styles.scoreBadgeNumber,
+                    { color: getDealScoreColor(analysis.dealScore) },
+                  ]}
+                >
+                  {analysis.dealScore}
+                </Text>
+              </View>
+              <Text style={[styles.scoreBadgeLabel, { color: theme.textSecondary }]}>
+                DEAL SCORE
               </Text>
-              <Text style={[styles.scoreLabel, { color: theme.textSecondary }]}>
-                Deal Score
+            </TouchableOpacity>
+
+            {/* Profit Score */}
+            <TouchableOpacity 
+              style={[styles.scoreBadge, { backgroundColor: theme.cardBg }]}
+              onPress={handleViewTopStrategy}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.scoreBadgeRing, { borderColor: getProfitGradeColor(profitGrade) }]}>
+                <Text
+                  style={[
+                    styles.scoreBadgeGrade,
+                    { color: getProfitGradeColor(profitGrade) },
+                  ]}
+                >
+                  {profitGrade}
+                </Text>
+              </View>
+              <Text style={[styles.scoreBadgeLabel, { color: theme.textSecondary }]}>
+                PROFIT QUALITY
               </Text>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
 
           <Text style={[styles.verdictDescription, { color: theme.textSecondary }]}>
             {analysis.verdictDescription}
@@ -363,6 +394,46 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 14,
   },
+  // Two-Score Display
+  twoScoreContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 24,
+    marginBottom: 14,
+  },
+  scoreBadge: {
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  scoreBadgeRing: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  scoreBadgeNumber: {
+    fontSize: 24,
+    fontWeight: '800',
+  },
+  scoreBadgeGrade: {
+    fontSize: 22,
+    fontWeight: '800',
+  },
+  scoreBadgeLabel: {
+    fontSize: 9,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  // Legacy - keeping for compatibility
   scoreContainer: {
     flexDirection: 'row',
     alignItems: 'center',

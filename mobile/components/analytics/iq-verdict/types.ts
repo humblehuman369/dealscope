@@ -82,7 +82,15 @@ export interface IQAnalysisResult {
   dealVerdict: IQDealVerdict;
   verdictDescription: string;
   strategies: IQStrategy[];   // Sorted by rank (1-6)
+  // NEW: Profit Score (0-100) based on 5 financial metrics
+  profitScore?: number;
+  profitGrade?: ProfitGrade;
 }
+
+/**
+ * Profit grade based on the profit score (0-100)
+ */
+export type ProfitGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
 
 export type IQDealVerdict = 
   | 'Excellent Investment'
@@ -223,6 +231,100 @@ export const getDealScoreColor = (score: number) => {
  */
 export const formatPrice = (price: number) => {
   return '$' + price.toLocaleString();
+};
+
+/**
+ * Calculate Profit Score from strategy metrics
+ * Simplified version for mobile - uses strategy score as basis
+ */
+export const calculateProfitScoreFromStrategy = (strategy: IQStrategy): number => {
+  // Use the strategy's CoC return as the primary factor
+  // Score is based on typical return thresholds
+  const metricValue = strategy.metricValue;
+  let score = 0;
+  
+  switch (strategy.id) {
+    case 'long-term-rental':
+    case 'short-term-rental':
+    case 'brrrr':
+      // CoC Return based scoring
+      if (metricValue >= 12) score = 100;
+      else if (metricValue >= 10) score = 85;
+      else if (metricValue >= 8) score = 70;
+      else if (metricValue >= 5) score = 55;
+      else if (metricValue >= 0) score = 40;
+      else score = 20;
+      break;
+    case 'fix-and-flip':
+    case 'wholesale':
+      // Profit based scoring
+      if (metricValue >= 50000) score = 100;
+      else if (metricValue >= 30000) score = 85;
+      else if (metricValue >= 20000) score = 70;
+      else if (metricValue >= 10000) score = 55;
+      else if (metricValue > 0) score = 40;
+      else score = 20;
+      break;
+    case 'house-hack':
+      // Savings percentage scoring
+      if (metricValue >= 80) score = 100;
+      else if (metricValue >= 60) score = 85;
+      else if (metricValue >= 40) score = 70;
+      else if (metricValue >= 20) score = 55;
+      else if (metricValue > 0) score = 40;
+      else score = 20;
+      break;
+    default:
+      score = 50;
+  }
+  
+  return Math.min(100, Math.max(0, score));
+};
+
+/**
+ * Convert a profit score (0-100) to a letter grade
+ */
+export const scoreToProfitGrade = (score: number): ProfitGrade => {
+  if (score >= 85) return 'A+';
+  if (score >= 70) return 'A';
+  if (score >= 55) return 'B';
+  if (score >= 40) return 'C';
+  if (score >= 25) return 'D';
+  return 'F';
+};
+
+/**
+ * Get color for a profit grade
+ */
+export const getProfitGradeColor = (grade: ProfitGrade): string => {
+  switch (grade) {
+    case 'A+':
+      return '#22c55e'; // green-500
+    case 'A':
+      return '#4ade80'; // green-400
+    case 'B':
+      return '#a3e635'; // lime-400
+    case 'C':
+      return '#fbbf24'; // amber-400
+    case 'D':
+      return '#fb923c'; // orange-400
+    case 'F':
+      return '#f87171'; // red-400
+    default:
+      return '#94a3b8'; // slate-400
+  }
+};
+
+/**
+ * Convert deal score to letter grade
+ */
+export const scoreToDealGrade = (score: number): 'A+' | 'A' | 'B' | 'C' | 'D' | 'F' => {
+  if (score >= 85) return 'A+';
+  if (score >= 70) return 'A';
+  if (score >= 55) return 'B';
+  if (score >= 40) return 'C';
+  if (score >= 25) return 'D';
+  return 'F';
 };
 
 // ===================
