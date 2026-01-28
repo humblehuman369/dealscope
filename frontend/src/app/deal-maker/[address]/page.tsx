@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useSearchParams } from 'next/navigation'
-import { DealMakerPage } from '@/components/deal-maker'
+import { DealMakerScreen, type DealMakerPropertyData } from '@/components/deal-maker/DealMakerScreen'
 
 /**
  * Deal Maker Page
@@ -24,6 +24,13 @@ export default function DealMakerRoutePage() {
   const encodedAddress = params.address as string
   const propertyAddress = decodeURIComponent(encodedAddress.replace(/-/g, ' '))
 
+  // Parse address components
+  const addressParts = propertyAddress.split(',').map(s => s.trim())
+  const streetAddress = addressParts[0] || propertyAddress
+  const city = addressParts[1] || 'Unknown'
+  const stateZip = addressParts[2] || 'FL 00000'
+  const [state, zipCode] = stateZip.split(' ')
+
   // Parse optional query params - helper to avoid NaN values
   const parseNumericParam = (name: string): number | undefined => {
     const value = searchParams.get(name)
@@ -37,13 +44,25 @@ export default function DealMakerRoutePage() {
   const insurance = parseNumericParam('insurance')
   const rentEstimate = parseNumericParam('rentEstimate')
 
+  // Build property data from URL params
+  const property: DealMakerPropertyData = {
+    address: streetAddress,
+    city: city,
+    state: state || 'FL',
+    zipCode: zipCode || '00000',
+    beds: 4,
+    baths: 2,
+    sqft: 1850,
+    price: listPrice || 350000,
+    rent: rentEstimate,
+    propertyTax: propertyTax,
+    insurance: insurance,
+  }
+
   return (
-    <DealMakerPage
-      propertyAddress={propertyAddress}
+    <DealMakerScreen
+      property={property}
       listPrice={listPrice}
-      propertyTax={propertyTax}
-      insurance={insurance}
-      rentEstimate={rentEstimate}
     />
   )
 }
