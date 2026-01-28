@@ -110,7 +110,7 @@ export function IQVerdictScreen({
   onNavChange,
   isDark = false,
 }: IQVerdictScreenProps) {
-  const [showFactors, setShowFactors] = useState(false)
+  const [showFactors, setShowFactors] = useState(true)
   const [currentStrategy, setCurrentStrategy] = useState<string>(HEADER_STRATEGIES[0].short)
   const topStrategy = analysis.strategies.reduce((best, s) => s.score > best.score ? s : best, analysis.strategies[0])
   
@@ -221,14 +221,10 @@ export function IQVerdictScreen({
                 <button
                   onClick={() => setShowFactors(!showFactors)}
                   className="flex items-center gap-1 text-xs cursor-pointer hover:opacity-80"
-                  style={{ color: COLORS.surface400 }}
+                  style={{ color: COLORS.teal }}
                 >
                   View Factors
-                  {showFactors ? (
-                    <ChevronUp className="w-3 h-3" />
-                  ) : (
-                    <ChevronDown className="w-3 h-3" />
-                  )}
+                  <ChevronDown className="w-3 h-3" />
                 </button>
               </div>
               
@@ -284,13 +280,6 @@ export function IQVerdictScreen({
               </div>
             </div>
             
-            {/* Factors (expandable) */}
-            {showFactors && (
-              <div className="mb-4 p-4 rounded-lg" style={{ background: COLORS.surface50 }}>
-                <OpportunityFactors factors={opportunityFactors} />
-              </div>
-            )}
-            
             {/* Verdict Description */}
             <div 
               className="text-sm text-center leading-relaxed pt-4"
@@ -310,6 +299,41 @@ export function IQVerdictScreen({
                 </React.Fragment>
               )) || 'Excellent potential across multiple strategies.'}
             </div>
+          </div>
+
+          {/* Factors Accordion - Full Width */}
+          <div 
+            className="rounded-2xl p-4 mb-4 cursor-pointer transition-colors hover:bg-opacity-95"
+            style={{ 
+              background: 'white',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+            }}
+            onClick={() => setShowFactors(!showFactors)}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span 
+                className="text-sm font-semibold uppercase tracking-wide"
+                style={{ color: COLORS.navy }}
+              >
+                Opportunity Factors
+              </span>
+              <div 
+                className="flex items-center gap-1 text-xs"
+                style={{ color: COLORS.surface400 }}
+              >
+                {showFactors ? 'Hide' : 'Show'}
+                {showFactors ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </div>
+            </div>
+            {showFactors && (
+              <div onClick={(e) => e.stopPropagation()}>
+                <OpportunityFactors factors={opportunityFactors} />
+              </div>
+            )}
           </div>
 
           {/* CTA Section */}
