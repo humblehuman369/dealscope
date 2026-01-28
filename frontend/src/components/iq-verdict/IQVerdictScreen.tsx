@@ -21,7 +21,7 @@ import {
   scoreToGradeLabel,
 } from './types'
 import { OpportunityFactors } from './OpportunityFactors'
-import { CompactHeader, PropertyData, NavItemId, Strategy } from '../layout/CompactHeader'
+import { CompactHeader, PropertyData, Strategy } from '../layout/CompactHeader'
 
 // =============================================================================
 // BRAND COLORS - From design files
@@ -75,7 +75,6 @@ interface IQVerdictScreenProps {
   analysis: IQAnalysisResult
   onViewStrategy: (strategy: IQStrategy) => void
   onCompareAll: () => void
-  onNavChange?: (navId: NavItemId) => void
   isDark?: boolean
 }
 
@@ -107,7 +106,6 @@ export function IQVerdictScreen({
   analysis,
   onViewStrategy,
   onCompareAll,
-  onNavChange,
   isDark = false,
 }: IQVerdictScreenProps) {
   const [showFactors, setShowFactors] = useState(true)
@@ -140,13 +138,6 @@ export function IQVerdictScreen({
     }
   }, [analysis.strategies, onViewStrategy])
 
-  // Handle navigation from header
-  const handleNavChange = useCallback((navId: NavItemId) => {
-    if (onNavChange) {
-      onNavChange(navId)
-    }
-  }, [onNavChange])
-  
   // Calculate prices
   const breakevenPrice = analysis.breakevenPrice || Math.round(property.price * 1.1)
   const buyPrice = analysis.purchasePrice || Math.round(breakevenPrice * 0.95)
@@ -178,7 +169,6 @@ export function IQVerdictScreen({
         currentStrategy={currentStrategy}
         pageTitle="VERDICT"
         pageTitleAccent="IQ"
-        onNavChange={handleNavChange}
         onStrategyChange={handleHeaderStrategyChange}
         defaultPropertyOpen={true}
       />

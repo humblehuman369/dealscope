@@ -33,7 +33,7 @@ import {
   formatPrice,
 } from './types';
 import { IQButton } from './IQButton';
-import { CompactHeader, PropertyData, NavItemId, Strategy } from '../../header';
+import { CompactHeader, PropertyData, NavItemId } from '../../header';
 
 // =============================================================================
 // RESPONSIVE SCALING - Dynamic font sizes based on screen dimensions
@@ -145,15 +145,6 @@ interface IQVerdictScreenProps {
   isDark?: boolean;
 }
 
-// Default strategies for the dropdown
-const HEADER_STRATEGIES: Strategy[] = [
-  { id: 'long-term-rental', label: 'Long-Term Rental', icon: 'home' },
-  { id: 'short-term-rental', label: 'Short-Term Rental', icon: 'calendar' },
-  { id: 'brrrr', label: 'BRRRR', icon: 'repeat' },
-  { id: 'fix-and-flip', label: 'Fix & Flip', icon: 'hammer' },
-  { id: 'house-hack', label: 'House Hack', icon: 'people' },
-  { id: 'wholesale', label: 'Wholesale', icon: 'swap-horizontal' },
-];
 
 // =============================================================================
 // COMPONENT
@@ -171,7 +162,7 @@ export function IQVerdictScreen({
   const { rs, rf, rsp } = useResponsiveScaling();
   
   const [showFactors, setShowFactors] = useState(false);
-  const [currentStrategy, setCurrentStrategy] = useState<Strategy>(HEADER_STRATEGIES[0]);
+  const [currentStrategy, setCurrentStrategy] = useState<string>('Long-term');
   const topStrategy = analysis.strategies.reduce((best, s) => s.score > best.score ? s : best, analysis.strategies[0]);
 
   // Build property data for CompactHeader
@@ -188,16 +179,6 @@ export function IQVerdictScreen({
     status: 'OFF-MARKET',
     image: property.imageUrl,
   }), [property]);
-
-  // Handle strategy change from header dropdown
-  const handleHeaderStrategyChange = useCallback((strategy: Strategy) => {
-    setCurrentStrategy(strategy);
-    // Find matching IQStrategy and trigger navigation
-    const matchingStrategy = analysis.strategies.find(s => s.id === strategy.id);
-    if (matchingStrategy) {
-      onViewStrategy(matchingStrategy);
-    }
-  }, [analysis.strategies, onViewStrategy]);
 
   // Handle navigation from header
   const handleNavChange = useCallback((navId: NavItemId) => {
@@ -247,14 +228,12 @@ export function IQVerdictScreen({
       {/* New Compact Header */}
       <CompactHeader
         property={headerPropertyData}
-        currentNavId="verdict"
+        activeNav="analysis"
         currentStrategy={currentStrategy}
-        strategies={HEADER_STRATEGIES}
         pageTitle="VERDICT"
         pageTitleAccent="IQ"
         onNavChange={handleNavChange}
-        onStrategyChange={handleHeaderStrategyChange}
-        isDark={isDark}
+        onStrategyChange={setCurrentStrategy}
       />
 
       <ScrollView

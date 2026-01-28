@@ -101,8 +101,6 @@ export function AnalysisIQPage({
     ...(address && { address }),
   };
 
-  const encodedAddress = encodeURIComponent(property.address);
-
   // Handlers
   const handleBack = useCallback(() => {
     router.back();
@@ -111,26 +109,6 @@ export function AnalysisIQPage({
   const handleStrategyChange = useCallback((strategy: string) => {
     setCurrentStrategy(strategy);
   }, []);
-
-  const handleNavChange = useCallback((navId: NavItemId) => {
-    setActiveNav(navId);
-    switch (navId) {
-      case 'search':
-        router.push('/search');
-        break;
-      case 'home':
-        router.push(`/property/unknown?address=${encodedAddress}`);
-        break;
-      case 'analysis':
-        // Already on analysis page
-        break;
-      case 'deals':
-        router.push(`/deal-maker?address=${encodedAddress}`);
-        break;
-      default:
-        break;
-    }
-  }, [router, encodedAddress]);
 
   const handleContinueToAnalysis = useCallback(() => {
     console.log('Continue to Analysis');
@@ -152,7 +130,6 @@ export function AnalysisIQPage({
         onStrategyChange={handleStrategyChange}
         onBack={handleBack}
         activeNav={activeNav}
-        onNavChange={handleNavChange}
       />
 
       {/* Scrollable Content */}

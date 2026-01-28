@@ -8,9 +8,13 @@
  * - Address with accordion dropdown for property details
  * - Page title + Strategy selector in one compact row
  * - Icon navigation bar
+ * 
+ * Navigation is handled directly via centralized navigation config.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getToolbarRoute, type ToolbarNavId, type NavContext } from '@/lib/navigation';
 
 // Types
 export interface PropertyData {
@@ -25,6 +29,7 @@ export interface PropertyData {
   rent?: number;
   status?: string;
   image?: string;
+  zpid?: string;
 }
 
 export interface Strategy {
@@ -42,7 +47,6 @@ interface CompactHeaderProps {
   onStrategyChange?: (strategy: string) => void;
   onBack?: () => void;
   activeNav?: NavItemId;
-  onNavChange?: (navId: NavItemId) => void;
   onPropertyClick?: (isOpen: boolean) => void;
   defaultPropertyOpen?: boolean;
 }
@@ -140,15 +144,21 @@ export function CompactHeader({
   onStrategyChange,
   onBack,
   activeNav = 'analysis',
-  onNavChange,
   onPropertyClick,
   defaultPropertyOpen = false,
 }: CompactHeaderProps) {
+  const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPropertyOpen, setIsPropertyOpen] = useState(defaultPropertyOpen);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zip}`;
+  
+  // Navigation context for toolbar
+  const navContext: NavContext = {
+    address: fullAddress,
+    zpid: property.zpid,
+  };
 
   // Format helpers
   const formatPrice = (price: number) => {
@@ -333,7 +343,10 @@ export function CompactHeader({
               className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
                 isActive ? 'bg-[#0891B2]/10' : 'hover:bg-slate-100'
               }`}
-              onClick={() => onNavChange?.(item.id)}
+              onClick={() => {
+                const route = getToolbarRoute(item.id as ToolbarNavId, navContext);
+                router.push(route);
+              }}
               title={item.label}
             >
               <IconComponent active={isActive} />
