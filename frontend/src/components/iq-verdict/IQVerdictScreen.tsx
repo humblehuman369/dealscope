@@ -165,7 +165,7 @@ export function IQVerdictScreen({
 
   return (
     <div 
-      className="min-h-screen flex flex-col"
+      className="min-h-screen flex flex-col max-w-[480px] mx-auto"
       style={{ 
         background: COLORS.surface100,
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
@@ -183,8 +183,8 @@ export function IQVerdictScreen({
         defaultPropertyOpen={true}
       />
 
-      {/* Main Content - Max 480px centered */}
-      <main className="max-w-[480px] mx-auto flex-1 w-full">
+      {/* Main Content */}
+      <main className="flex-1 w-full">
         {/* Content Area with padding */}
         <div className="p-4">
           {/* IQ Verdict Card */}
