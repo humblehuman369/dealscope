@@ -1,6 +1,6 @@
 'use client'
 
-import { Eye, Filter, Plus, Home, Bed, Bath, Square, Clock, ChevronRight, TrendingDown, Zap } from 'lucide-react'
+import { Eye, Filter, Plus, Home, Bed, Bath, Square, Clock, ChevronRight, TrendingDown, Zap, Search } from 'lucide-react'
 import Link from 'next/link'
 
 interface WatchlistProperty {
@@ -87,15 +87,26 @@ export function Watchlist({ properties, isLoading, onAddClick }: WatchlistProps)
       </div>
 
       {properties.length === 0 ? (
-        <div className="py-8 text-center">
-          <Eye className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">No properties in watchlist</p>
-          <button 
-            onClick={onAddClick}
-            className="text-xs text-teal-600 dark:text-teal-400 font-medium hover:text-teal-700"
+        <div className="py-6 px-4 text-center bg-gradient-to-b from-teal-500/5 to-transparent rounded-xl">
+          <div className="w-12 h-12 rounded-full bg-teal-500/10 flex items-center justify-center mx-auto mb-3">
+            <Eye className="w-6 h-6 text-teal-500" />
+          </div>
+          <h4 className="text-sm font-semibold text-slate-800 dark:text-white mb-1">Track Properties You Love</h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 max-w-[200px] mx-auto">
+            Save properties to compare deals and get price drop alerts
+          </p>
+          <Link 
+            href="/property"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 text-white text-xs font-semibold transition-colors"
           >
-            Add your first property
-          </button>
+            <Plus size={14} />
+            Find Properties
+          </Link>
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-navy-700">
+            <p className="text-[10px] text-slate-400">
+              Cash flow estimates shown after full analysis
+            </p>
+          </div>
         </div>
       ) : (
         <div className="space-y-3">

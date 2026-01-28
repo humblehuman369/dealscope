@@ -251,6 +251,19 @@ export function DealMakerPage({
     }
   }, [updateState])
 
+  // Reset all sliders to IQ defaults (but keep property-specific values)
+  const handleResetToDefaults = useCallback(() => {
+    setState(prev => ({
+      ...DEFAULT_DEAL_MAKER_STATE,
+      // Preserve property-specific values
+      buyPrice: listPrice ?? DEFAULT_DEAL_MAKER_STATE.buyPrice,
+      annualPropertyTax: propertyTax ?? DEFAULT_DEAL_MAKER_STATE.annualPropertyTax,
+      annualInsurance: insurance ?? DEFAULT_DEAL_MAKER_STATE.annualInsurance,
+      monthlyRent: rentEstimate ?? DEFAULT_DEAL_MAKER_STATE.monthlyRent,
+      arv: (listPrice ?? DEFAULT_DEAL_MAKER_STATE.buyPrice) * 1.2,
+    }))
+  }, [listPrice, propertyTax, insurance, rentEstimate])
+
   return (
     <div className="min-h-screen" style={{ background: '#F1F5F9' }}>
       {/* InvestIQ Header */}
@@ -277,7 +290,25 @@ export function DealMakerPage({
           <span style={{ color: '#0891B2' }}>IQ</span>
         </div>
         
-        <div style={{ width: '60px' }} />
+        {/* Reset to IQ Defaults button */}
+        <button 
+          onClick={handleResetToDefaults}
+          className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+          style={{ 
+            cursor: 'pointer', 
+            background: 'none', 
+            border: 'none',
+            fontSize: '12px',
+            fontWeight: 500,
+            color: '#64748B'
+          }}
+          title="Reset all sliders to IQ-recommended defaults"
+        >
+          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Reset
+        </button>
       </div>
 
       {/* Deal Maker IQ Header with Metrics */}

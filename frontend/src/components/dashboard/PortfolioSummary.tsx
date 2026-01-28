@@ -7,8 +7,13 @@ import {
   Percent, 
   ArrowUpRight, 
   ArrowDownRight,
-  Briefcase 
+  Briefcase,
+  Search,
+  Sparkles,
+  CheckCircle,
+  Database
 } from 'lucide-react'
+import Link from 'next/link'
 
 interface PortfolioData {
   portfolioValue: number
@@ -22,6 +27,7 @@ interface PortfolioData {
 interface PortfolioSummaryProps {
   data: PortfolioData
   isLoading?: boolean
+  onViewSample?: () => void
 }
 
 const formatCurrency = (value: number): string => {
@@ -37,7 +43,10 @@ const formatCurrency = (value: number): string => {
   }).format(value)
 }
 
-export function PortfolioSummary({ data, isLoading }: PortfolioSummaryProps) {
+export function PortfolioSummary({ data, isLoading, onViewSample }: PortfolioSummaryProps) {
+  // Check if portfolio is empty (all values are 0)
+  const isEmpty = data.portfolioValue === 0 && data.propertiesTracked === 0 && data.monthlyCashFlow === 0
+
   if (isLoading) {
     return (
       <div className="bg-white dark:bg-navy-800 rounded-xl shadow-sm border border-slate-100 dark:border-navy-700 p-6 animate-pulse">
@@ -49,6 +58,74 @@ export function PortfolioSummary({ data, isLoading }: PortfolioSummaryProps) {
               <div className="h-6 bg-gray-200 dark:bg-navy-600 rounded w-16"></div>
             </div>
           ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Empty state with aspirational content
+  if (isEmpty) {
+    return (
+      <div className="bg-gradient-to-br from-teal-500/5 to-cyan-500/5 dark:from-navy-800 dark:to-navy-900 rounded-xl shadow-sm border border-teal-200/50 dark:border-navy-700 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles size={18} className="text-teal-500" />
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white">Your Portfolio Starts Here</h3>
+        </div>
+        
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-5">
+          Analyze properties to build your investment portfolio and track your real estate wealth.
+        </p>
+
+        {/* Value Propositions */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-white/60 dark:bg-navy-700/50">
+            <CheckCircle size={16} className="text-teal-500 mt-0.5 flex-shrink-0" />
+            <div>
+              <div className="text-xs font-semibold text-slate-800 dark:text-white">Track Equity</div>
+              <div className="text-[10px] text-slate-500">Monitor property value growth</div>
+            </div>
+          </div>
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-white/60 dark:bg-navy-700/50">
+            <CheckCircle size={16} className="text-teal-500 mt-0.5 flex-shrink-0" />
+            <div>
+              <div className="text-xs font-semibold text-slate-800 dark:text-white">Cash Flow Analysis</div>
+              <div className="text-[10px] text-slate-500">See monthly income potential</div>
+            </div>
+          </div>
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-white/60 dark:bg-navy-700/50">
+            <CheckCircle size={16} className="text-teal-500 mt-0.5 flex-shrink-0" />
+            <div>
+              <div className="text-xs font-semibold text-slate-800 dark:text-white">Return Metrics</div>
+              <div className="text-[10px] text-slate-500">Compare CoC across deals</div>
+            </div>
+          </div>
+        </div>
+
+        {/* CTAs */}
+        <div className="flex flex-wrap items-center gap-3">
+          <Link 
+            href="/property"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-teal-500 hover:bg-teal-600 text-white text-sm font-semibold transition-colors"
+          >
+            <Search size={16} />
+            Analyze a Property
+          </Link>
+          {onViewSample && (
+            <button 
+              onClick={onViewSample}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-teal-500/30 text-teal-600 dark:text-teal-400 text-sm font-medium hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors"
+            >
+              View Sample Dashboard
+            </button>
+          )}
+        </div>
+
+        {/* Data Sources */}
+        <div className="flex items-center gap-2 mt-5 pt-4 border-t border-slate-200/50 dark:border-navy-600">
+          <Database size={12} className="text-slate-400" />
+          <span className="text-[10px] text-slate-400">
+            Powered by Zillow API, county records & rental market data
+          </span>
         </div>
       </div>
     )

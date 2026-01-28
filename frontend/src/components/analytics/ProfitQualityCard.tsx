@@ -9,9 +9,11 @@
  * - Protection
  * 
  * Also includes expandable factors and insight text.
+ * Includes "How we calculate this" link to explain scoring methodology.
  */
 
 import React, { useState } from 'react';
+import { ScoreMethodologySheet } from '../iq-verdict/ScoreMethodologySheet';
 
 // Types
 export interface ProfitQualityData {
@@ -100,6 +102,7 @@ function CircularProgress({
 
 export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardProps) {
   const [showFactors, setShowFactors] = useState(false);
+  const [showMethodology, setShowMethodology] = useState(false);
 
   // Color for strategy fit
   const getStrategyFitColor = () => {
@@ -173,21 +176,35 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
         </div>
       </div>
 
-      {/* View Factors */}
-      <button 
-        className={`flex items-center gap-1 mt-4 py-1 ${isDark ? 'text-white/60' : 'text-slate-500'} hover:opacity-80 transition-opacity`}
-        onClick={() => setShowFactors(!showFactors)}
-      >
-        <span className="text-xs font-medium">View Factors</span>
-        <svg 
-          className={`w-3.5 h-3.5 transition-transform duration-200 ${showFactors ? 'rotate-180' : ''}`} 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
+      {/* Action buttons row */}
+      <div className="flex items-center justify-between mt-4">
+        {/* View Factors */}
+        <button 
+          className={`flex items-center gap-1 py-1 ${isDark ? 'text-white/60' : 'text-slate-500'} hover:opacity-80 transition-opacity`}
+          onClick={() => setShowFactors(!showFactors)}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
-        </svg>
-      </button>
+          <span className="text-xs font-medium">View Factors</span>
+          <svg 
+            className={`w-3.5 h-3.5 transition-transform duration-200 ${showFactors ? 'rotate-180' : ''}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+
+        {/* How we calculate this */}
+        <button 
+          className="flex items-center gap-1 py-1 text-[#0891B2] hover:opacity-80 transition-opacity"
+          onClick={() => setShowMethodology(true)}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span className="text-xs font-medium">How we calculate this</span>
+        </button>
+      </div>
 
       {/* Factors list (expandable) */}
       {showFactors && data.factors && (
@@ -220,6 +237,14 @@ export function ProfitQualityCard({ data, isDark = false }: ProfitQualityCardPro
           {data.insight}
         </p>
       </div>
+
+      {/* Score Methodology Sheet */}
+      <ScoreMethodologySheet
+        isOpen={showMethodology}
+        onClose={() => setShowMethodology(false)}
+        currentScore={data.score}
+        scoreType="profit"
+      />
     </div>
   );
 }

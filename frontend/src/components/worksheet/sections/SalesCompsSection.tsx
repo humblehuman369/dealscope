@@ -73,6 +73,24 @@ const getDaysAgo = (dateString: string) => {
   return `${Math.floor(diffDays / 30)}mo ago`
 }
 
+const getSaleDaysAgo = (dateString: string): number => {
+  if (!dateString) return 999
+  const saleDate = new Date(dateString)
+  if (isNaN(saleDate.getTime())) return 999
+  const today = new Date()
+  const diffTime = today.getTime() - saleDate.getTime()
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24))
+}
+
+// Get freshness badge based on sale date
+const getFreshnessBadge = (dateString: string): { label: string; color: string; bgColor: string } | null => {
+  const daysAgo = getSaleDaysAgo(dateString)
+  if (daysAgo < 0) return null
+  if (daysAgo <= 30) return { label: 'Recent', color: '#10B981', bgColor: '#10B98115' }
+  if (daysAgo > 90) return { label: 'Older sale', color: '#F59E0B', bgColor: '#F59E0B15' }
+  return null
+}
+
 // Haversine formula for distance
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const R = 3959
@@ -274,7 +292,8 @@ const CompCard = ({
   isSelected, 
   onToggle, 
   isExpanded, 
-  onExpand 
+  onExpand,
+  freshnessBadge
 }: { 
   comp: CompProperty
   subject: SubjectProperty
@@ -282,6 +301,7 @@ const CompCard = ({
   onToggle: () => void
   isExpanded: boolean
   onExpand: () => void
+  freshnessBadge?: { label: string; color: string; bgColor: string } | null
 }) => (
   <div className={`relative rounded-xl border transition-all overflow-hidden ${
     isSelected ? 'bg-white ring-2 ring-teal-500/20 border-teal-200' : 'bg-white border-slate-200 hover:border-slate-300'
@@ -332,6 +352,14 @@ const CompCard = ({
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] text-slate-400">Sold {formatDate(comp.saleDate)}</span>
             <span className="text-[10px] px-1 py-0.5 rounded bg-slate-100 text-slate-500">{getDaysAgo(comp.saleDate)}</span>
+            {freshnessBadge && (
+              <span 
+                className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                style={{ backgroundColor: freshnessBadge.bgColor, color: freshnessBadge.color }}
+              >
+                {freshnessBadge.label}
+              </span>
+            )}
           </div>
           <button onClick={onExpand} className="text-xs text-teal-600 hover:text-teal-700 font-medium flex items-center gap-0.5">
             Details <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
@@ -398,6 +426,7 @@ export function SalesCompsSection() {
   const [error, setError] = useState<string | null>(null)
   const [selectedComps, setSelectedComps] = useState<(number | string)[]>([])
   const [expandedComp, setExpandedComp] = useState<number | string | null>(null)
+  const [recencyFilter, setRecencyFilter] = useState<'all' | '30' | '90'>('all')
 
   // Build subject property from worksheet data - use snapshot with fallback to top-level fields
   const snapshot = propertyData?.property_data_snapshot
@@ -544,10 +573,39 @@ export function SalesCompsSection() {
         </div>
       </div>
 
+      {/* Recency Filters */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-slate-500">Filter by:</span>
+        <div className="flex rounded-lg bg-slate-100 p-0.5">
+          {[
+            { value: 'all' as const, label: 'All' },
+            { value: '30' as const, label: 'Last 30 days' },
+            { value: '90' as const, label: 'Last 90 days' },
+          ].map((filter) => (
+            <button
+              key={filter.value}
+              onClick={() => setRecencyFilter(filter.value)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                recencyFilter === filter.value
+                  ? 'bg-white text-teal-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Controls */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-slate-500">
-          {selectedComps.length} of {comps.length} comps selected
+          {selectedComps.length} of {comps.filter(c => {
+            const daysAgo = getSaleDaysAgo(c.saleDate)
+            if (recencyFilter === '30') return daysAgo <= 30
+            if (recencyFilter === '90') return daysAgo <= 90
+            return true
+          }).length} comps selected
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -596,17 +654,54 @@ export function SalesCompsSection() {
       {/* Comps List */}
       {!loading && !error && comps.length > 0 && (
         <div className="space-y-3">
-          {comps.map(comp => (
-            <CompCard
-              key={comp.id}
-              comp={comp}
-              subject={subject}
-              isSelected={selectedComps.includes(comp.id)}
-              onToggle={() => toggleComp(comp.id)}
-              isExpanded={expandedComp === comp.id}
-              onExpand={() => setExpandedComp(expandedComp === comp.id ? null : comp.id)}
-            />
-          ))}
+          {comps
+            .filter(c => {
+              const daysAgo = getSaleDaysAgo(c.saleDate)
+              if (recencyFilter === '30') return daysAgo <= 30
+              if (recencyFilter === '90') return daysAgo <= 90
+              return true
+            })
+            .map(comp => {
+              const freshnessBadge = getFreshnessBadge(comp.saleDate)
+              return (
+                <CompCard
+                  key={comp.id}
+                  comp={comp}
+                  subject={subject}
+                  isSelected={selectedComps.includes(comp.id)}
+                  onToggle={() => toggleComp(comp.id)}
+                  isExpanded={expandedComp === comp.id}
+                  onExpand={() => setExpandedComp(expandedComp === comp.id ? null : comp.id)}
+                  freshnessBadge={freshnessBadge}
+                />
+              )
+            })}
+        </div>
+      )}
+
+      {/* Distance-based confidence indicator */}
+      {!loading && !error && comps.length > 0 && (
+        <div className="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-100">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500">
+              {comps.filter(c => c.distance <= 0.5).length} of {comps.length} comps within 0.5 mi
+            </span>
+            <span className={`text-xs font-semibold ${
+              comps.filter(c => c.distance <= 0.5).length >= 3 
+                ? 'text-teal-600' 
+                : comps.filter(c => c.distance <= 1).length >= 3 
+                  ? 'text-amber-500' 
+                  : 'text-slate-500'
+            }`}>
+              Confidence: {
+                comps.filter(c => c.distance <= 0.5).length >= 3 
+                  ? 'HIGH' 
+                  : comps.filter(c => c.distance <= 1).length >= 3 
+                    ? 'MODERATE' 
+                    : 'LOW'
+              }
+            </span>
+          </div>
         </div>
       )}
     </div>

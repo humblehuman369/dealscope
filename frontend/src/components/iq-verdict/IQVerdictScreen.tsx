@@ -12,7 +12,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react'
-import { ChevronDown, ChevronUp, ChevronRight, ArrowRight, Download } from 'lucide-react'
+import { ChevronDown, ChevronUp, ChevronRight, ArrowRight, Download, Info, HelpCircle } from 'lucide-react'
 import {
   IQProperty,
   IQAnalysisResult,
@@ -22,6 +22,7 @@ import {
 } from './types'
 import { OpportunityFactors } from './OpportunityFactors'
 import { CompactHeader, PropertyData, Strategy } from '../layout/CompactHeader'
+import { ScoreMethodologySheet } from './ScoreMethodologySheet'
 
 // =============================================================================
 // BRAND COLORS - From design files
@@ -47,6 +48,24 @@ const COLORS = {
 // =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
+
+// Get verdict label based on score tier
+const getVerdictLabel = (score: number): { label: string; sublabel: string } => {
+  if (score >= 90) return { label: 'Exceptional', sublabel: 'Top 5% of deals' }
+  if (score >= 80) return { label: 'Excellent', sublabel: 'Top 15% of deals' }
+  if (score >= 70) return { label: 'Good', sublabel: 'Above average' }
+  if (score >= 60) return { label: 'Fair', sublabel: 'Average market deal' }
+  if (score >= 50) return { label: 'Marginal', sublabel: 'Below average' }
+  return { label: 'Poor', sublabel: 'Proceed with caution' }
+}
+
+// Price point explanations
+const PRICE_EXPLANATIONS = {
+  breakeven: 'Maximum price where you won\'t lose money on monthly cash flow',
+  buyPrice: 'Target price for positive cash flow (5% below breakeven)',
+  wholesale: 'Price for assignment to another investor (70% of breakeven)',
+}
+
 const getReturnColor = (value: number): string => {
   if (value >= 50) return COLORS.green
   if (value > 0) return COLORS.teal
@@ -109,8 +128,14 @@ export function IQVerdictScreen({
   isDark = false,
 }: IQVerdictScreenProps) {
   const [showFactors, setShowFactors] = useState(true)
+  const [showMethodology, setShowMethodology] = useState(false)
+  const [showScoreBreakdown, setShowScoreBreakdown] = useState(false)
+  const [activePriceTooltip, setActivePriceTooltip] = useState<string | null>(null)
   const [currentStrategy, setCurrentStrategy] = useState<string>(HEADER_STRATEGIES[0].short)
   const topStrategy = analysis.strategies.reduce((best, s) => s.score > best.score ? s : best, analysis.strategies[0])
+  
+  // Get verdict label and sublabel
+  const verdictInfo = getVerdictLabel(analysis.dealScore)
   
   // Build property data for CompactHeader
   const headerPropertyData: PropertyData = useMemo(() => ({
@@ -197,7 +222,7 @@ export function IQVerdictScreen({
                   IQ VERDICT
                 </div>
                 <div 
-                  className="w-20 h-20 rounded-full flex items-center justify-center mb-2"
+                  className="w-20 h-20 rounded-full flex items-center justify-center mb-1"
                   style={{ 
                     border: `4px solid ${getScoreColor(analysis.dealScore)}`,
                     background: `${getScoreColor(analysis.dealScore)}14`,
@@ -210,64 +235,109 @@ export function IQVerdictScreen({
                     {analysis.dealScore}
                   </span>
                 </div>
+                {/* Verdict Label */}
+                <div className="text-center mb-2">
+                  <div 
+                    className="text-sm font-bold"
+                    style={{ color: getScoreColor(analysis.dealScore) }}
+                  >
+                    {verdictInfo.label}
+                  </div>
+                  <div 
+                    className="text-[10px]"
+                    style={{ color: COLORS.surface400 }}
+                  >
+                    {verdictInfo.sublabel}
+                  </div>
+                </div>
                 <button
-                  onClick={() => setShowFactors(!showFactors)}
-                  className="flex items-center gap-1 text-xs cursor-pointer hover:opacity-80"
+                  onClick={() => setShowMethodology(true)}
+                  className="flex items-center gap-1 text-[11px] cursor-pointer hover:opacity-80"
                   style={{ color: COLORS.teal }}
                 >
-                  View Factors
-                  <ChevronDown className="w-3 h-3" />
+                  <Info className="w-3 h-3" />
+                  How this works
                 </button>
               </div>
               
               {/* Prices - 65% */}
               <div className="flex flex-col gap-3 justify-center" style={{ flex: '65' }}>
                 {/* Breakeven */}
-                <div className="flex items-center justify-end gap-4">
-                  <span 
-                    className="text-[13px]"
+                <div className="flex items-center justify-end gap-2 relative">
+                  <button
+                    onClick={() => setActivePriceTooltip(activePriceTooltip === 'breakeven' ? null : 'breakeven')}
+                    className="flex items-center gap-1 text-[13px] hover:opacity-80"
                     style={{ color: COLORS.surface500 }}
                   >
                     Breakeven
-                  </span>
+                    <HelpCircle className="w-3 h-3" />
+                  </button>
                   <span 
                     className="text-base font-bold tabular-nums"
                     style={{ color: COLORS.navy }}
                   >
                     {formatPrice(breakevenPrice)}
                   </span>
+                  {activePriceTooltip === 'breakeven' && (
+                    <div 
+                      className="absolute right-0 top-6 z-10 p-2 rounded-lg shadow-lg text-xs max-w-[200px]"
+                      style={{ backgroundColor: COLORS.navy, color: 'white' }}
+                    >
+                      {PRICE_EXPLANATIONS.breakeven}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Buy Price - Highlighted */}
-                <div className="flex items-center justify-end gap-4">
-                  <span 
-                    className="text-[13px] font-semibold"
+                <div className="flex items-center justify-end gap-2 relative">
+                  <button
+                    onClick={() => setActivePriceTooltip(activePriceTooltip === 'buyPrice' ? null : 'buyPrice')}
+                    className="flex items-center gap-1 text-[13px] font-semibold hover:opacity-80"
                     style={{ color: COLORS.teal }}
                   >
                     Buy Price
-                  </span>
+                    <HelpCircle className="w-3 h-3" />
+                  </button>
                   <span 
                     className="text-base font-bold tabular-nums"
                     style={{ color: COLORS.teal }}
                   >
                     {formatPrice(buyPrice)}
                   </span>
+                  {activePriceTooltip === 'buyPrice' && (
+                    <div 
+                      className="absolute right-0 top-6 z-10 p-2 rounded-lg shadow-lg text-xs max-w-[200px]"
+                      style={{ backgroundColor: COLORS.navy, color: 'white' }}
+                    >
+                      {PRICE_EXPLANATIONS.buyPrice}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Wholesale */}
-                <div className="flex items-center justify-end gap-4">
-                  <span 
-                    className="text-[13px]"
+                <div className="flex items-center justify-end gap-2 relative">
+                  <button
+                    onClick={() => setActivePriceTooltip(activePriceTooltip === 'wholesale' ? null : 'wholesale')}
+                    className="flex items-center gap-1 text-[13px] hover:opacity-80"
                     style={{ color: COLORS.surface500 }}
                   >
                     Wholesale
-                  </span>
+                    <HelpCircle className="w-3 h-3" />
+                  </button>
                   <span 
                     className="text-base font-bold tabular-nums"
                     style={{ color: COLORS.navy }}
                   >
                     {formatPrice(wholesalePrice)}
                   </span>
+                  {activePriceTooltip === 'wholesale' && (
+                    <div 
+                      className="absolute right-0 top-6 z-10 p-2 rounded-lg shadow-lg text-xs max-w-[200px]"
+                      style={{ backgroundColor: COLORS.navy, color: 'white' }}
+                    >
+                      {PRICE_EXPLANATIONS.wholesale}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -290,6 +360,68 @@ export function IQVerdictScreen({
                   )}
                 </React.Fragment>
               )) || 'Excellent potential across multiple strategies.'}
+            </div>
+
+            {/* What makes this score - Expandable */}
+            <div className="pt-4" style={{ borderTop: `1px solid ${COLORS.surface100}`, marginTop: '16px' }}>
+              <button
+                onClick={() => setShowScoreBreakdown(!showScoreBreakdown)}
+                className="w-full flex items-center justify-between py-2 cursor-pointer hover:opacity-80"
+              >
+                <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: COLORS.teal }}>
+                  What makes this score
+                </span>
+                {showScoreBreakdown ? (
+                  <ChevronUp className="w-4 h-4" style={{ color: COLORS.surface400 }} />
+                ) : (
+                  <ChevronDown className="w-4 h-4" style={{ color: COLORS.surface400 }} />
+                )}
+              </button>
+              
+              {showScoreBreakdown && (
+                <div className="space-y-2 pt-2">
+                  {/* Positive factors */}
+                  {topStrategy.score >= 70 && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span style={{ color: COLORS.surface600 }}>Strong {topStrategy.name} potential</span>
+                      <span className="font-semibold" style={{ color: COLORS.green }}>+{Math.round(topStrategy.score * 0.2)} pts</span>
+                    </div>
+                  )}
+                  {analysis.discountPercent && analysis.discountPercent > 5 && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span style={{ color: COLORS.surface600 }}>Below-market price ({analysis.discountPercent}% off)</span>
+                      <span className="font-semibold" style={{ color: COLORS.green }}>+{Math.min(20, Math.round(analysis.discountPercent * 2))} pts</span>
+                    </div>
+                  )}
+                  {analysis.strategies.filter(s => s.score >= 60).length > 2 && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span style={{ color: COLORS.surface600 }}>Multiple viable strategies</span>
+                      <span className="font-semibold" style={{ color: COLORS.green }}>+12 pts</span>
+                    </div>
+                  )}
+                  {property.beds && property.beds >= 3 && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span style={{ color: COLORS.surface600 }}>House Hack potential ({property.beds} beds)</span>
+                      <span className="font-semibold" style={{ color: COLORS.green }}>+8 pts</span>
+                    </div>
+                  )}
+                  
+                  {/* Negative factors */}
+                  {analysis.dealScore < 70 && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span style={{ color: COLORS.surface600 }}>Market pricing</span>
+                      <span className="font-semibold" style={{ color: COLORS.rose }}>-{Math.round((100 - analysis.dealScore) * 0.15)} pts</span>
+                    </div>
+                  )}
+                  
+                  <div className="pt-2 mt-2" style={{ borderTop: `1px dashed ${COLORS.surface200}` }}>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold" style={{ color: COLORS.navy }}>IQ Verdict Score</span>
+                      <span className="font-bold" style={{ color: getScoreColor(analysis.dealScore) }}>{analysis.dealScore}/100</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -446,6 +578,21 @@ export function IQVerdictScreen({
           </button>
         </div>
       </main>
+
+      {/* Score Methodology Sheet */}
+      <ScoreMethodologySheet
+        isOpen={showMethodology}
+        onClose={() => setShowMethodology(false)}
+        currentScore={analysis.dealScore}
+        scoreType="verdict"
+        lastUpdated={new Date(analysis.analyzedAt).toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        })}
+      />
     </div>
   )
 }

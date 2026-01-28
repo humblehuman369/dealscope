@@ -1,6 +1,6 @@
 'use client'
 
-import { Activity, Flame, Sun, Snowflake } from 'lucide-react'
+import { Activity, Flame, Sun, Snowflake, Database } from 'lucide-react'
 
 interface MarketAlert {
   market: string
@@ -54,7 +54,7 @@ export function MarketAlerts({ alerts, isLoading }: MarketAlertsProps) {
 
   return (
     <div className="bg-white dark:bg-navy-800 rounded-xl shadow-sm border border-slate-100 dark:border-navy-700 p-5">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Activity size={16} className="text-teal-500 dark:text-teal-400" />
           <h3 className="text-sm font-semibold text-slate-800 dark:text-white">Market Pulse</h3>
@@ -62,6 +62,12 @@ export function MarketAlerts({ alerts, isLoading }: MarketAlertsProps) {
         <button className="text-xs text-teal-600 dark:text-teal-400 font-medium hover:text-teal-700 dark:hover:text-teal-300">
           View all
         </button>
+      </div>
+      
+      {/* Data Source Attribution */}
+      <div className="flex items-center gap-1.5 mb-4">
+        <Database size={10} className="text-slate-400" />
+        <span className="text-[10px] text-slate-400">Source: Zillow Home Value Index</span>
       </div>
 
       <div className="space-y-3">

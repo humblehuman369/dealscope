@@ -3,6 +3,7 @@
 /**
  * IQAnalyzingScreen - Loading screen shown while IQ analyzes all 6 strategies
  * Desktop/Web version with animated progress
+ * Includes time estimate and rotating micro-tips to reduce perceived wait time
  */
 
 import React, { useEffect, useState } from 'react'
@@ -18,6 +19,16 @@ const STRATEGIES: { id: IQStrategyId; name: string }[] = [
   { id: 'wholesale', name: 'Wholesale' },
 ]
 
+// Rotating micro-tips to show during analysis
+const MICRO_TIPS = [
+  'IQ checks 47 data points per strategy...',
+  'Comparing against 12 recent sales nearby...',
+  'Calculating cash-on-cash for 3 financing scenarios...',
+  'Analyzing rental comps within 1 mile...',
+  'Evaluating expense ratios for your market...',
+  'Running DSCR calculations for loan qualification...',
+]
+
 interface IQAnalyzingScreenProps {
   property: IQProperty
   onAnalysisComplete: () => void
@@ -30,6 +41,9 @@ export function IQAnalyzingScreen({
   minimumDisplayTime = 2800,
 }: IQAnalyzingScreenProps) {
   const [completedStrategies, setCompletedStrategies] = useState<number>(0)
+  const [currentTipIndex, setCurrentTipIndex] = useState<number>(0)
+  const [elapsedTime, setElapsedTime] = useState<number>(0)
+  const [showSlowMessage, setShowSlowMessage] = useState<boolean>(false)
   
   // Build full address with city, state, zip
   const fullAddress = [
@@ -37,19 +51,50 @@ export function IQAnalyzingScreen({
     [property.city, property.state, property.zip].filter(Boolean).join(' ')
   ].filter(Boolean).join(', ')
 
-  // Staggered progress animation
+  // Staggered progress animation with irregular intervals for better psychology
   useEffect(() => {
-    const progressInterval = setInterval(() => {
-      setCompletedStrategies(prev => {
-        if (prev < STRATEGIES.length) {
-          return prev + 1
+    const intervals = [300, 500, 350, 600, 400, 450] // Irregular intervals
+    let currentIndex = 0
+    
+    const runProgress = () => {
+      if (currentIndex < STRATEGIES.length) {
+        setCompletedStrategies(currentIndex + 1)
+        currentIndex++
+        if (currentIndex < STRATEGIES.length) {
+          setTimeout(runProgress, intervals[currentIndex] || 400)
         }
-        return prev
-      })
-    }, 400) // 400ms per strategy = ~2.4s total
-
-    return () => clearInterval(progressInterval)
+      }
+    }
+    
+    setTimeout(runProgress, intervals[0])
+    
+    return () => {}
   }, [])
+
+  // Rotate micro-tips every 2.5 seconds
+  useEffect(() => {
+    const tipInterval = setInterval(() => {
+      setCurrentTipIndex(prev => (prev + 1) % MICRO_TIPS.length)
+    }, 2500)
+
+    return () => clearInterval(tipInterval)
+  }, [])
+
+  // Track elapsed time
+  useEffect(() => {
+    const timeInterval = setInterval(() => {
+      setElapsedTime(prev => prev + 1)
+    }, 1000)
+
+    return () => clearInterval(timeInterval)
+  }, [])
+
+  // Show slow connection message after 15 seconds
+  useEffect(() => {
+    if (elapsedTime >= 15) {
+      setShowSlowMessage(true)
+    }
+  }, [elapsedTime])
 
   // Auto-transition after minimum display time
   useEffect(() => {
@@ -85,9 +130,27 @@ export function IQAnalyzingScreen({
         <h1 className="text-2xl font-bold text-white mb-2">
           IQ is Analyzing...
         </h1>
-        <p className="text-sm mb-10" style={{ color: IQ_COLORS.slateLight }}>
+        <p className="text-sm mb-3" style={{ color: IQ_COLORS.slateLight }}>
           Evaluating 6 investment strategies
         </p>
+        
+        {/* Time Estimate */}
+        <p className="text-xs mb-6" style={{ color: IQ_COLORS.slate }}>
+          Usually takes 8-12 seconds
+        </p>
+
+        {/* Rotating Micro-tip */}
+        <div 
+          className="mb-8 px-4 py-2 rounded-lg text-center"
+          style={{ backgroundColor: `${IQ_COLORS.electricCyan}15` }}
+        >
+          <p 
+            className="text-xs transition-opacity duration-300"
+            style={{ color: IQ_COLORS.electricCyan }}
+          >
+            {MICRO_TIPS[currentTipIndex]}
+          </p>
+        </div>
 
         {/* Progress List */}
         <div className="w-full max-w-xs space-y-3">
