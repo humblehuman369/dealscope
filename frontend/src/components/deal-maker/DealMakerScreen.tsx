@@ -204,18 +204,15 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
   // State
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
   const [activeAccordion, setActiveAccordion] = useState<AccordionSection>('buyPrice')
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:207',message:'H2: monthlyRent calculation',data:{propertyRent:property.rent,rentType:typeof property.rent,monthlyRentResult:property.rent||2800,wouldBeZero:property.rent===0},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
-  // #endregion
   const [state, setState] = useState<DealMakerState>({
-    buyPrice: listPrice || property.price || 350000,
+    buyPrice: listPrice ?? property.price ?? 350000,
     downPaymentPercent: 0.20,
     closingCostsPercent: 0.03,
     interestRate: 0.0725,
     loanTermYears: 30,
     rehabBudget: 0,
-    arv: (listPrice || property.price || 350000) * 1.0,
-    monthlyRent: property.rent || 2800,
+    arv: (listPrice ?? property.price ?? 350000) * 1.0,
+    monthlyRent: property.rent ?? 2800,
     otherIncome: 0,
     vacancyRate: 0.05,
     maintenanceRate: 0.05,
@@ -228,9 +225,6 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
 
   // Convert to CompactHeader format
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:237',message:'H3: headerPropertyData rent',data:{propertyRent:property.rent,rentType:typeof property.rent,calculatedDefault:Math.round(property.price*0.008),rentResult:property.rent||Math.round(property.price*0.008)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3'})}).catch(()=>{});
-  // #endregion
   const headerPropertyData: HeaderPropertyData = {
     address: property.address,
     city: property.city,
@@ -240,7 +234,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     baths: property.baths,
     sqft: property.sqft,
     price: property.price,
-    rent: property.rent || Math.round(property.price * 0.008),
+    rent: property.rent ?? Math.round(property.price * 0.008),
     status: 'FOR-SALE',
     image: property.image,
     zpid: property.zpid,

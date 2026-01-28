@@ -29,10 +29,7 @@ export default function DealMakerRoutePage() {
   const streetAddress = addressParts[0] || propertyAddress
   const city = addressParts[1] || 'Unknown'
   const stateZip = addressParts[2] || 'FL 00000'
-  const [state, zipCode] = stateZip.split(' ')
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deal-maker/page.tsx:32',message:'H1: stateZip split result',data:{stateZip,splitResult:stateZip.split(' '),state,zipCode,finalZip:zipCode||'00000'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{});
-  // #endregion
+  const [state, zipCode] = stateZip.split(/\s+/)
 
   // Parse optional query params - helper to avoid NaN values
   const parseNumericParam = (name: string): number | undefined => {
@@ -46,9 +43,6 @@ export default function DealMakerRoutePage() {
   const propertyTax = parseNumericParam('propertyTax')
   const insurance = parseNumericParam('insurance')
   const rentEstimate = parseNumericParam('rentEstimate')
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deal-maker/page.tsx:45',message:'H2/H3: rentEstimate from URL',data:{rentEstimate,rentEstimateType:typeof rentEstimate,urlParam:new URLSearchParams(window.location.search).get('rentEstimate')},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
-  // #endregion
 
   // Build property data from URL params
   const property: DealMakerPropertyData = {
