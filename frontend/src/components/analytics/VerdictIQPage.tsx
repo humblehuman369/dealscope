@@ -113,12 +113,6 @@ export function VerdictIQPage({
     setCurrentStrategy(strategy);
   }, []);
 
-  const handleNavChange = useCallback((navId: NavItemId) => {
-    setActiveNav(navId);
-    if (navId === 'analysis') {
-      onNavigateToAnalysis?.();
-    }
-  }, [onNavigateToAnalysis]);
 
   const handleContinueToAnalysis = useCallback(() => {
     onNavigateToAnalysis?.();
@@ -150,7 +144,6 @@ export function VerdictIQPage({
         onStrategyChange={handleStrategyChange}
         onBack={handleBack}
         activeNav={activeNav}
-        onNavChange={handleNavChange}
       />
 
       {/* Scrollable Content */}
