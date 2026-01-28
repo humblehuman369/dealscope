@@ -44,6 +44,7 @@ interface CompactHeaderProps {
   activeNav?: NavItemId;
   onNavChange?: (navId: NavItemId) => void;
   onPropertyClick?: (isOpen: boolean) => void;
+  defaultPropertyOpen?: boolean;
 }
 
 const STRATEGIES: Strategy[] = [
