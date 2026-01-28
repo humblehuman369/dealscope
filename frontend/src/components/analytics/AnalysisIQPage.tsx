@@ -119,7 +119,7 @@ export function AnalysisIQPage({
         router.push('/search');
         break;
       case 'home':
-        router.push(`/property-details?address=${encodedAddress}`);
+        router.push(`/property/unknown?address=${encodedAddress}`);
         break;
       case 'analysis':
         // Already on analysis page
