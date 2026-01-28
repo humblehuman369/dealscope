@@ -449,7 +449,7 @@ function VerdictContent() {
         router.push('/search')
         break
       case 'home':
-        router.push('/')
+        router.push(`/property-details?address=${encodedAddress}`)
         break
       case 'analysis':
         router.push(`/analysis-iq?address=${encodedAddress}`)

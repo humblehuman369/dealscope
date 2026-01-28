@@ -8,6 +8,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { CompactHeader, PropertyData, NavItemId } from '../layout/CompactHeader';
 import { ProfitQualityCard, ProfitQualityData } from './ProfitQualityCard';
 import { MetricsAccordion, MetricItem } from './MetricsAccordion';
@@ -90,6 +91,7 @@ export function AnalysisIQPage({
   isDark = false,
   showPhoneFrame = true 
 }: AnalysisIQPageProps) {
+  const router = useRouter();
   const [currentStrategy, setCurrentStrategy] = useState('Long-term');
   const [activeNav, setActiveNav] = useState<NavItemId>('analysis');
 
@@ -99,10 +101,12 @@ export function AnalysisIQPage({
     ...(address && { address }),
   };
 
+  const encodedAddress = encodeURIComponent(property.address);
+
   // Handlers
   const handleBack = useCallback(() => {
-    console.log('Back pressed');
-  }, []);
+    router.back();
+  }, [router]);
 
   const handleStrategyChange = useCallback((strategy: string) => {
     setCurrentStrategy(strategy);
@@ -110,8 +114,23 @@ export function AnalysisIQPage({
 
   const handleNavChange = useCallback((navId: NavItemId) => {
     setActiveNav(navId);
-    // Navigation will be connected in Step 2
-  }, []);
+    switch (navId) {
+      case 'search':
+        router.push('/search');
+        break;
+      case 'home':
+        router.push(`/property-details?address=${encodedAddress}`);
+        break;
+      case 'analysis':
+        // Already on analysis page
+        break;
+      case 'deals':
+        router.push(`/deal-maker?address=${encodedAddress}`);
+        break;
+      default:
+        break;
+    }
+  }, [router, encodedAddress]);
 
   const handleContinueToAnalysis = useCallback(() => {
     console.log('Continue to Analysis');

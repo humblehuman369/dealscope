@@ -135,7 +135,16 @@ export default function VerdictIQScreen() {
         router.push('/search');
         break;
       case 'home':
-        router.push('/(tabs)/home');
+        router.push({
+          pathname: '/property-details/[address]',
+          params: {
+            address: encodedAddress,
+            price: String(property.price),
+            beds: String(property.beds),
+            baths: String(property.baths),
+            sqft: String(property.sqft),
+          },
+        });
         break;
       case 'analysis':
         router.push({

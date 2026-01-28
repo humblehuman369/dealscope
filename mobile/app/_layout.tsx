@@ -135,6 +135,15 @@ function AppContent({
             animation: 'slide_from_right',
           }} 
         />
+        {/* Property Details Page */}
+        <Stack.Screen 
+          name="property-details/[address]" 
+          options={{ 
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'slide_from_right',
+          }} 
+        />
       </Stack>
       
       {/* Animated Splash Screen with pulsating logo */}

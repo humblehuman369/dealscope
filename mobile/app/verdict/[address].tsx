@@ -118,7 +118,19 @@ export default function VerdictScreen() {
         router.push('/(tabs)/search');
         break;
       case 'home':
-        router.push('/(tabs)');
+        router.push({
+          pathname: '/property-details/[address]',
+          params: {
+            address: encodedAddress,
+            price: String(property.price),
+            beds: String(property.beds),
+            baths: String(property.baths),
+            sqft: String(property.sqft),
+            city: property.city,
+            state: property.state,
+            zip: property.zip,
+          },
+        } as any);
         break;
       case 'analysis':
         router.push({
