@@ -216,8 +216,7 @@ export function CompactHeader({
       </div>
 
       {/* Dark Header */}
-      <div className="bg-[#0A1628]" ref={dropdownRef}>
-        <div className="max-w-[480px] mx-auto px-4 py-3 relative">
+      <div className="max-w-[480px] mx-auto bg-[#0A1628] px-4 py-3 relative" ref={dropdownRef}>
         {/* Title Row */}
         <div className="flex items-center justify-between mb-1">
           <button 
@@ -348,7 +347,6 @@ export function CompactHeader({
             ))}
           </div>
         )}
-        </div>
       </div>
 
       {/* Icon Navigation */}
