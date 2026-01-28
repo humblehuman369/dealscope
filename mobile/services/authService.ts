@@ -139,7 +139,7 @@ export async function storeTokens(tokens: TokenResponse): Promise<void> {
 export async function getAccessToken(): Promise<string | null> {
   // #region agent log
   const token = await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'authService.ts:getAccessToken',message:'Retrieved access token',data:{hasToken:!!token,tokenLength:token?.length||0,tokenPrefix:token?.substring(0,20)||'NULL',tokenSuffix:token?.substring(token.length-10)||'NULL'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2,H5'})}).catch(()=>{});
+  console.log('[DEBUG-H2,H5] getAccessToken:', JSON.stringify({hasToken:!!token,tokenLength:token?.length||0,tokenPrefix:token?.substring(0,20)||'NULL',tokenSuffix:token?.substring((token?.length||0)-10)||'NULL'}));
   // #endregion
   return token;
 }
@@ -150,7 +150,7 @@ export async function getAccessToken(): Promise<string | null> {
 export async function getRefreshToken(): Promise<string | null> {
   // #region agent log
   const token = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'authService.ts:getRefreshToken',message:'Retrieved refresh token',data:{hasToken:!!token,tokenLength:token?.length||0,tokenPrefix:token?.substring(0,20)||'NULL'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H2'})}).catch(()=>{});
+  console.log('[DEBUG-H1,H2] getRefreshToken:', JSON.stringify({hasToken:!!token,tokenLength:token?.length||0,tokenPrefix:token?.substring(0,20)||'NULL'}));
   // #endregion
   return token;
 }
@@ -290,7 +290,7 @@ export async function logout(): Promise<void> {
  */
 export async function refreshAccessToken(refreshToken: string): Promise<TokenResponse | null> {
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'authService.ts:refreshAccessToken:entry',message:'Attempting token refresh',data:{apiUrl:API_BASE_URL,refreshTokenLength:refreshToken?.length||0,refreshTokenPrefix:refreshToken?.substring(0,20)||'NULL'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H3,H4'})}).catch(()=>{});
+  console.log('[DEBUG-H1,H3,H4] refreshAccessToken:entry:', JSON.stringify({apiUrl:API_BASE_URL,refreshTokenLength:refreshToken?.length||0,refreshTokenPrefix:refreshToken?.substring(0,20)||'NULL'}));
   // #endregion
   try {
     const response = await axios.post<TokenResponse>(
@@ -298,12 +298,12 @@ export async function refreshAccessToken(refreshToken: string): Promise<TokenRes
       { refresh_token: refreshToken }
     );
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'authService.ts:refreshAccessToken:success',message:'Token refresh succeeded',data:{hasNewToken:!!response.data?.access_token},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{});
+    console.log('[DEBUG-H1] refreshAccessToken:success:', JSON.stringify({hasNewToken:!!response.data?.access_token}));
     // #endregion
     return response.data;
   } catch (error: any) {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'authService.ts:refreshAccessToken:error',message:'Token refresh failed',data:{errorStatus:error?.response?.status,errorMessage:error?.response?.data?.detail||error?.message,errorName:error?.name},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H3'})}).catch(()=>{});
+    console.log('[DEBUG-H1,H3] refreshAccessToken:error:', JSON.stringify({errorStatus:error?.response?.status,errorMessage:error?.response?.data?.detail||error?.message,errorName:error?.name}));
     // #endregion
     console.warn('Token refresh failed:', error);
     return null;
