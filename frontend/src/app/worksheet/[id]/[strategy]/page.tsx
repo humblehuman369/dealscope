@@ -29,9 +29,8 @@ export default function StrategyWorksheetPage() {
 
   const { property, isLoading, error } = useWorksheetProperty(propertyId, {
     onLoaded: (data) => {
-      if (strategyParam === 'ltr') {
-        initializeFromProperty(data)
-      }
+      // Initialize store for all strategies - needed for RentalCompsSection and other shared components
+      initializeFromProperty(data)
     },
   })
 

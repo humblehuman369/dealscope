@@ -186,12 +186,13 @@ export function CompactHeader({
   return (
     <header className="sticky top-0 z-50 font-sans">
       {/* App Header - White bar with logo */}
-      <div className="bg-white px-4 py-2.5 flex items-center justify-between border-b border-slate-200">
-        <div className="text-lg font-extrabold">
-          <span className="text-[#0A1628]">Invest</span>
-          <span className="text-[#0891B2]">IQ</span>
-        </div>
-        <div className="flex items-center gap-3">
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between">
+          <div className="text-lg font-extrabold">
+            <span className="text-[#0A1628]">Invest</span>
+            <span className="text-[#0891B2]">IQ</span>
+          </div>
+          <div className="flex items-center gap-3">
           <button className="p-1 text-slate-400 hover:text-slate-600 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
@@ -211,10 +212,12 @@ export function CompactHeader({
             </svg>
           </button>
         </div>
+        </div>
       </div>
 
       {/* Dark Header */}
-      <div className="bg-[#0A1628] px-4 py-3 relative" ref={dropdownRef}>
+      <div className="bg-[#0A1628]" ref={dropdownRef}>
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3 relative">
         {/* Title Row */}
         <div className="flex items-center justify-between mb-1">
           <button 
@@ -345,10 +348,12 @@ export function CompactHeader({
             ))}
           </div>
         )}
+        </div>
       </div>
 
       {/* Icon Navigation */}
-      <nav className="bg-white px-2 py-1.5 flex items-center justify-around border-b border-slate-200">
+      <nav className="bg-white border-b border-slate-200">
+        <div className="max-w-[1600px] mx-auto px-2 py-1.5 flex items-center justify-around">
         {NAV_ITEMS.map((item) => {
           const IconComponent = NAV_ICONS[item.id];
           const isActive = activeNav === item.id;
@@ -365,6 +370,7 @@ export function CompactHeader({
             </button>
           );
         })}
+        </div>
       </nav>
     </header>
   );

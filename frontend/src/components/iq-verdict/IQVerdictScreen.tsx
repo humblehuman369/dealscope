@@ -182,8 +182,8 @@ export function IQVerdictScreen({
         onStrategyChange={handleHeaderStrategyChange}
       />
 
-      {/* Main Content - Max 480px centered */}
-      <main className="max-w-[480px] mx-auto flex-1 w-full">
+      {/* Main Content - Max 1600px centered (matching header) */}
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex-1 w-full">
         {/* Content Area with padding */}
         <div className="p-4">
           {/* IQ Verdict Card */}
