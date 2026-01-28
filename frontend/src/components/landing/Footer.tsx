@@ -6,20 +6,17 @@ import Link from 'next/link';
 const footerLinks = {
   product: [
     { label: 'Features', href: '#features' },
-    { label: 'Pricing', href: '#pricing' },
     { label: 'Strategies', href: '#strategies' },
-    { label: 'API', href: '#' },
+    { label: 'DealMakerIQ', href: '#dealmaker' },
   ],
   company: [
     { label: 'About', href: '#' },
     { label: 'Blog', href: '#' },
-    { label: 'Careers', href: '#' },
     { label: 'Contact', href: '#' },
   ],
   support: [
     { label: 'Help Center', href: '#' },
     { label: 'Documentation', href: '#' },
-    { label: 'Community', href: '#' },
     { label: 'Status', href: '#' },
   ],
 };

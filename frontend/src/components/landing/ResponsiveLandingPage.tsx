@@ -1,26 +1,23 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { StrategyCard } from './StrategyCard';
 import { FeatureCard } from './FeatureCard';
 import { Footer } from './Footer';
-import { ScanDemoSection } from './ScanDemoSection';
 import { TryItNowModal } from './TryItNowModal';
-import { strategies, features, stats, howItWorksSteps, testimonials, aboutCards } from './types';
+import { strategies, features, howItWorksSteps, capabilityStats } from './types';
 import { 
   Camera, 
   BarChart3, 
-  Lightbulb, 
+  TrendingUp as Lightbulb, 
   Check, 
   Play,
   Quote,
-  Database,
-  Calculator,
-  ShieldCheck,
-  ExternalLink
+  Home,
+  ArrowRight
 } from 'lucide-react';
 
 interface ResponsiveLandingPageProps {
@@ -32,7 +29,7 @@ function AuthParamHandler() {
   const { setShowAuthModal } = useAuth();
   const searchParams = useSearchParams();
 
-  useEffect(() => {
+  React.useEffect(() => {
     const authParam = searchParams.get('auth');
     if (authParam === 'login') {
       setShowAuthModal('login');
@@ -41,12 +38,66 @@ function AuthParamHandler() {
     }
   }, [searchParams, setShowAuthModal]);
 
-  return null; // This component only handles the side effect
+  return null;
 }
+
+// DealMakerIQ calculation logic
+function useDealMakerCalculations(buyPrice: number, downPaymentPct: number, monthlyRent: number) {
+  const downPayment = buyPrice * (downPaymentPct / 100);
+  const closingCosts = buyPrice * 0.03;
+  const cashNeeded = downPayment + closingCosts;
+
+  const loanAmount = buyPrice - downPayment;
+  const monthlyRate = 0.07 / 12;
+  const numPayments = 360;
+  const mortgagePayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
+    (Math.pow(1 + monthlyRate, numPayments) - 1);
+
+  const totalMonthlyExpenses = mortgagePayment +
+    (buyPrice * 0.012) / 12 + // Property tax
+    150 + // Insurance
+    monthlyRent * 0.05 + // Vacancy
+    monthlyRent * 0.05; // Maintenance
+
+  const monthlyFlow = monthlyRent - totalMonthlyExpenses;
+  const annualFlow = monthlyFlow * 12;
+  const cocReturn = (annualFlow / cashNeeded) * 100;
+
+  let verdict: string;
+  if (cocReturn >= 8) verdict = 'Great Deal';
+  else if (cocReturn >= 4) verdict = 'Good Deal';
+  else if (cocReturn >= 0) verdict = 'Marginal';
+  else verdict = 'Risky';
+
+  return { cashNeeded, monthlyFlow, cocReturn, verdict };
+}
+
+// Format helpers
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
+const formatCurrencyShort = (value: number) => {
+  if (Math.abs(value) >= 1000) {
+    return '$' + (value / 1000).toFixed(1) + 'K';
+  }
+  return formatCurrency(value);
+};
 
 export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageProps) {
   const { user, isAuthenticated, setShowAuthModal } = useAuth();
   const [showTryItNowModal, setShowTryItNowModal] = useState(false);
+  
+  // DealMakerIQ State
+  const [buyPrice, setBuyPrice] = useState(350000);
+  const [downPaymentPct, setDownPaymentPct] = useState(20);
+  const [monthlyRent, setMonthlyRent] = useState(2800);
+  
+  const metrics = useDealMakerCalculations(buyPrice, downPaymentPct, monthlyRent);
 
   const handleTryItNow = () => {
     setShowTryItNowModal(true);
@@ -60,7 +111,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
 
   return (
     <div className="landing-page">
-      {/* Handle auth query params (e.g., ?auth=login after email verification) */}
+      {/* Handle auth query params */}
       <Suspense fallback={null}>
         <AuthParamHandler />
       </Suspense>
@@ -73,18 +124,16 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
           </Link>
           
           <nav className="nav-links">
-            <a href="#demo">Demo</a>
+            <a href="#how-it-works">How It Works</a>
             <a href="#strategies">Strategies</a>
             <a href="#features">Features</a>
           </nav>
           
           <div className="header-cta">
             {isAuthenticated && user ? (
-              <>
-                <Link href="/dashboard" className="btn btn-ghost">
-                  Dashboard
-                </Link>
-              </>
+              <Link href="/dashboard" className="btn btn-ghost">
+                Dashboard
+              </Link>
             ) : (
               <>
                 <button 
@@ -108,133 +157,96 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
       {/* Hero Section */}
       <section className="hero" id="demo">
         <div className="container">
-          <div className="hero-content">
-            <div className="hero-grid">
-              {/* Text Content */}
-              <div className="hero-text">
-                <div className="hero-eyebrow">
-                  <span className="hero-eyebrow-text">Intel for Real Estate Investors</span>
-                </div>
-                
-                <h1>
-                  Point. Scan.<br/>
-                  <span className="highlight">Invest Smarter.</span>
-                </h1>
-                <p className="hero-subtitle">
-                  Just point your phone at a property, IQ collects<br/>
-                  real-time multi-source market info and analyzes across<br/>
-                  <strong>six investment strategies</strong> in 60 seconds.
-                </p>
-                <div className="hero-cta">
-                  <button onClick={handleTryItNow} className="btn btn-primary btn-large">
-                    <Camera size={20} />
-                    Try It Now Free
-                  </button>
-                  <button onClick={handleTryItNow} className="btn btn-ghost">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                    </svg>
-                    Enter Address
-                  </button>
-                </div>
-                <div className="trust-signals">
-                  <span>
-                    <Check className="icon" size={16} />
-                    Start Free
-                  </span>
-                  <span>
-                    <Check className="icon" size={16} />
-                    No Credit Card
-                  </span>
-                  <span>
-                    <Check className="icon" size={16} />
-                    Instant Results
-                  </span>
-                </div>
+          <div className="hero-grid">
+            {/* Text Content */}
+            <div className="hero-text">
+              <div className="hero-eyebrow">
+                <span className="hero-eyebrow-icon">🚀</span>
+                <span className="hero-eyebrow-text">Early Access — Limited Beta</span>
               </div>
+              
+              <h1>
+                Point. Scan.<br/>
+                <span className="highlight">Invest Smarter.</span>
+              </h1>
+              <p className="hero-subtitle">
+                Point your phone at any property and get professional-grade investment analysis across 6 strategies in 60 seconds. No spreadsheets. No guesswork.
+              </p>
+              <div className="hero-cta">
+                <button onClick={handleTryItNow} className="btn btn-primary btn-large">
+                  Scan Your First Property Free
+                </button>
+                <button onClick={handleTryItNow} className="btn btn-ghost">
+                  <Play size={20} />
+                  Watch Demo
+                </button>
+              </div>
+              <div className="trust-signals">
+                <span>
+                  <Check className="icon" size={16} />
+                  No credit card required
+                </span>
+                <span>
+                  <Check className="icon" size={16} />
+                  3 free property scans
+                </span>
+              </div>
+            </div>
 
-              {/* Phone Visual */}
-              <div className="hero-visual">
-                <div className="phone-glow"></div>
-                <div className="phone-mockup">
-                  <div className="phone-screen">
-                    <div className="phone-notch"></div>
-                    <div className="phone-content">
-                      <div className="phone-header">
-                        <div className="phone-logo">IQ</div>
-                        <span className="phone-title">InvestIQ</span>
-                      </div>
+            {/* Phone Visual */}
+            <div className="hero-visual">
+              <div className="phone-glow"></div>
+              <div className="phone-mockup">
+                <div className="phone-screen">
+                  <div className="phone-notch"></div>
+                  <div className="phone-content">
+                    <div className="phone-header">
+                      <div className="phone-logo">IQ</div>
+                      <span className="phone-title">InvestIQ</span>
+                    </div>
 
-                      <div className="scan-animation">
-                        {/* House Being Scanned */}
-                        <div className="phone-house-scan">
-                          <div className="phone-house-container">
-                            <svg viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              {/* House body fill */}
-                              <path d="M150 50 L260 130 L260 290 L40 290 L40 130 Z" fill="rgba(77, 208, 225, 0.03)" stroke="rgba(77, 208, 225, 0.5)" strokeWidth="1.5"/>
-                              {/* Roof */}
-                              <path d="M150 30 L20 120 L40 120 L40 130 L150 50 L260 130 L260 120 L280 120 Z" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.7)" strokeWidth="2"/>
-                              {/* Chimney */}
-                              <rect x="195" y="65" width="25" height="45" fill="rgba(77, 208, 225, 0.03)" stroke="rgba(77, 208, 225, 0.5)" strokeWidth="1.5"/>
-                              {/* Front Door */}
-                              <rect x="130" y="195" width="40" height="75" rx="3" fill="rgba(77, 208, 225, 0.08)" stroke="rgba(77, 208, 225, 0.7)" strokeWidth="2"/>
-                              <circle cx="160" cy="235" r="3" fill="rgba(77, 208, 225, 0.9)"/>
-                              {/* Door frame top */}
-                              <path d="M125 195 L150 180 L175 195" stroke="rgba(77, 208, 225, 0.5)" strokeWidth="1.5" fill="none"/>
-                              {/* Left Window */}
-                              <rect x="60" y="155" width="45" height="40" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.7)" strokeWidth="1.5"/>
-                              <line x1="82.5" y1="155" x2="82.5" y2="195" stroke="rgba(77, 208, 225, 0.4)" strokeWidth="1"/>
-                              <line x1="60" y1="175" x2="105" y2="175" stroke="rgba(77, 208, 225, 0.4)" strokeWidth="1"/>
-                              {/* Right Window */}
-                              <rect x="195" y="155" width="45" height="40" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.7)" strokeWidth="1.5"/>
-                              <line x1="217.5" y1="155" x2="217.5" y2="195" stroke="rgba(77, 208, 225, 0.4)" strokeWidth="1"/>
-                              <line x1="195" y1="175" x2="240" y2="175" stroke="rgba(77, 208, 225, 0.4)" strokeWidth="1"/>
-                              {/* Garage Door */}
-                              <rect x="60" y="225" width="50" height="45" rx="2" fill="rgba(77, 208, 225, 0.05)" stroke="rgba(77, 208, 225, 0.5)" strokeWidth="1.5"/>
-                              <line x1="60" y1="238" x2="110" y2="238" stroke="rgba(77, 208, 225, 0.3)" strokeWidth="1"/>
-                              <line x1="60" y1="252" x2="110" y2="252" stroke="rgba(77, 208, 225, 0.3)" strokeWidth="1"/>
-                              {/* Ground line */}
-                              <line x1="20" y1="290" x2="280" y2="290" stroke="rgba(77, 208, 225, 0.4)" strokeWidth="1"/>
-                            </svg>
-                            
-                            {/* Scan line overlay */}
-                            <div className="phone-scan-line-overlay">
-                              <div className="phone-scan-line"></div>
-                            </div>
-                            
-                            {/* Corner brackets */}
-                            <div className="phone-scan-brackets">
-                              <div className="phone-scan-bracket tl"></div>
-                              <div className="phone-scan-bracket tr"></div>
-                              <div className="phone-scan-bracket bl"></div>
-                              <div className="phone-scan-bracket br"></div>
-                            </div>
+                    <div className="scan-animation">
+                      <div className="phone-house-scan">
+                        <div className="phone-house-container">
+                          <svg viewBox="0 0 100 100" fill="none">
+                            <path d="M50 10L10 40V90H40V65H60V90H90V40L50 10Z" stroke="#00D4FF" strokeWidth="2" />
+                            <rect x="42" y="45" width="16" height="16" stroke="#00D4FF" strokeWidth="1.5" />
+                            <path d="M10 40L50 10L90 40" stroke="#00D4FF" strokeWidth="2" />
+                          </svg>
+                          <div className="phone-scan-line-overlay">
+                            <div className="phone-scan-line"></div>
                           </div>
-                        </div>
-                        <div className="scan-status">
-                          <div className="scan-status-text">Scanning Property...</div>
-                          <div className="scan-status-address">1842 Investor Lane, Denver</div>
+                          <div className="phone-scan-brackets">
+                            <div className="phone-scan-bracket tl"></div>
+                            <div className="phone-scan-bracket tr"></div>
+                            <div className="phone-scan-bracket bl"></div>
+                            <div className="phone-scan-bracket br"></div>
+                          </div>
                         </div>
                       </div>
+                      <div className="scan-status">
+                        <div className="scan-status-text">Scanning Property...</div>
+                        <div className="scan-status-address">1842 Investor Lane, Denver</div>
+                      </div>
+                    </div>
 
-                      <div className="phone-results">
-                        <div className="phone-results-header">
-                          <span className="phone-results-label">Analysis Complete</span>
-                          <span className="phone-results-badge">✓ 6 Strategies</span>
+                    <div className="phone-results">
+                      <div className="phone-results-header">
+                        <span className="phone-results-label">Analysis Complete</span>
+                        <span className="phone-results-badge">✓ 6 Strategies</span>
+                      </div>
+                      <div className="phone-results-grid">
+                        <div className="phone-result-item">
+                          <div className="phone-result-value cyan">14.3%</div>
+                          <div className="phone-result-label">ROI</div>
                         </div>
-                        <div className="phone-results-grid">
-                          <div className="phone-result-item">
-                            <div className="phone-result-value green">14.3%</div>
-                            <div className="phone-result-label">ROI</div>
-                          </div>
-                          <div className="phone-result-item">
-                            <div className="phone-result-value cyan">$187</div>
-                            <div className="phone-result-label">Cash Flow</div>
-                          </div>
-                          <div className="phone-result-item">
-                            <div className="phone-result-value blue">8.2%</div>
-                            <div className="phone-result-label">Cap Rate</div>
-                          </div>
+                        <div className="phone-result-item">
+                          <div className="phone-result-value cyan">$187</div>
+                          <div className="phone-result-label">Cash Flow</div>
+                        </div>
+                        <div className="phone-result-item">
+                          <div className="phone-result-value cyan">8.2%</div>
+                          <div className="phone-result-label">Cap Rate</div>
                         </div>
                       </div>
                     </div>
@@ -246,32 +258,16 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
         </div>
       </section>
 
-      {/* Social Proof Bar */}
-      <section className="social-proof">
+      {/* Capability Stats Bar */}
+      <section className="capability-bar">
         <div className="container">
-          <div className="social-proof-inner">
-            <div className="social-proof-item">
-              <div className="social-proof-live"></div>
-              <span className="social-proof-number">23,847</span>
-              <span className="social-proof-label">properties analyzed</span>
-            </div>
-            <div className="social-proof-divider"></div>
-            <div className="social-proof-item">
-              <span className="social-proof-number">4.9</span>
-              <div className="social-proof-stars">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} width="18" height="18" viewBox="0 0 24 24" fill="#fbbf24">
-                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-                  </svg>
-                ))}
+          <div className="capability-inner">
+            {capabilityStats.map((stat, idx) => (
+              <div key={idx} className="capability-item">
+                <div className="capability-value">{stat.value}</div>
+                <div className="capability-label">{stat.label}</div>
               </div>
-              <span className="social-proof-label">from 2,400+ investors</span>
-            </div>
-            <div className="social-proof-divider"></div>
-            <div className="social-proof-item">
-              <span className="social-proof-number">60 sec</span>
-              <span className="social-proof-label">avg. analysis time</span>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -283,7 +279,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
             <div className="section-label">Simple 3-Step Process</div>
             <h2 className="section-title">How <span className="highlight">Point & Scan</span> Works</h2>
             <p className="section-subtitle">
-              No more spreadsheets. No more guesswork. Get professional-grade investment analysis in the time it takes to snap a photo.
+              No more spreadsheets. No more guesswork. Professional-grade analysis in the time it takes to snap a photo.
             </p>
           </div>
 
@@ -292,35 +288,165 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
               const StepIcon = step.number === 1 ? Camera : step.number === 2 ? BarChart3 : Lightbulb;
               return (
                 <div key={step.number} className={`step-card step-${step.number}`}>
-                  <div className="step-bg-number">{step.number}</div>
                   <div className="step-icon">
                     <StepIcon size={28} />
                   </div>
                   <h3 className="step-title">{step.title}</h3>
                   <p className="step-description">{step.description}</p>
-                  <ul className="step-features">
-                    {step.features.map((feature, idx) => (
-                      <li key={idx}>
-                        <Check className="icon" size={16} />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               );
             })}
           </div>
+        </div>
+      </section>
 
-          <div className="video-cta">
-            <button className="video-btn">
-              <div className="video-btn-icon">
-                <Play size={20} fill="currentColor" />
+      {/* DealMakerIQ Section */}
+      <section className="dealmaker-section" id="dealmaker">
+        <div className="container">
+          <div className="dealmaker-header">
+            <span className="dealmaker-badge">Deal<span className="dealmaker-badge-accent">Maker</span>IQ</span>
+            <h2 className="dealmaker-title">Dial In Your Perfect Deal</h2>
+            <p className="dealmaker-subtitle">
+              Adjust the numbers and watch your returns update in real time. This is how smart investors model deals before making offers.
+            </p>
+          </div>
+
+          <div className="dealmaker-card">
+            {/* Property Header */}
+            <div className="dealmaker-property">
+              <div className="dealmaker-property-icon">
+                <Home size={22} className="text-teal-600" />
               </div>
-              <div className="video-btn-text">
-                <div className="video-btn-title">Watch Demo</div>
-                <div className="video-btn-subtitle">See Point & Scan in action (30 sec)</div>
+              <div className="dealmaker-property-info">
+                <div className="dealmaker-property-address">3742 Lighthouse Circle, Boca Raton, FL</div>
+                <div className="dealmaker-property-specs">4 bed · 2 bath · 1,850 sqft</div>
               </div>
+              <div className="dealmaker-sample-badge">Sample</div>
+            </div>
+
+            {/* Interactive Sliders */}
+            <div className="dealmaker-sliders">
+              <div className="dealmaker-slider-group">
+                <div className="dealmaker-slider-label">
+                  <span className="dealmaker-slider-label-text">Buy Price</span>
+                  <span className="dealmaker-slider-value">{formatCurrency(buyPrice)}</span>
+                </div>
+                <input
+                  type="range"
+                  className="dealmaker-slider"
+                  min="200000"
+                  max="600000"
+                  step="5000"
+                  value={buyPrice}
+                  onChange={(e) => setBuyPrice(parseInt(e.target.value))}
+                />
+                <div className="dealmaker-slider-range">
+                  <span>$200K</span>
+                  <span>$600K</span>
+                </div>
+              </div>
+
+              <div className="dealmaker-slider-group">
+                <div className="dealmaker-slider-label">
+                  <span className="dealmaker-slider-label-text">Down Payment</span>
+                  <span className="dealmaker-slider-value">{downPaymentPct}%</span>
+                </div>
+                <input
+                  type="range"
+                  className="dealmaker-slider"
+                  min="5"
+                  max="50"
+                  step="1"
+                  value={downPaymentPct}
+                  onChange={(e) => setDownPaymentPct(parseInt(e.target.value))}
+                />
+                <div className="dealmaker-slider-range">
+                  <span>5%</span>
+                  <span>50%</span>
+                </div>
+              </div>
+
+              <div className="dealmaker-slider-group">
+                <div className="dealmaker-slider-label">
+                  <span className="dealmaker-slider-label-text">Monthly Rent</span>
+                  <span className="dealmaker-slider-value">{formatCurrency(monthlyRent)}</span>
+                </div>
+                <input
+                  type="range"
+                  className="dealmaker-slider"
+                  min="1500"
+                  max="5000"
+                  step="50"
+                  value={monthlyRent}
+                  onChange={(e) => setMonthlyRent(parseInt(e.target.value))}
+                />
+                <div className="dealmaker-slider-range">
+                  <span>$1,500</span>
+                  <span>$5,000</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Metrics Grid */}
+            <div className="dealmaker-metrics">
+              <div className="dealmaker-metric">
+                <div className="dealmaker-metric-label">Cash Needed</div>
+                <div className="dealmaker-metric-value">{formatCurrencyShort(metrics.cashNeeded)}</div>
+              </div>
+              <div className="dealmaker-metric">
+                <div className="dealmaker-metric-label">Monthly Flow</div>
+                <div className={`dealmaker-metric-value ${metrics.monthlyFlow >= 0 ? 'positive' : 'negative'}`}>
+                  {metrics.monthlyFlow >= 0 ? '+' : ''}{formatCurrency(Math.round(metrics.monthlyFlow))}
+                </div>
+              </div>
+              <div className="dealmaker-metric">
+                <div className="dealmaker-metric-label">COC Return</div>
+                <div className={`dealmaker-metric-value ${metrics.cocReturn >= 4 ? 'positive' : metrics.cocReturn >= 0 ? '' : 'negative'}`}>
+                  {metrics.cocReturn.toFixed(1)}%
+                </div>
+              </div>
+              <div className="dealmaker-metric verdict">
+                <div className="dealmaker-metric-label">IQ Verdict</div>
+                <div className="dealmaker-metric-value verdict-text">{metrics.verdict}</div>
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <button className="dealmaker-cta" onClick={handleTryItNow}>
+              Try DealMakerIQ Free
+              <ArrowRight size={20} />
             </button>
+          </div>
+
+          {/* Feature Pills */}
+          <div className="dealmaker-pills">
+            {['15+ Variables', '6 Strategies', 'Instant Updates', 'PDF Reports'].map((pill) => (
+              <div key={pill} className="dealmaker-pill">
+                <Check size={16} className="text-teal-600" />
+                {pill}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Founder Quote Section */}
+      <section className="founder-quote">
+        <div className="container">
+          <div className="founder-quote-inner">
+            <div className="founder-quote-icon">
+              <Quote size={24} />
+            </div>
+            <p className="founder-quote-text">
+              &ldquo;I analyzed 200+ properties manually before my first purchase—each taking 30+ minutes in spreadsheets. InvestIQ is the tool I wish existed. Now you can screen deals in seconds, not hours.&rdquo;
+            </p>
+            <div className="founder-quote-author">
+              <div className="founder-avatar">H</div>
+              <div className="founder-info">
+                <h4>Humble</h4>
+                <p>Founder, InvestIQ</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -332,26 +458,12 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
             <div className="section-label">6 Investment Strategies</div>
             <h2 className="section-title">One Property, Multiple Opportunities</h2>
             <p className="section-subtitle">
-              Instantly see how any property performs across all major real estate investment strategies.
+              See how any property performs across all major real estate investment strategies—instantly.
             </p>
           </div>
           <div className="strategy-grid">
             {strategies.map((strategy) => (
               <StrategyCard key={strategy.id} strategy={strategy} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="stats-section">
-        <div className="container">
-          <div className="stats-grid">
-            {stats.map((stat, idx) => (
-              <div key={idx} className="stat-item">
-                <div className="stat-value">{stat.value}</div>
-                <div className="stat-label">{stat.label}</div>
-              </div>
             ))}
           </div>
         </div>
@@ -363,9 +475,6 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
           <div className="section-header">
             <div className="section-label">Everything You Need</div>
             <h2 className="section-title">What You Get with <span className="highlight">InvestIQ</span></h2>
-            <p className="section-subtitle">
-              Professional-grade investment analysis tools designed for modern real estate investors.
-            </p>
           </div>
           <div className="features-grid">
             {features.map((feature, idx) => (
@@ -375,115 +484,19 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="testimonials">
-        <div className="container">
-          <div className="section-header">
-            <div className="section-label">Trusted by Investors</div>
-            <h2 className="section-title">What Investors Are <span className="highlight">Saying</span></h2>
-          </div>
-
-          <div className="testimonials-grid">
-            {testimonials.map((testimonial, idx) => (
-              <div key={idx} className="testimonial-card">
-                <div className="testimonial-quote-icon">
-                  <Quote size={16} />
-                </div>
-                <p className="testimonial-text">&ldquo;{testimonial.text}&rdquo;</p>
-                <div className="testimonial-author">
-                  <div className="testimonial-avatar">{testimonial.initials}</div>
-                  <div className="testimonial-info">
-                    <h4>{testimonial.authorName}</h4>
-                    <p>{testimonial.authorTitle}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="testimonials-stats">
-            <div className="stats-grid">
-              <div className="stat-item">
-                <div className="stat-value">23,847+</div>
-                <div className="stat-label">Properties Analyzed</div>
-              </div>
-              <div className="stat-item">
-                <div className="stat-value">6</div>
-                <div className="stat-label">Investment Strategies</div>
-              </div>
-              <div className="stat-item">
-                <div className="stat-value">60 sec</div>
-                <div className="stat-label">Average Analysis Time</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section className="about" id="about">
-        <div className="container">
-          <div className="about-grid">
-            <div className="about-content">
-              <div className="section-label">Built by Investors, For Investors</div>
-              <h2 className="section-title">Why We Built <span className="highlight">InvestIQ</span></h2>
-              
-              <p className="about-text">
-                I analyzed over 200 properties before my first purchase—each one taking 30+ minutes to run the numbers in spreadsheets. That&apos;s more than 100 hours of tedious calculations.
-              </p>
-              <p className="about-text">
-                InvestIQ was born from that frustration. I knew there had to be a faster way to screen deals without sacrificing accuracy. A way to analyze properties on the go, in real-time, as I drove past them.
-              </p>
-              <p className="about-text">
-                <strong>Now, thousands of investors use InvestIQ to screen properties in seconds, not hours. Because the best deals don&apos;t wait.</strong>
-              </p>
-
-              <div className="about-author">
-                <div className="about-author-avatar">H</div>
-                <div className="about-author-info">
-                  <h4>Humble</h4>
-                  <p>Founder, InvestIQ</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="about-cards">
-              {aboutCards.map((card, idx) => {
-                const IconComponent = card.icon === 'database' ? Database : card.icon === 'calculator' ? Calculator : ShieldCheck;
-                return (
-                  <div key={idx} className="about-card">
-                    <div className="about-card-icon">
-                      <IconComponent size={24} />
-                    </div>
-                    <div className="about-card-content">
-                      <h4>{card.title}</h4>
-                      <p>{card.description}</p>
-                    </div>
-                  </div>
-                );
-              })}
-              <a href="#methodology" className="about-link">
-                Read our full methodology
-                <ExternalLink size={16} />
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="cta-section">
         <div className="container cta-content">
           <div className="section-label">Get Started Today</div>
           <h2 className="cta-title">
-            Let IQ Analyze Your First Property <span className="highlight">Free</span>
+            Analyze Your First Property <span className="highlight">Free</span>
           </h2>
           <p className="cta-subtitle">
-            Point your camera at any property and IQ will deliver genius-level analysis across 6 investment strategies. No credit card required.
+            Point your camera at any property and get genius-level analysis across 6 strategies. No credit card required.
           </p>
           <div className="cta-buttons">
             <button onClick={handleTryItNow} className="btn btn-primary btn-large">
-              Try It Now
+              Start Your Free Analysis
             </button>
           </div>
           <div className="app-badges">

@@ -89,33 +89,33 @@ export const strategies: Strategy[] = [
 export const features: Feature[] = [
   {
     icon: 'scan',
-    title: 'Point & Scan',
-    description: 'Just point your camera at any property. Our AI instantly identifies it and pulls comprehensive data.',
+    title: "Know if it's a deal in 60 seconds",
+    description: 'Point your camera at any property and get instant analysis without spreadsheets.',
   },
   {
-    icon: 'chart',
-    title: '6 Strategies Compared',
-    description: 'See how each property performs across all major investment strategies, side by side, instantly.',
+    icon: 'strategy',
+    title: 'Find the strategy that fits YOUR goals',
+    description: 'See how every property performs across all 6 investment strategies instantly.',
   },
   {
-    icon: 'clock',
-    title: '60-Second Analysis',
-    description: 'From address to investment decision in under a minute. Stop wasting hours on spreadsheets.',
+    icon: 'comps',
+    title: 'See what similar properties sold for',
+    description: 'Access real market comps to validate your analysis and make confident offers.',
   },
   {
-    icon: 'check',
-    title: 'Accurate Projections',
-    description: 'Real market data, local comps, and proven formulas power every calculation.',
+    icon: 'profit',
+    title: 'Model your exact profit before offering',
+    description: 'Adjust every variable and watch returns update in real-time with DealMakerIQ.',
   },
   {
-    icon: 'folder',
-    title: 'Portfolio Tracking',
-    description: 'Save properties, track performance, and monitor your entire portfolio from one dashboard.',
+    icon: 'report',
+    title: 'Professional PDF reports',
+    description: 'Generate lender-ready reports to share with partners or your investment team.',
   },
   {
-    icon: 'lock',
-    title: 'Bank-Level Security',
-    description: 'Your data is encrypted and secure. We never share your information with third parties.',
+    icon: 'compare',
+    title: 'Save & compare deals',
+    description: 'Build a pipeline of investments and compare them side-by-side.',
   },
 ];
 
@@ -131,12 +131,19 @@ export const stats = [
   { value: '60s', label: 'Average Analysis Time' },
 ];
 
+// Capability Stats for launch (replaces social proof)
+export const capabilityStats = [
+  { value: '60s', label: 'Analysis Time' },
+  { value: '6', label: 'Strategies Per Property' },
+  { value: '15+', label: 'Variables You Control' },
+  { value: '100%', label: 'Free to Start' },
+];
+
 // How It Works Steps
 export interface HowItWorksStep {
   number: number;
   title: string;
   description: string;
-  features: string[];
   color: string;
 }
 
@@ -144,23 +151,20 @@ export const howItWorksSteps: HowItWorksStep[] = [
   {
     number: 1,
     title: 'Point & Scan',
-    description: 'Open InvestIQ and point your camera at any property address, For Sale sign, or MLS listing. Our AI reads it instantly.',
-    features: ['Street addresses', 'For Sale signs', 'MLS sheets', 'Property listings'],
-    color: '#4dd0e1',
+    description: 'Open InvestIQ and point your camera at any address, For Sale sign, or MLS listing. Our AI reads it instantly.',
+    color: '#0891B2',
   },
   {
     number: 2,
-    title: 'Analyze',
-    description: 'InvestIQ pulls real-time data and runs comprehensive analysis across all six investment strategies automatically.',
-    features: ['Real-time market data', 'Rental estimates', 'Expense calculations', 'ROI projections'],
+    title: 'Instant Analysis',
+    description: 'InvestIQ pulls real-time market data and runs comprehensive analysis across all six investment strategies.',
     color: '#8b5cf6',
   },
   {
     number: 3,
-    title: 'Decide',
-    description: 'Get clear recommendations on the best strategy for each property. Compare deals, save favorites, and invest with confidence.',
-    features: ['Strategy comparison', 'Risk assessment', 'Market benchmarks', 'Action recommendations'],
-    color: '#14b8a6',
+    title: 'Decide with Confidence',
+    description: 'Get clear recommendations on the best strategy. Compare deals and invest with confidence.',
+    color: '#06B6D4',
   },
 ];
 
