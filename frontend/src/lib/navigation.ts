@@ -33,6 +33,9 @@ export const ROUTES = {
   compare: (ctx: NavContext) => 
     `/compare?address=${encodeURIComponent(ctx.address || '')}`,
   
+  rentalComps: (ctx: NavContext) => 
+    `/rental-comps?address=${encodeURIComponent(ctx.address || '')}`,
+  
   // Worksheets
   worksheet: (propertyId: string, strategy: string) => 
     `/worksheet/${propertyId}/${strategy}`,
@@ -51,7 +54,7 @@ export const ROUTES = {
 /**
  * Toolbar navigation item IDs
  */
-export type ToolbarNavId = 'search' | 'home' | 'trends' | 'analysis' | 'compare' | 'reports' | 'deals';
+export type ToolbarNavId = 'search' | 'home' | 'trends' | 'analysis' | 'compare' | 'rentals' | 'reports' | 'deals';
 
 /**
  * Get the route for a toolbar navigation item
@@ -72,6 +75,8 @@ export function getToolbarRoute(navId: ToolbarNavId, ctx: NavContext): string {
       return ROUTES.dealMaker(ctx);
     case 'compare':
       return ROUTES.compare(ctx);
+    case 'rentals':
+      return ROUTES.rentalComps(ctx);
     case 'trends':
       return ROUTES.verdict(ctx);
     case 'reports':
