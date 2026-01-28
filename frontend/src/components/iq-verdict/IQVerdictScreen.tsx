@@ -81,13 +81,23 @@ interface IQVerdictScreenProps {
 
 // Default strategies for the dropdown
 const HEADER_STRATEGIES: Strategy[] = [
-  { id: 'long-term-rental', label: 'Long-Term Rental', icon: 'home' },
-  { id: 'short-term-rental', label: 'Short-Term Rental', icon: 'calendar' },
-  { id: 'brrrr', label: 'BRRRR', icon: 'repeat' },
-  { id: 'fix-and-flip', label: 'Fix & Flip', icon: 'hammer' },
-  { id: 'house-hack', label: 'House Hack', icon: 'people' },
-  { id: 'wholesale', label: 'Wholesale', icon: 'swap-horizontal' },
+  { short: 'Long-term', full: 'Long-term Rental' },
+  { short: 'Short-term', full: 'Short-term Rental' },
+  { short: 'BRRRR', full: 'BRRRR' },
+  { short: 'Fix & Flip', full: 'Fix & Flip' },
+  { short: 'House Hack', full: 'House Hack' },
+  { short: 'Wholesale', full: 'Wholesale' },
 ]
+
+// Mapping from display name to IQStrategy ID
+const STRATEGY_ID_MAP: Record<string, string> = {
+  'Long-term': 'long-term-rental',
+  'Short-term': 'short-term-rental',
+  'BRRRR': 'brrrr',
+  'Fix & Flip': 'fix-and-flip',
+  'House Hack': 'house-hack',
+  'Wholesale': 'wholesale',
+}
 
 // =============================================================================
 // COMPONENT
@@ -101,7 +111,7 @@ export function IQVerdictScreen({
   isDark = false,
 }: IQVerdictScreenProps) {
   const [showFactors, setShowFactors] = useState(false)
-  const [currentStrategy, setCurrentStrategy] = useState<Strategy>(HEADER_STRATEGIES[0])
+  const [currentStrategy, setCurrentStrategy] = useState<string>(HEADER_STRATEGIES[0].short)
   const topStrategy = analysis.strategies.reduce((best, s) => s.score > best.score ? s : best, analysis.strategies[0])
   
   // Build property data for CompactHeader
@@ -120,10 +130,11 @@ export function IQVerdictScreen({
   }), [property])
 
   // Handle strategy change from header dropdown
-  const handleHeaderStrategyChange = useCallback((strategy: Strategy) => {
+  const handleHeaderStrategyChange = useCallback((strategy: string) => {
     setCurrentStrategy(strategy)
     // Find matching IQStrategy and trigger navigation
-    const matchingStrategy = analysis.strategies.find(s => s.id === strategy.id)
+    const strategyId = STRATEGY_ID_MAP[strategy]
+    const matchingStrategy = analysis.strategies.find(s => s.id === strategyId)
     if (matchingStrategy) {
       onViewStrategy(matchingStrategy)
     }
@@ -163,14 +174,12 @@ export function IQVerdictScreen({
       {/* New Compact Header */}
       <CompactHeader
         property={headerPropertyData}
-        currentNavId="verdict"
+        activeNav="analysis"
         currentStrategy={currentStrategy}
-        strategies={HEADER_STRATEGIES}
         pageTitle="VERDICT"
         pageTitleAccent="IQ"
         onNavChange={handleNavChange}
         onStrategyChange={handleHeaderStrategyChange}
-        isDark={isDark}
       />
 
       {/* Main Content - Max 480px centered */}

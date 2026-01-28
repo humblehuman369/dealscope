@@ -9,8 +9,9 @@ const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.
 // GET /api/v1/properties/saved/[propertyId] - Get a saved property
 export async function GET(
   request: NextRequest,
-  { params }: { params: { propertyId: string } }
+  { params }: { params: Promise<{ propertyId: string }> }
 ) {
+  const { propertyId } = await params
   try {
     const authHeader = request.headers.get('Authorization')
     if (!authHeader) {
@@ -18,7 +19,7 @@ export async function GET(
     }
 
     const backendResponse = await fetch(
-      `${BACKEND_URL}/api/v1/properties/saved/${params.propertyId}`,
+      `${BACKEND_URL}/api/v1/properties/saved/${propertyId}`,
       {
         method: 'GET',
         headers: {
@@ -39,8 +40,9 @@ export async function GET(
 // PATCH /api/v1/properties/saved/[propertyId] - Update a saved property
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { propertyId: string } }
+  { params }: { params: Promise<{ propertyId: string }> }
 ) {
+  const { propertyId } = await params
   try {
     const authHeader = request.headers.get('Authorization')
     if (!authHeader) {
@@ -48,10 +50,10 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    console.log('[Saved Property PATCH] Updating property:', params.propertyId)
+    console.log('[Saved Property PATCH] Updating property:', propertyId)
 
     const backendResponse = await fetch(
-      `${BACKEND_URL}/api/v1/properties/saved/${params.propertyId}`,
+      `${BACKEND_URL}/api/v1/properties/saved/${propertyId}`,
       {
         method: 'PATCH',
         headers: {
@@ -80,18 +82,19 @@ export async function PATCH(
 // DELETE /api/v1/properties/saved/[propertyId] - Delete a saved property
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { propertyId: string } }
+  { params }: { params: Promise<{ propertyId: string }> }
 ) {
+  const { propertyId } = await params
   try {
     const authHeader = request.headers.get('Authorization')
     if (!authHeader) {
       return NextResponse.json({ detail: 'Not authenticated' }, { status: 401 })
     }
 
-    console.log('[Saved Property DELETE] Deleting property:', params.propertyId)
+    console.log('[Saved Property DELETE] Deleting property:', propertyId)
 
     const backendResponse = await fetch(
-      `${BACKEND_URL}/api/v1/properties/saved/${params.propertyId}`,
+      `${BACKEND_URL}/api/v1/properties/saved/${propertyId}`,
       {
         method: 'DELETE',
         headers: {

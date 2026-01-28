@@ -9,8 +9,9 @@ const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.
 // DELETE /api/v1/search-history/[entryId] - Delete single search entry
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { entryId: string } }
+  { params }: { params: Promise<{ entryId: string }> }
 ) {
+  const { entryId } = await params
   try {
     const authHeader = request.headers.get('Authorization')
     if (!authHeader) {
@@ -18,7 +19,7 @@ export async function DELETE(
     }
 
     const backendResponse = await fetch(
-      `${BACKEND_URL}/api/v1/search-history/${params.entryId}`,
+      `${BACKEND_URL}/api/v1/search-history/${entryId}`,
       {
         method: 'DELETE',
         headers: {

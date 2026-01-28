@@ -454,7 +454,7 @@ function VerdictContent() {
       case 'analysis':
         router.push(`/analysis-iq?address=${encodedAddress}`)
         break
-      case 'deal-maker':
+      case 'deals':
         router.push(`/deal-maker?address=${encodedAddress}`)
         break
     }
