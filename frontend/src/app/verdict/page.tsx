@@ -443,13 +443,15 @@ function VerdictContent() {
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
     const encodedAddress = encodeURIComponent(fullAddress)
+    const zpid = property.zpid || 'unknown'
     
     switch (navId) {
       case 'search':
         router.push('/search')
         break
       case 'home':
-        router.push(`/property-details?address=${encodedAddress}`)
+        // Navigate to new property details page
+        router.push(`/property/${zpid}?address=${encodedAddress}`)
         break
       case 'analysis':
         router.push(`/analysis-iq?address=${encodedAddress}`)
