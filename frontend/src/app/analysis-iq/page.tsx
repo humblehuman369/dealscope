@@ -1,15 +1,14 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { ResponsiveAnalyticsContainer, PropertyData } from '@/components/analytics/ResponsiveAnalyticsContainer'
+import { AnalysisIQScreen, type AnalysisPropertyData } from '@/components/analytics/AnalysisIQScreen'
 import { AnalyticsPageSkeleton } from '@/components/analytics/LoadingStates'
-import type { StrategyId } from '@/components/analytics/types'
 
 /**
  * Analysis IQ Page Route
  * Route: /analysis-iq?address=...&strategy=...
  * 
- * Displays strategy analytics with responsive desktop/mobile layout.
- * Uses ResponsiveAnalyticsContainer for proper viewport-based rendering.
+ * Displays strategy analytics with CompactHeader and metrics display.
+ * Uses AnalysisIQScreen for mobile-first accordion layout.
  */
 
 interface PageProps {
@@ -28,7 +27,7 @@ const VERIFIED_BACKEND_URL = BACKEND_URL.includes('vercel.app')
 /**
  * Fetch property data from backend
  */
-async function getPropertyData(address: string): Promise<PropertyData | null> {
+async function getPropertyData(address: string, zpid?: string): Promise<AnalysisPropertyData | null> {
   if (!address) {
     return null
   }
@@ -47,7 +46,7 @@ async function getPropertyData(address: string): Promise<PropertyData | null> {
     }
 
     const data = await propertyRes.json()
-    return normalizePropertyData(data)
+    return normalizePropertyData(data, zpid)
   } catch (error) {
     console.error('[Analysis IQ] Unexpected error:', error)
     return null
@@ -57,7 +56,7 @@ async function getPropertyData(address: string): Promise<PropertyData | null> {
 /**
  * Normalize backend response to PropertyData format for analytics
  */
-function normalizePropertyData(property: Record<string, unknown>): PropertyData {
+function normalizePropertyData(property: Record<string, unknown>, zpidParam?: string): AnalysisPropertyData {
   const p = property as {
     zpid?: string | number
     address?: {
@@ -125,6 +124,7 @@ function normalizePropertyData(property: Record<string, unknown>): PropertyData 
     thumbnailUrl: photos[0],
     photos,
     photoCount: photos.length,
+    zpid: zpidParam || String(p.zpid || ''),
   }
 }
 
@@ -145,29 +145,36 @@ export async function generateMetadata({ searchParams }: PageProps) {
  */
 async function AnalysisIQContent({ 
   address, 
-  strategy 
+  strategy,
+  zpid 
 }: { 
   address?: string
-  strategy?: string 
+  strategy?: string
+  zpid?: string 
 }) {
   if (!address) {
     notFound()
   }
 
-  const property = await getPropertyData(address)
+  const property = await getPropertyData(address, zpid)
 
   if (!property) {
     notFound()
   }
 
-  // Validate strategy
-  const validStrategies: StrategyId[] = ['ltr', 'str', 'brrrr', 'flip', 'house_hack', 'wholesale']
-  const initialStrategy = strategy && validStrategies.includes(strategy as StrategyId) 
-    ? strategy as StrategyId 
-    : undefined
+  // Map strategy param to display name
+  const strategyMap: Record<string, string> = {
+    'ltr': 'Long-term',
+    'str': 'Short-term',
+    'brrrr': 'BRRRR',
+    'flip': 'Fix & Flip',
+    'house_hack': 'House Hack',
+    'wholesale': 'Wholesale',
+  }
+  const initialStrategy = strategy ? (strategyMap[strategy] || strategy) : undefined
 
   return (
-    <ResponsiveAnalyticsContainer 
+    <AnalysisIQScreen 
       property={property} 
       initialStrategy={initialStrategy}
     />
@@ -178,11 +185,11 @@ async function AnalysisIQContent({
  * Main Page Component
  */
 export default async function AnalysisIQRoute({ searchParams }: PageProps) {
-  const { address, strategy } = await searchParams
+  const { address, strategy, zpid } = await searchParams
 
   return (
     <Suspense fallback={<AnalyticsPageSkeleton />}>
-      <AnalysisIQContent address={address} strategy={strategy} />
+      <AnalysisIQContent address={address} strategy={strategy} zpid={zpid} />
     </Suspense>
   )
 }
