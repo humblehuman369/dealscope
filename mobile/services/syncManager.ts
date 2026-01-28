@@ -272,6 +272,9 @@ class SyncManager {
   async pullFromServer(): Promise<number> {
     try {
       const token = await getAccessToken();
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'syncManager.ts:pullFromServer:entry',message:'Starting pull sync',data:{hasToken:!!token,tokenLength:token?.length||0,apiBaseUrl:API_BASE_URL},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2,H4'})}).catch(()=>{});
+      // #endregion
       if (!token) {
         console.log('[SyncManager] No auth token, skipping pull');
         return 0;
@@ -285,6 +288,8 @@ class SyncManager {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       };
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'syncManager.ts:pullFromServer:headers',message:'Request headers prepared',data:{authHeaderPrefix:headers.Authorization?.substring(0,30),fullUrl:`${API_BASE_URL}/api/v1/sync/pull`},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H4,H5'})}).catch(()=>{});
       
       let totalMerged = 0;
       let hasMore = true;
@@ -327,7 +332,10 @@ class SyncManager {
       await setSetting('sync_last_pull_timestamp', String(this.lastPullTimestamp));
       
       return totalMerged;
-    } catch (error) {
+    } catch (error: any) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'syncManager.ts:pullFromServer:error',message:'Pull sync error details',data:{errorStatus:error?.response?.status,errorMessage:error?.response?.data?.detail||error?.message,errorName:error?.name,errorUrl:error?.config?.url},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4'})}).catch(()=>{});
+      // #endregion
       console.error('[SyncManager] Pull sync error:', error);
       // Don't throw - pull errors shouldn't fail the entire sync
       return 0;
