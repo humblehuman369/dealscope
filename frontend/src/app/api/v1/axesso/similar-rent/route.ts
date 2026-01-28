@@ -25,6 +25,10 @@ export async function GET(request: NextRequest) {
     const url = searchParams.get('url')
     const address = searchParams.get('address')
     
+    // #region agent log
+    await fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'similar-rent/route.ts:GET:entry',message:'Proxy request received',data:{zpid,url,address,BACKEND_URL},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
+    // #endregion
+    
     if (!zpid && !url && !address) {
       return NextResponse.json(
         { error: 'At least one of zpid, url, or address is required', results: [] },
@@ -55,6 +59,10 @@ export async function GET(request: NextRequest) {
       const errorText = await response.text()
       console.error('[Similar Rent Proxy] Backend error:', response.status, errorText)
       
+      // #region agent log
+      await fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'similar-rent/route.ts:GET:backendError',message:'Backend returned error',data:{status:response.status,errorText:errorText.slice(0,500)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
+      // #endregion
+      
       try {
         const errorJson = JSON.parse(errorText)
         return NextResponse.json(
@@ -72,9 +80,16 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     console.log('[Similar Rent Proxy] Success, results:', data.results?.length || 0)
     
+    // #region agent log
+    await fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'similar-rent/route.ts:GET:success',message:'Backend response success',data:{status:response.status,dataKeys:Object.keys(data||{}),resultsLength:data.results?.length,success:data.success,rawPreview:JSON.stringify(data).slice(0,500)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,C'})}).catch(()=>{});
+    // #endregion
+    
     return NextResponse.json(data)
   } catch (error) {
     console.error('[Similar Rent Proxy] Exception:', error)
+    // #region agent log
+    await fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'similar-rent/route.ts:GET:exception',message:'Proxy exception',data:{error:String(error)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
     return NextResponse.json(
       { error: 'Failed to fetch rental comps from backend', results: [] },
       { status: 500 }
