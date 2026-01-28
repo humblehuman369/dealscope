@@ -192,8 +192,26 @@ export function IQAnalyzingScreen({
           <p className="text-sm" style={{ color: IQ_COLORS.slate }}>
             {fullAddress}
           </p>
+          {showSlowMessage && (
+            <p 
+              className="text-xs mt-2 animate-fade-in"
+              style={{ color: IQ_COLORS.slateLight }}
+            >
+              Taking longer than usual — complex property. Almost done...
+            </p>
+          )}
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out;
+        }
+      `}</style>
     </div>
   )
 }

@@ -297,10 +297,21 @@ export default function OnboardingPage() {
           </div>
           <button
             onClick={skipOnboarding}
-            className="text-gray-400 hover:text-white text-sm transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors"
           >
-            Skip for now
+            <ArrowRight className="w-4 h-4" />
+            Skip to analyze
           </button>
+        </div>
+      </div>
+
+      {/* Optional Badge */}
+      <div className="px-6 pb-2">
+        <div className="max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-500/20 text-brand-400 text-xs font-medium">
+            <Check className="w-3 h-3" />
+            Optional — analyze properties anytime
+          </div>
         </div>
       </div>
 
