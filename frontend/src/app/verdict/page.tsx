@@ -313,114 +313,16 @@ function VerdictContent() {
     router.back()
   }, [router])
 
-  const handleViewStrategy = useCallback(async (strategy: IQStrategy) => {
+  const handleViewStrategy = useCallback((strategy: IQStrategy) => {
     if (!property) return
     
-    // Require authentication for worksheets
-    if (!isAuthenticated) {
-      // Store intended destination for after login
-      localStorage.setItem('pendingStrategy', strategy.id)
-      localStorage.setItem('pendingAddress', addressParam)
-      setShowAuthModal('login')
-      return
-    }
+    // Build full address for URL
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
     
-    setIsNavigating(true)
-    
-    try {
-      const token = localStorage.getItem('access_token')
-      if (!token) {
-        setShowAuthModal('login')
-        setIsNavigating(false)
-        return
-      }
-      
-      // Build full address
-      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-      const fullAddress = [
-        property.address,
-        property.city,
-        stateZip
-      ].filter(Boolean).join(', ')
-      
-      // Save property to get an ID for the worksheet
-      const saveResponse = await fetch('/api/v1/properties/saved', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          address_street: property.address,
-          address_city: property.city,
-          address_state: property.state,
-          address_zip: property.zip,
-          full_address: fullAddress,
-          status: 'watching',
-          property_data_snapshot: {
-            zpid: property.zpid,
-            street: property.address,
-            city: property.city,
-            state: property.state,
-            zipCode: property.zip,
-            listPrice: property.price,
-            monthlyRent: property.monthlyRent,
-            propertyTaxes: property.propertyTaxes,
-            insurance: property.insurance,
-            bedrooms: property.beds,
-            bathrooms: property.baths,
-            sqft: property.sqft,
-            arv: property.arv || property.price,
-            averageDailyRate: property.averageDailyRate,
-            occupancyRate: property.occupancyRate,
-          },
-        }),
-      })
-      
-      let propertyId: string | null = null
-      
-      if (saveResponse.ok) {
-        const data = await saveResponse.json()
-        propertyId = data.id
-      } else if (saveResponse.status === 409 || saveResponse.status === 400) {
-        // Property already exists, fetch the list to find it
-        const listResponse = await fetch('/api/v1/properties/saved', {
-          headers: { 'Authorization': `Bearer ${token}` },
-        })
-        
-        if (listResponse.ok) {
-          const properties = await listResponse.json()
-          const existing = properties.find((p: { address_street: string; full_address?: string }) => 
-            p.address_street === property.address || 
-            p.full_address?.includes(property.address)
-          )
-          if (existing) {
-            propertyId = existing.id
-          }
-        }
-      } else if (saveResponse.status === 401) {
-        setShowAuthModal('login')
-        setIsNavigating(false)
-        return
-      }
-      
-      if (propertyId) {
-        // Navigate to the worksheet
-        const worksheetRoute = WORKSHEET_ROUTES[strategy.id] || 'ltr'
-        router.push(`/worksheet/${propertyId}/${worksheetRoute}`)
-      } else {
-        throw new Error('Could not save property')
-      }
-    } catch (err) {
-      console.error('Failed to navigate to worksheet:', err)
-      setIsNavigating(false)
-      // Fallback to property details page
-      const zpid = property.zpid || 'unknown'
-      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-      const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-      router.push(`/property/${zpid}?address=${encodeURIComponent(fullAddress)}`)
-    }
-  }, [property, isAuthenticated, addressParam, setShowAuthModal, router])
+    // Navigate to Analysis IQ with strategy
+    router.push(`/analysis-iq?address=${encodeURIComponent(fullAddress)}&strategy=${strategy.id}`)
+  }, [property, router])
 
   const handleCompareAll = useCallback(() => {
     if (!property) return

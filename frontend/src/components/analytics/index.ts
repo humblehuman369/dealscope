@@ -186,9 +186,6 @@ export {
   type MetricsAccordionProps
 } from './MetricsAccordion'
 
-// Analysis IQ Page - New analysis page with CompactHeader and metrics
-export { AnalysisIQPage } from './AnalysisIQPage'
-
 // Verdict IQ Page - IQ Verdict page with CompactHeader
 export { VerdictIQPage } from './VerdictIQPage'
 
