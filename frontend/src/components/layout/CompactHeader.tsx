@@ -352,7 +352,8 @@ export function CompactHeader({
       </div>
 
       {/* Icon Navigation */}
-      <nav className="max-w-[480px] mx-auto bg-white border-b border-slate-200 px-2 py-1.5 flex items-center justify-around">
+      <nav className="bg-white border-b border-slate-200">
+        <div className="max-w-[480px] mx-auto px-2 py-1.5 flex items-center justify-around">
         {NAV_ITEMS.map((item) => {
           const IconComponent = NAV_ICONS[item.id];
           const isActive = activeNav === item.id;
@@ -369,6 +370,7 @@ export function CompactHeader({
             </button>
           );
         })}
+        </div>
       </nav>
     </header>
   );

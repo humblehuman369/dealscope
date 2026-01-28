@@ -161,7 +161,7 @@ async function AnalysisIQContent({
   }
 
   // Validate strategy
-  const validStrategies: StrategyId[] = ['ltr', 'str', 'brrrr', 'flip', 'househack', 'wholesale']
+  const validStrategies: StrategyId[] = ['ltr', 'str', 'brrrr', 'flip', 'house_hack', 'wholesale']
   const initialStrategy = strategy && validStrategies.includes(strategy as StrategyId) 
     ? strategy as StrategyId 
     : undefined
