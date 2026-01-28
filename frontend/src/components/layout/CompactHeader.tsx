@@ -345,6 +345,7 @@ export function CompactHeader({
               }`}
               onClick={() => {
                 const route = getToolbarRoute(item.id as ToolbarNavId, navContext);
+                // All routes enabled - navigate directly
                 router.push(route);
               }}
               title={item.label}

@@ -125,6 +125,7 @@ export function IQVerdictScreen({
     rent: property.monthlyRent || Math.round(property.price * 0.007),
     status: 'OFF-MARKET',
     image: property.imageUrl,
+    zpid: property.zpid?.toString(),
   }), [property])
 
   // Handle strategy change from header dropdown
