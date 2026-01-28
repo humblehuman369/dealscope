@@ -180,6 +180,7 @@ export function IQVerdictScreen({
         pageTitleAccent="IQ"
         onNavChange={handleNavChange}
         onStrategyChange={handleHeaderStrategyChange}
+        defaultPropertyOpen={true}
       />
 
       {/* Main Content - Max 480px centered */}

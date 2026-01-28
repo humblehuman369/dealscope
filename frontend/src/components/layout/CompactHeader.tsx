@@ -142,9 +142,10 @@ export function CompactHeader({
   activeNav = 'analysis',
   onNavChange,
   onPropertyClick,
+  defaultPropertyOpen = false,
 }: CompactHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isPropertyOpen, setIsPropertyOpen] = useState(false);
+  const [isPropertyOpen, setIsPropertyOpen] = useState(defaultPropertyOpen);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zip}`;
