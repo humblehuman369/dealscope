@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deal Maker IQ - Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #1e293b;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .phone-frame {
+      width: 390px;
+      height: 844px;
+      background: #F8FAFC;
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    /* Status Bar */
+    .status-bar {
+      background: white;
+      padding: 12px 24px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #0A1628;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    /* InvestIQ Header */
+    .investiq-header {
+      background: white;
+      padding: 8px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .investiq-back-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .back-text {
+      font-size: 16px;
+      font-weight: 500;
+      color: #0891B2;
+    }
+    .investiq-logo {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .logo-invest {
+      color: #0A1628;
+    }
+    .logo-iq {
+      color: #0891B2;
+    }
+    .header-spacer {
+      width: 60px;
+    }
+    
+    /* Header Card */
+    .header-card-wrapper {
+      background: #F8FAFC;
+      padding: 0;
+    }
+    .header {
+      background: #0A1628;
+      padding: 16px 20px 20px;
+      border-radius: 0;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .back-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      opacity: 0.8;
+      cursor: pointer;
+    }
+    .header-title-area {
+      flex: 1;
+      text-align: center;
+      margin-right: 32px;
+    }
+    .address {
+      font-size: 11px;
+      color: #94A3B8;
+      margin-bottom: 2px;
+      letter-spacing: 0.02em;
+    }
+    .title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+    .title-deal {
+      color: white;
+    }
+    .title-maker {
+      color: #00D4FF;
+    }
+    .title-iq {
+      color: white;
+    }
+    
+    /* Metrics */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 24px;
+      margin-top: 12px;
+    }
+    .metric-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3px 0;
+    }
+    .metric-label {
+      font-size: 12px;
+      color: #94A3B8;
+    }
+    .metric-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      font-variant-numeric: tabular-nums;
+    }
+    .metric-value.cyan {
+      color: #00D4FF;
+    }
+    .metric-value.teal {
+      color: #06B6D4;
+    }
+    
+    /* Content */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      background: #F8FAFC;
+      padding: 16px;
+    }
+    
+    /* Accordion */
+    .accordion-card {
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #F1F5F9;
+      overflow: hidden;
+    }
+    .accordion-card.active {
+      box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.2);
+      border: 1px solid transparent;
+    }
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .step-icon {
+      width: 24px;
+      height: 24px;
+      color: #0891B2;
+    }
+    .step-title {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 600;
+      color: #0A1628;
+    }
+    .chevron {
+      width: 20px;
+      height: 20px;
+      color: #94A3B8;
+      transition: transform 0.2s ease;
+    }
+    .accordion-card.active .chevron {
+      transform: rotate(180deg);
+    }
+    
+    /* Accordion Content */
+    .accordion-content {
+      padding: 0 16px 16px;
+      border-top: 1px solid #F1F5F9;
+      display: none;
+    }
+    .accordion-card.active .accordion-content {
+      display: block;
+    }
+    .input-row {
+      margin-top: 16px;
+    }
+    .input-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .input-label-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0A1628;
+    }
+    .input-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0891B2;
+      font-variant-numeric: tabular-nums;
+    }
+    .slider-container {
+      position: relative;
+      height: 24px;
+      display: flex;
+      align-items: center;
+    }
+    .slider-track {
+      width: 100%;
+      height: 6px;
+      background: #E2E8F0;
+      border-radius: 3px;
+      position: relative;
+    }
+    .slider-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: #0891B2;
+      border-radius: 3px;
+    }
+    .slider-thumb {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: #0891B2;
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .slider-range {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 11px;
+      color: #94A3B8;
+    }
+    
+    /* Summary Box */
+    .summary-box {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 16px;
+      text-align: right;
+    }
+    .summary-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .summary-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #0A1628;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    /* CTA Button */
+    .cta-button {
+      width: 100%;
+      padding: 16px;
+      background: #0891B2;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+      cursor: pointer;
+    }
+    .cta-button:hover {
+      background: #0e7490;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>2:25</span>
+      <span>
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+        </svg>
+      </span>
+    </div>
+
+    <!-- InvestIQ Header -->
+    <div class="investiq-header">
+      <div class="investiq-back-btn">
+        <svg width="18" height="18" fill="none" stroke="#0891B2" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+        <span class="back-text">Back</span>
+      </div>
+      <div class="investiq-logo">
+        <span class="logo-invest">Invest</span><span class="logo-iq">IQ</span>
+      </div>
+      <div class="header-spacer"></div>
+    </div>
+
+    <!-- Header Card Container -->
+    <div class="header-card-wrapper">
+      <div class="header">
+        <div class="header-top">
+          <div class="back-btn">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </div>
+          <div class="header-title-area">
+            <div class="address">3742 Lighthouse Circle</div>
+            <div class="title">
+              <span class="title-deal">DEAL </span>
+              <span class="title-maker">MAKER </span>
+              <span class="title-iq">IQ</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="metrics-row">
+          <div class="metric-item">
+            <span class="metric-label">Buy Price</span>
+            <span class="metric-value">$350,000</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Cash Needed</span>
+            <span class="metric-value">$80,500</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Deal Gap</span>
+            <span class="metric-value cyan">+0%</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Annual Profit</span>
+            <span class="metric-value teal">$3,795</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">CAP Rate</span>
+            <span class="metric-value">6.8%</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">COC Return</span>
+            <span class="metric-value">4.7%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div class="content">
+      <!-- Buy Price Accordion - Active -->
+      <div class="accordion-card active">
+        <div class="accordion-header">
+          <div class="step-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+            </svg>
+          </div>
+          <span class="step-title">Buy Price</span>
+          <svg class="chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+        <div class="accordion-content">
+          <!-- Buy Price Input -->
+          <div class="input-row">
+            <div class="input-label">
+              <span class="input-label-text">Buy Price</span>
+              <span class="input-value">$350,000</span>
+            </div>
+            <div class="slider-container">
+              <div class="slider-track">
+                <div class="slider-fill" style="width: 15%"></div>
+                <div class="slider-thumb" style="left: calc(15% - 8px)"></div>
+              </div>
+            </div>
+            <div class="slider-range">
+              <span>$50,000</span>
+              <span>$2,000,000</span>
+            </div>
+          </div>
+
+          <!-- Down Payment Input -->
+          <div class="input-row">
+            <div class="input-label">
+              <span class="input-label-text">Down Payment</span>
+              <span class="input-value">20.0%</span>
+            </div>
+            <div class="slider-container">
+              <div class="slider-track">
+                <div class="slider-fill" style="width: 33%"></div>
+                <div class="slider-thumb" style="left: calc(33% - 8px)"></div>
+              </div>
+            </div>
+            <div class="slider-range">
+              <span>5.00%</span>
+              <span>50.0%</span>
+            </div>
+          </div>
+
+          <!-- Closing Costs Input -->
+          <div class="input-row">
+            <div class="input-label">
+              <span class="input-label-text">Closing Costs</span>
+              <span class="input-value">3.00%</span>
+            </div>
+            <div class="slider-container">
+              <div class="slider-track">
+                <div class="slider-fill" style="width: 33%"></div>
+                <div class="slider-thumb" style="left: calc(33% - 8px)"></div>
+              </div>
+            </div>
+            <div class="slider-range">
+              <span>2.00%</span>
+              <span>5.00%</span>
+            </div>
+          </div>
+
+          <!-- Summary Box -->
+          <div class="summary-box">
+            <div class="summary-label">CASH NEEDED</div>
+            <div class="summary-value">$80,500</div>
+          </div>
+
+          <!-- CTA Button -->
+          <button class="cta-button">
+            Continue to Next
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Financing Accordion -->
+      <div class="accordion-card">
+        <div class="accordion-header">
+          <div class="step-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"/>
+            </svg>
+          </div>
+          <span class="step-title">Financing</span>
+          <svg class="chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Rehab & Valuation Accordion -->
+      <div class="accordion-card">
+        <div class="accordion-header">
+          <div class="step-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/>
+            </svg>
+          </div>
+          <span class="step-title">Rehab & Valuation</span>
+          <svg class="chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Income Accordion -->
+      <div class="accordion-card">
+        <div class="accordion-header">
+          <div class="step-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="step-title">Income</span>
+          <svg class="chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Expenses Accordion -->
+      <div class="accordion-card">
+        <div class="accordion-header">
+          <div class="step-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+            </svg>
+          </div>
+          <span class="step-title">Expenses</span>
+          <svg class="chevron" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Toggle accordion
+    document.querySelectorAll('.accordion-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const card = header.parentElement;
+        const wasActive = card.classList.contains('active');
+        
+        // Close all accordions
+        document.querySelectorAll('.accordion-card').forEach(c => c.classList.remove('active'));
+        
+        // Open clicked one if it wasn't active
+        if (!wasActive) {
+          card.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
