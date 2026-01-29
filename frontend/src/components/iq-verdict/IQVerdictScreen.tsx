@@ -2,7 +2,13 @@
 
 /**
  * IQVerdictScreen - Redesigned IQ Verdict page
- * Exact implementation from design files (v2)
+ * 
+ * Core Value Proposition:
+ * "Every property can be a good investment at the right price."
+ * 
+ * InvestIQ tells you:
+ * 1. WHAT PRICE MAKES THIS DEAL WORK (Breakeven) - based on YOUR financing terms
+ * 2. HOW LIKELY YOU ARE TO GET THAT PRICE (Deal Gap + Motivation) - based on market signals
  * 
  * Design specs:
  * - Max width: 480px centered
@@ -12,7 +18,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react'
-import { ChevronDown, ChevronUp, ChevronRight, ArrowRight, Download, Info, HelpCircle, Settings2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, ChevronRight, ArrowRight, Download, Info, HelpCircle, Settings2, TrendingDown, Target, AlertCircle } from 'lucide-react'
 import { useDefaults } from '@/hooks/useDefaults'
 import {
   IQProperty,
@@ -20,6 +26,7 @@ import {
   IQStrategy,
   formatPrice,
   scoreToGradeLabel,
+  SellerMotivationData,
 } from './types'
 import { OpportunityFactors } from './OpportunityFactors'
 import { CompactHeader, PropertyData, Strategy } from '../layout/CompactHeader'
@@ -66,6 +73,41 @@ const PRICE_EXPLANATIONS = {
   breakeven: 'Maximum price with $0 cash flow, based on YOUR financing terms (down payment, rate, vacancy, etc.)',
   buyPrice: 'Recommended offer for positive cash flow — 5% below your breakeven',
   wholesale: 'Maximum price for assignment to another investor (70% of breakeven)',
+}
+
+// Get Deal Gap color and label based on percentage
+const getDealGapDisplay = (gap: number, isOffMarket: boolean): { color: string; label: string; emoji: string } => {
+  if (isOffMarket) {
+    // For off-market, we're comparing to AVM, so interpretation is different
+    if (gap <= 0) return { color: COLORS.rose, label: 'Above Market', emoji: '⚠️' }
+    if (gap <= 5) return { color: COLORS.warning, label: 'At Market', emoji: '➡️' }
+    if (gap <= 10) return { color: COLORS.teal, label: 'Below Market', emoji: '✓' }
+    if (gap <= 20) return { color: COLORS.green, label: 'Good Discount', emoji: '✓✓' }
+    return { color: COLORS.green, label: 'Deep Value', emoji: '🎯' }
+  }
+  
+  // For listed properties
+  if (gap <= 0) return { color: COLORS.rose, label: 'No Discount Needed', emoji: '✓' }
+  if (gap <= 5) return { color: COLORS.green, label: 'Easy Target', emoji: '✓' }
+  if (gap <= 10) return { color: COLORS.teal, label: 'Achievable', emoji: '➡️' }
+  if (gap <= 20) return { color: COLORS.warning, label: 'Challenging', emoji: '⚠️' }
+  return { color: COLORS.rose, label: 'Difficult', emoji: '⚠️⚠️' }
+}
+
+// Get Seller Motivation color
+const getMotivationColor = (score: number): string => {
+  if (score >= 70) return COLORS.green
+  if (score >= 40) return COLORS.warning
+  return COLORS.rose
+}
+
+// Get opening offer suggestion based on motivation
+const getSuggestedOffer = (motivation: number, dealGap: number): { min: number; max: number } => {
+  // Higher motivation = can ask for bigger discount
+  if (motivation >= 70) return { min: 15, max: 25 }
+  if (motivation >= 50) return { min: 10, max: 18 }
+  if (motivation >= 30) return { min: 5, max: 12 }
+  return { min: 3, max: 8 }
 }
 
 const getReturnColor = (value: number): string => {
@@ -223,95 +265,81 @@ export function IQVerdictScreen({
       <main className="flex-1 w-full">
         {/* Content Area with padding */}
         <div className="p-4">
-          {/* IQ Verdict Card */}
+          {/* YOUR INVESTMENT ANALYSIS - Main Header */}
           <div 
-            className="rounded-2xl p-6 mb-4"
+            className="rounded-2xl p-5 mb-4"
             style={{ 
               background: 'white',
               boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
             }}
           >
-            {/* Verdict Header - Score LEFT, Prices RIGHT */}
-            <div className="flex gap-4 items-stretch mb-5">
-              {/* Score Container - 35% */}
-              <div className="flex flex-col items-center justify-center" style={{ flex: '35' }}>
+            {/* Header with financing terms context */}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-[15px] font-bold" style={{ color: COLORS.navy }}>
+                  YOUR INVESTMENT ANALYSIS
+                </h2>
+                <p className="text-[11px] mt-0.5" style={{ color: COLORS.surface500 }}>
+                  Based on YOUR financing terms ({(defaults?.financing?.down_payment_pct ?? 0.20) * 100}% down, {((defaults?.financing?.interest_rate ?? 0.06) * 100).toFixed(1)}%)
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAssumptions(!showAssumptions)}
+                className="text-[11px] font-medium px-2 py-1 rounded-md hover:opacity-80"
+                style={{ color: COLORS.teal, backgroundColor: `${COLORS.teal}10` }}
+              >
+                Change terms
+              </button>
+            </div>
+
+            {/* SECTION 1: What Price Makes This Deal Work? */}
+            <div 
+              className="rounded-xl p-4 mb-4"
+              style={{ backgroundColor: COLORS.surface50, border: `1px solid ${COLORS.surface200}` }}
+            >
+              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: COLORS.teal }}>
+                WHAT PRICE MAKES THIS DEAL WORK?
+              </h3>
+              
+              {/* Off-Market Notice */}
+              {isOffMarket && (
                 <div 
-                  className="text-[10px] font-bold tracking-widest mb-2"
-                  style={{ color: COLORS.teal, letterSpacing: '0.1em' }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg mb-3 text-[11px]"
+                  style={{ backgroundColor: `${COLORS.warning}12`, border: `1px solid ${COLORS.warning}30` }}
                 >
-                  IQ VERDICT
-                </div>
-                <div 
-                  className="w-20 h-20 rounded-full flex items-center justify-center mb-1"
-                  style={{ 
-                    border: `4px solid ${getScoreColor(analysis.dealScore)}`,
-                    background: `${getScoreColor(analysis.dealScore)}14`,
-                  }}
-                >
-                  <span 
-                    className="text-[28px] font-extrabold"
-                    style={{ color: getScoreColor(analysis.dealScore) }}
-                  >
-                    {analysis.dealScore}
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" style={{ color: COLORS.warning }} />
+                  <span style={{ color: COLORS.surface600 }}>
+                    <strong style={{ color: COLORS.warning }}>Off-Market Property:</strong> No asking price available. 
+                    Using {priceSource} of {formatPrice(marketValue)} for Deal Gap calculation.
                   </span>
                 </div>
-                {/* Verdict Label */}
-                <div className="text-center mb-2">
-                  <div 
-                    className="text-sm font-bold"
-                    style={{ color: getScoreColor(analysis.dealScore) }}
-                  >
-                    {verdictInfo.label}
-                  </div>
-                  <div 
-                    className="text-[10px]"
-                    style={{ color: COLORS.surface400 }}
-                  >
-                    {verdictInfo.sublabel}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowMethodology(true)}
-                  className="flex items-center gap-1 text-[11px] cursor-pointer hover:opacity-80"
-                  style={{ color: COLORS.teal }}
-                >
-                  <Info className="w-3 h-3" />
-                  How this works
-                </button>
-              </div>
+              )}
               
-              {/* Prices - 65% */}
-              <div className="flex flex-col gap-3 justify-center" style={{ flex: '65' }}>
-                {/* Off-Market Indicator */}
-                {isOffMarket && (
-                  <div 
-                    className="flex items-center justify-end gap-1.5 px-2 py-1 rounded-md text-[10px]"
-                    style={{ backgroundColor: `${COLORS.warning}15`, color: COLORS.warning }}
-                  >
-                    <Info className="w-3 h-3" />
-                    <span>No asking price — using {priceSource}</span>
+              {/* Three Price Cards */}
+              <div className="grid grid-cols-3 gap-2">
+                {/* Breakeven Price */}
+                <div 
+                  className="rounded-lg p-3 text-center relative"
+                  style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+                >
+                  <div className="text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: COLORS.surface500 }}>
+                    BREAKEVEN
                   </div>
-                )}
-                
-                {/* Breakeven */}
-                <div className="flex items-center justify-end gap-2 relative">
+                  <div className="text-[15px] font-bold mb-1" style={{ color: COLORS.navy }}>
+                    {formatPrice(breakevenPrice)}
+                  </div>
+                  <div className="text-[9px] leading-tight" style={{ color: COLORS.surface400 }}>
+                    Max you can pay for $0 cashflow
+                  </div>
                   <button
                     onClick={() => setActivePriceTooltip(activePriceTooltip === 'breakeven' ? null : 'breakeven')}
-                    className="flex items-center gap-1 text-[13px] hover:opacity-80"
-                    style={{ color: COLORS.surface500 }}
+                    className="absolute top-2 right-2"
                   >
-                    Breakeven
-                    <HelpCircle className="w-3 h-3" />
+                    <HelpCircle className="w-3 h-3" style={{ color: COLORS.surface300 }} />
                   </button>
-                  <span 
-                    className="text-base font-bold tabular-nums"
-                    style={{ color: COLORS.navy }}
-                  >
-                    {formatPrice(breakevenPrice)}
-                  </span>
                   {activePriceTooltip === 'breakeven' && (
                     <div 
-                      className="absolute right-0 top-6 z-10 p-2 rounded-lg shadow-lg text-xs max-w-[200px]"
+                      className="absolute left-0 right-0 top-full mt-1 z-10 p-2 rounded-lg shadow-lg text-[10px] text-left"
                       style={{ backgroundColor: COLORS.navy, color: 'white' }}
                     >
                       {PRICE_EXPLANATIONS.breakeven}
@@ -319,25 +347,32 @@ export function IQVerdictScreen({
                   )}
                 </div>
                 
-                {/* Buy Price - Highlighted */}
-                <div className="flex items-center justify-end gap-2 relative">
+                {/* Target Buy Price - Highlighted */}
+                <div 
+                  className="rounded-lg p-3 text-center relative"
+                  style={{ 
+                    backgroundColor: `${COLORS.teal}08`, 
+                    border: `2px solid ${COLORS.teal}`,
+                  }}
+                >
+                  <div className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: COLORS.teal }}>
+                    TARGET BUY
+                  </div>
+                  <div className="text-[15px] font-bold mb-1" style={{ color: COLORS.teal }}>
+                    {formatPrice(buyPrice)}
+                  </div>
+                  <div className="text-[9px] leading-tight" style={{ color: COLORS.surface500 }}>
+                    5% discount for profit
+                  </div>
                   <button
                     onClick={() => setActivePriceTooltip(activePriceTooltip === 'buyPrice' ? null : 'buyPrice')}
-                    className="flex items-center gap-1 text-[13px] font-semibold hover:opacity-80"
-                    style={{ color: COLORS.teal }}
+                    className="absolute top-2 right-2"
                   >
-                    Buy Price
-                    <HelpCircle className="w-3 h-3" />
+                    <HelpCircle className="w-3 h-3" style={{ color: COLORS.teal }} />
                   </button>
-                  <span 
-                    className="text-base font-bold tabular-nums"
-                    style={{ color: COLORS.teal }}
-                  >
-                    {formatPrice(buyPrice)}
-                  </span>
                   {activePriceTooltip === 'buyPrice' && (
                     <div 
-                      className="absolute right-0 top-6 z-10 p-2 rounded-lg shadow-lg text-xs max-w-[200px]"
+                      className="absolute left-0 right-0 top-full mt-1 z-10 p-2 rounded-lg shadow-lg text-[10px] text-left"
                       style={{ backgroundColor: COLORS.navy, color: 'white' }}
                     >
                       {PRICE_EXPLANATIONS.buyPrice}
@@ -345,25 +380,29 @@ export function IQVerdictScreen({
                   )}
                 </div>
                 
-                {/* Wholesale */}
-                <div className="flex items-center justify-end gap-2 relative">
+                {/* Wholesale Price */}
+                <div 
+                  className="rounded-lg p-3 text-center relative"
+                  style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+                >
+                  <div className="text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: COLORS.surface500 }}>
+                    WHOLESALE
+                  </div>
+                  <div className="text-[15px] font-bold mb-1" style={{ color: COLORS.navy }}>
+                    {formatPrice(wholesalePrice)}
+                  </div>
+                  <div className="text-[9px] leading-tight" style={{ color: COLORS.surface400 }}>
+                    30% discount for assignment
+                  </div>
                   <button
                     onClick={() => setActivePriceTooltip(activePriceTooltip === 'wholesale' ? null : 'wholesale')}
-                    className="flex items-center gap-1 text-[13px] hover:opacity-80"
-                    style={{ color: COLORS.surface500 }}
+                    className="absolute top-2 right-2"
                   >
-                    Wholesale
-                    <HelpCircle className="w-3 h-3" />
+                    <HelpCircle className="w-3 h-3" style={{ color: COLORS.surface300 }} />
                   </button>
-                  <span 
-                    className="text-base font-bold tabular-nums"
-                    style={{ color: COLORS.navy }}
-                  >
-                    {formatPrice(wholesalePrice)}
-                  </span>
                   {activePriceTooltip === 'wholesale' && (
                     <div 
-                      className="absolute right-0 top-6 z-10 p-2 rounded-lg shadow-lg text-xs max-w-[200px]"
+                      className="absolute left-0 right-0 top-full mt-1 z-10 p-2 rounded-lg shadow-lg text-[10px] text-left"
                       style={{ backgroundColor: COLORS.navy, color: 'white' }}
                     >
                       {PRICE_EXPLANATIONS.wholesale}
@@ -371,180 +410,311 @@ export function IQVerdictScreen({
                   )}
                 </div>
               </div>
-            </div>
 
-            {/* "Based on your terms" - Expandable Assumptions */}
-            <div 
-              className="rounded-lg mb-4 overflow-hidden"
-              style={{ backgroundColor: COLORS.surface50, border: `1px solid ${COLORS.surface200}` }}
-            >
+              {/* Expandable Assumptions Panel */}
               <button
                 onClick={() => setShowAssumptions(!showAssumptions)}
-                className="w-full flex items-center justify-between px-3 py-2.5 cursor-pointer hover:opacity-90"
+                className="w-full flex items-center justify-center gap-1.5 mt-3 py-2 text-[11px] font-medium hover:opacity-80"
+                style={{ color: COLORS.teal }}
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-medium" style={{ color: COLORS.surface600 }}>
-                    Based on YOUR investor profile
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px]" style={{ color: COLORS.teal }}>
-                    {showAssumptions ? 'Hide' : 'See assumptions'}
-                  </span>
-                  {showAssumptions ? (
-                    <ChevronUp className="w-3.5 h-3.5" style={{ color: COLORS.teal }} />
-                  ) : (
-                    <ChevronDown className="w-3.5 h-3.5" style={{ color: COLORS.teal }} />
-                  )}
-                </div>
+                {showAssumptions ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                See how we calculated this
               </button>
               
               {showAssumptions && (
                 <div 
-                  className="px-3 pb-3 space-y-2"
+                  className="mt-3 pt-3 space-y-3"
                   style={{ borderTop: `1px solid ${COLORS.surface200}` }}
                 >
-                  <div className="pt-2 grid grid-cols-2 gap-2 text-[11px]">
-                    <div className="flex justify-between">
-                      <span style={{ color: COLORS.surface500 }}>Down Payment</span>
-                      <span className="font-medium" style={{ color: COLORS.navy }}>
-                        {((defaults?.financing?.down_payment_pct ?? 0.20) * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span style={{ color: COLORS.surface500 }}>Interest Rate</span>
-                      <span className="font-medium" style={{ color: COLORS.navy }}>
-                        {((defaults?.financing?.interest_rate ?? 0.06) * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span style={{ color: COLORS.surface500 }}>Vacancy</span>
-                      <span className="font-medium" style={{ color: COLORS.navy }}>
-                        {((defaults?.operating?.vacancy_rate ?? 0.01) * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span style={{ color: COLORS.surface500 }}>Management</span>
-                      <span className="font-medium" style={{ color: COLORS.navy }}>
-                        {((defaults?.operating?.property_management_pct ?? 0) * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span style={{ color: COLORS.surface500 }}>Maintenance</span>
-                      <span className="font-medium" style={{ color: COLORS.navy }}>
-                        {((defaults?.operating?.maintenance_pct ?? 0.05) * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span style={{ color: COLORS.surface500 }}>Loan Term</span>
-                      <span className="font-medium" style={{ color: COLORS.navy }}>
-                        {defaults?.financing?.loan_term_years ?? 30} yr
-                      </span>
-                    </div>
-                  </div>
-                  <div className="pt-2 flex justify-between items-center">
-                    {hasUserCustomizations ? (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: `${COLORS.green}20`, color: COLORS.green }}>
-                        Customized
-                      </span>
-                    ) : (
-                      <span className="text-[10px]" style={{ color: COLORS.surface400 }}>
-                        Using defaults
-                      </span>
-                    )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: COLORS.surface600 }}>
+                      YOUR ASSUMPTIONS
+                    </span>
                     <a 
                       href="/dashboard?tab=profile" 
                       className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
                       style={{ color: COLORS.teal }}
                     >
                       <Settings2 className="w-3 h-3" />
-                      Customize
+                      Edit in Dashboard
                     </a>
                   </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Verdict Description */}
-            <div 
-              className="text-sm text-center leading-relaxed pt-4"
-              style={{ 
-                color: COLORS.surface500,
-                borderTop: `1px solid ${COLORS.surface100}`,
-              }}
-            >
-              {analysis.verdictDescription?.split(topStrategy.name).map((part, i, arr) => (
-                <React.Fragment key={i}>
-                  {part}
-                  {i < arr.length - 1 && (
-                    <strong style={{ color: COLORS.teal, fontWeight: 600 }}>
-                      {topStrategy.name}
-                    </strong>
-                  )}
-                </React.Fragment>
-              )) || 'Excellent potential across multiple strategies.'}
-            </div>
-
-            {/* What makes this score - Expandable */}
-            <div className="pt-4" style={{ borderTop: `1px solid ${COLORS.surface100}`, marginTop: '16px' }}>
-              <button
-                onClick={() => setShowScoreBreakdown(!showScoreBreakdown)}
-                className="w-full flex items-center justify-between py-2 cursor-pointer hover:opacity-80"
-              >
-                <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: COLORS.teal }}>
-                  What makes this score
-                </span>
-                {showScoreBreakdown ? (
-                  <ChevronUp className="w-4 h-4" style={{ color: COLORS.surface400 }} />
-                ) : (
-                  <ChevronDown className="w-4 h-4" style={{ color: COLORS.surface400 }} />
-                )}
-              </button>
-              
-              {showScoreBreakdown && (
-                <div className="space-y-2 pt-2">
-                  {/* Positive factors */}
-                  {topStrategy.score >= 70 && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span style={{ color: COLORS.surface600 }}>Strong {topStrategy.name} potential</span>
-                      <span className="font-semibold" style={{ color: COLORS.green }}>+{Math.round(topStrategy.score * 0.2)} pts</span>
-                    </div>
-                  )}
-                  {analysis.discountPercent && analysis.discountPercent > 5 && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span style={{ color: COLORS.surface600 }}>Below-market price ({analysis.discountPercent}% off)</span>
-                      <span className="font-semibold" style={{ color: COLORS.green }}>+{Math.min(20, Math.round(analysis.discountPercent * 2))} pts</span>
-                    </div>
-                  )}
-                  {analysis.strategies.filter(s => s.score >= 60).length > 2 && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span style={{ color: COLORS.surface600 }}>Multiple viable strategies</span>
-                      <span className="font-semibold" style={{ color: COLORS.green }}>+12 pts</span>
-                    </div>
-                  )}
-                  {property.beds && property.beds >= 3 && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span style={{ color: COLORS.surface600 }}>House Hack potential ({property.beds} beds)</span>
-                      <span className="font-semibold" style={{ color: COLORS.green }}>+8 pts</span>
-                    </div>
-                  )}
                   
-                  {/* Negative factors */}
-                  {analysis.dealScore < 70 && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span style={{ color: COLORS.surface600 }}>Market pricing</span>
-                      <span className="font-semibold" style={{ color: COLORS.rose }}>-{Math.round((100 - analysis.dealScore) * 0.15)} pts</span>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Financing Column */}
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: COLORS.surface400 }}>
+                        FINANCING
+                      </div>
+                      <div className="space-y-1.5 text-[11px]">
+                        <div className="flex justify-between">
+                          <span style={{ color: COLORS.surface500 }}>Down Payment</span>
+                          <span className="font-medium" style={{ color: COLORS.navy }}>
+                            {((defaults?.financing?.down_payment_pct ?? 0.20) * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: COLORS.surface500 }}>Interest Rate</span>
+                          <span className="font-medium" style={{ color: COLORS.navy }}>
+                            {((defaults?.financing?.interest_rate ?? 0.06) * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: COLORS.surface500 }}>Loan Term</span>
+                          <span className="font-medium" style={{ color: COLORS.navy }}>
+                            {defaults?.financing?.loan_term_years ?? 30} years
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: COLORS.surface500 }}>Closing Costs</span>
+                          <span className="font-medium" style={{ color: COLORS.navy }}>
+                            {((defaults?.financing?.closing_costs_pct ?? 0.03) * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  )}
+                    
+                    {/* Expenses Column */}
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: COLORS.surface400 }}>
+                        EXPENSES
+                      </div>
+                      <div className="space-y-1.5 text-[11px]">
+                        <div className="flex justify-between">
+                          <span style={{ color: COLORS.surface500 }}>Vacancy</span>
+                          <span className="font-medium" style={{ color: COLORS.navy }}>
+                            {((defaults?.operating?.vacancy_rate ?? 0.01) * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: COLORS.surface500 }}>Management</span>
+                          <span className="font-medium" style={{ color: COLORS.navy }}>
+                            {((defaults?.operating?.property_management_pct ?? 0) * 100).toFixed(0)}% {(defaults?.operating?.property_management_pct ?? 0) === 0 ? '(self)' : ''}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: COLORS.surface500 }}>Maintenance</span>
+                          <span className="font-medium" style={{ color: COLORS.navy }}>
+                            {((defaults?.operating?.maintenance_pct ?? 0.05) * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span style={{ color: COLORS.surface500 }}>Insurance</span>
+                          <span className="font-medium" style={{ color: COLORS.navy }}>
+                            {((defaults?.operating?.insurance_pct ?? 0.01) * 100).toFixed(0)}% of value
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   
-                  <div className="pt-2 mt-2" style={{ borderTop: `1px dashed ${COLORS.surface200}` }}>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold" style={{ color: COLORS.navy }}>IQ Verdict Score</span>
-                      <span className="font-bold" style={{ color: getScoreColor(analysis.dealScore) }}>{analysis.dealScore}/100</span>
+                  {/* Income Source */}
+                  <div 
+                    className="pt-3 mt-2"
+                    style={{ borderTop: `1px solid ${COLORS.surface200}` }}
+                  >
+                    <div className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: COLORS.surface400 }}>
+                      INCOME
                     </div>
+                    <div className="flex justify-between text-[11px]">
+                      <span style={{ color: COLORS.surface500 }}>Estimated Rent</span>
+                      <span className="font-medium" style={{ color: COLORS.navy }}>
+                        ${property.monthlyRent?.toLocaleString() || Math.round(property.price * 0.007).toLocaleString()}/mo
+                        <span className="text-[9px] ml-1" style={{ color: COLORS.surface400 }}>(from rental comps)</span>
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center pt-2">
+                    {hasUserCustomizations ? (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: `${COLORS.green}20`, color: COLORS.green }}>
+                        Using your customized defaults
+                      </span>
+                    ) : (
+                      <span className="text-[10px]" style={{ color: COLORS.surface400 }}>
+                        Using system defaults
+                      </span>
+                    )}
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* SECTION 2: How Likely Can You Get This Price? */}
+            <div 
+              className="rounded-xl p-4"
+              style={{ backgroundColor: COLORS.surface50, border: `1px solid ${COLORS.surface200}` }}
+            >
+              <h3 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: COLORS.teal }}>
+                HOW LIKELY CAN YOU GET THIS PRICE?
+              </h3>
+              
+              {/* Deal Gap + Motivation Combined Display */}
+              <div 
+                className="rounded-lg p-4"
+                style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+              >
+                {/* Deal Gap Row */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <TrendingDown className="w-4 h-4" style={{ color: COLORS.surface400 }} />
+                    <span className="text-[13px] font-semibold" style={{ color: COLORS.navy }}>Deal Gap</span>
+                  </div>
+                  <span 
+                    className="text-[15px] font-bold"
+                    style={{ color: getDealGapDisplay(opportunityFactors.dealGap, isOffMarket).color }}
+                  >
+                    {opportunityFactors.dealGap > 0 ? '-' : '+'}{Math.abs(opportunityFactors.dealGap).toFixed(1)}%
+                  </span>
+                </div>
+                
+                {/* Gap Explanation */}
+                <div 
+                  className="rounded-lg p-3 mb-3"
+                  style={{ backgroundColor: COLORS.surface50 }}
+                >
+                  <div className="flex items-center justify-between text-[11px] mb-1">
+                    <span style={{ color: COLORS.surface500 }}>
+                      {isOffMarket ? 'Market Estimate' : 'Asking Price'}
+                    </span>
+                    <span className="font-medium" style={{ color: COLORS.navy }}>
+                      {formatPrice(estValue)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] mb-2">
+                    <span style={{ color: COLORS.surface500 }}>Your Target</span>
+                    <span className="font-medium" style={{ color: COLORS.teal }}>
+                      {formatPrice(breakevenPrice)}
+                    </span>
+                  </div>
+                  <div 
+                    className="pt-2 flex items-center justify-between text-[11px]"
+                    style={{ borderTop: `1px dashed ${COLORS.surface200}` }}
+                  >
+                    <span className="font-medium" style={{ color: COLORS.surface600 }}>
+                      {opportunityFactors.dealGap > 0 ? 'Discount needed' : 'Already below target'}
+                    </span>
+                    <span className="font-bold" style={{ color: getDealGapDisplay(opportunityFactors.dealGap, isOffMarket).color }}>
+                      {formatPrice(Math.abs(estValue - breakevenPrice))}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Seller Motivation Row - Integrated */}
+                <div 
+                  className="pt-3"
+                  style={{ borderTop: `1px solid ${COLORS.surface100}` }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4" style={{ color: COLORS.surface400 }} />
+                      <span className="text-[13px] font-semibold" style={{ color: COLORS.navy }}>Seller Motivation</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span 
+                        className="text-[13px] font-bold"
+                        style={{ color: getMotivationColor(opportunityFactors.motivation) }}
+                      >
+                        {opportunityFactors.motivationLabel}
+                      </span>
+                      <span 
+                        className="text-[11px] font-semibold px-1.5 py-0.5 rounded"
+                        style={{ 
+                          backgroundColor: `${getMotivationColor(opportunityFactors.motivation)}15`,
+                          color: getMotivationColor(opportunityFactors.motivation)
+                        }}
+                      >
+                        {opportunityFactors.motivation}/100
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Motivation Factors */}
+                  {(opportunityFactors.daysOnMarket !== null || opportunityFactors.distressedSale) && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {opportunityFactors.daysOnMarket !== null && opportunityFactors.daysOnMarket > 60 && (
+                        <span 
+                          className="text-[10px] px-2 py-1 rounded-full"
+                          style={{ backgroundColor: `${COLORS.green}15`, color: COLORS.green }}
+                        >
+                          ✓ {opportunityFactors.daysOnMarket} days on market
+                        </span>
+                      )}
+                      {opportunityFactors.distressedSale && (
+                        <span 
+                          className="text-[10px] px-2 py-1 rounded-full"
+                          style={{ backgroundColor: `${COLORS.green}15`, color: COLORS.green }}
+                        >
+                          ✓ Distressed sale
+                        </span>
+                      )}
+                      {opportunityFactors.buyerMarket === 'cold' && (
+                        <span 
+                          className="text-[10px] px-2 py-1 rounded-full"
+                          style={{ backgroundColor: `${COLORS.teal}15`, color: COLORS.teal }}
+                        >
+                          ✓ Buyer's market
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Suggested Opening Offer */}
+                  <div 
+                    className="rounded-lg p-3 flex items-center justify-between"
+                    style={{ backgroundColor: `${COLORS.teal}08`, border: `1px solid ${COLORS.teal}20` }}
+                  >
+                    <span className="text-[11px] font-medium" style={{ color: COLORS.surface600 }}>
+                      Suggested opening offer
+                    </span>
+                    <span className="text-[13px] font-bold" style={{ color: COLORS.teal }}>
+                      {getSuggestedOffer(opportunityFactors.motivation, opportunityFactors.dealGap).min}% - {getSuggestedOffer(opportunityFactors.motivation, opportunityFactors.dealGap).max}% below asking
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* IQ Score Badge - Compact */}
+            <div 
+              className="mt-4 pt-4 flex items-center justify-between"
+              style={{ borderTop: `1px solid ${COLORS.surface100}` }}
+            >
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{ 
+                    border: `3px solid ${getScoreColor(analysis.dealScore)}`,
+                    background: `${getScoreColor(analysis.dealScore)}14`,
+                  }}
+                >
+                  <span 
+                    className="text-lg font-extrabold"
+                    style={{ color: getScoreColor(analysis.dealScore) }}
+                  >
+                    {analysis.dealScore}
+                  </span>
+                </div>
+                <div>
+                  <div 
+                    className="text-[13px] font-bold"
+                    style={{ color: getScoreColor(analysis.dealScore) }}
+                  >
+                    {verdictInfo.label}
+                  </div>
+                  <div className="text-[10px]" style={{ color: COLORS.surface400 }}>
+                    {verdictInfo.sublabel}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowMethodology(true)}
+                className="flex items-center gap-1 text-[11px] font-medium hover:opacity-80"
+                style={{ color: COLORS.teal }}
+              >
+                <Info className="w-3 h-3" />
+                How we score
+              </button>
             </div>
           </div>
 

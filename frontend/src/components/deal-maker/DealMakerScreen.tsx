@@ -233,6 +233,9 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
   // Worksheet store for syncing changes to analytics
   const worksheetStore = useWorksheetStore()
   
+  // Track if we've initialized the worksheet with this property
+  const [worksheetInitialized, setWorksheetInitialized] = useState(false)
+  
   // Update state when defaults are loaded from API
   useEffect(() => {
     if (defaults && !defaultsLoading) {
@@ -250,9 +253,32 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     }
   }, [defaults, defaultsLoading])
   
-  // Sync Deal Maker state to worksheet store and navigate to results
-  const handleSeeResults = useCallback(() => {
-    // Map Deal Maker state to worksheet assumptions format
+  // Initialize worksheet store with property data on mount
+  useEffect(() => {
+    if (!worksheetInitialized && property.zpid) {
+      // Create a property object compatible with worksheetStore
+      const propertyForWorksheet = {
+        id: property.zpid,
+        property_data_snapshot: {
+          listPrice: listPrice ?? property.price,
+          monthlyRent: property.rent,
+          propertyTaxes: property.propertyTax,
+          insurance: property.insurance,
+          sqft: property.sqft,
+          zipCode: property.zipCode,
+        },
+        worksheet_assumptions: {},
+      }
+      worksheetStore.initializeFromProperty(propertyForWorksheet)
+      setWorksheetInitialized(true)
+    }
+  }, [worksheetInitialized, property, listPrice, worksheetStore])
+  
+  // Sync Deal Maker state to worksheet store on EVERY change (with debouncing built into worksheetStore)
+  useEffect(() => {
+    if (!worksheetInitialized) return
+    
+    // Map Deal Maker state to worksheet assumptions format and sync
     worksheetStore.updateMultipleAssumptions({
       purchasePrice: state.buyPrice,
       downPaymentPct: state.downPaymentPercent,
@@ -270,14 +296,32 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
       insurance: state.annualInsurance,
       hoaFees: state.monthlyHoa * 12,
     })
-    
-    // Trigger recalculation
-    worksheetStore.recalculate()
-    
-    // Navigate to worksheet/analysis page
+    // worksheetStore.updateMultipleAssumptions already triggers recalculation with debouncing
+  }, [
+    worksheetInitialized,
+    state.buyPrice,
+    state.downPaymentPercent,
+    state.closingCostsPercent,
+    state.interestRate,
+    state.loanTermYears,
+    state.rehabBudget,
+    state.arv,
+    state.monthlyRent,
+    state.vacancyRate,
+    state.maintenanceRate,
+    state.managementRate,
+    state.annualPropertyTax,
+    state.annualInsurance,
+    state.monthlyHoa,
+    worksheetStore
+  ])
+  
+  // Sync Deal Maker state to worksheet store and navigate to results
+  const handleSeeResults = useCallback(() => {
+    // Navigation only - state is already synced via the useEffect above
     const zpid = property.zpid || ''
     router.push(`/analysis/${zpid}?tab=worksheet`)
-  }, [state, worksheetStore, router, property.zpid])
+  }, [router, property.zpid])
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
 
@@ -297,35 +341,54 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     zpid: property.zpid,
   }
 
-  // Calculate metrics
+  // Get worksheet metrics for live updates (from API calculations)
+  const worksheetMetrics = worksheetStore.worksheetMetrics
+  const isWorksheetCalculating = worksheetStore.isCalculating
+  
+  // Calculate metrics - prefer worksheetStore values when available for consistency
   const metrics = useMemo<DealMakerMetrics>(() => {
     const downPaymentAmount = state.buyPrice * state.downPaymentPercent
     const closingCostsAmount = state.buyPrice * state.closingCostsPercent
-    const cashNeeded = downPaymentAmount + closingCostsAmount
+    const cashNeeded = worksheetMetrics?.total_cash_needed ?? (downPaymentAmount + closingCostsAmount)
 
-    const loanAmount = state.buyPrice - downPaymentAmount
-    const monthlyPayment = calculateMortgagePayment(loanAmount, state.interestRate, state.loanTermYears)
+    const loanAmount = worksheetMetrics?.loan_amount ?? (state.buyPrice - downPaymentAmount)
+    const monthlyPayment = worksheetMetrics?.monthly_payment ?? calculateMortgagePayment(loanAmount, state.interestRate, state.loanTermYears)
 
     const totalInvestment = state.buyPrice + state.rehabBudget
     const equityCreated = state.arv - totalInvestment
 
     const grossMonthlyIncome = state.monthlyRent + state.otherIncome
 
+    // Use worksheet values when available
+    const annualCashFlow = worksheetMetrics?.annual_cash_flow ?? (() => {
+      const vacancy = grossMonthlyIncome * state.vacancyRate
+      const maintenance = grossMonthlyIncome * state.maintenanceRate
+      const management = grossMonthlyIncome * state.managementRate
+      const propertyTaxMonthly = state.annualPropertyTax / 12
+      const insuranceMonthly = state.annualInsurance / 12
+      const monthlyOperatingExpenses = vacancy + maintenance + management + 
+        propertyTaxMonthly + insuranceMonthly + state.monthlyHoa
+      const totalMonthlyExpenses = monthlyOperatingExpenses + monthlyPayment
+      return (grossMonthlyIncome - totalMonthlyExpenses) * 12
+    })()
+
+    // Calculate operating expenses for totalMonthlyExpenses display
     const vacancy = grossMonthlyIncome * state.vacancyRate
     const maintenance = grossMonthlyIncome * state.maintenanceRate
     const management = grossMonthlyIncome * state.managementRate
     const propertyTaxMonthly = state.annualPropertyTax / 12
     const insuranceMonthly = state.annualInsurance / 12
-
     const monthlyOperatingExpenses = vacancy + maintenance + management + 
       propertyTaxMonthly + insuranceMonthly + state.monthlyHoa
     const totalMonthlyExpenses = monthlyOperatingExpenses + monthlyPayment
 
-    const annualNOI = (grossMonthlyIncome - monthlyOperatingExpenses) * 12
-    const annualCashFlow = (grossMonthlyIncome - totalMonthlyExpenses) * 12
-
-    const capRate = state.buyPrice > 0 ? annualNOI / state.buyPrice : 0
-    const cocReturn = cashNeeded > 0 ? annualCashFlow / cashNeeded : 0
+    const capRate = worksheetMetrics?.cap_rate ?? (state.buyPrice > 0 
+      ? (((grossMonthlyIncome - monthlyOperatingExpenses) * 12) / state.buyPrice) * 100 
+      : 0)
+    
+    const cocReturn = worksheetMetrics?.cash_on_cash_return ?? (cashNeeded > 0 
+      ? (annualCashFlow / cashNeeded) * 100 
+      : 0)
 
     const effectiveListPrice = listPrice ?? state.buyPrice
     const dealGap = effectiveListPrice > 0 
@@ -336,15 +399,15 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
       cashNeeded,
       dealGap,
       annualProfit: annualCashFlow,
-      capRate,
-      cocReturn,
+      capRate: worksheetMetrics ? capRate : capRate * 100, // worksheet returns %, local calc returns decimal
+      cocReturn: worksheetMetrics ? cocReturn : cocReturn * 100, // worksheet returns %, local calc returns decimal
       monthlyPayment,
       loanAmount,
       equityCreated,
       grossMonthlyIncome,
       totalMonthlyExpenses,
     }
-  }, [state, listPrice])
+  }, [state, listPrice, worksheetMetrics])
 
   const updateState = useCallback(<K extends keyof DealMakerState>(key: K, value: DealMakerState[K]) => {
     setState(prev => ({ ...prev, [key]: value }))
@@ -377,18 +440,19 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     switch (color) {
       case 'cyan': return '#00D4FF'
       case 'teal': return '#06B6D4'
+      case 'rose': return '#F43F5E'
       default: return '#FFFFFF'
     }
   }
 
-  // Key metrics for header
+  // Key metrics for header - cap rate and COC are now in % format from worksheetStore
   const headerMetrics = [
     { label: 'Buy Price', value: formatPrice(state.buyPrice), color: 'white' },
     { label: 'Cash Needed', value: formatPrice(metrics.cashNeeded), color: 'white' },
     { label: 'Deal Gap', value: `${metrics.dealGap >= 0 ? '+' : ''}${formatPercent(metrics.dealGap)}`, color: 'cyan' },
-    { label: 'Annual Profit', value: formatPrice(metrics.annualProfit), color: 'teal' },
-    { label: 'CAP Rate', value: formatPercent(metrics.capRate), color: 'white' },
-    { label: 'COC Return', value: formatPercent(metrics.cocReturn), color: 'white' },
+    { label: 'Annual Profit', value: formatPrice(metrics.annualProfit), color: metrics.annualProfit >= 0 ? 'teal' : 'rose' },
+    { label: 'CAP Rate', value: `${metrics.capRate.toFixed(1)}%`, color: 'white' },
+    { label: 'COC Return', value: `${metrics.cocReturn.toFixed(1)}%`, color: metrics.cocReturn >= 0 ? 'white' : 'rose' },
   ]
 
   return (
@@ -407,12 +471,19 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
 
       {/* Key Metrics Row */}
       <div className="bg-[#0A1628] px-4 pb-4 -mt-1">
+        {/* Live calculation indicator */}
+        {isWorksheetCalculating && (
+          <div className="flex items-center justify-center gap-2 py-1.5 text-[10px] text-[#00D4FF]">
+            <div className="w-2 h-2 bg-[#00D4FF] rounded-full animate-pulse" />
+            Recalculating...
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 pt-3 border-t border-white/10">
           {headerMetrics.map((metric, index) => (
             <div key={index} className="flex justify-between items-center py-0.5">
               <span className="text-xs text-[#94A3B8]">{metric.label}</span>
               <span 
-                className="text-[13px] font-semibold tabular-nums"
+                className={`text-[13px] font-semibold tabular-nums ${isWorksheetCalculating ? 'opacity-60' : ''}`}
                 style={{ color: getValueColor(metric.color) }}
               >
                 {metric.value}
