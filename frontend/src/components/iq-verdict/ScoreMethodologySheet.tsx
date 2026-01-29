@@ -45,8 +45,9 @@ const METHODOLOGY_SECTIONS = [
     name: 'Deal Gap %',
     icon: TrendingUp,
     description: 'The discount needed from asking price to reach your breakeven price.',
-    formula: 'Deal Gap = (List Price - Breakeven) / List Price × 100',
+    formula: 'Deal Gap = (List Price or Market Value - Breakeven) / List Price or Market Value × 100',
     explanation: 'Breakeven is the maximum price where monthly cash flow = $0, calculated using YOUR financing terms (down payment, interest rate, vacancy, etc.).',
+    priceNote: 'For listed properties, List Price is used. For off-market properties, Market Value (Zestimate) is used.',
     note: 'Based on LTR (rental) revenue model.',
   },
   {
@@ -305,6 +306,9 @@ export function ScoreMethodologySheet({
               </div>
               <p className="text-xs" style={{ color: COLORS.surface500 }}>
                 {METHODOLOGY_SECTIONS[0].explanation}
+              </p>
+              <p className="text-xs mt-2" style={{ color: COLORS.surface500 }}>
+                {METHODOLOGY_SECTIONS[0].priceNote}
               </p>
               <p className="text-[11px] mt-2 italic" style={{ color: COLORS.surface400 }}>
                 {METHODOLOGY_SECTIONS[0].note}

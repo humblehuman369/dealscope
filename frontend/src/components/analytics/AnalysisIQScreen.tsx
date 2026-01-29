@@ -186,6 +186,21 @@ function PerformanceBenchmarkBar({ label, value, displayValue, range, rangePos }
   const pillStyle = getPillStyle(rangePos.segment, range.higherIsBetter)
   const formatValue = range.format || ((v: number) => v.toString())
   
+  // InvestIQ Style Guide colors
+  // For higher-is-better: LOW=Red, AVG=Amber, HIGH=Teal
+  // For lower-is-better: LOW=Teal, AVG=Amber, HIGH=Red
+  const segmentColors = range.higherIsBetter
+    ? {
+        low: 'rgba(239, 68, 68, 0.25)',   // Light Red (bad)
+        avg: 'rgba(245, 158, 11, 0.30)',  // Light Amber (neutral)
+        high: 'rgba(8, 145, 178, 0.25)',  // Light Teal (good)
+      }
+    : {
+        low: 'rgba(8, 145, 178, 0.25)',   // Light Teal (good - low is better)
+        avg: 'rgba(245, 158, 11, 0.30)',  // Light Amber (neutral)
+        high: 'rgba(239, 68, 68, 0.25)',  // Light Red (bad - high is worse)
+      }
+  
   return (
     <div className="py-2.5">
       {/* Header row */}
@@ -214,7 +229,7 @@ function PerformanceBenchmarkBar({ label, value, displayValue, range, rangePos }
         {/* LOW segment (30%) */}
         <div 
           className="h-full flex items-center justify-center px-1.5"
-          style={{ width: '30%', background: '#fca5a5' }}
+          style={{ width: '30%', background: segmentColors.low }}
         >
           <div className="flex flex-col items-center gap-px select-none pointer-events-none">
             <span className="text-[9px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(15,23,42,.72)' }}>Low</span>
@@ -227,7 +242,7 @@ function PerformanceBenchmarkBar({ label, value, displayValue, range, rangePos }
         {/* AVG segment (40%) */}
         <div 
           className="h-full flex items-center justify-center px-1.5"
-          style={{ width: '40%', background: '#f7d889' }}
+          style={{ width: '40%', background: segmentColors.avg }}
         >
           <div className="flex flex-col items-center gap-px select-none pointer-events-none">
             <span className="text-[9px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(15,23,42,.72)' }}>Avg</span>
@@ -240,7 +255,7 @@ function PerformanceBenchmarkBar({ label, value, displayValue, range, rangePos }
         {/* HIGH segment (30%) */}
         <div 
           className="h-full flex items-center justify-center px-1.5"
-          style={{ width: '30%', background: '#86efac' }}
+          style={{ width: '30%', background: segmentColors.high }}
         >
           <div className="flex flex-col items-center gap-px select-none pointer-events-none">
             <span className="text-[9px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(15,23,42,.72)' }}>High</span>
@@ -269,7 +284,6 @@ function PerformanceBenchmarkBar({ label, value, displayValue, range, rangePos }
             bottom: '-7px', 
             width: '3px', 
             background: '#EF4444',
-            boxShadow: '0 0 0 2px rgba(255,255,255,.9)',
             transform: 'translateX(-1px)'
           }}
         />
@@ -447,7 +461,7 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
     },
     { 
       key: 'dscr',
-      metric: 'DSCR', 
+      metric: 'Debt Service Coverage Ratio', 
       result: metrics.dscr.toFixed(2),
       value: metrics.dscr,
       range: NATIONAL_RANGES.dscr,
@@ -463,7 +477,7 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
     },
     { 
       key: 'breakevenOcc',
-      metric: 'Breakeven Occ.', 
+      metric: 'Breakeven Occupancy', 
       result: `${metrics.breakevenOcc.toFixed(0)}%`,
       value: metrics.breakevenOcc,
       range: NATIONAL_RANGES.breakevenOcc,
