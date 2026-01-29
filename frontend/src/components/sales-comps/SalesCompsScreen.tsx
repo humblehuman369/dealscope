@@ -308,15 +308,15 @@ export function SalesCompsScreen({
       />
 
       {/* Main Content */}
-      <main className="p-4 pb-[100px]">
+      <main className="pb-[100px]">
         {/* Section Header */}
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between items-start p-4 bg-white border-b border-[#CBD5E1]">
           <div>
             <h2 className="text-lg font-bold text-[#0A1628]">Sales Comps & ARV</h2>
             <p className="text-xs text-[#64748B] mt-0.5">Comparable sales for {property.address}</p>
           </div>
           <button 
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#64748B] text-[13px] font-medium hover:bg-[#F8FAFC] transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#64748B] text-[13px] font-medium hover:bg-[#F8FAFC] hover:border-[#CBD5E1] transition-colors"
             onClick={handleRefresh}
           >
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,7 +327,7 @@ export function SalesCompsScreen({
         </div>
 
         {/* ARV Card */}
-        <div className="bg-white rounded-xl p-4 mb-4 border border-[#F1F5F9] shadow-sm">
+        <div className="bg-white p-4 border-b border-[#CBD5E1]">
           <div className="flex items-center gap-3">
             {/* Icon */}
             <div className="w-12 h-12 bg-gradient-to-br from-[#0A1628] to-[#1E293B] rounded-xl flex items-center justify-center flex-shrink-0">
@@ -383,7 +383,7 @@ export function SalesCompsScreen({
         </div>
 
         {/* Selection Bar */}
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex justify-between items-center px-4 py-3 bg-white border-b border-[#CBD5E1]">
           <div className="text-[13px] text-[#64748B]">
             <strong className="text-[#0A1628]">{selectedComps.length}</strong> of <strong className="text-[#0A1628]">{comps.length}</strong> comps selected
           </div>
@@ -401,13 +401,13 @@ export function SalesCompsScreen({
         {comps.map((comp) => (
           <div
             key={comp.id}
-            className={`bg-white rounded-xl mb-2.5 border-2 overflow-hidden shadow-sm transition-all ${
-              selectedComps.includes(comp.id) ? 'border-[#0891B2]' : 'border-transparent'
+            className={`bg-white border-b border-[#CBD5E1] border-l-[3px] overflow-hidden transition-all ${
+              selectedComps.includes(comp.id) ? 'border-l-[#0891B2] bg-[#F0FDFA]' : 'border-l-transparent'
             }`}
           >
-            <div className="flex p-3 gap-3">
+            <div className="flex p-4 gap-3">
               {/* Image Container */}
-              <div className="relative w-20 h-[60px] flex-shrink-0">
+              <div className="relative w-[120px] h-[90px] flex-shrink-0">
                 <img 
                   className="w-full h-full object-cover rounded-lg" 
                   src={comp.image || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=200&h=150&fit=crop'} 
@@ -455,6 +455,14 @@ export function SalesCompsScreen({
                     </svg>
                     {formatNumber(comp.sqft)}
                   </span>
+                  {comp.lotSize !== undefined && (
+                    <span className="flex items-center gap-1 text-[11px] text-[#64748B]">
+                      <svg className="w-3 h-3 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25"/>
+                      </svg>
+                      {comp.lotSize}
+                    </span>
+                  )}
                 </div>
                 <div className="text-[10px] text-[#94A3B8]">
                   Sold {comp.soldDate} · <span className="text-[#0891B2]">{comp.timeAgo}</span>
