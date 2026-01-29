@@ -102,7 +102,7 @@ export function useDefaults(zipCode?: string): UseDefaultsResult {
       if (!fullResponse?.user_overrides) return false
       const categoryOverrides = fullResponse.user_overrides[category]
       if (!categoryOverrides || typeof categoryOverrides !== 'object') return false
-      return field in (categoryOverrides as Record<string, unknown>)
+      return Object.prototype.hasOwnProperty.call(categoryOverrides, field)
     },
     [fullResponse]
   )
