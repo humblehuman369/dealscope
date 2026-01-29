@@ -474,71 +474,57 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
           </button>
 
           {expandedSections.returns && (
-            <div className="px-4 pb-4 space-y-5">
+            <div className="px-4 pb-3">
               {returnMetrics.map((row, idx) => {
-                const markerColor = row.rangePos.isGood ? '#0891B2' : '#E11D48'
-                // For metrics where lower is better, reverse the gradient
-                const gradientDirection = row.range.higherIsBetter 
-                  ? 'linear-gradient(90deg, #E11D48 0%, #0891B2 100%)'
-                  : 'linear-gradient(90deg, #0891B2 0%, #E11D48 100%)'
+                // Calculate average position (center of range)
+                const avgValue = (row.range.min + row.range.max) / 2
+                const avgPosition = 50 // Center is always 50%
                 return (
-                  <div key={idx}>
+                  <div key={idx} className={idx < returnMetrics.length - 1 ? 'mb-3' : ''}>
                     {/* Header row */}
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="text-sm font-semibold text-[#0A1628]">{row.metric}</p>
-                        <p className="text-[11px] text-[#94A3B8]">
-                          National range: {row.range.min}{row.range.unit} → {row.range.max}{row.range.unit}
-                        </p>
-                      </div>
-                      <span 
-                        className="text-lg font-bold tabular-nums"
-                        style={{ color: markerColor }}
-                      >
-                        {row.result}
-                      </span>
+                    <div className="flex justify-between items-baseline mb-1">
+                      <span className="text-sm font-semibold text-[#0A1628]">{row.metric}</span>
+                      <span className="text-sm font-bold text-[#0A1628] tabular-nums">{row.result}</span>
                     </div>
                     
-                    {/* Range bar with marker */}
-                    <div className="relative pt-5">
-                      {/* Marker */}
-                      <div 
-                        className="absolute top-0 flex flex-col items-center"
-                        style={{ left: `${row.rangePos.position}%`, transform: 'translateX(-50%)' }}
-                      >
-                        <span 
-                          className="text-[10px] font-bold px-2 py-0.5 rounded-full mb-1"
-                          style={{ 
-                            backgroundColor: 'white',
-                            color: markerColor,
-                            border: `1.5px solid ${markerColor}`,
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                          }}
-                        >
-                          {row.result}
-                        </span>
+                    {/* Bar with markers */}
+                    <div className="relative">
+                      {/* Background bar */}
+                      <div className="h-2 bg-[#E2E8F0] rounded-full relative overflow-visible">
+                        {/* Filled portion (teal) */}
                         <div 
-                          className="w-3 h-3 rounded-full border-2 border-white"
+                          className="absolute left-0 top-0 h-full rounded-full bg-[#0891B2]"
+                          style={{ width: `${row.rangePos.position}%` }}
+                        />
+                        
+                        {/* National Average center line */}
+                        <div 
+                          className="absolute top-[-3px] bottom-[-3px] w-0.5 bg-[#0A1628]"
+                          style={{ left: '50%', transform: 'translateX(-50%)' }}
+                        />
+                        
+                        {/* Value marker dot */}
+                        <div 
+                          className="absolute top-1/2 w-3 h-3 rounded-full bg-[#0891B2] border-2 border-white"
                           style={{ 
-                            backgroundColor: markerColor,
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+                            left: `${row.rangePos.position}%`, 
+                            transform: 'translate(-50%, -50%)',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
                           }}
                         />
                       </div>
                       
-                      {/* Gradient bar */}
-                      <div 
-                        className="h-2.5 rounded-full"
-                        style={{ 
-                          background: gradientDirection,
-                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
-                        }}
-                      />
-                      
-                      {/* Range labels */}
-                      <div className="flex justify-between mt-1.5 text-[10px] text-[#94A3B8]">
-                        <span>{row.range.higherIsBetter ? 'Low' : 'High'} ({row.range.min}{row.range.unit})</span>
-                        <span>{row.range.higherIsBetter ? 'High' : 'Low'} ({row.range.max}{row.range.unit})</span>
+                      {/* Labels row */}
+                      <div className="flex justify-between items-center mt-1">
+                        <span className="text-[11px] font-semibold text-[#0A1628]">
+                          Low {row.range.min}{row.range.unit}
+                        </span>
+                        <span className="text-[10px] text-[#64748B]">
+                          Avg {row.key === 'dscr' ? avgValue.toFixed(2) : avgValue}{row.range.unit}
+                        </span>
+                        <span className="text-[11px] font-semibold text-[#0A1628]">
+                          High {row.range.max}{row.range.unit}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -575,71 +561,56 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
           </button>
 
           {expandedSections.cashFlow && (
-            <div className="px-4 pb-4 space-y-5">
+            <div className="px-4 pb-3">
               {cashFlowMetrics.map((row, idx) => {
-                const markerColor = row.rangePos.isGood ? '#0891B2' : '#E11D48'
-                // For metrics where lower is better, reverse the gradient
-                const gradientDirection = row.range.higherIsBetter 
-                  ? 'linear-gradient(90deg, #E11D48 0%, #0891B2 100%)'
-                  : 'linear-gradient(90deg, #0891B2 0%, #E11D48 100%)'
+                // Calculate average position (center of range)
+                const avgValue = (row.range.min + row.range.max) / 2
                 return (
-                  <div key={idx}>
+                  <div key={idx} className={idx < cashFlowMetrics.length - 1 ? 'mb-3' : ''}>
                     {/* Header row */}
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="text-sm font-semibold text-[#0A1628]">{row.metric}</p>
-                        <p className="text-[11px] text-[#94A3B8]">
-                          National range: {row.range.min}{row.range.unit} → {row.range.max}{row.range.unit}
-                        </p>
-                      </div>
-                      <span 
-                        className="text-lg font-bold tabular-nums"
-                        style={{ color: markerColor }}
-                      >
-                        {row.result}
-                      </span>
+                    <div className="flex justify-between items-baseline mb-1">
+                      <span className="text-sm font-semibold text-[#0A1628]">{row.metric}</span>
+                      <span className="text-sm font-bold text-[#0A1628] tabular-nums">{row.result}</span>
                     </div>
                     
-                    {/* Range bar with marker */}
-                    <div className="relative pt-5">
-                      {/* Marker */}
-                      <div 
-                        className="absolute top-0 flex flex-col items-center"
-                        style={{ left: `${row.rangePos.position}%`, transform: 'translateX(-50%)' }}
-                      >
-                        <span 
-                          className="text-[10px] font-bold px-2 py-0.5 rounded-full mb-1"
-                          style={{ 
-                            backgroundColor: 'white',
-                            color: markerColor,
-                            border: `1.5px solid ${markerColor}`,
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                          }}
-                        >
-                          {row.result}
-                        </span>
+                    {/* Bar with markers */}
+                    <div className="relative">
+                      {/* Background bar */}
+                      <div className="h-2 bg-[#E2E8F0] rounded-full relative overflow-visible">
+                        {/* Filled portion (teal) */}
                         <div 
-                          className="w-3 h-3 rounded-full border-2 border-white"
+                          className="absolute left-0 top-0 h-full rounded-full bg-[#0891B2]"
+                          style={{ width: `${row.rangePos.position}%` }}
+                        />
+                        
+                        {/* National Average center line */}
+                        <div 
+                          className="absolute top-[-3px] bottom-[-3px] w-0.5 bg-[#0A1628]"
+                          style={{ left: '50%', transform: 'translateX(-50%)' }}
+                        />
+                        
+                        {/* Value marker dot */}
+                        <div 
+                          className="absolute top-1/2 w-3 h-3 rounded-full bg-[#0891B2] border-2 border-white"
                           style={{ 
-                            backgroundColor: markerColor,
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+                            left: `${row.rangePos.position}%`, 
+                            transform: 'translate(-50%, -50%)',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
                           }}
                         />
                       </div>
                       
-                      {/* Gradient bar */}
-                      <div 
-                        className="h-2.5 rounded-full"
-                        style={{ 
-                          background: gradientDirection,
-                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
-                        }}
-                      />
-                      
-                      {/* Range labels */}
-                      <div className="flex justify-between mt-1.5 text-[10px] text-[#94A3B8]">
-                        <span>{row.range.higherIsBetter ? 'Low' : 'High'} ({row.range.min}{row.range.unit})</span>
-                        <span>{row.range.higherIsBetter ? 'High' : 'Low'} ({row.range.max}{row.range.unit})</span>
+                      {/* Labels row */}
+                      <div className="flex justify-between items-center mt-1">
+                        <span className="text-[11px] font-semibold text-[#0A1628]">
+                          Low {row.range.min}{row.range.unit}
+                        </span>
+                        <span className="text-[10px] text-[#64748B]">
+                          Avg {row.key === 'dscr' ? avgValue.toFixed(2) : avgValue}{row.range.unit}
+                        </span>
+                        <span className="text-[11px] font-semibold text-[#0A1628]">
+                          High {row.range.max}{row.range.unit}
+                        </span>
                       </div>
                     </div>
                   </div>
