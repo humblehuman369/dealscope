@@ -464,27 +464,35 @@ export const STRATEGY_ROUTE_MAP: Record<IQStrategyId, string> = {
   'wholesale': 'wholesale',
 };
 
-// ===================
-// DEFAULT ASSUMPTIONS (aligned with stores/index.ts)
-// ===================
+// =============================================================================
+// FALLBACK DEFAULTS - Must match backend/app/core/defaults.py
+// 
+// These are used for client-side calculations when API defaults are not available.
+// Ideally, components should use useDefaults() hook to get values from the API.
+// 
+// See docs/DEFAULTS_ARCHITECTURE.md for full details.
+// =============================================================================
 
-const DEFAULT_ASSUMPTIONS = {
-  interestRate: 0.06,           // 6% (was 7.25%)
-  downPaymentPct: 0.20,         // 20%
-  loanTermYears: 30,
-  closingCostsPct: 0.03,        // 3%
-  vacancyRate: 0.01,            // 1% (was 5%)
-  managementPct: 0.00,          // 0% (was 8%)
-  maintenancePct: 0.05,         // 5%
-  insurancePct: 0.01,           // 1% of purchase price
-  strManagementPct: 0.10,       // 10% (was 20%)
-  platformFeesPct: 0.15,        // 15%
-  sellingCostsPct: 0.06,        // 6% (was 8%)
-  rehabBudgetPct: 0.05,         // 5% of ARV
-  buyDiscountPct: 0.05,         // 5% below breakeven
-  refinanceRate: 0.06,          // 6%
-  refinanceLtv: 0.75,           // 75%
+const FALLBACK_ASSUMPTIONS = {
+  interestRate: 0.06,           // FINANCING.interest_rate
+  downPaymentPct: 0.20,         // FINANCING.down_payment_pct
+  loanTermYears: 30,            // FINANCING.loan_term_years
+  closingCostsPct: 0.03,        // FINANCING.closing_costs_pct
+  vacancyRate: 0.01,            // OPERATING.vacancy_rate
+  managementPct: 0.00,          // OPERATING.property_management_pct
+  maintenancePct: 0.05,         // OPERATING.maintenance_pct
+  insurancePct: 0.01,           // OPERATING.insurance_pct
+  strManagementPct: 0.10,       // STR.str_management_pct
+  platformFeesPct: 0.15,        // STR.platform_fees_pct
+  sellingCostsPct: 0.06,        // FLIP.selling_costs_pct
+  rehabBudgetPct: 0.05,         // REHAB.renovation_budget_pct
+  buyDiscountPct: 0.05,         // BRRRR.buy_discount_pct
+  refinanceRate: 0.06,          // BRRRR.refinance_interest_rate
+  refinanceLtv: 0.75,           // BRRRR.refinance_ltv
 } as const;
+
+// Legacy alias for backward compatibility
+const DEFAULT_ASSUMPTIONS = FALLBACK_ASSUMPTIONS;
 
 // ===================
 // CALCULATION HELPERS

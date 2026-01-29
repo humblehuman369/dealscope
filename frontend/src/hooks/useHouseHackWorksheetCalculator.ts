@@ -5,6 +5,18 @@ import { calculateInitialPurchasePrice } from '@/lib/iqTarget'
 const WORKSHEET_API_URL = '/api/v1/worksheet/househack/calculate'
 const CALC_DEBOUNCE_MS = 150
 
+// =============================================================================
+// FALLBACK DEFAULTS - Must match backend/app/core/defaults.py
+// Components using this hook should ideally pass defaults from useDefaults()
+// These values are used only when API-provided defaults are not available
+// =============================================================================
+const FALLBACK_INSURANCE_PCT = 0.01        // OPERATING.insurance_pct
+const FALLBACK_FHA_DOWN_PAYMENT_PCT = 0.035 // HOUSE_HACK.fha_down_payment_pct
+const FALLBACK_FHA_MIP_RATE = 0.0085       // HOUSE_HACK.fha_mip_rate
+const FALLBACK_INTEREST_RATE = 0.06        // FINANCING.interest_rate
+const FALLBACK_VACANCY_RATE = 0.01         // OPERATING.vacancy_rate
+const FALLBACK_MAINTENANCE_PCT = 0.05      // OPERATING.maintenance_pct
+
 export type PropertyTypeOption = '2' | '3' | '4' | '1' | 'rooms'
 
 export interface HouseHackInputs {
@@ -61,30 +73,27 @@ export interface HouseHackResult {
   fha_max_price: number
 }
 
-// Default percentages for calculated fields
-const DEFAULT_INSURANCE_PCT = 0.01        // 1% of purchase price annually
-
 const defaultInputs: HouseHackInputs = {
   property_type: '2',
   purchase_price: 425000,
-  down_payment_pct: 0.035,               // 3.5% FHA (was 5%)
+  down_payment_pct: FALLBACK_FHA_DOWN_PAYMENT_PCT,
   closing_costs: 8625,
-  interest_rate: 0.06,                   // 6% (was 7.25%)
+  interest_rate: FALLBACK_INTEREST_RATE,
   loan_term_years: 30,
-  pmi_rate: 0.0085,                      // 0.85% MIP (was 0.8%)
+  pmi_rate: FALLBACK_FHA_MIP_RATE,
   unit2_rent: 1800,
   unit3_rent: 1600,
   unit4_rent: 1500,
-  vacancy_rate: 0.01,                    // 1% (was 5%)
+  vacancy_rate: FALLBACK_VACANCY_RATE,
   property_taxes_monthly: 354,
-  insurance_monthly: (425000 * DEFAULT_INSURANCE_PCT) / 12, // 1% of purchase price annually
-  maintenance_pct: 0.05,                 // 5%
-  capex_pct: 0.05,                       // 5%
-  utilities_monthly: 100,                // $100 (was $150)
+  insurance_monthly: (425000 * FALLBACK_INSURANCE_PCT) / 12,
+  maintenance_pct: FALLBACK_MAINTENANCE_PCT,
+  capex_pct: 0.05,
+  utilities_monthly: 100,
   owner_market_rent: 2200,
   list_price: 449000,
   fha_max_price: 472030,
-  loan_type: 'fha',                      // Default to FHA (was conventional)
+  loan_type: 'fha',
 }
 
 const getUnitsCount = (propertyType: PropertyTypeOption) => {

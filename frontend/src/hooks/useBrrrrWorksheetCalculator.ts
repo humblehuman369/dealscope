@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { SavedProperty } from './useWorksheetProperty'
-import { calculateInitialPurchasePrice, DEFAULT_RENOVATION_BUDGET_PCT } from '@/lib/iqTarget'
+import { calculateInitialPurchasePrice } from '@/lib/iqTarget'
 
 const WORKSHEET_API_URL = '/api/v1/worksheet/brrrr/calculate'
 const CALC_DEBOUNCE_MS = 150
@@ -78,33 +78,42 @@ export interface BrrrrWorksheetResult {
   equity_created: number
 }
 
-// Default percentages for calculated fields
-const DEFAULT_INSURANCE_PCT = 0.01        // 1% of purchase price
-const DEFAULT_REHAB_BUDGET_PCT = 0.05     // 5% of ARV
-const DEFAULT_REFI_CLOSING_COSTS_PCT = 0.03 // 3% of refinance amount
+// =============================================================================
+// FALLBACK DEFAULTS - Must match backend/app/core/defaults.py
+// Components using this hook should ideally pass defaults from useDefaults()
+// These values are used only when API-provided defaults are not available
+// =============================================================================
+const FALLBACK_INSURANCE_PCT = 0.01        // OPERATING.insurance_pct
+const FALLBACK_REHAB_BUDGET_PCT = 0.05     // REHAB.renovation_budget_pct
+const FALLBACK_REFI_CLOSING_COSTS_PCT = 0.03 // BRRRR.refinance_closing_costs_pct
+const FALLBACK_VACANCY_RATE = 0.01         // OPERATING.vacancy_rate
+const FALLBACK_MANAGEMENT_PCT = 0.00       // OPERATING.property_management_pct
+const FALLBACK_MAINTENANCE_PCT = 0.05      // OPERATING.maintenance_pct
+const FALLBACK_REFI_INTEREST_RATE = 0.06   // BRRRR.refinance_interest_rate
+const FALLBACK_REFI_LTV = 0.75             // BRRRR.refinance_ltv
 
 const defaultInputs: BrrrrWorksheetInputs = {
   purchase_price: 285000,
   purchase_costs: 8550,
-  rehab_costs: 425000 * DEFAULT_REHAB_BUDGET_PCT, // 5% of ARV
+  rehab_costs: 425000 * FALLBACK_REHAB_BUDGET_PCT,
   arv: 425000,
   monthly_rent: 2800,
   property_taxes_annual: 5700,
-  insurance_annual: 285000 * DEFAULT_INSURANCE_PCT, // 1% of purchase price
-  utilities_monthly: 100,                  // $100 (was $475)
+  insurance_annual: 285000 * FALLBACK_INSURANCE_PCT,
+  utilities_monthly: 100,
   down_payment_pct: 0.1,
   loan_to_cost_pct: 90,
-  interest_rate: 0.12,                     // 12% hard money
+  interest_rate: 0.12,                     // Hard money rate
   points: 2,
   holding_months: 4,
-  refi_ltv: 0.75,                          // 75%
-  refi_interest_rate: 0.06,                // 6% (was 7%)
+  refi_ltv: FALLBACK_REFI_LTV,
+  refi_interest_rate: FALLBACK_REFI_INTEREST_RATE,
   refi_loan_term: 30,
-  refi_closing_costs: 425000 * 0.75 * DEFAULT_REFI_CLOSING_COSTS_PCT, // 3% of refinance amount
-  vacancy_rate: 0.01,                      // 1% (was 5%)
-  property_management_pct: 0.00,           // 0% (was 8%)
-  maintenance_pct: 0.05,                   // 5%
-  capex_pct: 0.05,                         // 5%
+  refi_closing_costs: 425000 * FALLBACK_REFI_LTV * FALLBACK_REFI_CLOSING_COSTS_PCT,
+  vacancy_rate: FALLBACK_VACANCY_RATE,
+  property_management_pct: FALLBACK_MANAGEMENT_PCT,
+  maintenance_pct: FALLBACK_MAINTENANCE_PCT,
+  capex_pct: 0.05,
 }
 
 export function useBrrrrWorksheetCalculator(property: SavedProperty | null) {
@@ -123,23 +132,24 @@ export function useBrrrrWorksheetCalculator(property: SavedProperty | null) {
     const monthlyRent = data.monthlyRent ?? defaultInputs.monthly_rent
     const propertyTaxes = data.propertyTaxes ?? defaultInputs.property_taxes_annual
     
-    // Calculate percentage-based fields
-    const insurance = data.insurance ?? (listPrice * DEFAULT_INSURANCE_PCT)
-    const rehabCosts = arv * DEFAULT_RENOVATION_BUDGET_PCT
-    const refiLoanAmount = arv * 0.75
-    const refiClosingCosts = refiLoanAmount * DEFAULT_REFI_CLOSING_COSTS_PCT
+    // Calculate percentage-based fields using fallback defaults
+    const insurance = data.insurance ?? (listPrice * FALLBACK_INSURANCE_PCT)
+    const rehabCosts = arv * FALLBACK_REHAB_BUDGET_PCT
+    const refiLoanAmount = arv * FALLBACK_REFI_LTV
+    const refiClosingCosts = refiLoanAmount * FALLBACK_REFI_CLOSING_COSTS_PCT
     
     // Calculate initial purchase price as 95% of estimated breakeven
+    // Using fallback defaults - ideally should come from useDefaults() hook
     const initialPurchasePrice = calculateInitialPurchasePrice({
       monthlyRent: monthlyRent,
       propertyTaxes: propertyTaxes,
       insurance: insurance,
       listPrice: listPrice,
-      vacancyRate: 0.01,
-      maintenancePct: 0.05,
-      managementPct: 0,
+      vacancyRate: FALLBACK_VACANCY_RATE,
+      maintenancePct: FALLBACK_MAINTENANCE_PCT,
+      managementPct: FALLBACK_MANAGEMENT_PCT,
       downPaymentPct: 0.10,   // BRRRR typically uses hard money
-      interestRate: 0.06,    // Refinance rate
+      interestRate: FALLBACK_REFI_INTEREST_RATE,
       loanTermYears: 30,
     })
 

@@ -1,9 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { SavedProperty } from './useWorksheetProperty'
-import { DEFAULT_RENOVATION_BUDGET_PCT, DEFAULT_BUY_DISCOUNT_PCT } from '@/lib/iqTarget'
 
 const WORKSHEET_API_URL = '/api/v1/worksheet/flip/calculate'
 const CALC_DEBOUNCE_MS = 150
+
+// =============================================================================
+// FALLBACK DEFAULTS - Must match backend/app/core/defaults.py
+// Components using this hook should ideally pass defaults from useDefaults()
+// These values are used only when API-provided defaults are not available
+// =============================================================================
+const FALLBACK_INSURANCE_PCT = 0.01        // OPERATING.insurance_pct
+const FALLBACK_REHAB_BUDGET_PCT = 0.05     // REHAB.renovation_budget_pct
+const FALLBACK_BUY_DISCOUNT_PCT = 0.05     // BRRRR.buy_discount_pct
+const FALLBACK_SELLING_COSTS_PCT = 0.06    // FLIP.selling_costs_pct
+const FALLBACK_DOWN_PAYMENT_PCT = 0.20     // FINANCING.down_payment_pct
+const FALLBACK_CONTINGENCY_PCT = 0.05      // REHAB.contingency_pct
 
 export interface FlipWorksheetInputs {
   purchase_price: number
@@ -57,26 +68,22 @@ export interface FlipWorksheetResult {
   target_fifteen_all_in: number
 }
 
-// Default percentages for calculated fields
-const DEFAULT_INSURANCE_PCT = 0.01        // 1% of purchase price
-const DEFAULT_REHAB_BUDGET_PCT = 0.05     // 5% of ARV
-
 const defaultInputs: FlipWorksheetInputs = {
   purchase_price: 24000,
   purchase_costs: 1225,
-  rehab_costs: 75000 * DEFAULT_REHAB_BUDGET_PCT, // 5% of ARV
+  rehab_costs: 75000 * FALLBACK_REHAB_BUDGET_PCT,
   arv: 75000,
-  down_payment_pct: 0.20,              // 20% (was 25%)
+  down_payment_pct: FALLBACK_DOWN_PAYMENT_PCT,
   interest_rate: 0.12,                 // 12% hard money
   points: 2,
-  holding_months: 6,                   // 6 months (was 3)
+  holding_months: 6,
   property_taxes_annual: 792,
-  insurance_annual: 24000 * DEFAULT_INSURANCE_PCT, // 1% of purchase price
-  utilities_monthly: 100,              // $100 (was $75)
+  insurance_annual: 24000 * FALLBACK_INSURANCE_PCT,
+  utilities_monthly: 100,
   dumpster_monthly: 100,
   inspection_costs: 0,
-  contingency_pct: 0.05,               // 5% (was 0)
-  selling_costs_pct: 0.06,             // 6% (was 8%)
+  contingency_pct: FALLBACK_CONTINGENCY_PCT,
+  selling_costs_pct: FALLBACK_SELLING_COSTS_PCT,
   capital_gains_rate: 0.2,
   loan_type: 'interest_only',
 }
@@ -94,15 +101,15 @@ export function useFlipWorksheetCalculator(property: SavedProperty | null) {
     const listPrice = data.listPrice ?? defaultInputs.purchase_price
     const arv = data.arv ?? listPrice
     
-    // Calculate percentage-based fields
-    const insurance = data.insurance ?? (listPrice * DEFAULT_INSURANCE_PCT)
-    const rehabCosts = arv * DEFAULT_RENOVATION_BUDGET_PCT
+    // Calculate percentage-based fields using fallback defaults
+    const insurance = data.insurance ?? (listPrice * FALLBACK_INSURANCE_PCT)
+    const rehabCosts = arv * FALLBACK_REHAB_BUDGET_PCT
     
     // For flips, estimate breakeven using 70% rule: ARV * 0.70 - Rehab = MAO
     // Then buy price = MAO * (1 - Buy Discount %)
     const mao = (arv * 0.70) - rehabCosts
     const initialPurchasePrice = Math.max(
-      Math.round(mao * (1 - DEFAULT_BUY_DISCOUNT_PCT)),
+      Math.round(mao * (1 - FALLBACK_BUY_DISCOUNT_PCT)),
       listPrice * 0.50  // Floor at 50% of list to avoid unrealistic values
     )
 

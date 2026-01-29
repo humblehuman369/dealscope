@@ -73,33 +73,50 @@ export interface TargetAssumptions {
 }
 
 // ============================================
-// DEFAULT CONSTANTS
+// DEFAULT CONSTANTS (FALLBACKS ONLY)
 // ============================================
+// 
+// IMPORTANT: These constants are FALLBACK values for when the API cannot be reached.
+// Components should use the useDefaults() hook to get values from the backend.
+// These values MUST match backend/app/core/defaults.py to ensure consistency.
+//
+// DO NOT import these constants directly in components. Use useDefaults() instead.
+// These are exported for utility functions that need a fallback.
 
 /**
  * Default buy discount percentage below breakeven
  * 5% means buying at 95% of breakeven (breakeven × (1 - 0.05))
  * ensuring immediate profitability
+ * 
+ * @deprecated Use useDefaults() hook instead - defaults.brrrr.buy_discount_pct
  */
 export const DEFAULT_BUY_DISCOUNT_PCT = 0.05
 
 /**
  * Default insurance as percentage of purchase price
+ * 
+ * @deprecated Use useDefaults() hook instead - defaults.operating.insurance_pct
  */
 export const DEFAULT_INSURANCE_PCT = 0.01
 
 /**
  * Default renovation budget as percentage of ARV
+ * 
+ * @deprecated Use useDefaults() hook instead - defaults.rehab.renovation_budget_pct
  */
 export const DEFAULT_RENOVATION_BUDGET_PCT = 0.05
 
 /**
  * Default holding costs as percentage of purchase price (annual)
+ * 
+ * @deprecated Use useDefaults() hook instead - defaults.rehab.holding_costs_pct
  */
 export const DEFAULT_HOLDING_COSTS_PCT = 0.01
 
 /**
  * Default refinance closing costs as percentage of refinance amount
+ * 
+ * @deprecated Use useDefaults() hook instead - defaults.brrrr.refinance_closing_costs_pct
  */
 export const DEFAULT_REFINANCE_CLOSING_COSTS_PCT = 0.03
 
@@ -114,7 +131,15 @@ export const DEFAULT_REFINANCE_CLOSING_COSTS_PCT = 0.03
  * Breakeven is where monthly cash flow = $0
  * At breakeven: NOI = Annual Debt Service
  * 
- * Uses typical LTR assumptions for a quick estimate.
+ * IMPORTANT: Default parameter values are fallbacks that match backend/app/core/defaults.py.
+ * Callers should provide values from useDefaults() hook when available.
+ * 
+ * @param params.vacancyRate - From useDefaults().defaults.operating.vacancy_rate
+ * @param params.maintenancePct - From useDefaults().defaults.operating.maintenance_pct
+ * @param params.managementPct - From useDefaults().defaults.operating.property_management_pct
+ * @param params.downPaymentPct - From useDefaults().defaults.financing.down_payment_pct
+ * @param params.interestRate - From useDefaults().defaults.financing.interest_rate
+ * @param params.loanTermYears - From useDefaults().defaults.financing.loan_term_years
  */
 export function estimateLTRBreakeven(params: {
   monthlyRent: number
@@ -127,16 +152,17 @@ export function estimateLTRBreakeven(params: {
   interestRate?: number
   loanTermYears?: number
 }): number {
+  // FALLBACK VALUES - should match backend/app/core/defaults.py
   const {
     monthlyRent,
     propertyTaxes,
     insurance,
-    vacancyRate = 0.01,      // 1%
-    maintenancePct = 0.05,   // 5%
-    managementPct = 0,       // 0%
-    downPaymentPct = 0.20,   // 20%
-    interestRate = 0.06,     // 6%
-    loanTermYears = 30,
+    vacancyRate = 0.01,      // OPERATING.vacancy_rate
+    maintenancePct = 0.05,   // OPERATING.maintenance_pct
+    managementPct = 0,       // OPERATING.property_management_pct
+    downPaymentPct = 0.20,   // FINANCING.down_payment_pct
+    interestRate = 0.06,     // FINANCING.interest_rate
+    loanTermYears = 30,      // FINANCING.loan_term_years
   } = params
 
   // Calculate annual gross income
