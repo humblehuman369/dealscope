@@ -291,7 +291,7 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
 
   // Determine risk level and strategy fit
   const riskLevel = score >= 70 ? 'Low' : score >= 50 ? 'Medium' : 'High'
-  const strategyFit = score >= 70 ? 'Strong Fit' : score >= 50 ? 'Moderate Fit' : 'Development'
+  const strategyFit = score >= 70 ? 'Strong' : score >= 50 ? 'Moderate' : 'Developing'
   const protection = score >= 60 ? 'Strong' : score >= 40 ? 'Moderate' : 'Weak'
 
   return (
@@ -312,7 +312,7 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
       <main className="p-4">
         {/* Profit Quality Card */}
         <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 mb-3 shadow-sm">
-          <p className="text-[11px] font-bold text-[#E11D48] tracking-widest mb-4">PROFIT QUALITY</p>
+          <p className="text-[11px] font-bold text-[#E11D48] tracking-widest mb-4">PROFIT RATING</p>
           
           <div className="flex gap-6 items-start">
             {/* Circular Score Gauge */}

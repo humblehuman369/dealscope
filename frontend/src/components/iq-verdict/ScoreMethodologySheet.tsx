@@ -10,7 +10,7 @@
  */
 
 import React from 'react'
-import { X, Info, TrendingUp, Shield, Target, BarChart3, Percent, Home, Database, Clock } from 'lucide-react'
+import { X, Info, TrendingUp, Shield, Target, BarChart3, Percent, Home, Database, Clock, DollarSign } from 'lucide-react'
 
 // =============================================================================
 // BRAND COLORS
@@ -37,7 +37,7 @@ const COLORS = {
 // IQ VERDICT METHODOLOGY
 // =============================================================================
 
-// The IQ Verdict Score answers: "How likely can you negotiate the required discount?"
+// The Verdict IQ Score answers: "How likely can you negotiate the required discount?"
 // Score = Probability of achieving Deal Gap given Motivation level
 
 const METHODOLOGY_SECTIONS = [
@@ -94,7 +94,7 @@ const GRADE_TIERS = [
 // DATA SOURCES
 // =============================================================================
 const DATA_SOURCES = [
-  { name: 'Zillow API', description: 'Property values, rent estimates', icon: Home },
+  { name: 'Zillow', description: 'Property values, rent estimates', icon: Home },
   { name: 'County Records', description: 'Property taxes, ownership history', icon: Database },
   { name: 'Rental Comps', description: 'Nearby rental listings', icon: BarChart3 },
   { name: 'Sales Comps', description: 'Recent sold properties', icon: TrendingUp },
@@ -128,7 +128,7 @@ export function ScoreMethodologySheet({
   const getTitle = () => {
     switch (scoreType) {
       case 'verdict':
-        return 'How IQ Verdict Works'
+        return 'How Verdict IQ Works'
       case 'strategy':
         return 'Strategy Score Breakdown'
       default:
@@ -195,10 +195,80 @@ export function ScoreMethodologySheet({
               style={{ backgroundColor: `${COLORS.teal}10`, border: `1px solid ${COLORS.teal}30` }}
             >
               <p className="text-sm font-medium text-center" style={{ color: COLORS.navy }}>
-                The IQ Verdict Score answers:
+                The Verdict IQ Score answers:
               </p>
               <p className="text-base font-bold text-center mt-1" style={{ color: COLORS.teal }}>
                 "How likely can you negotiate the required discount?"
+              </p>
+            </div>
+          </section>
+
+          {/* Breakeven Price Section */}
+          <section>
+            <h3 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: COLORS.teal }}>
+              Understanding Breakeven Price
+            </h3>
+            <div 
+              className="p-4 rounded-xl"
+              style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+            >
+              <div className="flex items-start gap-3 mb-3">
+                <div 
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: `${COLORS.green}10` }}
+                >
+                  <DollarSign className="w-4 h-4" style={{ color: COLORS.green }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: COLORS.navy }}>
+                    The maximum price you can pay and still break even on monthly cash flow.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-2 mb-3">
+                <p className="text-xs font-semibold" style={{ color: COLORS.surface600 }}>
+                  Breakeven is calculated using YOUR assumptions:
+                </p>
+                <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                  <div className="flex items-center gap-1">
+                    <span style={{ color: COLORS.teal }}>•</span>
+                    <span style={{ color: COLORS.surface500 }}>Down payment %</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span style={{ color: COLORS.teal }}>•</span>
+                    <span style={{ color: COLORS.surface500 }}>Interest rate</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span style={{ color: COLORS.teal }}>•</span>
+                    <span style={{ color: COLORS.surface500 }}>Loan term</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span style={{ color: COLORS.teal }}>•</span>
+                    <span style={{ color: COLORS.surface500 }}>Vacancy rate</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span style={{ color: COLORS.teal }}>•</span>
+                    <span style={{ color: COLORS.surface500 }}>Management fees</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span style={{ color: COLORS.teal }}>•</span>
+                    <span style={{ color: COLORS.surface500 }}>Maintenance %</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div 
+                className="p-3 rounded-lg"
+                style={{ backgroundColor: `${COLORS.green}08`, border: `1px solid ${COLORS.green}20` }}
+              >
+                <p className="text-xs" style={{ color: COLORS.surface600 }}>
+                  <span className="font-semibold">At breakeven:</span> Monthly rental income exactly covers all expenses (mortgage, taxes, insurance, vacancy, maintenance, management). Any price below breakeven = positive cash flow.
+                </p>
+              </div>
+              
+              <p className="text-[11px] mt-3 italic" style={{ color: COLORS.surface400 }}>
+                Based on LTR (Long-Term Rental) revenue model using estimated market rent.
               </p>
             </div>
           </section>
