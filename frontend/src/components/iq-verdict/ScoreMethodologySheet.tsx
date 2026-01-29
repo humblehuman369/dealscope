@@ -66,7 +66,7 @@ const METHODOLOGY_SECTIONS = [
       hot: '-15 (Seller\'s market - sellers less motivated)',
     },
   },
-]
+] as const
 
 const SCORE_FORMULA = {
   title: 'How the Score is Calculated',
