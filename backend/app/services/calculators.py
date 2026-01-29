@@ -976,15 +976,16 @@ breakeven since it can be calculated from available market data.
 AVAILABILITY_RANKINGS = {
     "WITHDRAWN": {"rank": 1, "score": 100, "label": "Withdrawn - High Motivation", "motivation": "high"},
     "PRICE_REDUCED": {"rank": 2, "score": 90, "label": "Price Reduced", "motivation": "high"},
-    "BANK_OWNED": {"rank": 3, "score": 80, "label": "Bank Owned (REO)", "motivation": "high"},
-    "FORECLOSURE": {"rank": 3, "score": 80, "label": "Foreclosure", "motivation": "high"},
-    "FSBO": {"rank": 4, "score": 70, "label": "For Sale By Owner", "motivation": "medium"},
-    "FOR_SALE": {"rank": 5, "score": 60, "label": "For Sale - Agent Listed", "motivation": "medium"},
-    "OFF_MARKET": {"rank": 6, "score": 50, "label": "Off-Market", "motivation": "low"},
-    "FOR_RENT": {"rank": 7, "score": 40, "label": "For Rent", "motivation": "low"},
-    "PENDING": {"rank": 8, "score": 20, "label": "Pending - Under Contract", "motivation": "low"},
-    "SOLD": {"rank": 9, "score": 10, "label": "Recently Sold", "motivation": "low"},
-    "UNKNOWN": {"rank": 6, "score": 50, "label": "Unknown Status", "motivation": "low"},
+    "AUCTION": {"rank": 3, "score": 85, "label": "Auction - Motivated Sale", "motivation": "high"},
+    "BANK_OWNED": {"rank": 4, "score": 80, "label": "Bank Owned (REO)", "motivation": "high"},
+    "FORECLOSURE": {"rank": 4, "score": 80, "label": "Foreclosure", "motivation": "high"},
+    "FSBO": {"rank": 5, "score": 70, "label": "For Sale By Owner", "motivation": "medium"},
+    "FOR_SALE": {"rank": 6, "score": 60, "label": "For Sale - Agent Listed", "motivation": "medium"},
+    "OFF_MARKET": {"rank": 7, "score": 50, "label": "Off-Market", "motivation": "low"},
+    "FOR_RENT": {"rank": 8, "score": 40, "label": "For Rent", "motivation": "low"},
+    "PENDING": {"rank": 9, "score": 20, "label": "Pending - Under Contract", "motivation": "low"},
+    "SOLD": {"rank": 10, "score": 10, "label": "Recently Sold", "motivation": "low"},
+    "UNKNOWN": {"rank": 7, "score": 50, "label": "Unknown Status", "motivation": "low"},
 }
 
 
@@ -994,11 +995,12 @@ def get_availability_ranking(
     is_foreclosure: bool = False,
     is_bank_owned: bool = False,
     is_fsbo: bool = False,
+    is_auction: bool = False,
     price_reductions: int = 0,
 ) -> Dict[str, Any]:
     """
     Get availability ranking based on listing status and seller type.
-    
+
     Returns dict with: status, rank, score, label, motivation_level
     """
     status = (listing_status or "").upper()
@@ -1022,6 +1024,11 @@ def get_availability_ranking(
             "label": f"Price Reduced {price_reductions}x",
             "motivation": ranking["motivation"]
         }
+    
+    # Check for auction (highly motivated - must sell)
+    if is_auction or "AUCTION" in status or "AUCTION" in seller:
+        ranking = AVAILABILITY_RANKINGS["AUCTION"]
+        return {"status": "AUCTION", **ranking}
     
     # Check for bank owned / foreclosure
     if is_bank_owned or "BANK" in seller:
@@ -1213,6 +1220,7 @@ def calculate_deal_opportunity_score(
         is_foreclosure=is_foreclosure,
         is_bank_owned=is_bank_owned,
         is_fsbo=is_fsbo,
+        is_auction=is_auction,
         price_reductions=price_reductions,
     )
     base_motivation = availability["score"]
