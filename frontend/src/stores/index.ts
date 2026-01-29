@@ -1,6 +1,26 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+/**
+ * IMPORTANT: Default Assumptions Architecture
+ * 
+ * The DEFAULT_ASSUMPTIONS below are FALLBACK VALUES ONLY.
+ * 
+ * The actual defaults should always be fetched from the API using:
+ *   - useDefaults() hook for components
+ *   - defaultsService.getDefaults() for services
+ * 
+ * These fallback values are used:
+ *   1. During initial page load before API responds
+ *   2. When offline or API is unavailable
+ *   3. For type definitions
+ * 
+ * DO NOT reference DEFAULT_ASSUMPTIONS directly in components.
+ * Always use the useDefaults() hook instead.
+ * 
+ * See docs/DEFAULTS_ARCHITECTURE.md for full details.
+ */
+
 // Types
 export interface FinancingAssumptions {
   purchase_price: number | null

@@ -22,6 +22,15 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { colors } from '../theme/colors';
 import { formatCurrency, formatPercent } from '../services/analytics';
 
+/**
+ * IMPORTANT: Default assumptions architecture
+ * 
+ * The DEFAULT_ASSUMPTIONS below are FALLBACK VALUES ONLY.
+ * Always use the useDefaults() hook or defaultsService for actual values.
+ * 
+ * See docs/DEFAULTS_ARCHITECTURE.md for details.
+ */
+
 export interface Assumptions {
   downPayment: number;      // 0-1 (percentage)
   interestRate: number;     // 0-1 (percentage)
@@ -32,14 +41,22 @@ export interface Assumptions {
   maintenance: number;      // 0-1 (percentage)
 }
 
+/**
+ * FALLBACK DEFAULT ASSUMPTIONS
+ * 
+ * These values are used only when the API hasn't loaded yet.
+ * Values should match backend/app/core/defaults.py to minimize visual jumps.
+ * 
+ * DO NOT change these values here - update backend/app/core/defaults.py instead.
+ */
 export const DEFAULT_ASSUMPTIONS: Assumptions = {
-  downPayment: 0.20,
-  interestRate: 0.07,
-  loanTerm: 30,
-  rehabCost: 25000,
-  vacancyRate: 0.05,
-  managementFee: 0.08,
-  maintenance: 0.05,
+  downPayment: 0.20,       // Matches FINANCING.down_payment_pct
+  interestRate: 0.06,      // Matches FINANCING.interest_rate (was 0.07)
+  loanTerm: 30,            // Matches FINANCING.loan_term_years
+  rehabCost: 25000,        // Calculated from REHAB.renovation_budget_pct * ARV
+  vacancyRate: 0.01,       // Matches OPERATING.vacancy_rate (was 0.05)
+  managementFee: 0.00,     // Matches OPERATING.property_management_pct (was 0.08)
+  maintenance: 0.05,       // Matches OPERATING.maintenance_pct
 };
 
 interface AssumptionsSlidersProps {

@@ -6,6 +6,15 @@ import {
   calculateProjectionSummary,
   ProjectionSummary
 } from '@/lib/projections'
+import { defaultsService } from '@/services/defaults'
+
+/**
+ * Worksheet Store
+ * 
+ * NOTE: Default values in this store are fallbacks only.
+ * The store initializes from the centralized defaults API.
+ * See docs/DEFAULTS_ARCHITECTURE.md for details.
+ */
 
 // Use relative paths for API calls to go through Next.js API routes
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
@@ -50,7 +59,7 @@ export interface WorksheetState {
   viewMode: 'monthly' | 'yearly'
   
   // Actions
-  initializeFromProperty: (property: any) => void
+  initializeFromProperty: (property: any) => Promise<void>
   updateAssumption: <K extends keyof WorksheetAssumptions>(key: K, value: WorksheetAssumptions[K]) => void
   updateMultipleAssumptions: (updates: Partial<WorksheetAssumptions>) => void
   recalculate: () => void
@@ -101,31 +110,40 @@ export interface WorksheetMetrics {
   deal_score: number
 }
 
+/**
+ * FALLBACK DEFAULT ASSUMPTIONS
+ * 
+ * These values are used only when the API hasn't loaded yet.
+ * The initializeFromProperty method will fetch actual defaults from the API.
+ * 
+ * Values here should match the backend defaults.py to minimize visual jumps.
+ * DO NOT change these values here - update backend/app/core/defaults.py instead.
+ */
 const defaultAssumptions: WorksheetAssumptions = {
   // Property
   purchasePrice: 0,
-  downPaymentPct: 0.20,
-  closingCostsPct: 0.03,
+  downPaymentPct: 0.20,      // Matches FINANCING.down_payment_pct
+  closingCostsPct: 0.03,     // Matches FINANCING.closing_costs_pct
   closingCosts: 0,
   rehabCosts: 0,
   arv: 0,
   
   // Financing
-  interestRate: 0.07,
-  loanTermYears: 30,
+  interestRate: 0.06,        // Matches FINANCING.interest_rate (was 0.07)
+  loanTermYears: 30,         // Matches FINANCING.loan_term_years
   
   // Income
   monthlyRent: 0,
-  annualRentGrowth: 0.03,
-  vacancyRate: 0.08,
+  annualRentGrowth: 0.05,    // Matches GROWTH.rent_growth_rate (was 0.03)
+  vacancyRate: 0.01,         // Matches OPERATING.vacancy_rate (was 0.08)
   
   // Expenses
   propertyTaxes: 0,
   insurance: 0,
   propertyTaxGrowth: 0.02,
   insuranceGrowth: 0.03,
-  managementPct: 0.08,
-  maintenancePct: 0.05,
+  managementPct: 0.00,       // Matches OPERATING.property_management_pct (was 0.08)
+  maintenancePct: 0.05,      // Matches OPERATING.maintenance_pct
   capexReservePct: 0.05,
   hoaFees: 0,
   utilities: 0,
@@ -133,7 +151,7 @@ const defaultAssumptions: WorksheetAssumptions = {
   miscExpenses: 0,
   
   // Appreciation
-  annualAppreciation: 0.03,
+  annualAppreciation: 0.05,  // Matches GROWTH.appreciation_rate (was 0.03)
   
   // Tax
   incomeTaxRate: 0.25,
@@ -156,18 +174,45 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
   activeSection: 'analyze',
   viewMode: 'yearly',
 
-  initializeFromProperty: (property: any) => {
+  initializeFromProperty: async (property: any) => {
     const data = property.property_data_snapshot || {}
     const savedAssumptions = property.worksheet_assumptions || {}
+    const zipCode = data.zipCode || property.zip_code
+    
+    // Start with fallback defaults
+    let baseDefaults = { ...defaultAssumptions }
+    
+    // Try to fetch resolved defaults from API (includes market adjustments + user preferences)
+    try {
+      const resolvedDefaults = await defaultsService.getResolvedDefaults(zipCode)
+      if (resolvedDefaults?.resolved) {
+        const resolved = resolvedDefaults.resolved
+        // Map API defaults to worksheet format
+        baseDefaults = {
+          ...defaultAssumptions,
+          downPaymentPct: resolved.financing?.down_payment_pct ?? defaultAssumptions.downPaymentPct,
+          closingCostsPct: resolved.financing?.closing_costs_pct ?? defaultAssumptions.closingCostsPct,
+          interestRate: resolved.financing?.interest_rate ?? defaultAssumptions.interestRate,
+          loanTermYears: resolved.financing?.loan_term_years ?? defaultAssumptions.loanTermYears,
+          vacancyRate: resolved.operating?.vacancy_rate ?? defaultAssumptions.vacancyRate,
+          managementPct: resolved.operating?.property_management_pct ?? defaultAssumptions.managementPct,
+          maintenancePct: resolved.operating?.maintenance_pct ?? defaultAssumptions.maintenancePct,
+          annualAppreciation: resolved.growth?.appreciation_rate ?? defaultAssumptions.annualAppreciation,
+          annualRentGrowth: resolved.growth?.rent_growth_rate ?? defaultAssumptions.annualRentGrowth,
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to fetch defaults from API, using fallback defaults:', error)
+    }
     
     const assumptions: WorksheetAssumptions = {
-      ...defaultAssumptions,
+      ...baseDefaults,
       purchasePrice: data.listPrice || 0,
       monthlyRent: data.monthlyRent || 0,
       propertyTaxes: data.propertyTaxes || 0,
       insurance: data.insurance || 0,
       arv: data.arv || data.listPrice || 0,
-      closingCosts: (data.listPrice || 0) * 0.03,
+      closingCosts: (data.listPrice || 0) * baseDefaults.closingCostsPct,
       ...savedAssumptions,
     }
     

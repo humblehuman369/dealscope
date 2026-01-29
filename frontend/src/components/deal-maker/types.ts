@@ -172,19 +172,31 @@ export const EXPENSES_SLIDERS: SliderConfig[] = [
 // DEFAULT STATE
 // =============================================================================
 
+/**
+ * FALLBACK DEFAULT STATE
+ * 
+ * These values are used only when the API hasn't loaded yet.
+ * The DealMakerScreen should initialize from the centralized defaults API
+ * using the useDefaults() hook or defaultsService.getResolvedDefaults().
+ * 
+ * Values should match backend/app/core/defaults.py to minimize visual jumps.
+ * DO NOT change these values here - update backend/app/core/defaults.py instead.
+ * 
+ * See docs/DEFAULTS_ARCHITECTURE.md for full details.
+ */
 export const DEFAULT_DEAL_MAKER_STATE: DealMakerState = {
   // Tab 1: Buy Price
   buyPrice: 300000,
-  downPaymentPercent: 0.20,
-  closingCostsPercent: 0.03,
+  downPaymentPercent: 0.20,      // Matches FINANCING.down_payment_pct
+  closingCostsPercent: 0.03,     // Matches FINANCING.closing_costs_pct
   
   // Tab 2: Financing
   loanType: '30-year',
-  interestRate: 0.06,
-  loanTermYears: 30,
+  interestRate: 0.06,            // Matches FINANCING.interest_rate
+  loanTermYears: 30,             // Matches FINANCING.loan_term_years
   
   // Tab 3: Rehab & Valuation
-  rehabBudget: 25000,
+  rehabBudget: 25000,            // Calculated from REHAB.renovation_budget_pct * ARV
   arv: 350000,
   
   // Tab 4: Income
@@ -192,9 +204,9 @@ export const DEFAULT_DEAL_MAKER_STATE: DealMakerState = {
   otherIncome: 0,
   
   // Tab 5: Expenses
-  vacancyRate: 0.05,
-  maintenanceRate: 0.05,
-  managementRate: 0,
+  vacancyRate: 0.01,             // Matches OPERATING.vacancy_rate (was 0.05)
+  maintenanceRate: 0.05,         // Matches OPERATING.maintenance_pct
+  managementRate: 0.00,          // Matches OPERATING.property_management_pct
   annualPropertyTax: 3600,
   annualInsurance: 1500,
   monthlyHoa: 0,

@@ -1,10 +1,19 @@
 """
 Investment Strategy Calculators
 All formulas derived from Property_Data_Analytics.xlsx
+
+NOTE: All default values are imported from app.core.defaults.
+Do NOT hardcode default values in this file.
 """
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 import math
+
+# Import centralized defaults - SINGLE SOURCE OF TRUTH
+from app.core.defaults import (
+    FINANCING, OPERATING, STR, REHAB, BRRRR, FLIP, 
+    HOUSE_HACK, WHOLESALE, GROWTH
+)
 
 
 # ============================================
@@ -70,21 +79,36 @@ def calculate_ltr(
     monthly_rent: float,
     property_taxes_annual: float,
     hoa_monthly: float = 0,
-    down_payment_pct: float = 0.20,
-    interest_rate: float = 0.075,
-    loan_term_years: int = 30,
-    closing_costs_pct: float = 0.03,
-    vacancy_rate: float = 0.05,
-    property_management_pct: float = 0.10,
-    maintenance_pct: float = 0.10,
-    insurance_annual: float = 500,
-    utilities_monthly: float = 75,
-    landscaping_annual: float = 500,
-    pest_control_annual: float = 200,
-    appreciation_rate: float = 0.05,
-    rent_growth_rate: float = 0.03,
-    expense_growth_rate: float = 0.03,
+    down_payment_pct: float = None,
+    interest_rate: float = None,
+    loan_term_years: int = None,
+    closing_costs_pct: float = None,
+    vacancy_rate: float = None,
+    property_management_pct: float = None,
+    maintenance_pct: float = None,
+    insurance_annual: float = None,
+    utilities_monthly: float = None,
+    landscaping_annual: float = None,
+    pest_control_annual: float = None,
+    appreciation_rate: float = None,
+    rent_growth_rate: float = None,
+    expense_growth_rate: float = None,
 ) -> Dict[str, Any]:
+    # Apply centralized defaults for any unspecified values
+    down_payment_pct = down_payment_pct if down_payment_pct is not None else FINANCING.down_payment_pct
+    interest_rate = interest_rate if interest_rate is not None else FINANCING.interest_rate
+    loan_term_years = loan_term_years if loan_term_years is not None else FINANCING.loan_term_years
+    closing_costs_pct = closing_costs_pct if closing_costs_pct is not None else FINANCING.closing_costs_pct
+    vacancy_rate = vacancy_rate if vacancy_rate is not None else OPERATING.vacancy_rate
+    property_management_pct = property_management_pct if property_management_pct is not None else OPERATING.property_management_pct
+    maintenance_pct = maintenance_pct if maintenance_pct is not None else OPERATING.maintenance_pct
+    insurance_annual = insurance_annual if insurance_annual is not None else purchase_price * OPERATING.insurance_pct
+    utilities_monthly = utilities_monthly if utilities_monthly is not None else OPERATING.utilities_monthly
+    landscaping_annual = landscaping_annual if landscaping_annual is not None else OPERATING.landscaping_annual
+    pest_control_annual = pest_control_annual if pest_control_annual is not None else OPERATING.pest_control_annual
+    appreciation_rate = appreciation_rate if appreciation_rate is not None else GROWTH.appreciation_rate
+    rent_growth_rate = rent_growth_rate if rent_growth_rate is not None else GROWTH.rent_growth_rate
+    expense_growth_rate = expense_growth_rate if expense_growth_rate is not None else GROWTH.expense_growth_rate
     """
     Calculate Long-Term Rental metrics.
     Based on '1. Long-Term Rental' sheet from Excel.
@@ -211,23 +235,40 @@ def calculate_str(
     occupancy_rate: float,
     property_taxes_annual: float,
     hoa_monthly: float = 0,
-    down_payment_pct: float = 0.25,
-    interest_rate: float = 0.075,
-    loan_term_years: int = 30,
-    closing_costs_pct: float = 0.03,
-    furniture_setup_cost: float = 6000,
-    platform_fees_pct: float = 0.15,
-    str_management_pct: float = 0.20,
-    cleaning_cost_per_turnover: float = 200,
-    cleaning_fee_revenue: float = 75,
-    avg_length_of_stay_days: int = 6,
-    supplies_monthly: float = 100,
-    additional_utilities_monthly: float = 125,
-    insurance_annual: float = 1500,
-    maintenance_annual: float = 3500,
-    landscaping_annual: float = 500,
-    pest_control_annual: float = 200,
+    down_payment_pct: float = None,
+    interest_rate: float = None,
+    loan_term_years: int = None,
+    closing_costs_pct: float = None,
+    furniture_setup_cost: float = None,
+    platform_fees_pct: float = None,
+    str_management_pct: float = None,
+    cleaning_cost_per_turnover: float = None,
+    cleaning_fee_revenue: float = None,
+    avg_length_of_stay_days: int = None,
+    supplies_monthly: float = None,
+    additional_utilities_monthly: float = None,
+    insurance_annual: float = None,
+    maintenance_annual: float = None,
+    landscaping_annual: float = None,
+    pest_control_annual: float = None,
 ) -> Dict[str, Any]:
+    # Apply centralized defaults for any unspecified values
+    down_payment_pct = down_payment_pct if down_payment_pct is not None else FINANCING.down_payment_pct
+    interest_rate = interest_rate if interest_rate is not None else FINANCING.interest_rate
+    loan_term_years = loan_term_years if loan_term_years is not None else FINANCING.loan_term_years
+    closing_costs_pct = closing_costs_pct if closing_costs_pct is not None else FINANCING.closing_costs_pct
+    furniture_setup_cost = furniture_setup_cost if furniture_setup_cost is not None else STR.furniture_setup_cost
+    platform_fees_pct = platform_fees_pct if platform_fees_pct is not None else STR.platform_fees_pct
+    str_management_pct = str_management_pct if str_management_pct is not None else STR.str_management_pct
+    cleaning_cost_per_turnover = cleaning_cost_per_turnover if cleaning_cost_per_turnover is not None else STR.cleaning_cost_per_turnover
+    cleaning_fee_revenue = cleaning_fee_revenue if cleaning_fee_revenue is not None else STR.cleaning_fee_revenue
+    avg_length_of_stay_days = avg_length_of_stay_days if avg_length_of_stay_days is not None else STR.avg_length_of_stay_days
+    supplies_monthly = supplies_monthly if supplies_monthly is not None else STR.supplies_monthly
+    additional_utilities_monthly = additional_utilities_monthly if additional_utilities_monthly is not None else STR.additional_utilities_monthly
+    insurance_annual = insurance_annual if insurance_annual is not None else purchase_price * STR.str_insurance_pct
+    maintenance_annual = maintenance_annual if maintenance_annual is not None else purchase_price * OPERATING.maintenance_pct
+    landscaping_annual = landscaping_annual if landscaping_annual is not None else OPERATING.landscaping_annual
+    pest_control_annual = pest_control_annual if pest_control_annual is not None else OPERATING.pest_control_annual
     """
     Calculate Short-Term Rental metrics.
     Based on '2. Short-Term Rental' sheet from Excel.
@@ -363,23 +404,40 @@ def calculate_brrrr(
     arv: float,
     monthly_rent_post_rehab: float,
     property_taxes_annual: float,
-    purchase_discount_pct: float = 0.20,
-    down_payment_pct: float = 0.20,
-    interest_rate: float = 0.075,
-    loan_term_years: int = 30,
-    closing_costs_pct: float = 0.03,
-    renovation_budget: float = 40000,
-    contingency_pct: float = 0.10,
-    holding_period_months: int = 4,
-    monthly_holding_costs: float = 2000,
-    refinance_ltv: float = 0.75,
-    refinance_interest_rate: float = 0.07,
-    refinance_term_years: int = 30,
-    refinance_closing_costs: float = 3500,
-    vacancy_rate: float = 0.05,
-    operating_expense_pct: float = 0.35,
-    insurance_annual: float = 1500,
+    purchase_discount_pct: float = None,
+    down_payment_pct: float = None,
+    interest_rate: float = None,
+    loan_term_years: int = None,
+    closing_costs_pct: float = None,
+    renovation_budget: float = None,
+    contingency_pct: float = None,
+    holding_period_months: int = None,
+    monthly_holding_costs: float = None,
+    refinance_ltv: float = None,
+    refinance_interest_rate: float = None,
+    refinance_term_years: int = None,
+    refinance_closing_costs: float = None,
+    vacancy_rate: float = None,
+    operating_expense_pct: float = None,
+    insurance_annual: float = None,
 ) -> Dict[str, Any]:
+    # Apply centralized defaults for any unspecified values
+    purchase_discount_pct = purchase_discount_pct if purchase_discount_pct is not None else BRRRR.buy_discount_pct
+    down_payment_pct = down_payment_pct if down_payment_pct is not None else FINANCING.down_payment_pct
+    interest_rate = interest_rate if interest_rate is not None else FINANCING.interest_rate
+    loan_term_years = loan_term_years if loan_term_years is not None else FINANCING.loan_term_years
+    closing_costs_pct = closing_costs_pct if closing_costs_pct is not None else FINANCING.closing_costs_pct
+    renovation_budget = renovation_budget if renovation_budget is not None else arv * REHAB.renovation_budget_pct
+    contingency_pct = contingency_pct if contingency_pct is not None else REHAB.contingency_pct
+    holding_period_months = holding_period_months if holding_period_months is not None else REHAB.holding_period_months
+    monthly_holding_costs = monthly_holding_costs if monthly_holding_costs is not None else (market_value * REHAB.holding_costs_pct) / 12
+    refinance_ltv = refinance_ltv if refinance_ltv is not None else BRRRR.refinance_ltv
+    refinance_interest_rate = refinance_interest_rate if refinance_interest_rate is not None else BRRRR.refinance_interest_rate
+    refinance_term_years = refinance_term_years if refinance_term_years is not None else BRRRR.refinance_term_years
+    refinance_closing_costs = refinance_closing_costs if refinance_closing_costs is not None else arv * BRRRR.refinance_closing_costs_pct
+    vacancy_rate = vacancy_rate if vacancy_rate is not None else OPERATING.vacancy_rate
+    operating_expense_pct = operating_expense_pct if operating_expense_pct is not None else (OPERATING.maintenance_pct + OPERATING.property_management_pct)
+    insurance_annual = insurance_annual if insurance_annual is not None else arv * OPERATING.insurance_pct
     """
     Calculate BRRRR Strategy metrics.
     Based on '3. BRRRR Strategy' sheet from Excel.
@@ -490,21 +548,33 @@ def calculate_brrrr(
 def calculate_flip(
     market_value: float,
     arv: float,
-    purchase_discount_pct: float = 0.20,
-    hard_money_ltv: float = 0.90,
-    hard_money_rate: float = 0.12,
-    closing_costs_pct: float = 0.03,
+    purchase_discount_pct: float = None,
+    hard_money_ltv: float = None,
+    hard_money_rate: float = None,
+    closing_costs_pct: float = None,
     inspection_costs: float = 1000,
-    renovation_budget: float = 60500,
-    contingency_pct: float = 0.10,
-    holding_period_months: float = 6,
-    property_taxes_annual: float = 4500,
-    insurance_annual: float = 1500,
-    utilities_monthly: float = 100,
+    renovation_budget: float = None,
+    contingency_pct: float = None,
+    holding_period_months: float = None,
+    property_taxes_annual: float = None,
+    insurance_annual: float = None,
+    utilities_monthly: float = None,
     security_maintenance_monthly: float = 83,
-    selling_costs_pct: float = 0.08,  # 6% commission + 2% closing
+    selling_costs_pct: float = None,
     capital_gains_rate: float = 0.15,
 ) -> Dict[str, Any]:
+    # Apply centralized defaults for any unspecified values
+    purchase_discount_pct = purchase_discount_pct if purchase_discount_pct is not None else BRRRR.buy_discount_pct
+    hard_money_ltv = hard_money_ltv if hard_money_ltv is not None else FLIP.hard_money_ltv
+    hard_money_rate = hard_money_rate if hard_money_rate is not None else FLIP.hard_money_rate
+    closing_costs_pct = closing_costs_pct if closing_costs_pct is not None else FINANCING.closing_costs_pct
+    renovation_budget = renovation_budget if renovation_budget is not None else arv * REHAB.renovation_budget_pct
+    contingency_pct = contingency_pct if contingency_pct is not None else REHAB.contingency_pct
+    holding_period_months = holding_period_months if holding_period_months is not None else FLIP.holding_period_months
+    property_taxes_annual = property_taxes_annual if property_taxes_annual is not None else market_value * 0.012
+    insurance_annual = insurance_annual if insurance_annual is not None else market_value * OPERATING.insurance_pct
+    utilities_monthly = utilities_monthly if utilities_monthly is not None else OPERATING.utilities_monthly
+    selling_costs_pct = selling_costs_pct if selling_costs_pct is not None else FLIP.selling_costs_pct
     """
     Calculate Fix & Flip metrics.
     Based on '4. Fix & Flip' sheet from Excel.
@@ -624,17 +694,24 @@ def calculate_house_hack(
     rooms_rented: int,
     property_taxes_annual: float,
     owner_unit_market_rent: float = 1500,
-    down_payment_pct: float = 0.035,  # FHA
-    interest_rate: float = 0.065,
-    loan_term_years: int = 30,
-    closing_costs_pct: float = 0.03,
-    fha_mip_rate: float = 0.0085,
-    insurance_annual: float = 500,
+    down_payment_pct: float = None,
+    interest_rate: float = None,
+    loan_term_years: int = None,
+    closing_costs_pct: float = None,
+    fha_mip_rate: float = None,
+    insurance_annual: float = None,
     utilities_shared_monthly: float = 150,
     maintenance_monthly: float = 200,
-    conversion_cost: float = None,  # For duplex conversion scenario
+    conversion_cost: float = None,
     unit2_rent: float = None,
 ) -> Dict[str, Any]:
+    # Apply centralized defaults for any unspecified values (FHA defaults for house hack)
+    down_payment_pct = down_payment_pct if down_payment_pct is not None else HOUSE_HACK.fha_down_payment_pct
+    interest_rate = interest_rate if interest_rate is not None else FINANCING.interest_rate
+    loan_term_years = loan_term_years if loan_term_years is not None else FINANCING.loan_term_years
+    closing_costs_pct = closing_costs_pct if closing_costs_pct is not None else FINANCING.closing_costs_pct
+    fha_mip_rate = fha_mip_rate if fha_mip_rate is not None else HOUSE_HACK.fha_mip_rate
+    insurance_annual = insurance_annual if insurance_annual is not None else purchase_price * OPERATING.insurance_pct
     """
     Calculate House Hacking metrics.
     Based on '5. House Hacking' sheet from Excel.
@@ -726,13 +803,19 @@ def calculate_house_hack(
 def calculate_wholesale(
     arv: float,
     estimated_rehab_costs: float,
-    assignment_fee: float = 15000,
-    marketing_costs: float = 500,
-    earnest_money_deposit: float = 1000,
-    arv_discount_pct: float = 0.30,  # 70% rule = 30% discount
-    days_to_close: int = 45,
+    assignment_fee: float = None,
+    marketing_costs: float = None,
+    earnest_money_deposit: float = None,
+    arv_discount_pct: float = None,
+    days_to_close: int = None,
     time_investment_hours: float = 50,
 ) -> Dict[str, Any]:
+    # Apply centralized defaults for any unspecified values
+    assignment_fee = assignment_fee if assignment_fee is not None else WHOLESALE.assignment_fee
+    marketing_costs = marketing_costs if marketing_costs is not None else WHOLESALE.marketing_costs
+    earnest_money_deposit = earnest_money_deposit if earnest_money_deposit is not None else WHOLESALE.earnest_money_deposit
+    arv_discount_pct = arv_discount_pct if arv_discount_pct is not None else WHOLESALE.target_purchase_discount_pct
+    days_to_close = days_to_close if days_to_close is not None else WHOLESALE.days_to_close
     """
     Calculate Wholesale Deal metrics.
     Based on '6. Wholesale' sheet from Excel.

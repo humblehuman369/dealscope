@@ -132,6 +132,15 @@ except Exception as e:
     logger.warning(f"Sync router failed to load: {e}")
     sync_router = None
 
+# Import Defaults router (public defaults API)
+defaults_router = None
+try:
+    from app.routers.defaults import router as defaults_router
+    logger.info("Defaults router loaded successfully")
+except Exception as e:
+    logger.warning(f"Defaults router failed to load: {e}")
+    defaults_router = None
+
 # Import database session for cleanup
 try:
     from app.db.session import close_db
@@ -268,6 +277,11 @@ if billing_router is not None:
 if sync_router is not None:
     app.include_router(sync_router)
     logger.info("Sync router included")
+
+# Defaults router (public defaults API - no auth required)
+if defaults_router is not None:
+    app.include_router(defaults_router)
+    logger.info("Defaults router included")
 
 
 # ============================================

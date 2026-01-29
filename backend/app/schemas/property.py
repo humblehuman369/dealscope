@@ -1,10 +1,19 @@
 """
 Pydantic schemas for API request/response validation.
+
+NOTE: Default values are imported from app.core.defaults.
+Do NOT hardcode default values in this file.
 """
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 from enum import Enum
+
+# Import centralized defaults - SINGLE SOURCE OF TRUTH
+from app.core.defaults import (
+    FINANCING, OPERATING, STR, REHAB, BRRRR, FLIP, 
+    HOUSE_HACK, WHOLESALE, GROWTH
+)
 
 
 # ============================================
@@ -398,87 +407,101 @@ class SellerMotivationScore(BaseModel):
 class FinancingAssumptions(BaseModel):
     """Loan and financing assumptions."""
     purchase_price: Optional[float] = None
-    down_payment_pct: float = 0.20
-    interest_rate: float = 0.075
-    loan_term_years: int = 30
-    closing_costs_pct: float = 0.03
+    down_payment_pct: float = Field(default_factory=lambda: FINANCING.down_payment_pct)
+    interest_rate: float = Field(default_factory=lambda: FINANCING.interest_rate)
+    loan_term_years: int = Field(default_factory=lambda: FINANCING.loan_term_years)
+    closing_costs_pct: float = Field(default_factory=lambda: FINANCING.closing_costs_pct)
     loan_origination_points: float = 0.0
     pmi_rate: float = 0.0085  # If down payment < 20%
 
 
 class OperatingAssumptions(BaseModel):
     """Operating expense assumptions."""
-    vacancy_rate: float = 0.05
-    property_management_pct: float = 0.10
-    maintenance_pct: float = 0.10
-    insurance_annual: float = 500.0
-    utilities_monthly: float = 75.0
-    landscaping_annual: float = 500.0
-    pest_control_annual: float = 200.0
+    vacancy_rate: float = Field(default_factory=lambda: OPERATING.vacancy_rate)
+    property_management_pct: float = Field(default_factory=lambda: OPERATING.property_management_pct)
+    maintenance_pct: float = Field(default_factory=lambda: OPERATING.maintenance_pct)
+    insurance_pct: float = Field(default_factory=lambda: OPERATING.insurance_pct)
+    insurance_annual: Optional[float] = None  # Calculated from insurance_pct if not provided
+    utilities_monthly: float = Field(default_factory=lambda: OPERATING.utilities_monthly)
+    landscaping_annual: float = Field(default_factory=lambda: OPERATING.landscaping_annual)
+    pest_control_annual: float = Field(default_factory=lambda: OPERATING.pest_control_annual)
     other_expenses_annual: float = 0.0
 
 
 class STRAssumptions(BaseModel):
     """Short-term rental specific assumptions."""
-    platform_fees_pct: float = 0.15
-    str_management_pct: float = 0.20
-    cleaning_cost_per_turnover: float = 200.0
-    cleaning_fee_revenue: float = 75.0
-    avg_length_of_stay_days: int = 6
-    supplies_monthly: float = 100.0
-    additional_utilities_monthly: float = 125.0
-    furniture_setup_cost: float = 6000.0
-    str_insurance_annual: float = 1500.0
+    platform_fees_pct: float = Field(default_factory=lambda: STR.platform_fees_pct)
+    str_management_pct: float = Field(default_factory=lambda: STR.str_management_pct)
+    cleaning_cost_per_turnover: float = Field(default_factory=lambda: STR.cleaning_cost_per_turnover)
+    cleaning_fee_revenue: float = Field(default_factory=lambda: STR.cleaning_fee_revenue)
+    avg_length_of_stay_days: int = Field(default_factory=lambda: STR.avg_length_of_stay_days)
+    supplies_monthly: float = Field(default_factory=lambda: STR.supplies_monthly)
+    additional_utilities_monthly: float = Field(default_factory=lambda: STR.additional_utilities_monthly)
+    furniture_setup_cost: float = Field(default_factory=lambda: STR.furniture_setup_cost)
+    str_insurance_pct: float = Field(default_factory=lambda: STR.str_insurance_pct)
+    str_insurance_annual: Optional[float] = None  # Calculated from str_insurance_pct if not provided
+    buy_discount_pct: float = Field(default_factory=lambda: BRRRR.buy_discount_pct)
 
 
 class RehabAssumptions(BaseModel):
     """Renovation and rehab assumptions."""
-    renovation_budget: float = 40000.0
-    contingency_pct: float = 0.10
-    holding_period_months: int = 4
-    monthly_holding_costs: float = 2000.0
+    renovation_budget_pct: float = Field(default_factory=lambda: REHAB.renovation_budget_pct)
+    renovation_budget: Optional[float] = None  # Calculated from renovation_budget_pct if not provided
+    contingency_pct: float = Field(default_factory=lambda: REHAB.contingency_pct)
+    holding_period_months: int = Field(default_factory=lambda: REHAB.holding_period_months)
+    holding_costs_pct: float = Field(default_factory=lambda: REHAB.holding_costs_pct)
+    monthly_holding_costs: Optional[float] = None  # Calculated from holding_costs_pct if not provided
 
 
 class BRRRRAssumptions(BaseModel):
     """BRRRR-specific assumptions."""
-    purchase_discount_pct: float = 0.20  # Below market
-    refinance_ltv: float = 0.75
-    refinance_interest_rate: float = 0.07
-    refinance_term_years: int = 30
-    refinance_closing_costs: float = 3500.0
-    post_rehab_rent_increase_pct: float = 0.10
+    buy_discount_pct: float = Field(default_factory=lambda: BRRRR.buy_discount_pct)
+    purchase_discount_pct: Optional[float] = None  # Deprecated, use buy_discount_pct
+    refinance_ltv: float = Field(default_factory=lambda: BRRRR.refinance_ltv)
+    refinance_interest_rate: float = Field(default_factory=lambda: BRRRR.refinance_interest_rate)
+    refinance_term_years: int = Field(default_factory=lambda: BRRRR.refinance_term_years)
+    refinance_closing_costs_pct: float = Field(default_factory=lambda: BRRRR.refinance_closing_costs_pct)
+    refinance_closing_costs: Optional[float] = None  # Calculated from refinance_closing_costs_pct if not provided
+    post_rehab_rent_increase_pct: float = Field(default_factory=lambda: BRRRR.post_rehab_rent_increase_pct)
 
 
 class FlipAssumptions(BaseModel):
     """Fix & Flip specific assumptions."""
-    hard_money_ltv: float = 0.90
-    hard_money_rate: float = 0.12  # Annual
-    selling_costs_pct: float = 0.08  # 6% commission + 2% closing
-    holding_period_months: int = 6
+    hard_money_ltv: float = Field(default_factory=lambda: FLIP.hard_money_ltv)
+    hard_money_rate: float = Field(default_factory=lambda: FLIP.hard_money_rate)
+    selling_costs_pct: float = Field(default_factory=lambda: FLIP.selling_costs_pct)
+    holding_period_months: int = Field(default_factory=lambda: FLIP.holding_period_months)
 
 
 class HouseHackAssumptions(BaseModel):
     """House hacking specific assumptions."""
-    fha_down_payment_pct: float = 0.035
-    fha_mip_rate: float = 0.0085
-    units_rented_out: int = 2
-    room_rent_monthly: float = 900.0
-    owner_unit_market_rent: float = 1500.0
+    fha_down_payment_pct: float = Field(default_factory=lambda: HOUSE_HACK.fha_down_payment_pct)
+    fha_mip_rate: float = Field(default_factory=lambda: HOUSE_HACK.fha_mip_rate)
+    units_rented_out: int = Field(default_factory=lambda: HOUSE_HACK.units_rented_out)
+    buy_discount_pct: float = Field(default_factory=lambda: HOUSE_HACK.buy_discount_pct)
+    room_rent_monthly: Optional[float] = None  # Now calculated dynamically
+    owner_unit_market_rent: Optional[float] = None  # Now calculated dynamically
 
 
 class WholesaleAssumptions(BaseModel):
     """Wholesale deal assumptions."""
-    assignment_fee: float = 15000.0
-    marketing_costs: float = 500.0
-    earnest_money_deposit: float = 1000.0
-    days_to_close: int = 45
-    target_purchase_discount_pct: float = 0.30  # 70% ARV rule
+    assignment_fee: float = Field(default_factory=lambda: WHOLESALE.assignment_fee)
+    marketing_costs: float = Field(default_factory=lambda: WHOLESALE.marketing_costs)
+    earnest_money_deposit: float = Field(default_factory=lambda: WHOLESALE.earnest_money_deposit)
+    days_to_close: int = Field(default_factory=lambda: WHOLESALE.days_to_close)
+    target_purchase_discount_pct: float = Field(default_factory=lambda: WHOLESALE.target_purchase_discount_pct)
+
+
+class LTRAssumptions(BaseModel):
+    """Long-term rental specific assumptions."""
+    buy_discount_pct: float = Field(default_factory=lambda: BRRRR.buy_discount_pct)
 
 
 class AllAssumptions(BaseModel):
     """Combined assumptions for all strategies."""
     financing: FinancingAssumptions = Field(default_factory=FinancingAssumptions)
     operating: OperatingAssumptions = Field(default_factory=OperatingAssumptions)
+    ltr: LTRAssumptions = Field(default_factory=LTRAssumptions)
     str_assumptions: STRAssumptions = Field(default_factory=STRAssumptions, alias="str")
     rehab: RehabAssumptions = Field(default_factory=RehabAssumptions)
     brrrr: BRRRRAssumptions = Field(default_factory=BRRRRAssumptions)
@@ -486,10 +509,10 @@ class AllAssumptions(BaseModel):
     house_hack: HouseHackAssumptions = Field(default_factory=HouseHackAssumptions)
     wholesale: WholesaleAssumptions = Field(default_factory=WholesaleAssumptions)
     
-    # General
-    appreciation_rate: float = 0.05
-    rent_growth_rate: float = 0.03
-    expense_growth_rate: float = 0.03
+    # General - use centralized defaults
+    appreciation_rate: float = Field(default_factory=lambda: GROWTH.appreciation_rate)
+    rent_growth_rate: float = Field(default_factory=lambda: GROWTH.rent_growth_rate)
+    expense_growth_rate: float = Field(default_factory=lambda: GROWTH.expense_growth_rate)
     
     model_config = {"populate_by_name": True}
 

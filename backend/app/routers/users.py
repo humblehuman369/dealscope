@@ -3,8 +3,10 @@ Users router for profile and account management.
 """
 
 import logging
+from typing import Optional, Dict, Any
 
 from fastapi import APIRouter, HTTPException, status
+from pydantic import BaseModel
 
 from app.services.user_service import user_service
 from app.schemas.user import (
@@ -22,6 +24,33 @@ from app.core.deps import CurrentUser, DbSession
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
+
+
+# ===========================================
+# User Assumptions Schemas
+# ===========================================
+
+class UserAssumptionsResponse(BaseModel):
+    """User's saved default assumptions."""
+    assumptions: Dict[str, Any]
+    has_customizations: bool
+    updated_at: Optional[str] = None
+
+
+class UserAssumptionsUpdate(BaseModel):
+    """Update user's default assumptions."""
+    assumptions: Dict[str, Any]
+
+
+def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    """Deep merge two dictionaries."""
+    result = {**base}
+    for key, value in override.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            result[key] = _deep_merge(result[key], value)
+        else:
+            result[key] = value
+    return result
 
 
 # ===========================================
@@ -308,5 +337,119 @@ async def complete_onboarding(
         onboarding_step=profile.onboarding_step,
         created_at=profile.created_at,
         updated_at=profile.updated_at,
+    )
+
+
+# ===========================================
+# User Default Assumptions
+# ===========================================
+
+@router.get(
+    "/me/assumptions",
+    response_model=UserAssumptionsResponse,
+    summary="Get user's default assumptions",
+    tags=["Defaults"]
+)
+async def get_user_assumptions(
+    current_user: CurrentUser,
+    db: DbSession
+):
+    """
+    Get the current user's saved default assumptions.
+    
+    These override system defaults when calculating investment metrics.
+    Returns:
+    - **assumptions**: User's custom default values
+    - **has_customizations**: Whether user has any custom defaults set
+    - **updated_at**: When assumptions were last updated
+    """
+    profile = await user_service.get_or_create_profile(db, str(current_user.id))
+    
+    assumptions = profile.default_assumptions or {}
+    has_customizations = bool(assumptions)
+    
+    return UserAssumptionsResponse(
+        assumptions=assumptions,
+        has_customizations=has_customizations,
+        updated_at=profile.updated_at.isoformat() if profile.updated_at else None
+    )
+
+
+@router.put(
+    "/me/assumptions",
+    response_model=UserAssumptionsResponse,
+    summary="Update user's default assumptions",
+    tags=["Defaults"]
+)
+async def update_user_assumptions(
+    data: UserAssumptionsUpdate,
+    current_user: CurrentUser,
+    db: DbSession
+):
+    """
+    Update the current user's default assumptions.
+    
+    These values will override system defaults in all calculations.
+    
+    Example request body:
+    ```json
+    {
+        "assumptions": {
+            "financing": {
+                "down_payment_pct": 0.25,
+                "interest_rate": 0.055
+            },
+            "operating": {
+                "vacancy_rate": 0.03,
+                "property_management_pct": 0.0
+            }
+        }
+    }
+    ```
+    
+    Only include fields you want to override. Other fields will use system defaults.
+    """
+    profile = await user_service.get_or_create_profile(db, str(current_user.id))
+    
+    # Merge with existing assumptions (allow partial updates)
+    existing = profile.default_assumptions or {}
+    merged = _deep_merge(existing, data.assumptions)
+    
+    # Update profile with new assumptions
+    profile_update = UserProfileUpdate(default_assumptions=merged)
+    profile = await user_service.update_profile(db, profile, profile_update)
+    
+    return UserAssumptionsResponse(
+        assumptions=profile.default_assumptions or {},
+        has_customizations=bool(profile.default_assumptions),
+        updated_at=profile.updated_at.isoformat() if profile.updated_at else None
+    )
+
+
+@router.delete(
+    "/me/assumptions",
+    response_model=UserAssumptionsResponse,
+    summary="Reset user's default assumptions",
+    tags=["Defaults"]
+)
+async def reset_user_assumptions(
+    current_user: CurrentUser,
+    db: DbSession
+):
+    """
+    Reset the current user's default assumptions to system defaults.
+    
+    This removes all custom overrides and reverts to system defaults.
+    """
+    profile = await user_service.get_or_create_profile(db, str(current_user.id))
+    
+    # Clear assumptions
+    profile_update = UserProfileUpdate(default_assumptions={})
+    profile = await user_service.update_profile(db, profile, profile_update)
+    
+    return UserAssumptionsResponse(
+        assumptions={},
+        has_customizations=False,
+        updated_at=profile.updated_at.isoformat() if profile.updated_at else None
     )
 

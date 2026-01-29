@@ -1,0 +1,163 @@
+# Defaults Architecture Rule
+
+This rule enforces the centralized defaults architecture for InvestIQ.
+
+## CRITICAL: Never Hardcode Financial Defaults
+
+The following values MUST come from the API, never hardcoded in frontend or mobile code:
+
+### Financing Defaults
+- `interest_rate` - Current mortgage rate
+- `down_payment_pct` - Down payment percentage
+- `loan_term_years` - Loan term
+- `closing_costs_pct` - Closing costs percentage
+
+### Operating Defaults
+- `vacancy_rate` - Vacancy rate percentage
+- `property_management_pct` - Property management fee
+- `maintenance_pct` - Maintenance reserve percentage
+- `insurance_pct` - Insurance percentage of purchase price
+
+### Strategy-Specific Defaults
+- STR: `platform_fees_pct`, `str_management_pct`, `cleaning_cost_per_turnover`
+- BRRRR: `refinance_ltv`, `refinance_interest_rate`, `refinance_closing_costs_pct`
+- Flip: `hard_money_ltv`, `hard_money_rate`, `selling_costs_pct`
+- House Hack: `fha_down_payment_pct`, `fha_mip_rate`
+- Wholesale: `assignment_fee`, `target_purchase_discount_pct`
+
+### Growth Rates
+- `appreciation_rate`
+- `rent_growth_rate`
+- `expense_growth_rate`
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    DEFAULTS RESOLUTION FLOW                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  ┌──────────────────┐                                            │
+│  │ 1. System Defaults│  backend/app/core/defaults.py             │
+│  │   (Base values)   │  Single source of truth                   │
+│  └────────┬─────────┘                                            │
+│           │                                                       │
+│           ▼                                                       │
+│  ┌──────────────────┐                                            │
+│  │ 2. Market Adjust │  ZIP-specific adjustments                  │
+│  │   (Location)     │  assumptions_service.py                    │
+│  └────────┬─────────┘                                            │
+│           │                                                       │
+│           ▼                                                       │
+│  ┌──────────────────┐                                            │
+│  │ 3. User Profile  │  User's saved preferences                  │
+│  │   (Personal)     │  /api/v1/users/me/assumptions              │
+│  └────────┬─────────┘                                            │
+│           │                                                       │
+│           ▼                                                       │
+│  ┌──────────────────┐                                            │
+│  │ 4. Property Data │  Actual property values                    │
+│  │   (API response) │  Tax, rent, insurance from data            │
+│  └────────┬─────────┘                                            │
+│           │                                                       │
+│           ▼                                                       │
+│  ┌──────────────────┐                                            │
+│  │ 5. Session       │  Deal Maker adjustments                    │
+│  │   (User edits)   │  Highest priority                          │
+│  └──────────────────┘                                            │
+│                                                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Correct Usage Pattern
+
+### Frontend (React/Next.js)
+
+```typescript
+// CORRECT: Import from centralized service
+import { useDefaults } from '@/hooks/useDefaults'
+
+function MyComponent({ zipCode }) {
+  const { defaults, loading, error } = useDefaults(zipCode)
+  
+  // Use defaults.financing.interest_rate, etc.
+  const interestRate = defaults?.financing.interest_rate ?? 0.06
+}
+```
+
+### Mobile (React Native)
+
+```typescript
+// CORRECT: Import from centralized service
+import { useDefaults } from '../services/defaults'
+
+function MyScreen({ zipCode }) {
+  const { defaults, loading } = useDefaults(zipCode)
+  
+  // Use defaults.financing.interest_rate, etc.
+}
+```
+
+## FORBIDDEN Patterns
+
+```typescript
+// ❌ WRONG: Hardcoded default value
+const interestRate = 0.06
+
+// ❌ WRONG: Hardcoded in component
+const DEFAULT_VACANCY = 0.05
+
+// ❌ WRONG: Inline fallback without fetching
+const downPayment = assumedDownPayment || 0.20
+
+// ❌ WRONG: Constants file with hardcoded defaults
+export const DEFAULTS = {
+  INTEREST_RATE: 0.07,  // DON'T DO THIS
+}
+```
+
+## API Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/v1/defaults` | System defaults from backend |
+| `GET /api/v1/defaults/resolved?zip_code=XXXXX` | Fully resolved defaults for location |
+| `GET /api/v1/users/me/assumptions` | User's saved preferences |
+| `PUT /api/v1/users/me/assumptions` | Update user's preferences |
+| `GET /api/v1/market/assumptions?zip_code=XXXXX` | Market-specific adjustments |
+
+## Key Files
+
+### Backend (Source of Truth)
+- `backend/app/core/defaults.py` - All default values defined here
+- `backend/app/services/assumptions_service.py` - Market adjustments
+- `backend/app/routers/users.py` - User assumptions endpoints
+
+### Frontend (Consumers)
+- `frontend/src/services/defaults.ts` - Defaults service
+- `frontend/src/hooks/useDefaults.ts` - React hook
+- `frontend/src/stores/index.ts` - Types only, NO values
+
+### Mobile (Consumers)
+- `mobile/services/defaults.ts` - Defaults service and hook
+
+## Enforcement
+
+1. **TypeScript**: Types imported from `@/stores/index.ts`, values from `useDefaults()`
+2. **Linting**: ESLint rule warns on numeric literals that look like percentages
+3. **Code Review**: This rule is checked by AI and human reviewers
+4. **Runtime**: `useDefaults()` hook validates values are fetched, not hardcoded
+
+## When Adding New Defaults
+
+1. Add to `backend/app/core/defaults.py` dataclass
+2. Add to `get_all_defaults()` function
+3. Update TypeScript types in `frontend/src/stores/index.ts`
+4. Values automatically available via `useDefaults()` hook
+
+## Migration Notes
+
+If you find hardcoded defaults during development:
+1. Replace with `useDefaults()` hook
+2. Use optional chaining with nullish coalescing for loading states
+3. Never add a local fallback value - let the API provide defaults

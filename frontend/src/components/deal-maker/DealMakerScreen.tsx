@@ -11,11 +11,15 @@
  * - Interactive sliders for all values
  * 
  * Uses InvestIQ Universal Style Guide colors
+ * 
+ * NOTE: Default values are loaded from the centralized defaults API.
+ * See docs/DEFAULTS_ARCHITECTURE.md for details.
  */
 
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CompactHeader, type PropertyData as HeaderPropertyData } from '@/components/layout/CompactHeader'
+import { useDefaults } from '@/hooks/useDefaults'
 
 // Types
 export interface DealMakerPropertyData {
@@ -201,26 +205,46 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
 export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMakerScreenProps) {
   const router = useRouter()
   
+  // Fetch centralized defaults based on property ZIP code
+  const { defaults, loading: defaultsLoading } = useDefaults(property.zipCode)
+  
   // State
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
   const [activeAccordion, setActiveAccordion] = useState<AccordionSection>('buyPrice')
   const [state, setState] = useState<DealMakerState>({
     buyPrice: listPrice ?? property.price ?? 350000,
-    downPaymentPercent: 0.20,
+    downPaymentPercent: 0.20,  // Will be updated from defaults
     closingCostsPercent: 0.03,
-    interestRate: 0.0725,
+    interestRate: 0.06,
     loanTermYears: 30,
     rehabBudget: 0,
     arv: (listPrice ?? property.price ?? 350000) * 1.0,
     monthlyRent: property.rent ?? 2800,
     otherIncome: 0,
-    vacancyRate: 0.05,
+    vacancyRate: 0.01,
     maintenanceRate: 0.05,
-    managementRate: 0.08,
+    managementRate: 0.00,
     annualPropertyTax: property.propertyTax || 4200,
     annualInsurance: property.insurance || 1800,
     monthlyHoa: 0,
   })
+  
+  // Update state when defaults are loaded from API
+  useEffect(() => {
+    if (defaults && !defaultsLoading) {
+      setState(prev => ({
+        ...prev,
+        // Only update values that haven't been manually changed
+        downPaymentPercent: prev.downPaymentPercent === 0.20 ? (defaults.financing?.down_payment_pct ?? 0.20) : prev.downPaymentPercent,
+        closingCostsPercent: defaults.financing?.closing_costs_pct ?? prev.closingCostsPercent,
+        interestRate: defaults.financing?.interest_rate ?? prev.interestRate,
+        loanTermYears: defaults.financing?.loan_term_years ?? prev.loanTermYears,
+        vacancyRate: defaults.operating?.vacancy_rate ?? prev.vacancyRate,
+        maintenanceRate: defaults.operating?.maintenance_pct ?? prev.maintenanceRate,
+        managementRate: defaults.operating?.property_management_pct ?? prev.managementRate,
+      }))
+    }
+  }, [defaults, defaultsLoading])
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
 
