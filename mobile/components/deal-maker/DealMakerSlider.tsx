@@ -91,6 +91,9 @@ export function DealMakerSlider({
   value,
   onChange,
   onChangeComplete,
+  defaultValue,
+  onReset,
+  showReset,
 }: DealMakerSliderProps) {
   const [localValue, setLocalValue] = useState(value);
   const [isEditing, setIsEditing] = useState(false);
@@ -167,6 +170,30 @@ export function DealMakerSlider({
   // Determine keyboard type based on format
   const keyboardType = config.format === 'percentage' ? 'decimal-pad' : 'numeric';
 
+  // Check if data is stale
+  const isStale = (() => {
+    if (!config.lastUpdated) return false;
+    const thresholdDays = config.staleThresholdDays ?? 7;
+    const daysSinceUpdate = Math.floor((Date.now() - config.lastUpdated.getTime()) / (1000 * 60 * 60 * 24));
+    return daysSinceUpdate > thresholdDays;
+  })();
+
+  const getStaleMessage = () => {
+    if (!config.lastUpdated) return '';
+    const daysSinceUpdate = Math.floor((Date.now() - config.lastUpdated.getTime()) / (1000 * 60 * 60 * 24));
+    return `Data is ${daysSinceUpdate} days old`;
+  };
+
+  // Check if value differs from default (for showing reset button)
+  const canReset = showReset && defaultValue !== undefined && Math.abs(value - defaultValue) > 0.0001;
+
+  const handleReset = useCallback(() => {
+    if (onReset) {
+      onReset();
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+  }, [onReset]);
+
   return (
     <View style={styles.inputRow}>
       {/* Label and Value */}
@@ -232,6 +259,46 @@ export function DealMakerSlider({
         <Text style={styles.rangeText}>{formattedMin}</Text>
         <Text style={styles.rangeText}>{formattedMax}</Text>
       </View>
+
+      {/* Source Attribution */}
+      {config.sourceLabel && (
+        <View style={styles.sourceRow}>
+          {config.isEstimate ? (
+            <View style={[styles.sourceIcon, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
+              <Text style={{ fontSize: 8, color: '#F59E0B' }}>!</Text>
+            </View>
+          ) : (
+            <View style={[styles.sourceIcon, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
+              <Text style={{ fontSize: 8, color: '#10B981' }}>✓</Text>
+            </View>
+          )}
+          <Text style={styles.sourceText}>{config.sourceLabel}</Text>
+        </View>
+      )}
+
+      {/* Stale Data Warning */}
+      {isStale && (
+        <View style={styles.staleWarning}>
+          <View style={styles.staleIconContainer}>
+            <Text style={{ fontSize: 10, color: '#F59E0B' }}>⚠</Text>
+          </View>
+          <Text style={styles.staleText}>
+            {getStaleMessage()} — rate may have changed
+          </Text>
+        </View>
+      )}
+
+      {/* Reset Button */}
+      {canReset && (
+        <TouchableOpacity 
+          onPress={handleReset} 
+          style={styles.resetButton}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.resetIcon}>↺</Text>
+          <Text style={styles.resetText}>Reset to IQ Default</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -305,6 +372,69 @@ const styles = StyleSheet.create({
   rangeText: {
     fontSize: 11,
     color: '#94A3B8',
+  },
+  sourceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 8,
+  },
+  sourceIcon: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sourceText: {
+    fontSize: 10,
+    color: '#94A3B8',
+  },
+  staleWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  staleIconContainer: {
+    width: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  staleText: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#D97706',
+    flex: 1,
+  },
+  resetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    backgroundColor: 'rgba(8, 145, 178, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(8, 145, 178, 0.3)',
+  },
+  resetIcon: {
+    fontSize: 12,
+    color: '#0891B2',
+  },
+  resetText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#0891B2',
   },
 });
 

@@ -22,6 +22,8 @@ import {
 } from '@/components/iq-verdict'
 import { parseAddressString } from '@/utils/formatters'
 import { useAuth } from '@/context/AuthContext'
+import { useProgressiveProfiling } from '@/hooks/useProgressiveProfiling'
+import { ProgressiveProfilingPrompt } from '@/components/profile/ProgressiveProfilingPrompt'
 
 // Backend analysis response type
 interface BackendAnalysisResponse {
@@ -86,6 +88,17 @@ function VerdictContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isNavigating, setIsNavigating] = useState(false)
+  const [hasTrackedAnalysis, setHasTrackedAnalysis] = useState(false)
+
+  // Progressive profiling hook
+  const {
+    showPrompt,
+    currentQuestion,
+    trackAnalysis,
+    handleAnswer,
+    handleSkip,
+    handleClose,
+  } = useProgressiveProfiling()
 
   // Fetch property data from API
   useEffect(() => {
@@ -308,6 +321,20 @@ function VerdictContent() {
   // Analysis is now fetched from backend API (stored in state)
   // No local calculations are performed
 
+  // Track analysis completion for progressive profiling
+  // This triggers after analysis is loaded (not during loading state)
+  useEffect(() => {
+    if (analysis && !hasTrackedAnalysis && !isLoading) {
+      // Delay slightly to let the verdict screen render first
+      const timer = setTimeout(() => {
+        trackAnalysis()
+        setHasTrackedAnalysis(true)
+      }, 1500) // Show prompt 1.5s after verdict loads
+      
+      return () => clearTimeout(timer)
+    }
+  }, [analysis, hasTrackedAnalysis, isLoading, trackAnalysis])
+
   // Navigation handlers
   const handleBack = useCallback(() => {
     router.back()
@@ -390,12 +417,24 @@ function VerdictContent() {
   }
 
   return (
-    <IQVerdictScreen
-      property={property}
-      analysis={analysis}
-      onViewStrategy={handleViewStrategy}
-      onCompareAll={handleCompareAll}
-    />
+    <>
+      <IQVerdictScreen
+        property={property}
+        analysis={analysis}
+        onViewStrategy={handleViewStrategy}
+        onCompareAll={handleCompareAll}
+      />
+
+      {/* Progressive Profiling Prompt - Shows after analysis completion */}
+      {showPrompt && currentQuestion && (
+        <ProgressiveProfilingPrompt
+          question={currentQuestion}
+          onAnswer={handleAnswer}
+          onSkip={handleSkip}
+          onClose={handleClose}
+        />
+      )}
+    </>
   )
 }
 

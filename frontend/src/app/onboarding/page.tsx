@@ -95,6 +95,42 @@ export default function OnboardingPage() {
     risk_tolerance: 'moderate',
   })
 
+  // Value messaging state - shows immediate benefit of each input
+  const [valueMessage, setValueMessage] = useState<string | null>(null)
+  const [valueMessageKey, setValueMessageKey] = useState(0)
+
+  // Show a value message that auto-hides after 3 seconds
+  const showValueMessage = (message: string) => {
+    setValueMessage(message)
+    setValueMessageKey(prev => prev + 1)
+    setTimeout(() => setValueMessage(null), 4000)
+  }
+
+  // Value message mappings
+  const VALUE_MESSAGES = {
+    experience: {
+      beginner: "We'll show more educational context in your analyses.",
+      intermediate: "We'll tailor recommendations to your growing expertise.",
+      advanced: "You'll see advanced metrics and pro-level insights.",
+      expert: "Full access to all professional tools and detailed analytics.",
+    },
+    strategy: {
+      ltr: "Long-Term Rental scores will be highlighted on every analysis.",
+      str: "We'll show ADR and occupancy projections for vacation rentals.",
+      brrrr: "BRRRR metrics like equity capture will be front and center.",
+      flip: "We'll calculate rehab ROI and flip profit margins for you.",
+      house_hack: "House Hack savings and owner-occupant benefits will be featured.",
+      wholesale: "Assignment fee estimates will appear on qualifying deals.",
+    },
+    budget: "Filtering deal alerts to properties in your budget range.",
+    risk: {
+      conservative: "We'll prioritize stable, lower-risk investment opportunities.",
+      moderate: "You'll see a balanced mix of risk and reward options.",
+      aggressive: "We'll surface high-upside opportunities that match your appetite.",
+    },
+    market: (state: string) => `You'll get alerts when new deals appear in ${state}.`,
+  } as const
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -113,24 +149,46 @@ export default function OnboardingPage() {
 
   const updateFormData = (field: keyof OnboardingData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    
+    // Show value message for experience level
+    if (field === 'investment_experience' && value in VALUE_MESSAGES.experience) {
+      showValueMessage(VALUE_MESSAGES.experience[value as keyof typeof VALUE_MESSAGES.experience])
+    }
+    
+    // Show value message for risk tolerance
+    if (field === 'risk_tolerance' && value in VALUE_MESSAGES.risk) {
+      showValueMessage(VALUE_MESSAGES.risk[value as keyof typeof VALUE_MESSAGES.risk])
+    }
   }
 
   const toggleStrategy = (strategyId: string) => {
+    const isAdding = !formData.preferred_strategies.includes(strategyId)
     setFormData(prev => ({
       ...prev,
       preferred_strategies: prev.preferred_strategies.includes(strategyId)
         ? prev.preferred_strategies.filter(s => s !== strategyId)
         : [...prev.preferred_strategies, strategyId]
     }))
+    
+    // Show value message when adding a strategy
+    if (isAdding && strategyId in VALUE_MESSAGES.strategy) {
+      showValueMessage(VALUE_MESSAGES.strategy[strategyId as keyof typeof VALUE_MESSAGES.strategy])
+    }
   }
 
   const toggleMarket = (state: string) => {
+    const isAdding = !formData.target_markets.includes(state)
     setFormData(prev => ({
       ...prev,
       target_markets: prev.target_markets.includes(state)
         ? prev.target_markets.filter(s => s !== state)
         : [...prev.target_markets, state]
     }))
+    
+    // Show value message when adding a market
+    if (isAdding) {
+      showValueMessage(VALUE_MESSAGES.market(state))
+    }
   }
 
   const selectBudgetRange = (range: typeof BUDGET_RANGES[0]) => {
@@ -139,6 +197,7 @@ export default function OnboardingPage() {
       investment_budget_min: range.min,
       investment_budget_max: range.max,
     }))
+    showValueMessage(VALUE_MESSAGES.budget)
   }
 
   const saveProgress = async (step: number, completed: boolean = false): Promise<boolean> => {
@@ -335,6 +394,17 @@ export default function OnboardingPage() {
       {/* Content */}
       <div className="flex-1 flex items-center justify-center px-6 py-8">
         <div className="w-full max-w-2xl">
+          
+          {/* Value Message Toast */}
+          {valueMessage && (
+            <div 
+              key={valueMessageKey}
+              className="mb-6 flex items-center gap-2 px-4 py-3 rounded-xl bg-brand-500/20 border border-brand-500/30 animate-fade-in"
+            >
+              <Check className="w-4 h-4 text-brand-400 flex-shrink-0" />
+              <p className="text-sm text-brand-300">{valueMessage}</p>
+            </div>
+          )}
           
           {/* Step 0: Welcome & Experience */}
           {currentStep === 0 && (

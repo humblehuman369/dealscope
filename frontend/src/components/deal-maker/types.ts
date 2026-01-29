@@ -117,6 +117,8 @@ export interface SliderConfig {
   defaultValue?: number
   sourceLabel?: string // Data source attribution (e.g., "Freddie Mac weekly average")
   isEstimate?: boolean // If true, shows as estimated vs. actual data
+  lastUpdated?: Date // When the source data was last updated
+  staleThresholdDays?: number // Days after which data is considered stale (default: 7)
 }
 
 // Tab 1: Buy Price sliders
@@ -127,8 +129,20 @@ export const BUY_PRICE_SLIDERS: SliderConfig[] = [
 ]
 
 // Tab 2: Financing sliders
+// Note: lastUpdated for interestRate should be set dynamically from API response
+// When rate data is fetched, update this timestamp. Shows stale warning if >7 days old.
 export const FINANCING_SLIDERS: SliderConfig[] = [
-  { id: 'interestRate', label: 'Interest Rate', min: 0.04, max: 0.12, step: 0.00125, format: 'percentage', sourceLabel: 'Freddie Mac weekly average' },
+  { 
+    id: 'interestRate', 
+    label: 'Interest Rate', 
+    min: 0.04, 
+    max: 0.12, 
+    step: 0.00125, 
+    format: 'percentage', 
+    sourceLabel: 'Freddie Mac weekly average',
+    staleThresholdDays: 7,
+    // lastUpdated will be populated when rates are fetched from API
+  },
   { id: 'loanTermYears', label: 'Loan Term', min: 15, max: 30, step: 5, format: 'years', sourceLabel: 'Industry standard' },
 ]
 

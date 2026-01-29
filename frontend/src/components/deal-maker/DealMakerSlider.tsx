@@ -150,6 +150,20 @@ export function DealMakerSlider({
   // Determine input type
   const inputType = config.format === 'percentage' ? 'number' : 'number'
 
+  // Check if data is stale
+  const isStale = (() => {
+    if (!config.lastUpdated) return false
+    const thresholdDays = config.staleThresholdDays ?? 7
+    const daysSinceUpdate = Math.floor((Date.now() - config.lastUpdated.getTime()) / (1000 * 60 * 60 * 24))
+    return daysSinceUpdate > thresholdDays
+  })()
+
+  const getStaleMessage = () => {
+    if (!config.lastUpdated) return ''
+    const daysSinceUpdate = Math.floor((Date.now() - config.lastUpdated.getTime()) / (1000 * 60 * 60 * 24))
+    return `Data is ${daysSinceUpdate} days old`
+  }
+
   return (
     <div style={{ marginTop: '16px' }}>
       {/* Label and Value */}
@@ -289,6 +303,21 @@ export function DealMakerSlider({
           )}
           <span style={{ fontSize: '10px', color: '#94A3B8' }}>
             {config.sourceLabel}
+          </span>
+        </div>
+      )}
+
+      {/* Stale Data Warning */}
+      {isStale && (
+        <div 
+          className="flex items-center gap-1.5 mt-2 px-2 py-1.5 rounded-md"
+          style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)' }}
+        >
+          <svg className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#F59E0B' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span style={{ fontSize: '10px', color: '#D97706', fontWeight: 500 }}>
+            {getStaleMessage()} — rate may have changed
           </span>
         </div>
       )}
