@@ -77,6 +77,30 @@ function getBarColor(value: number): string {
   return '#E11D48'
 }
 
+// National average benchmarks for metric comparisons
+const NATIONAL_BENCHMARKS: Record<string, { avg: number; unit: string; higherIsBetter: boolean }> = {
+  capRate: { avg: 6.0, unit: '%', higherIsBetter: true },
+  cashOnCash: { avg: 8.0, unit: '%', higherIsBetter: true },
+  equityCapture: { avg: 10, unit: '%', higherIsBetter: true },
+  dscr: { avg: 1.25, unit: '', higherIsBetter: true },
+  cashFlowYield: { avg: 10, unit: '%', higherIsBetter: true },
+  expenseRatio: { avg: 35, unit: '%', higherIsBetter: false },
+  breakevenOcc: { avg: 80, unit: '%', higherIsBetter: false },
+}
+
+// Get comparison to national average
+function getComparison(metric: string, value: number): { diff: number; isGood: boolean; label: string } {
+  const benchmark = NATIONAL_BENCHMARKS[metric]
+  if (!benchmark) return { diff: 0, isGood: true, label: '' }
+  
+  const diff = value - benchmark.avg
+  const isGood = benchmark.higherIsBetter ? diff >= 0 : diff <= 0
+  const sign = diff >= 0 ? '+' : ''
+  const label = `vs ${benchmark.avg}${benchmark.unit} avg`
+  
+  return { diff, isGood, label }
+}
+
 // Score color helper
 function getScoreColor(score: number): string {
   if (score >= 70) return '#0891B2'
@@ -91,7 +115,7 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
   const [expandedSections, setExpandedSections] = useState({
     returns: true,
     cashFlow: true,
-    atGlance: false
+    atGlance: true
   })
   const [showFactors, setShowFactors] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
@@ -180,79 +204,100 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
       case 'capRate':
         if (value >= 8) return { grade: 'A', label: 'STRONG', status: 'Excellent' }
         if (value >= 6) return { grade: 'B', label: 'MODERATE', status: 'Acceptable' }
-        if (value >= 4) return { grade: 'C', label: 'POTENTIAL', status: 'Below Average' }
+        if (value >= 4) return { grade: 'C', label: 'FAIR', status: 'Below Average' }
         return { grade: 'D', label: 'WEAK', status: 'Weak' }
       case 'cashOnCash':
         if (value >= 10) return { grade: 'A', label: 'STRONG', status: 'Excellent' }
         if (value >= 6) return { grade: 'B', label: 'MODERATE', status: 'Acceptable' }
-        if (value >= 2) return { grade: 'C', label: 'POTENTIAL', status: 'Below Average' }
+        if (value >= 2) return { grade: 'C', label: 'FAIR', status: 'Below Average' }
         return { grade: 'D', label: 'WEAK', status: 'Weak' }
       case 'equityCapture':
         if (value >= 20) return { grade: 'A', label: 'STRONG', status: 'Discounted Entry' }
         if (value >= 10) return { grade: 'B', label: 'MODERATE', status: 'Some Discount' }
-        return { grade: 'C', label: 'POTENTIAL', status: 'Market Price' }
+        return { grade: 'C', label: 'FAIR', status: 'Market Price' }
       case 'dscr':
         if (value >= 1.5) return { grade: 'A', label: 'STRONG', status: 'Safe' }
         if (value >= 1.25) return { grade: 'B', label: 'MODERATE', status: 'Acceptable' }
-        if (value >= 1.0) return { grade: 'C', label: 'POTENTIAL', status: 'Tight' }
+        if (value >= 1.0) return { grade: 'C', label: 'FAIR', status: 'Tight' }
         return { grade: 'D', label: 'WEAK', status: 'Risky' }
       case 'expenseRatio':
         if (value <= 30) return { grade: 'A', label: 'STRONG', status: 'Efficient' }
         if (value <= 40) return { grade: 'B', label: 'MODERATE', status: 'Acceptable' }
-        return { grade: 'C', label: 'POTENTIAL', status: 'High' }
+        return { grade: 'C', label: 'FAIR', status: 'High' }
       case 'cashFlowYield':
         if (value >= 15) return { grade: 'A', label: 'STRONG', status: 'Healthy' }
         if (value >= 8) return { grade: 'B', label: 'MODERATE', status: 'Acceptable' }
-        return { grade: 'C', label: 'POTENTIAL', status: 'Low' }
+        return { grade: 'C', label: 'FAIR', status: 'Low' }
       case 'breakevenOcc':
         if (value <= 70) return { grade: 'A', label: 'STRONG', status: 'Safe Buffer' }
         if (value <= 85) return { grade: 'B', label: 'MODERATE', status: 'Acceptable' }
-        if (value <= 95) return { grade: 'C', label: 'POTENTIAL', status: 'Tight' }
+        if (value <= 95) return { grade: 'C', label: 'FAIR', status: 'Tight' }
         return { grade: 'D', label: 'WEAK', status: 'Risky' }
       default:
         return { grade: 'B', label: 'MODERATE', status: 'Average' }
     }
   }
 
-  // Build metric rows
+  // Build metric rows with comparison data
   const returnMetrics = [
     { 
+      key: 'capRate',
       metric: 'Cap Rate', 
-      result: `${metrics.capRate.toFixed(1)}%`, 
-      ...getGrade('capRate', metrics.capRate)
+      result: `${metrics.capRate.toFixed(1)}%`,
+      value: metrics.capRate,
+      ...getGrade('capRate', metrics.capRate),
+      comparison: getComparison('capRate', metrics.capRate)
     },
     { 
+      key: 'cashOnCash',
       metric: 'Cash-on-Cash', 
-      result: `${metrics.cashOnCash.toFixed(1)}%`, 
-      ...getGrade('cashOnCash', metrics.cashOnCash)
+      result: `${metrics.cashOnCash.toFixed(1)}%`,
+      value: metrics.cashOnCash,
+      ...getGrade('cashOnCash', metrics.cashOnCash),
+      comparison: getComparison('cashOnCash', metrics.cashOnCash)
     },
     { 
+      key: 'equityCapture',
       metric: 'Equity Capture', 
-      result: `${metrics.equityCapture.toFixed(0)}%`, 
-      ...getGrade('equityCapture', metrics.equityCapture)
+      result: `${metrics.equityCapture.toFixed(0)}%`,
+      value: metrics.equityCapture,
+      ...getGrade('equityCapture', metrics.equityCapture),
+      comparison: getComparison('equityCapture', metrics.equityCapture)
     }
   ]
 
   const cashFlowMetrics = [
     { 
+      key: 'cashFlowYield',
       metric: 'Cash Flow Yield', 
-      result: `${metrics.cashFlowYield.toFixed(1)}%`, 
-      ...getGrade('cashFlowYield', metrics.cashFlowYield)
+      result: `${metrics.cashFlowYield.toFixed(1)}%`,
+      value: metrics.cashFlowYield,
+      ...getGrade('cashFlowYield', metrics.cashFlowYield),
+      comparison: getComparison('cashFlowYield', metrics.cashFlowYield)
     },
     { 
+      key: 'dscr',
       metric: 'DSCR', 
-      result: metrics.dscr.toFixed(2), 
-      ...getGrade('dscr', metrics.dscr)
+      result: metrics.dscr.toFixed(2),
+      value: metrics.dscr,
+      ...getGrade('dscr', metrics.dscr),
+      comparison: getComparison('dscr', metrics.dscr)
     },
     { 
+      key: 'expenseRatio',
       metric: 'Expense Ratio', 
-      result: `${metrics.expenseRatio.toFixed(0)}%`, 
-      ...getGrade('expenseRatio', metrics.expenseRatio)
+      result: `${metrics.expenseRatio.toFixed(0)}%`,
+      value: metrics.expenseRatio,
+      ...getGrade('expenseRatio', metrics.expenseRatio),
+      comparison: getComparison('expenseRatio', metrics.expenseRatio)
     },
     { 
+      key: 'breakevenOcc',
       metric: 'Breakeven Occ.', 
-      result: `${metrics.breakevenOcc.toFixed(0)}%`, 
-      ...getGrade('breakevenOcc', metrics.breakevenOcc)
+      result: `${metrics.breakevenOcc.toFixed(0)}%`,
+      value: metrics.breakevenOcc,
+      ...getGrade('breakevenOcc', metrics.breakevenOcc),
+      comparison: getComparison('breakevenOcc', metrics.breakevenOcc)
     }
   ]
 
@@ -429,7 +474,8 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
           {expandedSections.returns && (
             <div className="px-4 pb-4">
               {returnMetrics.map((row, idx) => {
-                const gradeStyle = getGradeStyles(row.grade)
+                const compColor = row.comparison.isGood ? '#0891B2' : '#E11D48'
+                const compBg = row.comparison.isGood ? '#E0F7FA' : '#FEE2E2'
                 return (
                   <div 
                     key={idx}
@@ -437,17 +483,17 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
                   >
                     <div>
                       <p className="text-sm font-medium text-[#0A1628] mb-0.5">{row.metric}</p>
-                      <p className="text-xs text-[#94A3B8]">{row.status}</p>
+                      <p className="text-xs text-[#94A3B8]">{row.comparison.label}</p>
                     </div>
                     <div className="flex items-center gap-2.5">
-                      <span className="text-sm font-bold tabular-nums" style={{ color: gradeStyle.text }}>
+                      <span className="text-sm font-bold tabular-nums" style={{ color: compColor }}>
                         {row.result}
                       </span>
                       <span 
-                        className="text-[10px] font-bold px-2 py-1 rounded"
-                        style={{ backgroundColor: gradeStyle.bg, color: gradeStyle.text }}
+                        className="text-[10px] font-semibold px-2 py-1 rounded"
+                        style={{ backgroundColor: compBg, color: compColor }}
                       >
-                        {row.label} {row.grade}
+                        {row.comparison.diff >= 0 ? '+' : ''}{row.comparison.diff.toFixed(1)}
                       </span>
                     </div>
                   </div>
@@ -486,7 +532,8 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
           {expandedSections.cashFlow && (
             <div className="px-4 pb-4">
               {cashFlowMetrics.map((row, idx) => {
-                const gradeStyle = getGradeStyles(row.grade)
+                const compColor = row.comparison.isGood ? '#0891B2' : '#E11D48'
+                const compBg = row.comparison.isGood ? '#E0F7FA' : '#FEE2E2'
                 return (
                   <div 
                     key={idx}
@@ -494,17 +541,17 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
                   >
                     <div>
                       <p className="text-sm font-medium text-[#0A1628] mb-0.5">{row.metric}</p>
-                      <p className="text-xs text-[#94A3B8]">{row.status}</p>
+                      <p className="text-xs text-[#94A3B8]">{row.comparison.label}</p>
                     </div>
                     <div className="flex items-center gap-2.5">
-                      <span className="text-sm font-bold tabular-nums" style={{ color: gradeStyle.text }}>
+                      <span className="text-sm font-bold tabular-nums" style={{ color: compColor }}>
                         {row.result}
                       </span>
                       <span 
-                        className="text-[10px] font-bold px-2 py-1 rounded"
-                        style={{ backgroundColor: gradeStyle.bg, color: gradeStyle.text }}
+                        className="text-[10px] font-semibold px-2 py-1 rounded"
+                        style={{ backgroundColor: compBg, color: compColor }}
                       >
-                        {row.label} {row.grade}
+                        {row.comparison.diff >= 0 ? '+' : ''}{row.comparison.diff.toFixed(row.key === 'dscr' ? 2 : 1)}
                       </span>
                     </div>
                   </div>
