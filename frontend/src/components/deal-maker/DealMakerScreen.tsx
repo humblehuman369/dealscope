@@ -318,10 +318,24 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
   
   // Sync Deal Maker state to worksheet store and navigate to results
   const handleSeeResults = useCallback(() => {
-    // Navigation only - state is already synced via the useEffect above
-    const zpid = property.zpid || ''
-    router.push(`/analysis/${zpid}?tab=worksheet`)
-  }, [router, property.zpid])
+    // Trigger recalculation with current state
+    worksheetStore.recalculate()
+    
+    // Determine strategy route based on current selection
+    const strategyMap: Record<string, string> = {
+      'Long-term': 'ltr',
+      'Short-term': 'str',
+      'BRRRR': 'brrrr',
+      'Fix & Flip': 'flip',
+      'House Hack': 'househack',
+      'Wholesale': 'wholesale',
+    }
+    const strategySlug = strategyMap[currentStrategy] || 'ltr'
+    
+    // Navigate to worksheet page - use zpid or encoded address as ID
+    const propertyId = property.zpid || encodeURIComponent(property.address)
+    router.push(`/worksheet/${propertyId}/${strategySlug}`)
+  }, [router, property.zpid, property.address, currentStrategy, worksheetStore])
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
 
