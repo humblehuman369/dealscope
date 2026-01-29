@@ -757,108 +757,12 @@ export function IQVerdictScreen({
           <div className="mb-5">
             <button
               onClick={() => onViewStrategy(topStrategy)}
-              className="w-full p-4 rounded-xl text-base font-semibold text-white flex items-center justify-center gap-2 mb-3 transition-opacity hover:opacity-90 active:opacity-80"
+              className="w-full p-4 rounded-xl text-base font-semibold text-white flex items-center justify-center gap-2 mb-5 transition-opacity hover:opacity-90 active:opacity-80"
               style={{ background: COLORS.teal }}
             >
               Continue to Analysis
               <ArrowRight className="w-5 h-5" />
             </button>
-            <div 
-              className="text-center text-[13px] italic"
-              style={{ color: COLORS.surface400 }}
-            >
-              or
-            </div>
-            <div 
-              className="text-center text-[15px] font-semibold mt-1"
-              style={{ color: COLORS.navy }}
-            >
-              Select a Strategy
-            </div>
-          </div>
-
-          {/* Strategy List */}
-          <div className="mb-5">
-            {analysis.strategies.map((strategy) => {
-              const isTopPick = strategy.id === topStrategy.id && strategy.score >= 70
-              const gradeDisplay = scoreToGradeLabel(strategy.score)
-              const metricValue = strategy.metricValue
-              
-              return (
-                <button
-                  key={strategy.id}
-                  onClick={() => onViewStrategy(strategy)}
-                  className="w-full rounded-xl mb-2 cursor-pointer transition-shadow hover:shadow-md"
-                  style={{ 
-                    background: 'white',
-                    boxShadow: isTopPick 
-                      ? `0 0 0 2px ${COLORS.green}` 
-                      : '0 1px 3px rgba(0, 0, 0, 0.05)',
-                  }}
-                >
-                  <div className="flex items-center gap-3 p-3.5">
-                    {/* Strategy Info */}
-                    <div className="flex-1 flex items-center gap-2 text-left">
-                      <span 
-                        className="text-[15px] font-semibold"
-                        style={{ color: COLORS.navy }}
-                      >
-                        {strategy.name}
-                      </span>
-                      {strategy.type && (
-                        <span 
-                          className="text-xs"
-                          style={{ color: COLORS.surface400 }}
-                        >
-                          {strategy.type}
-                        </span>
-                      )}
-                      {strategy.badge && (
-                        <span 
-                          className="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase"
-                          style={{ 
-                            letterSpacing: '0.03em',
-                            background: strategy.badge === 'Strong' 
-                              ? `${COLORS.green}1F` 
-                              : `${COLORS.teal}1F`,
-                            color: strategy.badge === 'Strong' 
-                              ? COLORS.green 
-                              : COLORS.teal,
-                          }}
-                        >
-                          {strategy.badge}
-                        </span>
-                      )}
-                    </div>
-                    
-                    {/* Metrics */}
-                    <div className="text-right flex-shrink-0">
-                      <div 
-                        className="text-base font-bold tabular-nums"
-                        style={{ color: getReturnColor(metricValue) }}
-                      >
-                        {strategy.metric}
-                      </div>
-                      <div 
-                        className="text-[10px] font-semibold uppercase"
-                        style={{ 
-                          letterSpacing: '0.03em',
-                          color: getGradeColor(gradeDisplay.grade),
-                        }}
-                      >
-                        {gradeDisplay.label} {gradeDisplay.grade}
-                      </div>
-                    </div>
-                    
-                    {/* Chevron */}
-                    <ChevronRight 
-                      className="w-5 h-5 flex-shrink-0" 
-                      style={{ color: COLORS.surface300 }}
-                    />
-                  </div>
-                </button>
-              )
-            })}
           </div>
 
           {/* Export Link */}
