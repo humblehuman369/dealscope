@@ -478,17 +478,25 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
               {returnMetrics.map((row, idx) => {
                 // Calculate average position (center of range)
                 const avgValue = (row.range.min + row.range.max) / 2
-                const avgPosition = 50 // Center is always 50%
                 return (
-                  <div key={idx} className={idx < returnMetrics.length - 1 ? 'mb-3' : ''}>
-                    {/* Header row */}
-                    <div className="flex justify-between items-baseline mb-1">
+                  <div key={idx} className={idx < returnMetrics.length - 1 ? 'mb-4' : ''}>
+                    {/* Metric name */}
+                    <div className="mb-1">
                       <span className="text-sm font-semibold text-[#0A1628]">{row.metric}</span>
-                      <span className="text-sm font-bold text-[#0A1628] tabular-nums">{row.result}</span>
                     </div>
                     
                     {/* Bar with markers */}
-                    <div className="relative">
+                    <div className="relative pt-5">
+                      {/* Value label above marker */}
+                      <div 
+                        className="absolute top-0 flex flex-col items-center"
+                        style={{ left: `${row.rangePos.position}%`, transform: 'translateX(-50%)' }}
+                      >
+                        <span className="text-[11px] font-bold text-[#0A1628] tabular-nums whitespace-nowrap">
+                          {row.result}
+                        </span>
+                      </div>
+                      
                       {/* Background bar */}
                       <div className="h-2 bg-[#E2E8F0] rounded-full relative overflow-visible">
                         {/* Filled portion (teal) */}
@@ -566,15 +574,24 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
                 // Calculate average position (center of range)
                 const avgValue = (row.range.min + row.range.max) / 2
                 return (
-                  <div key={idx} className={idx < cashFlowMetrics.length - 1 ? 'mb-3' : ''}>
-                    {/* Header row */}
-                    <div className="flex justify-between items-baseline mb-1">
+                  <div key={idx} className={idx < cashFlowMetrics.length - 1 ? 'mb-4' : ''}>
+                    {/* Metric name */}
+                    <div className="mb-1">
                       <span className="text-sm font-semibold text-[#0A1628]">{row.metric}</span>
-                      <span className="text-sm font-bold text-[#0A1628] tabular-nums">{row.result}</span>
                     </div>
                     
                     {/* Bar with markers */}
-                    <div className="relative">
+                    <div className="relative pt-5">
+                      {/* Value label above marker */}
+                      <div 
+                        className="absolute top-0 flex flex-col items-center"
+                        style={{ left: `${row.rangePos.position}%`, transform: 'translateX(-50%)' }}
+                      >
+                        <span className="text-[11px] font-bold text-[#0A1628] tabular-nums whitespace-nowrap">
+                          {row.result}
+                        </span>
+                      </div>
+                      
                       {/* Background bar */}
                       <div className="h-2 bg-[#E2E8F0] rounded-full relative overflow-visible">
                         {/* Filled portion (teal) */}
