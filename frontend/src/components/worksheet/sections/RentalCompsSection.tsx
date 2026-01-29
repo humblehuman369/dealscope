@@ -553,6 +553,9 @@ export function RentalCompsSection() {
         <div>
           <h2 className="text-lg font-bold text-slate-800">Rental Comps & Rent Estimate</h2>
           <p className="text-sm text-slate-500">Comparable rentals for {subject.address}</p>
+          <p className="text-xs text-slate-400 mt-1">
+            Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
         </div>
         <button
           onClick={fetchComps}

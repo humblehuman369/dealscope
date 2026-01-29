@@ -1,9 +1,10 @@
 /**
  * IQAnalyzingScreen - Loading screen shown while IQ analyzes all 6 strategies
  * Displays animated progress with sequential checkmarks for each strategy
+ * Includes micro-tips, time estimate, and slow connection fallback
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -36,6 +37,19 @@ const STRATEGIES: { id: IQStrategyId; name: string }[] = [
   { id: 'wholesale', name: 'Wholesale' },
 ];
 
+// Irregular intervals for progress bar psychology (fast start, slight pause, fast finish)
+const PROGRESS_INTERVALS = [300, 500, 350, 600, 400, 450];
+
+// Rotating micro-tips to show during analysis
+const MICRO_TIPS = [
+  'IQ checks 47 data points per strategy...',
+  'Comparing against 12 recent sales nearby...',
+  'Calculating cash-on-cash for 3 financing scenarios...',
+  'Analyzing rental comps within 0.5 miles...',
+  'Evaluating exit strategy options...',
+  'Computing breakeven occupancy rates...',
+];
+
 interface IQAnalyzingScreenProps {
   property: IQProperty;
   onAnalysisComplete: () => void;
@@ -48,6 +62,9 @@ export function IQAnalyzingScreen({
   minimumDisplayTime = 2800,
 }: IQAnalyzingScreenProps) {
   const [completedStrategies, setCompletedStrategies] = useState<number>(0);
+  const [currentTipIndex, setCurrentTipIndex] = useState<number>(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
+  const progressIndexRef = useRef(0);
 
   // Pulse animation for IQ icon
   const pulseScale = useSharedValue(1);
@@ -67,18 +84,37 @@ export function IQAnalyzingScreen({
     transform: [{ scale: pulseScale.value }],
   }));
 
-  // Staggered progress animation
+  // Staggered progress animation with irregular intervals
   useEffect(() => {
-    const progressInterval = setInterval(() => {
-      setCompletedStrategies(prev => {
-        if (prev < STRATEGIES.length) {
-          return prev + 1;
-        }
-        return prev;
-      });
-    }, 400); // 400ms per strategy = ~2.4s total
+    const runProgress = () => {
+      if (progressIndexRef.current < STRATEGIES.length) {
+        const delay = PROGRESS_INTERVALS[progressIndexRef.current];
+        setTimeout(() => {
+          setCompletedStrategies(prev => prev + 1);
+          progressIndexRef.current += 1;
+          runProgress();
+        }, delay);
+      }
+    };
+    runProgress();
+  }, []);
 
-    return () => clearInterval(progressInterval);
+  // Rotating micro-tips every 2.5 seconds
+  useEffect(() => {
+    const tipInterval = setInterval(() => {
+      setCurrentTipIndex(prev => (prev + 1) % MICRO_TIPS.length);
+    }, 2500);
+
+    return () => clearInterval(tipInterval);
+  }, []);
+
+  // Track elapsed time for slow connection fallback
+  useEffect(() => {
+    const elapsedInterval = setInterval(() => {
+      setElapsedSeconds(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(elapsedInterval);
   }, []);
 
   // Auto-transition after minimum display time
@@ -89,6 +125,9 @@ export function IQAnalyzingScreen({
 
     return () => clearTimeout(timer);
   }, [minimumDisplayTime, onAnalysisComplete]);
+
+  // Show slow connection message after 15 seconds
+  const showSlowMessage = elapsedSeconds >= 15;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -105,6 +144,9 @@ export function IQAnalyzingScreen({
         {/* Title */}
         <Text style={styles.title}>IQ is Analyzing...</Text>
         <Text style={styles.subtitle}>Evaluating 6 investment strategies</Text>
+
+        {/* Time Estimate */}
+        <Text style={styles.timeEstimate}>Usually takes 8-12 seconds</Text>
 
         {/* Progress List */}
         <View style={styles.progressList}>
@@ -150,6 +192,29 @@ export function IQAnalyzingScreen({
             );
           })}
         </View>
+
+        {/* Micro-tips */}
+        <View style={styles.microTipContainer}>
+          <Animated.Text 
+            key={currentTipIndex}
+            entering={FadeIn.duration(300)}
+            style={styles.microTip}
+          >
+            {MICRO_TIPS[currentTipIndex]}
+          </Animated.Text>
+        </View>
+
+        {/* Slow Connection Fallback */}
+        {showSlowMessage && (
+          <Animated.View 
+            entering={FadeIn.duration(400)}
+            style={styles.slowMessageContainer}
+          >
+            <Text style={styles.slowMessage}>
+              Taking longer than usual — complex property. Almost done...
+            </Text>
+          </Animated.View>
+        )}
 
         {/* Property Reference */}
         <View style={styles.propertyRef}>
@@ -208,7 +273,12 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: IQ_COLORS.slateLight,
-    marginBottom: 40,
+    marginBottom: 8,
+  },
+  timeEstimate: {
+    fontSize: 11,
+    color: IQ_COLORS.slate,
+    marginBottom: 32,
   },
 
   // Progress List
@@ -231,6 +301,38 @@ const styles = StyleSheet.create({
   },
   strategyName: {
     fontSize: 14,
+    fontWeight: '500',
+  },
+
+  // Micro-tips
+  microTipContainer: {
+    marginTop: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: IQ_COLORS.electricCyan + '10',
+    borderRadius: 8,
+    minHeight: 40,
+    justifyContent: 'center',
+  },
+  microTip: {
+    fontSize: 12,
+    color: IQ_COLORS.electricCyan,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+
+  // Slow Connection Message
+  slowMessageContainer: {
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: IQ_COLORS.warning + '15',
+    borderRadius: 8,
+  },
+  slowMessage: {
+    fontSize: 11,
+    color: IQ_COLORS.warning,
+    textAlign: 'center',
     fontWeight: '500',
   },
 

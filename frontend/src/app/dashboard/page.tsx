@@ -13,7 +13,8 @@ import {
   Watchlist,
   PortfolioProperties,
   ActivityFeed,
-  InvestmentGoals 
+  InvestmentGoals,
+  QuickStartChecklist
 } from '@/components/dashboard'
 import { 
   LayoutDashboard, 
@@ -157,6 +158,9 @@ export default function DashboardPage() {
   
   // State for modal
   const [showSearchModal, setShowSearchModal] = useState(false)
+  
+  // State for sample/demo mode
+  const [showSampleData, setShowSampleData] = useState(false)
   
   // State for dashboard data
   const [isLoading, setIsLoading] = useState(true)
@@ -372,7 +376,30 @@ export default function DashboardPage() {
 
         {/* Portfolio Summary */}
         <div className="mb-6">
-          <PortfolioSummary data={portfolioData} isLoading={isLoading} />
+          {showSampleData && (
+            <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+              <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-amber-400/30 text-amber-700 dark:text-amber-300 rounded">Demo</span>
+              <span className="text-xs text-amber-700 dark:text-amber-300">Viewing sample data — this is not your real portfolio</span>
+              <button 
+                onClick={() => setShowSampleData(false)}
+                className="ml-auto text-xs text-amber-600 dark:text-amber-400 hover:underline"
+              >
+                Exit Demo
+              </button>
+            </div>
+          )}
+          <PortfolioSummary 
+            data={showSampleData ? {
+              portfolioValue: 1250000,
+              portfolioChange: 12.4,
+              propertiesTracked: 3,
+              totalEquity: 425000,
+              monthlyCashFlow: 4200,
+              avgCoC: 9.8,
+            } : portfolioData} 
+            isLoading={isLoading && !showSampleData}
+            onViewSample={() => setShowSampleData(true)}
+          />
         </div>
 
         {/* Main Grid */}
@@ -396,6 +423,14 @@ export default function DashboardPage() {
 
           {/* Right Column - 4 cols */}
           <div className="lg:col-span-4 space-y-6">
+            {/* Quick Start Checklist */}
+            <QuickStartChecklist 
+              hasAnalyzedProperty={watchlistProperties.length > 0 || portfolioProperties.length > 0}
+              hasCompletedProfile={!needsOnboarding}
+              hasViewedSample={showSampleData}
+              onViewSample={() => setShowSampleData(true)}
+            />
+
             {/* Deal Pipeline */}
             <DealPipeline pipeline={pipelineData} isLoading={isLoading} />
 

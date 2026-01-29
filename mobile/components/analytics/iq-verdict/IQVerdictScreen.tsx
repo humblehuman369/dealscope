@@ -309,22 +309,55 @@ export function IQVerdictScreen({
               {/* Prices */}
               <View style={[styles.verdictPrices, { gap: rsp(12) }]}>
                 {/* Breakeven */}
-                <View style={[styles.priceRow, { gap: rsp(16) }]}>
-                  <Text style={[styles.priceLabel, { fontSize: rf(13) }]}>Breakeven</Text>
+                <TouchableOpacity 
+                  style={[styles.priceRow, { gap: rsp(8) }]}
+                  onPress={() => setActivePriceTooltip(activePriceTooltip === 'breakeven' ? null : 'breakeven')}
+                >
+                  <View style={styles.priceLabelRow}>
+                    <Text style={[styles.priceLabel, { fontSize: rf(13) }]}>Breakeven</Text>
+                    <Ionicons name="help-circle-outline" size={rs(14)} color={COLORS.surface400} />
+                  </View>
                   <Text style={[styles.priceValue, { fontSize: rf(16) }]}>{formatPrice(Math.round(breakevenPrice))}</Text>
-                </View>
+                </TouchableOpacity>
+                {activePriceTooltip === 'breakeven' && (
+                  <View style={[styles.priceTooltip, { padding: rsp(8) }]}>
+                    <Text style={[styles.priceTooltipText, { fontSize: rf(11) }]}>{PRICE_EXPLANATIONS.breakeven}</Text>
+                  </View>
+                )}
 
                 {/* Buy Price - Highlighted */}
-                <View style={[styles.priceRow, { gap: rsp(16) }]}>
-                  <Text style={[styles.priceLabel, styles.priceLabelHighlight, { fontSize: rf(13) }]}>Buy Price</Text>
+                <TouchableOpacity 
+                  style={[styles.priceRow, { gap: rsp(8) }]}
+                  onPress={() => setActivePriceTooltip(activePriceTooltip === 'buyPrice' ? null : 'buyPrice')}
+                >
+                  <View style={styles.priceLabelRow}>
+                    <Text style={[styles.priceLabel, styles.priceLabelHighlight, { fontSize: rf(13) }]}>Buy Price</Text>
+                    <Ionicons name="help-circle-outline" size={rs(14)} color={COLORS.teal} />
+                  </View>
                   <Text style={[styles.priceValue, styles.priceValueHighlight, { fontSize: rf(16) }]}>{formatPrice(Math.round(buyPrice))}</Text>
-                </View>
+                </TouchableOpacity>
+                {activePriceTooltip === 'buyPrice' && (
+                  <View style={[styles.priceTooltip, { padding: rsp(8) }]}>
+                    <Text style={[styles.priceTooltipText, { fontSize: rf(11) }]}>{PRICE_EXPLANATIONS.buyPrice}</Text>
+                  </View>
+                )}
 
                 {/* Wholesale */}
-                <View style={[styles.priceRow, { gap: rsp(16) }]}>
-                  <Text style={[styles.priceLabel, { fontSize: rf(13) }]}>Wholesale</Text>
+                <TouchableOpacity 
+                  style={[styles.priceRow, { gap: rsp(8) }]}
+                  onPress={() => setActivePriceTooltip(activePriceTooltip === 'wholesale' ? null : 'wholesale')}
+                >
+                  <View style={styles.priceLabelRow}>
+                    <Text style={[styles.priceLabel, { fontSize: rf(13) }]}>Wholesale</Text>
+                    <Ionicons name="help-circle-outline" size={rs(14)} color={COLORS.surface400} />
+                  </View>
                   <Text style={[styles.priceValue, { fontSize: rf(16) }]}>{formatPrice(Math.round(wholesalePrice))}</Text>
-                </View>
+                </TouchableOpacity>
+                {activePriceTooltip === 'wholesale' && (
+                  <View style={[styles.priceTooltip, { padding: rsp(8) }]}>
+                    <Text style={[styles.priceTooltipText, { fontSize: rf(11) }]}>{PRICE_EXPLANATIONS.wholesale}</Text>
+                  </View>
+                )}
               </View>
             </View>
 
@@ -333,6 +366,65 @@ export function IQVerdictScreen({
               <Text style={[styles.verdictDescription, { fontSize: rf(14), lineHeight: rf(22) }]}>
                 {analysis.verdictDescription || 'Excellent potential across multiple strategies.'}
               </Text>
+            </View>
+
+            {/* What makes this score - Expandable */}
+            <View style={[styles.scoreBreakdownContainer, { paddingTop: rsp(16), marginTop: rsp(16) }]}>
+              <TouchableOpacity
+                onPress={() => setShowScoreBreakdown(!showScoreBreakdown)}
+                style={[styles.scoreBreakdownHeader, { paddingVertical: rsp(8) }]}
+              >
+                <Text style={[styles.scoreBreakdownTitle, { fontSize: rf(11) }]}>What makes this score</Text>
+                <Ionicons 
+                  name={showScoreBreakdown ? "chevron-up" : "chevron-down"} 
+                  size={rs(16)} 
+                  color={COLORS.surface400} 
+                />
+              </TouchableOpacity>
+              
+              {showScoreBreakdown && (
+                <View style={[styles.scoreBreakdownContent, { gap: rsp(8), paddingTop: rsp(8) }]}>
+                  {/* Positive factors */}
+                  {topStrategy.score >= 70 && (
+                    <View style={styles.factorRow}>
+                      <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>Strong {topStrategy.name} potential</Text>
+                      <Text style={[styles.factorPoints, styles.factorPositive, { fontSize: rf(12) }]}>+{Math.round(topStrategy.score * 0.2)} pts</Text>
+                    </View>
+                  )}
+                  {analysis.discountPercent && analysis.discountPercent > 5 && (
+                    <View style={styles.factorRow}>
+                      <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>Below-market price ({analysis.discountPercent}% off)</Text>
+                      <Text style={[styles.factorPoints, styles.factorPositive, { fontSize: rf(12) }]}>+{Math.min(20, Math.round(analysis.discountPercent * 2))} pts</Text>
+                    </View>
+                  )}
+                  {analysis.strategies.filter(s => s.score >= 60).length > 2 && (
+                    <View style={styles.factorRow}>
+                      <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>Multiple viable strategies</Text>
+                      <Text style={[styles.factorPoints, styles.factorPositive, { fontSize: rf(12) }]}>+12 pts</Text>
+                    </View>
+                  )}
+                  {property.beds && property.beds >= 3 && (
+                    <View style={styles.factorRow}>
+                      <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>House Hack potential ({property.beds} beds)</Text>
+                      <Text style={[styles.factorPoints, styles.factorPositive, { fontSize: rf(12) }]}>+8 pts</Text>
+                    </View>
+                  )}
+                  
+                  {/* Negative factors */}
+                  {analysis.dealScore < 70 && (
+                    <View style={styles.factorRow}>
+                      <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>Market pricing</Text>
+                      <Text style={[styles.factorPoints, styles.factorNegative, { fontSize: rf(12) }]}>-{Math.round((100 - analysis.dealScore) * 0.15)} pts</Text>
+                    </View>
+                  )}
+                  
+                  {/* Total */}
+                  <View style={[styles.factorTotal, { marginTop: rsp(8), paddingTop: rsp(8) }]}>
+                    <Text style={[styles.factorTotalLabel, { fontSize: rf(12) }]}>IQ Verdict Score</Text>
+                    <Text style={[styles.factorTotalValue, { fontSize: rf(12), color: getScoreColor(analysis.dealScore) }]}>{analysis.dealScore}/100</Text>
+                  </View>
+                </View>
+              )}
             </View>
           </View>
 
@@ -698,6 +790,84 @@ const styles = StyleSheet.create({
   },
   exportLinkText: {
     color: COLORS.surface500,
+  },
+
+  // Verdict Label (new)
+  verdictLabelText: {
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  verdictSublabel: {
+    color: COLORS.surface400,
+    textAlign: 'center',
+  },
+
+  // Price Label Row (new)
+  priceLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: staticRsp(4),
+  },
+
+  // Price Tooltip (new)
+  priceTooltip: {
+    backgroundColor: COLORS.navy,
+    borderRadius: staticRs(8),
+    marginTop: staticRsp(-4),
+    marginBottom: staticRsp(4),
+  },
+  priceTooltipText: {
+    color: COLORS.white,
+  },
+
+  // Score Breakdown (new)
+  scoreBreakdownContainer: {
+    borderTopWidth: 1,
+    borderTopColor: COLORS.surface100,
+  },
+  scoreBreakdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  scoreBreakdownTitle: {
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    color: COLORS.teal,
+  },
+  scoreBreakdownContent: {},
+  factorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  factorLabel: {
+    color: COLORS.surface600,
+  },
+  factorPoints: {
+    fontWeight: '600',
+  },
+  factorPositive: {
+    color: COLORS.green,
+  },
+  factorNegative: {
+    color: COLORS.rose,
+  },
+  factorTotal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: COLORS.surface200,
+    borderStyle: 'dashed',
+  },
+  factorTotalLabel: {
+    fontWeight: '600',
+    color: COLORS.navy,
+  },
+  factorTotalValue: {
+    fontWeight: '700',
   },
 });
 

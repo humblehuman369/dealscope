@@ -115,6 +115,7 @@ export function PortfolioSummary({ data, isLoading, onViewSample }: PortfolioSum
               onClick={onViewSample}
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-teal-500/30 text-teal-600 dark:text-teal-400 text-sm font-medium hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors"
             >
+              <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-amber-400/20 text-amber-600 dark:text-amber-400 rounded">Demo</span>
               View Sample Dashboard
             </button>
           )}
