@@ -46,7 +46,7 @@ const SCORING_FACTORS = [
   },
   {
     name: 'Cash-on-Cash',
-    weight: 25,
+    weight: 20,
     description: 'Annual cash flow relative to cash invested',
     icon: TrendingUp,
     thresholds: '≥10% = Full points, ≥5% = Half points',
@@ -59,18 +59,18 @@ const SCORING_FACTORS = [
     thresholds: '≥1.25 = Full points, ≥1.0 = Half points',
   },
   {
-    name: 'Expense Ratio',
-    weight: 15,
-    description: 'Operating expenses as percentage of income',
+    name: 'Annual ROI',
+    weight: 20,
+    description: 'Annual return on investment from cash flow',
     icon: BarChart3,
-    thresholds: '≤40% = Full points, ≤50% = Half points',
+    thresholds: '>$5K/yr = Full points, >$0 = Half points',
   },
   {
-    name: 'Equity Capture',
+    name: 'Annual Profit',
     weight: 20,
-    description: 'Discount from market value creating instant equity',
+    description: 'Total annual profit from rental income after expenses',
     icon: Target,
-    thresholds: '≥10% = Full points, ≥5% = Half points',
+    thresholds: '>$10K/yr = Full points, >$0 = Half points',
   },
 ]
 

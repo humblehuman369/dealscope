@@ -139,6 +139,13 @@ export const capabilityStats = [
   { value: '100%', label: 'Free to Start' },
 ];
 
+// Trust Stats Bar - credibility signals for above the fold
+export const trustStats = [
+  { value: '10K+', label: 'Properties Analyzed', icon: 'chart' },
+  { value: 'Zillow', label: 'Data from Zillow API', icon: 'database' },
+  { value: '256-bit', label: 'Bank-level Encryption', icon: 'shield' },
+];
+
 // How It Works Steps
 export interface HowItWorksStep {
   number: number;

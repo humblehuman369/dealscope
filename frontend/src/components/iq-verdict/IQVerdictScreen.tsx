@@ -50,12 +50,13 @@ const COLORS = {
 // =============================================================================
 
 // Get verdict label based on score tier
-const getVerdictLabel = (score: number): { label: string; sublabel: string } => {
-  if (score >= 90) return { label: 'Exceptional', sublabel: 'Top 5% of deals' }
-  if (score >= 80) return { label: 'Excellent', sublabel: 'Top 15% of deals' }
-  if (score >= 70) return { label: 'Good', sublabel: 'Above average' }
-  if (score >= 60) return { label: 'Fair', sublabel: 'Average market deal' }
-  if (score >= 50) return { label: 'Marginal', sublabel: 'Below average' }
+const getVerdictLabel = (score: number, city?: string): { label: string; sublabel: string } => {
+  const marketName = city || 'your market'
+  if (score >= 90) return { label: 'Exceptional', sublabel: `Top 5% of ${marketName} deals` }
+  if (score >= 80) return { label: 'Excellent', sublabel: `Top 15% of ${marketName} deals` }
+  if (score >= 70) return { label: 'Good', sublabel: `Above average in ${marketName}` }
+  if (score >= 60) return { label: 'Fair', sublabel: `Average ${marketName} deal` }
+  if (score >= 50) return { label: 'Marginal', sublabel: `Below ${marketName} average` }
   return { label: 'Poor', sublabel: 'Proceed with caution' }
 }
 
@@ -134,8 +135,8 @@ export function IQVerdictScreen({
   const [currentStrategy, setCurrentStrategy] = useState<string>(HEADER_STRATEGIES[0].short)
   const topStrategy = analysis.strategies.reduce((best, s) => s.score > best.score ? s : best, analysis.strategies[0])
   
-  // Get verdict label and sublabel
-  const verdictInfo = getVerdictLabel(analysis.dealScore)
+  // Get verdict label and sublabel with city-specific context
+  const verdictInfo = getVerdictLabel(analysis.dealScore, property.city)
   
   // Build property data for CompactHeader
   const headerPropertyData: PropertyData = useMemo(() => ({

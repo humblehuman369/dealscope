@@ -132,6 +132,24 @@ const scoreToGradeLabel = (score: number): { label: string; grade: string } => {
   return { label: 'POOR', grade: 'F' };
 };
 
+// Get verdict label based on score tier with city-specific context
+const getVerdictLabel = (score: number, city?: string): { label: string; sublabel: string } => {
+  const marketName = city || 'your market';
+  if (score >= 90) return { label: 'Exceptional', sublabel: `Top 5% of ${marketName} deals` };
+  if (score >= 80) return { label: 'Excellent', sublabel: `Top 15% of ${marketName} deals` };
+  if (score >= 70) return { label: 'Good', sublabel: `Above average in ${marketName}` };
+  if (score >= 60) return { label: 'Fair', sublabel: `Average ${marketName} deal` };
+  if (score >= 50) return { label: 'Marginal', sublabel: `Below ${marketName} average` };
+  return { label: 'Poor', sublabel: 'Proceed with caution' };
+};
+
+// Price point explanations
+const PRICE_EXPLANATIONS = {
+  breakeven: 'Maximum price where you won\'t lose money on monthly cash flow',
+  buyPrice: 'Target price for positive cash flow (5% below breakeven)',
+  wholesale: 'Price for assignment to another investor (70% of breakeven)',
+};
+
 // =============================================================================
 // PROPS
 // =============================================================================
@@ -162,8 +180,13 @@ export function IQVerdictScreen({
   const { rs, rf, rsp } = useResponsiveScaling();
   
   const [showFactors, setShowFactors] = useState(false);
+  const [showScoreBreakdown, setShowScoreBreakdown] = useState(false);
+  const [activePriceTooltip, setActivePriceTooltip] = useState<string | null>(null);
   const [currentStrategy, setCurrentStrategy] = useState<string>('Long-term');
   const topStrategy = analysis.strategies.reduce((best, s) => s.score > best.score ? s : best, analysis.strategies[0]);
+  
+  // Get verdict label with city-specific context
+  const verdictInfo = getVerdictLabel(analysis.dealScore, property.city);
 
   // Build property data for CompactHeader
   const headerPropertyData: PropertyData = useMemo(() => ({
@@ -260,23 +283,26 @@ export function IQVerdictScreen({
                     borderWidth: scoreRingBorder,
                     borderColor: getScoreColor(analysis.dealScore), 
                     backgroundColor: `${getScoreColor(analysis.dealScore)}14`,
-                    marginBottom: rsp(8),
+                    marginBottom: rsp(4),
                   }
                 ]}>
                   <Text style={[styles.scoreValue, { fontSize: rf(28), color: getScoreColor(analysis.dealScore) }]}>
                     {analysis.dealScore}
                   </Text>
                 </View>
+                {/* Verdict Label */}
+                <Text style={[styles.verdictLabelText, { fontSize: rf(14), color: getScoreColor(analysis.dealScore), marginBottom: rsp(2) }]}>
+                  {verdictInfo.label}
+                </Text>
+                <Text style={[styles.verdictSublabel, { fontSize: rf(10), marginBottom: rsp(8) }]}>
+                  {verdictInfo.sublabel}
+                </Text>
                 <TouchableOpacity 
                   onPress={() => setShowFactors(!showFactors)}
                   style={styles.viewFactors}
                 >
-                  <Text style={[styles.viewFactorsText, { fontSize: rf(12) }]}>View Factors</Text>
-                  <Ionicons 
-                    name={showFactors ? "chevron-up" : "chevron-down"} 
-                    size={rs(12)} 
-                    color={COLORS.surface400} 
-                  />
+                  <Ionicons name="information-circle-outline" size={rs(12)} color={COLORS.teal} />
+                  <Text style={[styles.viewFactorsText, { fontSize: rf(11), color: COLORS.teal }]}>How this works</Text>
                 </TouchableOpacity>
               </View>
 

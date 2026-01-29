@@ -349,6 +349,49 @@
   gap: 6px;
 }
 
+/* Trust Stats Bar - Data credibility signals */
+.landing-page .trust-stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.landing-page .trust-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.landing-page .trust-stat-icon {
+  color: var(--teal);
+  opacity: 0.8;
+}
+
+.landing-page .trust-stat-value {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.landing-page .trust-stat-label {
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .landing-page .trust-stats-bar {
+    gap: 16px;
+  }
+  
+  .landing-page .trust-stat-item {
+    font-size: 0.7rem;
+  }
+}
+
 /* Hero Visual / Phone Mockup */
 .landing-page .hero-visual {
   display: flex;
@@ -2475,6 +2518,86 @@
 
 .landing-page .founder-info p {
   font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ============================================ */
+/* TESTIMONIALS SECTION
+/* ============================================ */
+.landing-page .testimonials-section {
+  padding: 80px 0;
+  background: var(--bg-primary);
+}
+
+.landing-page .testimonials-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-top: 48px;
+}
+
+@media (min-width: 768px) {
+  .landing-page .testimonials-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.landing-page .testimonial-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+}
+
+.landing-page .testimonial-quote {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  opacity: 0.15;
+}
+
+.landing-page .testimonial-quote-icon {
+  color: var(--teal);
+}
+
+.landing-page .testimonial-text {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.landing-page .testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-page .testimonial-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--electric-cyan) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: white;
+}
+
+.landing-page .testimonial-info h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.landing-page .testimonial-info p {
+  font-size: 0.75rem;
   color: var(--text-muted);
   margin: 0;
 }

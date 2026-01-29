@@ -8,7 +8,7 @@ import { StrategyCard } from './StrategyCard';
 import { FeatureCard } from './FeatureCard';
 import { Footer } from './Footer';
 import { TryItNowModal } from './TryItNowModal';
-import { strategies, features, howItWorksSteps, capabilityStats } from './types';
+import { strategies, features, howItWorksSteps, capabilityStats, trustStats, testimonials } from './types';
 import { 
   Camera, 
   BarChart3, 
@@ -17,7 +17,10 @@ import {
   Play,
   Quote,
   Home,
-  ArrowRight
+  ArrowRight,
+  Database,
+  Shield,
+  PieChart
 } from 'lucide-react';
 
 interface ResponsiveLandingPageProps {
@@ -190,6 +193,20 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
                   <Check className="icon" size={16} />
                   3 free property scans
                 </span>
+              </div>
+              
+              {/* Trust Stats Bar - Data credibility signals */}
+              <div className="trust-stats-bar">
+                {trustStats.map((stat, idx) => {
+                  const IconComponent = stat.icon === 'chart' ? PieChart : stat.icon === 'database' ? Database : Shield;
+                  return (
+                    <div key={idx} className="trust-stat-item">
+                      <IconComponent size={14} className="trust-stat-icon" />
+                      <span className="trust-stat-value">{stat.value}</span>
+                      <span className="trust-stat-label">{stat.label}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -447,6 +464,33 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
                 <p>Founder, InvestIQ</p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="testimonials-section">
+        <div className="container">
+          <div className="section-header">
+            <div className="section-label">What Investors Say</div>
+            <h2 className="section-title">Real Results from <span className="highlight">Real Investors</span></h2>
+          </div>
+          <div className="testimonials-grid">
+            {testimonials.map((testimonial, idx) => (
+              <div key={idx} className="testimonial-card">
+                <div className="testimonial-quote">
+                  <Quote size={20} className="testimonial-quote-icon" />
+                </div>
+                <p className="testimonial-text">&ldquo;{testimonial.text}&rdquo;</p>
+                <div className="testimonial-author">
+                  <div className="testimonial-avatar">{testimonial.initials}</div>
+                  <div className="testimonial-info">
+                    <h4>{testimonial.authorName}</h4>
+                    <p>{testimonial.authorTitle}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
