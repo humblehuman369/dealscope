@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { TrendingDown, Clock, Thermometer, AlertTriangle, Target, ChevronDown, ChevronUp, Handshake } from 'lucide-react'
+import { TrendingDown, Clock, Thermometer, AlertTriangle, Target, ChevronDown, ChevronUp, Scale } from 'lucide-react'
 import { OpportunityFactors as OpportunityFactorsType, SellerMotivationData } from './types'
 
 interface OpportunityFactorsProps {
@@ -115,7 +115,7 @@ export function OpportunityFactors({ factors, sellerMotivation, className = '' }
               {sellerMotivation.negotiation_leverage && (
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5">
-                    <Handshake className="w-3 h-3 text-gray-400" />
+                    <Scale className="w-3 h-3 text-gray-400" />
                     <span className="text-gray-500">Negotiation Leverage</span>
                   </div>
                   <span className={`font-semibold ${

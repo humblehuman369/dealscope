@@ -118,7 +118,7 @@ export function useHouseHackWorksheetCalculator(property: SavedProperty | null) 
     const propertyTaxes = data.propertyTaxes ?? (defaultInputs.property_taxes_monthly * 12)
     
     // Calculate insurance as 1% of purchase price annually
-    const insuranceAnnual = data.insurance ?? (listPrice * DEFAULT_INSURANCE_PCT)
+    const insuranceAnnual = data.insurance ?? (listPrice * FALLBACK_INSURANCE_PCT)
     const insuranceMonthly = insuranceAnnual / 12
     
     // Calculate room rent: (monthlyRent / bedrooms) * units_rented_out
