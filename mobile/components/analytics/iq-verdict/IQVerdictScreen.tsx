@@ -260,9 +260,9 @@ export function IQVerdictScreen({
   const wholesalePrice = breakevenPrice * 0.70;
   const estValue = property.price;
 
-  // Dynamic sizes for score ring
-  const scoreRingSize = rs(80);
-  const scoreRingBorder = rs(4);
+  // Dynamic sizes for score ring - reduced to prevent overlap
+  const scoreRingSize = rs(70);
+  const scoreRingBorder = rs(3);
 
   return (
     <View style={styles.container}>
@@ -306,15 +306,15 @@ export function IQVerdictScreen({
                     marginBottom: rsp(4),
                   }
                 ]}>
-                  <Text style={[styles.scoreValue, { fontSize: rf(28), color: getScoreColor(analysis.dealScore) }]}>
+                  <Text style={[styles.scoreValue, { fontSize: rf(24), color: getScoreColor(analysis.dealScore) }]}>
                     {analysis.dealScore}
                   </Text>
                 </View>
                 {/* Verdict Label */}
-                <Text style={[styles.verdictLabelText, { fontSize: rf(14), color: getScoreColor(analysis.dealScore), marginBottom: rsp(2) }]}>
+                <Text style={[styles.verdictLabelText, { fontSize: rf(12), color: getScoreColor(analysis.dealScore), marginBottom: rsp(2) }]}>
                   {verdictInfo.label}
                 </Text>
-                <Text style={[styles.verdictSublabel, { fontSize: rf(10), marginBottom: rsp(8) }]}>
+                <Text style={[styles.verdictSublabel, { fontSize: rf(9), marginBottom: rsp(6) }]}>
                   {verdictInfo.sublabel}
                 </Text>
                 <TouchableOpacity 
@@ -660,11 +660,13 @@ const styles = StyleSheet.create({
   },
   verdictHeader: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
   },
   scoreContainer: {
-    flex: 35,
+    width: '30%',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    paddingRight: 8,
   },
   verdictLabel: {
     fontWeight: '700',
@@ -687,8 +689,9 @@ const styles = StyleSheet.create({
     color: COLORS.surface400,
   },
   verdictPrices: {
-    flex: 65,
-    justifyContent: 'center',
+    flex: 1,
+    justifyContent: 'flex-start',
+    paddingLeft: 8,
   },
   priceRow: {
     flexDirection: 'row',
