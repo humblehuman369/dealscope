@@ -77,28 +77,30 @@ function getBarColor(value: number): string {
   return '#E11D48'
 }
 
-// National average benchmarks for metric comparisons
-const NATIONAL_BENCHMARKS: Record<string, { avg: number; unit: string; higherIsBetter: boolean }> = {
-  capRate: { avg: 6.0, unit: '%', higherIsBetter: true },
-  cashOnCash: { avg: 8.0, unit: '%', higherIsBetter: true },
-  equityCapture: { avg: 10, unit: '%', higherIsBetter: true },
-  dscr: { avg: 1.25, unit: '', higherIsBetter: true },
-  cashFlowYield: { avg: 10, unit: '%', higherIsBetter: true },
-  expenseRatio: { avg: 35, unit: '%', higherIsBetter: false },
-  breakevenOcc: { avg: 80, unit: '%', higherIsBetter: false },
+// National range benchmarks for horizontal bar scale
+const NATIONAL_RANGES: Record<string, { min: number; max: number; unit: string; higherIsBetter: boolean }> = {
+  capRate: { min: 3, max: 9, unit: '%', higherIsBetter: true },
+  cashOnCash: { min: 2, max: 14, unit: '%', higherIsBetter: true },
+  equityCapture: { min: 0, max: 25, unit: '%', higherIsBetter: true },
+  dscr: { min: 0.8, max: 2.0, unit: '', higherIsBetter: true },
+  cashFlowYield: { min: 2, max: 18, unit: '%', higherIsBetter: true },
+  expenseRatio: { min: 20, max: 50, unit: '%', higherIsBetter: false },
+  breakevenOcc: { min: 60, max: 100, unit: '%', higherIsBetter: false },
 }
 
-// Get comparison to national average
-function getComparison(metric: string, value: number): { diff: number; isGood: boolean; label: string } {
-  const benchmark = NATIONAL_BENCHMARKS[metric]
-  if (!benchmark) return { diff: 0, isGood: true, label: '' }
+// Calculate position on the range bar (0-100%)
+function getRangePosition(metric: string, value: number): { position: number; isGood: boolean } {
+  const range = NATIONAL_RANGES[metric]
+  if (!range) return { position: 50, isGood: true }
   
-  const diff = value - benchmark.avg
-  const isGood = benchmark.higherIsBetter ? diff >= 0 : diff <= 0
-  const sign = diff >= 0 ? '+' : ''
-  const label = `vs ${benchmark.avg}${benchmark.unit} avg`
+  // Clamp value within range for display
+  const clampedValue = Math.max(range.min, Math.min(range.max, value))
+  const position = ((clampedValue - range.min) / (range.max - range.min)) * 100
   
-  return { diff, isGood, label }
+  // Determine if value is good (in the better half of the range)
+  const isGood = range.higherIsBetter ? position >= 50 : position <= 50
+  
+  return { position, isGood }
 }
 
 // Score color helper
@@ -238,31 +240,31 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
     }
   }
 
-  // Build metric rows with comparison data
+  // Build metric rows with range position data
   const returnMetrics = [
     { 
       key: 'capRate',
       metric: 'Cap Rate', 
       result: `${metrics.capRate.toFixed(1)}%`,
       value: metrics.capRate,
-      ...getGrade('capRate', metrics.capRate),
-      comparison: getComparison('capRate', metrics.capRate)
+      range: NATIONAL_RANGES.capRate,
+      rangePos: getRangePosition('capRate', metrics.capRate)
     },
     { 
       key: 'cashOnCash',
       metric: 'Cash-on-Cash', 
       result: `${metrics.cashOnCash.toFixed(1)}%`,
       value: metrics.cashOnCash,
-      ...getGrade('cashOnCash', metrics.cashOnCash),
-      comparison: getComparison('cashOnCash', metrics.cashOnCash)
+      range: NATIONAL_RANGES.cashOnCash,
+      rangePos: getRangePosition('cashOnCash', metrics.cashOnCash)
     },
     { 
       key: 'equityCapture',
       metric: 'Equity Capture', 
       result: `${metrics.equityCapture.toFixed(0)}%`,
       value: metrics.equityCapture,
-      ...getGrade('equityCapture', metrics.equityCapture),
-      comparison: getComparison('equityCapture', metrics.equityCapture)
+      range: NATIONAL_RANGES.equityCapture,
+      rangePos: getRangePosition('equityCapture', metrics.equityCapture)
     }
   ]
 
@@ -272,32 +274,32 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
       metric: 'Cash Flow Yield', 
       result: `${metrics.cashFlowYield.toFixed(1)}%`,
       value: metrics.cashFlowYield,
-      ...getGrade('cashFlowYield', metrics.cashFlowYield),
-      comparison: getComparison('cashFlowYield', metrics.cashFlowYield)
+      range: NATIONAL_RANGES.cashFlowYield,
+      rangePos: getRangePosition('cashFlowYield', metrics.cashFlowYield)
     },
     { 
       key: 'dscr',
       metric: 'DSCR', 
       result: metrics.dscr.toFixed(2),
       value: metrics.dscr,
-      ...getGrade('dscr', metrics.dscr),
-      comparison: getComparison('dscr', metrics.dscr)
+      range: NATIONAL_RANGES.dscr,
+      rangePos: getRangePosition('dscr', metrics.dscr)
     },
     { 
       key: 'expenseRatio',
       metric: 'Expense Ratio', 
       result: `${metrics.expenseRatio.toFixed(0)}%`,
       value: metrics.expenseRatio,
-      ...getGrade('expenseRatio', metrics.expenseRatio),
-      comparison: getComparison('expenseRatio', metrics.expenseRatio)
+      range: NATIONAL_RANGES.expenseRatio,
+      rangePos: getRangePosition('expenseRatio', metrics.expenseRatio)
     },
     { 
       key: 'breakevenOcc',
       metric: 'Breakeven Occ.', 
       result: `${metrics.breakevenOcc.toFixed(0)}%`,
       value: metrics.breakevenOcc,
-      ...getGrade('breakevenOcc', metrics.breakevenOcc),
-      comparison: getComparison('breakevenOcc', metrics.breakevenOcc)
+      range: NATIONAL_RANGES.breakevenOcc,
+      rangePos: getRangePosition('breakevenOcc', metrics.breakevenOcc)
     }
   ]
 
@@ -472,29 +474,72 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
           </button>
 
           {expandedSections.returns && (
-            <div className="px-4 pb-4">
+            <div className="px-4 pb-4 space-y-5">
               {returnMetrics.map((row, idx) => {
-                const compColor = row.comparison.isGood ? '#0891B2' : '#E11D48'
-                const compBg = row.comparison.isGood ? '#E0F7FA' : '#FEE2E2'
+                const markerColor = row.rangePos.isGood ? '#0891B2' : '#E11D48'
+                // For metrics where lower is better, reverse the gradient
+                const gradientDirection = row.range.higherIsBetter 
+                  ? 'linear-gradient(90deg, #E11D48 0%, #0891B2 100%)'
+                  : 'linear-gradient(90deg, #0891B2 0%, #E11D48 100%)'
                 return (
-                  <div 
-                    key={idx}
-                    className={`flex items-center justify-between py-3.5 ${idx < returnMetrics.length - 1 ? 'border-b border-[#F8FAFC]' : ''}`}
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-[#0A1628] mb-0.5">{row.metric}</p>
-                      <p className="text-xs text-[#94A3B8]">{row.comparison.label}</p>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-sm font-bold tabular-nums" style={{ color: compColor }}>
+                  <div key={idx}>
+                    {/* Header row */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="text-sm font-semibold text-[#0A1628]">{row.metric}</p>
+                        <p className="text-[11px] text-[#94A3B8]">
+                          National range: {row.range.min}{row.range.unit} → {row.range.max}{row.range.unit}
+                        </p>
+                      </div>
+                      <span 
+                        className="text-lg font-bold tabular-nums"
+                        style={{ color: markerColor }}
+                      >
                         {row.result}
                       </span>
-                      <span 
-                        className="text-[10px] font-semibold px-2 py-1 rounded"
-                        style={{ backgroundColor: compBg, color: compColor }}
+                    </div>
+                    
+                    {/* Range bar with marker */}
+                    <div className="relative pt-5">
+                      {/* Marker */}
+                      <div 
+                        className="absolute top-0 flex flex-col items-center"
+                        style={{ left: `${row.rangePos.position}%`, transform: 'translateX(-50%)' }}
                       >
-                        {row.comparison.diff >= 0 ? '+' : ''}{row.comparison.diff.toFixed(1)}
-                      </span>
+                        <span 
+                          className="text-[10px] font-bold px-2 py-0.5 rounded-full mb-1"
+                          style={{ 
+                            backgroundColor: 'white',
+                            color: markerColor,
+                            border: `1.5px solid ${markerColor}`,
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                          }}
+                        >
+                          {row.result}
+                        </span>
+                        <div 
+                          className="w-3 h-3 rounded-full border-2 border-white"
+                          style={{ 
+                            backgroundColor: markerColor,
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Gradient bar */}
+                      <div 
+                        className="h-2.5 rounded-full"
+                        style={{ 
+                          background: gradientDirection,
+                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                        }}
+                      />
+                      
+                      {/* Range labels */}
+                      <div className="flex justify-between mt-1.5 text-[10px] text-[#94A3B8]">
+                        <span>{row.range.higherIsBetter ? 'Low' : 'High'} ({row.range.min}{row.range.unit})</span>
+                        <span>{row.range.higherIsBetter ? 'High' : 'Low'} ({row.range.max}{row.range.unit})</span>
+                      </div>
                     </div>
                   </div>
                 )
@@ -530,29 +575,72 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
           </button>
 
           {expandedSections.cashFlow && (
-            <div className="px-4 pb-4">
+            <div className="px-4 pb-4 space-y-5">
               {cashFlowMetrics.map((row, idx) => {
-                const compColor = row.comparison.isGood ? '#0891B2' : '#E11D48'
-                const compBg = row.comparison.isGood ? '#E0F7FA' : '#FEE2E2'
+                const markerColor = row.rangePos.isGood ? '#0891B2' : '#E11D48'
+                // For metrics where lower is better, reverse the gradient
+                const gradientDirection = row.range.higherIsBetter 
+                  ? 'linear-gradient(90deg, #E11D48 0%, #0891B2 100%)'
+                  : 'linear-gradient(90deg, #0891B2 0%, #E11D48 100%)'
                 return (
-                  <div 
-                    key={idx}
-                    className={`flex items-center justify-between py-3.5 ${idx < cashFlowMetrics.length - 1 ? 'border-b border-[#F8FAFC]' : ''}`}
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-[#0A1628] mb-0.5">{row.metric}</p>
-                      <p className="text-xs text-[#94A3B8]">{row.comparison.label}</p>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-sm font-bold tabular-nums" style={{ color: compColor }}>
+                  <div key={idx}>
+                    {/* Header row */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="text-sm font-semibold text-[#0A1628]">{row.metric}</p>
+                        <p className="text-[11px] text-[#94A3B8]">
+                          National range: {row.range.min}{row.range.unit} → {row.range.max}{row.range.unit}
+                        </p>
+                      </div>
+                      <span 
+                        className="text-lg font-bold tabular-nums"
+                        style={{ color: markerColor }}
+                      >
                         {row.result}
                       </span>
-                      <span 
-                        className="text-[10px] font-semibold px-2 py-1 rounded"
-                        style={{ backgroundColor: compBg, color: compColor }}
+                    </div>
+                    
+                    {/* Range bar with marker */}
+                    <div className="relative pt-5">
+                      {/* Marker */}
+                      <div 
+                        className="absolute top-0 flex flex-col items-center"
+                        style={{ left: `${row.rangePos.position}%`, transform: 'translateX(-50%)' }}
                       >
-                        {row.comparison.diff >= 0 ? '+' : ''}{row.comparison.diff.toFixed(row.key === 'dscr' ? 2 : 1)}
-                      </span>
+                        <span 
+                          className="text-[10px] font-bold px-2 py-0.5 rounded-full mb-1"
+                          style={{ 
+                            backgroundColor: 'white',
+                            color: markerColor,
+                            border: `1.5px solid ${markerColor}`,
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                          }}
+                        >
+                          {row.result}
+                        </span>
+                        <div 
+                          className="w-3 h-3 rounded-full border-2 border-white"
+                          style={{ 
+                            backgroundColor: markerColor,
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Gradient bar */}
+                      <div 
+                        className="h-2.5 rounded-full"
+                        style={{ 
+                          background: gradientDirection,
+                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+                        }}
+                      />
+                      
+                      {/* Range labels */}
+                      <div className="flex justify-between mt-1.5 text-[10px] text-[#94A3B8]">
+                        <span>{row.range.higherIsBetter ? 'Low' : 'High'} ({row.range.min}{row.range.unit})</span>
+                        <span>{row.range.higherIsBetter ? 'High' : 'Low'} ({row.range.max}{row.range.unit})</span>
+                      </div>
                     </div>
                   </div>
                 )
