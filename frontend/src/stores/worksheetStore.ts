@@ -197,8 +197,8 @@ export const useWorksheetStore = create<WorksheetState>((set, get) => ({
           vacancyRate: resolved.operating?.vacancy_rate ?? defaultAssumptions.vacancyRate,
           managementPct: resolved.operating?.property_management_pct ?? defaultAssumptions.managementPct,
           maintenancePct: resolved.operating?.maintenance_pct ?? defaultAssumptions.maintenancePct,
-          annualAppreciation: resolved.growth?.appreciation_rate ?? defaultAssumptions.annualAppreciation,
-          annualRentGrowth: resolved.growth?.rent_growth_rate ?? defaultAssumptions.annualRentGrowth,
+          annualAppreciation: resolved.appreciation_rate ?? defaultAssumptions.annualAppreciation,
+          annualRentGrowth: resolved.rent_growth_rate ?? defaultAssumptions.annualRentGrowth,
         }
       }
     } catch (error) {
