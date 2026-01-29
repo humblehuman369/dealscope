@@ -55,6 +55,54 @@ const US_STATES = [
   'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
 ]
 
+// Financing types with descriptions and default down payments
+const FINANCING_TYPES = [
+  { 
+    id: 'conventional', 
+    label: 'Conventional', 
+    desc: 'Traditional 20% down mortgage',
+    defaultDownPayment: 0.20,
+    icon: '🏦'
+  },
+  { 
+    id: 'fha', 
+    label: 'FHA', 
+    desc: 'Low down payment (3.5%), owner-occupied',
+    defaultDownPayment: 0.035,
+    icon: '🏠'
+  },
+  { 
+    id: 'va', 
+    label: 'VA', 
+    desc: 'Zero down for veterans',
+    defaultDownPayment: 0,
+    icon: '🎖️'
+  },
+  { 
+    id: 'cash', 
+    label: 'Cash', 
+    desc: 'All-cash purchase, no financing',
+    defaultDownPayment: 1.0,
+    icon: '💵'
+  },
+  { 
+    id: 'hard_money', 
+    label: 'Hard Money', 
+    desc: 'Short-term for flips/BRRRR (10-30% down)',
+    defaultDownPayment: 0.10,
+    icon: '⚡'
+  },
+]
+
+const DOWN_PAYMENT_OPTIONS = [
+  { value: 0, label: '0%', desc: 'VA or seller financing' },
+  { value: 0.035, label: '3.5%', desc: 'FHA minimum' },
+  { value: 0.05, label: '5%', desc: 'Low conventional' },
+  { value: 0.10, label: '10%', desc: 'Hard money typical' },
+  { value: 0.20, label: '20%', desc: 'Conventional, no PMI' },
+  { value: 0.25, label: '25%', desc: 'Investment property' },
+]
+
 // ===========================================
 // Types
 // ===========================================
@@ -69,6 +117,9 @@ interface OnboardingData {
   target_cash_on_cash: number
   target_cap_rate: number
   risk_tolerance: string
+  // Financing assumptions (saved to user profile defaults)
+  financing_type: string
+  down_payment_pct: number
 }
 
 // ===========================================
@@ -93,6 +144,8 @@ export default function OnboardingPage() {
     target_cash_on_cash: 0.08,
     target_cap_rate: 0.06,
     risk_tolerance: 'moderate',
+    financing_type: 'conventional',
+    down_payment_pct: 0.20,
   })
 
   // Value messaging state - shows immediate benefit of each input
@@ -129,6 +182,14 @@ export default function OnboardingPage() {
       aggressive: "We'll surface high-upside opportunities that match your appetite.",
     },
     market: (state: string) => `You'll get alerts when new deals appear in ${state}.`,
+    financing: {
+      conventional: "Calculations will use standard 20% down with PMI if lower.",
+      fha: "FHA terms with 3.5% down and MIP will be applied.",
+      va: "VA loan terms with zero down payment will be used.",
+      cash: "All-cash analysis with no financing costs.",
+      hard_money: "Short-term hard money rates will be used for flip/BRRRR.",
+    },
+    downPayment: (pct: number) => `Your breakeven prices will reflect ${(pct * 100).toFixed(1)}% down.`,
   } as const
 
   // Redirect if not authenticated
@@ -145,7 +206,7 @@ export default function OnboardingPage() {
     }
   }, [user])
 
-  const totalSteps = 4
+  const totalSteps = 5
 
   const updateFormData = (field: keyof OnboardingData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -200,6 +261,25 @@ export default function OnboardingPage() {
     showValueMessage(VALUE_MESSAGES.budget)
   }
 
+  const selectFinancingType = (financing: typeof FINANCING_TYPES[0]) => {
+    setFormData(prev => ({
+      ...prev,
+      financing_type: financing.id,
+      down_payment_pct: financing.defaultDownPayment,
+    }))
+    if (financing.id in VALUE_MESSAGES.financing) {
+      showValueMessage(VALUE_MESSAGES.financing[financing.id as keyof typeof VALUE_MESSAGES.financing])
+    }
+  }
+
+  const selectDownPayment = (pct: number) => {
+    setFormData(prev => ({
+      ...prev,
+      down_payment_pct: pct,
+    }))
+    showValueMessage(VALUE_MESSAGES.downPayment(pct))
+  }
+
   const saveProgress = async (step: number, completed: boolean = false): Promise<boolean> => {
     setIsSaving(true)
     if (completed) {
@@ -214,6 +294,7 @@ export default function OnboardingPage() {
       }
       
       // Build profile data based on current step
+      // Steps: 0=Experience, 1=Strategies, 2=Financing, 3=Budget, 4=Markets
       let profileData: any = {}
       
       if (step >= 0) {
@@ -223,13 +304,21 @@ export default function OnboardingPage() {
         profileData.preferred_strategies = formData.preferred_strategies
       }
       if (step >= 2) {
+        // Save financing assumptions to user profile defaults
+        profileData.default_assumptions = {
+          financing: {
+            down_payment_pct: formData.down_payment_pct,
+          }
+        }
+      }
+      if (step >= 3) {
         profileData.investment_budget_min = formData.investment_budget_min
         profileData.investment_budget_max = formData.investment_budget_max
         profileData.target_cash_on_cash = formData.target_cash_on_cash
         profileData.target_cap_rate = formData.target_cap_rate
         profileData.risk_tolerance = formData.risk_tolerance
       }
-      if (step >= 3) {
+      if (step >= 4) {
         profileData.target_markets = formData.target_markets
       }
 
@@ -508,8 +597,92 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Step 2: Budget & Goals */}
+          {/* Step 2: Financing Assumptions */}
           {currentStep === 2 && (
+            <div className="animate-fade-in">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+                  Your Financing Terms
+                </h1>
+                <p className="text-gray-400 text-lg">
+                  How do you typically finance deals? We'll use this for all analyses.
+                </p>
+              </div>
+
+              {/* Financing Type */}
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-gray-300 mb-3">
+                  Financing Type
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {FINANCING_TYPES.map(financing => {
+                    const isSelected = formData.financing_type === financing.id
+                    
+                    return (
+                      <button
+                        key={financing.id}
+                        onClick={() => selectFinancingType(financing)}
+                        className={`p-4 rounded-xl border-2 transition-all text-left flex items-start gap-3 ${
+                          isSelected
+                            ? 'border-brand-500 bg-brand-500/10'
+                            : 'border-white/10 hover:border-white/20 bg-white/5'
+                        }`}
+                      >
+                        <span className="text-2xl">{financing.icon}</span>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-white">{financing.label}</p>
+                            {isSelected && (
+                              <Check className="w-4 h-4 text-brand-400" />
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-400">{financing.desc}</p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Down Payment */}
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-gray-300 mb-3">
+                  Default Down Payment
+                </label>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {DOWN_PAYMENT_OPTIONS.map(option => {
+                    const isSelected = Math.abs(formData.down_payment_pct - option.value) < 0.001
+                    
+                    return (
+                      <button
+                        key={option.label}
+                        onClick={() => selectDownPayment(option.value)}
+                        className={`px-3 py-2.5 rounded-lg border transition-all text-center ${
+                          isSelected
+                            ? 'border-brand-500 bg-brand-500/20 text-white'
+                            : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/20'
+                        }`}
+                      >
+                        <div className="font-semibold">{option.label}</div>
+                        <div className="text-xs text-gray-500">{option.desc}</div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Explanation */}
+              <div className="bg-brand-500/10 border border-brand-500/30 rounded-xl p-4">
+                <p className="text-sm text-brand-300">
+                  <strong>How this is used:</strong> Your breakeven price and target buy price are calculated using these terms. 
+                  You can customize these in detail anytime in your Dashboard settings.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Budget & Goals */}
+          {currentStep === 3 && (
             <div className="animate-fade-in">
               <div className="text-center mb-8">
                 <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
@@ -619,8 +792,8 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Step 3: Target Markets */}
-          {currentStep === 3 && (
+          {/* Step 4: Target Markets */}
+          {currentStep === 4 && (
             <div className="animate-fade-in">
               <div className="text-center mb-8">
                 <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">

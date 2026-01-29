@@ -20,6 +20,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CompactHeader, type PropertyData as HeaderPropertyData } from '@/components/layout/CompactHeader'
 import { useDefaults } from '@/hooks/useDefaults'
+import { useWorksheetStore } from '@/stores/worksheetStore'
 
 // Types
 export interface DealMakerPropertyData {
@@ -229,6 +230,9 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     monthlyHoa: 0,
   })
   
+  // Worksheet store for syncing changes to analytics
+  const worksheetStore = useWorksheetStore()
+  
   // Update state when defaults are loaded from API
   useEffect(() => {
     if (defaults && !defaultsLoading) {
@@ -245,6 +249,35 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
       }))
     }
   }, [defaults, defaultsLoading])
+  
+  // Sync Deal Maker state to worksheet store and navigate to results
+  const handleSeeResults = useCallback(() => {
+    // Map Deal Maker state to worksheet assumptions format
+    worksheetStore.updateMultipleAssumptions({
+      purchasePrice: state.buyPrice,
+      downPaymentPct: state.downPaymentPercent,
+      closingCostsPct: state.closingCostsPercent,
+      closingCosts: state.buyPrice * state.closingCostsPercent,
+      interestRate: state.interestRate,
+      loanTermYears: state.loanTermYears,
+      rehabCosts: state.rehabBudget,
+      arv: state.arv,
+      monthlyRent: state.monthlyRent,
+      vacancyRate: state.vacancyRate,
+      maintenancePct: state.maintenanceRate,
+      managementPct: state.managementRate,
+      propertyTaxes: state.annualPropertyTax,
+      insurance: state.annualInsurance,
+      hoaFees: state.monthlyHoa * 12,
+    })
+    
+    // Trigger recalculation
+    worksheetStore.recalculate()
+    
+    // Navigate to worksheet/analysis page
+    const zpid = property.zpid || ''
+    router.push(`/analysis/${zpid}?tab=worksheet`)
+  }, [state, worksheetStore, router, property.zpid])
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
 
@@ -610,6 +643,27 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
           </div>
         ))}
       </main>
+
+      {/* Floating "See Results" Button */}
+      <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pb-4 pt-2 bg-gradient-to-t from-[#F1F5F9] via-[#F1F5F9] to-transparent pointer-events-none">
+        <button
+          onClick={handleSeeResults}
+          className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl text-white font-semibold text-base shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] pointer-events-auto"
+          style={{ 
+            background: 'linear-gradient(135deg, #0891B2 0%, #06B6D4 100%)',
+            boxShadow: '0 4px 20px rgba(8, 145, 178, 0.25)'
+          }}
+        >
+          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          See Results
+          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </button>
+      </div>
 
       {/* CSS for tabular-nums */}
       <style>{`.tabular-nums { font-variant-numeric: tabular-nums; }`}</style>

@@ -12,7 +12,8 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react'
-import { ChevronDown, ChevronUp, ChevronRight, ArrowRight, Download, Info, HelpCircle } from 'lucide-react'
+import { ChevronDown, ChevronUp, ChevronRight, ArrowRight, Download, Info, HelpCircle, Settings2 } from 'lucide-react'
+import { useDefaults } from '@/hooks/useDefaults'
 import {
   IQProperty,
   IQAnalysisResult,
@@ -60,11 +61,11 @@ const getVerdictLabel = (score: number, city?: string): { label: string; sublabe
   return { label: 'Poor', sublabel: 'Proceed with caution' }
 }
 
-// Price point explanations
+// Price point explanations - now includes YOUR terms messaging
 const PRICE_EXPLANATIONS = {
-  breakeven: 'Maximum price where you won\'t lose money on monthly cash flow',
-  buyPrice: 'Target price for positive cash flow (5% below breakeven)',
-  wholesale: 'Price for assignment to another investor (70% of breakeven)',
+  breakeven: 'Maximum price with $0 cash flow, based on YOUR financing terms (down payment, rate, vacancy, etc.)',
+  buyPrice: 'Recommended offer for positive cash flow — 5% below your breakeven',
+  wholesale: 'Maximum price for assignment to another investor (70% of breakeven)',
 }
 
 const getReturnColor = (value: number): string => {
@@ -133,7 +134,11 @@ export function IQVerdictScreen({
   const [showScoreBreakdown, setShowScoreBreakdown] = useState(false)
   const [activePriceTooltip, setActivePriceTooltip] = useState<string | null>(null)
   const [currentStrategy, setCurrentStrategy] = useState<string>(HEADER_STRATEGIES[0].short)
+  const [showAssumptions, setShowAssumptions] = useState(false)
   const topStrategy = analysis.strategies.reduce((best, s) => s.score > best.score ? s : best, analysis.strategies[0])
+  
+  // Get user's default assumptions (for displaying what terms breakeven is based on)
+  const { defaults, hasUserCustomizations } = useDefaults(property.zip)
   
   // Get verdict label and sublabel with city-specific context
   const verdictInfo = getVerdictLabel(analysis.dealScore, property.city)
@@ -165,11 +170,25 @@ export function IQVerdictScreen({
     }
   }, [analysis.strategies, onViewStrategy])
 
+  // Determine if property is off-market (no asking price)
+  const isOffMarket = !property.listingStatus || 
+    property.listingStatus === 'OFF_MARKET' || 
+    property.listingStatus === 'SOLD' ||
+    property.listingStatus === 'FOR_RENT'
+  
+  // Use AVM (Zestimate) for off-market properties, otherwise use listing price
+  const marketValue = isOffMarket 
+    ? (property.zestimate || property.price) 
+    : property.price
+  const priceSource = isOffMarket 
+    ? (property.zestimate ? 'Zestimate' : 'Market Estimate')
+    : 'Asking Price'
+
   // Calculate prices
-  const breakevenPrice = analysis.breakevenPrice || Math.round(property.price * 1.1)
+  const breakevenPrice = analysis.breakevenPrice || Math.round(marketValue * 1.1)
   const buyPrice = analysis.purchasePrice || Math.round(breakevenPrice * 0.95)
   const wholesalePrice = Math.round(breakevenPrice * 0.70)
-  const estValue = analysis.listPrice || property.price
+  const estValue = analysis.listPrice || marketValue
   
   // Default opportunity factors
   const opportunityFactors = analysis.opportunityFactors || {
@@ -263,6 +282,17 @@ export function IQVerdictScreen({
               
               {/* Prices - 65% */}
               <div className="flex flex-col gap-3 justify-center" style={{ flex: '65' }}>
+                {/* Off-Market Indicator */}
+                {isOffMarket && (
+                  <div 
+                    className="flex items-center justify-end gap-1.5 px-2 py-1 rounded-md text-[10px]"
+                    style={{ backgroundColor: `${COLORS.warning}15`, color: COLORS.warning }}
+                  >
+                    <Info className="w-3 h-3" />
+                    <span>No asking price — using {priceSource}</span>
+                  </div>
+                )}
+                
                 {/* Breakeven */}
                 <div className="flex items-center justify-end gap-2 relative">
                   <button
@@ -341,6 +371,98 @@ export function IQVerdictScreen({
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* "Based on your terms" - Expandable Assumptions */}
+            <div 
+              className="rounded-lg mb-4 overflow-hidden"
+              style={{ backgroundColor: COLORS.surface50, border: `1px solid ${COLORS.surface200}` }}
+            >
+              <button
+                onClick={() => setShowAssumptions(!showAssumptions)}
+                className="w-full flex items-center justify-between px-3 py-2.5 cursor-pointer hover:opacity-90"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-medium" style={{ color: COLORS.surface600 }}>
+                    Based on YOUR investor profile
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px]" style={{ color: COLORS.teal }}>
+                    {showAssumptions ? 'Hide' : 'See assumptions'}
+                  </span>
+                  {showAssumptions ? (
+                    <ChevronUp className="w-3.5 h-3.5" style={{ color: COLORS.teal }} />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5" style={{ color: COLORS.teal }} />
+                  )}
+                </div>
+              </button>
+              
+              {showAssumptions && (
+                <div 
+                  className="px-3 pb-3 space-y-2"
+                  style={{ borderTop: `1px solid ${COLORS.surface200}` }}
+                >
+                  <div className="pt-2 grid grid-cols-2 gap-2 text-[11px]">
+                    <div className="flex justify-between">
+                      <span style={{ color: COLORS.surface500 }}>Down Payment</span>
+                      <span className="font-medium" style={{ color: COLORS.navy }}>
+                        {((defaults?.financing?.down_payment_pct ?? 0.20) * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: COLORS.surface500 }}>Interest Rate</span>
+                      <span className="font-medium" style={{ color: COLORS.navy }}>
+                        {((defaults?.financing?.interest_rate ?? 0.06) * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: COLORS.surface500 }}>Vacancy</span>
+                      <span className="font-medium" style={{ color: COLORS.navy }}>
+                        {((defaults?.operating?.vacancy_rate ?? 0.01) * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: COLORS.surface500 }}>Management</span>
+                      <span className="font-medium" style={{ color: COLORS.navy }}>
+                        {((defaults?.operating?.property_management_pct ?? 0) * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: COLORS.surface500 }}>Maintenance</span>
+                      <span className="font-medium" style={{ color: COLORS.navy }}>
+                        {((defaults?.operating?.maintenance_pct ?? 0.05) * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: COLORS.surface500 }}>Loan Term</span>
+                      <span className="font-medium" style={{ color: COLORS.navy }}>
+                        {defaults?.financing?.loan_term_years ?? 30} yr
+                      </span>
+                    </div>
+                  </div>
+                  <div className="pt-2 flex justify-between items-center">
+                    {hasUserCustomizations ? (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: `${COLORS.green}20`, color: COLORS.green }}>
+                        Customized
+                      </span>
+                    ) : (
+                      <span className="text-[10px]" style={{ color: COLORS.surface400 }}>
+                        Using defaults
+                      </span>
+                    )}
+                    <a 
+                      href="/dashboard?tab=profile" 
+                      className="flex items-center gap-1 text-[10px] font-medium hover:opacity-80"
+                      style={{ color: COLORS.teal }}
+                    >
+                      <Settings2 className="w-3 h-3" />
+                      Customize
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* Verdict Description */}

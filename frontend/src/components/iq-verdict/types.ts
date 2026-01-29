@@ -24,6 +24,9 @@ export interface IQProperty {
   yearBuilt?: number;
   lotSize?: number;
   propertyType?: 'single_family' | 'multi_family' | 'condo' | 'townhouse';
+  // Listing status and market value
+  listingStatus?: 'FOR_SALE' | 'PENDING' | 'SOLD' | 'OFF_MARKET' | 'FOR_RENT' | string;
+  zestimate?: number;  // Automated valuation model (AVM) estimate
   // Optional enriched data from API
   monthlyRent?: number;
   propertyTaxes?: number;
@@ -153,6 +156,30 @@ export interface OpportunityFactors {
   daysOnMarket: number | null; // Days property has been listed
   buyerMarket: 'cold' | 'warm' | 'hot' | null;  // Market temperature
   distressedSale: boolean;     // Is foreclosure/bank-owned
+}
+
+/**
+ * Seller Motivation Data - detailed motivation analysis
+ * From backend calculate_seller_motivation() function
+ */
+export interface SellerMotivationIndicator {
+  name: string;
+  detected: boolean;
+  score: number;
+  weight: number;
+  reason?: string;
+}
+
+export interface SellerMotivationData {
+  score: number;              // Overall score 0-100
+  grade: string;              // A+, A, B, C, D, F
+  label: string;              // "Very High", "High", "Moderate", "Low", "Very Low"
+  indicators: SellerMotivationIndicator[];
+  negotiation_leverage: 'high' | 'medium' | 'low';
+  suggested_discount_range: {
+    min: number;
+    max: number;
+  };
 }
 
 /**
