@@ -77,30 +77,77 @@ function getBarColor(value: number): string {
   return '#E11D48'
 }
 
-// National range benchmarks for horizontal bar scale
-const NATIONAL_RANGES: Record<string, { min: number; max: number; unit: string; higherIsBetter: boolean }> = {
-  capRate: { min: 3, max: 9, unit: '%', higherIsBetter: true },
-  cashOnCash: { min: 2, max: 14, unit: '%', higherIsBetter: true },
-  equityCapture: { min: 0, max: 25, unit: '%', higherIsBetter: true },
-  dscr: { min: 0.8, max: 2.0, unit: '', higherIsBetter: true },
-  cashFlowYield: { min: 2, max: 18, unit: '%', higherIsBetter: true },
-  expenseRatio: { min: 20, max: 50, unit: '%', higherIsBetter: false },
-  breakevenOcc: { min: 60, max: 100, unit: '%', higherIsBetter: false },
+// National range benchmarks for horizontal bar scale with LOW/AVG/HIGH thresholds
+const NATIONAL_RANGES: Record<string, { 
+  low: number; avg: number; high: number; 
+  unit: string; higherIsBetter: boolean;
+  // For display formatting
+  format?: (v: number) => string;
+}> = {
+  capRate: { low: 4.0, avg: 5.5, high: 7.0, unit: '%', higherIsBetter: true },
+  cashOnCash: { low: 5.0, avg: 8.5, high: 12.0, unit: '%', higherIsBetter: true },
+  equityCapture: { low: 2.0, avg: 5.0, high: 8.0, unit: '%', higherIsBetter: true },
+  dscr: { low: 1.00, avg: 1.25, high: 1.50, unit: '', higherIsBetter: true, format: (v) => v.toFixed(2) },
+  cashFlowYield: { low: 2.0, avg: 5.0, high: 8.0, unit: '%', higherIsBetter: true },
+  expenseRatio: { low: 20, avg: 35, high: 50, unit: '%', higherIsBetter: false },
+  breakevenOcc: { low: 60, avg: 80, high: 100, unit: '%', higherIsBetter: false },
 }
 
-// Calculate position on the range bar (0-100%)
-function getRangePosition(metric: string, value: number): { position: number; isGood: boolean } {
+// Calculate position on the tri-color segmented bar
+// LOW segment: 0-30%, AVG segment: 30-70%, HIGH segment: 70-100%
+function getRangePosition(metric: string, value: number): { position: number; segment: 'low' | 'avg' | 'high' } {
   const range = NATIONAL_RANGES[metric]
-  if (!range) return { position: 50, isGood: true }
+  if (!range) return { position: 50, segment: 'avg' }
   
-  // Clamp value within range for display
-  const clampedValue = Math.max(range.min, Math.min(range.max, value))
-  const position = ((clampedValue - range.min) / (range.max - range.min)) * 100
+  // Determine which segment and position within the full bar
+  // LOW segment covers values from low threshold down
+  // AVG segment covers values around avg threshold  
+  // HIGH segment covers values from high threshold up
   
-  // Determine if value is good (in the better half of the range)
-  const isGood = range.higherIsBetter ? position >= 50 : position <= 50
+  const { low, avg, high, higherIsBetter } = range
   
-  return { position, isGood }
+  let segment: 'low' | 'avg' | 'high'
+  let position: number
+  
+  if (higherIsBetter) {
+    // For higher-is-better metrics: low values are bad, high values are good
+    if (value <= low) {
+      segment = 'low'
+      position = 15 // Center of LOW segment (0-30%)
+    } else if (value >= high) {
+      segment = 'high'
+      position = 85 // Center of HIGH segment (70-100%)
+    } else if (value < avg) {
+      // Between low and avg - position in LOW or early AVG
+      const t = (value - low) / (avg - low)
+      segment = t < 0.5 ? 'low' : 'avg'
+      position = 15 + t * 35 // 15% to 50%
+    } else {
+      // Between avg and high - position in late AVG or HIGH
+      const t = (value - avg) / (high - avg)
+      segment = t > 0.5 ? 'high' : 'avg'
+      position = 50 + t * 35 // 50% to 85%
+    }
+  } else {
+    // For lower-is-better metrics: low values are good, high values are bad
+    if (value <= low) {
+      segment = 'high' // Low values = good = green
+      position = 85
+    } else if (value >= high) {
+      segment = 'low' // High values = bad = red
+      position = 15
+    } else if (value < avg) {
+      const t = (value - low) / (avg - low)
+      segment = t < 0.5 ? 'high' : 'avg'
+      position = 85 - t * 35
+    } else {
+      const t = (value - avg) / (high - avg)
+      segment = t > 0.5 ? 'low' : 'avg'
+      position = 50 - t * 35
+    }
+  }
+  
+  return { position, segment }
 }
 
 // Score color helper
@@ -108,6 +155,127 @@ function getScoreColor(score: number): string {
   if (score >= 70) return '#0891B2'
   if (score >= 40) return '#F59E0B'
   return '#E11D48'
+}
+
+// Get pill badge style based on segment
+function getPillStyle(segment: 'low' | 'avg' | 'high', higherIsBetter: boolean): { bg: string; border: string; text: string; label: string } {
+  // For higher-is-better: low=bad, high=good
+  // For lower-is-better: low=good, high=bad
+  const isGood = higherIsBetter ? segment === 'high' : segment === 'low'
+  const isBad = higherIsBetter ? segment === 'low' : segment === 'high'
+  
+  if (isGood) {
+    return { bg: '#dcfce7', border: 'rgba(22,163,74,.18)', text: '#166534', label: 'High' }
+  } else if (isBad) {
+    return { bg: '#fee2e2', border: 'rgba(220,38,38,.18)', text: '#991b1b', label: 'Low' }
+  } else {
+    return { bg: '#fff7ed', border: 'rgba(146,64,14,.18)', text: '#92400e', label: 'Avg' }
+  }
+}
+
+// Performance Benchmark Bar Component
+interface BenchmarkBarProps {
+  label: string
+  value: number
+  displayValue: string
+  range: typeof NATIONAL_RANGES[keyof typeof NATIONAL_RANGES]
+  rangePos: { position: number; segment: 'low' | 'avg' | 'high' }
+}
+
+function PerformanceBenchmarkBar({ label, value, displayValue, range, rangePos }: BenchmarkBarProps) {
+  const pillStyle = getPillStyle(rangePos.segment, range.higherIsBetter)
+  const formatValue = range.format || ((v: number) => v.toString())
+  
+  return (
+    <div className="py-2.5">
+      {/* Header row */}
+      <div className="flex items-end justify-between gap-3 mb-2">
+        <span className="text-[13px] font-bold text-[#0A1628]">{label}</span>
+        <div className="flex items-center gap-2.5">
+          <span className="text-[13px] font-extrabold text-[#0A1628] tabular-nums">{displayValue}</span>
+          <span 
+            className="text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-full leading-none"
+            style={{ 
+              background: pillStyle.bg,
+              border: `1px solid ${pillStyle.border}`,
+              color: pillStyle.text
+            }}
+          >
+            {pillStyle.label}
+          </span>
+        </div>
+      </div>
+      
+      {/* Tri-color segmented bar */}
+      <div 
+        className="relative h-[22px] rounded-full flex overflow-hidden"
+        style={{ outline: '1px solid rgba(15,23,42,.08)' }}
+      >
+        {/* LOW segment (30%) */}
+        <div 
+          className="h-full flex items-center justify-center px-1.5"
+          style={{ width: '30%', background: '#fca5a5' }}
+        >
+          <div className="flex flex-col items-center gap-px select-none pointer-events-none">
+            <span className="text-[9px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(15,23,42,.72)' }}>Low</span>
+            <span className="text-[8px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(15,23,42,.55)' }}>
+              {formatValue(range.low)}{range.unit}
+            </span>
+          </div>
+        </div>
+        
+        {/* AVG segment (40%) */}
+        <div 
+          className="h-full flex items-center justify-center px-1.5"
+          style={{ width: '40%', background: '#f7d889' }}
+        >
+          <div className="flex flex-col items-center gap-px select-none pointer-events-none">
+            <span className="text-[9px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(15,23,42,.72)' }}>Avg</span>
+            <span className="text-[8px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(15,23,42,.55)' }}>
+              {formatValue(range.avg)}{range.unit}
+            </span>
+          </div>
+        </div>
+        
+        {/* HIGH segment (30%) */}
+        <div 
+          className="h-full flex items-center justify-center px-1.5"
+          style={{ width: '30%', background: '#86efac' }}
+        >
+          <div className="flex flex-col items-center gap-px select-none pointer-events-none">
+            <span className="text-[9px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(15,23,42,.72)' }}>High</span>
+            <span className="text-[8px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(15,23,42,.55)' }}>
+              {formatValue(range.high)}{range.unit}
+            </span>
+          </div>
+        </div>
+        
+        {/* Dividers */}
+        <span 
+          className="absolute rounded-sm"
+          style={{ left: '30%', top: '3px', bottom: '3px', width: '2px', background: 'rgba(15,23,42,.14)', opacity: 0.85 }}
+        />
+        <span 
+          className="absolute rounded-sm"
+          style={{ left: '70%', top: '3px', bottom: '3px', width: '2px', background: 'rgba(15,23,42,.14)', opacity: 0.85 }}
+        />
+        
+        {/* Marker */}
+        <span 
+          className="absolute rounded-sm"
+          style={{ 
+            left: `${rangePos.position}%`, 
+            top: '-7px', 
+            bottom: '-7px', 
+            width: '3px', 
+            background: '#EF4444',
+            boxShadow: '0 0 0 2px rgba(255,255,255,.9)',
+            transform: 'translateX(-1px)'
+          }}
+        />
+      </div>
+    </div>
+  )
 }
 
 export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreenProps) {
@@ -474,70 +642,18 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
           </button>
 
           {expandedSections.returns && (
-            <div className="px-4 pb-3">
-              {returnMetrics.map((row, idx) => {
-                // Calculate average position (center of range)
-                const avgValue = (row.range.min + row.range.max) / 2
-                return (
-                  <div key={idx} className={idx < returnMetrics.length - 1 ? 'mb-4' : ''}>
-                    {/* Metric name */}
-                    <div className="mb-1">
-                      <span className="text-sm font-semibold text-[#0A1628]">{row.metric}</span>
-                    </div>
-                    
-                    {/* Bar with markers */}
-                    <div className="relative pt-5">
-                      {/* Value label above marker */}
-                      <div 
-                        className="absolute top-0 flex flex-col items-center"
-                        style={{ left: `${row.rangePos.position}%`, transform: 'translateX(-50%)' }}
-                      >
-                        <span className="text-[11px] font-bold text-[#0A1628] tabular-nums whitespace-nowrap">
-                          {row.result}
-                        </span>
-                      </div>
-                      
-                      {/* Background bar */}
-                      <div className="h-2 bg-[#E2E8F0] rounded-full relative overflow-visible">
-                        {/* Filled portion (teal) */}
-                        <div 
-                          className="absolute left-0 top-0 h-full rounded-full bg-[#0891B2]"
-                          style={{ width: `${row.rangePos.position}%` }}
-                        />
-                        
-                        {/* National Average center line */}
-                        <div 
-                          className="absolute top-[-3px] bottom-[-3px] w-0.5 bg-[#0A1628]"
-                          style={{ left: '50%', transform: 'translateX(-50%)' }}
-                        />
-                        
-                        {/* Value marker dot */}
-                        <div 
-                          className="absolute top-1/2 w-3 h-3 rounded-full bg-[#0891B2] border-2 border-white"
-                          style={{ 
-                            left: `${row.rangePos.position}%`, 
-                            transform: 'translate(-50%, -50%)',
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                          }}
-                        />
-                      </div>
-                      
-                      {/* Labels row */}
-                      <div className="flex justify-between items-center mt-1">
-                        <span className="text-[11px] font-semibold text-[#0A1628]">
-                          Low {row.range.min}{row.range.unit}
-                        </span>
-                        <span className="text-[10px] text-[#64748B]">
-                          Avg {row.key === 'dscr' ? avgValue.toFixed(2) : avgValue}{row.range.unit}
-                        </span>
-                        <span className="text-[11px] font-semibold text-[#0A1628]">
-                          High {row.range.max}{row.range.unit}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="px-4 pb-2">
+              {returnMetrics.map((row, idx) => (
+                <div key={idx} className={idx < returnMetrics.length - 1 ? 'border-b border-[rgba(15,23,42,.04)]' : ''}>
+                  <PerformanceBenchmarkBar
+                    label={row.metric}
+                    value={row.value}
+                    displayValue={row.result}
+                    range={row.range}
+                    rangePos={row.rangePos}
+                  />
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -569,70 +685,18 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
           </button>
 
           {expandedSections.cashFlow && (
-            <div className="px-4 pb-3">
-              {cashFlowMetrics.map((row, idx) => {
-                // Calculate average position (center of range)
-                const avgValue = (row.range.min + row.range.max) / 2
-                return (
-                  <div key={idx} className={idx < cashFlowMetrics.length - 1 ? 'mb-4' : ''}>
-                    {/* Metric name */}
-                    <div className="mb-1">
-                      <span className="text-sm font-semibold text-[#0A1628]">{row.metric}</span>
-                    </div>
-                    
-                    {/* Bar with markers */}
-                    <div className="relative pt-5">
-                      {/* Value label above marker */}
-                      <div 
-                        className="absolute top-0 flex flex-col items-center"
-                        style={{ left: `${row.rangePos.position}%`, transform: 'translateX(-50%)' }}
-                      >
-                        <span className="text-[11px] font-bold text-[#0A1628] tabular-nums whitespace-nowrap">
-                          {row.result}
-                        </span>
-                      </div>
-                      
-                      {/* Background bar */}
-                      <div className="h-2 bg-[#E2E8F0] rounded-full relative overflow-visible">
-                        {/* Filled portion (teal) */}
-                        <div 
-                          className="absolute left-0 top-0 h-full rounded-full bg-[#0891B2]"
-                          style={{ width: `${row.rangePos.position}%` }}
-                        />
-                        
-                        {/* National Average center line */}
-                        <div 
-                          className="absolute top-[-3px] bottom-[-3px] w-0.5 bg-[#0A1628]"
-                          style={{ left: '50%', transform: 'translateX(-50%)' }}
-                        />
-                        
-                        {/* Value marker dot */}
-                        <div 
-                          className="absolute top-1/2 w-3 h-3 rounded-full bg-[#0891B2] border-2 border-white"
-                          style={{ 
-                            left: `${row.rangePos.position}%`, 
-                            transform: 'translate(-50%, -50%)',
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                          }}
-                        />
-                      </div>
-                      
-                      {/* Labels row */}
-                      <div className="flex justify-between items-center mt-1">
-                        <span className="text-[11px] font-semibold text-[#0A1628]">
-                          Low {row.range.min}{row.range.unit}
-                        </span>
-                        <span className="text-[10px] text-[#64748B]">
-                          Avg {row.key === 'dscr' ? avgValue.toFixed(2) : avgValue}{row.range.unit}
-                        </span>
-                        <span className="text-[11px] font-semibold text-[#0A1628]">
-                          High {row.range.max}{row.range.unit}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="px-4 pb-2">
+              {cashFlowMetrics.map((row, idx) => (
+                <div key={idx} className={idx < cashFlowMetrics.length - 1 ? 'border-b border-[rgba(15,23,42,.04)]' : ''}>
+                  <PerformanceBenchmarkBar
+                    label={row.metric}
+                    value={row.value}
+                    displayValue={row.result}
+                    range={row.range}
+                    rangePos={row.rangePos}
+                  />
+                </div>
+              ))}
             </div>
           )}
         </div>
