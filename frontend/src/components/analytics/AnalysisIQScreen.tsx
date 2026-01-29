@@ -182,8 +182,7 @@ interface BenchmarkBarProps {
   rangePos: { position: number; segment: 'low' | 'avg' | 'high' }
 }
 
-function PerformanceBenchmarkBar({ label, value, displayValue, range, rangePos }: BenchmarkBarProps) {
-  const pillStyle = getPillStyle(rangePos.segment, range.higherIsBetter)
+function PerformanceBenchmarkBar({ label, displayValue, range, rangePos }: BenchmarkBarProps) {
   const formatValue = range.format || ((v: number) => v.toString())
   
   // InvestIQ Style Guide colors
@@ -206,19 +205,7 @@ function PerformanceBenchmarkBar({ label, value, displayValue, range, rangePos }
       {/* Header row */}
       <div className="flex items-end justify-between gap-3 mb-2">
         <span className="text-[13px] font-bold text-[#0A1628]">{label}</span>
-        <div className="flex items-center gap-2.5">
-          <span className="text-[13px] font-extrabold text-[#0A1628] tabular-nums">{displayValue}</span>
-          <span 
-            className="text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-full leading-none"
-            style={{ 
-              background: pillStyle.bg,
-              border: `1px solid ${pillStyle.border}`,
-              color: pillStyle.text
-            }}
-          >
-            {pillStyle.label}
-          </span>
-        </div>
+        <span className="text-[13px] font-extrabold text-[#0A1628] tabular-nums">{displayValue}</span>
       </div>
       
       {/* Tri-color segmented bar */}
