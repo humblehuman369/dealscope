@@ -58,14 +58,14 @@ const COLORS = {
 // =============================================================================
 
 // Get verdict label based on score tier
+// Score represents probability of achieving the required Deal Gap
 const getVerdictLabel = (score: number, city?: string): { label: string; sublabel: string } => {
-  const marketName = city || 'your market'
-  if (score >= 90) return { label: 'Exceptional', sublabel: `Top 5% of ${marketName} deals` }
-  if (score >= 80) return { label: 'Excellent', sublabel: `Top 15% of ${marketName} deals` }
-  if (score >= 70) return { label: 'Good', sublabel: `Above average in ${marketName}` }
-  if (score >= 60) return { label: 'Fair', sublabel: `Average ${marketName} deal` }
-  if (score >= 50) return { label: 'Marginal', sublabel: `Below ${marketName} average` }
-  return { label: 'Poor', sublabel: 'Proceed with caution' }
+  if (score >= 90) return { label: 'Strong Buy', sublabel: 'Deal Gap easily achievable' }
+  if (score >= 80) return { label: 'Good Buy', sublabel: 'Deal Gap likely achievable' }
+  if (score >= 65) return { label: 'Moderate', sublabel: 'Negotiation required' }
+  if (score >= 50) return { label: 'Stretch', sublabel: 'Aggressive discount needed' }
+  if (score >= 30) return { label: 'Unlikely', sublabel: 'Deal Gap probably too large' }
+  return { label: 'Pass', sublabel: 'Discount unrealistic' }
 }
 
 // Price point explanations - now includes YOUR terms messaging
@@ -648,16 +648,22 @@ export function IQVerdictScreen({
                           ✓ Distressed sale
                         </span>
                       )}
-                      {opportunityFactors.buyerMarket === 'cold' && (
-                        <span 
-                          className="text-[10px] px-2 py-1 rounded-full"
-                          style={{ backgroundColor: `${COLORS.teal}15`, color: COLORS.teal }}
-                        >
-                          ✓ Buyer's market
-                        </span>
-                      )}
                     </div>
                   )}
+                  
+                  {/* Max Achievable Discount - Based on Motivation */}
+                  <div 
+                    className="rounded-lg p-2.5 mb-3 flex items-center justify-between"
+                    style={{ backgroundColor: COLORS.surface50 }}
+                  >
+                    <span className="text-[11px]" style={{ color: COLORS.surface500 }}>
+                      Max achievable discount
+                    </span>
+                    <span className="text-[12px] font-semibold" style={{ color: COLORS.navy }}>
+                      {/* Calculate max based on motivation: motivation/100 * 25 */}
+                      Up to {Math.round((opportunityFactors.motivation / 100) * 25)}%
+                    </span>
+                  </div>
                   
                   {/* Suggested Opening Offer */}
                   <div 

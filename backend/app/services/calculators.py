@@ -1169,14 +1169,17 @@ def calculate_deal_opportunity_score(
     is_auction: bool = False,
     price_reductions: int = 0,
     days_on_market: Optional[int] = None,
+    market_temperature: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
-    Calculate comprehensive Deal Opportunity Score.
+    Calculate IQ Verdict Score (Deal Opportunity Score).
     
-    Weights:
-    - Deal Gap: 50% (primary factor - how much discount needed)
-    - Availability: 30% (seller motivation and listing status)
-    - Days on Market: 20% (negotiation leverage context)
+    The score answers: "How likely can you negotiate the required discount?"
+    
+    Formula:
+    1. Deal Gap % = (List Price - Breakeven) / List Price (required discount)
+    2. Motivation = Seller signals + Market condition modifier
+    3. IQ Score = Probability of achieving Deal Gap given Motivation
     
     Args:
         breakeven_price: LTR breakeven price (from market rent less costs)
@@ -1189,21 +1192,21 @@ def calculate_deal_opportunity_score(
         is_auction: Whether property is an auction listing
         price_reductions: Number of price reductions
         days_on_market: Days the property has been listed
+        market_temperature: Market condition (hot, warm, cold) from AXESSO
     
     Returns:
-        Dict with score, grade, label, color, and factor breakdowns
+        Dict with score, grade, label, color, deal_gap, motivation details
     """
-    # Weights for composite score
-    WEIGHTS = {
-        "deal_gap": 0.50,
-        "availability": 0.30,
-        "days_on_market": 0.20
-    }
+    # ========================================
+    # STEP 1: Calculate Deal Gap %
+    # ========================================
+    deal_gap_info = calculate_deal_gap_score(breakeven_price, list_price)
+    deal_gap_pct = deal_gap_info["gap_percent"]  # This is the required discount %
     
-    # Calculate Deal Gap score (50% weight)
-    deal_gap = calculate_deal_gap_score(breakeven_price, list_price)
-    
-    # Calculate Availability score (30% weight)
+    # ========================================
+    # STEP 2: Calculate Motivation Score
+    # ========================================
+    # Get base motivation from availability/seller signals
     availability = get_availability_ranking(
         listing_status=listing_status,
         seller_type=seller_type,
@@ -1212,61 +1215,146 @@ def calculate_deal_opportunity_score(
         is_fsbo=is_fsbo,
         price_reductions=price_reductions,
     )
+    base_motivation = availability["score"]
     
-    # Calculate Days on Market score (20% weight)
-    dom_score = calculate_dom_score(
-        days_on_market=days_on_market,
-        deal_gap_percent=deal_gap["gap_percent"]
-    )
+    # Add DOM bonus (longer = more motivated)
+    dom_bonus = 0
+    if days_on_market is not None:
+        if days_on_market >= 180:
+            dom_bonus = 20
+        elif days_on_market >= 120:
+            dom_bonus = 15
+        elif days_on_market >= 90:
+            dom_bonus = 10
+        elif days_on_market >= 60:
+            dom_bonus = 5
     
-    # Calculate weighted composite score
-    composite_score = round(
-        (deal_gap["score"] * WEIGHTS["deal_gap"]) +
-        (availability["score"] * WEIGHTS["availability"]) +
-        (dom_score["score"] * WEIGHTS["days_on_market"])
-    )
+    # Apply market temperature modifier
+    # Cold (buyer's market) = sellers more motivated = +15
+    # Hot (seller's market) = sellers less motivated = -15
+    market_modifier = 0
+    if market_temperature:
+        temp_lower = market_temperature.lower()
+        if temp_lower == "cold":
+            market_modifier = 15
+        elif temp_lower == "hot":
+            market_modifier = -15
     
-    # Determine grade and label based on composite score
-    if composite_score >= 85:
+    motivation_score = min(100, max(0, base_motivation + dom_bonus + market_modifier))
+    
+    # ========================================
+    # STEP 3: Map Motivation to Max Achievable Discount
+    # ========================================
+    # Higher motivation = larger discount possible
+    # Formula: max_achievable = (motivation / 100) * 0.25 (0-25% range)
+    max_achievable_discount = (motivation_score / 100) * 0.25
+    
+    # ========================================
+    # STEP 4: Calculate IQ Verdict Score (Probability)
+    # ========================================
+    # Score reflects how achievable the required Deal Gap is
+    deal_gap_decimal = deal_gap_pct / 100  # Convert to decimal
+    
+    if deal_gap_decimal <= 0:
+        # No discount needed - already a good deal at asking price
+        iq_score = 100
+    elif max_achievable_discount <= 0:
+        # No negotiation power
+        iq_score = max(0, 30 - deal_gap_pct * 2)
+    elif deal_gap_decimal <= max_achievable_discount * 0.6:
+        # Deal gap within comfortable range (90-100)
+        ratio = deal_gap_decimal / (max_achievable_discount * 0.6)
+        iq_score = round(90 + (1 - ratio) * 10)
+    elif deal_gap_decimal <= max_achievable_discount:
+        # Deal gap within achievable range (70-90)
+        ratio = (deal_gap_decimal - max_achievable_discount * 0.6) / (max_achievable_discount * 0.4)
+        iq_score = round(70 + (1 - ratio) * 20)
+    elif deal_gap_decimal <= max_achievable_discount * 1.5:
+        # Deal gap is a stretch but possible (40-70)
+        ratio = (deal_gap_decimal - max_achievable_discount) / (max_achievable_discount * 0.5)
+        iq_score = round(40 + (1 - ratio) * 30)
+    else:
+        # Deal gap is unlikely (0-40)
+        excess = deal_gap_decimal - max_achievable_discount * 1.5
+        iq_score = max(0, round(40 - excess * 200))  # Steep drop-off
+    
+    # Ensure score is in valid range
+    iq_score = min(100, max(0, iq_score))
+    
+    # ========================================
+    # STEP 5: Determine Grade and Label
+    # ========================================
+    if iq_score >= 90:
         grade = "A+"
-        label = "Strong Opportunity"
+        label = "Strong Buy"
         color = "#22c55e"  # green-500
-    elif composite_score >= 70:
+    elif iq_score >= 80:
         grade = "A"
-        label = "Great Opportunity"
+        label = "Good Buy"
         color = "#22c55e"  # green-500
-    elif composite_score >= 55:
+    elif iq_score >= 65:
         grade = "B"
-        label = "Moderate Opportunity"
+        label = "Moderate"
         color = "#84cc16"  # lime-500
-    elif composite_score >= 40:
+    elif iq_score >= 50:
         grade = "C"
-        label = "Potential Opportunity"
+        label = "Stretch"
         color = "#f97316"  # orange-500
-    elif composite_score >= 25:
+    elif iq_score >= 30:
         grade = "D"
-        label = "Weak Opportunity"
+        label = "Unlikely"
         color = "#f97316"  # orange-500
     else:
         grade = "F"
-        label = "Poor Opportunity"
+        label = "Pass"
         color = "#ef4444"  # red-500
     
+    # Motivation label
+    if motivation_score >= 80:
+        motivation_label = "Very High"
+    elif motivation_score >= 60:
+        motivation_label = "High"
+    elif motivation_score >= 40:
+        motivation_label = "Medium"
+    elif motivation_score >= 20:
+        motivation_label = "Low"
+    else:
+        motivation_label = "Very Low"
+    
     return {
-        "score": composite_score,
+        "score": iq_score,
         "grade": grade,
         "label": label,
         "color": color,
-        "factors": {
-            "deal_gap": deal_gap,
-            "availability": availability,
-            "days_on_market": dom_score,
-            "weights": WEIGHTS
-        },
-        # Legacy compatibility
-        "discount_percent": deal_gap["gap_percent"],
+        # Deal Gap details (the required discount)
+        "deal_gap_percent": deal_gap_pct,
+        "deal_gap_amount": deal_gap_info["gap_amount"],
         "breakeven_price": breakeven_price,
-        "list_price": list_price
+        "list_price": list_price,
+        # Motivation details
+        "motivation": {
+            "score": motivation_score,
+            "label": motivation_label,
+            "base_score": base_motivation,
+            "dom_bonus": dom_bonus,
+            "market_modifier": market_modifier,
+            "market_temperature": market_temperature,
+            "availability_status": availability["status"],
+            "availability_label": availability["label"],
+        },
+        # Achievability
+        "max_achievable_discount": round(max_achievable_discount * 100, 1),  # as %
+        "probability_interpretation": label,
+        # Legacy compatibility
+        "factors": {
+            "deal_gap": deal_gap_info,
+            "availability": availability,
+            "days_on_market": {
+                "days": days_on_market,
+                "bonus": dom_bonus
+            },
+        },
+        "discount_percent": deal_gap_pct,
     }
 
 
@@ -1693,9 +1781,26 @@ def calculate_seller_motivation(
     if detected_indicators:
         total_weight = sum(i["weight"] for i in detected_indicators)
         weighted_sum = sum(i["score"] * i["weight"] for i in detected_indicators)
-        composite_score = round(weighted_sum / total_weight) if total_weight > 0 else 0
+        base_score = round(weighted_sum / total_weight) if total_weight > 0 else 0
     else:
-        composite_score = 25  # Default low score if no indicators detected
+        base_score = 25  # Default low score if no indicators detected
+    
+    # ========================================
+    # APPLY MARKET TEMPERATURE MODIFIER
+    # ========================================
+    # Cold market (buyer's market) = sellers more motivated = +15
+    # Warm market (balanced) = no adjustment = +0
+    # Hot market (seller's market) = sellers less motivated = -15
+    market_modifier = 0
+    if market_temperature:
+        temp_lower = market_temperature.lower()
+        if temp_lower == "cold":
+            market_modifier = 15
+        elif temp_lower == "hot":
+            market_modifier = -15
+        # warm = 0 (no change)
+    
+    composite_score = min(100, max(0, base_score + market_modifier))
     
     # Count high-signal indicators
     high_signals = sum(1 for i in detected_indicators if i["signal_strength"] == "high")
@@ -1726,19 +1831,28 @@ def calculate_seller_motivation(
         label = "Minimal Motivation"
         color = "#ef4444"
     
-    # Determine negotiation leverage
-    if composite_score >= 70:
+    # Determine negotiation leverage and max achievable discount
+    # Based on motivation score, map to realistic discount ranges
+    if composite_score >= 85:
         leverage = "high"
-        discount_range = "10-20%"
+        discount_range = "15-25%"
+        max_achievable_discount = 0.25
+    elif composite_score >= 70:
+        leverage = "high"
+        discount_range = "10-15%"
+        max_achievable_discount = 0.18
     elif composite_score >= 50:
         leverage = "medium"
         discount_range = "5-10%"
+        max_achievable_discount = 0.12
     elif composite_score >= 30:
         leverage = "low"
         discount_range = "2-5%"
+        max_achievable_discount = 0.07
     else:
         leverage = "minimal"
         discount_range = "0-3%"
+        max_achievable_discount = 0.04
     
     # Extract key leverage points (top 3 detected indicators by score)
     sorted_detected = sorted(detected_indicators, key=lambda x: x["score"], reverse=True)
@@ -1751,6 +1865,8 @@ def calculate_seller_motivation(
     
     return {
         "score": composite_score,
+        "base_score": base_score,
+        "market_modifier": market_modifier,
         "grade": grade,
         "label": label,
         "color": color,
@@ -1759,6 +1875,7 @@ def calculate_seller_motivation(
         "total_signals_detected": len(detected_indicators),
         "negotiation_leverage": leverage,
         "recommended_discount_range": discount_range,
+        "max_achievable_discount": max_achievable_discount,
         "key_leverage_points": key_leverage_points,
         "dom_vs_market_avg": (days_on_market / market_median_dom) if days_on_market and market_median_dom else None,
         "market_temperature": market_temperature,

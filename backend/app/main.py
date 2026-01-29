@@ -1280,18 +1280,35 @@ class DealScoreInput(BaseModel):
     is_auction: Optional[bool] = Field(False, description="Auction listing")
     price_reductions: Optional[int] = Field(0, description="Number of price reductions")
     days_on_market: Optional[int] = Field(None, description="Days on market")
+    market_temperature: Optional[str] = Field(None, description="Market condition (hot, warm, cold) from AXESSO")
+
+
+class DealScoreMotivation(BaseModel):
+    """Motivation score breakdown."""
+    score: int = Field(..., description="Composite motivation score (0-100)")
+    label: str = Field(..., description="Motivation label (Very High, High, Medium, Low, Very Low)")
+    base_score: int = Field(..., description="Base score from availability/seller signals")
+    dom_bonus: int = Field(0, description="Bonus from days on market")
+    market_modifier: int = Field(0, description="Modifier from market temperature (+15 cold, -15 hot)")
+    market_temperature: Optional[str] = Field(None, description="Market condition (hot, warm, cold)")
+    availability_status: str = Field(..., description="Availability category")
+    availability_label: str = Field(..., description="Human-readable availability label")
 
 
 class DealScoreFactors(BaseModel):
     """Breakdown of Deal Opportunity Score factors."""
-    deal_gap_score: int = Field(..., description="Score based on discount needed (0-100)")
-    deal_gap_percent: float = Field(..., description="Discount % needed from list to breakeven")
-    availability_score: int = Field(..., description="Score based on listing status/seller motivation (0-100)")
-    availability_status: str = Field(..., description="Availability category (WITHDRAWN, FOR_SALE, etc.)")
-    availability_label: str = Field(..., description="Human-readable availability label")
-    availability_motivation: str = Field(..., description="Seller motivation level (high, medium, low)")
-    dom_score: int = Field(..., description="Score based on days on market (0-100)")
-    dom_leverage: str = Field(..., description="Negotiation leverage (high, medium, low, unknown)")
+    deal_gap_percent: float = Field(..., description="Required discount % from list to breakeven")
+    deal_gap_amount: float = Field(0, description="Dollar amount of discount needed")
+    max_achievable_discount: float = Field(..., description="Max realistic discount given motivation (%)")
+    motivation: DealScoreMotivation = Field(..., description="Motivation score breakdown")
+    # Legacy fields for backward compatibility
+    deal_gap_score: Optional[int] = Field(None, description="Legacy: Score based on discount needed")
+    availability_score: Optional[int] = Field(None, description="Legacy: Score based on availability")
+    availability_status: Optional[str] = Field(None, description="Legacy: Availability category")
+    availability_label: Optional[str] = Field(None, description="Legacy: Availability label")
+    availability_motivation: Optional[str] = Field(None, description="Legacy: Motivation level")
+    dom_score: Optional[int] = Field(None, description="Legacy: DOM score")
+    dom_leverage: Optional[str] = Field(None, description="Legacy: Negotiation leverage")
     days_on_market: Optional[int] = Field(None, description="Days on market if available")
 
 
@@ -1315,27 +1332,24 @@ class DealScoreResponse(BaseModel):
 @app.post("/api/v1/worksheet/deal-score", response_model=DealScoreResponse)
 async def calculate_deal_score(input_data: DealScoreInput):
     """
-    Calculate Deal Score for worksheet pages.
+    Calculate IQ Verdict Score (Deal Opportunity Score).
     
-    This endpoint provides a centralized Deal Score calculation that all
-    worksheet pages should use to ensure consistency.
+    The score answers: "How likely can you negotiate the required discount?"
     
-    The Deal Score is based on the discount from list price to breakeven:
-    - Breakeven = price where cash flow = $0
-    - Discount % = (list_price - breakeven) / list_price × 100
-    
-    Enhanced Deal Opportunity Score (when listing context provided):
-    - Deal Gap (50%): Discount needed from list to breakeven
-    - Availability (30%): Listing status and seller motivation
-    - Days on Market (20%): Negotiation leverage context
+    Formula:
+    1. Deal Gap % = (List Price - Breakeven) / List Price (required discount)
+    2. Motivation = Seller signals + Market condition modifier
+       - Seller signals: Foreclosure, Bank-Owned, FSBO, Price Cuts, DOM
+       - Market modifier: Cold (+15), Warm (+0), Hot (-15)
+    3. IQ Score = Probability of achieving Deal Gap given Motivation
     
     Scoring thresholds:
-    - 85-100: Strong Opportunity (A+)
-    - 70-84: Great Opportunity (A)
-    - 55-69: Moderate Opportunity (B)
-    - 40-54: Potential Opportunity (C)
-    - 25-39: Weak Opportunity (D)
-    - 0-24: Poor Opportunity (F)
+    - 90-100: Strong Buy (A+) - Deal Gap easily achievable
+    - 80-89: Good Buy (A) - Deal Gap likely achievable
+    - 65-79: Moderate (B) - Deal Gap possible with negotiation
+    - 50-64: Stretch (C) - Deal Gap aggressive, needs motivation
+    - 30-49: Unlikely (D) - Deal Gap probably too large
+    - 0-29: Pass (F) - Deal Gap unrealistic given motivation
     """
     from app.services.calculators import calculate_deal_opportunity_score
     
@@ -1375,7 +1389,8 @@ async def calculate_deal_score(input_data: DealScoreInput):
             input_data.is_bank_owned or
             input_data.is_fsbo or
             input_data.days_on_market is not None or
-            input_data.price_reductions > 0
+            input_data.price_reductions > 0 or
+            input_data.market_temperature is not None
         )
         
         if has_listing_context:
@@ -1391,29 +1406,47 @@ async def calculate_deal_score(input_data: DealScoreInput):
                 is_auction=input_data.is_auction or False,
                 price_reductions=input_data.price_reductions or 0,
                 days_on_market=input_data.days_on_market,
+                market_temperature=input_data.market_temperature,
             )
             
             deal_score = enhanced_result["score"]
-            discount_pct = enhanced_result["discount_percent"]
+            discount_pct = enhanced_result["deal_gap_percent"]
             deal_verdict = enhanced_result["label"]
             grade = enhanced_result["grade"]
             color = enhanced_result["color"]
             
-            # Build factors response
+            # Build motivation response
+            motivation_data = enhanced_result["motivation"]
+            motivation = DealScoreMotivation(
+                score=motivation_data["score"],
+                label=motivation_data["label"],
+                base_score=motivation_data["base_score"],
+                dom_bonus=motivation_data["dom_bonus"],
+                market_modifier=motivation_data["market_modifier"],
+                market_temperature=motivation_data["market_temperature"],
+                availability_status=motivation_data["availability_status"],
+                availability_label=motivation_data["availability_label"],
+            )
+            
+            # Build factors response with new structure
             factors = DealScoreFactors(
+                deal_gap_percent=enhanced_result["deal_gap_percent"],
+                deal_gap_amount=enhanced_result["deal_gap_amount"],
+                max_achievable_discount=enhanced_result["max_achievable_discount"],
+                motivation=motivation,
+                # Legacy fields for backward compatibility
                 deal_gap_score=enhanced_result["factors"]["deal_gap"]["score"],
-                deal_gap_percent=enhanced_result["factors"]["deal_gap"]["gap_percent"],
                 availability_score=enhanced_result["factors"]["availability"]["score"],
                 availability_status=enhanced_result["factors"]["availability"]["status"],
                 availability_label=enhanced_result["factors"]["availability"]["label"],
-                availability_motivation=enhanced_result["factors"]["availability"]["motivation"],
-                dom_score=enhanced_result["factors"]["days_on_market"]["score"],
-                dom_leverage=enhanced_result["factors"]["days_on_market"]["leverage"],
-                days_on_market=enhanced_result["factors"]["days_on_market"]["days"],
+                availability_motivation=enhanced_result["factors"]["availability"].get("motivation", "medium"),
+                dom_score=enhanced_result["factors"]["days_on_market"].get("bonus", 0),
+                dom_leverage="medium",
+                days_on_market=enhanced_result["factors"]["days_on_market"].get("days"),
             )
             
-            logger.info(f"Enhanced Deal Score: list=${list_price:,.0f}, breakeven=${breakeven:,.0f}, "
-                       f"score={deal_score}, grade={grade}, availability={factors.availability_status}")
+            logger.info(f"IQ Verdict Score: list=${list_price:,.0f}, breakeven=${breakeven:,.0f}, "
+                       f"deal_gap={discount_pct:.1f}%, motivation={motivation.score}, score={deal_score}, grade={grade}")
         else:
             # Use legacy Deal Score (Deal Gap only)
             deal_score, discount_pct, deal_verdict = _calculate_opportunity_score(breakeven, list_price)
