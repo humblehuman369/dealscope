@@ -525,9 +525,9 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
       />
 
       {/* Main Content */}
-      <main className="p-4">
+      <main>
         {/* Profit Quality Card */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 mb-3 shadow-sm">
+        <div className="bg-white p-4 border-b border-[#CBD5E1]">
           <p className="text-[11px] font-bold text-[#E11D48] tracking-widest mb-4">PROFIT RATING</p>
           
           <div className="flex gap-6 items-start">
@@ -617,7 +617,7 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
         </div>
 
         {/* Return Metrics Card */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] mb-3 shadow-sm overflow-hidden">
+        <div className="bg-white border-b border-[#CBD5E1] overflow-hidden">
           <button 
             className="w-full flex items-center justify-between p-4 bg-transparent border-none cursor-pointer text-left"
             onClick={() => toggleSection('returns')}
@@ -660,7 +660,7 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
         </div>
 
         {/* Cash Flow & Risk Card */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] mb-3 shadow-sm overflow-hidden">
+        <div className="bg-white border-b border-[#CBD5E1] overflow-hidden">
           <button 
             className="w-full flex items-center justify-between p-4 bg-transparent border-none cursor-pointer text-left"
             onClick={() => toggleSection('cashFlow')}
@@ -703,7 +703,7 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
         </div>
 
         {/* At-a-Glance Card */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] mb-3 shadow-sm overflow-hidden">
+        <div className="bg-white border-b border-[#CBD5E1] overflow-hidden">
           <button 
             className="w-full flex items-center justify-between p-4 bg-transparent border-none cursor-pointer text-left"
             onClick={() => toggleSection('atGlance')}
@@ -762,25 +762,27 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
         </div>
 
         {/* CTA Button */}
-        <button 
-          className="w-full bg-[#0891B2] text-white text-base font-semibold py-4 px-6 rounded-xl border-none cursor-pointer flex items-center justify-center gap-2 mb-3 shadow-sm hover:bg-[#0E7490] transition-colors"
-          onClick={handleContinue}
-        >
-          <span>Continue to Deal Maker</span>
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-          </svg>
-        </button>
+        <div className="p-4 bg-white border-b border-[#CBD5E1]">
+          <button 
+            className="w-full bg-[#0891B2] text-white text-base font-semibold py-4 px-6 rounded-xl border-none cursor-pointer flex items-center justify-center gap-2 hover:bg-[#0E7490] transition-colors"
+            onClick={handleContinue}
+          >
+            <span>Continue to Deal Maker</span>
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
+          </button>
+        </div>
 
         {/* Export Link */}
-        <button className="w-full bg-transparent border-none flex items-center justify-center gap-2 text-[#64748B] text-sm py-3 cursor-pointer hover:text-[#475569]">
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-          </svg>
-          <span>Export PDF Report</span>
-        </button>
-
-        <div className="h-6" />
+        <div className="p-4 bg-white">
+          <button className="w-full bg-transparent border-none flex items-center justify-center gap-2 text-[#64748B] text-sm py-3 cursor-pointer hover:text-[#475569]">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            <span>Export PDF Report</span>
+          </button>
+        </div>
       </main>
 
       {/* CSS for tabular-nums */}

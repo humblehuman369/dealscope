@@ -309,15 +309,15 @@ export function RentalCompsScreen({
       />
 
       {/* Main Content */}
-      <main className="p-4 pb-[100px]">
+      <main className="pb-[100px]">
         {/* Section Header */}
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between items-start p-4 bg-white border-b border-[#CBD5E1]">
           <div>
             <h2 className="text-lg font-bold text-[#0A1628]">Rental Comps & Rent Estimate</h2>
             <p className="text-xs text-[#64748B] mt-0.5">Comparable rentals for {property.address}</p>
           </div>
           <button 
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#64748B] text-[13px] font-medium hover:bg-[#F8FAFC] transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[#64748B] text-[13px] font-medium hover:bg-[#F8FAFC] hover:border-[#CBD5E1] transition-colors"
             onClick={handleRefresh}
           >
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -328,7 +328,7 @@ export function RentalCompsScreen({
         </div>
 
         {/* Rent Estimate Card */}
-        <div className="bg-white rounded-xl p-4 mb-4 border border-[#F1F5F9] shadow-sm">
+        <div className="bg-white p-4 border-b border-[#CBD5E1]">
           <div className="flex items-start gap-3">
             {/* Icon */}
             <div className="w-12 h-12 bg-gradient-to-br from-[#E0F7FA] to-[#B2EBF2] rounded-xl flex items-center justify-center flex-shrink-0">
@@ -404,7 +404,7 @@ export function RentalCompsScreen({
         </div>
 
         {/* Selection Bar */}
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex justify-between items-center px-4 py-3 bg-white border-b border-[#CBD5E1]">
           <div className="text-[13px] text-[#64748B]">
             <strong className="text-[#0A1628]">{selectedComps.length}</strong> of <strong className="text-[#0A1628]">{comps.length}</strong> rentals selected
           </div>
@@ -422,13 +422,13 @@ export function RentalCompsScreen({
         {comps.map((comp) => (
           <div
             key={comp.id}
-            className={`bg-white rounded-xl mb-2.5 border-2 overflow-hidden shadow-sm transition-all ${
-              selectedComps.includes(comp.id) ? 'border-[#0891B2]' : 'border-transparent'
+            className={`bg-white border-b border-[#CBD5E1] border-l-[3px] overflow-hidden transition-all ${
+              selectedComps.includes(comp.id) ? 'border-l-[#0891B2] bg-[#F0FDFA]' : 'border-l-transparent'
             }`}
           >
-            <div className="flex p-3 gap-3">
+            <div className="flex p-4 gap-3">
               {/* Image Container */}
-              <div className="relative w-20 h-[60px] flex-shrink-0">
+              <div className="relative w-[120px] h-[90px] flex-shrink-0">
                 <img 
                   className="w-full h-full object-cover rounded-lg" 
                   src={comp.image || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=200&h=150&fit=crop'} 
