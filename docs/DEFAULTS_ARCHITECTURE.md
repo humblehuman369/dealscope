@@ -426,6 +426,127 @@ function Component({ zipCode }) {
 }
 ```
 
+## IQ Verdict Scoring
+
+### Core Value Proposition
+
+> Every property can be a good investment at the right price.
+> 
+> InvestIQ answers two critical questions:
+> 1. **What price makes this deal work?** (Breakeven) - based on YOUR financing terms
+> 2. **How likely can you get that price?** (Deal Gap + Motivation) - based on market signals
+
+### Price Points
+
+| Price | Calculation | Purpose |
+|-------|-------------|---------|
+| **Breakeven** | Max price for $0 monthly cash flow | Maximum you can pay |
+| **Target Buy** | Breakeven × (1 - buy_discount_pct) | Recommended purchase price |
+| **Wholesale** | Breakeven × 0.70 | Assignment deal price |
+
+### Deal Gap
+
+The Deal Gap measures the distance between asking price and your breakeven:
+
+```
+Deal Gap = (Asking Price - Breakeven) / Asking Price × 100%
+```
+
+- **Negative gap**: Deal is profitable at asking price
+- **Positive gap**: Need to negotiate a discount
+- **0%**: Break-even at asking price
+
+### Off-Market Properties
+
+When there's no listing price:
+- Use AVM (Zestimate) as "Estimated Market Value"
+- Display: "No asking price - using market estimate"
+- Allow user to input expected price in Deal Maker
+
+### Seller Motivation Score
+
+The `calculate_seller_motivation()` function analyzes:
+
+| Indicator | Weight | Description |
+|-----------|--------|-------------|
+| Days on Market | 3.0 | Time on market vs. market average |
+| Price Reductions | 3.0 | Number and percentage of cuts |
+| Expired/Withdrawn | 3.0 | Previously failed to sell |
+| Foreclosure/Distress | 3.0 | Pre-foreclosure, REO, auction |
+| Absentee Owner | 2.5 | Non-owner occupied |
+| Out-of-State Owner | 2.5 | Owner in different state |
+| Likely Vacant | 2.0 | Appears unoccupied |
+| Poor Condition | 2.0 | Condition issues mentioned |
+| Possibly Inherited | 2.0 | Signs of inheritance sale |
+| FSBO | 1.0 | For sale by owner |
+| Owner-Occupied | 1.0 | Counter-indicator |
+
+### Display Guidelines
+
+1. Always show user's assumptions: "Based on YOUR terms (20% down, 7% rate)"
+2. Offer "See how we calculated this" expandable section
+3. Integrate Seller Motivation into Deal Gap display (not separate)
+4. Show suggested negotiation range based on motivation score
+
+---
+
+## Deal Maker Integration
+
+### State Management
+
+Deal Maker MUST use `worksheetStore` (Zustand), not isolated local state:
+
+```typescript
+// ❌ WRONG: Isolated state
+const [state, setState] = useState<DealMakerState>(initial)
+
+// ✅ CORRECT: Shared store
+const { assumptions, updateAssumption } = useWorksheetStore()
+```
+
+### Field Mapping
+
+| Deal Maker | worksheetStore |
+|------------|---------------|
+| buyPrice | purchasePrice |
+| downPaymentPercent | downPaymentPct |
+| closingCostsPercent | closingCostsPct |
+| interestRate | interestRate |
+| loanTermYears | loanTermYears |
+| rehabBudget | rehabCosts |
+| arv | arv |
+| monthlyRent | monthlyRent |
+| vacancyRate | vacancyRate |
+| maintenanceRate | maintenancePct |
+| managementRate | managementPct |
+| annualPropertyTax | propertyTaxes |
+| annualInsurance | insurance |
+| monthlyHoa | hoaFees |
+
+### Recalculation Flow
+
+```
+User adjusts slider
+        ↓
+worksheetStore.updateAssumption()
+        ↓
+Zustand triggers re-render
+        ↓
+recalculateProjections() - client-side
+recalculateWorksheetMetrics() - API call (debounced)
+        ↓
+All subscribed components update
+```
+
+### "See Results" Button
+
+Deal Maker should have a persistent way to see results:
+- Floating or fixed position
+- Shows: Deal Score, Cash Flow, CoC (live updating)
+- Click navigates to full verdict page
+
+---
+
 ## FAQ
 
 ### Q: What if the API is slow or unavailable?
@@ -443,3 +564,11 @@ The backend maps ZIP codes to regions (FL, TX, CA, etc.) and applies region-spec
 ### Q: What about session-level overrides?
 
 Session overrides (Deal Maker adjustments) are stored in client state only and are not persisted unless the user explicitly saves them.
+
+### Q: Why use worksheetStore instead of local state?
+
+Using worksheetStore ensures:
+1. Changes propagate to all analytics components
+2. Automatic recalculation of metrics
+3. Persistence across navigation
+4. Sync with backend for saving

@@ -161,3 +161,129 @@ If you find hardcoded defaults during development:
 1. Replace with `useDefaults()` hook
 2. Use optional chaining with nullish coalescing for loading states
 3. Never add a local fallback value - let the API provide defaults
+
+---
+
+## IQ Verdict Scoring Architecture
+
+### Core Value Proposition
+
+> Every property can be a good investment at the right price.
+> 
+> InvestIQ answers two questions:
+> 1. **What price makes this deal work?** (Breakeven) - based on user's financing terms
+> 2. **How likely can you get that price?** (Deal Gap + Motivation) - based on market signals
+
+### IQ Score Components
+
+| Component | Weight | Description |
+|-----------|--------|-------------|
+| Deal Gap | 50% | Distance from asking to breakeven |
+| Seller Motivation | 30% | Likelihood of negotiation success |
+| Market Context | 20% | Days on market, buyer/seller market |
+
+### Price Points (Must Be Clear to User)
+
+1. **Breakeven Price** - Maximum price for $0 monthly cash flow (based on USER'S assumptions)
+2. **Target Buy Price** - Breakeven minus default discount (typically 5%)
+3. **Wholesale Price** - Breakeven × 0.70 (for assignment deals)
+
+### Off-Market Properties
+
+When `listing_status` is not FOR_SALE:
+- Use AVM (Zestimate) as baseline for Deal Gap calculation
+- Display: "No asking price - using market estimate of $X"
+- Allow user to input expected price in Deal Maker
+
+### Seller Motivation Score
+
+The `calculate_seller_motivation()` function in `calculators.py` provides:
+- Individual indicators (DOM, price reductions, foreclosure, etc.)
+- Composite score (0-100)
+- Negotiation leverage level
+- Suggested discount range
+
+**Must be integrated into Deal Gap display**, not shown separately.
+
+---
+
+## Deal Maker IQ Architecture
+
+### State Management
+
+Deal Maker MUST use `worksheetStore` (Zustand), NOT local `useState`.
+
+```typescript
+// ❌ WRONG: Isolated local state
+const [state, setState] = useState<DealMakerState>(initialState)
+
+// ✅ CORRECT: Shared store
+const { assumptions, updateAssumption } = useWorksheetStore()
+```
+
+### Field Mapping
+
+| Deal Maker Field | worksheetStore Field |
+|-----------------|---------------------|
+| buyPrice | purchasePrice |
+| downPaymentPercent | downPaymentPct |
+| closingCostsPercent | closingCostsPct |
+| interestRate | interestRate |
+| loanTermYears | loanTermYears |
+| rehabBudget | rehabCosts |
+| arv | arv |
+| monthlyRent | monthlyRent |
+| vacancyRate | vacancyRate |
+| maintenanceRate | maintenancePct |
+| managementRate | managementPct |
+| annualPropertyTax | propertyTaxes |
+| annualInsurance | insurance |
+| monthlyHoa | hoaFees |
+
+### Recalculation Flow
+
+```
+User adjusts slider in Deal Maker
+        ↓
+worksheetStore.updateAssumption() called
+        ↓
+Zustand state updates
+        ↓
+recalculateProjections() → client-side projections update
+recalculateWorksheetMetrics() → debounced API call
+        ↓
+All subscribed components re-render with new values
+```
+
+### "See Results" Button
+
+Deal Maker must have a persistent way to see results without completing all tabs:
+- Floating or fixed position
+- Shows live-updating: Deal Score, Cash Flow, CoC
+- Click navigates to full results
+
+---
+
+## User Profile Assumptions
+
+### Onboarding Flow
+
+During registration, after experience level:
+1. **Financing Type** - Conventional/FHA/VA/Cash/Hard Money
+2. Each option sets appropriate defaults
+3. Display: "Results based on these terms. Customize in Dashboard."
+
+### Dashboard Editor
+
+Users can edit detailed assumptions in Dashboard:
+- All financing parameters
+- All operating expense rates
+- Strategy-specific settings
+- Saved via `PUT /api/v1/users/me/assumptions`
+
+### Display Transparency
+
+When showing calculated values:
+- Include "Based on your investor profile" or similar
+- Offer "See how we calculated this" expansion
+- Link to Dashboard for customization

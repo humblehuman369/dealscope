@@ -1813,12 +1813,12 @@ def calculate_ltr_breakeven(
     monthly_rent: float,
     property_taxes: float,
     insurance: float,
-    vacancy_rate: float = 0.01,
-    maintenance_pct: float = 0.05,
-    management_pct: float = 0.0,
-    down_payment_pct: float = 0.20,
-    interest_rate: float = 0.06,
-    loan_term_years: int = 30,
+    vacancy_rate: float = None,
+    maintenance_pct: float = None,
+    management_pct: float = None,
+    down_payment_pct: float = None,
+    interest_rate: float = None,
+    loan_term_years: int = None,
 ) -> float:
     """
     Estimate breakeven purchase price for LTR based on basic property data.
@@ -1830,16 +1830,24 @@ def calculate_ltr_breakeven(
         monthly_rent: Expected monthly rental income
         property_taxes: Annual property taxes
         insurance: Annual insurance cost
-        vacancy_rate: Expected vacancy rate (default 1%)
-        maintenance_pct: Maintenance as % of rent (default 5%)
-        management_pct: Management as % of rent (default 0%)
-        down_payment_pct: Down payment percentage (default 20%)
-        interest_rate: Annual interest rate (default 6%)
-        loan_term_years: Loan term in years (default 30)
+        vacancy_rate: Expected vacancy rate (from centralized defaults)
+        maintenance_pct: Maintenance as % of rent (from centralized defaults)
+        management_pct: Management as % of rent (from centralized defaults)
+        down_payment_pct: Down payment percentage (from centralized defaults)
+        interest_rate: Annual interest rate (from centralized defaults)
+        loan_term_years: Loan term in years (from centralized defaults)
     
     Returns:
         Breakeven purchase price
     """
+    # Apply centralized defaults for any unspecified values
+    vacancy_rate = vacancy_rate if vacancy_rate is not None else OPERATING.vacancy_rate
+    maintenance_pct = maintenance_pct if maintenance_pct is not None else OPERATING.maintenance_pct
+    management_pct = management_pct if management_pct is not None else OPERATING.property_management_pct
+    down_payment_pct = down_payment_pct if down_payment_pct is not None else FINANCING.down_payment_pct
+    interest_rate = interest_rate if interest_rate is not None else FINANCING.interest_rate
+    loan_term_years = loan_term_years if loan_term_years is not None else FINANCING.loan_term_years
+    
     # Calculate annual gross income
     annual_gross_rent = monthly_rent * 12
     effective_gross_income = annual_gross_rent * (1 - vacancy_rate)

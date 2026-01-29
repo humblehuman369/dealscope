@@ -1471,19 +1471,22 @@ async def calculate_deal_score(input_data: DealScoreInput):
 
 
 class LTRWorksheetInput(BaseModel):
-    """Input parameters for LTR worksheet calculation."""
+    """Input parameters for LTR worksheet calculation.
+    
+    Note: Default values are pulled from centralized defaults (app.core.defaults).
+    """
     purchase_price: float = Field(..., description="Property purchase price")
     monthly_rent: float = Field(..., description="Monthly gross rent")
-    property_taxes_annual: float = Field(6000, description="Annual property taxes")
-    insurance_annual: float = Field(2000, description="Annual insurance")
-    down_payment_pct: float = Field(0.20, description="Down payment percentage (0.20 = 20%)")
-    interest_rate: float = Field(0.07, description="Annual interest rate (0.07 = 7%)")
-    loan_term_years: int = Field(30, description="Loan term in years")
+    property_taxes_annual: float = Field(None, description="Annual property taxes (estimated if not provided)")
+    insurance_annual: float = Field(None, description="Annual insurance (estimated if not provided)")
+    down_payment_pct: float = Field(default_factory=lambda: FINANCING.down_payment_pct, description="Down payment percentage")
+    interest_rate: float = Field(default_factory=lambda: FINANCING.interest_rate, description="Annual interest rate")
+    loan_term_years: int = Field(default_factory=lambda: FINANCING.loan_term_years, description="Loan term in years")
     closing_costs: float = Field(0, description="Closing costs in dollars")
     rehab_costs: float = Field(0, description="Rehab/renovation costs")
-    vacancy_rate: float = Field(0.08, description="Vacancy rate (0.08 = 8%)")
-    property_management_pct: float = Field(0.0, description="Property management fee %")
-    maintenance_pct: float = Field(0.02, description="Maintenance reserve %")
+    vacancy_rate: float = Field(default_factory=lambda: OPERATING.vacancy_rate, description="Vacancy rate")
+    property_management_pct: float = Field(default_factory=lambda: OPERATING.property_management_pct, description="Property management fee %")
+    maintenance_pct: float = Field(default_factory=lambda: OPERATING.maintenance_pct, description="Maintenance reserve %")
     capex_pct: float = Field(0.0, description="Capital expenditure reserve %")
     hoa_monthly: float = Field(0, description="Monthly HOA fees")
     arv: float = Field(None, description="After Repair Value")
@@ -1607,27 +1610,30 @@ async def calculate_ltr_worksheet(input_data: LTRWorksheetInput):
 
 
 class STRWorksheetInput(BaseModel):
-    """Input parameters for STR worksheet calculation."""
+    """Input parameters for STR worksheet calculation.
+    
+    Note: Default values are pulled from centralized defaults (app.core.defaults).
+    """
     purchase_price: float
     list_price: Optional[float] = None
     average_daily_rate: float
     occupancy_rate: float = Field(0.75, description="Occupancy rate (0.75 = 75%)")
-    property_taxes_annual: float = 6000
-    insurance_annual: float = 2000
-    down_payment_pct: float = 0.25
-    interest_rate: float = 0.07
-    loan_term_years: int = 30
+    property_taxes_annual: float = Field(None, description="Annual property taxes (estimated if not provided)")
+    insurance_annual: float = Field(None, description="Annual insurance (estimated if not provided)")
+    down_payment_pct: float = Field(default_factory=lambda: FINANCING.down_payment_pct, description="Down payment percentage")
+    interest_rate: float = Field(default_factory=lambda: FINANCING.interest_rate, description="Annual interest rate")
+    loan_term_years: int = Field(default_factory=lambda: FINANCING.loan_term_years, description="Loan term in years")
     closing_costs: float = 0
-    furnishing_budget: float = 10000
-    platform_fees_pct: float = 0.15
-    property_management_pct: float = 0.20
-    cleaning_cost_per_turn: float = 150
-    cleaning_fee_revenue: float = 100
-    avg_booking_length: int = 4
-    supplies_monthly: float = 100
-    utilities_monthly: float = 200
-    maintenance_pct: float = 0.05
-    capex_pct: float = 0.05
+    furnishing_budget: float = Field(default_factory=lambda: STR.furniture_setup_cost, description="Furnishing budget")
+    platform_fees_pct: float = Field(default_factory=lambda: STR.platform_fees_pct, description="Platform fees %")
+    property_management_pct: float = Field(default_factory=lambda: STR.str_management_pct, description="STR management fee %")
+    cleaning_cost_per_turn: float = Field(default_factory=lambda: STR.cleaning_cost_per_turnover, description="Cleaning cost per turnover")
+    cleaning_fee_revenue: float = Field(default_factory=lambda: STR.cleaning_fee_revenue, description="Cleaning fee charged")
+    avg_booking_length: int = Field(default_factory=lambda: STR.avg_length_of_stay_days, description="Average booking length")
+    supplies_monthly: float = Field(default_factory=lambda: STR.supplies_monthly, description="Monthly supplies cost")
+    utilities_monthly: float = Field(default_factory=lambda: OPERATING.utilities_monthly, description="Monthly utilities")
+    maintenance_pct: float = Field(default_factory=lambda: OPERATING.maintenance_pct, description="Maintenance reserve %")
+    capex_pct: float = Field(0.05, description="Capital expenditure reserve %")
 
 
 @app.post("/api/v1/worksheet/str/calculate")
