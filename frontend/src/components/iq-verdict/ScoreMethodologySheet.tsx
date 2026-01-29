@@ -34,56 +34,60 @@ const COLORS = {
 }
 
 // =============================================================================
-// SCORING FACTORS
+// IQ VERDICT METHODOLOGY
 // =============================================================================
-const SCORING_FACTORS = [
+
+// The IQ Verdict Score answers: "How likely can you negotiate the required discount?"
+// Score = Probability of achieving Deal Gap given Motivation level
+
+const METHODOLOGY_SECTIONS = [
   {
-    name: 'Cap Rate',
-    weight: 20,
-    description: 'Net operating income relative to property value',
-    icon: Percent,
-    thresholds: '≥8% = Full points, ≥5% = Half points',
-  },
-  {
-    name: 'Cash-on-Cash',
-    weight: 20,
-    description: 'Annual cash flow relative to cash invested',
+    name: 'Deal Gap %',
     icon: TrendingUp,
-    thresholds: '≥10% = Full points, ≥5% = Half points',
+    description: 'The discount needed from asking price to reach your breakeven price.',
+    formula: 'Deal Gap = (List Price - Breakeven) / List Price × 100',
+    explanation: 'Breakeven is the maximum price where monthly cash flow = $0, calculated using YOUR financing terms (down payment, interest rate, vacancy, etc.).',
+    note: 'Based on LTR (rental) revenue model.',
   },
   {
-    name: 'DSCR',
-    weight: 20,
-    description: 'Debt Service Coverage Ratio - ability to cover mortgage',
-    icon: Shield,
-    thresholds: '≥1.25 = Full points, ≥1.0 = Half points',
-  },
-  {
-    name: 'Annual ROI',
-    weight: 20,
-    description: 'Annual return on investment from cash flow',
-    icon: BarChart3,
-    thresholds: '>$5K/yr = Full points, >$0 = Half points',
-  },
-  {
-    name: 'Annual Profit',
-    weight: 20,
-    description: 'Total annual profit from rental income after expenses',
+    name: 'Motivation',
     icon: Target,
-    thresholds: '>$10K/yr = Full points, >$0 = Half points',
+    description: 'Seller willingness to negotiate, based on signals and market conditions.',
+    components: [
+      { label: 'Foreclosure/Bank-Owned', impact: 'Very High (+90-100)' },
+      { label: 'FSBO + Price Reductions', impact: 'High (+70-85)' },
+      { label: 'High Days on Market (90+)', impact: 'Medium (+50-70)' },
+      { label: 'Standard Listing', impact: 'Low (+40-50)' },
+      { label: 'Off-Market', impact: 'Minimal (+25-35)' },
+    ],
+    marketModifier: {
+      cold: '+15 (Buyer\'s market - sellers more motivated)',
+      warm: '+0 (Balanced market)',
+      hot: '-15 (Seller\'s market - sellers less motivated)',
+    },
   },
 ]
+
+const SCORE_FORMULA = {
+  title: 'How the Score is Calculated',
+  steps: [
+    'Motivation Score determines Max Achievable Discount (0-25%)',
+    'Compare your Deal Gap to the Max Achievable Discount',
+    'Score = Probability of successfully negotiating the gap',
+  ],
+  example: 'If Motivation = 80 → Max Discount ≈ 20%. If your Deal Gap is 10%, that\'s easily achievable = High Score (A+)',
+}
 
 // =============================================================================
 // GRADE TIERS
 // =============================================================================
 const GRADE_TIERS = [
-  { grade: 'A+', range: '85-100', label: 'Exceptional', color: '#22c55e' },
-  { grade: 'A', range: '70-84', label: 'Excellent', color: '#22c55e' },
-  { grade: 'B', range: '55-69', label: 'Good', color: '#84cc16' },
-  { grade: 'C', range: '40-54', label: 'Fair', color: '#f97316' },
-  { grade: 'D', range: '25-39', label: 'Below Average', color: '#f97316' },
-  { grade: 'F', range: '0-24', label: 'Poor', color: '#ef4444' },
+  { grade: 'A+', range: '90-100', label: 'Strong Buy', color: '#22c55e', meaning: 'Deal Gap easily achievable' },
+  { grade: 'A', range: '80-89', label: 'Good Buy', color: '#22c55e', meaning: 'Deal Gap likely achievable' },
+  { grade: 'B', range: '65-79', label: 'Moderate', color: '#84cc16', meaning: 'Negotiation required' },
+  { grade: 'C', range: '50-64', label: 'Stretch', color: '#f97316', meaning: 'Aggressive discount needed' },
+  { grade: 'D', range: '30-49', label: 'Unlikely', color: '#f97316', meaning: 'Deal Gap probably too large' },
+  { grade: 'F', range: '0-29', label: 'Pass', color: '#ef4444', meaning: 'Discount unrealistic' },
 ]
 
 // =============================================================================
@@ -184,57 +188,155 @@ export function ScoreMethodologySheet({
 
         {/* Content */}
         <div className="overflow-y-auto max-h-[calc(85vh-100px)] px-5 py-4 space-y-6">
-          {/* Scoring Factors */}
+          {/* Core Concept */}
+          <section>
+            <div 
+              className="p-4 rounded-xl"
+              style={{ backgroundColor: `${COLORS.teal}10`, border: `1px solid ${COLORS.teal}30` }}
+            >
+              <p className="text-sm font-medium text-center" style={{ color: COLORS.navy }}>
+                The IQ Verdict Score answers:
+              </p>
+              <p className="text-base font-bold text-center mt-1" style={{ color: COLORS.teal }}>
+                "How likely can you negotiate the required discount?"
+              </p>
+            </div>
+          </section>
+
+          {/* Deal Gap Section */}
           <section>
             <h3 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: COLORS.teal }}>
-              Scoring Factors
+              1. Deal Gap %
             </h3>
-            <div className="space-y-3">
-              {SCORING_FACTORS.map((factor) => {
-                const Icon = factor.icon
-                return (
-                  <div 
-                    key={factor.name}
-                    className="p-3 rounded-xl"
-                    style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div 
-                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: `${COLORS.teal}10` }}
-                      >
-                        <Icon className="w-4 h-4" style={{ color: COLORS.teal }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-semibold" style={{ color: COLORS.navy }}>
-                            {factor.name}
-                          </span>
-                          <span 
-                            className="text-xs font-bold px-2 py-0.5 rounded-full"
-                            style={{ backgroundColor: `${COLORS.teal}15`, color: COLORS.teal }}
-                          >
-                            {factor.weight}%
-                          </span>
-                        </div>
-                        <p className="text-xs mb-1" style={{ color: COLORS.surface500 }}>
-                          {factor.description}
-                        </p>
-                        <p className="text-[11px]" style={{ color: COLORS.surface400 }}>
-                          {factor.thresholds}
-                        </p>
-                      </div>
-                    </div>
+            <div 
+              className="p-4 rounded-xl"
+              style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+            >
+              <div className="flex items-start gap-3 mb-3">
+                <div 
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: `${COLORS.teal}10` }}
+                >
+                  <TrendingUp className="w-4 h-4" style={{ color: COLORS.teal }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: COLORS.navy }}>
+                    {METHODOLOGY_SECTIONS[0].description}
+                  </p>
+                </div>
+              </div>
+              <div 
+                className="p-3 rounded-lg mb-3"
+                style={{ backgroundColor: COLORS.surface50 }}
+              >
+                <p className="text-xs font-mono font-medium text-center" style={{ color: COLORS.navy }}>
+                  {METHODOLOGY_SECTIONS[0].formula}
+                </p>
+              </div>
+              <p className="text-xs" style={{ color: COLORS.surface500 }}>
+                {METHODOLOGY_SECTIONS[0].explanation}
+              </p>
+              <p className="text-[11px] mt-2 italic" style={{ color: COLORS.surface400 }}>
+                {METHODOLOGY_SECTIONS[0].note}
+              </p>
+            </div>
+          </section>
+
+          {/* Motivation Section */}
+          <section>
+            <h3 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: COLORS.teal }}>
+              2. Motivation Score
+            </h3>
+            <div 
+              className="p-4 rounded-xl"
+              style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+            >
+              <div className="flex items-start gap-3 mb-3">
+                <div 
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: `${COLORS.teal}10` }}
+                >
+                  <Target className="w-4 h-4" style={{ color: COLORS.teal }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: COLORS.navy }}>
+                    {METHODOLOGY_SECTIONS[1].description}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Seller Signals */}
+              <p className="text-xs font-semibold mb-2" style={{ color: COLORS.surface600 }}>
+                Seller Signals:
+              </p>
+              <div className="space-y-1.5 mb-4">
+                {METHODOLOGY_SECTIONS[1].components.map((comp, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-xs">
+                    <span style={{ color: COLORS.surface500 }}>{comp.label}</span>
+                    <span className="font-medium" style={{ color: COLORS.navy }}>{comp.impact}</span>
                   </div>
-                )
-              })}
+                ))}
+              </div>
+
+              {/* Market Temperature */}
+              <p className="text-xs font-semibold mb-2" style={{ color: COLORS.surface600 }}>
+                Market Condition Modifier:
+              </p>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span style={{ color: COLORS.surface500 }}>Cold Market</span>
+                  <span className="font-medium" style={{ color: COLORS.green }}>+15</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span style={{ color: COLORS.surface500 }}>Warm Market</span>
+                  <span className="font-medium" style={{ color: COLORS.surface500 }}>+0</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span style={{ color: COLORS.surface500 }}>Hot Market</span>
+                  <span className="font-medium" style={{ color: COLORS.rose }}>-15</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* How Score is Calculated */}
+          <section>
+            <h3 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: COLORS.teal }}>
+              3. Score Calculation
+            </h3>
+            <div 
+              className="p-4 rounded-xl"
+              style={{ backgroundColor: 'white', border: `1px solid ${COLORS.surface200}` }}
+            >
+              <div className="space-y-2 mb-3">
+                {SCORE_FORMULA.steps.map((step, idx) => (
+                  <div key={idx} className="flex items-start gap-2">
+                    <span 
+                      className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold"
+                      style={{ backgroundColor: `${COLORS.teal}15`, color: COLORS.teal }}
+                    >
+                      {idx + 1}
+                    </span>
+                    <span className="text-xs" style={{ color: COLORS.surface600 }}>{step}</span>
+                  </div>
+                ))}
+              </div>
+              <div 
+                className="p-3 rounded-lg"
+                style={{ backgroundColor: `${COLORS.green}08`, border: `1px solid ${COLORS.green}20` }}
+              >
+                <p className="text-xs" style={{ color: COLORS.surface600 }}>
+                  <span className="font-semibold">Example: </span>
+                  {SCORE_FORMULA.example}
+                </p>
+              </div>
             </div>
           </section>
 
           {/* Grade Tiers */}
           <section>
             <h3 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: COLORS.teal }}>
-              Grade Scale
+              Score Interpretation
             </h3>
             <div 
               className="p-4 rounded-xl"
@@ -256,7 +358,7 @@ export function ScoreMethodologySheet({
                     <div className="text-[10px] font-medium" style={{ color: COLORS.surface500 }}>
                       {tier.range}
                     </div>
-                    <div className="text-[10px]" style={{ color: COLORS.surface400 }}>
+                    <div className="text-[10px] font-semibold" style={{ color: tier.color }}>
                       {tier.label}
                     </div>
                   </div>

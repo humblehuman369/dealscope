@@ -132,22 +132,42 @@ const scoreToGradeLabel = (score: number): { label: string; grade: string } => {
   return { label: 'POOR', grade: 'F' };
 };
 
-// Get verdict label based on score tier with city-specific context
+// Get verdict label based on score tier
+// Score represents probability of achieving the required Deal Gap
 const getVerdictLabel = (score: number, city?: string): { label: string; sublabel: string } => {
-  const marketName = city || 'your market';
-  if (score >= 90) return { label: 'Exceptional', sublabel: `Top 5% of ${marketName} deals` };
-  if (score >= 80) return { label: 'Excellent', sublabel: `Top 15% of ${marketName} deals` };
-  if (score >= 70) return { label: 'Good', sublabel: `Above average in ${marketName}` };
-  if (score >= 60) return { label: 'Fair', sublabel: `Average ${marketName} deal` };
-  if (score >= 50) return { label: 'Marginal', sublabel: `Below ${marketName} average` };
-  return { label: 'Poor', sublabel: 'Proceed with caution' };
+  if (score >= 90) return { label: 'Strong Buy', sublabel: 'Deal Gap easily achievable' };
+  if (score >= 80) return { label: 'Good Buy', sublabel: 'Deal Gap likely achievable' };
+  if (score >= 65) return { label: 'Moderate', sublabel: 'Negotiation required' };
+  if (score >= 50) return { label: 'Stretch', sublabel: 'Aggressive discount needed' };
+  if (score >= 30) return { label: 'Unlikely', sublabel: 'Deal Gap probably too large' };
+  return { label: 'Pass', sublabel: 'Discount unrealistic' };
 };
 
 // Price point explanations
 const PRICE_EXPLANATIONS = {
-  breakeven: 'Maximum price where you won\'t lose money on monthly cash flow',
+  breakeven: 'Maximum price with $0 cash flow, based on YOUR financing terms. Calculated using LTR (rental) revenue model.',
   buyPrice: 'Target price for positive cash flow (5% below breakeven)',
   wholesale: 'Price for assignment to another investor (70% of breakeven)',
+};
+
+// Get motivation label from score
+const getMotivationLabel = (dealScore: number): string => {
+  // Approximate motivation from deal score (higher score = higher motivation was detected)
+  if (dealScore >= 85) return 'Very High';
+  if (dealScore >= 70) return 'High';
+  if (dealScore >= 50) return 'Medium';
+  if (dealScore >= 30) return 'Low';
+  return 'Very Low';
+};
+
+// Get max achievable discount from deal score
+const getMaxAchievableDiscount = (dealScore: number): number => {
+  // Approximate based on score tier
+  if (dealScore >= 85) return 25;
+  if (dealScore >= 70) return 18;
+  if (dealScore >= 50) return 12;
+  if (dealScore >= 30) return 7;
+  return 4;
 };
 
 // =============================================================================
@@ -315,6 +335,7 @@ export function IQVerdictScreen({
                 >
                   <View style={styles.priceLabelRow}>
                     <Text style={[styles.priceLabel, { fontSize: rf(13) }]}>Breakeven</Text>
+                    <Text style={{ fontSize: rf(9), color: COLORS.surface400, marginLeft: 4 }}>(LTR)</Text>
                     <Ionicons name="help-circle-outline" size={rs(14)} color={COLORS.surface400} />
                   </View>
                   <Text style={[styles.priceValue, { fontSize: rf(16) }]}>{formatPrice(Math.round(breakevenPrice))}</Text>
@@ -384,39 +405,36 @@ export function IQVerdictScreen({
               
               {showScoreBreakdown && (
                 <View style={[styles.scoreBreakdownContent, { gap: rsp(8), paddingTop: rsp(8) }]}>
-                  {/* Positive factors */}
-                  {topStrategy.score >= 70 && (
-                    <View style={styles.factorRow}>
-                      <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>Strong {topStrategy.name} potential</Text>
-                      <Text style={[styles.factorPoints, styles.factorPositive, { fontSize: rf(12) }]}>+{Math.round(topStrategy.score * 0.2)} pts</Text>
-                    </View>
-                  )}
-                  {analysis.discountPercent && analysis.discountPercent > 5 && (
-                    <View style={styles.factorRow}>
-                      <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>Below-market price ({analysis.discountPercent}% off)</Text>
-                      <Text style={[styles.factorPoints, styles.factorPositive, { fontSize: rf(12) }]}>+{Math.min(20, Math.round(analysis.discountPercent * 2))} pts</Text>
-                    </View>
-                  )}
-                  {analysis.strategies.filter(s => s.score >= 60).length > 2 && (
-                    <View style={styles.factorRow}>
-                      <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>Multiple viable strategies</Text>
-                      <Text style={[styles.factorPoints, styles.factorPositive, { fontSize: rf(12) }]}>+12 pts</Text>
-                    </View>
-                  )}
-                  {property.beds && property.beds >= 3 && (
-                    <View style={styles.factorRow}>
-                      <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>House Hack potential ({property.beds} beds)</Text>
-                      <Text style={[styles.factorPoints, styles.factorPositive, { fontSize: rf(12) }]}>+8 pts</Text>
-                    </View>
-                  )}
+                  {/* Deal Gap */}
+                  <View style={styles.factorRow}>
+                    <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>Deal Gap (discount needed)</Text>
+                    <Text style={[styles.factorPoints, { fontSize: rf(12), color: COLORS.navy, fontWeight: '600' }]}>
+                      {analysis.discountPercent ? `${analysis.discountPercent.toFixed(1)}%` : '0%'}
+                    </Text>
+                  </View>
                   
-                  {/* Negative factors */}
-                  {analysis.dealScore < 70 && (
-                    <View style={styles.factorRow}>
-                      <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>Market pricing</Text>
-                      <Text style={[styles.factorPoints, styles.factorNegative, { fontSize: rf(12) }]}>-{Math.round((100 - analysis.dealScore) * 0.15)} pts</Text>
-                    </View>
-                  )}
+                  {/* Motivation */}
+                  <View style={styles.factorRow}>
+                    <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>Seller Motivation</Text>
+                    <Text style={[styles.factorPoints, { fontSize: rf(12), color: getScoreColor(analysis.dealScore), fontWeight: '600' }]}>
+                      {getMotivationLabel(analysis.dealScore)}
+                    </Text>
+                  </View>
+                  
+                  {/* Max Achievable Discount */}
+                  <View style={styles.factorRow}>
+                    <Text style={[styles.factorLabel, { fontSize: rf(12) }]}>Max Achievable Discount</Text>
+                    <Text style={[styles.factorPoints, { fontSize: rf(12), color: COLORS.surface500 }]}>
+                      Up to {getMaxAchievableDiscount(analysis.dealScore)}%
+                    </Text>
+                  </View>
+                  
+                  {/* Score Explanation */}
+                  <View style={[styles.factorRow, { marginTop: rsp(4), paddingTop: rsp(8), borderTopWidth: 1, borderTopColor: COLORS.surface200, borderStyle: 'dashed' }]}>
+                    <Text style={[styles.factorLabel, { fontSize: rf(11), color: COLORS.surface400, fontStyle: 'italic', flex: 1 }]}>
+                      Score = Probability of achieving Deal Gap given Motivation
+                    </Text>
+                  </View>
                   
                   {/* Total */}
                   <View style={[styles.factorTotal, { marginTop: rsp(8), paddingTop: rsp(8) }]}>

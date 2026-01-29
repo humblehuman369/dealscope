@@ -70,7 +70,7 @@ const getVerdictLabel = (score: number, city?: string): { label: string; sublabe
 
 // Price point explanations - now includes YOUR terms messaging
 const PRICE_EXPLANATIONS = {
-  breakeven: 'Maximum price with $0 cash flow, based on YOUR financing terms (down payment, rate, vacancy, etc.)',
+  breakeven: 'Maximum price with $0 cash flow, based on YOUR financing terms (down payment, rate, vacancy, etc.). Calculated using LTR (rental) revenue model.',
   buyPrice: 'Recommended offer for positive cash flow — 5% below your breakeven',
   wholesale: 'Maximum price for assignment to another investor (70% of breakeven)',
 }
@@ -329,7 +329,7 @@ export function IQVerdictScreen({
                     {formatPrice(breakevenPrice)}
                   </div>
                   <div className="text-[9px] leading-tight" style={{ color: COLORS.surface400 }}>
-                    Max you can pay for $0 cashflow
+                    Max price for $0 cashflow (LTR model)
                   </div>
                   <button
                     onClick={() => setActivePriceTooltip(activePriceTooltip === 'breakeven' ? null : 'breakeven')}

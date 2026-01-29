@@ -240,22 +240,36 @@ export const getDealVerdict = (score: number): IQDealVerdict => {
 };
 
 /**
- * Get verdict description based on score and top strategy
+ * Get verdict description based on score (probability of achieving Deal Gap)
+ * Score is determined by Deal Gap % and Motivation level
  */
 export const getVerdictDescription = (
   score: number, 
-  topStrategy: IQStrategy
+  topStrategy: IQStrategy,
+  dealGapPercent?: number,
+  motivationLabel?: string
 ): string => {
+  const dealGapText = dealGapPercent !== undefined 
+    ? `${dealGapPercent > 0 ? dealGapPercent.toFixed(1) : '0'}% discount needed`
+    : '';
+  const motivationText = motivationLabel || 'Unknown';
+  
+  if (score >= 90) {
+    return `Strong Buy — ${dealGapText}. ${motivationText} motivation makes this easily achievable.`;
+  }
   if (score >= 80) {
-    return `Excellent potential across multiple strategies. ${topStrategy.name} shows best returns.`;
+    return `Good Buy — ${dealGapText}. ${motivationText} motivation suggests good negotiation potential.`;
   }
-  if (score >= 60) {
-    return `Good investment opportunity. ${topStrategy.name} is your strongest option at ${topStrategy.metric} ${topStrategy.metricLabel}.`;
+  if (score >= 65) {
+    return `Moderate — ${dealGapText}. ${motivationText} motivation means negotiation is possible.`;
   }
-  if (score >= 40) {
-    return `Moderate opportunity. Consider ${topStrategy.name} for best results, but review numbers carefully.`;
+  if (score >= 50) {
+    return `Stretch — ${dealGapText}. ${motivationText} motivation requires aggressive negotiation.`;
   }
-  return `This property shows limited investment potential. ${topStrategy.name} is the best option available.`;
+  if (score >= 30) {
+    return `Unlikely — ${dealGapText}. ${motivationText} motivation makes this discount hard to achieve.`;
+  }
+  return `Pass — ${dealGapText}. The required discount is unrealistic given ${motivationText.toLowerCase()} seller motivation.`;
 };
 
 /**

@@ -135,7 +135,7 @@ export function ProgressiveProfilingPrompt({
 
       case 'budget':
         return {
-          title: "What's your budget range?",
+          title: "What's your target investment range?",
           subtitle: "Per deal investment budget",
           benefit: "Filter alerts to properties in your range",
           content: (
