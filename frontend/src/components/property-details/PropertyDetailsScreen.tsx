@@ -269,7 +269,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
       {/* Main Content */}
       <main className="pb-[100px]">
         {/* Image Gallery */}
-        <section className="bg-white mb-2.5">
+        <section className="bg-white border-b border-[#CBD5E1]">
           {/* Main Image */}
           <div className="relative w-full h-60 overflow-hidden">
             {images.length > 0 ? (
@@ -319,7 +319,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
 
           {/* Thumbnail Strip */}
           {images.length > 1 && (
-            <div className="flex gap-1.5 p-3 overflow-x-auto">
+            <div className="flex gap-1.5 px-3 py-2 overflow-x-auto">
               {images.slice(0, 12).map((img, idx) => (
                 <img
                   key={idx}
@@ -338,7 +338,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
         </section>
 
         {/* Property Facts Accordion */}
-        <div className={`bg-white rounded-xl mx-4 mb-2.5 border border-[#F1F5F9] shadow-sm overflow-hidden mt-2.5`}>
+        <div className="bg-white border-b border-[#CBD5E1] overflow-hidden">
           <div 
             className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-[#F8FAFC] transition-colors"
             onClick={() => toggleSection('facts')}
@@ -362,13 +362,10 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
                 {keySpecs.map((spec, idx) => (
                   <div 
                     key={idx} 
-                    className="bg-gradient-to-br from-[#0A1628] to-[#1E293B] rounded-xl px-2 py-3 flex flex-col items-center gap-1"
+                    className="bg-gradient-to-br from-[#0A1628] to-[#1E293B] rounded-[10px] px-2 py-2.5 flex flex-col items-center gap-0.5"
                   >
-                    <div className="w-5 h-5 text-[#00D4FF] flex items-center justify-center">
-                      {renderFactIcon(spec.icon)}
-                    </div>
                     <div className="text-lg font-bold text-white tabular-nums">{spec.value}</div>
-                    <div className="text-[10px] font-medium text-[#94A3B8] uppercase tracking-wide">{spec.label}</div>
+                    <div className="text-[10px] font-medium text-[#00D4FF] uppercase tracking-wide">{spec.label}</div>
                   </div>
                 ))}
               </div>
@@ -403,7 +400,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
         </div>
 
         {/* Features & Amenities Accordion */}
-        <div className="bg-white rounded-xl mx-4 mb-2.5 border border-[#F1F5F9] shadow-sm overflow-hidden">
+        <div className="bg-white border-b border-[#CBD5E1] overflow-hidden">
           <div 
             className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-[#F8FAFC] transition-colors"
             onClick={() => toggleSection('features')}
@@ -461,7 +458,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
         </div>
 
         {/* Location Accordion */}
-        <div className="bg-white rounded-xl mx-4 mb-2.5 border border-[#F1F5F9] shadow-sm overflow-hidden">
+        <div className="bg-white overflow-hidden">
           <div 
             className="flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-[#F8FAFC] transition-colors"
             onClick={() => toggleSection('location')}
@@ -481,7 +478,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
           
           {expandedSections.location && (
             <div className="px-4 pb-4">
-              <div className="h-36 bg-gradient-to-br from-[#E2E8F0] to-[#CBD5E1] rounded-lg flex flex-col items-center justify-center gap-2 mb-2">
+              <div className="h-36 bg-gradient-to-br from-[#E2E8F0] to-[#CBD5E1] rounded-lg flex flex-col items-center justify-center gap-2">
                 <svg className="w-8 h-8 text-[#0891B2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>

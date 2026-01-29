@@ -436,7 +436,6 @@ export function PropertyDetailsScreen({
               <View style={styles.keySpecsRow}>
                 {keySpecs.map((spec, idx) => (
                   <View key={idx} style={styles.keySpecItem}>
-                    <Ionicons name={spec.icon} size={18} color={COLORS.cyan} />
                     <Text style={styles.keySpecValue}>{spec.value}</Text>
                     <Text style={styles.keySpecLabel}>{spec.label}</Text>
                   </View>
@@ -511,8 +510,8 @@ export function PropertyDetailsScreen({
           )}
         </View>
 
-        {/* Location Accordion */}
-        <View style={styles.accordionCard}>
+        {/* Location Accordion - last card, no border */}
+        <View style={[styles.accordionCard, styles.accordionCardLast]}>
           <TouchableOpacity 
             style={styles.accordionHeader}
             onPress={() => toggleSection('location')}
@@ -815,7 +814,8 @@ const styles = StyleSheet.create({
   // Gallery
   gallerySection: {
     backgroundColor: COLORS.white,
-    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#CBD5E1',
   },
   mainImageContainer: {
     position: 'relative',
@@ -867,7 +867,7 @@ const styles = StyleSheet.create({
   },
   thumbnailStrip: {
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   thumbnail: {
     width: 48,
@@ -883,15 +883,18 @@ const styles = StyleSheet.create({
     borderColor: COLORS.teal,
   },
 
-  // Accordion Card
+  // Accordion Card - flat edge-to-edge design
   accordionCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: COLORS.surface100,
+    borderRadius: 0,
+    marginHorizontal: 0,
+    marginBottom: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#CBD5E1',
     overflow: 'hidden',
+  },
+  accordionCardLast: {
+    borderBottomWidth: 0,
   },
   accordionHeader: {
     flexDirection: 'row',
@@ -913,7 +916,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
 
-  // Key Specs
+  // Key Specs - dark gradient cards
   keySpecsRow: {
     flexDirection: 'row',
     gap: 8,
@@ -923,10 +926,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.navy,
     borderRadius: 10,
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 8,
     alignItems: 'center',
-    gap: 4,
+    gap: 2,
   },
   keySpecValue: {
     fontSize: 18,
@@ -936,7 +939,7 @@ const styles = StyleSheet.create({
   keySpecLabel: {
     fontSize: 10,
     fontWeight: '500',
-    color: COLORS.surface400,
+    color: COLORS.cyan,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
