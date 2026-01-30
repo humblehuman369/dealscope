@@ -263,13 +263,14 @@ export function IQVerdictScreen({
 
       {/* Main Content */}
       <main className="flex-1 w-full">
-        {/* Content Area */}
-        <div>
+        {/* Content Area with padding */}
+        <div className="p-4">
           {/* YOUR INVESTMENT ANALYSIS - Main Header */}
           <div 
-            className="p-4 border-b border-[#CBD5E1]"
+            className="rounded-2xl p-5 mb-4"
             style={{ 
               background: 'white',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
             }}
           >
             {/* Header with financing terms context */}
@@ -723,11 +724,12 @@ export function IQVerdictScreen({
             </div>
           </div>
 
-          {/* Factors Accordion - Full Width */}
+          {/* Factors Accordion */}
           <div 
-            className="p-4 border-b border-[#CBD5E1] cursor-pointer transition-colors hover:bg-[#FAFAFA]"
+            className="rounded-2xl p-4 mb-4 cursor-pointer transition-colors hover:bg-opacity-95"
             style={{ 
               background: 'white',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
             }}
             onClick={() => setShowFactors(!showFactors)}
           >
@@ -758,7 +760,7 @@ export function IQVerdictScreen({
           </div>
 
           {/* CTA Section */}
-          <div className="p-4 bg-white border-b border-[#CBD5E1]">
+          <div className="mb-4">
             <button
               onClick={() => onViewStrategy(topStrategy)}
               className="w-full p-4 rounded-xl text-base font-semibold text-white flex items-center justify-center gap-2 transition-opacity hover:opacity-90 active:opacity-80"
@@ -770,15 +772,13 @@ export function IQVerdictScreen({
           </div>
 
           {/* Export Link */}
-          <div className="p-4 bg-white">
-            <button 
-              className="flex items-center gap-2 text-sm py-3 cursor-pointer hover:opacity-80"
-              style={{ color: COLORS.surface500 }}
-            >
-              <Download className="w-[18px] h-[18px]" />
-              Export PDF Report
-            </button>
-          </div>
+          <button 
+            className="flex items-center gap-2 text-sm py-3 cursor-pointer hover:opacity-80"
+            style={{ color: COLORS.surface500 }}
+          >
+            <Download className="w-[18px] h-[18px]" />
+            Export PDF Report
+          </button>
         </div>
       </main>
 
