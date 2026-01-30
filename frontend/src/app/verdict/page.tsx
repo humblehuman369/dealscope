@@ -21,6 +21,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { 
   VerdictIQCombined,
   IQProperty, 
+  IQStrategy,
   IQAnalysisResult,
 } from '@/components/iq-verdict'
 import { parseAddressString } from '@/utils/formatters'
