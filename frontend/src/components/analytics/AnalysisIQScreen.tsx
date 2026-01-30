@@ -45,38 +45,6 @@ interface AnalysisIQScreenProps {
   initialStrategy?: string
 }
 
-// Helper functions
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0
-  }).format(price)
-}
-
-function formatNumber(num: number): string {
-  return new Intl.NumberFormat('en-US').format(num)
-}
-
-// Grade styling helper
-function getGradeStyles(grade: string): { bg: string; text: string } {
-  switch (grade) {
-    case 'A': return { bg: '#E0F7FA', text: '#0891B2' }
-    case 'B': return { bg: '#F1F5F9', text: '#64748B' }
-    case 'C': return { bg: '#FEF3C7', text: '#D97706' }
-    case 'D': return { bg: '#FEE2E2', text: '#E11D48' }
-    case 'F': return { bg: '#FEE2E2', text: '#E11D48' }
-    default: return { bg: '#F1F5F9', text: '#64748B' }
-  }
-}
-
-// Bar color helper
-function getBarColor(value: number): string {
-  if (value >= 70) return '#0891B2'
-  if (value >= 40) return '#F59E0B'
-  return '#E11D48'
-}
-
 // National range benchmarks for horizontal bar scale with LOW/AVG/HIGH thresholds
 const NATIONAL_RANGES: Record<string, { 
   low: number; avg: number; high: number; 
@@ -93,8 +61,7 @@ const NATIONAL_RANGES: Record<string, {
   breakevenOcc: { low: 60, avg: 80, high: 100, unit: '%', higherIsBetter: false },
 }
 
-// Calculate position on the tri-color segmented bar
-// LOW segment: 0-30%, AVG segment: 30-70%, HIGH segment: 70-100%
+// Calculate position on the gradient benchmark bar (0-100%)
 function getRangePosition(metric: string, value: number): { position: number; segment: 'low' | 'avg' | 'high' } {
   const range = NATIONAL_RANGES[metric]
   if (!range) return { position: 50, segment: 'avg' }
@@ -150,30 +117,7 @@ function getRangePosition(metric: string, value: number): { position: number; se
   return { position, segment }
 }
 
-// Score color helper
-function getScoreColor(score: number): string {
-  if (score >= 70) return '#0891B2'
-  if (score >= 40) return '#F59E0B'
-  return '#E11D48'
-}
-
-// Get pill badge style based on segment
-function getPillStyle(segment: 'low' | 'avg' | 'high', higherIsBetter: boolean): { bg: string; border: string; text: string; label: string } {
-  // For higher-is-better: low=bad, high=good
-  // For lower-is-better: low=good, high=bad
-  const isGood = higherIsBetter ? segment === 'high' : segment === 'low'
-  const isBad = higherIsBetter ? segment === 'low' : segment === 'high'
-  
-  if (isGood) {
-    return { bg: '#dcfce7', border: 'rgba(22,163,74,.18)', text: '#166534', label: 'High' }
-  } else if (isBad) {
-    return { bg: '#fee2e2', border: 'rgba(220,38,38,.18)', text: '#991b1b', label: 'Low' }
-  } else {
-    return { bg: '#fff7ed', border: 'rgba(146,64,14,.18)', text: '#92400e', label: 'Avg' }
-  }
-}
-
-// Performance Benchmark Bar Component
+// Performance Benchmark Bar Component with Gradient Design
 interface BenchmarkBarProps {
   label: string
   value: number
@@ -185,95 +129,50 @@ interface BenchmarkBarProps {
 function PerformanceBenchmarkBar({ label, displayValue, range, rangePos }: BenchmarkBarProps) {
   const formatValue = range.format || ((v: number) => v.toString())
   
-  // InvestIQ Style Guide colors
-  // For higher-is-better: LOW=Red, AVG=Amber, HIGH=Teal
-  // For lower-is-better: LOW=Teal, AVG=Amber, HIGH=Red
-  const segmentColors = range.higherIsBetter
-    ? {
-        low: 'rgba(239, 68, 68, 0.25)',   // Light Red (bad)
-        avg: 'rgba(245, 158, 11, 0.30)',  // Light Amber (neutral)
-        high: 'rgba(8, 145, 178, 0.25)',  // Light Teal (good)
-      }
-    : {
-        low: 'rgba(8, 145, 178, 0.25)',   // Light Teal (good - low is better)
-        avg: 'rgba(245, 158, 11, 0.30)',  // Light Amber (neutral)
-        high: 'rgba(239, 68, 68, 0.25)',  // Light Red (bad - high is worse)
-      }
-  
   return (
-    <div className="py-2.5">
+    <div className="mb-5 last:mb-0">
       {/* Header row */}
-      <div className="flex items-end justify-between gap-3 mb-2">
-        <span className="text-[13px] font-bold text-[#0A1628]">{label}</span>
-        <span className="text-[13px] font-extrabold text-[#0A1628] tabular-nums">{displayValue}</span>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-medium text-[#334155]">{label}</span>
+        <span className="text-base font-bold text-[#0A1628] tabular-nums">{displayValue}</span>
       </div>
       
-      {/* Tri-color segmented bar */}
-      <div 
-        className="relative h-[22px] rounded-full flex overflow-hidden"
-        style={{ outline: '1px solid rgba(15,23,42,.08)' }}
-      >
-        {/* LOW segment (30%) */}
+      {/* Gradient bar container */}
+      <div className="bg-[#F8FAFC] rounded-xl p-3 px-4 border border-[#E2E8F0]">
+        {/* Gradient bar with bullet marker */}
         <div 
-          className="h-full flex items-center justify-center px-1.5"
-          style={{ width: '30%', background: segmentColors.low }}
-        >
-          <div className="flex flex-col items-center gap-px select-none pointer-events-none">
-            <span className="text-[9px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(15,23,42,.72)' }}>Low</span>
-            <span className="text-[8px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(15,23,42,.55)' }}>
-              {formatValue(range.low)}{range.unit}
-            </span>
-          </div>
-        </div>
-        
-        {/* AVG segment (40%) */}
-        <div 
-          className="h-full flex items-center justify-center px-1.5"
-          style={{ width: '40%', background: segmentColors.avg }}
-        >
-          <div className="flex flex-col items-center gap-px select-none pointer-events-none">
-            <span className="text-[9px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(15,23,42,.72)' }}>Avg</span>
-            <span className="text-[8px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(15,23,42,.55)' }}>
-              {formatValue(range.avg)}{range.unit}
-            </span>
-          </div>
-        </div>
-        
-        {/* HIGH segment (30%) */}
-        <div 
-          className="h-full flex items-center justify-center px-1.5"
-          style={{ width: '30%', background: segmentColors.high }}
-        >
-          <div className="flex flex-col items-center gap-px select-none pointer-events-none">
-            <span className="text-[9px] font-black uppercase tracking-wide leading-none" style={{ color: 'rgba(15,23,42,.72)' }}>High</span>
-            <span className="text-[8px] font-bold leading-none whitespace-nowrap" style={{ color: 'rgba(15,23,42,.55)' }}>
-              {formatValue(range.high)}{range.unit}
-            </span>
-          </div>
-        </div>
-        
-        {/* Dividers */}
-        <span 
-          className="absolute rounded-sm"
-          style={{ left: '30%', top: '3px', bottom: '3px', width: '2px', background: 'rgba(15,23,42,.14)', opacity: 0.85 }}
-        />
-        <span 
-          className="absolute rounded-sm"
-          style={{ left: '70%', top: '3px', bottom: '3px', width: '2px', background: 'rgba(15,23,42,.14)', opacity: 0.85 }}
-        />
-        
-        {/* Marker */}
-        <span 
-          className="absolute rounded-sm"
+          className="relative h-3.5 rounded-full"
           style={{ 
-            left: `${rangePos.position}%`, 
-            top: '-7px', 
-            bottom: '-7px', 
-            width: '3px', 
-            background: '#EF4444',
-            transform: 'translateX(-1px)'
+            background: 'linear-gradient(to right, #1E293B 0%, #334155 20%, #475569 40%, #0E7490 60%, #0891B2 75%, #06B6D4 90%, #00D4FF 100%)',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
           }}
-        />
+        >
+          {/* Bullet marker */}
+          <div 
+            className="absolute top-1/2 w-5 h-5 rounded-full bg-[#0A1628] border-[3px] border-white"
+            style={{ 
+              left: `${rangePos.position}%`,
+              transform: 'translate(-50%, -50%)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+            }}
+          />
+        </div>
+        
+        {/* Labels below bar */}
+        <div className="flex justify-between mt-2">
+          <div className="text-left">
+            <div className="text-[9px] font-bold text-[#64748B] uppercase tracking-wide">Low</div>
+            <div className="text-[10px] text-[#94A3B8] mt-0.5">{formatValue(range.low)}{range.unit}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-[9px] font-bold text-[#64748B] uppercase tracking-wide">Avg</div>
+            <div className="text-[10px] text-[#94A3B8] mt-0.5">{formatValue(range.avg)}{range.unit}</div>
+          </div>
+          <div className="text-right">
+            <div className="text-[9px] font-bold text-[#64748B] uppercase tracking-wide">High</div>
+            <div className="text-[10px] text-[#94A3B8] mt-0.5">{formatValue(range.high)}{range.unit}</div>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -368,46 +267,6 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
       downPayment,
     }
   }, [property])
-
-  // Grade metrics
-  const getGrade = (metric: string, value: number): { grade: string; label: string; status: string } => {
-    switch (metric) {
-      case 'capRate':
-        if (value >= 8) return { grade: 'A', label: 'STRONG', status: 'Excellent' }
-        if (value >= 6) return { grade: 'B', label: 'MODERATE', status: 'Acceptable' }
-        if (value >= 4) return { grade: 'C', label: 'FAIR', status: 'Below Average' }
-        return { grade: 'D', label: 'WEAK', status: 'Weak' }
-      case 'cashOnCash':
-        if (value >= 10) return { grade: 'A', label: 'STRONG', status: 'Excellent' }
-        if (value >= 6) return { grade: 'B', label: 'MODERATE', status: 'Acceptable' }
-        if (value >= 2) return { grade: 'C', label: 'FAIR', status: 'Below Average' }
-        return { grade: 'D', label: 'WEAK', status: 'Weak' }
-      case 'equityCapture':
-        if (value >= 20) return { grade: 'A', label: 'STRONG', status: 'Discounted Entry' }
-        if (value >= 10) return { grade: 'B', label: 'MODERATE', status: 'Some Discount' }
-        return { grade: 'C', label: 'FAIR', status: 'Market Price' }
-      case 'dscr':
-        if (value >= 1.5) return { grade: 'A', label: 'STRONG', status: 'Safe' }
-        if (value >= 1.25) return { grade: 'B', label: 'MODERATE', status: 'Acceptable' }
-        if (value >= 1.0) return { grade: 'C', label: 'FAIR', status: 'Tight' }
-        return { grade: 'D', label: 'WEAK', status: 'Risky' }
-      case 'expenseRatio':
-        if (value <= 30) return { grade: 'A', label: 'STRONG', status: 'Efficient' }
-        if (value <= 40) return { grade: 'B', label: 'MODERATE', status: 'Acceptable' }
-        return { grade: 'C', label: 'FAIR', status: 'High' }
-      case 'cashFlowYield':
-        if (value >= 15) return { grade: 'A', label: 'STRONG', status: 'Healthy' }
-        if (value >= 8) return { grade: 'B', label: 'MODERATE', status: 'Acceptable' }
-        return { grade: 'C', label: 'FAIR', status: 'Low' }
-      case 'breakevenOcc':
-        if (value <= 70) return { grade: 'A', label: 'STRONG', status: 'Safe Buffer' }
-        if (value <= 85) return { grade: 'B', label: 'MODERATE', status: 'Acceptable' }
-        if (value <= 95) return { grade: 'C', label: 'FAIR', status: 'Tight' }
-        return { grade: 'D', label: 'WEAK', status: 'Risky' }
-      default:
-        return { grade: 'B', label: 'MODERATE', status: 'Average' }
-    }
-  }
 
   // Build metric rows with range position data
   const returnMetrics = [
@@ -510,12 +369,9 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
     router.push(`/deal-maker/${encodedAddress}?${params.toString()}`)
   }
 
-  // Score gauge
+  // Score and derived values
   const score = Math.round(metrics.score)
-  const circumference = 2 * Math.PI * 42
-  const strokeDasharray = `${(score / 100) * circumference} ${circumference}`
-  const scoreColor = getScoreColor(score)
-
+  
   // Determine risk level and strategy fit
   const riskLevel = score >= 70 ? 'Low' : score >= 50 ? 'Medium' : 'High'
   const strategyFit = score >= 70 ? 'Strong' : score >= 50 ? 'Moderate' : 'Developing'
@@ -537,66 +393,60 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
 
       {/* Main Content */}
       <main>
-        {/* Profit Quality Card */}
-        <div className="bg-white p-4 border-b border-[#CBD5E1]">
-          <p className="text-[11px] font-bold text-[#E11D48] tracking-widest mb-4">PROFIT RATING</p>
+        {/* Profit Rating Section */}
+        <section className="bg-white p-5 border-b border-[#CBD5E1]">
+          <div className="text-[11px] font-bold text-[#0891B2] uppercase tracking-[0.08em] mb-4">Profit Rating</div>
           
-          <div className="flex gap-6 items-start">
-            {/* Circular Score Gauge */}
-            <div className="relative w-24 h-24 flex-shrink-0">
-              <svg width="96" height="96" viewBox="0 0 96 96" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="48" cy="48" r="42" fill="none" stroke="#E2E8F0" strokeWidth="8" />
-                <circle 
-                  cx="48" cy="48" r="42" 
-                  fill="none" 
-                  stroke={scoreColor}
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray={strokeDasharray}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[32px] font-bold text-[#0A1628] leading-none">{score}</span>
+          <div className="flex items-center gap-5">
+            {/* Conic Gradient Score Circle */}
+            <div 
+              className="w-[90px] h-[90px] rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ 
+                background: `conic-gradient(#0891B2 0deg ${(score / 100) * 360}deg, #E2E8F0 ${(score / 100) * 360}deg 360deg)` 
+              }}
+            >
+              <div className="w-[70px] h-[70px] rounded-full bg-white flex flex-col items-center justify-center">
+                <span className="text-[28px] font-extrabold text-[#0A1628] leading-none">{score}</span>
                 <span className="text-[11px] text-[#94A3B8]">/100</span>
               </div>
             </div>
 
-            {/* Score Details */}
+            {/* Rating Details */}
             <div className="flex-1">
-              <div className="flex justify-between mb-2">
+              <div className="flex justify-between py-1.5">
                 <span className="text-sm text-[#64748B]">Strategy Fit</span>
-                <span className="text-sm font-semibold text-[#0A1628]">{strategyFit}</span>
+                <span className="text-sm font-semibold text-[#059669]">{strategyFit}</span>
               </div>
-              <div className="flex justify-between mb-2">
+              <div className="flex justify-between py-1.5">
                 <span className="text-sm text-[#64748B]">Risk Level</span>
-                <span className="text-sm font-semibold text-[#0A1628]">{riskLevel}</span>
+                <span className="text-sm font-semibold text-[#059669]">{riskLevel}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between py-1.5">
                 <span className="text-sm text-[#64748B]">Protection</span>
-                <span className={`text-sm font-semibold ${protection === 'Weak' ? 'text-[#E11D48]' : 'text-[#0A1628]'}`}>
+                <span className={`text-sm font-semibold ${protection === 'Weak' ? 'text-[#E11D48]' : 'text-[#059669]'}`}>
                   {protection}
                 </span>
               </div>
+              
+              {/* View Factors Toggle */}
+              <button 
+                className="flex items-center gap-1 mt-3 bg-transparent border-none text-[#94A3B8] text-[13px] cursor-pointer p-0"
+                onClick={() => setShowFactors(!showFactors)}
+              >
+                <span>View Factors</span>
+                <svg 
+                  width="16" height="16" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor" 
+                  strokeWidth={2}
+                  style={{ transform: showFactors ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
             </div>
           </div>
-
-          {/* View Factors Toggle */}
-          <button 
-            className="flex items-center gap-1 mt-4 bg-transparent border-none text-[#94A3B8] text-sm cursor-pointer p-0"
-            onClick={() => setShowFactors(!showFactors)}
-          >
-            <span>View Factors</span>
-            <svg 
-              width="16" height="16" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor" 
-              strokeWidth={2}
-              style={{ transform: showFactors ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
-          </button>
 
           {showFactors && (
             <div className="mt-3 pt-3 border-t border-[#F1F5F9] grid grid-cols-2 gap-3">
@@ -612,30 +462,33 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
               </div>
             </div>
           )}
+        </section>
 
-          {/* Summary Text */}
-          <div className="mt-4 pt-4 border-t border-[#F1F5F9] flex gap-2">
-            <div className="w-[3px] bg-[#0891B2] rounded flex-shrink-0" />
-            <p className="text-sm text-[#475569] leading-relaxed">
-              {score >= 70 
-                ? <>This deal shows <span className="text-[#0891B2] font-medium">strong fundamentals</span> with good return potential.</>
-                : score >= 50 
-                ? <>This deal has potential but requires careful consideration. <span className="text-[#0891B2] font-medium">Value-add improvements</span> may improve returns.</>
-                : <>This deal shows <span className="text-[#E11D48] font-medium">weak metrics</span>. Consider negotiating a lower price.</>
-              }
-            </p>
-          </div>
+        {/* Summary Banner */}
+        <div className="p-4 px-5 bg-white border-b border-[#CBD5E1] flex items-start gap-3">
+          <div className="w-1 h-6 bg-[#0891B2] rounded flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-[#475569] leading-relaxed">
+            {score >= 70 
+              ? <>This deal shows <strong className="text-[#0891B2] font-semibold">strong fundamentals</strong> with good return potential.</>
+              : score >= 50 
+              ? <>This deal has potential but requires careful consideration. <strong className="text-[#0891B2] font-semibold">Value-add improvements</strong> may improve returns.</>
+              : <>This deal shows <strong className="text-[#E11D48] font-semibold">weak metrics</strong>. Consider negotiating a lower price.</>
+            }
+          </p>
         </div>
 
         {/* Return Metrics Card */}
         <div className="bg-white border-b border-[#CBD5E1] overflow-hidden">
           <button 
-            className="w-full flex items-center justify-between p-4 bg-transparent border-none cursor-pointer text-left"
+            className="w-full flex items-center justify-between p-4 bg-transparent border-none cursor-pointer text-left hover:bg-[#F8FAFC] transition-colors"
             onClick={() => toggleSection('returns')}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[rgba(8,145,178,0.1)] flex items-center justify-center">
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#0891B2" strokeWidth={1.5}>
+              <div 
+                className="w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0"
+                style={{ background: 'linear-gradient(135deg, #0A1628 0%, #1E293B 100%)' }}
+              >
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#00D4FF" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
                 </svg>
               </div>
@@ -646,25 +499,24 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
               fill="none" 
               viewBox="0 0 24 24" 
               stroke="#94A3B8" 
-              strokeWidth={1.5}
+              strokeWidth={2}
               style={{ transform: expandedSections.returns ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
 
           {expandedSections.returns && (
-            <div className="px-4 pb-2">
+            <div className="px-5 pb-5">
               {returnMetrics.map((row, idx) => (
-                <div key={idx} className={idx < returnMetrics.length - 1 ? 'border-b border-[rgba(15,23,42,.04)]' : ''}>
-                  <PerformanceBenchmarkBar
-                    label={row.metric}
-                    value={row.value}
-                    displayValue={row.result}
-                    range={row.range}
-                    rangePos={row.rangePos}
-                  />
-                </div>
+                <PerformanceBenchmarkBar
+                  key={idx}
+                  label={row.metric}
+                  value={row.value}
+                  displayValue={row.result}
+                  range={row.range}
+                  rangePos={row.rangePos}
+                />
               ))}
             </div>
           )}
@@ -673,12 +525,15 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
         {/* Cash Flow & Risk Card */}
         <div className="bg-white border-b border-[#CBD5E1] overflow-hidden">
           <button 
-            className="w-full flex items-center justify-between p-4 bg-transparent border-none cursor-pointer text-left"
+            className="w-full flex items-center justify-between p-4 bg-transparent border-none cursor-pointer text-left hover:bg-[#F8FAFC] transition-colors"
             onClick={() => toggleSection('cashFlow')}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[rgba(8,145,178,0.1)] flex items-center justify-center">
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#0891B2" strokeWidth={1.5}>
+              <div 
+                className="w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0"
+                style={{ background: 'linear-gradient(135deg, #0A1628 0%, #1E293B 100%)' }}
+              >
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#00D4FF" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -689,25 +544,24 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
               fill="none" 
               viewBox="0 0 24 24" 
               stroke="#94A3B8" 
-              strokeWidth={1.5}
+              strokeWidth={2}
               style={{ transform: expandedSections.cashFlow ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
 
           {expandedSections.cashFlow && (
-            <div className="px-4 pb-2">
+            <div className="px-5 pb-5">
               {cashFlowMetrics.map((row, idx) => (
-                <div key={idx} className={idx < cashFlowMetrics.length - 1 ? 'border-b border-[rgba(15,23,42,.04)]' : ''}>
-                  <PerformanceBenchmarkBar
-                    label={row.metric}
-                    value={row.value}
-                    displayValue={row.result}
-                    range={row.range}
-                    rangePos={row.rangePos}
-                  />
-                </div>
+                <PerformanceBenchmarkBar
+                  key={idx}
+                  label={row.metric}
+                  value={row.value}
+                  displayValue={row.result}
+                  range={row.range}
+                  rangePos={row.rangePos}
+                />
               ))}
             </div>
           )}
@@ -716,12 +570,15 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
         {/* At-a-Glance Card */}
         <div className="bg-white border-b border-[#CBD5E1] overflow-hidden">
           <button 
-            className="w-full flex items-center justify-between p-4 bg-transparent border-none cursor-pointer text-left"
+            className="w-full flex items-center justify-between p-4 bg-transparent border-none cursor-pointer text-left hover:bg-[#F8FAFC] transition-colors"
             onClick={() => toggleSection('atGlance')}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[rgba(8,145,178,0.1)] flex items-center justify-center">
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#0891B2" strokeWidth={1.5}>
+              <div 
+                className="w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0"
+                style={{ background: 'linear-gradient(135deg, #0A1628 0%, #1E293B 100%)' }}
+              >
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#00D4FF" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
                 </svg>
               </div>
@@ -735,60 +592,58 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
               fill="none" 
               viewBox="0 0 24 24" 
               stroke="#94A3B8" 
-              strokeWidth={1.5}
+              strokeWidth={2}
               style={{ transform: expandedSections.atGlance ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
 
           {expandedSections.atGlance && (
-            <div className="px-4 pb-4">
+            <div className="px-5 pb-5">
               {performanceBars.map((bar, idx) => (
-                <div key={idx} className={idx < performanceBars.length - 1 ? 'mb-4' : ''}>
-                  <div className="flex justify-between mb-1.5">
-                    <span className="text-sm text-[#475569]">{bar.label}</span>
-                    <span className="text-sm font-bold text-[#0A1628] tabular-nums">{Math.round(bar.value)}%</span>
-                  </div>
-                  <div className="h-2 bg-[#F1F5F9] rounded overflow-hidden">
+                <div key={idx} className="flex items-center mb-3 last:mb-0">
+                  <span className="text-sm text-[#475569] min-w-[100px]">{bar.label}</span>
+                  <div className="flex-1 mx-4 h-2 bg-[#E2E8F0] rounded overflow-hidden">
                     <div 
                       className="h-full rounded transition-all duration-300"
                       style={{ 
                         width: `${bar.value}%`, 
-                        backgroundColor: getBarColor(bar.value)
+                        background: bar.value >= 70 
+                          ? 'linear-gradient(90deg, #0891B2, #06B6D4)' 
+                          : bar.value >= 40 
+                            ? 'linear-gradient(90deg, #D97706, #F59E0B)' 
+                            : 'linear-gradient(90deg, #DC2626, #EF4444)'
                       }} 
                     />
                   </div>
+                  <span className="text-sm font-bold text-[#0A1628] tabular-nums min-w-[45px] text-right">{Math.round(bar.value)}%</span>
                 </div>
               ))}
               
-              <div className="mt-5 pt-4 border-t border-[#F1F5F9]">
-                <p className="text-sm text-[#475569]">
-                  <span className="font-semibold text-[#0A1628]">Composite: </span>
-                  {score}% score across returns and risk protection.
+              <div className="mt-4 pt-4 border-t border-[#E2E8F0]">
+                <p className="text-[13px] text-[#64748B]">
+                  <span className="font-semibold text-[#0A1628]">Composite:</span> {score}% score across returns and risk protection.
                 </p>
               </div>
             </div>
           )}
         </div>
 
-        {/* CTA Button */}
-        <div className="p-4 bg-white border-b border-[#CBD5E1]">
+        {/* Bottom Actions */}
+        <div className="p-4 px-5 bg-white border-b border-[#CBD5E1]">
           <button 
-            className="w-full bg-[#0891B2] text-white text-base font-semibold py-4 px-6 rounded-xl border-none cursor-pointer flex items-center justify-center gap-2 hover:bg-[#0E7490] transition-colors"
+            className="w-full bg-[#0891B2] text-white text-[15px] font-semibold py-4 px-6 rounded-xl border-none cursor-pointer flex items-center justify-center gap-2 hover:bg-[#0E7490] transition-colors mb-3"
             onClick={handleContinue}
           >
             <span>Continue to Deal Maker</span>
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </button>
-        </div>
-
-        {/* Export Link */}
-        <div className="p-4 bg-white">
-          <button className="w-full bg-transparent border-none flex items-center justify-center gap-2 text-[#64748B] text-sm py-3 cursor-pointer hover:text-[#475569]">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          
+          <button className="w-full bg-white text-[#64748B] text-sm font-medium py-3.5 px-6 rounded-xl border border-[#E2E8F0] cursor-pointer flex items-center justify-center gap-2 hover:bg-[#F8FAFC] hover:border-[#CBD5E1] transition-all">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
             </svg>
             <span>Export PDF Report</span>
