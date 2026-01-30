@@ -206,18 +206,18 @@ export function IQVerdictScreen({
   }
 
   // Opportunity factors for collapsible section
-  const factors = [
+  const factors: Array<{ icon: 'clock' | 'alert'; label: string; value: string; positive: boolean }> = [
     { 
-      icon: 'clock' as const, 
+      icon: 'clock', 
       label: 'Long Listing Duration', 
       value: opportunityFactors.daysOnMarket && opportunityFactors.daysOnMarket > 60 ? 'Yes' : 'No', 
-      positive: opportunityFactors.daysOnMarket && opportunityFactors.daysOnMarket > 60 
+      positive: !!(opportunityFactors.daysOnMarket && opportunityFactors.daysOnMarket > 60)
     },
     { 
-      icon: 'alert' as const, 
+      icon: 'alert', 
       label: 'Distressed Sale', 
       value: opportunityFactors.distressedSale ? 'Yes' : 'No', 
-      positive: opportunityFactors.distressedSale 
+      positive: !!opportunityFactors.distressedSale 
     },
   ]
 
