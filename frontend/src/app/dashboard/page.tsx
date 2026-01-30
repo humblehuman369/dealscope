@@ -114,6 +114,12 @@ export default function DashboardPage() {
   const { user, isAuthenticated, isLoading: authLoading, needsOnboarding } = useAuth()
   const router = useRouter()
   
+  // #region agent log
+  useEffect(() => {
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard/page.tsx:mount',message:'Dashboard page mounted',data:{isAuthenticated,authLoading,needsOnboarding,hasUser:!!user},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+  }, [isAuthenticated, authLoading, needsOnboarding, user]);
+  // #endregion
+  
   // State for modal
   const [showSearchModal, setShowSearchModal] = useState(false)
   

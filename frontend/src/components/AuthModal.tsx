@@ -21,6 +21,12 @@ export default function AuthModal() {
   const router = useRouter()
   const pathname = usePathname()
   const { showAuthModal, setShowAuthModal, login, register: registerUser, isLoading } = useAuth()
+  
+  // #region agent log
+  useEffect(() => {
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthModal.tsx:mount',message:'AuthModal mounted',data:{pathname,showAuthModal},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+  }, []);
+  // #endregion
   const [isLogin, setIsLogin] = useState(true)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
