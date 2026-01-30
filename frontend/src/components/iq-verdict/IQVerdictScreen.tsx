@@ -18,6 +18,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { ChevronDown, ChevronUp, ArrowRight, Download, Info, HelpCircle, Settings2, TrendingDown, Target, AlertCircle, Clock, AlertTriangle } from 'lucide-react'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import {
@@ -130,6 +131,7 @@ export function IQVerdictScreen({
   isDark = false,
   savedPropertyId,
 }: IQVerdictScreenProps) {
+  const router = useRouter()
   const [showFactors, setShowFactors] = useState(true)
   const [showMethodology, setShowMethodology] = useState(false)
   const [showCalculation, setShowCalculation] = useState(false)
@@ -447,13 +449,19 @@ export function IQVerdictScreen({
                 <span className="text-[11px] font-semibold uppercase tracking-wide text-[#475569]">
                   YOUR ASSUMPTIONS
                 </span>
-                <a 
-                  href="/dashboard?tab=profile" 
+                <button 
+                  onClick={() => {
+                    const fullAddr = `${property.address}, ${property.city || ''}, ${property.state || ''} ${property.zip || ''}`
+                    const dealMakerUrl = savedPropertyId
+                      ? `/deal-maker/${encodeURIComponent(fullAddr)}?propertyId=${savedPropertyId}`
+                      : `/deal-maker/${encodeURIComponent(fullAddr)}`
+                    router.push(dealMakerUrl)
+                  }}
                   className="flex items-center gap-1 text-[10px] font-medium text-[#0891B2] hover:opacity-80"
                 >
                   <Settings2 className="w-3 h-3" />
-                  Edit in Dashboard
-                </a>
+                  Edit in Deal Maker
+                </button>
               </div>
               
               <div className="grid grid-cols-2 gap-4 text-[11px]">
