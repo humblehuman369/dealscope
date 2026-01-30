@@ -457,10 +457,23 @@ function VerdictContent() {
     }
   }, [analysis, hasTrackedAnalysis, isLoading, trackAnalysis])
 
-  // Navigation handler
+  // Navigation handlers - MUST be defined before any early returns to follow Rules of Hooks
   const handleBack = useCallback(() => {
     router.back()
   }, [router])
+
+  // Navigate to Deal Maker with property data
+  const handleNavigateToDealMaker = useCallback(() => {
+    if (!property) return
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+    const encodedAddress = encodeURIComponent(fullAddress)
+    
+    const url = propertyIdParam
+      ? `/deal-maker/${encodedAddress}?propertyId=${propertyIdParam}`
+      : `/deal-maker/${encodedAddress}`
+    router.push(url)
+  }, [property, propertyIdParam, router])
 
   // Loading state
   if (isLoading) {
@@ -500,19 +513,6 @@ function VerdictContent() {
       </div>
     )
   }
-
-  // Navigate to Deal Maker with property data
-  const handleNavigateToDealMaker = useCallback(() => {
-    if (!property) return
-    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-    const encodedAddress = encodeURIComponent(fullAddress)
-    
-    const url = propertyIdParam
-      ? `/deal-maker/${encodedAddress}?propertyId=${propertyIdParam}`
-      : `/deal-maker/${encodedAddress}`
-    router.push(url)
-  }, [property, propertyIdParam, router])
 
   return (
     <>
