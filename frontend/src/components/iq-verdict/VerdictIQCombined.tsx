@@ -1,0 +1,566 @@
+'use client'
+
+/**
+ * VerdictIQCombined Component
+ * 
+ * Unified IQ Verdict page that combines:
+ * - Verdict Score Hero with deal gap and motivation factors
+ * - Investment Analysis with price cards (Breakeven, Target, Wholesale)
+ * - Performance Benchmarks with national comparisons
+ * - At-a-Glance summary bars
+ * 
+ * This replaces the previous two-page flow (verdict + analysis-iq).
+ * 
+ * ARCHITECTURE:
+ * - For SAVED properties (propertyId param): Loads from dealMakerStore
+ * - For UNSAVED properties (address param): Uses URL params for overrides
+ */
+
+import React, { useState, useMemo, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { ArrowRight, Download, TrendingDown, Target, Clock, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
+import { CompactHeader, PropertyData } from '../layout/CompactHeader'
+import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
+import { ScoreMethodologySheet } from './ScoreMethodologySheet'
+import { VerdictHero } from './VerdictHero'
+import { HowWeScoreDropdown } from './HowWeScoreDropdown'
+import { InvestmentAnalysis } from './InvestmentAnalysis'
+import { SummarySnapshot } from './SummarySnapshot'
+import { AtAGlanceSection } from './AtAGlanceSection'
+import { PerformanceBenchmarksSection, NATIONAL_RANGES } from './PerformanceBenchmarksSection'
+import {
+  IQProperty,
+  IQAnalysisResult,
+  IQStrategy,
+  formatPrice,
+} from './types'
+
+// =============================================================================
+// PROPS
+// =============================================================================
+
+interface VerdictIQCombinedProps {
+  property: IQProperty
+  analysis: IQAnalysisResult
+  onNavigateToDealMaker?: () => void
+  savedPropertyId?: string
+}
+
+// Default strategies for the dropdown
+const HEADER_STRATEGIES = [
+  { short: 'Long-term', full: 'Long-term Rental' },
+  { short: 'Short-term', full: 'Short-term Rental' },
+  { short: 'BRRRR', full: 'BRRRR' },
+  { short: 'Fix & Flip', full: 'Fix & Flip' },
+  { short: 'House Hack', full: 'House Hack' },
+  { short: 'Wholesale', full: 'Wholesale' },
+]
+
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+const getVerdictLabel = (score: number): { label: string; sublabel: string } => {
+  if (score >= 90) return { label: 'Strong Buy', sublabel: 'Deal Gap easily achievable' }
+  if (score >= 80) return { label: 'Good Buy', sublabel: 'Deal Gap likely achievable' }
+  if (score >= 65) return { label: 'Moderate', sublabel: 'Negotiation required' }
+  if (score >= 50) return { label: 'Stretch', sublabel: 'Aggressive discount needed' }
+  if (score >= 30) return { label: 'Unlikely', sublabel: 'Deal Gap probably too large' }
+  return { label: 'Pass', sublabel: 'Discount unrealistic' }
+}
+
+const getMotivationColor = (score: number): string => {
+  if (score >= 70) return '#10B981'
+  if (score >= 40) return '#F59E0B'
+  return '#E11D48'
+}
+
+const getSuggestedOffer = (motivation: number): { min: number; max: number } => {
+  if (motivation >= 70) return { min: 15, max: 25 }
+  if (motivation >= 50) return { min: 10, max: 18 }
+  if (motivation >= 30) return { min: 5, max: 12 }
+  return { min: 3, max: 8 }
+}
+
+// =============================================================================
+// COMPONENT
+// =============================================================================
+
+export function VerdictIQCombined({
+  property,
+  analysis,
+  onNavigateToDealMaker,
+  savedPropertyId,
+}: VerdictIQCombinedProps) {
+  const router = useRouter()
+  const [showMethodology, setShowMethodology] = useState(false)
+  const [showFactors, setShowFactors] = useState(false)
+  const [currentStrategy, setCurrentStrategy] = useState(HEADER_STRATEGIES[0].short)
+
+  // Deal Maker Store for saved properties
+  const { record } = useDealMakerStore()
+  const { hasRecord } = useDealMakerReady()
+  const isSavedPropertyMode = !!savedPropertyId && hasRecord
+
+  // Build defaults from store or fallback
+  const defaults = useMemo(() => {
+    if (isSavedPropertyMode && record?.initial_assumptions) {
+      const initial = record.initial_assumptions
+      return {
+        financing: {
+          down_payment_pct: initial.down_payment_pct,
+          interest_rate: initial.interest_rate,
+          loan_term_years: initial.loan_term_years,
+          closing_costs_pct: initial.closing_costs_pct,
+        },
+        operating: {
+          vacancy_rate: initial.vacancy_rate,
+          maintenance_pct: initial.maintenance_pct,
+          property_management_pct: initial.management_pct,
+        },
+      }
+    }
+    return {
+      financing: {
+        down_payment_pct: 0.20,
+        interest_rate: 0.06,
+        loan_term_years: 30,
+        closing_costs_pct: 0.03,
+      },
+      operating: {
+        vacancy_rate: 0.01,
+        maintenance_pct: 0.05,
+        property_management_pct: 0.00,
+      },
+    }
+  }, [isSavedPropertyMode, record])
+
+  // Build property data for CompactHeader
+  const headerPropertyData: PropertyData = useMemo(() => ({
+    address: property.address,
+    city: property.city || '',
+    state: property.state || '',
+    zip: property.zip || '',
+    beds: property.beds,
+    baths: property.baths,
+    sqft: property.sqft || 0,
+    price: property.price,
+    rent: property.monthlyRent || Math.round(property.price * 0.007),
+    status: 'OFF-MARKET',
+    image: property.imageUrl,
+    zpid: property.zpid?.toString(),
+  }), [property])
+
+  // Verdict and pricing calculations
+  const verdictInfo = getVerdictLabel(analysis.dealScore)
+  
+  const isOffMarket = !property.listingStatus || 
+    property.listingStatus === 'OFF_MARKET' || 
+    property.listingStatus === 'SOLD' ||
+    property.listingStatus === 'FOR_RENT'
+  
+  const marketValue = isOffMarket 
+    ? (property.zestimate || property.price) 
+    : property.price
+  const priceSource = isOffMarket 
+    ? (property.zestimate ? 'Zestimate' : 'Market Estimate')
+    : 'Asking Price'
+
+  const breakevenPrice = analysis.breakevenPrice || Math.round(marketValue * 1.1)
+  const buyPrice = analysis.purchasePrice || Math.round(breakevenPrice * 0.95)
+  const wholesalePrice = Math.round(breakevenPrice * 0.70)
+
+  const estValue = isSavedPropertyMode && record?.list_price
+    ? record.list_price
+    : marketValue
+
+  const userTargetPrice = isSavedPropertyMode && record?.buy_price 
+    ? record.buy_price 
+    : breakevenPrice
+  const discountNeeded = estValue - userTargetPrice
+
+  const calculatedDealGap = estValue > 0 
+    ? ((estValue - userTargetPrice) / estValue) * 100 
+    : 0
+
+  // Opportunity factors
+  const opportunityFactors = {
+    dealGap: isSavedPropertyMode 
+      ? calculatedDealGap
+      : (analysis.opportunityFactors?.dealGap ?? analysis.discountPercent ?? 0),
+    motivation: analysis.opportunityFactors?.motivation ?? 50,
+    motivationLabel: analysis.opportunityFactors?.motivationLabel ?? 'Medium',
+    daysOnMarket: analysis.opportunityFactors?.daysOnMarket ?? null,
+    distressedSale: analysis.opportunityFactors?.distressedSale ?? false,
+  }
+
+  const sellerMotivation = {
+    level: opportunityFactors.motivationLabel,
+    score: `${opportunityFactors.motivation}/100`,
+    maxDiscount: `Up to ${Math.round((opportunityFactors.motivation / 100) * 25)}%`,
+    suggestedOffer: `${getSuggestedOffer(opportunityFactors.motivation).min}% - ${getSuggestedOffer(opportunityFactors.motivation).max}% below asking`,
+  }
+
+  // Calculate metrics for snapshots and benchmarks
+  const metrics = useMemo(() => {
+    const effectivePrice = isSavedPropertyMode && record?.buy_price
+      ? record.buy_price
+      : buyPrice
+    const monthlyRent = property.monthlyRent || effectivePrice * 0.007
+    const propertyTaxes = property.propertyTaxes || effectivePrice * 0.012
+    const insurance = property.insurance || effectivePrice * 0.01
+
+    const annualRent = monthlyRent * 12
+    const noi = annualRent - propertyTaxes - insurance - (annualRent * defaults.operating.vacancy_rate) - (annualRent * defaults.operating.maintenance_pct)
+    const downPayment = effectivePrice * defaults.financing.down_payment_pct
+    const loanAmount = effectivePrice * (1 - defaults.financing.down_payment_pct)
+    const closingCosts = effectivePrice * (defaults.financing.closing_costs_pct || 0.03)
+    const totalInvestment = downPayment + closingCosts
+
+    // Simple annual debt service calculation
+    const monthlyRate = defaults.financing.interest_rate / 12
+    const numPayments = defaults.financing.loan_term_years * 12
+    const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
+      (Math.pow(1 + monthlyRate, numPayments) - 1)
+    const annualDebtService = monthlyPI * 12
+    
+    const annualCashFlow = noi - annualDebtService
+    const monthlyCashFlow = annualCashFlow / 12
+
+    const capRate = effectivePrice > 0 ? (noi / effectivePrice) * 100 : 0
+    const cashOnCash = totalInvestment > 0 ? (annualCashFlow / totalInvestment) * 100 : 0
+    const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
+
+    const arv = property.arv || effectivePrice * 1.15
+    const equityCapture = effectivePrice > 0 ? ((arv - effectivePrice) / effectivePrice) * 100 : 0
+
+    const totalExpenses = propertyTaxes + insurance + (annualRent * defaults.operating.vacancy_rate) + (annualRent * defaults.operating.maintenance_pct)
+    const expenseRatio = annualRent > 0 ? (totalExpenses / annualRent) * 100 : 0
+
+    const fixedCosts = propertyTaxes + insurance + annualDebtService
+    const breakevenOcc = annualRent > 0 ? (fixedCosts / annualRent) * 100 : 0
+
+    const cashFlowYield = totalInvestment > 0 ? (annualCashFlow / totalInvestment) * 100 : 0
+
+    return {
+      capRate,
+      cashOnCash,
+      dscr,
+      monthlyCashFlow,
+      noi,
+      totalInvestment,
+      equityCapture,
+      expenseRatio,
+      breakevenOcc,
+      cashFlowYield,
+    }
+  }, [property, buyPrice, defaults, isSavedPropertyMode, record])
+
+  // Performance bars for At-a-Glance
+  const performanceBars = useMemo(() => [
+    { label: 'Returns', value: Math.min(100, Math.max(0, metrics.capRate * 12)) },
+    { label: 'Cash Flow', value: Math.min(100, Math.max(0, metrics.cashFlowYield * 5)) },
+    { label: 'Equity Gain', value: Math.min(100, Math.max(0, metrics.equityCapture * 5)) },
+    { label: 'Debt Safety', value: Math.min(100, Math.max(0, metrics.dscr * 70)) },
+    { label: 'Cost Control', value: Math.min(100, Math.max(0, 100 - metrics.expenseRatio * 2)) },
+    { label: 'Downside Risk', value: Math.min(100, Math.max(0, 100 - metrics.breakevenOcc)) },
+  ], [metrics])
+
+  // Benchmark metrics
+  const benchmarkMetrics = useMemo(() => [
+    {
+      key: 'capRate',
+      label: 'Cap Rate',
+      value: metrics.capRate,
+      displayValue: `${metrics.capRate.toFixed(1)}%`,
+      range: NATIONAL_RANGES.capRate,
+    },
+    {
+      key: 'cashOnCash',
+      label: 'Cash-on-Cash',
+      value: metrics.cashOnCash,
+      displayValue: `${metrics.cashOnCash.toFixed(1)}%`,
+      range: NATIONAL_RANGES.cashOnCash,
+    },
+    {
+      key: 'dscr',
+      label: 'DSCR',
+      value: metrics.dscr,
+      displayValue: metrics.dscr.toFixed(2),
+      range: NATIONAL_RANGES.dscr,
+    },
+    {
+      key: 'expenseRatio',
+      label: 'Expense Ratio',
+      value: metrics.expenseRatio,
+      displayValue: `${metrics.expenseRatio.toFixed(0)}%`,
+      range: NATIONAL_RANGES.expenseRatio,
+    },
+  ], [metrics])
+
+  // Composite score
+  const compositeScore = useMemo(() => {
+    let score = 50
+    if (metrics.capRate >= 6) score += 15
+    else if (metrics.capRate >= 4) score += 5
+    if (metrics.cashOnCash >= 8) score += 15
+    else if (metrics.cashOnCash >= 4) score += 5
+    if (metrics.dscr >= 1.25) score += 10
+    else if (metrics.dscr >= 1.0) score += 5
+    if (metrics.equityCapture >= 15) score += 10
+    return Math.min(100, Math.max(0, score))
+  }, [metrics])
+
+  // Opportunity factors for collapsible section
+  const factors = [
+    { 
+      icon: 'clock' as const, 
+      label: 'Long Listing Duration', 
+      value: opportunityFactors.daysOnMarket && opportunityFactors.daysOnMarket > 60 ? 'Yes' : 'No', 
+      positive: !!(opportunityFactors.daysOnMarket && opportunityFactors.daysOnMarket > 60)
+    },
+    { 
+      icon: 'alert' as const, 
+      label: 'Distressed Sale', 
+      value: opportunityFactors.distressedSale ? 'Yes' : 'No', 
+      positive: !!opportunityFactors.distressedSale 
+    },
+  ]
+
+  // Navigation handlers
+  const handleBack = useCallback(() => {
+    router.back()
+  }, [router])
+
+  const handleStrategyChange = useCallback((strategy: string) => {
+    setCurrentStrategy(strategy)
+  }, [])
+
+  const handleNavigateToDealMaker = useCallback(() => {
+    if (onNavigateToDealMaker) {
+      onNavigateToDealMaker()
+      return
+    }
+    const fullAddr = `${property.address}, ${property.city || ''}, ${property.state || ''} ${property.zip || ''}`
+    const dealMakerUrl = savedPropertyId
+      ? `/deal-maker/${encodeURIComponent(fullAddr)}?propertyId=${savedPropertyId}`
+      : `/deal-maker/${encodeURIComponent(fullAddr)}`
+    router.push(dealMakerUrl)
+  }, [property, savedPropertyId, router, onNavigateToDealMaker])
+
+  const handleEditAssumptions = useCallback(() => {
+    handleNavigateToDealMaker()
+  }, [handleNavigateToDealMaker])
+
+  return (
+    <div 
+      className="min-h-screen flex flex-col max-w-[480px] mx-auto"
+      style={{ 
+        background: '#E8ECF0',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      }}
+    >
+      {/* Compact Header */}
+      <CompactHeader
+        property={headerPropertyData}
+        activeNav="trends"
+        currentStrategy={currentStrategy}
+        pageTitle="VERDICT"
+        pageTitleAccent="IQ"
+        onStrategyChange={handleStrategyChange}
+        defaultPropertyOpen={true}
+        savedPropertyId={savedPropertyId}
+      />
+
+      {/* Main Content - Scrollable */}
+      <main className="flex-1 overflow-y-auto pb-36">
+        {/* Verdict Hero */}
+        <VerdictHero
+          dealScore={analysis.dealScore}
+          verdictLabel={verdictInfo.label}
+          verdictSublabel={verdictInfo.sublabel}
+          dealGap={opportunityFactors.dealGap}
+          motivationLevel={sellerMotivation.level}
+          motivationScore={opportunityFactors.motivation}
+          onShowMethodology={() => setShowMethodology(true)}
+        />
+
+        {/* How We Score Dropdown */}
+        <HowWeScoreDropdown />
+
+        {/* Investment Analysis with Price Cards */}
+        <InvestmentAnalysis
+          breakevenPrice={breakevenPrice}
+          targetBuyPrice={buyPrice}
+          wholesalePrice={wholesalePrice}
+          isOffMarket={isOffMarket}
+          priceSource={priceSource}
+          marketValue={estValue}
+          financing={defaults.financing}
+          operating={defaults.operating}
+          onEditAssumptions={handleEditAssumptions}
+        />
+
+        {/* Deal Gap & Motivation Section */}
+        <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
+          <div className="text-xs font-semibold text-[#0891B2] mb-3">
+            HOW LIKELY CAN YOU GET THIS PRICE?
+          </div>
+
+          {/* Deal Gap */}
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
+              <TrendingDown className="w-[18px] h-[18px] text-[#64748B]" />
+              Deal Gap
+            </div>
+            <div className="text-lg font-bold text-[#0891B2]">
+              {opportunityFactors.dealGap > 0 ? '-' : '+'}{Math.abs(opportunityFactors.dealGap).toFixed(1)}%
+            </div>
+          </div>
+
+          <div className="bg-[#F8FAFC] rounded-lg p-3 mb-4">
+            <div className="flex justify-between items-center py-1.5">
+              <span className="text-[13px] text-[#64748B]">{isOffMarket ? 'Market Estimate' : 'Asking Price'}</span>
+              <span className="text-[13px] font-semibold text-[#0A1628]">{formatPrice(estValue)}</span>
+            </div>
+            <div className="flex justify-between items-center py-1.5">
+              <span className="text-[13px] text-[#64748B]">Your Target</span>
+              <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(userTargetPrice)}</span>
+            </div>
+            <div className="flex justify-between items-center py-1.5">
+              <span className="text-[13px] text-[#64748B]">Discount needed</span>
+              <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(Math.abs(discountNeeded))}</span>
+            </div>
+          </div>
+
+          {/* Seller Motivation */}
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
+              <Target className="w-[18px] h-[18px] text-[#64748B]" />
+              Seller Motivation
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-sm font-semibold" style={{ color: getMotivationColor(opportunityFactors.motivation) }}>
+                {sellerMotivation.level}
+              </span>
+              <span className="text-xs text-[#94A3B8]">{sellerMotivation.score}</span>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center py-2">
+            <span className="text-[13px] text-[#64748B]">Max achievable discount</span>
+            <span className="text-[13px] font-semibold text-[#0A1628]">{sellerMotivation.maxDiscount}</span>
+          </div>
+
+          {/* Suggested Offer */}
+          <div 
+            className="relative rounded-[10px] p-4 mt-3 border border-[#0891B2]"
+            style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #E0F7FA 100%)' }}
+          >
+            <span className="absolute -top-2 left-4 bg-[#0891B2] text-white text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
+              Recommended
+            </span>
+            <div className="flex justify-between items-center">
+              <span className="text-[13px] text-[#0A1628] font-medium">Suggested opening offer</span>
+              <span className="text-base font-bold text-[#0891B2]">{sellerMotivation.suggestedOffer}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Opportunity Factors */}
+        <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
+          <div className="flex justify-between items-center">
+            <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[#64748B]">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+              </svg>
+              Additional Opportunity Factors
+            </span>
+            <button 
+              className="flex items-center gap-1 text-[#0891B2] text-xs font-medium bg-transparent border-none cursor-pointer"
+              onClick={() => setShowFactors(!showFactors)}
+            >
+              {showFactors ? 'Hide' : 'Show'}
+              {showFactors ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+
+          {showFactors && (
+            <div className="mt-3 pt-3 border-t border-[#E2E8F0]">
+              {factors.map((factor, index) => (
+                <div key={index} className="flex justify-between items-center py-2">
+                  <div className="flex items-center gap-2.5 text-[13px] text-[#475569]">
+                    {factor.icon === 'clock' ? (
+                      <Clock className="w-4 h-4 text-[#94A3B8]" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-[#94A3B8]" />
+                    )}
+                    {factor.label}
+                  </div>
+                  <span className={`text-[13px] font-semibold ${factor.positive ? 'text-[#0891B2]' : 'text-[#94A3B8]'}`}>
+                    {factor.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Summary Snapshot */}
+        <SummarySnapshot
+          capRate={metrics.capRate}
+          cashOnCash={metrics.cashOnCash}
+          dscr={metrics.dscr}
+          monthlyCashFlow={metrics.monthlyCashFlow}
+          noi={metrics.noi}
+          totalInvestment={metrics.totalInvestment}
+        />
+
+        {/* At-a-Glance */}
+        <AtAGlanceSection
+          bars={performanceBars}
+          compositeScore={compositeScore}
+        />
+
+        {/* Performance Benchmarks */}
+        <PerformanceBenchmarksSection
+          metrics={benchmarkMetrics}
+        />
+      </main>
+
+      {/* Fixed Bottom Actions */}
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-[#E2E8F0] p-4 px-6">
+        <button 
+          className="w-full flex items-center justify-center gap-2 bg-[#0891B2] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0E7490] transition-colors"
+          onClick={handleNavigateToDealMaker}
+        >
+          Go to Deal Maker IQ
+          <ArrowRight className="w-[18px] h-[18px]" />
+        </button>
+        <button 
+          className="w-full flex items-center justify-center gap-2 bg-transparent text-[#64748B] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[#475569] transition-colors"
+        >
+          <Download className="w-4 h-4" />
+          Export PDF Report
+        </button>
+      </div>
+
+      {/* Score Methodology Sheet */}
+      <ScoreMethodologySheet
+        isOpen={showMethodology}
+        onClose={() => setShowMethodology(false)}
+        currentScore={analysis.dealScore}
+        scoreType="verdict"
+        lastUpdated={new Date(analysis.analyzedAt).toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        })}
+      />
+    </div>
+  )
+}
+
+export default VerdictIQCombined

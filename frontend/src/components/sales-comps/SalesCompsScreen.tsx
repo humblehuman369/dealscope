@@ -244,8 +244,8 @@ export function SalesCompsScreen({
   }
 
   const handleApplyArv = () => {
-    // Could navigate to analysis with ARV or save it
-    router.push(`/analysis-iq?address=${encodeURIComponent(fullAddress)}&arv=${arvEstimate}`)
+    // Could navigate to verdict with ARV or save it
+    router.push(`/verdict?address=${encodeURIComponent(fullAddress)}&arv=${arvEstimate}`)
   }
 
   const handleRefresh = () => {
@@ -285,7 +285,7 @@ export function SalesCompsScreen({
 
   // Handle analyze
   const handleAnalyze = () => {
-    router.push(`/analysis-iq?address=${encodeURIComponent(fullAddress)}`)
+    router.push(`/verdict?address=${encodeURIComponent(fullAddress)}`)
   }
 
   const getMatchScoreColor = (score: number) => {

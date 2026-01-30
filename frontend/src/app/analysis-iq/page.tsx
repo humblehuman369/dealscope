@@ -1,14 +1,10 @@
-import { Suspense } from 'react'
-import { notFound } from 'next/navigation'
-import { AnalysisIQScreen, type AnalysisPropertyData } from '@/components/analytics/AnalysisIQScreen'
-import { AnalyticsPageSkeleton } from '@/components/analytics/LoadingStates'
+import { redirect } from 'next/navigation'
 
 /**
- * Analysis IQ Page Route
- * Route: /analysis-iq?address=...&strategy=...
+ * Analysis IQ Page Route - DEPRECATED
  * 
- * Displays strategy analytics with CompactHeader and metrics display.
- * Uses AnalysisIQScreen for mobile-first accordion layout.
+ * This route now redirects to /verdict which contains the combined analysis functionality.
+ * The redirect preserves all query parameters.
  */
 
 interface PageProps {
@@ -18,116 +14,6 @@ interface PageProps {
 // Enable dynamic rendering
 export const dynamic = 'force-dynamic'
 
-// Backend URL
-const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.railway.app'
-const VERIFIED_BACKEND_URL = BACKEND_URL.includes('vercel.app') 
-  ? 'https://dealscope-production.up.railway.app'
-  : BACKEND_URL
-
-/**
- * Fetch property data from backend
- */
-async function getPropertyData(address: string, zpid?: string): Promise<AnalysisPropertyData | null> {
-  if (!address) {
-    return null
-  }
-  
-  try {
-    const propertyRes = await fetch(`${VERIFIED_BACKEND_URL}/api/v1/properties/search`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address }),
-      cache: 'no-store'
-    })
-
-    if (!propertyRes.ok) {
-      console.error('[Analysis IQ] Backend error:', propertyRes.status)
-      return null
-    }
-
-    const data = await propertyRes.json()
-    return normalizePropertyData(data, zpid)
-  } catch (error) {
-    console.error('[Analysis IQ] Unexpected error:', error)
-    return null
-  }
-}
-
-/**
- * Normalize backend response to PropertyData format for analytics
- */
-function normalizePropertyData(property: Record<string, unknown>, zpidParam?: string): AnalysisPropertyData {
-  const p = property as {
-    zpid?: string | number
-    address?: {
-      street?: string
-      city?: string
-      state?: string
-      zip_code?: string
-    }
-    details?: {
-      bedrooms?: number
-      bathrooms?: number
-      square_footage?: number
-    }
-    valuations?: {
-      current_value_avm?: number
-      zestimate?: number
-      rent_zestimate?: number
-    }
-    rentals?: {
-      monthly_rent_ltr?: number
-      monthly_rent_str?: number
-      average_daily_rate?: number
-      occupancy_rate?: number
-    }
-    market?: {
-      property_taxes_annual?: number
-    }
-    listing?: {
-      list_price?: number
-    }
-    photos?: { url?: string }[]
-  }
-
-  const streetAddress = p.address?.street || ''
-  const city = p.address?.city || ''
-  const state = p.address?.state || ''
-  const zipCode = p.address?.zip_code || ''
-  const listPrice = p.listing?.list_price || p.valuations?.current_value_avm || p.valuations?.zestimate || 0
-  const monthlyRent = p.valuations?.rent_zestimate || p.rentals?.monthly_rent_ltr || listPrice * 0.007
-  const sqft = p.details?.square_footage || 0
-
-  // Extract photos
-  let photos: string[] = []
-  if (p.photos && Array.isArray(p.photos)) {
-    photos = p.photos
-      .map((photo: { url?: string }) => photo.url)
-      .filter((url): url is string => !!url)
-  }
-
-  return {
-    address: streetAddress,
-    city,
-    state,
-    zipCode,
-    listPrice,
-    monthlyRent,
-    averageDailyRate: p.rentals?.average_daily_rate || 150,
-    occupancyRate: p.rentals?.occupancy_rate || 0.70,
-    propertyTaxes: p.market?.property_taxes_annual || listPrice * 0.012,
-    insurance: 1800, // Default insurance
-    bedrooms: p.details?.bedrooms || 0,
-    bathrooms: p.details?.bathrooms || 0,
-    sqft,
-    arv: listPrice * 1.15, // Default ARV estimate
-    thumbnailUrl: photos[0],
-    photos,
-    photoCount: photos.length,
-    zpid: zpidParam || String(p.zpid || ''),
-  }
-}
-
 /**
  * Generate metadata for SEO
  */
@@ -135,64 +21,26 @@ export async function generateMetadata({ searchParams }: PageProps) {
   const { address } = await searchParams
   
   return {
-    title: address ? `Analysis IQ - ${address} | InvestIQ` : 'Analysis IQ | InvestIQ',
+    title: address ? `Verdict IQ - ${address} | InvestIQ` : 'Verdict IQ | InvestIQ',
     description: 'Analyze investment strategies and returns for this property.',
   }
 }
 
 /**
- * Analysis IQ Content Component
- */
-async function AnalysisIQContent({ 
-  address, 
-  strategy,
-  zpid,
-  propertyId
-}: { 
-  address?: string
-  strategy?: string
-  zpid?: string
-  propertyId?: string
-}) {
-  if (!address) {
-    notFound()
-  }
-
-  const property = await getPropertyData(address, zpid)
-
-  if (!property) {
-    notFound()
-  }
-
-  // Map strategy param to display name
-  const strategyMap: Record<string, string> = {
-    'ltr': 'Long-term',
-    'str': 'Short-term',
-    'brrrr': 'BRRRR',
-    'flip': 'Fix & Flip',
-    'house_hack': 'House Hack',
-    'wholesale': 'Wholesale',
-  }
-  const initialStrategy = strategy ? (strategyMap[strategy] || strategy) : undefined
-
-  return (
-    <AnalysisIQScreen 
-      property={property} 
-      initialStrategy={initialStrategy}
-      savedPropertyId={propertyId}
-    />
-  )
-}
-
-/**
- * Main Page Component
+ * Main Page Component - Redirects to /verdict
  */
 export default async function AnalysisIQRoute({ searchParams }: PageProps) {
-  const { address, strategy, zpid, propertyId } = await searchParams
-
-  return (
-    <Suspense fallback={<AnalyticsPageSkeleton />}>
-      <AnalysisIQContent address={address} strategy={strategy} zpid={zpid} propertyId={propertyId} />
-    </Suspense>
-  )
+  const params = await searchParams
+  
+  // Build redirect URL preserving all query params
+  const queryParams = new URLSearchParams()
+  if (params.address) queryParams.set('address', params.address)
+  if (params.strategy) queryParams.set('strategy', params.strategy)
+  if (params.zpid) queryParams.set('zpid', params.zpid)
+  if (params.propertyId) queryParams.set('propertyId', params.propertyId)
+  
+  const queryString = queryParams.toString()
+  const redirectUrl = `/verdict${queryString ? `?${queryString}` : ''}`
+  
+  redirect(redirectUrl)
 }

@@ -245,8 +245,8 @@ export function RentalCompsScreen({
   }
 
   const handleApplyRent = () => {
-    // Navigate to analysis with rent estimate
-    router.push(`/analysis-iq?address=${encodeURIComponent(fullAddress)}&rent=${rentEstimate}`)
+    // Navigate to verdict with rent estimate
+    router.push(`/verdict?address=${encodeURIComponent(fullAddress)}&rent=${rentEstimate}`)
   }
 
   const handleRefresh = () => {
@@ -286,7 +286,7 @@ export function RentalCompsScreen({
 
   // Handle analyze
   const handleAnalyze = () => {
-    router.push(`/analysis-iq?address=${encodeURIComponent(fullAddress)}`)
+    router.push(`/verdict?address=${encodeURIComponent(fullAddress)}`)
   }
 
   const getMatchScoreColor = (score: number) => {

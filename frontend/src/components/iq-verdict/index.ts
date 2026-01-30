@@ -9,9 +9,18 @@
 
 export { IQAnalyzingScreen } from './IQAnalyzingScreen'
 export { IQVerdictScreen } from './IQVerdictScreen'
+export { VerdictIQCombined } from './VerdictIQCombined'
 export { OpportunityFactors } from './OpportunityFactors'
 export { ReturnFactors } from './ReturnFactors'
 export { ScoreGradeDisplay, ScoreGradeInline } from './ScoreGradeDisplay'
+
+// Sub-components for VerdictIQCombined
+export { VerdictHero } from './VerdictHero'
+export { HowWeScoreDropdown } from './HowWeScoreDropdown'
+export { InvestmentAnalysis } from './InvestmentAnalysis'
+export { SummarySnapshot } from './SummarySnapshot'
+export { AtAGlanceSection } from './AtAGlanceSection'
+export { PerformanceBenchmarksSection, NATIONAL_RANGES } from './PerformanceBenchmarksSection'
 
 export {
   // Types

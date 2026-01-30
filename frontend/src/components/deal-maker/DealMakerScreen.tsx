@@ -493,8 +493,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     if (currentIndex < sectionOrder.length - 1) {
       setActiveAccordion(sectionOrder[currentIndex + 1])
     } else {
-      // Final step - view analysis
-      router.push(`/analysis-iq?address=${encodeURIComponent(fullAddress)}`)
+      // Final step - view verdict
+      router.push(`/verdict?address=${encodeURIComponent(fullAddress)}`)
     }
   }
 

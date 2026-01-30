@@ -1,18 +1,13 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { VerdictIQPage } from '@/components/analytics';
+/**
+ * Verdict IQ Page Route - DEPRECATED
+ * 
+ * This route now redirects to /verdict which contains the combined analysis functionality.
+ */
+
+export const dynamic = 'force-dynamic';
 
 export default function VerdictIQRoute() {
-  const handleNavigateToAnalysis = (strategyId?: string) => {
-    // Navigate to analysis-iq page
-    window.location.href = `/analysis-iq${strategyId ? `?strategy=${strategyId}` : ''}`;
-  };
-
-  return (
-    <VerdictIQPage 
-      showPhoneFrame={true} 
-      isDark={false}
-      onNavigateToAnalysis={handleNavigateToAnalysis}
-    />
-  );
+  redirect('/verdict');
 }

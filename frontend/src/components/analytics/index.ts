@@ -187,7 +187,14 @@ export {
 } from './MetricsAccordion'
 
 // Verdict IQ Page - IQ Verdict page with CompactHeader
+// @deprecated - Use VerdictIQCombined from @/components/iq-verdict instead
+// This component is kept for backwards compatibility
 export { VerdictIQPage } from './VerdictIQPage'
+
+// Analysis IQ Screen - Strategy analysis page
+// @deprecated - Use VerdictIQCombined from @/components/iq-verdict instead
+// Analysis functionality is now merged into the verdict page
+export { AnalysisIQScreen, type AnalysisPropertyData } from './AnalysisIQScreen'
 
 // ============================================
 // FUNDING & LOAN COMPONENTS

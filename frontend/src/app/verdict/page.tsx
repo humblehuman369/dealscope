@@ -19,11 +19,9 @@
 import { useCallback, useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { 
-  IQVerdictScreen, 
+  VerdictIQCombined,
   IQProperty, 
-  IQStrategy,
   IQAnalysisResult,
-  STRATEGY_ROUTE_MAP,
 } from '@/components/iq-verdict'
 import { parseAddressString } from '@/utils/formatters'
 import { useAuth } from '@/context/AuthContext'
@@ -65,16 +63,6 @@ function getStrategyIcon(strategyId: string): string {
   return icons[strategyId] || '📊'
 }
 
-// Map IQ strategy IDs to worksheet route segments
-const WORKSHEET_ROUTES: Record<string, string> = {
-  'long-term-rental': 'ltr',
-  'short-term-rental': 'str',
-  'brrrr': 'brrrr',
-  'fix-and-flip': 'flip',
-  'house-hack': 'househack',
-  'wholesale': 'wholesale',
-}
-
 // Sample photos for fallback
 const SAMPLE_PHOTOS = [
   'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=400&fit=crop',
@@ -84,7 +72,8 @@ const SAMPLE_PHOTOS = [
 function VerdictContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { isAuthenticated, setShowAuthModal } = useAuth()
+  // Auth context available for future use
+  useAuth()
 
   // Check for saved property mode (when coming from Deal Maker with a propertyId)
   const propertyIdParam = searchParams.get('propertyId')
@@ -155,7 +144,6 @@ function VerdictContent() {
   const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isNavigating, setIsNavigating] = useState(false)
   const [hasTrackedAnalysis, setHasTrackedAnalysis] = useState(false)
 
   // Progressive profiling hook
@@ -468,35 +456,10 @@ function VerdictContent() {
     }
   }, [analysis, hasTrackedAnalysis, isLoading, trackAnalysis])
 
-  // Navigation handlers
+  // Navigation handler
   const handleBack = useCallback(() => {
     router.back()
   }, [router])
-
-  const handleViewStrategy = useCallback((strategy: IQStrategy) => {
-    if (!property) return
-    
-    // Build full address for URL
-    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-    
-    // Navigate to Analysis IQ with strategy
-    router.push(`/analysis-iq?address=${encodeURIComponent(fullAddress)}&strategy=${strategy.id}`)
-  }, [property, router])
-
-  const handleCompareAll = useCallback(() => {
-    if (!property) return
-    // Build full address with city, state zip (no comma between state and zip)
-    // Format: "street, city, state zip" - required by backend address parser
-    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-    const fullAddress = [
-      property.address,
-      property.city,
-      stateZip
-    ].filter(Boolean).join(', ')
-    const encodedAddress = encodeURIComponent(fullAddress)
-    router.push(`/compare?address=${encodedAddress}`)
-  }, [property, router])
 
   // Loading state
   if (isLoading) {
@@ -505,18 +468,6 @@ function VerdictContent() {
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-gray-500 dark:text-gray-400">Analyzing property...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Navigating to worksheet state
-  if (isNavigating) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-navy-900">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-500 dark:text-gray-400">Loading worksheet...</p>
         </div>
       </div>
     )
@@ -549,13 +500,26 @@ function VerdictContent() {
     )
   }
 
+  // Navigate to Deal Maker with property data
+  const handleNavigateToDealMaker = useCallback(() => {
+    if (!property) return
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+    const encodedAddress = encodeURIComponent(fullAddress)
+    
+    const url = propertyIdParam
+      ? `/deal-maker/${encodedAddress}?propertyId=${propertyIdParam}`
+      : `/deal-maker/${encodedAddress}`
+    router.push(url)
+  }, [property, propertyIdParam, router])
+
   return (
     <>
-      <IQVerdictScreen
+      <VerdictIQCombined
         property={property}
         analysis={analysis}
-        onViewStrategy={handleViewStrategy}
-        onCompareAll={handleCompareAll}
+        onNavigateToDealMaker={handleNavigateToDealMaker}
+        savedPropertyId={propertyIdParam || undefined}
       />
 
       {/* Progressive Profiling Prompt - Shows after analysis completion */}
