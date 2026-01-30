@@ -13,7 +13,7 @@ const protectedRoutes = [
   '/dashboard',
   '/profile',
   '/worksheet',
-  '/deal-maker',
+  // '/deal-maker', // Removed: Deal Maker is part of the public analysis flow (Analysis IQ → Deal Maker)
   '/compare',
   '/search-history',
   '/billing',
