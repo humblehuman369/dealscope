@@ -471,11 +471,13 @@ class FlipAssumptions(BaseModel):
     hard_money_rate: float = Field(default_factory=lambda: FLIP.hard_money_rate)
     selling_costs_pct: float = Field(default_factory=lambda: FLIP.selling_costs_pct)
     holding_period_months: int = Field(default_factory=lambda: FLIP.holding_period_months)
+    purchase_discount_pct: float = Field(default_factory=lambda: FLIP.purchase_discount_pct)
 
 
 class HouseHackAssumptions(BaseModel):
     """House hacking specific assumptions."""
     fha_down_payment_pct: float = Field(default_factory=lambda: HOUSE_HACK.fha_down_payment_pct)
+    fha_interest_rate: float = Field(default_factory=lambda: HOUSE_HACK.fha_interest_rate)
     fha_mip_rate: float = Field(default_factory=lambda: HOUSE_HACK.fha_mip_rate)
     units_rented_out: int = Field(default_factory=lambda: HOUSE_HACK.units_rented_out)
     buy_discount_pct: float = Field(default_factory=lambda: HOUSE_HACK.buy_discount_pct)

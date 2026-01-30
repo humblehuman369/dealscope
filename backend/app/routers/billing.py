@@ -259,19 +259,16 @@ async def stripe_webhook(
     """
     payload = await request.body()
     
-    # Verify signature
+    # Verify webhook signature - REQUIRED for all environments
+    # This prevents attackers from forging webhook events
     event = billing_service.verify_webhook_signature(payload, stripe_signature or "")
     
     if event is None:
-        # In dev mode, try to parse payload directly
-        import json
-        try:
-            event = json.loads(payload)
-        except:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid webhook payload"
-            )
+        logger.warning("Webhook signature verification failed - rejecting request")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid webhook signature. Ensure STRIPE_WEBHOOK_SECRET is configured correctly."
+        )
     
     # Handle the event
     success = await billing_service.handle_webhook_event(db, event)

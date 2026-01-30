@@ -211,12 +211,13 @@ class BillingService:
         """Get user's current usage."""
         subscription = await self.get_or_create_subscription(db, user_id)
         
-        # Count saved properties
+        # Count saved properties using COUNT query (not loading all into memory)
         from app.models.saved_property import SavedProperty
+        from sqlalchemy import func
         result = await db.execute(
-            select(SavedProperty).where(SavedProperty.user_id == user_id)
+            select(func.count()).select_from(SavedProperty).where(SavedProperty.user_id == user_id)
         )
-        properties_count = len(result.scalars().all())
+        properties_count = result.scalar() or 0
         
         # Calculate remaining
         props_limit = subscription.properties_limit

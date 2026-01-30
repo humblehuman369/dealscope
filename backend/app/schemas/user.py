@@ -1,8 +1,8 @@
 """
 User and UserProfile schemas for API responses and updates.
 """
-
-from pydantic import BaseModel, EmailStr, Field
+import re
+from pydantic import BaseModel, EmailStr, Field, field_validator, HttpUrl
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -21,6 +21,16 @@ class RiskTolerance(str, Enum):
     CONSERVATIVE = "conservative"
     MODERATE = "moderate"
     AGGRESSIVE = "aggressive"
+
+
+# Phone number regex pattern (US format primarily, but flexible)
+PHONE_PATTERN = re.compile(r'^[\d\s\-\.\(\)\+]+$')
+
+# State code pattern (2 letters)
+STATE_PATTERN = re.compile(r'^[A-Z]{2}$')
+
+# ZIP code pattern (5 digits or 5+4 format)
+ZIP_PATTERN = re.compile(r'^\d{5}(-\d{4})?$')
 
 
 # ===========================================
@@ -43,6 +53,20 @@ class PhoneNumber(BaseModel):
     type: str = Field(..., pattern="^(mobile|home|work|fax|other)$")
     number: str = Field(..., min_length=10, max_length=20)
     primary: bool = False
+    
+    @field_validator('number')
+    @classmethod
+    def validate_phone_number(cls, v: str) -> str:
+        """Validate phone number format."""
+        # Remove all formatting to check digit count
+        digits_only = re.sub(r'\D', '', v)
+        if len(digits_only) < 10:
+            raise ValueError('Phone number must have at least 10 digits')
+        if len(digits_only) > 15:
+            raise ValueError('Phone number cannot exceed 15 digits')
+        if not PHONE_PATTERN.match(v):
+            raise ValueError('Phone number contains invalid characters')
+        return v
 
 
 class SocialLinks(BaseModel):
@@ -54,6 +78,35 @@ class SocialLinks(BaseModel):
     youtube: Optional[str] = None
     tiktok: Optional[str] = None
     website: Optional[str] = None
+    
+    @field_validator('linkedin', 'facebook', 'instagram', 'twitter', 'youtube', 'tiktok', 'website')
+    @classmethod
+    def validate_url(cls, v: Optional[str]) -> Optional[str]:
+        """Validate that social links are valid URLs."""
+        if v is None or v == '':
+            return None
+        
+        # Check if it's a valid URL format
+        if not v.startswith(('http://', 'https://')):
+            # Allow just the username/handle for social platforms
+            if len(v) > 500:
+                raise ValueError('URL or handle is too long')
+            return v
+        
+        # Basic URL validation
+        url_pattern = re.compile(
+            r'^https?://'  # http:// or https://
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain...
+            r'localhost|'  # localhost...
+            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+            r'(?::\d+)?'  # optional port
+            r'(?:/?|[/?]\S+)$', re.IGNORECASE
+        )
+        
+        if not url_pattern.match(v):
+            raise ValueError('Invalid URL format')
+        
+        return v
 
 
 class UserUpdate(BaseModel):
@@ -68,8 +121,8 @@ class UserUpdate(BaseModel):
     # Business Address
     business_address_street: Optional[str] = Field(None, max_length=255)
     business_address_city: Optional[str] = Field(None, max_length=100)
-    business_address_state: Optional[str] = Field(None, max_length=10)
-    business_address_zip: Optional[str] = Field(None, max_length=20)
+    business_address_state: Optional[str] = Field(None, max_length=2)
+    business_address_zip: Optional[str] = Field(None, max_length=10)
     business_address_country: Optional[str] = Field(None, max_length=100)
     
     # Contact Information
@@ -81,8 +134,36 @@ class UserUpdate(BaseModel):
     
     # Professional Info
     license_number: Optional[str] = Field(None, max_length=100)
-    license_state: Optional[str] = Field(None, max_length=10)
+    license_state: Optional[str] = Field(None, max_length=2)
     bio: Optional[str] = Field(None, max_length=2000)
+    
+    @field_validator('business_address_state', 'license_state')
+    @classmethod
+    def validate_state_code(cls, v: Optional[str]) -> Optional[str]:
+        """Validate US state code format (2 uppercase letters)."""
+        if v is None or v == '':
+            return None
+        
+        v_upper = v.upper()
+        if not STATE_PATTERN.match(v_upper):
+            raise ValueError('State code must be 2 uppercase letters (e.g., FL, CA, NY)')
+        
+        return v_upper
+    
+    @field_validator('business_address_zip')
+    @classmethod
+    def validate_zip_code(cls, v: Optional[str]) -> Optional[str]:
+        """Validate US ZIP code format (5 digits or 5+4 format)."""
+        if v is None or v == '':
+            return None
+        
+        # Remove any extra whitespace
+        v = v.strip()
+        
+        if not ZIP_PATTERN.match(v):
+            raise ValueError('ZIP code must be 5 digits (e.g., 33444) or 5+4 format (e.g., 33444-1234)')
+        
+        return v
 
 
 class UserResponse(BaseModel):

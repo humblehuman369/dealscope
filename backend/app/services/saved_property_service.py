@@ -203,12 +203,23 @@ class SavedPropertyService:
         db: AsyncSession,
         user_id: str
     ) -> dict:
-        """Get statistics about saved properties."""
-        # Count by status
-        status_counts = {}
-        for status in PropertyStatus:
-            count = await self.count_properties(db, user_id, status)
-            status_counts[status.value] = count
+        """Get statistics about saved properties using GROUP BY (single query)."""
+        from sqlalchemy import func
+        
+        # Count by status with a single GROUP BY query
+        result = await db.execute(
+            select(SavedProperty.status, func.count(SavedProperty.id))
+            .where(SavedProperty.user_id == uuid.UUID(user_id))
+            .group_by(SavedProperty.status)
+        )
+        
+        # Initialize all status counts to 0
+        status_counts = {status.value: 0 for status in PropertyStatus}
+        
+        # Fill in actual counts from query
+        for status, count in result.all():
+            if status:
+                status_counts[status.value] = count
         
         total = sum(status_counts.values())
         
@@ -288,12 +299,35 @@ class SavedPropertyService:
         property_ids: List[str],
         status: PropertyStatus
     ) -> int:
-        """Bulk update status for multiple properties."""
-        count = 0
+        """Bulk update status for multiple properties using a single query."""
+        from sqlalchemy import update
+        
+        # Convert string IDs to UUIDs
+        uuid_ids = []
         for pid in property_ids:
-            result = await self.update_status(db, pid, user_id, status)
-            if result:
-                count += 1
+            try:
+                uuid_ids.append(uuid.UUID(pid))
+            except ValueError:
+                continue
+        
+        if not uuid_ids:
+            return 0
+        
+        # Bulk update with single query
+        result = await db.execute(
+            update(SavedProperty)
+            .where(
+                SavedProperty.id.in_(uuid_ids),
+                SavedProperty.user_id == uuid.UUID(user_id)
+            )
+            .values(
+                status=status,
+                updated_at=datetime.utcnow()
+            )
+        )
+        
+        await db.flush()
+        count = result.rowcount
         
         logger.info(f"Bulk status update: {count} properties updated to {status.value}")
         return count
@@ -326,11 +360,31 @@ class SavedPropertyService:
         user_id: str,
         property_ids: List[str]
     ) -> int:
-        """Bulk delete properties."""
-        count = 0
+        """Bulk delete properties using a single query."""
+        from sqlalchemy import delete
+        
+        # Convert string IDs to UUIDs
+        uuid_ids = []
         for pid in property_ids:
-            if await self.delete_property(db, pid, user_id):
-                count += 1
+            try:
+                uuid_ids.append(uuid.UUID(pid))
+            except ValueError:
+                continue
+        
+        if not uuid_ids:
+            return 0
+        
+        # Bulk delete with single query
+        result = await db.execute(
+            delete(SavedProperty)
+            .where(
+                SavedProperty.id.in_(uuid_ids),
+                SavedProperty.user_id == uuid.UUID(user_id)
+            )
+        )
+        
+        await db.flush()
+        count = result.rowcount
         
         logger.info(f"Bulk delete: {count} properties deleted")
         return count

@@ -67,7 +67,10 @@ class Settings(BaseSettings):
     # ===========================================
     # JWT Authentication
     # ===========================================
-    SECRET_KEY: str = "your-secret-key-change-in-production"
+    # SECURITY: SECRET_KEY must be set via environment variable.
+    # Generate with: openssl rand -hex 32
+    # Empty default ensures this is explicitly configured.
+    SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -189,5 +192,43 @@ def get_settings() -> Settings:
     return Settings()
 
 
+def validate_settings(settings: Settings) -> None:
+    """
+    Validate critical settings at startup.
+    Raises RuntimeError if required settings are missing in production.
+    """
+    errors = []
+    
+    # SECRET_KEY is required in all environments for JWT security
+    if not settings.SECRET_KEY or len(settings.SECRET_KEY) < 32:
+        if settings.is_production:
+            errors.append(
+                "SECRET_KEY must be set and at least 32 characters. "
+                "Generate with: openssl rand -hex 32"
+            )
+        else:
+            import warnings
+            warnings.warn(
+                "SECRET_KEY is not set or too short. Using insecure default for development. "
+                "Set SECRET_KEY environment variable before deploying to production.",
+                UserWarning
+            )
+    
+    # Production-specific validations
+    if settings.is_production:
+        if not settings.DATABASE_URL or "localhost" in settings.DATABASE_URL:
+            errors.append("DATABASE_URL must be set to a production database in production mode")
+        
+        if not settings.STRIPE_WEBHOOK_SECRET:
+            errors.append("STRIPE_WEBHOOK_SECRET must be set in production for secure webhook handling")
+    
+    if errors:
+        error_msg = "Configuration errors:\n" + "\n".join(f"  - {e}" for e in errors)
+        raise RuntimeError(error_msg)
+
+
 # Export settings instance
 settings = get_settings()
+
+# Validate settings at import time (will warn in dev, error in prod)
+validate_settings(settings)

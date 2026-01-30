@@ -71,12 +71,14 @@ class FlipDefaults:
     hard_money_rate: float = 0.12           # 12%
     selling_costs_pct: float = 0.06         # 6% (was 8%)
     holding_period_months: int = 6          # 6 months
+    purchase_discount_pct: float = 0.20     # 20% below ARV for purchase
 
 
 @dataclass(frozen=True)
 class HouseHackDefaults:
     """Default house hack assumptions."""
     fha_down_payment_pct: float = 0.035     # 3.5%
+    fha_interest_rate: float = 0.065        # 6.5% (FHA rates typically lower than conventional)
     fha_mip_rate: float = 0.0085            # 0.85%
     units_rented_out: int = 2               # 2 units
     buy_discount_pct: float = 0.05          # 5% below breakeven
@@ -166,9 +168,11 @@ def get_all_defaults() -> Dict[str, Any]:
             "hard_money_rate": FLIP.hard_money_rate,
             "selling_costs_pct": FLIP.selling_costs_pct,
             "holding_period_months": FLIP.holding_period_months,
+            "purchase_discount_pct": FLIP.purchase_discount_pct,
         },
         "house_hack": {
             "fha_down_payment_pct": HOUSE_HACK.fha_down_payment_pct,
+            "fha_interest_rate": HOUSE_HACK.fha_interest_rate,
             "fha_mip_rate": HOUSE_HACK.fha_mip_rate,
             "units_rented_out": HOUSE_HACK.units_rented_out,
             "buy_discount_pct": HOUSE_HACK.buy_discount_pct,

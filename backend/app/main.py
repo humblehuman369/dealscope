@@ -229,10 +229,114 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Security and performance middleware
+try:
+    from app.core.middleware import (
+        RateLimitMiddleware,
+        SecurityHeadersMiddleware,
+        RequestTimingMiddleware,
+    )
+    
+    # Add security headers to all responses
+    app.add_middleware(SecurityHeadersMiddleware)
+    
+    # Add request timing for performance monitoring
+    app.add_middleware(RequestTimingMiddleware)
+    
+    # Add rate limiting (use configured limits from settings)
+    app.add_middleware(
+        RateLimitMiddleware,
+        default_limit=settings.RATE_LIMIT_REQUESTS,
+        default_period=settings.RATE_LIMIT_PERIOD,
+    )
+    
+    logger.info("Security middleware enabled: rate limiting, security headers, request timing")
+except Exception as e:
+    logger.warning(f"Could not load security middleware: {e}")
+
+
+# ============================================
+# GLOBAL EXCEPTION HANDLERS
+# ============================================
+
+from app.core.exceptions import (
+    InvestIQError,
+    NotFoundError,
+    ValidationError,
+    AuthenticationError,
+    AuthorizationError,
+    ExternalAPIError,
+    RateLimitError,
+    SubscriptionError,
+)
+from fastapi import Request
+from fastapi import status as http_status
+
+
+@app.exception_handler(InvestIQError)
+async def investiq_error_handler(request: Request, exc: InvestIQError):
+    """Handle all InvestIQ custom exceptions."""
+    status_code = http_status.HTTP_500_INTERNAL_SERVER_ERROR
+    
+    if isinstance(exc, NotFoundError):
+        status_code = http_status.HTTP_404_NOT_FOUND
+    elif isinstance(exc, ValidationError):
+        status_code = http_status.HTTP_422_UNPROCESSABLE_ENTITY
+    elif isinstance(exc, AuthenticationError):
+        status_code = http_status.HTTP_401_UNAUTHORIZED
+    elif isinstance(exc, AuthorizationError):
+        status_code = http_status.HTTP_403_FORBIDDEN
+    elif isinstance(exc, RateLimitError):
+        status_code = http_status.HTTP_429_TOO_MANY_REQUESTS
+    elif isinstance(exc, ExternalAPIError):
+        status_code = http_status.HTTP_503_SERVICE_UNAVAILABLE
+    elif isinstance(exc, SubscriptionError):
+        status_code = http_status.HTTP_402_PAYMENT_REQUIRED
+    
+    return JSONResponse(
+        status_code=status_code,
+        content=exc.to_dict()
+    )
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    """Handle unexpected exceptions with consistent format."""
+    logger.exception(f"Unhandled exception: {exc}")
+    
+    # Don't expose internal details in production
+    detail = str(exc) if settings.DEBUG else "An unexpected error occurred"
+    
+    return JSONResponse(
+        status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "error": True,
+            "code": "INTERNAL_ERROR",
+            "message": detail,
+            "details": {}
+        }
+    )
+
 
 # ============================================
 # INCLUDE ROUTERS
 # ============================================
+
+# Property router (extracted from main.py)
+property_router = None
+try:
+    from app.routers.property import router as property_router
+    logger.info("Property router loaded successfully")
+except Exception as e:
+    logger.warning(f"Property router failed to load: {e}")
+
+# Health router (deep health checks)
+health_router = None
+try:
+    from app.routers.health import router as health_router
+    logger.info("Health router loaded successfully")
+except Exception as e:
+    logger.warning(f"Health router failed to load: {e}")
 
 # Auth & User routes (only if available)
 if auth_router is not None:
@@ -283,9 +387,20 @@ if defaults_router is not None:
     app.include_router(defaults_router)
     logger.info("Defaults router included")
 
+# Property router (extracted endpoints for cleaner architecture)
+if property_router is not None:
+    app.include_router(property_router)
+    logger.info("Property router included")
+
+# Health router (deep health checks for monitoring)
+if health_router is not None:
+    app.include_router(health_router)
+    logger.info("Health router included")
+
 
 # ============================================
-# HEALTH CHECK
+# HEALTH CHECK (basic - kept for backward compatibility)
+# Additional health endpoints are in health router
 # ============================================
 
 @app.get("/health")

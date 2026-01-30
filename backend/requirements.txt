@@ -49,3 +49,11 @@ resend==0.7.0
 # NEW: Billing (Phase 8)
 # ===========================================
 stripe==7.0.0
+
+# ===========================================
+# Testing (Phase 1 - Production Readiness)
+# ===========================================
+pytest==8.0.0
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+aiosqlite==0.19.0  # Async SQLite for testing

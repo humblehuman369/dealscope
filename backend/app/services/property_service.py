@@ -18,7 +18,7 @@ from app.services.calculators import (
     calculate_flip, calculate_house_hack, calculate_wholesale
 )
 from app.services.cache_service import get_cache_service, CacheService
-from app.schemas import (
+from app.schemas.property import (
     PropertyResponse, AnalyticsResponse, AllAssumptions,
     StrategyType, Address, PropertyDetails, ValuationData,
     RentalData, RentalMarketStatistics, MarketData, MarketStatistics,
@@ -514,14 +514,19 @@ class PropertyService:
             results.brrrr = BRRRRResults(**brrrr_result)
         
         if StrategyType.FIX_AND_FLIP in strategies_to_calc:
+            # Calculate renovation budget from ARV if not explicitly set
+            flip_renovation_budget = assumptions.rehab.renovation_budget
+            if flip_renovation_budget is None:
+                flip_renovation_budget = arv_flip * assumptions.rehab.renovation_budget_pct
+            
             flip_result = calculate_flip(
                 market_value=purchase_price,
                 arv=arv_flip,
-                purchase_discount_pct=0.20,
+                purchase_discount_pct=assumptions.flip.purchase_discount_pct,
                 hard_money_ltv=assumptions.flip.hard_money_ltv,
                 hard_money_rate=assumptions.flip.hard_money_rate,
                 closing_costs_pct=assumptions.financing.closing_costs_pct,
-                renovation_budget=60500,  # Flip typically needs more
+                renovation_budget=flip_renovation_budget,
                 contingency_pct=assumptions.rehab.contingency_pct,
                 holding_period_months=assumptions.flip.holding_period_months,
                 property_taxes_annual=property_taxes,
@@ -537,7 +542,7 @@ class PropertyService:
                 property_taxes_annual=property_taxes,
                 owner_unit_market_rent=assumptions.house_hack.owner_unit_market_rent,
                 down_payment_pct=assumptions.house_hack.fha_down_payment_pct,
-                interest_rate=0.065,  # FHA rates typically lower
+                interest_rate=assumptions.house_hack.fha_interest_rate,
                 loan_term_years=assumptions.financing.loan_term_years,
                 closing_costs_pct=assumptions.financing.closing_costs_pct,
                 fha_mip_rate=assumptions.house_hack.fha_mip_rate,
@@ -546,9 +551,14 @@ class PropertyService:
             results.house_hack = HouseHackResults(**house_hack_result)
         
         if StrategyType.WHOLESALE in strategies_to_calc:
+            # Calculate rehab costs from ARV if not explicitly set
+            wholesale_rehab_costs = assumptions.rehab.renovation_budget
+            if wholesale_rehab_costs is None:
+                wholesale_rehab_costs = arv_flip * assumptions.rehab.renovation_budget_pct
+            
             wholesale_result = calculate_wholesale(
                 arv=arv_flip,
-                estimated_rehab_costs=50000,
+                estimated_rehab_costs=wholesale_rehab_costs,
                 assignment_fee=assumptions.wholesale.assignment_fee,
                 marketing_costs=assumptions.wholesale.marketing_costs,
                 earnest_money_deposit=assumptions.wholesale.earnest_money_deposit,

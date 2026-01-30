@@ -110,20 +110,18 @@ async def get_current_user_optional(
         return None
 
 
+# DEPRECATED: Use get_current_user instead - it already checks is_active
+# Kept for backward compatibility but should not be used in new code.
 async def get_current_active_user(
     current_user: User = Depends(get_current_user)
 ) -> User:
     """
-    Dependency that ensures the user is active.
+    DEPRECATED: Use get_current_user instead.
     
-    This is redundant with get_current_user but provided
-    for semantic clarity in route definitions.
+    This is redundant because get_current_user already checks is_active.
+    Kept for backward compatibility only.
     """
-    if not current_user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is disabled"
-        )
+    # get_current_user already verified is_active, just return
     return current_user
 
 

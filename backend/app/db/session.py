@@ -4,12 +4,17 @@ Provides connection pooling and session dependency for FastAPI.
 Uses lazy initialization to allow app to start without database.
 
 Note: Using psycopg3 driver instead of asyncpg for better SSL handling.
+
+Connection Pooling Strategy:
+- Local/standard deployments: Use QueuePool for connection reuse
+- Railway/serverless: Use NullPool to avoid connection pool issues
 """
 
 from typing import AsyncGenerator, Optional
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker, AsyncEngine
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool
 import logging
+import os
 
 from app.core.config import settings
 
@@ -20,11 +25,28 @@ _engine: Optional[AsyncEngine] = None
 _session_factory: Optional[async_sessionmaker] = None
 
 
+def _is_serverless_environment() -> bool:
+    """Detect if running in a serverless/Railway environment."""
+    # Check for Railway-specific environment variables
+    if os.environ.get("RAILWAY_ENVIRONMENT"):
+        return True
+    # Check for common serverless indicators
+    if os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+        return True
+    if os.environ.get("VERCEL"):
+        return True
+    # Check if DATABASE_URL contains Railway indicators
+    db_url = settings.DATABASE_URL or ""
+    if "railway" in db_url.lower():
+        return True
+    return False
+
+
 def get_engine() -> AsyncEngine:
     """Get or create the async database engine (lazy initialization)."""
     global _engine
     if _engine is None:
-        logger.info(f"Creating database engine...")
+        logger.info("Creating database engine...")
         
         db_url = settings.async_database_url
         
@@ -53,13 +75,35 @@ def get_engine() -> AsyncEngine:
             url_end = db_url.split("@")[-1]
             logger.info(f"Database URL: {url_start}://***@{url_end}")
         
-        _engine = create_async_engine(
-            db_url,
-            echo=settings.DEBUG,
-            pool_pre_ping=True,
-            # Use NullPool for Railway/serverless to avoid connection pool issues
-            poolclass=NullPool,
-        )
+        # Determine pool strategy based on environment
+        is_serverless = _is_serverless_environment()
+        
+        if is_serverless:
+            # Serverless: Use NullPool to avoid connection pool issues
+            logger.info("Connection pooling: NullPool (serverless environment)")
+            _engine = create_async_engine(
+                db_url,
+                echo=settings.DEBUG,
+                pool_pre_ping=True,
+                poolclass=NullPool,
+            )
+        else:
+            # Standard deployment: Use QueuePool for connection reuse
+            logger.info(
+                f"Connection pooling: QueuePool (pool_size={settings.DB_POOL_SIZE}, "
+                f"max_overflow={settings.DB_MAX_OVERFLOW})"
+            )
+            _engine = create_async_engine(
+                db_url,
+                echo=settings.DEBUG,
+                pool_pre_ping=True,
+                poolclass=AsyncAdaptedQueuePool,
+                pool_size=settings.DB_POOL_SIZE,
+                max_overflow=settings.DB_MAX_OVERFLOW,
+                pool_timeout=settings.DB_POOL_TIMEOUT,
+                pool_recycle=1800,  # Recycle connections after 30 minutes
+            )
+        
         logger.info("Database engine created successfully")
     return _engine
 
