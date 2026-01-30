@@ -1,6 +1,11 @@
 /**
  * InvestIQ API Client
  * Handles all communication with the backend API
+ * 
+ * Features:
+ * - Automatic auth header injection
+ * - 401 interceptor with token refresh
+ * - Centralized error handling
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
@@ -9,24 +14,128 @@ interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: any
   headers?: Record<string, string>
+  skipAuth?: boolean // For public endpoints that don't need auth
 }
 
+/**
+ * Get the current access token from localStorage
+ */
+function getAccessToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('access_token')
+}
+
+/**
+ * Get the refresh token from localStorage
+ */
+function getRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('refresh_token')
+}
+
+/**
+ * Store tokens in localStorage
+ */
+function storeTokens(accessToken: string, refreshToken: string): void {
+  if (typeof window === 'undefined') return
+  localStorage.setItem('access_token', accessToken)
+  localStorage.setItem('refresh_token', refreshToken)
+}
+
+/**
+ * Clear tokens from localStorage
+ */
+function clearTokens(): void {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem('access_token')
+  localStorage.removeItem('refresh_token')
+}
+
+/**
+ * Attempt to refresh the access token using the refresh token
+ */
+async function refreshAccessToken(): Promise<string | null> {
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) return null
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    })
+
+    if (!response.ok) {
+      // Refresh failed - clear tokens and return null
+      clearTokens()
+      return null
+    }
+
+    const data = await response.json()
+    storeTokens(data.access_token, data.refresh_token)
+    return data.access_token
+  } catch (error) {
+    console.error('Token refresh failed:', error)
+    clearTokens()
+    return null
+  }
+}
+
+/**
+ * Redirect to login page (for use when auth fails)
+ */
+function redirectToLogin(): void {
+  if (typeof window === 'undefined') return
+  const currentPath = window.location.pathname
+  window.location.href = `/?redirect=${encodeURIComponent(currentPath)}&auth=required`
+}
+
+/**
+ * Main API request function with auth handling
+ */
 async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, headers = {} } = options
+  const { method = 'GET', body, headers = {}, skipAuth = false } = options
+
+  // Build headers with auth token if available
+  const requestHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...headers,
+  }
+
+  // Add auth header if not skipping auth
+  if (!skipAuth) {
+    const token = getAccessToken()
+    if (token) {
+      requestHeaders['Authorization'] = `Bearer ${token}`
+    }
+  }
 
   const config: RequestInit = {
     method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...headers,
-    },
+    headers: requestHeaders,
   }
 
   if (body) {
     config.body = JSON.stringify(body)
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config)
+  let response = await fetch(`${API_BASE_URL}${endpoint}`, config)
+
+  // Handle 401 Unauthorized - attempt token refresh
+  if (response.status === 401 && !skipAuth) {
+    const newToken = await refreshAccessToken()
+    
+    if (newToken) {
+      // Retry the request with the new token
+      requestHeaders['Authorization'] = `Bearer ${newToken}`
+      config.headers = requestHeaders
+      response = await fetch(`${API_BASE_URL}${endpoint}`, config)
+    } else {
+      // Token refresh failed - redirect to login
+      redirectToLogin()
+      throw new Error('Session expired. Please log in again.')
+    }
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'Unknown error' }))
@@ -34,6 +143,18 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
   }
 
   return response.json()
+}
+
+/**
+ * Create an authenticated API request (convenience wrapper)
+ */
+async function authenticatedRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+  const token = getAccessToken()
+  if (!token) {
+    redirectToLogin()
+    throw new Error('Authentication required')
+  }
+  return apiRequest<T>(endpoint, options)
 }
 
 // Types
@@ -377,6 +498,16 @@ export const api = {
         body: prefs,
       }),
   },
+}
+
+// Auth utility exports
+export {
+  getAccessToken,
+  getRefreshToken,
+  storeTokens,
+  clearTokens,
+  refreshAccessToken,
+  authenticatedRequest,
 }
 
 export default api

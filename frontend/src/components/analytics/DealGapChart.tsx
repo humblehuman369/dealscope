@@ -108,11 +108,6 @@ export function DealGapChart({
   showHeader = true,
   className = '',
 }: DealGapChartProps) {
-  // #region agent log
-  React.useEffect(() => {
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealGapChart.tsx:entry',message:'DealGapChart mounted - checking label positioning',data:{breakeven,listPrice,initialBuyPrice},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1-H2'})}).catch(()=>{});
-  }, [breakeven, listPrice, initialBuyPrice]);
-  // #endregion
   // Use the actual buy price from props (default to 90% of breakeven if not provided)
   const buyPrice = useMemo(() => {
     return initialBuyPrice ?? Math.round(breakeven * 0.9)
@@ -297,9 +292,6 @@ export function DealGapChart({
               />
 
               {/* LIST Label - right of ladder, color matches position */}
-              {/* #region agent log */}
-              {(() => { fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealGapChart.tsx:LIST-label',message:'LIST label render - checking if visible',data:{listPosOnLadder,rightPos:'-65px',labelsOverlap},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{}); return null; })()}
-              {/* #endregion */}
               <div 
                 className="absolute right-[-65px] text-[22px] font-bold whitespace-nowrap"
                 style={{ 
@@ -312,9 +304,6 @@ export function DealGapChart({
               </div>
 
               {/* BUY Label - right of ladder, color matches position */}
-              {/* #region agent log */}
-              {(() => { fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealGapChart.tsx:BUY-label',message:'BUY label render - checking if visible',data:{buyPosOnLadder,rightPos:'-60px',labelsOverlap},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{}); return null; })()}
-              {/* #endregion */}
               <div 
                 className="absolute right-[-60px] text-[22px] font-bold whitespace-nowrap"
                 style={{ 
@@ -327,9 +316,6 @@ export function DealGapChart({
               </div>
 
               {/* Breakeven label on right side - further out */}
-              {/* #region agent log */}
-              {(() => { fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealGapChart.tsx:Breakeven-label',message:'Breakeven label render - checking if visible',data:{rightPos:'-120px',breakeven},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{}); return null; })()}
-              {/* #endregion */}
               <div 
                 className="absolute right-[-120px] text-xs font-semibold text-slate-600 dark:text-white/70 whitespace-nowrap text-center"
                 style={{ top: '50%', transform: 'translateY(-50%)' }}

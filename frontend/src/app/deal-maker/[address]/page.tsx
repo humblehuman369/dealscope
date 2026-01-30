@@ -64,10 +64,6 @@ export default function DealMakerRoutePage() {
     zpid: zpid,
   }
   
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deal-maker/[address]/page.tsx:52',message:'DealMakerRoutePage v2',data:{hasZpid:!!property.zpid,zpid:property.zpid,address:property.address,price:property.price,rent:property.rent,codeVersion:'FIX_V2'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
-  // #endregion
-
   return (
     <DealMakerScreen
       property={property}

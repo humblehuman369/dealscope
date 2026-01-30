@@ -19,12 +19,6 @@ async function fetchRentalComps(params: { zpid?: string; url?: string; address?:
   if (params.url) url.searchParams.append('url', params.url)
   if (params.address) url.searchParams.append('address', params.address)
 
-  console.log('[RentalComps] Fetching from proxy:', url.toString())
-
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RentalCompsSection.tsx:fetchRentalComps',message:'API request params',data:{zpid:params.zpid,url:params.url,address:params.address,fullUrl:url.toString()},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
-
   const response = await fetch(url.toString(), {
     method: 'GET',
     headers: {
@@ -34,10 +28,6 @@ async function fetchRentalComps(params: { zpid?: string; url?: string; address?:
   })
 
   const data = await response.json()
-
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RentalCompsSection.tsx:fetchRentalComps:response',message:'API response received',data:{status:response.status,ok:response.ok,hasResults:!!data.results,resultsLength:data.results?.length,hasRentalComps:!!data.rentalComps,rentalCompsLength:data.rentalComps?.length,dataKeys:Object.keys(data||{}),rawDataPreview:JSON.stringify(data).slice(0,500)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
 
   if (!response.ok) {
     console.error('[RentalComps] API Error:', data)
@@ -194,15 +184,7 @@ const calculateRentAdjustments = (subject: SubjectProperty, comp: RentalComp) =>
 }
 
 const transformRentalResponse = (apiData: any, subject: SubjectProperty): RentalComp[] => {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RentalCompsSection.tsx:transformRentalResponse',message:'Transform input data',data:{apiDataType:typeof apiData,isArray:Array.isArray(apiData),apiDataKeys:apiData?Object.keys(apiData):[],hasRentalComps:!!apiData?.rentalComps,hasResults:!!apiData?.results,hasData:!!apiData?.data,hasRentals:!!apiData?.rentals,rentalCompsType:typeof apiData?.rentalComps,resultsType:typeof apiData?.results,sampleData:JSON.stringify(apiData).slice(0,800)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
-  // #endregion
-
   const rawResults = apiData.rentalComps || apiData.results || apiData.data || apiData.rentals || []
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RentalCompsSection.tsx:transformRentalResponse:rawResults',message:'Raw results extracted',data:{rawResultsType:typeof rawResults,isArray:Array.isArray(rawResults),length:rawResults?.length,firstItem:rawResults?.[0]?JSON.stringify(rawResults[0]).slice(0,500):null},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
-  // #endregion
 
   return rawResults.map((item: any, index: number) => {
     const comp = item.property || item
@@ -447,14 +429,7 @@ export function RentalCompsSection() {
   const zpid = propertyData?.zpid?.toString() || snapshot?.zpid?.toString() || ''
 
   const fetchComps = useCallback(async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RentalCompsSection.tsx:fetchComps:entry',message:'fetchComps called',data:{subjectAddress:subject.address,zpid,hasPropertyData:!!propertyData,hasSnapshot:!!propertyData?.property_data_snapshot,snapshotZpid:propertyData?.property_data_snapshot?.zpid,topLevelZpid:propertyData?.zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,E'})}).catch(()=>{});
-    // #endregion
-
     if (!subject.address && !zpid) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RentalCompsSection.tsx:fetchComps:noData',message:'No address or zpid available',data:{subject,zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,E'})}).catch(()=>{});
-      // #endregion
       setError('No property address or ID available')
       return
     }
@@ -475,26 +450,13 @@ export function RentalCompsSection() {
       }
       
       const response = await fetchRentalComps(params)
-
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RentalCompsSection.tsx:fetchComps:beforeTransform',message:'Response before transform',data:{responseKeys:Object.keys(response||{}),hasRentalComps:!!response?.rentalComps,hasResults:!!response?.results,hasData:!!response?.data,hasRentals:!!response?.rentals},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-
       const transformed = transformRentalResponse(response, subject)
-
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RentalCompsSection.tsx:fetchComps:afterTransform',message:'After transform',data:{transformedLength:transformed.length,firstComp:transformed[0]?{id:transformed[0].id,address:transformed[0].address,monthlyRent:transformed[0].monthlyRent}:null},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-
       setComps(transformed)
       
       if (transformed.length > 0) {
         setSelectedComps(transformed.slice(0, 3).map(c => c.id))
       }
     } catch (err) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RentalCompsSection.tsx:fetchComps:error',message:'Fetch error caught',data:{errorMessage:err instanceof Error ? err.message : String(err)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       console.error('[RentalComps] Fetch error:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch rental comps')
     } finally {
