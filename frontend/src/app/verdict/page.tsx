@@ -97,15 +97,57 @@ function VerdictContent() {
   // Determine if we're in "saved property mode" (use store) or "legacy mode" (use URL params)
   const isSavedPropertyMode = !!propertyIdParam
   
-  // Check for legacy Deal Maker override values (when coming from Deal Maker without propertyId)
-  const overridePurchasePrice = searchParams.get('purchasePrice')
-  const overrideMonthlyRent = searchParams.get('monthlyRent')
-  const overridePropertyTaxes = searchParams.get('propertyTaxes')
-  const overrideInsurance = searchParams.get('insurance')
-  const overrideArv = searchParams.get('arv')
-  const overrideZpid = searchParams.get('zpid')
+  // Check for Deal Maker override values
+  // Priority: URL params > sessionStorage (for toolbar navigation)
+  const urlPurchasePrice = searchParams.get('purchasePrice')
+  const urlMonthlyRent = searchParams.get('monthlyRent')
+  const urlPropertyTaxes = searchParams.get('propertyTaxes')
+  const urlInsurance = searchParams.get('insurance')
+  const urlArv = searchParams.get('arv')
+  const urlZpid = searchParams.get('zpid')
   
-  // Parse override values
+  // Load sessionStorage data synchronously to avoid race conditions
+  // This function is called during render, so we use a try/catch
+  const getSessionData = useCallback(() => {
+    if (typeof window === 'undefined' || !addressParam || urlPurchasePrice) {
+      return null
+    }
+    
+    try {
+      const sessionKey = `dealMaker_${encodeURIComponent(addressParam)}`
+      const stored = sessionStorage.getItem(sessionKey)
+      if (stored) {
+        const data = JSON.parse(stored)
+        // Check if data is recent (within last hour)
+        if (data.timestamp && Date.now() - data.timestamp < 3600000) {
+          console.log('[IQ Verdict] Loaded Deal Maker values from sessionStorage:', data)
+          return data
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load sessionStorage:', e)
+    }
+    return null
+  }, [addressParam, urlPurchasePrice])
+  
+  // Use state to trigger re-render when sessionStorage is available (client-side only)
+  const [isClient, setIsClient] = useState(false)
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+  
+  // Get session data (only on client)
+  const sessionData = isClient ? getSessionData() : null
+  
+  // Use URL params if available, otherwise fall back to sessionStorage
+  const overridePurchasePrice = urlPurchasePrice || (sessionData?.purchasePrice ? String(sessionData.purchasePrice) : null)
+  const overrideMonthlyRent = urlMonthlyRent || (sessionData?.monthlyRent ? String(sessionData.monthlyRent) : null)
+  const overridePropertyTaxes = urlPropertyTaxes || (sessionData?.propertyTaxes ? String(sessionData.propertyTaxes) : null)
+  const overrideInsurance = urlInsurance || (sessionData?.insurance ? String(sessionData.insurance) : null)
+  const overrideArv = urlArv || (sessionData?.arv ? String(sessionData.arv) : null)
+  const overrideZpid = urlZpid || sessionData?.zpid || null
+  
+  // Has any overrides (from URL or session)
   const hasLegacyOverrides = !!(overridePurchasePrice || overrideMonthlyRent)
   
   // State for property data and analysis
@@ -401,7 +443,8 @@ function VerdictContent() {
     }
 
     fetchPropertyData()
-  }, [addressParam, isSavedPropertyMode, hasRecord, dealMakerStore.record, overridePurchasePrice, overrideMonthlyRent, overridePropertyTaxes, overrideInsurance, overrideArv, hasLegacyOverrides])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addressParam, isSavedPropertyMode, hasRecord, dealMakerStore.record, isClient])
 
   // Analysis is now fetched from backend API (stored in state)
   // No local calculations are performed

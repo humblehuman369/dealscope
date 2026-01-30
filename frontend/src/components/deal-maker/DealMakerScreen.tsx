@@ -279,7 +279,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   
   // Navigate to Verdict IQ page
   // For saved properties, Verdict will read from the store (same data source)
-  // For unsaved properties, pass values via URL params (legacy mode)
+  // For unsaved properties, store values in sessionStorage and pass via URL params
   const handleSeeResults = useCallback(() => {
     const fullAddr = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
     
@@ -288,7 +288,40 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       // Verdict will load the DealMakerRecord from the same store
       router.push(`/verdict?propertyId=${savedPropertyId}`)
     } else {
-      // Legacy mode for unsaved properties - pass values via URL params
+      // For unsaved properties:
+      // 1. Store values in sessionStorage so they survive toolbar navigation
+      // 2. Also pass via URL params for initial load
+      const sessionKey = `dealMaker_${encodeURIComponent(fullAddr)}`
+      const sessionData = {
+        address: fullAddr,
+        purchasePrice: state.buyPrice,
+        monthlyRent: state.monthlyRent,
+        propertyTaxes: state.annualPropertyTax,
+        insurance: state.annualInsurance,
+        arv: state.arv,
+        zpid: property.zpid,
+        // Include all Deal Maker values for complete persistence
+        downPaymentPct: state.downPaymentPercent,
+        closingCostsPct: state.closingCostsPercent,
+        interestRate: state.interestRate,
+        loanTermYears: state.loanTermYears,
+        rehabBudget: state.rehabBudget,
+        vacancyRate: state.vacancyRate,
+        maintenancePct: state.maintenanceRate,
+        managementPct: state.managementRate,
+        monthlyHoa: state.monthlyHoa,
+        timestamp: Date.now(),
+      }
+      
+      try {
+        sessionStorage.setItem(sessionKey, JSON.stringify(sessionData))
+        // Also store the current address as the "active" deal maker session
+        sessionStorage.setItem('dealMaker_activeAddress', fullAddr)
+      } catch (e) {
+        console.warn('Failed to save to sessionStorage:', e)
+      }
+      
+      // Navigate with URL params (for initial load and bookmarkability)
       const params = new URLSearchParams({
         address: fullAddr,
         purchasePrice: String(state.buyPrice),

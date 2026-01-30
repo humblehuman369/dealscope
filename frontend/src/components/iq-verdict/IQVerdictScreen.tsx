@@ -313,7 +313,7 @@ export function IQVerdictScreen({
       {/* Compact Header */}
       <CompactHeader
         property={headerPropertyData}
-        activeNav="analysis"
+        activeNav="trends"
         currentStrategy={currentStrategy}
         pageTitle="VERDICT"
         pageTitleAccent="IQ"
