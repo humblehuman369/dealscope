@@ -340,6 +340,7 @@ export function IQVerdictScreen({
         pageTitleAccent="IQ"
         onStrategyChange={handleHeaderStrategyChange}
         defaultPropertyOpen={true}
+        savedPropertyId={savedPropertyId}
       />
 
       {/* Main Content - Scrollable */}

@@ -12,7 +12,7 @@ import { AnalyticsPageSkeleton } from '@/components/analytics/LoadingStates'
  */
 
 interface PageProps {
-  searchParams: Promise<{ address?: string; strategy?: string; zpid?: string }>
+  searchParams: Promise<{ address?: string; strategy?: string; zpid?: string; propertyId?: string }>
 }
 
 // Enable dynamic rendering
@@ -146,11 +146,13 @@ export async function generateMetadata({ searchParams }: PageProps) {
 async function AnalysisIQContent({ 
   address, 
   strategy,
-  zpid 
+  zpid,
+  propertyId
 }: { 
   address?: string
   strategy?: string
-  zpid?: string 
+  zpid?: string
+  propertyId?: string
 }) {
   if (!address) {
     notFound()
@@ -177,6 +179,7 @@ async function AnalysisIQContent({
     <AnalysisIQScreen 
       property={property} 
       initialStrategy={initialStrategy}
+      savedPropertyId={propertyId}
     />
   )
 }
@@ -185,11 +188,11 @@ async function AnalysisIQContent({
  * Main Page Component
  */
 export default async function AnalysisIQRoute({ searchParams }: PageProps) {
-  const { address, strategy, zpid } = await searchParams
+  const { address, strategy, zpid, propertyId } = await searchParams
 
   return (
     <Suspense fallback={<AnalyticsPageSkeleton />}>
-      <AnalysisIQContent address={address} strategy={strategy} zpid={zpid} />
+      <AnalysisIQContent address={address} strategy={strategy} zpid={zpid} propertyId={propertyId} />
     </Suspense>
   )
 }

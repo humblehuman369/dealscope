@@ -14,9 +14,10 @@
  * Uses InvestIQ Universal Style Guide colors
  */
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CompactHeader, type PropertyData as HeaderPropertyData } from '@/components/layout/CompactHeader'
+import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 
 // Property data interface for this component
 export interface AnalysisPropertyData {
@@ -43,6 +44,8 @@ export interface AnalysisPropertyData {
 interface AnalysisIQScreenProps {
   property: AnalysisPropertyData
   initialStrategy?: string
+  // If provided, values will be read from dealMakerStore (saved property mode)
+  savedPropertyId?: string
 }
 
 // National range benchmarks for horizontal bar scale with LOW/AVG/HIGH thresholds
@@ -178,8 +181,23 @@ function PerformanceBenchmarkBar({ label, displayValue, range, rangePos }: Bench
   )
 }
 
-export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreenProps) {
+export function AnalysisIQScreen({ property, initialStrategy, savedPropertyId }: AnalysisIQScreenProps) {
   const router = useRouter()
+  
+  // Deal Maker Store for saved properties
+  const dealMakerStore = useDealMakerStore()
+  const { hasRecord } = useDealMakerReady()
+  const record = dealMakerStore.record
+  
+  // Determine if using Deal Maker values (saved property mode)
+  const isSavedPropertyMode = !!savedPropertyId
+  
+  // Load Deal Maker record if in saved property mode
+  useEffect(() => {
+    if (isSavedPropertyMode && savedPropertyId && !hasRecord) {
+      dealMakerStore.loadRecord(savedPropertyId)
+    }
+  }, [isSavedPropertyMode, savedPropertyId, hasRecord, dealMakerStore])
   
   // State
   const [expandedSections, setExpandedSections] = useState({
@@ -190,7 +208,62 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
   const [showFactors, setShowFactors] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
 
+  // Try to load Deal Maker values from sessionStorage (for unsaved properties)
+  const [sessionData, setSessionData] = useState<{
+    purchasePrice?: number
+    monthlyRent?: number
+    propertyTaxes?: number
+    insurance?: number
+    arv?: number
+  } | null>(null)
+  
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isSavedPropertyMode) {
+      try {
+        const sessionKey = `dealMaker_${encodeURIComponent(fullAddress)}`
+        const stored = sessionStorage.getItem(sessionKey)
+        if (stored) {
+          const data = JSON.parse(stored)
+          // Check if data is recent (within last hour)
+          if (data.timestamp && Date.now() - data.timestamp < 3600000) {
+            setSessionData(data)
+            console.log('[Analysis IQ] Loaded Deal Maker values from sessionStorage:', data)
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load sessionStorage:', e)
+      }
+    }
+  }, [fullAddress, isSavedPropertyMode])
+
+  // Merge Deal Maker values with property data
+  // Priority: dealMakerStore (saved) > sessionStorage (unsaved) > property defaults
+  const effectiveProperty = useMemo(() => {
+    if (isSavedPropertyMode && hasRecord && record) {
+      // Saved property mode: use values from store
+      return {
+        ...property,
+        listPrice: record.buy_price,  // Use user's buy price for calculations
+        monthlyRent: record.monthly_rent,
+        propertyTaxes: record.annual_property_tax,
+        insurance: record.annual_insurance,
+        arv: record.arv,
+      }
+    } else if (sessionData) {
+      // Unsaved property with Deal Maker session data
+      return {
+        ...property,
+        listPrice: sessionData.purchasePrice ?? property.listPrice,
+        monthlyRent: sessionData.monthlyRent ?? property.monthlyRent,
+        propertyTaxes: sessionData.propertyTaxes ?? property.propertyTaxes,
+        insurance: sessionData.insurance ?? property.insurance,
+        arv: sessionData.arv ?? property.arv,
+      }
+    }
+    return property
+  }, [property, isSavedPropertyMode, hasRecord, record, sessionData])
 
   // Convert to CompactHeader format
   const headerPropertyData: HeaderPropertyData = {
@@ -201,44 +274,44 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
     beds: property.bedrooms,
     baths: property.bathrooms,
     sqft: property.sqft,
-    price: property.listPrice,
-    rent: property.monthlyRent,
+    price: effectiveProperty.listPrice,  // Show user's buy price in header
+    rent: effectiveProperty.monthlyRent,
     status: 'OFF-MARKET',
     image: property.thumbnailUrl,
     zpid: property.zpid,
   }
 
-  // Calculate metrics based on property data
+  // Calculate metrics based on effective property data (with Deal Maker overrides)
   const metrics = useMemo(() => {
-    const annualRent = property.monthlyRent * 12
-    const noi = annualRent - property.propertyTaxes - property.insurance - (annualRent * 0.05) // 5% vacancy
-    const downPayment = property.listPrice * 0.25 // 25% down
-    const loanAmount = property.listPrice * 0.75
+    const annualRent = effectiveProperty.monthlyRent * 12
+    const noi = annualRent - effectiveProperty.propertyTaxes - effectiveProperty.insurance - (annualRent * 0.05) // 5% vacancy
+    const downPayment = effectiveProperty.listPrice * 0.25 // 25% down
+    const loanAmount = effectiveProperty.listPrice * 0.75
     const annualDebtService = (loanAmount * 0.07) / 12 * 12 // ~7% interest approximation
     const cashFlow = noi - annualDebtService
     
     // Cap Rate
-    const capRate = (noi / property.listPrice) * 100
+    const capRate = (noi / effectiveProperty.listPrice) * 100
     
     // Cash on Cash
     const cashOnCash = (cashFlow / downPayment) * 100
     
-    // Equity Capture (assuming ARV is 15% higher)
-    const arv = property.arv || property.listPrice * 1.15
-    const equityCapture = ((arv - property.listPrice) / property.listPrice) * 100
+    // Equity Capture (using ARV from Deal Maker or default)
+    const arv = effectiveProperty.arv || effectiveProperty.listPrice * 1.15
+    const equityCapture = ((arv - effectiveProperty.listPrice) / effectiveProperty.listPrice) * 100
     
     // DSCR
     const dscr = noi / annualDebtService
     
     // Expense Ratio
-    const totalExpenses = property.propertyTaxes + property.insurance + (annualRent * 0.05)
+    const totalExpenses = effectiveProperty.propertyTaxes + effectiveProperty.insurance + (annualRent * 0.05)
     const expenseRatio = (totalExpenses / annualRent) * 100
     
     // Cash Flow Yield
     const cashFlowYield = (cashFlow / downPayment) * 100
     
     // Breakeven Occupancy
-    const fixedCosts = property.propertyTaxes + property.insurance + annualDebtService
+    const fixedCosts = effectiveProperty.propertyTaxes + effectiveProperty.insurance + annualDebtService
     const breakevenOcc = (fixedCosts / annualRent) * 100
 
     // Calculate composite score
@@ -266,7 +339,7 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
       cashFlow,
       downPayment,
     }
-  }, [property])
+  }, [effectiveProperty])
 
   // Build metric rows with range position data
   const returnMetrics = [
@@ -389,6 +462,7 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
         onBack={handleBack}
         activeNav="analysis"
         defaultPropertyOpen={false}
+        savedPropertyId={savedPropertyId}
       />
 
       {/* Main Content */}

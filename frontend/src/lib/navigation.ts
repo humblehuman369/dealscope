@@ -21,11 +21,17 @@ export const ROUTES = {
   property: (ctx: NavContext) => 
     `/property/${ctx.zpid || 'unknown'}?address=${encodeURIComponent(ctx.address || '')}`,
   
-  verdict: (ctx: NavContext) => 
-    `/verdict?address=${encodeURIComponent(ctx.address || '')}`,
+  verdict: (ctx: NavContext) => {
+    const params = new URLSearchParams({ address: ctx.address || '' });
+    if (ctx.propertyId) params.set('propertyId', ctx.propertyId);
+    return `/verdict?${params.toString()}`;
+  },
   
-  analysis: (ctx: NavContext) => 
-    `/analysis-iq?address=${encodeURIComponent(ctx.address || '')}`,
+  analysis: (ctx: NavContext) => {
+    const params = new URLSearchParams({ address: ctx.address || '' });
+    if (ctx.propertyId) params.set('propertyId', ctx.propertyId);
+    return `/analysis-iq?${params.toString()}`;
+  },
   
   dealMaker: (ctx: NavContext) => 
     `/deal-maker/${encodeURIComponent(ctx.address || '')}`,

@@ -524,6 +524,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         onBack={handleBack}
         activeNav="deals"
         defaultPropertyOpen={false}
+        savedPropertyId={savedPropertyId}
       />
 
       {/* Key Metrics Row */}

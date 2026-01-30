@@ -49,6 +49,8 @@ interface CompactHeaderProps {
   activeNav?: NavItemId;
   onPropertyClick?: (isOpen: boolean) => void;
   defaultPropertyOpen?: boolean;
+  // For saved properties, include propertyId in navigation context
+  savedPropertyId?: string;
 }
 
 const STRATEGIES: Strategy[] = [
@@ -173,6 +175,7 @@ export function CompactHeader({
   activeNav = 'analysis',
   onPropertyClick,
   defaultPropertyOpen = false,
+  savedPropertyId,
 }: CompactHeaderProps) {
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -182,9 +185,11 @@ export function CompactHeader({
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zip}`;
   
   // Navigation context for toolbar
+  // Include propertyId for saved properties so Deal Maker values persist across pages
   const navContext: NavContext = {
     address: fullAddress,
     zpid: property.zpid,
+    propertyId: savedPropertyId,
   };
 
   // Format helpers
