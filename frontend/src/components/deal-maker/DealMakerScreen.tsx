@@ -206,10 +206,6 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
 export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMakerScreenProps) {
   const router = useRouter()
   
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:206',message:'DealMakerScreen mounted',data:{propertyZpid:property.zpid,propertyAddress:property.address,hasZpid:!!property.zpid,listPrice},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H2'})}).catch(()=>{});
-  // #endregion
-  
   // Fetch centralized defaults based on property ZIP code
   const { defaults, loading: defaultsLoading } = useDefaults(property.zipCode)
   
@@ -285,7 +281,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
       worksheetStore.initializeFromProperty(propertyForWorksheet)
       setWorksheetInitialized(true)
     }
-  }, [worksheetInitialized, property, listPrice, worksheetStore, tempPropertyId])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [worksheetInitialized, tempPropertyId])
   
   // Sync Deal Maker state to worksheet store on EVERY change (with debouncing built into worksheetStore)
   useEffect(() => {
@@ -310,6 +307,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
       hoaFees: state.monthlyHoa * 12,
     })
     // worksheetStore.updateMultipleAssumptions already triggers recalculation with debouncing
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     worksheetInitialized,
     state.buyPrice,
@@ -326,7 +324,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     state.annualPropertyTax,
     state.annualInsurance,
     state.monthlyHoa,
-    worksheetStore
+    // Note: worksheetStore removed to prevent infinite loop - it's a store reference, not a value
   ])
   
   // Sync Deal Maker state to worksheet store and navigate to results

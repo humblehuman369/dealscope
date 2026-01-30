@@ -28,10 +28,6 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useWorksheetProperty.ts:15',message:'Hook initialized',data:{propertyId,isAuthenticated,authLoading,isTemp:isTempPropertyId(propertyId),worksheetStoreId:worksheetStore.propertyId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H3'})}).catch(()=>{});
-  // #endregion
-  
   // Use ref to avoid re-fetching when onLoaded changes (prevents infinite loop)
   const onLoadedRef = useRef(onLoaded)
   onLoadedRef.current = onLoaded
@@ -175,7 +171,10 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
     }
 
     fetchProperty()
-  }, [propertyId, isAuthenticated, authLoading, router, worksheetStore.propertyId, worksheetStore.propertyData, worksheetStore.assumptions])
+    // Note: worksheetStore values intentionally excluded from deps to prevent infinite loops
+    // The effect runs once per propertyId change, and worksheetStore data is read at that moment
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propertyId, isAuthenticated, authLoading, router])
   
   // Reset fetch flag when propertyId changes
   useEffect(() => {
