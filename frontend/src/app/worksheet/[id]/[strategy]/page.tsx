@@ -21,6 +21,10 @@ export default function StrategyWorksheetPage() {
 
   const propertyId = params.id as string
   const strategyParam = params.strategy as WorksheetStrategyId
+  
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'worksheet/page.tsx:17',message:'StrategyWorksheetPage mounted',data:{propertyId,strategyParam,rawId:params.id},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H3'})}).catch(()=>{});
+  // #endregion
 
   const isValidStrategy = useMemo(
     () => WORKSHEET_STRATEGIES.some((strategy) => strategy.id === strategyParam),

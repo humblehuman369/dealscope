@@ -206,6 +206,10 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
 export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMakerScreenProps) {
   const router = useRouter()
   
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:206',message:'DealMakerScreen mounted',data:{propertyZpid:property.zpid,propertyAddress:property.address,hasZpid:!!property.zpid,listPrice},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H2'})}).catch(()=>{});
+  // #endregion
+  
   // Fetch centralized defaults based on property ZIP code
   const { defaults, loading: defaultsLoading } = useDefaults(property.zipCode)
   
@@ -255,6 +259,9 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
   
   // Initialize worksheet store with property data on mount
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:258',message:'worksheetStore init check',data:{worksheetInitialized,hasZpid:!!property.zpid,zpid:property.zpid,willInitialize:!worksheetInitialized && !!property.zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
+    // #endregion
     if (!worksheetInitialized && property.zpid) {
       // Create a property object compatible with worksheetStore
       const propertyForWorksheet = {
@@ -334,6 +341,9 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     
     // Navigate to worksheet page - use zpid or encoded address as ID
     const propertyId = property.zpid || encodeURIComponent(property.address)
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:336',message:'handleSeeResults navigating',data:{hasZpid:!!property.zpid,zpid:property.zpid,propertyId,strategySlug,navigationUrl:`/worksheet/${propertyId}/${strategySlug}`},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4'})}).catch(()=>{});
+    // #endregion
     router.push(`/worksheet/${propertyId}/${strategySlug}`)
   }, [router, property.zpid, property.address, currentStrategy, worksheetStore])
 

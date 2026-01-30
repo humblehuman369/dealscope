@@ -21,6 +21,10 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useWorksheetProperty.ts:15',message:'Hook initialized',data:{propertyId,isAuthenticated,authLoading},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H3'})}).catch(()=>{});
+  // #endregion
+  
   // Use ref to avoid re-fetching when onLoaded changes (prevents infinite loop)
   const onLoadedRef = useRef(onLoaded)
   onLoadedRef.current = onLoaded
@@ -64,13 +68,20 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
           return
         }
         
-        const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved/${propertyId}`, {
+        const fetchUrl = `${API_BASE_URL}/api/v1/properties/saved/${propertyId}`
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useWorksheetProperty.ts:67',message:'Fetching property from API',data:{fetchUrl,propertyId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
+        const response = await fetch(fetchUrl, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
         })
 
         console.log('[useWorksheetProperty] Response status:', response.status)
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useWorksheetProperty.ts:73',message:'API response received',data:{status:response.status,ok:response.ok,propertyId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
 
         if (!response.ok) {
           if (response.status === 401) {
@@ -80,6 +91,9 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
             return
           }
           if (response.status === 404) {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useWorksheetProperty.ts:82',message:'Property NOT FOUND - 404 error',data:{propertyId,status:404,errorMessage:'Property not found'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{});
+            // #endregion
             setError('Property not found')
           } else {
             const errorData = await response.json().catch(() => ({}))

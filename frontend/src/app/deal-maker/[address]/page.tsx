@@ -58,6 +58,10 @@ export default function DealMakerRoutePage() {
     propertyTax: propertyTax,
     insurance: insurance,
   }
+  
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deal-maker/[address]/page.tsx:48',message:'DealMakerRoutePage property built',data:{hasZpid:!!property.zpid,address:property.address,price:property.price,zpid:property.zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
+  // #endregion
 
   return (
     <DealMakerScreen
