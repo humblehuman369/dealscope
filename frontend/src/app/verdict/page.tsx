@@ -82,6 +82,17 @@ function VerdictContent() {
 
   const addressParam = searchParams.get('address') || ''
   
+  // Check for Deal Maker override values (when coming from Deal Maker with adjustments)
+  const overridePurchasePrice = searchParams.get('purchasePrice')
+  const overrideMonthlyRent = searchParams.get('monthlyRent')
+  const overridePropertyTaxes = searchParams.get('propertyTaxes')
+  const overrideInsurance = searchParams.get('insurance')
+  const overrideArv = searchParams.get('arv')
+  const overrideZpid = searchParams.get('zpid')
+  
+  // Parse override values
+  const hasDealMakerOverrides = !!(overridePurchasePrice || overrideMonthlyRent)
+  
   // State for property data and analysis
   const [property, setProperty] = useState<IQProperty | null>(null)
   const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
@@ -209,17 +220,37 @@ function VerdictContent() {
         setProperty(propertyData)
         
         // Fetch analysis from backend API (all calculations done server-side)
-        // Use same fallback logic as worksheet to ensure consistency
-        const listPriceForCalc = propertyData.price
-        const rentForCalc = propertyData.monthlyRent || (listPriceForCalc * 0.007) // 0.7% rule
-        const taxesForCalc = propertyData.propertyTaxes || (listPriceForCalc * 0.012) // ~1.2%
-        const insuranceForCalc = propertyData.insurance || (listPriceForCalc * 0.01) // 1%
+        // Use Deal Maker override values if provided, otherwise use property data with fallbacks
+        const listPriceForCalc = overridePurchasePrice 
+          ? parseFloat(overridePurchasePrice) 
+          : propertyData.price
+        const rentForCalc = overrideMonthlyRent 
+          ? parseFloat(overrideMonthlyRent) 
+          : (propertyData.monthlyRent || (listPriceForCalc * 0.007)) // 0.7% rule
+        const taxesForCalc = overridePropertyTaxes 
+          ? parseFloat(overridePropertyTaxes) 
+          : (propertyData.propertyTaxes || (listPriceForCalc * 0.012)) // ~1.2%
+        const insuranceForCalc = overrideInsurance 
+          ? parseFloat(overrideInsurance) 
+          : (propertyData.insurance || (listPriceForCalc * 0.01)) // 1%
+        const arvForCalc = overrideArv 
+          ? parseFloat(overrideArv) 
+          : propertyData.arv
         
         console.log('[IQ Verdict] Calculation inputs:', {
           list_price: listPriceForCalc,
           monthly_rent: rentForCalc,
           property_taxes: taxesForCalc,
           insurance: insuranceForCalc,
+          arv: arvForCalc,
+          hasDealMakerOverrides,
+          overrides: hasDealMakerOverrides ? {
+            purchasePrice: overridePurchasePrice,
+            monthlyRent: overrideMonthlyRent,
+            propertyTaxes: overridePropertyTaxes,
+            insurance: overrideInsurance,
+            arv: overrideArv,
+          } : null,
           provided: {
             rent: propertyData.monthlyRent,
             taxes: propertyData.propertyTaxes,
@@ -241,7 +272,7 @@ function VerdictContent() {
               bedrooms: propertyData.beds,
               bathrooms: propertyData.baths,
               sqft: propertyData.sqft,
-              arv: propertyData.arv,
+              arv: arvForCalc,
               average_daily_rate: propertyData.averageDailyRate,
               occupancy_rate: propertyData.occupancyRate,
             }),

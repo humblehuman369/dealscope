@@ -330,31 +330,36 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     // Note: worksheetStore removed to prevent infinite loop - it's a store reference, not a value
   ])
   
-  // Sync Deal Maker state to worksheet store and navigate to results
+  // Navigate to Verdict IQ page with adjusted values for recalculation
   const handleSeeResults = useCallback(() => {
-    // Trigger recalculation with current state
-    worksheetStore.recalculate()
+    // Build full address for Verdict page
+    const fullAddr = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
     
-    // Determine strategy route based on current selection
-    const strategyMap: Record<string, string> = {
-      'Long-term': 'ltr',
-      'Short-term': 'str',
-      'BRRRR': 'brrrr',
-      'Fix & Flip': 'flip',
-      'House Hack': 'househack',
-      'Wholesale': 'wholesale',
+    // Build query params with Deal Maker adjusted values
+    const params = new URLSearchParams({
+      address: fullAddr,
+      // Pass adjusted values from Deal Maker
+      purchasePrice: String(state.buyPrice),
+      monthlyRent: String(state.monthlyRent),
+      propertyTaxes: String(state.annualPropertyTax),
+      insurance: String(state.annualInsurance),
+    })
+    
+    // Add optional params
+    if (property.zpid) {
+      params.set('zpid', property.zpid)
     }
-    const strategySlug = strategyMap[currentStrategy] || 'ltr'
+    if (state.arv > 0) {
+      params.set('arv', String(state.arv))
+    }
     
-    // Navigate to worksheet page - always use temp ID since Deal Maker properties aren't saved
-    const propertyId = property.zpid 
-      ? `temp_zpid_${property.zpid}` 
-      : `temp_${encodeURIComponent(property.address)}`
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:348',message:'handleSeeResults v2',data:{propertyId,hasTemp:propertyId.startsWith('temp_'),strategySlug,codeVersion:'FIX_V2'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:348',message:'handleSeeResults v3 - navigating to verdict',data:{address:fullAddr,purchasePrice:state.buyPrice,monthlyRent:state.monthlyRent,codeVersion:'FIX_V3'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4'})}).catch(()=>{});
     // #endregion
-    router.push(`/worksheet/${propertyId}/${strategySlug}`)
-  }, [router, property.zpid, property.address, currentStrategy, worksheetStore])
+    
+    // Navigate to Verdict IQ page with adjusted values
+    router.push(`/verdict?${params.toString()}`)
+  }, [router, property, state.buyPrice, state.monthlyRent, state.annualPropertyTax, state.annualInsurance, state.arv])
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
 
