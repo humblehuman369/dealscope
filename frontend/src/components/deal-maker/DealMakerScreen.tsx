@@ -209,29 +209,63 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
   // Fetch centralized defaults based on property ZIP code
   const { defaults, loading: defaultsLoading } = useDefaults(property.zipCode)
   
+  // Worksheet store for syncing changes to analytics
+  const worksheetStore = useWorksheetStore()
+  
+  // Generate property ID for worksheetStore lookup
+  const tempPropertyId = property.zpid 
+    ? `temp_zpid_${property.zpid}` 
+    : `temp_${encodeURIComponent(property.address)}`
+  
+  // Check if worksheetStore has existing adjustments for this property
+  const hasExistingAdjustments = worksheetStore.propertyId === tempPropertyId && 
+    worksheetStore.assumptions?.purchasePrice > 0
+  
+  // Initialize state from worksheetStore if adjustments exist, otherwise from props
+  const getInitialState = (): DealMakerState => {
+    if (hasExistingAdjustments) {
+      const a = worksheetStore.assumptions
+      return {
+        buyPrice: a.purchasePrice || listPrice || property.price || 350000,
+        downPaymentPercent: a.downPaymentPct || 0.20,
+        closingCostsPercent: a.closingCostsPct || 0.03,
+        interestRate: a.interestRate || 0.06,
+        loanTermYears: a.loanTermYears || 30,
+        rehabBudget: a.rehabCosts || 0,
+        arv: a.arv || (listPrice ?? property.price ?? 350000),
+        monthlyRent: a.monthlyRent || property.rent || 2800,
+        otherIncome: 0,
+        vacancyRate: a.vacancyRate || 0.01,
+        maintenanceRate: a.maintenancePct || 0.05,
+        managementRate: a.managementPct || 0.00,
+        annualPropertyTax: a.propertyTaxes || property.propertyTax || 4200,
+        annualInsurance: a.insurance || property.insurance || 1800,
+        monthlyHoa: (a.hoaFees || 0) / 12,
+      }
+    }
+    return {
+      buyPrice: listPrice ?? property.price ?? 350000,
+      downPaymentPercent: 0.20,
+      closingCostsPercent: 0.03,
+      interestRate: 0.06,
+      loanTermYears: 30,
+      rehabBudget: 0,
+      arv: (listPrice ?? property.price ?? 350000) * 1.0,
+      monthlyRent: property.rent ?? 2800,
+      otherIncome: 0,
+      vacancyRate: 0.01,
+      maintenanceRate: 0.05,
+      managementRate: 0.00,
+      annualPropertyTax: property.propertyTax || 4200,
+      annualInsurance: property.insurance || 1800,
+      monthlyHoa: 0,
+    }
+  }
+  
   // State
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
   const [activeAccordion, setActiveAccordion] = useState<AccordionSection>('buyPrice')
-  const [state, setState] = useState<DealMakerState>({
-    buyPrice: listPrice ?? property.price ?? 350000,
-    downPaymentPercent: 0.20,  // Will be updated from defaults
-    closingCostsPercent: 0.03,
-    interestRate: 0.06,
-    loanTermYears: 30,
-    rehabBudget: 0,
-    arv: (listPrice ?? property.price ?? 350000) * 1.0,
-    monthlyRent: property.rent ?? 2800,
-    otherIncome: 0,
-    vacancyRate: 0.01,
-    maintenanceRate: 0.05,
-    managementRate: 0.00,
-    annualPropertyTax: property.propertyTax || 4200,
-    annualInsurance: property.insurance || 1800,
-    monthlyHoa: 0,
-  })
-  
-  // Worksheet store for syncing changes to analytics
-  const worksheetStore = useWorksheetStore()
+  const [state, setState] = useState<DealMakerState>(getInitialState)
   
   // Track if we've initialized the worksheet with this property
   const [worksheetInitialized, setWorksheetInitialized] = useState(false)
@@ -253,18 +287,13 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     }
   }, [defaults, defaultsLoading])
   
-  // Initialize worksheet store with property data on mount
-  // Always use temp_ prefix for Deal Maker properties since they're not saved in the database
-  // Include zpid in the temp ID for reference, otherwise use address
-  const tempPropertyId = property.zpid 
-    ? `temp_zpid_${property.zpid}` 
-    : `temp_${encodeURIComponent(property.address)}`
-  
+  // Initialize worksheet store with property data on mount (only if not already initialized for this property)
   useEffect(() => {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:260',message:'worksheetStore init v2',data:{worksheetInitialized,tempPropertyId,hasTemp:tempPropertyId.startsWith('temp_'),willInit:!worksheetInitialized,codeVersion:'FIX_V2'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:290',message:'worksheetStore init v3',data:{worksheetInitialized,tempPropertyId,hasExistingAdjustments,storePropertyId:worksheetStore.propertyId,codeVersion:'FIX_V4'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
     // #endregion
-    if (!worksheetInitialized) {
+    // Only initialize if we don't have existing adjustments for this property
+    if (!worksheetInitialized && !hasExistingAdjustments) {
       // Create a property object compatible with worksheetStore
       // Use zpid if available, otherwise use a temp ID based on address
       const propertyForWorksheet = {
@@ -283,9 +312,12 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
       }
       worksheetStore.initializeFromProperty(propertyForWorksheet)
       setWorksheetInitialized(true)
+    } else if (hasExistingAdjustments && !worksheetInitialized) {
+      // Existing adjustments found in store, just mark as initialized
+      setWorksheetInitialized(true)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [worksheetInitialized, tempPropertyId])
+  }, [worksheetInitialized, tempPropertyId, hasExistingAdjustments])
   
   // Sync Deal Maker state to worksheet store on EVERY change (with debouncing built into worksheetStore)
   useEffect(() => {
