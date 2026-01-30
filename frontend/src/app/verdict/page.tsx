@@ -93,6 +93,10 @@ function VerdictContent() {
   // Parse override values
   const hasDealMakerOverrides = !!(overridePurchasePrice || overrideMonthlyRent)
   
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'verdict/page.tsx:94',message:'VerdictContent params check',data:{addressParam,hasDealMakerOverrides,overridePurchasePrice,overrideMonthlyRent,overridePropertyTaxes,overrideInsurance,overrideArv,overrideZpid,codeVersion:'FIX_V3'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H6'})}).catch(()=>{});
+  // #endregion
+  
   // State for property data and analysis
   const [property, setProperty] = useState<IQProperty | null>(null)
   const [analysis, setAnalysis] = useState<IQAnalysisResult | null>(null)
@@ -257,6 +261,10 @@ function VerdictContent() {
             insurance: propertyData.insurance,
           }
         })
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'verdict/page.tsx:calcInputs',message:'Calculation inputs for API',data:{listPriceForCalc,rentForCalc,taxesForCalc,insuranceForCalc,arvForCalc,hasDealMakerOverrides,overridePurchasePrice,codeVersion:'FIX_V3'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H6'})}).catch(()=>{});
+        // #endregion
         
         try {
           const analysisResponse = await fetch('/api/v1/analysis/verdict', {
