@@ -2,10 +2,13 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 /**
- * Route Protection Middleware
+ * Route Protection Proxy
  * 
  * Handles authentication redirects at the edge before the page renders.
  * This prevents the "flash of protected content" issue.
+ * 
+ * NOTE: Next.js 16 renamed "middleware" to "proxy" to clarify its purpose.
+ * The proxy runs at the edge, in front of the app, handling routing concerns.
  */
 
 // Routes that require authentication
@@ -35,7 +38,7 @@ const publicRoutes = [
   '/onboarding',
 ]
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   
   // Get the access token from cookies or check for the cookie header
@@ -73,7 +76,7 @@ export function middleware(request: NextRequest) {
   return NextResponse.next()
 }
 
-// Configure which paths the middleware runs on
+// Configure which paths the proxy runs on
 export const config = {
   matcher: [
     /*
