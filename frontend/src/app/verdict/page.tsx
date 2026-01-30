@@ -169,9 +169,14 @@ function VerdictContent() {
   } = useProgressiveProfiling()
 
   // Load from dealMakerStore for saved properties
+  // Check both hasRecord AND if the loaded record is for the correct property
+  // This handles navigation between different saved properties
   useEffect(() => {
-    if (isSavedPropertyMode && propertyIdParam && !hasRecord) {
-      dealMakerStore.loadRecord(propertyIdParam)
+    if (isSavedPropertyMode && propertyIdParam) {
+      const isWrongProperty = dealMakerStore.propertyId !== propertyIdParam
+      if (!hasRecord || isWrongProperty) {
+        dealMakerStore.loadRecord(propertyIdParam)
+      }
     }
   }, [isSavedPropertyMode, propertyIdParam, hasRecord, dealMakerStore])
   

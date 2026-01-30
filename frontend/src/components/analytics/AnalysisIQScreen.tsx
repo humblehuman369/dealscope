@@ -193,9 +193,14 @@ export function AnalysisIQScreen({ property, initialStrategy, savedPropertyId }:
   const isSavedPropertyMode = !!savedPropertyId
   
   // Load Deal Maker record if in saved property mode
+  // Check both hasRecord AND if the loaded record is for the correct property
+  // This handles navigation between different saved properties
   useEffect(() => {
-    if (isSavedPropertyMode && savedPropertyId && !hasRecord) {
-      dealMakerStore.loadRecord(savedPropertyId)
+    if (isSavedPropertyMode && savedPropertyId) {
+      const isWrongProperty = dealMakerStore.propertyId !== savedPropertyId
+      if (!hasRecord || isWrongProperty) {
+        dealMakerStore.loadRecord(savedPropertyId)
+      }
     }
   }, [isSavedPropertyMode, savedPropertyId, hasRecord, dealMakerStore])
   

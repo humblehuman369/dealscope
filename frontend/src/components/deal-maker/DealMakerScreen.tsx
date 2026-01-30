@@ -246,9 +246,14 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   const [localState, setLocalState] = useState<DealMakerState>(getInitialLocalState)
   
   // Load Deal Maker record from backend for saved properties
+  // Check both hasRecord AND if the loaded record is for the correct property
+  // This handles navigation between different saved properties
   useEffect(() => {
-    if (isSavedPropertyMode && savedPropertyId && !hasRecord) {
-      dealMakerStore.loadRecord(savedPropertyId)
+    if (isSavedPropertyMode && savedPropertyId) {
+      const isWrongProperty = dealMakerStore.propertyId !== savedPropertyId
+      if (!hasRecord || isWrongProperty) {
+        dealMakerStore.loadRecord(savedPropertyId)
+      }
     }
   }, [isSavedPropertyMode, savedPropertyId, hasRecord, dealMakerStore])
   
