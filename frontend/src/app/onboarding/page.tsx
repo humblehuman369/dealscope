@@ -3,12 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-
-// #region agent log - temporarily at top for debugging
-const logOnboardingMount = () => {
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'onboarding/page.tsx:mount',message:'Onboarding page mounted',data:{},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
-};
-// #endregion
 import { 
   ChevronRight, ChevronLeft, Check, Sparkles, User,
   TrendingUp, Target, DollarSign, Home, Building2,
@@ -139,12 +133,6 @@ export default function OnboardingPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
-  // #region agent log
-  useEffect(() => {
-    logOnboardingMount();
-  }, []);
-  // #endregion
   
   const [formData, setFormData] = useState<OnboardingData>({
     full_name: '',

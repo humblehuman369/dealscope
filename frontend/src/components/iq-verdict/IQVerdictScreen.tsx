@@ -374,7 +374,7 @@ export function IQVerdictScreen({
               onClick={() => setShowMethodology(true)}
             >
               <Info className="w-3.5 h-3.5" />
-              How we score
+              How Verdict IQ Works
             </button>
           </div>
         </div>

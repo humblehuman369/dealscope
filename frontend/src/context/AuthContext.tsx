@@ -73,37 +73,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Load user from stored token on mount
   useEffect(() => {
     const initAuth = async () => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:initAuth:start',message:'Auth initialization starting',data:{hasWindow:typeof window!=='undefined'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,E'})}).catch(()=>{});
-      // #endregion
-      try {
-        const token = localStorage.getItem('access_token')
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:initAuth:tokenCheck',message:'Token check',data:{hasToken:!!token},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,E'})}).catch(()=>{});
-        // #endregion
-        if (token) {
-          try {
-            await fetchCurrentUser(token)
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:initAuth:userFetched',message:'User fetched successfully',data:{},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C,E'})}).catch(()=>{});
-            // #endregion
-          } catch (error) {
-            // Token expired or invalid - clear it
-            console.error('Failed to restore session:', error)
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:initAuth:fetchError',message:'Failed to restore session',data:{error:String(error)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C,E'})}).catch(()=>{});
-            // #endregion
-            localStorage.removeItem('access_token')
-            localStorage.removeItem('refresh_token')
-          }
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        try {
+          await fetchCurrentUser(token)
+        } catch (error) {
+          // Token expired or invalid - clear it
+          console.error('Failed to restore session:', error)
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
         }
-        setIsLoading(false)
-      } catch (outerError) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:initAuth:outerError',message:'Outer error in initAuth',data:{error:String(outerError)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,E'})}).catch(()=>{});
-        // #endregion
-        setIsLoading(false)
       }
+      setIsLoading(false)
     }
 
     initAuth()

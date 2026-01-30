@@ -32,12 +32,6 @@ import { SearchPropertyModal } from '@/components/SearchPropertyModal'
  * - max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8
  */
 export default function Header() {
-  // #region agent log
-  useEffect(() => {
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:mount',message:'Header component mounted',data:{},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
-  }, []);
-  // #endregion
-
   const pathname = usePathname()
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
