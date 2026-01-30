@@ -7,6 +7,8 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
 
+from app.schemas.deal_maker import DealMakerRecord, DealMakerRecordCreate
+
 
 class PropertyStatus(str, Enum):
     """Status of a saved property."""
@@ -58,6 +60,13 @@ class SavedPropertyCreate(SavedPropertyBase):
         description="Full property data at time of save"
     )
     
+    # Deal Maker Record - the central analysis data structure
+    # If provided, will be stored as-is. If not, will be created from property data + defaults
+    deal_maker_record: Optional[DealMakerRecord] = Field(
+        None,
+        description="Central analysis record with property data + assumptions + adjustments"
+    )
+    
     # Initial status
     status: PropertyStatus = PropertyStatus.WATCHING
 
@@ -68,7 +77,7 @@ class SavedPropertyUpdate(SavedPropertyBase):
     status: Optional[PropertyStatus] = None
     display_order: Optional[int] = None
     
-    # Custom value adjustments
+    # Custom value adjustments (DEPRECATED - use deal_maker_record)
     custom_purchase_price: Optional[float] = Field(None, ge=0)
     custom_rent_estimate: Optional[float] = Field(None, ge=0)
     custom_arv: Optional[float] = Field(None, ge=0)
@@ -76,11 +85,17 @@ class SavedPropertyUpdate(SavedPropertyBase):
     custom_daily_rate: Optional[float] = Field(None, ge=0)
     custom_occupancy_rate: Optional[float] = Field(None, ge=0, le=1)
     
-    # Custom assumptions per strategy
+    # Custom assumptions per strategy (DEPRECATED - use deal_maker_record)
     custom_assumptions: Optional[Dict[str, Any]] = None
     
-    # Worksheet assumptions (detailed analysis settings)
+    # Worksheet assumptions (DEPRECATED - use deal_maker_record)
     worksheet_assumptions: Optional[Dict[str, Any]] = None
+    
+    # Deal Maker Record - the central analysis data structure
+    deal_maker_record: Optional[DealMakerRecord] = Field(
+        None,
+        description="Central analysis record - replaces custom_assumptions and worksheet_assumptions"
+    )
 
 
 class SavedPropertySummary(BaseModel):
@@ -127,7 +142,7 @@ class SavedPropertyResponse(SavedPropertySummary):
     # Full property data
     property_data_snapshot: Optional[Dict[str, Any]]
     
-    # Custom adjustments
+    # Custom adjustments (DEPRECATED - use deal_maker_record)
     custom_purchase_price: Optional[float]
     custom_rent_estimate: Optional[float]
     custom_arv: Optional[float]
@@ -136,8 +151,14 @@ class SavedPropertyResponse(SavedPropertySummary):
     custom_occupancy_rate: Optional[float]
     custom_assumptions: Optional[Dict[str, Any]]
     
-    # Worksheet assumptions
+    # Worksheet assumptions (DEPRECATED - use deal_maker_record)
     worksheet_assumptions: Optional[Dict[str, Any]]
+    
+    # Deal Maker Record - the central analysis data structure
+    deal_maker_record: Optional[DealMakerRecord] = Field(
+        None,
+        description="Central analysis record with property data + assumptions + user adjustments"
+    )
     
     # Notes
     notes: Optional[str]

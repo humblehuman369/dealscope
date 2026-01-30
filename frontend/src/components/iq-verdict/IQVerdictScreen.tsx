@@ -19,7 +19,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react'
 import { ChevronDown, ChevronUp, ArrowRight, Download, Info, HelpCircle, Settings2, TrendingDown, Target, AlertCircle, Clock, AlertTriangle } from 'lucide-react'
-import { useDefaults } from '@/hooks/useDefaults'
+import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import {
   IQProperty,
   IQAnalysisResult,
@@ -95,6 +95,8 @@ interface IQVerdictScreenProps {
   onViewStrategy: (strategy: IQStrategy) => void
   onCompareAll: () => void
   isDark?: boolean
+  // If provided, assumptions will be read from dealMakerStore (saved property mode)
+  savedPropertyId?: string
 }
 
 // Default strategies for the dropdown
@@ -126,6 +128,7 @@ export function IQVerdictScreen({
   onViewStrategy,
   onCompareAll,
   isDark = false,
+  savedPropertyId,
 }: IQVerdictScreenProps) {
   const [showFactors, setShowFactors] = useState(true)
   const [showMethodology, setShowMethodology] = useState(false)
@@ -134,8 +137,49 @@ export function IQVerdictScreen({
   const [showAssumptions, setShowAssumptions] = useState(false)
   const topStrategy = analysis.strategies.reduce((best, s) => s.score > best.score ? s : best, analysis.strategies[0])
   
-  // Get user's default assumptions (for displaying what terms breakeven is based on)
-  const { defaults, hasUserCustomizations } = useDefaults(property.zip)
+  // Get assumptions from dealMakerStore (for saved properties) or use analysis inputs
+  const { record, isLoading: storeLoading } = useDealMakerStore()
+  const { hasRecord } = useDealMakerReady()
+  
+  // Determine if we're using store data or analysis data for assumptions display
+  const isSavedPropertyMode = !!savedPropertyId && hasRecord
+  
+  // Build defaults object from store or analysis inputs
+  const defaults = useMemo(() => {
+    if (isSavedPropertyMode && record?.initial_assumptions) {
+      // Use locked assumptions from DealMakerRecord
+      const initial = record.initial_assumptions
+      return {
+        financing: {
+          down_payment_pct: initial.down_payment_pct,
+          interest_rate: initial.interest_rate,
+          loan_term_years: initial.loan_term_years,
+          closing_costs_pct: initial.closing_costs_pct,
+        },
+        operating: {
+          vacancy_rate: initial.vacancy_rate,
+          maintenance_pct: initial.maintenance_pct,
+          property_management_pct: initial.management_pct,
+        },
+      }
+    }
+    // Fallback to hardcoded defaults (these should match backend defaults)
+    return {
+      financing: {
+        down_payment_pct: 0.20,
+        interest_rate: 0.06,
+        loan_term_years: 30,
+        closing_costs_pct: 0.03,
+      },
+      operating: {
+        vacancy_rate: 0.01,
+        maintenance_pct: 0.05,
+        property_management_pct: 0.00,
+      },
+    }
+  }, [isSavedPropertyMode, record])
+  
+  const hasUserCustomizations = isSavedPropertyMode && !!record?.initial_assumptions
   
   // Get verdict label and sublabel
   const verdictInfo = getVerdictLabel(analysis.dealScore)

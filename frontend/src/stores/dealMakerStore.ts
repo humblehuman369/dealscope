@@ -1,0 +1,491 @@
+import { create } from 'zustand'
+
+/**
+ * Deal Maker Store
+ * 
+ * The central store for Deal Maker data. This is the single source of truth for:
+ * - Deal Maker screen
+ * - IQ Verdict
+ * - Strategy worksheets
+ * - Dashboard cards
+ * 
+ * Key principles:
+ * - Loads from backend (never computes defaults locally)
+ * - All changes persist immediately to backend
+ * - initial_assumptions are immutable (locked at save time)
+ * - Metrics are recalculated on every update (backend-driven)
+ */
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const SAVE_DEBOUNCE_MS = 300
+
+// Debounce helper
+let saveTimeout: ReturnType<typeof setTimeout> | null = null
+
+// ============================================
+// Types matching backend schemas
+// ============================================
+
+export interface InitialAssumptions {
+  down_payment_pct: number
+  closing_costs_pct: number
+  interest_rate: number
+  loan_term_years: number
+  vacancy_rate: number
+  maintenance_pct: number
+  management_pct: number
+  insurance_pct: number
+  capex_pct: number
+  appreciation_rate: number
+  rent_growth_rate: number
+  expense_growth_rate: number
+  resolved_at?: string
+  zip_code?: string
+  market_region?: string
+  str_defaults?: Record<string, unknown>
+  brrrr_defaults?: Record<string, unknown>
+  flip_defaults?: Record<string, unknown>
+}
+
+export interface CachedMetrics {
+  cap_rate: number | null
+  cash_on_cash: number | null
+  monthly_cash_flow: number | null
+  annual_cash_flow: number | null
+  loan_amount: number | null
+  down_payment: number | null
+  closing_costs: number | null
+  monthly_payment: number | null
+  total_cash_needed: number | null
+  gross_income: number | null
+  vacancy_loss: number | null
+  total_expenses: number | null
+  noi: number | null
+  dscr: number | null
+  ltv: number | null
+  one_percent_rule: number | null
+  grm: number | null
+  equity: number | null
+  equity_after_rehab: number | null
+  deal_gap_pct: number | null
+  breakeven_price: number | null
+  calculated_at?: string
+}
+
+export interface DealMakerRecord {
+  // Property data (from API at search time)
+  list_price: number
+  rent_estimate: number
+  property_taxes: number
+  insurance: number
+  arv_estimate: number | null
+  sqft: number | null
+  bedrooms: number | null
+  bathrooms: number | null
+  year_built: number | null
+  property_type: string | null
+  
+  // Initial assumptions (locked at creation)
+  initial_assumptions: InitialAssumptions
+  
+  // User adjustments (editable via Deal Maker)
+  buy_price: number
+  down_payment_pct: number
+  closing_costs_pct: number
+  interest_rate: number
+  loan_term_years: number
+  rehab_budget: number
+  arv: number
+  monthly_rent: number
+  other_income: number
+  vacancy_rate: number
+  maintenance_pct: number
+  management_pct: number
+  capex_pct: number
+  annual_property_tax: number
+  annual_insurance: number
+  monthly_hoa: number
+  monthly_utilities: number
+  
+  // Cached metrics
+  cached_metrics: CachedMetrics | null
+  
+  // Metadata
+  created_at?: string
+  updated_at?: string
+  version: number
+}
+
+export interface DealMakerResponse {
+  record: DealMakerRecord
+  cash_needed: number | null
+  deal_gap: number | null
+  annual_profit: number | null
+  cap_rate: number | null
+  coc_return: number | null
+  monthly_payment: number | null
+}
+
+// Update payload (only user-adjustable fields)
+export interface DealMakerUpdate {
+  buy_price?: number
+  down_payment_pct?: number
+  closing_costs_pct?: number
+  interest_rate?: number
+  loan_term_years?: number
+  rehab_budget?: number
+  arv?: number
+  monthly_rent?: number
+  other_income?: number
+  vacancy_rate?: number
+  maintenance_pct?: number
+  management_pct?: number
+  capex_pct?: number
+  annual_property_tax?: number
+  annual_insurance?: number
+  monthly_hoa?: number
+  monthly_utilities?: number
+}
+
+// ============================================
+// Store State
+// ============================================
+
+export interface DealMakerState {
+  // Current property
+  propertyId: string | null
+  record: DealMakerRecord | null
+  
+  // Loading states
+  isLoading: boolean
+  isSaving: boolean
+  error: string | null
+  
+  // Dirty tracking
+  isDirty: boolean
+  pendingUpdates: DealMakerUpdate
+  
+  // Actions
+  loadRecord: (propertyId: string) => Promise<void>
+  updateField: <K extends keyof DealMakerUpdate>(field: K, value: DealMakerUpdate[K]) => void
+  updateMultipleFields: (updates: DealMakerUpdate) => void
+  saveToBackend: () => Promise<void>
+  debouncedSave: () => void
+  reset: () => void
+  
+  // Computed helpers
+  getMetrics: () => CachedMetrics | null
+  getCashNeeded: () => number
+  getDealGap: () => number
+  getAnnualProfit: () => number
+  getCapRate: () => number
+  getCocReturn: () => number
+  getMonthlyPayment: () => number
+}
+
+// ============================================
+// Store Implementation
+// ============================================
+
+export const useDealMakerStore = create<DealMakerState>((set, get) => ({
+  propertyId: null,
+  record: null,
+  isLoading: false,
+  isSaving: false,
+  error: null,
+  isDirty: false,
+  pendingUpdates: {},
+
+  loadRecord: async (propertyId: string) => {
+    set({ isLoading: true, error: null })
+    
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        throw new Error('Not authenticated')
+      }
+      
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/properties/saved/${propertyId}/deal-maker`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'Failed to load Deal Maker record')
+      }
+      
+      const data: DealMakerResponse = await response.json()
+      
+      set({
+        propertyId,
+        record: data.record,
+        isLoading: false,
+        isDirty: false,
+        pendingUpdates: {},
+        error: null,
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to load Deal Maker record'
+      set({
+        error: message,
+        isLoading: false,
+      })
+      console.error('Failed to load Deal Maker record:', error)
+    }
+  },
+
+  updateField: (field, value) => {
+    const { record, pendingUpdates } = get()
+    
+    if (!record) return
+    
+    // Update local state immediately for responsive UI
+    const updatedRecord = {
+      ...record,
+      [field]: value,
+    }
+    
+    // Track pending updates for debounced save
+    const newPendingUpdates = {
+      ...pendingUpdates,
+      [field]: value,
+    }
+    
+    set({
+      record: updatedRecord,
+      isDirty: true,
+      pendingUpdates: newPendingUpdates,
+    })
+    
+    // Trigger debounced save
+    get().debouncedSave()
+  },
+
+  updateMultipleFields: (updates) => {
+    const { record, pendingUpdates } = get()
+    
+    if (!record) return
+    
+    // Update local state immediately
+    const updatedRecord = {
+      ...record,
+      ...updates,
+    }
+    
+    // Track pending updates
+    const newPendingUpdates = {
+      ...pendingUpdates,
+      ...updates,
+    }
+    
+    set({
+      record: updatedRecord,
+      isDirty: true,
+      pendingUpdates: newPendingUpdates,
+    })
+    
+    // Trigger debounced save
+    get().debouncedSave()
+  },
+
+  saveToBackend: async () => {
+    const { propertyId, pendingUpdates, isDirty } = get()
+    
+    if (!propertyId || !isDirty || Object.keys(pendingUpdates).length === 0) {
+      return
+    }
+    
+    set({ isSaving: true })
+    
+    try {
+      const token = localStorage.getItem('access_token')
+      if (!token) {
+        throw new Error('Not authenticated')
+      }
+      
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/properties/saved/${propertyId}/deal-maker`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(pendingUpdates),
+        }
+      )
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'Failed to save Deal Maker record')
+      }
+      
+      const data: DealMakerResponse = await response.json()
+      
+      // Update with server response (includes recalculated metrics)
+      set({
+        record: data.record,
+        isSaving: false,
+        isDirty: false,
+        pendingUpdates: {},
+        error: null,
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to save Deal Maker record'
+      set({
+        error: message,
+        isSaving: false,
+      })
+      console.error('Failed to save Deal Maker record:', error)
+    }
+  },
+
+  debouncedSave: () => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout)
+    }
+    saveTimeout = setTimeout(() => {
+      get().saveToBackend()
+    }, SAVE_DEBOUNCE_MS)
+  },
+
+  reset: () => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout)
+    }
+    set({
+      propertyId: null,
+      record: null,
+      isLoading: false,
+      isSaving: false,
+      error: null,
+      isDirty: false,
+      pendingUpdates: {},
+    })
+  },
+
+  // Computed helpers with safe defaults
+  getMetrics: () => {
+    return get().record?.cached_metrics || null
+  },
+
+  getCashNeeded: () => {
+    const metrics = get().record?.cached_metrics
+    return metrics?.total_cash_needed || 0
+  },
+
+  getDealGap: () => {
+    const metrics = get().record?.cached_metrics
+    return metrics?.deal_gap_pct || 0
+  },
+
+  getAnnualProfit: () => {
+    const metrics = get().record?.cached_metrics
+    return metrics?.annual_cash_flow || 0
+  },
+
+  getCapRate: () => {
+    const metrics = get().record?.cached_metrics
+    return metrics?.cap_rate || 0
+  },
+
+  getCocReturn: () => {
+    const metrics = get().record?.cached_metrics
+    return metrics?.cash_on_cash || 0
+  },
+
+  getMonthlyPayment: () => {
+    const metrics = get().record?.cached_metrics
+    return metrics?.monthly_payment || 0
+  },
+}))
+
+// ============================================
+// Selectors / Derived State
+// ============================================
+
+/**
+ * Hook to get derived Deal Maker values with safe number handling
+ */
+export const useDealMakerDerived = () => {
+  const record = useDealMakerStore((state) => state.record)
+  const metrics = record?.cached_metrics
+  
+  // Safe number function that handles NaN, Infinity, and extremely large values
+  const safeNumber = (value?: number | null, maxAbs: number = 1e12): number => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return 0
+    if (Math.abs(value) > maxAbs) return value > 0 ? maxAbs : -maxAbs
+    return value
+  }
+  
+  return {
+    // Property data
+    listPrice: safeNumber(record?.list_price),
+    rentEstimate: safeNumber(record?.rent_estimate),
+    
+    // User adjustments
+    buyPrice: safeNumber(record?.buy_price),
+    monthlyRent: safeNumber(record?.monthly_rent),
+    arv: safeNumber(record?.arv),
+    rehabBudget: safeNumber(record?.rehab_budget),
+    
+    // Financing
+    loanAmount: safeNumber(metrics?.loan_amount),
+    downPayment: safeNumber(metrics?.down_payment),
+    totalCashNeeded: safeNumber(metrics?.total_cash_needed),
+    monthlyPayment: safeNumber(metrics?.monthly_payment),
+    ltv: safeNumber(metrics?.ltv),
+    
+    // Income
+    grossIncome: safeNumber(metrics?.gross_income),
+    vacancyLoss: safeNumber(metrics?.vacancy_loss),
+    
+    // Expenses
+    totalExpenses: safeNumber(metrics?.total_expenses),
+    
+    // Cash Flow
+    noi: safeNumber(metrics?.noi),
+    annualCashFlow: safeNumber(metrics?.annual_cash_flow),
+    monthlyCashFlow: safeNumber(metrics?.monthly_cash_flow),
+    
+    // Returns
+    capRate: safeNumber(metrics?.cap_rate),
+    cashOnCash: safeNumber(metrics?.cash_on_cash),
+    
+    // Ratios
+    dscr: safeNumber(metrics?.dscr),
+    onePercentRule: safeNumber(metrics?.one_percent_rule),
+    grm: safeNumber(metrics?.grm),
+    
+    // Equity
+    equity: safeNumber(metrics?.equity),
+    equityAfterRehab: safeNumber(metrics?.equity_after_rehab),
+    
+    // Deal Analysis
+    dealGapPct: safeNumber(metrics?.deal_gap_pct),
+    breakevenPrice: safeNumber(metrics?.breakeven_price),
+    
+    // Has record loaded?
+    hasRecord: record !== null,
+  }
+}
+
+/**
+ * Hook to check if Deal Maker is ready
+ */
+export const useDealMakerReady = () => {
+  const { record, isLoading, error } = useDealMakerStore()
+  return {
+    isReady: record !== null && !isLoading,
+    isLoading,
+    error,
+    hasRecord: record !== null,
+  }
+}

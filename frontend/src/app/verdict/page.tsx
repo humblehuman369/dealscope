@@ -2,13 +2,18 @@
 
 /**
  * IQ Verdict Page
- * Route: /verdict?address=...
+ * Route: /verdict?address=... OR /verdict?propertyId=...
  * 
  * Shows the IQ Verdict with ranked strategy recommendations after analysis.
  * Fetches real property data from the API including photos, beds, baths, sqft, and price.
  * 
  * IMPORTANT: All calculations are done by the backend API.
  * This page does NOT perform any financial calculations locally.
+ * 
+ * ARCHITECTURE:
+ * - For SAVED properties (propertyId param): Loads from dealMakerStore
+ *   The DealMakerRecord contains all the assumptions and metrics from Deal Maker
+ * - For UNSAVED properties (address param): Uses URL params for overrides (legacy mode)
  */
 
 import { useCallback, useEffect, useState, Suspense } from 'react'
@@ -24,6 +29,7 @@ import { parseAddressString } from '@/utils/formatters'
 import { useAuth } from '@/context/AuthContext'
 import { useProgressiveProfiling } from '@/hooks/useProgressiveProfiling'
 import { ProgressiveProfilingPrompt } from '@/components/profile/ProgressiveProfilingPrompt'
+import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 
 // Backend analysis response type
 interface BackendAnalysisResponse {
@@ -80,9 +86,18 @@ function VerdictContent() {
   const searchParams = useSearchParams()
   const { isAuthenticated, setShowAuthModal } = useAuth()
 
+  // Check for saved property mode (when coming from Deal Maker with a propertyId)
+  const propertyIdParam = searchParams.get('propertyId')
   const addressParam = searchParams.get('address') || ''
   
-  // Check for Deal Maker override values (when coming from Deal Maker with adjustments)
+  // Deal Maker Store (for saved properties)
+  const dealMakerStore = useDealMakerStore()
+  const { hasRecord } = useDealMakerReady()
+  
+  // Determine if we're in "saved property mode" (use store) or "legacy mode" (use URL params)
+  const isSavedPropertyMode = !!propertyIdParam
+  
+  // Check for legacy Deal Maker override values (when coming from Deal Maker without propertyId)
   const overridePurchasePrice = searchParams.get('purchasePrice')
   const overrideMonthlyRent = searchParams.get('monthlyRent')
   const overridePropertyTaxes = searchParams.get('propertyTaxes')
@@ -91,11 +106,7 @@ function VerdictContent() {
   const overrideZpid = searchParams.get('zpid')
   
   // Parse override values
-  const hasDealMakerOverrides = !!(overridePurchasePrice || overrideMonthlyRent)
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'verdict/page.tsx:94',message:'VerdictContent params check',data:{addressParam,hasDealMakerOverrides,overridePurchasePrice,overrideMonthlyRent,overridePropertyTaxes,overrideInsurance,overrideArv,overrideZpid,codeVersion:'FIX_V3'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H6'})}).catch(()=>{});
-  // #endregion
+  const hasLegacyOverrides = !!(overridePurchasePrice || overrideMonthlyRent)
   
   // State for property data and analysis
   const [property, setProperty] = useState<IQProperty | null>(null)
@@ -115,10 +126,31 @@ function VerdictContent() {
     handleClose,
   } = useProgressiveProfiling()
 
-  // Fetch property data from API
+  // Load from dealMakerStore for saved properties
+  useEffect(() => {
+    if (isSavedPropertyMode && propertyIdParam && !hasRecord) {
+      dealMakerStore.loadRecord(propertyIdParam)
+    }
+  }, [isSavedPropertyMode, propertyIdParam, hasRecord, dealMakerStore])
+  
+  // Fetch property data from API (or use store data for saved properties)
   useEffect(() => {
     async function fetchPropertyData() {
-      if (!addressParam) {
+      // For saved property mode, wait for store to load then use that data
+      if (isSavedPropertyMode) {
+        if (!hasRecord) {
+          // Still loading from store
+          return
+        }
+        
+        // Use data from the dealMakerStore
+        const record = dealMakerStore.record!
+        // We need to fetch property details still, but use store values for calculations
+        // The propertyId should be used to load from saved properties API
+        // For now, continue to regular flow but use store values as overrides
+      }
+      
+      if (!addressParam && !isSavedPropertyMode) {
         setError('No address provided')
         setIsLoading(false)
         return
@@ -224,47 +256,61 @@ function VerdictContent() {
         setProperty(propertyData)
         
         // Fetch analysis from backend API (all calculations done server-side)
-        // Use Deal Maker override values if provided, otherwise use property data with fallbacks
-        const listPriceForCalc = overridePurchasePrice 
-          ? parseFloat(overridePurchasePrice) 
-          : propertyData.price
-        const rentForCalc = overrideMonthlyRent 
-          ? parseFloat(overrideMonthlyRent) 
-          : (propertyData.monthlyRent || (listPriceForCalc * 0.007)) // 0.7% rule
-        const taxesForCalc = overridePropertyTaxes 
-          ? parseFloat(overridePropertyTaxes) 
-          : (propertyData.propertyTaxes || (listPriceForCalc * 0.012)) // ~1.2%
-        const insuranceForCalc = overrideInsurance 
-          ? parseFloat(overrideInsurance) 
-          : (propertyData.insurance || (listPriceForCalc * 0.01)) // 1%
-        const arvForCalc = overrideArv 
-          ? parseFloat(overrideArv) 
-          : propertyData.arv
+        // Priority for calculation values:
+        // 1. DealMakerStore (for saved properties) - has locked assumptions from Deal Maker
+        // 2. URL param overrides (legacy mode for unsaved properties)
+        // 3. Property data from API
         
-        console.log('[IQ Verdict] Calculation inputs:', {
-          list_price: listPriceForCalc,
-          monthly_rent: rentForCalc,
-          property_taxes: taxesForCalc,
-          insurance: insuranceForCalc,
-          arv: arvForCalc,
-          hasDealMakerOverrides,
-          overrides: hasDealMakerOverrides ? {
-            purchasePrice: overridePurchasePrice,
-            monthlyRent: overrideMonthlyRent,
-            propertyTaxes: overridePropertyTaxes,
-            insurance: overrideInsurance,
-            arv: overrideArv,
-          } : null,
-          provided: {
-            rent: propertyData.monthlyRent,
-            taxes: propertyData.propertyTaxes,
-            insurance: propertyData.insurance,
-          }
-        })
+        let listPriceForCalc: number
+        let rentForCalc: number
+        let taxesForCalc: number
+        let insuranceForCalc: number
+        let arvForCalc: number | null
         
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'verdict/page.tsx:calcInputs',message:'Calculation inputs for API',data:{listPriceForCalc,rentForCalc,taxesForCalc,insuranceForCalc,arvForCalc,hasDealMakerOverrides,overridePurchasePrice,codeVersion:'FIX_V3'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H6'})}).catch(()=>{});
-        // #endregion
+        if (isSavedPropertyMode && hasRecord && dealMakerStore.record) {
+          // Use values from DealMakerRecord (single source of truth for saved properties)
+          const record = dealMakerStore.record
+          listPriceForCalc = record.buy_price
+          rentForCalc = record.monthly_rent
+          taxesForCalc = record.annual_property_tax
+          insuranceForCalc = record.annual_insurance
+          arvForCalc = record.arv
+          
+          console.log('[IQ Verdict] Using DealMakerStore values:', {
+            list_price: listPriceForCalc,
+            monthly_rent: rentForCalc,
+            property_taxes: taxesForCalc,
+            insurance: insuranceForCalc,
+            arv: arvForCalc,
+            source: 'dealMakerStore',
+          })
+        } else {
+          // Legacy mode: use URL param overrides or property data
+          listPriceForCalc = overridePurchasePrice 
+            ? parseFloat(overridePurchasePrice) 
+            : propertyData.price
+          rentForCalc = overrideMonthlyRent 
+            ? parseFloat(overrideMonthlyRent) 
+            : (propertyData.monthlyRent || (listPriceForCalc * 0.007)) // 0.7% rule
+          taxesForCalc = overridePropertyTaxes 
+            ? parseFloat(overridePropertyTaxes) 
+            : (propertyData.propertyTaxes || (listPriceForCalc * 0.012)) // ~1.2%
+          insuranceForCalc = overrideInsurance 
+            ? parseFloat(overrideInsurance) 
+            : (propertyData.insurance || (listPriceForCalc * 0.01)) // 1%
+          arvForCalc = overrideArv 
+            ? parseFloat(overrideArv) 
+            : propertyData.arv
+          
+          console.log('[IQ Verdict] Using legacy override values:', {
+            list_price: listPriceForCalc,
+            monthly_rent: rentForCalc,
+            property_taxes: taxesForCalc,
+            insurance: insuranceForCalc,
+            arv: arvForCalc,
+            source: hasLegacyOverrides ? 'urlParams' : 'propertyData',
+          })
+        }
         
         try {
           const analysisResponse = await fetch('/api/v1/analysis/verdict', {
@@ -355,7 +401,7 @@ function VerdictContent() {
     }
 
     fetchPropertyData()
-  }, [addressParam])
+  }, [addressParam, isSavedPropertyMode, hasRecord, dealMakerStore.record, overridePurchasePrice, overrideMonthlyRent, overridePropertyTaxes, overrideInsurance, overrideArv, hasLegacyOverrides])
 
   // Analysis is now fetched from backend API (stored in state)
   // No local calculations are performed

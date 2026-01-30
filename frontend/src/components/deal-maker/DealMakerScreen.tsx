@@ -12,15 +12,17 @@
  * 
  * Uses InvestIQ Universal Style Guide colors
  * 
- * NOTE: Default values are loaded from the centralized defaults API.
- * See docs/DEFAULTS_ARCHITECTURE.md for details.
+ * ARCHITECTURE: This component now uses the centralized dealMakerStore.
+ * - For SAVED properties: Load from backend via dealMakerStore.loadRecord(propertyId)
+ * - For UNSAVED properties: Use local state with property defaults (legacy mode)
+ * - All changes are persisted to backend immediately (for saved properties)
+ * - No more fetching defaults on every page load - they're locked in the DealMakerRecord
  */
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CompactHeader, type PropertyData as HeaderPropertyData } from '@/components/layout/CompactHeader'
-import { useDefaults } from '@/hooks/useDefaults'
-import { useWorksheetStore } from '@/stores/worksheetStore'
+import { useDealMakerStore, useDealMakerDerived, useDealMakerReady } from '@/stores/dealMakerStore'
 
 // Types
 export interface DealMakerPropertyData {
@@ -44,6 +46,9 @@ interface DealMakerScreenProps {
   property: DealMakerPropertyData
   listPrice?: number
   initialStrategy?: string
+  // If propertyId is provided, load from backend (saved property mode)
+  // If not provided, use local state (unsaved property mode)
+  savedPropertyId?: string
 }
 
 interface DealMakerState {
@@ -203,46 +208,19 @@ function SliderInput({ label, value, displayValue, min, max, minLabel, maxLabel,
   )
 }
 
-export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMakerScreenProps) {
+export function DealMakerScreen({ property, listPrice, initialStrategy, savedPropertyId }: DealMakerScreenProps) {
   const router = useRouter()
   
-  // Fetch centralized defaults based on property ZIP code
-  const { defaults, loading: defaultsLoading } = useDefaults(property.zipCode)
+  // Deal Maker Store (for saved properties)
+  const dealMakerStore = useDealMakerStore()
+  const derived = useDealMakerDerived()
+  const { isReady, isLoading: storeLoading, hasRecord } = useDealMakerReady()
   
-  // Worksheet store for syncing changes to analytics
-  const worksheetStore = useWorksheetStore()
+  // Determine if we're in "saved property mode" (use store) or "unsaved mode" (use local state)
+  const isSavedPropertyMode = !!savedPropertyId
   
-  // Generate property ID for worksheetStore lookup
-  const tempPropertyId = property.zpid 
-    ? `temp_zpid_${property.zpid}` 
-    : `temp_${encodeURIComponent(property.address)}`
-  
-  // Check if worksheetStore has existing adjustments for this property
-  const hasExistingAdjustments = worksheetStore.propertyId === tempPropertyId && 
-    worksheetStore.assumptions?.purchasePrice > 0
-  
-  // Initialize state from worksheetStore if adjustments exist, otherwise from props
-  const getInitialState = (): DealMakerState => {
-    if (hasExistingAdjustments) {
-      const a = worksheetStore.assumptions
-      return {
-        buyPrice: a.purchasePrice || listPrice || property.price || 350000,
-        downPaymentPercent: a.downPaymentPct || 0.20,
-        closingCostsPercent: a.closingCostsPct || 0.03,
-        interestRate: a.interestRate || 0.06,
-        loanTermYears: a.loanTermYears || 30,
-        rehabBudget: a.rehabCosts || 0,
-        arv: a.arv || (listPrice ?? property.price ?? 350000),
-        monthlyRent: a.monthlyRent || property.rent || 2800,
-        otherIncome: 0,
-        vacancyRate: a.vacancyRate || 0.01,
-        maintenanceRate: a.maintenancePct || 0.05,
-        managementRate: a.managementPct || 0.00,
-        annualPropertyTax: a.propertyTaxes || property.propertyTax || 4200,
-        annualInsurance: a.insurance || property.insurance || 1800,
-        monthlyHoa: (a.hoaFees || 0) / 12,
-      }
-    }
+  // Initialize local state for unsaved properties (backward compatibility)
+  const getInitialLocalState = (): DealMakerState => {
     return {
       buyPrice: listPrice ?? property.price ?? 350000,
       downPaymentPercent: 0.20,
@@ -265,133 +243,70 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
   // State
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
   const [activeAccordion, setActiveAccordion] = useState<AccordionSection>('buyPrice')
-  const [state, setState] = useState<DealMakerState>(getInitialState)
+  const [localState, setLocalState] = useState<DealMakerState>(getInitialLocalState)
   
-  // Track if we've initialized the worksheet with this property
-  const [worksheetInitialized, setWorksheetInitialized] = useState(false)
-  
-  // Update state when defaults are loaded from API
+  // Load Deal Maker record from backend for saved properties
   useEffect(() => {
-    if (defaults && !defaultsLoading) {
-      setState(prev => ({
-        ...prev,
-        // Only update values that haven't been manually changed
-        downPaymentPercent: prev.downPaymentPercent === 0.20 ? (defaults.financing?.down_payment_pct ?? 0.20) : prev.downPaymentPercent,
-        closingCostsPercent: defaults.financing?.closing_costs_pct ?? prev.closingCostsPercent,
-        interestRate: defaults.financing?.interest_rate ?? prev.interestRate,
-        loanTermYears: defaults.financing?.loan_term_years ?? prev.loanTermYears,
-        vacancyRate: defaults.operating?.vacancy_rate ?? prev.vacancyRate,
-        maintenanceRate: defaults.operating?.maintenance_pct ?? prev.maintenanceRate,
-        managementRate: defaults.operating?.property_management_pct ?? prev.managementRate,
-      }))
+    if (isSavedPropertyMode && savedPropertyId && !hasRecord) {
+      dealMakerStore.loadRecord(savedPropertyId)
     }
-  }, [defaults, defaultsLoading])
+  }, [isSavedPropertyMode, savedPropertyId, hasRecord, dealMakerStore])
   
-  // Initialize worksheet store with property data on mount (only if not already initialized for this property)
-  useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:290',message:'worksheetStore init v3',data:{worksheetInitialized,tempPropertyId,hasExistingAdjustments,storePropertyId:worksheetStore.propertyId,codeVersion:'FIX_V4'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
-    // #endregion
-    // Only initialize if we don't have existing adjustments for this property
-    if (!worksheetInitialized && !hasExistingAdjustments) {
-      // Create a property object compatible with worksheetStore
-      // Use zpid if available, otherwise use a temp ID based on address
-      const propertyForWorksheet = {
-        id: tempPropertyId,
-        property_data_snapshot: {
-          listPrice: listPrice ?? property.price,
-          monthlyRent: property.rent,
-          propertyTaxes: property.propertyTax,
-          insurance: property.insurance,
-          sqft: property.sqft,
-          zipCode: property.zipCode,
-        },
-        worksheet_assumptions: {},
-        // Mark as unsaved so worksheet knows not to fetch from API
-        _isUnsaved: !property.zpid,
+  // Get the current state (from store for saved properties, local for unsaved)
+  const state: DealMakerState = useMemo(() => {
+    if (isSavedPropertyMode && hasRecord) {
+      const record = dealMakerStore.record!
+      return {
+        buyPrice: record.buy_price,
+        downPaymentPercent: record.down_payment_pct,
+        closingCostsPercent: record.closing_costs_pct,
+        interestRate: record.interest_rate,
+        loanTermYears: record.loan_term_years,
+        rehabBudget: record.rehab_budget,
+        arv: record.arv,
+        monthlyRent: record.monthly_rent,
+        otherIncome: record.other_income,
+        vacancyRate: record.vacancy_rate,
+        maintenanceRate: record.maintenance_pct,
+        managementRate: record.management_pct,
+        annualPropertyTax: record.annual_property_tax,
+        annualInsurance: record.annual_insurance,
+        monthlyHoa: record.monthly_hoa,
       }
-      worksheetStore.initializeFromProperty(propertyForWorksheet)
-      setWorksheetInitialized(true)
-    } else if (hasExistingAdjustments && !worksheetInitialized) {
-      // Existing adjustments found in store, just mark as initialized
-      setWorksheetInitialized(true)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [worksheetInitialized, tempPropertyId, hasExistingAdjustments])
+    return localState
+  }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, localState])
   
-  // Sync Deal Maker state to worksheet store on EVERY change (with debouncing built into worksheetStore)
-  useEffect(() => {
-    if (!worksheetInitialized) return
-    
-    // Map Deal Maker state to worksheet assumptions format and sync
-    worksheetStore.updateMultipleAssumptions({
-      purchasePrice: state.buyPrice,
-      downPaymentPct: state.downPaymentPercent,
-      closingCostsPct: state.closingCostsPercent,
-      closingCosts: state.buyPrice * state.closingCostsPercent,
-      interestRate: state.interestRate,
-      loanTermYears: state.loanTermYears,
-      rehabCosts: state.rehabBudget,
-      arv: state.arv,
-      monthlyRent: state.monthlyRent,
-      vacancyRate: state.vacancyRate,
-      maintenancePct: state.maintenanceRate,
-      managementPct: state.managementRate,
-      propertyTaxes: state.annualPropertyTax,
-      insurance: state.annualInsurance,
-      hoaFees: state.monthlyHoa * 12,
-    })
-    // worksheetStore.updateMultipleAssumptions already triggers recalculation with debouncing
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    worksheetInitialized,
-    state.buyPrice,
-    state.downPaymentPercent,
-    state.closingCostsPercent,
-    state.interestRate,
-    state.loanTermYears,
-    state.rehabBudget,
-    state.arv,
-    state.monthlyRent,
-    state.vacancyRate,
-    state.maintenanceRate,
-    state.managementRate,
-    state.annualPropertyTax,
-    state.annualInsurance,
-    state.monthlyHoa,
-    // Note: worksheetStore removed to prevent infinite loop - it's a store reference, not a value
-  ])
-  
-  // Navigate to Verdict IQ page with adjusted values for recalculation
+  // Navigate to Verdict IQ page
+  // For saved properties, Verdict will read from the store (same data source)
+  // For unsaved properties, pass values via URL params (legacy mode)
   const handleSeeResults = useCallback(() => {
-    // Build full address for Verdict page
     const fullAddr = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
     
-    // Build query params with Deal Maker adjusted values
-    const params = new URLSearchParams({
-      address: fullAddr,
-      // Pass adjusted values from Deal Maker
-      purchasePrice: String(state.buyPrice),
-      monthlyRent: String(state.monthlyRent),
-      propertyTaxes: String(state.annualPropertyTax),
-      insurance: String(state.annualInsurance),
-    })
-    
-    // Add optional params
-    if (property.zpid) {
-      params.set('zpid', property.zpid)
+    if (isSavedPropertyMode && savedPropertyId) {
+      // For saved properties, navigate with just the propertyId
+      // Verdict will load the DealMakerRecord from the same store
+      router.push(`/verdict?propertyId=${savedPropertyId}`)
+    } else {
+      // Legacy mode for unsaved properties - pass values via URL params
+      const params = new URLSearchParams({
+        address: fullAddr,
+        purchasePrice: String(state.buyPrice),
+        monthlyRent: String(state.monthlyRent),
+        propertyTaxes: String(state.annualPropertyTax),
+        insurance: String(state.annualInsurance),
+      })
+      
+      if (property.zpid) {
+        params.set('zpid', property.zpid)
+      }
+      if (state.arv > 0) {
+        params.set('arv', String(state.arv))
+      }
+      
+      router.push(`/verdict?${params.toString()}`)
     }
-    if (state.arv > 0) {
-      params.set('arv', String(state.arv))
-    }
-    
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:348',message:'handleSeeResults v3 - navigating to verdict',data:{address:fullAddr,purchasePrice:state.buyPrice,monthlyRent:state.monthlyRent,codeVersion:'FIX_V3'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4'})}).catch(()=>{});
-    // #endregion
-    
-    // Navigate to Verdict IQ page with adjusted values
-    router.push(`/verdict?${params.toString()}`)
-  }, [router, property, state.buyPrice, state.monthlyRent, state.annualPropertyTax, state.annualInsurance, state.arv])
+  }, [router, property, state, isSavedPropertyMode, savedPropertyId])
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
 
@@ -411,38 +326,47 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     zpid: property.zpid,
   }
 
-  // Get worksheet metrics for live updates (from API calculations)
-  const worksheetMetrics = worksheetStore.worksheetMetrics
-  const isWorksheetCalculating = worksheetStore.isCalculating
+  // Get metrics - from store for saved properties, calculate locally for unsaved
+  const isCalculating = isSavedPropertyMode ? dealMakerStore.isSaving : false
   
-  // Calculate metrics - prefer worksheetStore values when available for consistency
+  // Calculate metrics - prefer store values for saved properties
   const metrics = useMemo<DealMakerMetrics>(() => {
+    // For saved properties, use cached metrics from store
+    if (isSavedPropertyMode && hasRecord && dealMakerStore.record?.cached_metrics) {
+      const cachedMetrics = dealMakerStore.record.cached_metrics
+      const effectiveListPrice = dealMakerStore.record.list_price || state.buyPrice
+      const dealGap = effectiveListPrice > 0 
+        ? (effectiveListPrice - state.buyPrice) / effectiveListPrice 
+        : 0
+      
+      return {
+        cashNeeded: cachedMetrics.total_cash_needed || 0,
+        dealGap,
+        annualProfit: cachedMetrics.annual_cash_flow || 0,
+        capRate: (cachedMetrics.cap_rate || 0) * 100, // Convert to percentage
+        cocReturn: (cachedMetrics.cash_on_cash || 0) * 100, // Convert to percentage
+        monthlyPayment: cachedMetrics.monthly_payment || 0,
+        loanAmount: cachedMetrics.loan_amount || 0,
+        equityCreated: cachedMetrics.equity_after_rehab || 0,
+        grossMonthlyIncome: (cachedMetrics.gross_income || 0) / 12,
+        totalMonthlyExpenses: ((cachedMetrics.total_expenses || 0) + (cachedMetrics.monthly_payment || 0) * 12) / 12,
+      }
+    }
+    
+    // For unsaved properties, calculate locally
     const downPaymentAmount = state.buyPrice * state.downPaymentPercent
     const closingCostsAmount = state.buyPrice * state.closingCostsPercent
-    const cashNeeded = worksheetMetrics?.total_cash_needed ?? (downPaymentAmount + closingCostsAmount)
+    const cashNeeded = downPaymentAmount + closingCostsAmount
 
-    const loanAmount = worksheetMetrics?.loan_amount ?? (state.buyPrice - downPaymentAmount)
-    const monthlyPayment = worksheetMetrics?.monthly_payment ?? calculateMortgagePayment(loanAmount, state.interestRate, state.loanTermYears)
+    const loanAmount = state.buyPrice - downPaymentAmount
+    const monthlyPayment = calculateMortgagePayment(loanAmount, state.interestRate, state.loanTermYears)
 
     const totalInvestment = state.buyPrice + state.rehabBudget
     const equityCreated = state.arv - totalInvestment
 
     const grossMonthlyIncome = state.monthlyRent + state.otherIncome
 
-    // Use worksheet values when available
-    const annualCashFlow = worksheetMetrics?.annual_cash_flow ?? (() => {
-      const vacancy = grossMonthlyIncome * state.vacancyRate
-      const maintenance = grossMonthlyIncome * state.maintenanceRate
-      const management = grossMonthlyIncome * state.managementRate
-      const propertyTaxMonthly = state.annualPropertyTax / 12
-      const insuranceMonthly = state.annualInsurance / 12
-      const monthlyOperatingExpenses = vacancy + maintenance + management + 
-        propertyTaxMonthly + insuranceMonthly + state.monthlyHoa
-      const totalMonthlyExpenses = monthlyOperatingExpenses + monthlyPayment
-      return (grossMonthlyIncome - totalMonthlyExpenses) * 12
-    })()
-
-    // Calculate operating expenses for totalMonthlyExpenses display
+    // Calculate operating expenses
     const vacancy = grossMonthlyIncome * state.vacancyRate
     const maintenance = grossMonthlyIncome * state.maintenanceRate
     const management = grossMonthlyIncome * state.managementRate
@@ -452,13 +376,15 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
       propertyTaxMonthly + insuranceMonthly + state.monthlyHoa
     const totalMonthlyExpenses = monthlyOperatingExpenses + monthlyPayment
 
-    const capRate = worksheetMetrics?.cap_rate ?? (state.buyPrice > 0 
+    const annualCashFlow = (grossMonthlyIncome - totalMonthlyExpenses) * 12
+
+    const capRate = state.buyPrice > 0 
       ? (((grossMonthlyIncome - monthlyOperatingExpenses) * 12) / state.buyPrice) * 100 
-      : 0)
+      : 0
     
-    const cocReturn = worksheetMetrics?.cash_on_cash_return ?? (cashNeeded > 0 
+    const cocReturn = cashNeeded > 0 
       ? (annualCashFlow / cashNeeded) * 100 
-      : 0)
+      : 0
 
     const effectiveListPrice = listPrice ?? state.buyPrice
     const dealGap = effectiveListPrice > 0 
@@ -469,19 +395,47 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
       cashNeeded,
       dealGap,
       annualProfit: annualCashFlow,
-      capRate: worksheetMetrics ? capRate : capRate * 100, // worksheet returns %, local calc returns decimal
-      cocReturn: worksheetMetrics ? cocReturn : cocReturn * 100, // worksheet returns %, local calc returns decimal
+      capRate,
+      cocReturn,
       monthlyPayment,
       loanAmount,
       equityCreated,
       grossMonthlyIncome,
       totalMonthlyExpenses,
     }
-  }, [state, listPrice, worksheetMetrics])
+  }, [state, listPrice, isSavedPropertyMode, hasRecord, dealMakerStore.record])
 
+  // Update state - use store for saved properties, local state for unsaved
   const updateState = useCallback(<K extends keyof DealMakerState>(key: K, value: DealMakerState[K]) => {
-    setState(prev => ({ ...prev, [key]: value }))
-  }, [])
+    if (isSavedPropertyMode && hasRecord) {
+      // Map local field names to store field names
+      const fieldMap: Record<string, string> = {
+        buyPrice: 'buy_price',
+        downPaymentPercent: 'down_payment_pct',
+        closingCostsPercent: 'closing_costs_pct',
+        interestRate: 'interest_rate',
+        loanTermYears: 'loan_term_years',
+        rehabBudget: 'rehab_budget',
+        arv: 'arv',
+        monthlyRent: 'monthly_rent',
+        otherIncome: 'other_income',
+        vacancyRate: 'vacancy_rate',
+        maintenanceRate: 'maintenance_pct',
+        managementRate: 'management_pct',
+        annualPropertyTax: 'annual_property_tax',
+        annualInsurance: 'annual_insurance',
+        monthlyHoa: 'monthly_hoa',
+      }
+      
+      const storeField = fieldMap[key as string]
+      if (storeField) {
+        dealMakerStore.updateField(storeField as keyof typeof dealMakerStore.pendingUpdates, value as number)
+      }
+    } else {
+      // Local state for unsaved properties
+      setLocalState(prev => ({ ...prev, [key]: value }))
+    }
+  }, [isSavedPropertyMode, hasRecord, dealMakerStore])
 
   const handleStrategyChange = (strategy: string) => {
     setCurrentStrategy(strategy)
@@ -542,7 +496,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
       {/* Key Metrics Row */}
       <div className="bg-[#0A1628] px-4 pb-4 -mt-1">
         {/* Live calculation indicator */}
-        {isWorksheetCalculating && (
+        {isCalculating && (
           <div className="flex items-center justify-center gap-2 py-1.5 text-[10px] text-[#00D4FF]">
             <div className="w-2 h-2 bg-[#00D4FF] rounded-full animate-pulse" />
             Recalculating...
@@ -553,7 +507,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
             <div key={index} className="flex justify-between items-center py-0.5">
               <span className="text-xs text-[#94A3B8]">{metric.label}</span>
               <span 
-                className={`text-[13px] font-semibold tabular-nums ${isWorksheetCalculating ? 'opacity-60' : ''}`}
+                className={`text-[13px] font-semibold tabular-nums ${isCalculating ? 'opacity-60' : ''}`}
                 style={{ color: getValueColor(metric.color) }}
               >
                 {metric.value}

@@ -98,6 +98,16 @@ from app.schemas.saved_property import (
     BulkTagUpdate,
 )
 
+# Deal Maker schemas - central analysis data structure
+from app.schemas.deal_maker import (
+    InitialAssumptions,
+    CachedMetrics,
+    DealMakerRecord,
+    DealMakerRecordCreate,
+    DealMakerRecordUpdate,
+    DealMakerResponse,
+)
+
 __all__ = [
     # Property/Analytics (backward compatible)
     "PropertyType",
@@ -176,4 +186,11 @@ __all__ = [
     "PropertyAdjustmentResponse",
     "BulkStatusUpdate",
     "BulkTagUpdate",
+    # Deal Maker
+    "InitialAssumptions",
+    "CachedMetrics",
+    "DealMakerRecord",
+    "DealMakerRecordCreate",
+    "DealMakerRecordUpdate",
+    "DealMakerResponse",
 ]

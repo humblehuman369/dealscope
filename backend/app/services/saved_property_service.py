@@ -51,6 +51,11 @@ class SavedPropertyService:
             logger.info(f"Property already saved: {data.address_street}")
             raise ValueError("This property is already in your saved list")
         
+        # Convert DealMakerRecord to dict if provided
+        deal_maker_dict = None
+        if data.deal_maker_record:
+            deal_maker_dict = data.deal_maker_record.model_dump(mode="json")
+        
         # Create the saved property
         saved_property = SavedProperty(
             user_id=user_id,
@@ -62,6 +67,7 @@ class SavedPropertyService:
             address_zip=data.address_zip,
             full_address=data.full_address or f"{data.address_street}, {data.address_city}, {data.address_state} {data.address_zip}",
             property_data_snapshot=data.property_data_snapshot,
+            deal_maker_record=deal_maker_dict,
             status=data.status,
             nickname=data.nickname,
             tags=data.tags or [],
@@ -232,17 +238,23 @@ class SavedPropertyService:
         update_data = data.model_dump(exclude_unset=True)
         
         for field, value in update_data.items():
+            # Handle DealMakerRecord conversion to dict
+            if field == "deal_maker_record" and value is not None:
+                if hasattr(value, "model_dump"):
+                    value = value.model_dump(mode="json")
+            
             if track_changes and hasattr(saved_property, field):
                 old_value = getattr(saved_property, field)
                 if old_value != value:
-                    # Create adjustment record
-                    adjustment = PropertyAdjustment(
-                        property_id=saved_property.id,
-                        adjustment_type=field,
-                        previous_value={"value": old_value} if old_value is not None else None,
-                        new_value={"value": value} if value is not None else None,
-                    )
-                    db.add(adjustment)
+                    # Create adjustment record (skip for large JSON fields)
+                    if field not in ("deal_maker_record", "property_data_snapshot", "last_analytics_result"):
+                        adjustment = PropertyAdjustment(
+                            property_id=saved_property.id,
+                            adjustment_type=field,
+                            previous_value={"value": old_value} if old_value is not None else None,
+                            new_value={"value": value} if value is not None else None,
+                        )
+                        db.add(adjustment)
             
             setattr(saved_property, field, value)
         
