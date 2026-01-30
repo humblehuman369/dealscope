@@ -55,9 +55,6 @@ export function middleware(request: NextRequest) {
   
   // If trying to access a protected route without authentication
   if (isProtectedRoute && !token) {
-    // #region agent log
-    console.log('[DEBUG-MIDDLEWARE]',JSON.stringify({location:'middleware.ts:authRedirect',message:'Redirecting protected route - no auth token',data:{pathname,isProtectedRoute,hasToken:!!token},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'}));
-    // #endregion
     const loginUrl = new URL('/', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     loginUrl.searchParams.set('auth', 'required')

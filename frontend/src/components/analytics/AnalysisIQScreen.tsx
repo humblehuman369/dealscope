@@ -432,14 +432,8 @@ export function AnalysisIQScreen({ property, initialStrategy, savedPropertyId }:
   }
 
   const handleContinue = () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AnalysisIQScreen.tsx:handleContinue:entry',message:'handleContinue called',data:{fullAddress,propertyAddress:property?.address,propertyCity:property?.city,propertyState:property?.state,propertyZip:property?.zipCode},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,C'})}).catch(()=>{});
-    // #endregion
     // Navigate to Deal Maker with property data as query params
     const encodedAddress = encodeURIComponent(fullAddress.replace(/\s+/g, '-'))
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AnalysisIQScreen.tsx:handleContinue:encodedAddress',message:'Address encoded',data:{encodedAddress,originalFullAddress:fullAddress},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,E'})}).catch(()=>{});
-    // #endregion
     const params = new URLSearchParams({
       listPrice: String(property.listPrice),
       rentEstimate: String(property.monthlyRent),
@@ -450,14 +444,7 @@ export function AnalysisIQScreen({ property, initialStrategy, savedPropertyId }:
     if (property.zpid) {
       params.set('zpid', property.zpid)
     }
-    const targetUrl = `/deal-maker/${encodedAddress}?${params.toString()}`
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AnalysisIQScreen.tsx:handleContinue:beforePush',message:'About to navigate',data:{targetUrl,hasAccessToken:typeof document!=='undefined'&&document.cookie.includes('access_token')},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
-    // #endregion
-    router.push(targetUrl)
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AnalysisIQScreen.tsx:handleContinue:afterPush',message:'router.push called',data:{targetUrl},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
+    router.push(`/deal-maker/${encodedAddress}?${params.toString()}`)
   }
 
   // Score and derived values
