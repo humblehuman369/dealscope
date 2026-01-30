@@ -259,7 +259,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
   
   useEffect(() => {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:258',message:'worksheetStore init check',data:{worksheetInitialized,hasZpid:!!property.zpid,zpid:property.zpid,tempPropertyId,willInitialize:!worksheetInitialized},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:260',message:'worksheetStore init v2',data:{worksheetInitialized,tempPropertyId,hasTemp:tempPropertyId.startsWith('temp_'),willInit:!worksheetInitialized,codeVersion:'FIX_V2'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
     // #endregion
     if (!worksheetInitialized) {
       // Create a property object compatible with worksheetStore
@@ -346,7 +346,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     // Navigate to worksheet page - use zpid or temp ID for unsaved properties
     const propertyId = property.zpid || `temp_${encodeURIComponent(property.address)}`
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:336',message:'handleSeeResults navigating',data:{hasZpid:!!property.zpid,zpid:property.zpid,propertyId,strategySlug,navigationUrl:`/worksheet/${propertyId}/${strategySlug}`,isTemp:propertyId.startsWith('temp_')},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:348',message:'handleSeeResults v2',data:{propertyId,hasTemp:propertyId.startsWith('temp_'),strategySlug,codeVersion:'FIX_V2'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4'})}).catch(()=>{});
     // #endregion
     router.push(`/worksheet/${propertyId}/${strategySlug}`)
   }, [router, property.zpid, property.address, currentStrategy, worksheetStore])

@@ -43,6 +43,10 @@ export default function DealMakerRoutePage() {
   const propertyTax = parseNumericParam('propertyTax')
   const insurance = parseNumericParam('insurance')
   const rentEstimate = parseNumericParam('rentEstimate')
+  const beds = parseNumericParam('beds')
+  const baths = parseNumericParam('baths')
+  const sqft = parseNumericParam('sqft')
+  const zpid = searchParams.get('zpid') || undefined
 
   // Build property data from URL params
   const property: DealMakerPropertyData = {
@@ -50,17 +54,18 @@ export default function DealMakerRoutePage() {
     city: city,
     state: state || 'FL',
     zipCode: zipCode || '00000',
-    beds: 4,
-    baths: 2,
-    sqft: 1850,
+    beds: beds || 4,
+    baths: baths || 2,
+    sqft: sqft || 1850,
     price: listPrice || 350000,
     rent: rentEstimate,
     propertyTax: propertyTax,
     insurance: insurance,
+    zpid: zpid,
   }
   
   // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deal-maker/[address]/page.tsx:48',message:'DealMakerRoutePage property built',data:{hasZpid:!!property.zpid,address:property.address,price:property.price,zpid:property.zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
+  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'deal-maker/[address]/page.tsx:52',message:'DealMakerRoutePage v2',data:{hasZpid:!!property.zpid,zpid:property.zpid,address:property.address,price:property.price,rent:property.rent,codeVersion:'FIX_V2'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
   // #endregion
 
   return (

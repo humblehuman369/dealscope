@@ -50,10 +50,14 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
     }
     
     // Handle temporary (unsaved) properties - use worksheetStore data instead of API
-    if (isTempPropertyId(propertyId)) {
+    const isTemp = isTempPropertyId(propertyId)
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useWorksheetProperty.ts:52',message:'temp check v2',data:{propertyId,isTemp,startsWithTemp:propertyId.startsWith('temp_'),codeVersion:'FIX_V2'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H3'})}).catch(()=>{});
+    // #endregion
+    if (isTemp) {
       console.log('[useWorksheetProperty] Temp property detected, using worksheetStore data')
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useWorksheetProperty.ts:tempHandler',message:'Using worksheetStore for temp property',data:{propertyId,worksheetStoreId:worksheetStore.propertyId,hasPropertyData:!!worksheetStore.propertyData},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H3'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useWorksheetProperty.ts:tempHandler',message:'Using worksheetStore for temp property',data:{propertyId,worksheetStoreId:worksheetStore.propertyId,hasPropertyData:!!worksheetStore.propertyData,hasPurchasePrice:worksheetStore.assumptions?.purchasePrice > 0},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H3'})}).catch(()=>{});
       // #endregion
       
       if (worksheetStore.propertyId === propertyId && worksheetStore.propertyData) {

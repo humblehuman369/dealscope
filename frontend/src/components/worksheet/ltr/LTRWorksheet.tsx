@@ -950,9 +950,18 @@ export function LTRWorksheet({
         {/* CTA Button */}
         <button 
           onClick={() => {
-            // Navigate to detailed analysis or worksheet
+            // Navigate to Deal Maker with property data
             const encodedAddress = encodeURIComponent(fullAddress.replace(/\s+/g, '-'))
-            router.push(`/deal-maker/${encodedAddress}`)
+            const params = new URLSearchParams({
+              listPrice: String(listPrice),
+              rentEstimate: String(monthlyRent),
+              propertyTax: String(propertyTaxes),
+              insurance: String(insurance),
+            })
+            if (property.zpid) {
+              params.set('zpid', property.zpid)
+            }
+            router.push(`/deal-maker/${encodedAddress}?${params.toString()}`)
           }}
           style={{
             width: '100%',

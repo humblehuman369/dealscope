@@ -495,8 +495,19 @@ export function AnalysisIQScreen({ property, initialStrategy }: AnalysisIQScreen
   }
 
   const handleContinue = () => {
-    // Navigate to worksheet or deal maker
-    router.push(`/deal-maker/${encodeURIComponent(fullAddress)}`)
+    // Navigate to Deal Maker with property data as query params
+    const encodedAddress = encodeURIComponent(fullAddress.replace(/\s+/g, '-'))
+    const params = new URLSearchParams({
+      listPrice: String(property.listPrice),
+      rentEstimate: String(property.monthlyRent),
+      propertyTax: String(property.propertyTaxes),
+      insurance: String(property.insurance),
+    })
+    // Add zpid if available
+    if (property.zpid) {
+      params.set('zpid', property.zpid)
+    }
+    router.push(`/deal-maker/${encodedAddress}?${params.toString()}`)
   }
 
   // Score gauge
