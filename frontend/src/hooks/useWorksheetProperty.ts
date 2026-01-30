@@ -14,8 +14,17 @@ interface UseWorksheetPropertyOptions {
 }
 
 // Helper to check if propertyId is a temporary (unsaved) ID
+// Matches: temp_<address> or temp_zpid_<zpid>
 function isTempPropertyId(id: string): boolean {
   return id.startsWith('temp_')
+}
+
+// Helper to extract address from temp ID for display
+function extractAddressFromTempId(id: string): string {
+  if (id.startsWith('temp_zpid_')) {
+    return `Property ${id.replace('temp_zpid_', '')}`
+  }
+  return decodeURIComponent(id.replace('temp_', ''))
 }
 
 export function useWorksheetProperty(propertyId: string, options: UseWorksheetPropertyOptions = {}) {
@@ -76,7 +85,7 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
           const syntheticProperty: SavedProperty = {
             id: propertyId,
             user_id: '',
-            address_street: decodeURIComponent(propertyId.replace('temp_', '')),
+            address_street: extractAddressFromTempId(propertyId),
             address_city: '',
             address_state: '',
             address_zip: '',

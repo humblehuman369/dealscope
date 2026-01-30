@@ -254,8 +254,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
   }, [defaults, defaultsLoading])
   
   // Initialize worksheet store with property data on mount
-  // Generate a temporary ID for unsaved properties (use zpid if available, otherwise address-based)
-  const tempPropertyId = property.zpid || `temp_${encodeURIComponent(property.address)}`
+  // Always use temp_ prefix for Deal Maker properties since they're not saved in the database
+  // Include zpid in the temp ID for reference, otherwise use address
+  const tempPropertyId = property.zpid 
+    ? `temp_zpid_${property.zpid}` 
+    : `temp_${encodeURIComponent(property.address)}`
   
   useEffect(() => {
     // #region agent log
@@ -343,8 +346,10 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     }
     const strategySlug = strategyMap[currentStrategy] || 'ltr'
     
-    // Navigate to worksheet page - use zpid or temp ID for unsaved properties
-    const propertyId = property.zpid || `temp_${encodeURIComponent(property.address)}`
+    // Navigate to worksheet page - always use temp ID since Deal Maker properties aren't saved
+    const propertyId = property.zpid 
+      ? `temp_zpid_${property.zpid}` 
+      : `temp_${encodeURIComponent(property.address)}`
     // #region agent log
     fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:348',message:'handleSeeResults v2',data:{propertyId,hasTemp:propertyId.startsWith('temp_'),strategySlug,codeVersion:'FIX_V2'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4'})}).catch(()=>{});
     // #endregion
