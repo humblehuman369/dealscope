@@ -258,14 +258,18 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
   }, [defaults, defaultsLoading])
   
   // Initialize worksheet store with property data on mount
+  // Generate a temporary ID for unsaved properties (use zpid if available, otherwise address-based)
+  const tempPropertyId = property.zpid || `temp_${encodeURIComponent(property.address)}`
+  
   useEffect(() => {
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:258',message:'worksheetStore init check',data:{worksheetInitialized,hasZpid:!!property.zpid,zpid:property.zpid,willInitialize:!worksheetInitialized && !!property.zpid},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:258',message:'worksheetStore init check',data:{worksheetInitialized,hasZpid:!!property.zpid,zpid:property.zpid,tempPropertyId,willInitialize:!worksheetInitialized},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
     // #endregion
-    if (!worksheetInitialized && property.zpid) {
+    if (!worksheetInitialized) {
       // Create a property object compatible with worksheetStore
+      // Use zpid if available, otherwise use a temp ID based on address
       const propertyForWorksheet = {
-        id: property.zpid,
+        id: tempPropertyId,
         property_data_snapshot: {
           listPrice: listPrice ?? property.price,
           monthlyRent: property.rent,
@@ -275,11 +279,13 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
           zipCode: property.zipCode,
         },
         worksheet_assumptions: {},
+        // Mark as unsaved so worksheet knows not to fetch from API
+        _isUnsaved: !property.zpid,
       }
       worksheetStore.initializeFromProperty(propertyForWorksheet)
       setWorksheetInitialized(true)
     }
-  }, [worksheetInitialized, property, listPrice, worksheetStore])
+  }, [worksheetInitialized, property, listPrice, worksheetStore, tempPropertyId])
   
   // Sync Deal Maker state to worksheet store on EVERY change (with debouncing built into worksheetStore)
   useEffect(() => {
@@ -339,10 +345,10 @@ export function DealMakerScreen({ property, listPrice, initialStrategy }: DealMa
     }
     const strategySlug = strategyMap[currentStrategy] || 'ltr'
     
-    // Navigate to worksheet page - use zpid or encoded address as ID
-    const propertyId = property.zpid || encodeURIComponent(property.address)
+    // Navigate to worksheet page - use zpid or temp ID for unsaved properties
+    const propertyId = property.zpid || `temp_${encodeURIComponent(property.address)}`
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:336',message:'handleSeeResults navigating',data:{hasZpid:!!property.zpid,zpid:property.zpid,propertyId,strategySlug,navigationUrl:`/worksheet/${propertyId}/${strategySlug}`},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DealMakerScreen.tsx:336',message:'handleSeeResults navigating',data:{hasZpid:!!property.zpid,zpid:property.zpid,propertyId,strategySlug,navigationUrl:`/worksheet/${propertyId}/${strategySlug}`,isTemp:propertyId.startsWith('temp_')},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1,H4'})}).catch(()=>{});
     // #endregion
     router.push(`/worksheet/${propertyId}/${strategySlug}`)
   }, [router, property.zpid, property.address, currentStrategy, worksheetStore])
