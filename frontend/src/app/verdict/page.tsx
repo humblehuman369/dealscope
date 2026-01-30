@@ -300,7 +300,7 @@ function VerdictContent() {
             : (propertyData.insurance || (listPriceForCalc * 0.01)) // 1%
           arvForCalc = overrideArv 
             ? parseFloat(overrideArv) 
-            : propertyData.arv
+            : (propertyData.arv ?? null)
           
           console.log('[IQ Verdict] Using legacy override values:', {
             list_price: listPriceForCalc,
