@@ -79,8 +79,7 @@ export function useWorksheetProperty(propertyId: string, options: UseWorksheetPr
             address_street: decodeURIComponent(propertyId.replace('temp_', '')),
             address_city: '',
             address_state: '',
-            zip_code: '',
-            property_type: 'single_family',
+            address_zip: '',
             property_data_snapshot: {
               listPrice: worksheetStore.assumptions.purchasePrice,
               monthlyRent: worksheetStore.assumptions.monthlyRent,
