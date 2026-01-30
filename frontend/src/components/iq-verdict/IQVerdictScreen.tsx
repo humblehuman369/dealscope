@@ -228,17 +228,38 @@ export function IQVerdictScreen({
   const breakevenPrice = analysis.breakevenPrice || Math.round(marketValue * 1.1)
   const buyPrice = analysis.purchasePrice || Math.round(breakevenPrice * 0.95)
   const wholesalePrice = Math.round(breakevenPrice * 0.70)
-  const estValue = analysis.listPrice || marketValue
-  const discountNeeded = estValue - breakevenPrice
+  
+  // For "Market Estimate" / "Asking Price" display:
+  // - For saved properties, use the original list_price from Deal Maker record
+  // - For unsaved properties, use property's market value
+  // NOTE: Don't use analysis.listPrice here - that contains the user's buy_price for calculations
+  const estValue = isSavedPropertyMode && record?.list_price
+    ? record.list_price
+    : marketValue
+  
+  // User's target buy price (from Deal Maker or calculated breakeven)
+  const userTargetPrice = isSavedPropertyMode && record?.buy_price 
+    ? record.buy_price 
+    : breakevenPrice
+  const discountNeeded = estValue - userTargetPrice
+  
+  // Recalculate deal gap: (Market - Target) / Market × 100
+  // Positive means discount needed, negative means paying premium
+  const calculatedDealGap = estValue > 0 
+    ? ((estValue - userTargetPrice) / estValue) * 100 
+    : 0
   
   // Default opportunity factors
-  const opportunityFactors = analysis.opportunityFactors || {
-    dealGap: analysis.discountPercent || 0,
-    motivation: 50,
-    motivationLabel: 'Medium',
-    daysOnMarket: null,
-    buyerMarket: null,
-    distressedSale: false,
+  // Use recalculated deal gap for accurate display
+  const opportunityFactors = {
+    dealGap: isSavedPropertyMode 
+      ? calculatedDealGap  // Use recalculated gap based on actual list_price
+      : (analysis.opportunityFactors?.dealGap ?? analysis.discountPercent ?? 0),
+    motivation: analysis.opportunityFactors?.motivation ?? 50,
+    motivationLabel: analysis.opportunityFactors?.motivationLabel ?? 'Medium',
+    daysOnMarket: analysis.opportunityFactors?.daysOnMarket ?? null,
+    buyerMarket: analysis.opportunityFactors?.buyerMarket ?? null,
+    distressedSale: analysis.opportunityFactors?.distressedSale ?? false,
   }
 
   // Seller motivation data
@@ -498,7 +519,7 @@ export function IQVerdictScreen({
             </div>
             <div className="flex justify-between items-center py-1.5">
               <span className="text-[13px] text-[#64748B]">Your Target</span>
-              <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(breakevenPrice)}</span>
+              <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(userTargetPrice)}</span>
             </div>
             <div className="flex justify-between items-center py-1.5">
               <span className="text-[13px] text-[#64748B]">Discount needed</span>
