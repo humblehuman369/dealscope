@@ -2,25 +2,49 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { X, Mail, Lock, User, Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import { 
+  loginSchema, 
+  registerSchema, 
+  forgotPasswordSchema,
+  type LoginFormData,
+  type RegisterFormData,
+  type ForgotPasswordFormData
+} from '@/lib/validations/auth'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
 export default function AuthModal() {
   const router = useRouter()
   const pathname = usePathname()
-  const { showAuthModal, setShowAuthModal, login, register, isLoading } = useAuth()
+  const { showAuthModal, setShowAuthModal, login, register: registerUser, isLoading } = useAuth()
   const [isLogin, setIsLogin] = useState(true)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isSendingReset, setIsSendingReset] = useState(false)
+
+  // Login form
+  const loginForm = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  })
+
+  // Register form
+  const registerForm = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' },
+  })
+
+  // Forgot password form
+  const forgotPasswordForm = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: '' },
+  })
 
   // Sync modal type with context
   useEffect(() => {
@@ -29,39 +53,30 @@ export default function AuthModal() {
     } else if (showAuthModal === 'register') {
       setIsLogin(false)
     }
-    // Reset form when modal opens
-    setEmail('')
-    setPassword('')
-    setFullName('')
-    setConfirmPassword('')
+    // Reset forms when modal opens
+    loginForm.reset()
+    registerForm.reset()
+    forgotPasswordForm.reset()
     setError('')
     setSuccess('')
     setShowForgotPassword(false)
-  }, [showAuthModal])
+  }, [showAuthModal, loginForm, registerForm, forgotPasswordForm])
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleForgotPassword = async (data: ForgotPasswordFormData) => {
     setError('')
     setSuccess('')
-
-    if (!email) {
-      setError('Please enter your email address')
-      return
-    }
-
     setIsSendingReset(true)
+    
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/forgot-password`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: data.email }),
       })
 
       if (response.ok) {
         setSuccess('If an account exists with that email, a reset link has been sent. Please check your inbox.')
-        setEmail('')
+        forgotPasswordForm.reset()
       } else {
         const errorData = await response.json()
         setError(errorData.detail || 'Failed to send reset email')
@@ -75,56 +90,34 @@ export default function AuthModal() {
 
   if (!showAuthModal) return null
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleLoginSubmit = async (data: LoginFormData) => {
     setError('')
     setSuccess('')
 
-    // Validation
-    if (!email || !password) {
-      setError('Please fill in all required fields')
-      return
-    }
-
-    if (!isLogin) {
-      if (!fullName) {
-        setError('Please enter your name')
-        return
-      }
-      if (password !== confirmPassword) {
-        setError('Passwords do not match')
-        return
-      }
-      if (password.length < 8) {
-        setError('Password must be at least 8 characters')
-        return
-      }
-      // Check for uppercase, lowercase, and digit (must match backend validation)
-      if (!/[A-Z]/.test(password)) {
-        setError('Password must contain at least one uppercase letter')
-        return
-      }
-      if (!/[a-z]/.test(password)) {
-        setError('Password must contain at least one lowercase letter')
-        return
-      }
-      if (!/[0-9]/.test(password)) {
-        setError('Password must contain at least one digit')
-        return
-      }
-    }
-
     try {
-      if (isLogin) {
-        await login(email, password)
-        setSuccess('Login successful!')
-      } else {
-        await register(email, password, fullName)
-        setSuccess('Account created successfully!')
-      }
+      await login(data.email, data.password)
+      setSuccess('Login successful!')
       
       // Only redirect to dashboard if user is on homepage or login-related pages
-      // If user is on a property page or other app pages, stay there so they can complete their action
+      const shouldRedirect = pathname === '/' || pathname === '/login' || pathname === '/register'
+      if (shouldRedirect) {
+        router.push('/dashboard')
+      }
+      setShowAuthModal(null)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred'
+      setError(errorMessage)
+    }
+  }
+
+  const handleRegisterSubmit = async (data: RegisterFormData) => {
+    setError('')
+    setSuccess('')
+
+    try {
+      await registerUser(data.email, data.password, data.fullName)
+      setSuccess('Account created successfully!')
+      
       const shouldRedirect = pathname === '/' || pathname === '/login' || pathname === '/register'
       if (shouldRedirect) {
         router.push('/dashboard')
@@ -133,10 +126,9 @@ export default function AuthModal() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred'
       
-      // Handle verification required case - show success message instead of error
+      // Handle verification required case
       if (errorMessage.startsWith('VERIFICATION_REQUIRED:')) {
         setSuccess(errorMessage.replace('VERIFICATION_REQUIRED:', ''))
-        // Don't close modal - let user see the message
         return
       }
       
@@ -153,7 +145,12 @@ export default function AuthModal() {
     setError('')
     setSuccess('')
     setShowForgotPassword(false)
+    loginForm.reset()
+    registerForm.reset()
   }
+
+  // Get the current form's errors for display
+  const currentErrors = isLogin ? loginForm.formState.errors : registerForm.formState.errors
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
@@ -165,7 +162,7 @@ export default function AuthModal() {
       
       {/* Modal */}
       <div className="relative bg-white dark:bg-navy-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* Header - Teal gradient fading to background */}
+        {/* Header */}
         <div className="relative bg-gradient-to-r from-teal dark:from-accent-500 to-navy-900/70 dark:to-navy-900/70 px-6 py-8 text-white">
           <button
             onClick={handleClose}
@@ -186,10 +183,10 @@ export default function AuthModal() {
           </p>
         </div>
 
-        {/* Form */}
+        {/* Form Content */}
         {showForgotPassword ? (
           /* Forgot Password Form */
-          <form onSubmit={handleForgotPassword} className="p-6 space-y-4">
+          <form onSubmit={forgotPasswordForm.handleSubmit(handleForgotPassword)} className="p-6 space-y-4">
             {/* Error Message */}
             {error && (
               <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
@@ -215,12 +212,14 @@ export default function AuthModal() {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...forgotPasswordForm.register('email')}
                   placeholder="you@example.com"
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
                 />
               </div>
+              {forgotPasswordForm.formState.errors.email && (
+                <p className="mt-1 text-xs text-red-500">{forgotPasswordForm.formState.errors.email.message}</p>
+              )}
             </div>
 
             {/* Submit Button */}
@@ -252,126 +251,87 @@ export default function AuthModal() {
               ← Back to Sign In
             </button>
           </form>
-        ) : (
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Error Message */}
-          {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              {error}
-            </div>
-          )}
+        ) : isLogin ? (
+          /* Login Form */
+          <form onSubmit={loginForm.handleSubmit(handleLoginSubmit)} className="p-6 space-y-4">
+            {/* Error Message */}
+            {error && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {error}
+              </div>
+            )}
 
-          {/* Success Message */}
-          {success && (
-            <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-400 text-sm">
-              <CheckCircle className="w-4 h-4 flex-shrink-0" />
-              {success}
-            </div>
-          )}
+            {/* Success Message */}
+            {success && (
+              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-400 text-sm">
+                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                {success}
+              </div>
+            )}
 
-          {/* Full Name (Register only) */}
-          {!isLogin && (
+            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Full Name
+                Email
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="John Doe"
+                  type="email"
+                  {...loginForm.register('email')}
+                  placeholder="you@example.com"
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
                 />
               </div>
+              {loginForm.formState.errors.email && (
+                <p className="mt-1 text-xs text-red-500">{loginForm.formState.errors.email.message}</p>
+              )}
             </div>
-          )}
 
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Email
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full pl-10 pr-12 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-            {!isLogin && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Min 8 characters with uppercase, lowercase, and number
-              </p>
-            )}
-          </div>
-
-          {/* Confirm Password (Register only) */}
-          {!isLogin && (
+            {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Confirm Password
+                Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  {...loginForm.register('password')}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-12 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
+              {loginForm.formState.errors.password && (
+                <p className="mt-1 text-xs text-red-500">{loginForm.formState.errors.password.message}</p>
+              )}
             </div>
-          )}
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 bg-gradient-to-r from-teal dark:from-accent-500 to-navy-900/70 dark:to-navy-900/70 text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-teal/30 dark:focus:ring-accent-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                {isLogin ? 'Signing in...' : 'Creating account...'}
-              </>
-            ) : (
-              isLogin ? 'Sign In' : 'Create Account'
-            )}
-          </button>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 bg-gradient-to-r from-teal dark:from-accent-500 to-navy-900/70 dark:to-navy-900/70 text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-teal/30 dark:focus:ring-accent-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </button>
 
-          {/* Forgot Password (Login only) */}
-          {isLogin && !showForgotPassword && (
+            {/* Forgot Password */}
             <button
               type="button"
               onClick={() => {
@@ -383,38 +343,154 @@ export default function AuthModal() {
             >
               Forgot your password?
             </button>
-          )}
 
-          {/* Toggle Mode */}
-          <div className="text-center text-sm text-gray-600 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-neutral-700">
-            {isLogin ? (
-              <>
-                Don&apos;t have an account?{' '}
-                <button
-                  type="button"
-                  onClick={toggleMode}
-                  className="text-teal dark:text-accent-500 font-semibold hover:underline"
-                >
-                  Sign up
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{' '}
-                <button
-                  type="button"
-                  onClick={toggleMode}
-                  className="text-teal dark:text-accent-500 font-semibold hover:underline"
-                >
-                  Sign in
-                </button>
-              </>
+            {/* Toggle Mode */}
+            <div className="text-center text-sm text-gray-600 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-neutral-700">
+              Don&apos;t have an account?{' '}
+              <button
+                type="button"
+                onClick={toggleMode}
+                className="text-teal dark:text-accent-500 font-semibold hover:underline"
+              >
+                Sign up
+              </button>
+            </div>
+          </form>
+        ) : (
+          /* Register Form */
+          <form onSubmit={registerForm.handleSubmit(handleRegisterSubmit)} className="p-6 space-y-4">
+            {/* Error Message */}
+            {error && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {error}
+              </div>
             )}
-          </div>
-        </form>
+
+            {/* Success Message */}
+            {success && (
+              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-400 text-sm">
+                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                {success}
+              </div>
+            )}
+
+            {/* Full Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Full Name
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  {...registerForm.register('fullName')}
+                  placeholder="John Doe"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
+                />
+              </div>
+              {registerForm.formState.errors.fullName && (
+                <p className="mt-1 text-xs text-red-500">{registerForm.formState.errors.fullName.message}</p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="email"
+                  {...registerForm.register('email')}
+                  placeholder="you@example.com"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
+                />
+              </div>
+              {registerForm.formState.errors.email && (
+                <p className="mt-1 text-xs text-red-500">{registerForm.formState.errors.email.message}</p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  {...registerForm.register('password')}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-12 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Min 8 characters with uppercase, lowercase, and number
+              </p>
+              {registerForm.formState.errors.password && (
+                <p className="mt-1 text-xs text-red-500">{registerForm.formState.errors.password.message}</p>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  {...registerForm.register('confirmPassword')}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-navy-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
+                />
+              </div>
+              {registerForm.formState.errors.confirmPassword && (
+                <p className="mt-1 text-xs text-red-500">{registerForm.formState.errors.confirmPassword.message}</p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 bg-gradient-to-r from-teal dark:from-accent-500 to-navy-900/70 dark:to-navy-900/70 text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-teal/30 dark:focus:ring-accent-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                'Create Account'
+              )}
+            </button>
+
+            {/* Toggle Mode */}
+            <div className="text-center text-sm text-gray-600 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-neutral-700">
+              Already have an account?{' '}
+              <button
+                type="button"
+                onClick={toggleMode}
+                className="text-teal dark:text-accent-500 font-semibold hover:underline"
+              >
+                Sign in
+              </button>
+            </div>
+          </form>
         )}
       </div>
     </div>
   )
 }
-

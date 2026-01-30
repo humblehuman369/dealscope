@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { Providers } from './providers'
 import Header from '@/components/Header'
+import { Toaster } from '@/components/feedback'
 
 export const metadata: Metadata = {
   title: 'InvestIQ - Real Estate Investment Analytics',
@@ -41,6 +42,9 @@ export default function RootLayout({
 
           {/* Main content */}
           {children}
+
+          {/* Toast notifications */}
+          <Toaster />
         </Providers>
       </body>
     </html>
