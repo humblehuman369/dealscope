@@ -9,7 +9,7 @@
 
 import React from 'react'
 
-export type SliderFormat = 'currency' | 'currency-year' | 'percent' | 'percent-int' | 'years'
+export type PopupSliderFormat = 'currency' | 'currency-year' | 'percent' | 'percent-int' | 'years'
 
 interface SliderInputProps {
   label: string
@@ -18,12 +18,12 @@ interface SliderInputProps {
   min: number
   max: number
   step: number
-  format: SliderFormat
+  format: PopupSliderFormat
   onChange: (value: number) => void
 }
 
 // Format value based on type
-function formatValue(value: number, format: SliderFormat): string {
+function formatValue(value: number, format: PopupSliderFormat): string {
   switch (format) {
     case 'currency':
       return `$${value.toLocaleString()}`
@@ -41,7 +41,7 @@ function formatValue(value: number, format: SliderFormat): string {
 }
 
 // Format min/max for range labels
-function formatMinMax(value: number, format: SliderFormat): string {
+function formatMinMax(value: number, format: PopupSliderFormat): string {
   switch (format) {
     case 'currency':
     case 'currency-year':
