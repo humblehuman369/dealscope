@@ -188,33 +188,73 @@ export function VerdictIQCombined({
     ? (property.zestimate ? 'Zestimate' : 'Market Estimate')
     : 'Asking Price'
 
-  const breakevenPrice = analysis.breakevenPrice || Math.round(marketValue * 1.1)
-  const buyPrice = analysis.purchasePrice || Math.round(breakevenPrice * 0.95)
+  // Base prices from analysis (before any overrides)
+  const baseBreakevenPrice = analysis.breakevenPrice || Math.round(marketValue * 1.1)
+  const baseBuyPrice = analysis.purchasePrice || Math.round(baseBreakevenPrice * 0.95)
+  
+  // Use override buy price if available, otherwise fall back to calculated
+  const effectiveBuyPrice = overrideValues?.buyPrice ?? baseBuyPrice
+  
+  // Recalculate breakeven based on override values if available
+  const breakevenPrice = useMemo(() => {
+    if (!overrideValues) return baseBreakevenPrice
+    
+    // Recalculate breakeven based on new terms
+    const monthlyRent = overrideValues.monthlyRent ?? property.monthlyRent ?? effectiveBuyPrice * 0.007
+    const annualRent = monthlyRent * 12
+    const vacancyRate = (overrideValues.vacancyRate ?? 1) / 100
+    const effectiveIncome = annualRent * (1 - vacancyRate)
+    
+    const propertyTaxes = overrideValues.propertyTaxes ?? property.propertyTaxes ?? effectiveBuyPrice * 0.012
+    const insurance = overrideValues.insurance ?? property.insurance ?? effectiveBuyPrice * 0.01
+    const managementRate = (overrideValues.managementRate ?? 0) / 100
+    const maintenance = annualRent * 0.05
+    const management = annualRent * managementRate
+    
+    const noi = effectiveIncome - propertyTaxes - insurance - maintenance - management
+    
+    // Calculate mortgage constant
+    const rate = (overrideValues.interestRate ?? 6) / 100 / 12
+    const term = (overrideValues.loanTerm ?? 30) * 12
+    const downPmt = (overrideValues.downPayment ?? 20) / 100
+    const loanRatio = 1 - downPmt
+    
+    const monthlyRate = rate
+    const mortgageConstant = loanRatio * (monthlyRate * Math.pow(1 + monthlyRate, term)) / 
+      (Math.pow(1 + monthlyRate, term) - 1) * 12
+    
+    // Breakeven = NOI / Mortgage Constant
+    return mortgageConstant > 0 ? Math.round(noi / mortgageConstant) : baseBreakevenPrice
+  }, [overrideValues, property, effectiveBuyPrice, baseBreakevenPrice])
+  
+  const buyPrice = effectiveBuyPrice
   const wholesalePrice = Math.round(breakevenPrice * 0.70)
 
   const estValue = isSavedPropertyMode && record?.list_price
     ? record.list_price
     : marketValue
 
-  const userTargetPrice = isSavedPropertyMode && record?.buy_price 
-    ? record.buy_price 
-    : breakevenPrice
+  // User target price uses override buy price if available
+  const userTargetPrice = overrideValues?.buyPrice 
+    ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : breakevenPrice)
   const discountNeeded = estValue - userTargetPrice
 
   const calculatedDealGap = estValue > 0 
     ? ((estValue - userTargetPrice) / estValue) * 100 
     : 0
 
-  // Opportunity factors
-  const opportunityFactors = {
-    dealGap: isSavedPropertyMode 
+  // Opportunity factors - recalculate deal gap when override values are present
+  const opportunityFactors = useMemo(() => ({
+    dealGap: overrideValues 
       ? calculatedDealGap
-      : (analysis.opportunityFactors?.dealGap ?? analysis.discountPercent ?? 0),
+      : (isSavedPropertyMode 
+          ? calculatedDealGap
+          : (analysis.opportunityFactors?.dealGap ?? analysis.discountPercent ?? 0)),
     motivation: analysis.opportunityFactors?.motivation ?? 50,
     motivationLabel: analysis.opportunityFactors?.motivationLabel ?? 'Medium',
     daysOnMarket: analysis.opportunityFactors?.daysOnMarket ?? null,
     distressedSale: analysis.opportunityFactors?.distressedSale ?? false,
-  }
+  }), [overrideValues, calculatedDealGap, isSavedPropertyMode, analysis])
 
   const sellerMotivation = {
     level: opportunityFactors.motivationLabel,
@@ -243,7 +283,8 @@ export function VerdictIQCombined({
     const downPayment = effectivePrice * defaults.financing.down_payment_pct
     const loanAmount = effectivePrice * (1 - defaults.financing.down_payment_pct)
     const closingCosts = effectivePrice * (defaults.financing.closing_costs_pct || 0.03)
-    const totalInvestment = downPayment + closingCosts
+    const rehabBudget = overrideValues?.rehabBudget ?? 0
+    const totalInvestment = downPayment + closingCosts + rehabBudget
 
     // Simple annual debt service calculation
     const monthlyRate = defaults.financing.interest_rate / 12
@@ -259,8 +300,9 @@ export function VerdictIQCombined({
     const cashOnCash = totalInvestment > 0 ? (annualCashFlow / totalInvestment) * 100 : 0
     const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
 
-    const arv = property.arv || effectivePrice * 1.15
-    const equityCapture = effectivePrice > 0 ? ((arv - effectivePrice) / effectivePrice) * 100 : 0
+    const arv = overrideValues?.arv ?? property.arv ?? effectivePrice * 1.15
+    const totalBasis = effectivePrice + rehabBudget
+    const equityCapture = totalBasis > 0 ? ((arv - totalBasis) / totalBasis) * 100 : 0
 
     const totalExpenses = propertyTaxes + insurance + (annualRent * defaults.operating.vacancy_rate) + (annualRent * defaults.operating.maintenance_pct)
     const expenseRatio = annualRent > 0 ? (totalExpenses / annualRent) * 100 : 0
