@@ -9,7 +9,159 @@ export interface Strategy {
   statLabel: string;
   color: string;
   href: string;
+  badge?: string;
 }
+
+// IQ Stats Bar - Five core IQ products
+export interface IQStat {
+  name: string;
+  desc: string;
+  icon: string;
+}
+
+export const iqStats: IQStat[] = [
+  { name: 'Price', desc: '3 prices that define your deal', icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' },
+  { name: 'Scan', desc: 'Point at any property', icon: 'M3 3h18v18H3V3zM3 9h18M9 21V9' },
+  { name: 'Strategy', desc: '6 strategies analyzed', icon: 'M12 2L2 7l12 12l22 7l12 2zM2 17l10 5l10-5M2 12l10 5l10-5' },
+  { name: 'Model', desc: '15+ variables you control', icon: 'M18 20V10M12 20V4M6 20v-6' },
+  { name: 'Verdict', desc: 'Clear recommendation', icon: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3' },
+];
+
+// PriceIQ Sample Data
+export interface PriceIQCard {
+  name: string;
+  suffix: string;
+  value: string;
+  description: string;
+  subtext: string;
+  featured?: boolean;
+}
+
+export const priceIQData: PriceIQCard[] = [
+  {
+    name: 'Breakeven',
+    suffix: 'IQ',
+    value: '$807,087',
+    description: 'Max price for $0 cashflow',
+    subtext: 'Your ceiling. Don\'t cross it.',
+  },
+  {
+    name: 'Target',
+    suffix: 'IQ',
+    value: '$723,000',
+    description: '5% discount for profit',
+    subtext: 'Your optimal offer price',
+    featured: true,
+  },
+  {
+    name: 'Wholesale',
+    suffix: 'IQ',
+    value: '$564,961',
+    description: '30% discount for assignment',
+    subtext: 'Your wholesale number',
+  },
+];
+
+// ScanIQ Input Methods
+export interface InputMethod {
+  title: string;
+  description: string;
+  icon: string;
+  action: 'scan' | 'address' | 'link';
+}
+
+export const inputMethods: InputMethod[] = [
+  {
+    title: 'Point & Scan',
+    description: 'Snap a For Sale sign, address, or listing sheet. ScanIQ reads it instantly.',
+    icon: 'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+    action: 'scan',
+  },
+  {
+    title: 'Enter Address',
+    description: 'Type or paste any property address. We pull the data automatically.',
+    icon: 'M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0zM12 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+    action: 'address',
+  },
+  {
+    title: 'Drop a Link',
+    description: 'Paste a Zillow, Redfin, or MLS URL. We extract everything we need.',
+    icon: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71',
+    action: 'link',
+  },
+];
+
+// VerdictIQ Types
+export interface VerdictType {
+  verdict: string;
+  color: 'emerald' | 'amber' | 'red';
+  title: string;
+  description: string;
+  logic: string;
+}
+
+export const verdictTypes: VerdictType[] = [
+  {
+    verdict: 'Strong Buy',
+    color: 'emerald',
+    title: 'Move Fast',
+    description: 'Asking price is at or below your TargetIQ. This deal works across multiple strategies.',
+    logic: 'Asking ≤ TargetIQ',
+  },
+  {
+    verdict: 'Marginal',
+    color: 'amber',
+    title: 'Negotiate Down',
+    description: 'Asking price is between TargetIQ and BreakevenIQ. Thin margins — proceed with caution.',
+    logic: 'TargetIQ < Asking < BreakevenIQ',
+  },
+  {
+    verdict: 'Pass',
+    color: 'red',
+    title: 'Walk Away',
+    description: "Asking price exceeds your BreakevenIQ. This deal doesn't work at any strategy.",
+    logic: 'Asking > BreakevenIQ',
+  },
+];
+
+// Founder Section
+export interface FounderStat {
+  value: string;
+  label: string;
+}
+
+export const founderStats: FounderStat[] = [
+  { value: '35+', label: 'Years' },
+  { value: '80+', label: 'Companies' },
+  { value: '30+', label: 'Years with GSEs' },
+  { value: '500+', label: 'Projects' },
+];
+
+export const founderInfo = {
+  name: 'Brad Geisen',
+  title: 'Founder, InvestIQ • Real Estate Technology Pioneer',
+  quote: 'I built HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac — systems still running today. I created Foreclosure.com before data platforms existed. I spent 35 years building the infrastructure institutions depend on. DealMakerIQ puts that same intelligence in your hands.',
+  credentials: ['Fannie Mae', 'Freddie Mac', 'HUD'],
+};
+
+// IQ Features (Complete Toolkit)
+export interface IQFeature {
+  name: string;
+  hasIQ: boolean;
+  description: string;
+}
+
+export const iqFeatures: IQFeature[] = [
+  { name: 'Price', hasIQ: true, description: 'Three numbers that define your deal: Breakeven, Target, and Wholesale prices calculated instantly.' },
+  { name: 'Scan', hasIQ: true, description: 'Point your camera at any property. Address, sign, or listing — we read it instantly.' },
+  { name: 'Strategy', hasIQ: true, description: 'See how every property performs across all 6 investment strategies simultaneously.' },
+  { name: 'Model', hasIQ: true, description: 'Adjust 15+ variables and watch your prices and returns update in real time.' },
+  { name: 'Verdict', hasIQ: true, description: 'Clear recommendation based on where asking price falls relative to your target prices.' },
+  { name: 'Comp', hasIQ: true, description: 'See what similar properties sold for. Validate your analysis with real market data.' },
+  { name: 'Report', hasIQ: true, description: 'Generate lender-ready PDF reports to share with partners or your investment team.' },
+  { name: 'Pipeline', hasIQ: true, description: 'Save deals, build your pipeline, and compare opportunities side-by-side.' },
+  { name: '60-Second', hasIQ: false, description: 'From address to actionable intelligence in under a minute. Speed is your advantage.' },
+];
 
 export interface Feature {
   icon: string;
@@ -28,29 +180,30 @@ export const strategies: Strategy[] = [
     id: 'long',
     name: 'Long-Term Rental',
     tagline: 'Steady income & build equity',
-    description: 'Buy and hold properties for consistent monthly rental income. Build long-term wealth through appreciation and mortgage paydown.',
+    description: 'Buy and hold for consistent monthly rental income. Build wealth through appreciation and mortgage paydown.',
     statValue: '8-12%',
-    statLabel: 'Cash-on-Cash',
+    statLabel: 'CoC',
     color: '#0465f2',
     href: '/strategies/strategy-long-term-rental.html',
+    badge: 'Most Popular',
   },
   {
     id: 'short',
     name: 'Short-Term Rental',
     tagline: 'Vacation & business rental income',
-    description: 'Maximize income through Airbnb or VRBO rentals. Higher returns with more active management and seasonal demand.',
+    description: 'Maximize income through Airbnb or VRBO. Higher returns with active management and seasonal demand.',
     statValue: '15-25%',
-    statLabel: 'Cash-on-Cash',
+    statLabel: 'CoC',
     color: '#8b5cf6',
     href: '/strategies/strategy-short-term-rental.html',
   },
   {
     id: 'brrrr',
     name: 'BRRRR',
-    tagline: 'Buy-Rehab-Rent-Refi-Repeat wealth builder',
-    description: 'Buy a fixer-upper, Renovate it, Rent it out, then Refinance to get your cash back and Repeat',
-    statValue: '∞',
-    statLabel: 'Scale',
+    tagline: 'Buy-Rehab-Rent-Refi-Repeat',
+    description: 'Buy, Rehab, Rent, Refinance, Repeat. Recycle your capital to build a portfolio quickly.',
+    statValue: 'Scale Fast',
+    statLabel: '',
     color: '#f97316',
     href: '/strategies/strategy-brrrr.html',
   },
@@ -58,7 +211,7 @@ export const strategies: Strategy[] = [
     id: 'flip',
     name: 'Fix & Flip',
     tagline: 'Buy low, fix up, sell high',
-    description: 'Purchase undervalued properties, renovate strategically, and sell for profit. Quick returns with active project management.',
+    description: 'Purchase undervalued, renovate strategically, sell for profit. Quick returns with active management.',
     statValue: '$50K+',
     statLabel: 'Profit',
     color: '#ec4899',
@@ -68,17 +221,18 @@ export const strategies: Strategy[] = [
     id: 'hack',
     name: 'House Hack',
     tagline: 'Cut your housing costs up to 100%',
-    description: 'Live in one unit while renting others. Eliminate your housing payment and start building wealth from day one.',
+    description: 'Live in one unit, rent the others. Eliminate your housing payment while building equity.',
     statValue: '75%',
-    statLabel: 'Cost Savings',
+    statLabel: 'Cost Cut',
     color: '#14b8a6',
     href: '/strategies/strategy-house-hack.html',
+    badge: 'Beginner Friendly',
   },
   {
     id: 'wholesale',
     name: 'Wholesale',
     tagline: 'Find deals, assign contracts, profit',
-    description: 'Find properties under market value, get them under contract, then assign to other investors for a fee. Zero capital required.',
+    description: 'Find deals, assign contracts, collect fees. Zero capital required — just hustle and knowledge.',
     statValue: '$10K+',
     statLabel: 'Per Deal',
     color: '#84cc16',

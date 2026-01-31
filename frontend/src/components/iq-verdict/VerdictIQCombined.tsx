@@ -714,12 +714,59 @@ export function VerdictIQCombined({
           Go to Deal Maker IQ
           <ArrowRight className="w-[18px] h-[18px]" />
         </button>
-        <button 
-          className="w-full flex items-center justify-center gap-2 bg-transparent text-[#64748B] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[#475569] transition-colors"
-        >
-          <Download className="w-4 h-4" />
-          Export PDF Report
-        </button>
+        
+        {/* Export Proforma Button with Menu */}
+        <div className="relative">
+          <button 
+            className="w-full flex items-center justify-center gap-2 bg-transparent text-[#64748B] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[#475569] transition-colors disabled:opacity-50"
+            onClick={() => setShowExportMenu(!showExportMenu)}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                Export Financial Proforma
+                <ChevronDown className="w-3.5 h-3.5" />
+              </>
+            )}
+          </button>
+          
+          {/* Export Format Menu */}
+          {showExportMenu && !isExporting && (
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl shadow-lg border border-[#E2E8F0] overflow-hidden">
+              <button
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-[13px] hover:bg-[#F8FAFC] transition-colors border-none bg-transparent cursor-pointer"
+                onClick={() => handleExportProforma('excel')}
+              >
+                <FileSpreadsheet className="w-5 h-5 text-[#22C55E]" />
+                <div>
+                  <div className="font-semibold text-[#0A1628]">Excel Workbook</div>
+                  <div className="text-[11px] text-[#64748B]">8 tabs: Cash flow, depreciation, amortization, etc.</div>
+                </div>
+              </button>
+              <button
+                className="w-full flex items-center gap-3 px-4 py-3 text-left text-[13px] hover:bg-[#F8FAFC] transition-colors border-t border-[#E2E8F0] bg-transparent cursor-pointer"
+                onClick={() => handleExportProforma('pdf')}
+              >
+                <FileText className="w-5 h-5 text-[#EF4444]" />
+                <div>
+                  <div className="font-semibold text-[#0A1628]">PDF Report</div>
+                  <div className="text-[11px] text-[#64748B]">Professional summary for sharing</div>
+                </div>
+              </button>
+            </div>
+          )}
+          
+          {/* Export Error */}
+          {exportError && (
+            <p className="text-center text-[11px] text-red-500 mt-1">{exportError}</p>
+          )}
+        </div>
       </div>
 
       {/* Score Methodology Sheet */}

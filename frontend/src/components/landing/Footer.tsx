@@ -5,19 +5,19 @@ import Link from 'next/link';
 
 const footerLinks = {
   product: [
-    { label: 'Features', href: '#features' },
+    { label: 'Features', href: '#priceiq' },
+    { label: 'How It Works', href: '#how-it-works' },
     { label: 'Strategies', href: '#strategies' },
-    { label: 'DealMakerIQ', href: '#dealmaker' },
+    { label: 'Pricing', href: '#' },
   ],
   company: [
-    { label: 'About', href: '#' },
+    { label: 'About InvestIQ', href: '#founder' },
     { label: 'Blog', href: '#' },
     { label: 'Contact', href: '#' },
   ],
   support: [
     { label: 'Help Center', href: '#' },
     { label: 'Documentation', href: '#' },
-    { label: 'Status', href: '#' },
   ],
 };
 
@@ -29,10 +29,13 @@ export function Footer() {
           {/* Brand */}
           <div className="footer-brand">
             <Link href="/" className="logo">
-              Invest<span>IQ</span>
+              <span className="logo-text font-display">
+                DealMaker<span className="iq">IQ</span>
+              </span>
+              <span className="logo-subtext">by InvestIQ</span>
             </Link>
             <p className="footer-tagline">
-              The fastest path from address to investable decision. Analyze any property in 60 seconds.
+              Know exactly what to offer in 60 seconds. Price<span className="iq">IQ</span> gives you the three numbers that define every deal.
             </p>
           </div>
 
