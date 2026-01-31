@@ -403,21 +403,25 @@ export function VerdictIQCombined({
     setCurrentStrategy(strategy)
   }, [])
 
+  // Open DealMaker popup instead of navigating to page
+  const handleOpenDealMakerPopup = useCallback(() => {
+    setShowDealMakerPopup(true)
+  }, [])
+
+  // Handle apply from DealMaker popup
+  const handleApplyDealMakerValues = useCallback((values: DealMakerValues) => {
+    setOverrideValues(values)
+    setShowDealMakerPopup(false)
+  }, [])
+
+  // For backward compatibility - calls popup
   const handleNavigateToDealMaker = useCallback(() => {
-    if (onNavigateToDealMaker) {
-      onNavigateToDealMaker()
-      return
-    }
-    const fullAddr = `${property.address}, ${property.city || ''}, ${property.state || ''} ${property.zip || ''}`
-    const dealMakerUrl = savedPropertyId
-      ? `/deal-maker/${encodeURIComponent(fullAddr)}?propertyId=${savedPropertyId}`
-      : `/deal-maker/${encodeURIComponent(fullAddr)}`
-    router.push(dealMakerUrl)
-  }, [property, savedPropertyId, router, onNavigateToDealMaker])
+    handleOpenDealMakerPopup()
+  }, [handleOpenDealMakerPopup])
 
   const handleEditAssumptions = useCallback(() => {
-    handleNavigateToDealMaker()
-  }, [handleNavigateToDealMaker])
+    handleOpenDealMakerPopup()
+  }, [handleOpenDealMakerPopup])
 
   return (
     <div 
