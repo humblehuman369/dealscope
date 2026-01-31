@@ -89,7 +89,7 @@ export function InvestmentAnalysis({
         </div>
         <button 
           className="text-[#0891B2] text-[13px] font-medium bg-transparent border-none cursor-pointer hover:opacity-80"
-          onClick={() => setShowAssumptions(!showAssumptions)}
+          onClick={onEditAssumptions}
         >
           Change terms
         </button>

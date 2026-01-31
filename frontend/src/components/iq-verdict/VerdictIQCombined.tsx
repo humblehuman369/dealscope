@@ -631,6 +631,27 @@ export function VerdictIQCombined({
           minute: '2-digit'
         })}
       />
+
+      {/* DealMaker Popup */}
+      <DealMakerPopup
+        isOpen={showDealMakerPopup}
+        onClose={() => setShowDealMakerPopup(false)}
+        onApply={handleApplyDealMakerValues}
+        initialValues={{
+          buyPrice: overrideValues?.buyPrice ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : buyPrice),
+          downPayment: (defaults.financing.down_payment_pct * 100),
+          closingCosts: ((defaults.financing.closing_costs_pct || 0.03) * 100),
+          interestRate: (defaults.financing.interest_rate * 100),
+          loanTerm: defaults.financing.loan_term_years,
+          rehabBudget: overrideValues?.rehabBudget ?? 0,
+          arv: overrideValues?.arv ?? property.arv ?? buyPrice * 1.15,
+          monthlyRent: overrideValues?.monthlyRent ?? property.monthlyRent ?? Math.round(buyPrice * 0.007),
+          vacancyRate: (defaults.operating.vacancy_rate * 100),
+          propertyTaxes: overrideValues?.propertyTaxes ?? property.propertyTaxes ?? Math.round(buyPrice * 0.012),
+          insurance: overrideValues?.insurance ?? property.insurance ?? Math.round(buyPrice * 0.01),
+          managementRate: (defaults.operating.property_management_pct * 100),
+        }}
+      />
     </div>
   )
 }
