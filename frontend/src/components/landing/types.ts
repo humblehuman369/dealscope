@@ -140,7 +140,7 @@ export const founderStats: FounderStat[] = [
 export const founderInfo = {
   name: 'Brad Geisen',
   title: 'Founder, InvestIQ • Real Estate Technology Pioneer',
-  quote: 'I built HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac — systems still running today. I created Foreclosure.com before data platforms existed. I spent 35 years building the infrastructure institutions depend on. DealMakerIQ puts that same intelligence in your hands.',
+  quote: 'I built HomePath.com for Fannie Mae and HomeSteps.com for Freddie Mac. Founded Foreclosure.com before data platforms existed and spent 35 years building the infrastructure institutions depend on. DealMakerIQ puts that same intelligence in your hands.',
   credentials: ['Fannie Mae', 'Freddie Mac', 'HUD'],
 };
 

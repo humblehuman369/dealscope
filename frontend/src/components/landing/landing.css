@@ -1328,12 +1328,42 @@
   margin-bottom: 24px;
 }
 
+.landing-page .founder-content-centered {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.landing-page .founder-content-centered .founder-label {
+  margin-bottom: 24px;
+}
+
+.landing-page .founder-content-centered .founder-quote {
+  font-size: 1.375rem;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 768px) {
+  .landing-page .founder-content-centered .founder-quote {
+    font-size: 1.5rem;
+  }
+}
+
+.landing-page .founder-credentials-inline {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
 .landing-page .founder-stats {
   display: flex;
   gap: 32px;
   padding-top: 24px;
   border-top: 1px solid var(--border-color);
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .landing-page .founder-stat {

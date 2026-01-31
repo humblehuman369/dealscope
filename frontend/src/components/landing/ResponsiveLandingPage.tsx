@@ -511,37 +511,27 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
       {/* Founder Section */}
       <section id="founder" className="founder-section">
         <div className="container">
-          <div className="founder-grid">
-            <div className="founder-image-container">
-              <img
-                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=500&fit=crop&crop=face"
-                alt={founderInfo.name}
-                className="founder-image"
-              />
-              <div className="founder-credentials">
-                {founderInfo.credentials.map((cred, i) => (
-                  <span key={i} className="founder-credential">{cred}</span>
-                ))}
-              </div>
+          <div className="founder-content-centered">
+            <p className="founder-label">
+              From the Pioneer Behind the Platforms You Already Use
+            </p>
+            <p className="founder-quote">
+              &ldquo;I built <strong>HomePath.com</strong> for Fannie Mae and <strong>HomeSteps.com</strong> for Freddie Mac. Founded <strong>Foreclosure.com</strong> before data platforms existed and spent 35 years building the infrastructure institutions depend on. <span className="highlight">DealMakerIQ</span> puts that same intelligence in your hands.&rdquo;
+            </p>
+            <p className="founder-name font-display">{founderInfo.name}</p>
+            <p className="founder-title">{founderInfo.title}</p>
+            <div className="founder-credentials-inline">
+              {founderInfo.credentials.map((cred, i) => (
+                <span key={i} className="founder-credential">{cred}</span>
+              ))}
             </div>
-
-            <div className="founder-content">
-              <p className="founder-label">
-                From the Pioneer Behind the Platforms You Already Use
-              </p>
-              <p className="founder-quote">
-                &ldquo;I built <strong>HomePath.com</strong> for Fannie Mae and <strong>HomeSteps.com</strong> for Freddie Mac — systems still running today. I created <strong>Foreclosure.com</strong> before data platforms existed. I spent 35 years building the infrastructure institutions depend on. <span className="highlight">DealMakerIQ</span> puts that same intelligence in your hands.&rdquo;
-              </p>
-              <p className="founder-name font-display">{founderInfo.name}</p>
-              <p className="founder-title">{founderInfo.title}</p>
-              <div className="founder-stats">
-                {founderStats.map((stat, i) => (
-                  <div key={i} className="founder-stat">
-                    <p className="founder-stat-value font-display">{stat.value}</p>
-                    <p className="founder-stat-label">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
+            <div className="founder-stats">
+              {founderStats.map((stat, i) => (
+                <div key={i} className="founder-stat">
+                  <p className="founder-stat-value font-display">{stat.value}</p>
+                  <p className="founder-stat-label">{stat.label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
