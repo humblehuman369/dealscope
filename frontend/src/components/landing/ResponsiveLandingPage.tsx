@@ -200,7 +200,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
                           <p className="phone-price-label">
                             Target<span style={{ color: 'white' }}>IQ</span>
                           </p>
-                          <p className="phone-price-value font-display">$723K</p>
+                          <p className="phone-price-value font-display">$767K</p>
                           <p className="phone-price-subtext">Your Offer</p>
                         </div>
                         <div className="phone-price-card">

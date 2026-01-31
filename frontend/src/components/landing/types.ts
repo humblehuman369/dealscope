@@ -48,7 +48,7 @@ export const priceIQData: PriceIQCard[] = [
   {
     name: 'Target',
     suffix: 'IQ',
-    value: '$723,000',
+    value: '$766,733',
     description: '5% discount for profit',
     subtext: 'Your optimal offer price',
     featured: true,
