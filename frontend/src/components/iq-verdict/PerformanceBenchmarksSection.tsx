@@ -350,7 +350,7 @@ export function PerformanceBenchmarksSection({
         {/* Returns Category */}
         {returnsMetrics.length > 0 && (
           <>
-            <div className="text-[10px] font-bold text-[#0A1628] uppercase tracking-wide pb-2 border-b border-[#F1F5F9]">
+            <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide text-center py-2 bg-[#F8FAFC] rounded-md mb-2">
               Returns
             </div>
             {returnsMetrics.map((metric) => (
@@ -362,7 +362,7 @@ export function PerformanceBenchmarksSection({
         {/* Cash Flow & Risk Category */}
         {cashflowMetrics.length > 0 && (
           <>
-            <div className="text-[10px] font-bold text-[#0A1628] uppercase tracking-wide pt-4 pb-2 border-b border-[#F1F5F9]">
+            <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide text-center py-2 bg-[#F8FAFC] rounded-md mt-4 mb-2">
               Cash Flow & Risk
             </div>
             {cashflowMetrics.map((metric) => (
