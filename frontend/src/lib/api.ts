@@ -453,6 +453,95 @@ export const api = {
       }),
   },
 
+  // Proforma export endpoints
+  proforma: {
+    /**
+     * Download Excel proforma
+     */
+    downloadExcel: async (params: {
+      propertyId: string
+      strategy?: string
+      holdPeriodYears?: number
+      landValuePercent?: number
+      marginalTaxRate?: number
+      capitalGainsTaxRate?: number
+    }) => {
+      const searchParams = new URLSearchParams()
+      if (params.strategy) searchParams.set('strategy', params.strategy)
+      if (params.holdPeriodYears) searchParams.set('hold_period_years', String(params.holdPeriodYears))
+      if (params.landValuePercent) searchParams.set('land_value_percent', String(params.landValuePercent))
+      if (params.marginalTaxRate) searchParams.set('marginal_tax_rate', String(params.marginalTaxRate))
+      if (params.capitalGainsTaxRate) searchParams.set('capital_gains_tax_rate', String(params.capitalGainsTaxRate))
+      
+      const token = getAccessToken()
+      const headers: Record<string, string> = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/proforma/property/${params.propertyId}/excel?${searchParams}`,
+        { headers }
+      )
+      
+      if (!response.ok) {
+        throw new Error(`Failed to download proforma: ${response.statusText}`)
+      }
+      
+      return response.blob()
+    },
+
+    /**
+     * Download PDF proforma
+     */
+    downloadPdf: async (params: {
+      propertyId: string
+      strategy?: string
+      holdPeriodYears?: number
+      landValuePercent?: number
+      marginalTaxRate?: number
+      capitalGainsTaxRate?: number
+    }) => {
+      const searchParams = new URLSearchParams()
+      if (params.strategy) searchParams.set('strategy', params.strategy)
+      if (params.holdPeriodYears) searchParams.set('hold_period_years', String(params.holdPeriodYears))
+      if (params.landValuePercent) searchParams.set('land_value_percent', String(params.landValuePercent))
+      if (params.marginalTaxRate) searchParams.set('marginal_tax_rate', String(params.marginalTaxRate))
+      if (params.capitalGainsTaxRate) searchParams.set('capital_gains_tax_rate', String(params.capitalGainsTaxRate))
+      
+      const token = getAccessToken()
+      const headers: Record<string, string> = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/proforma/property/${params.propertyId}/pdf?${searchParams}`,
+        { headers }
+      )
+      
+      if (!response.ok) {
+        throw new Error(`Failed to download proforma: ${response.statusText}`)
+      }
+      
+      return response.blob()
+    },
+
+    /**
+     * Get proforma data as JSON
+     */
+    getData: (params: {
+      propertyId: string
+      strategy?: string
+      holdPeriodYears?: number
+    }) => {
+      const searchParams = new URLSearchParams()
+      if (params.strategy) searchParams.set('strategy', params.strategy)
+      if (params.holdPeriodYears) searchParams.set('hold_period_years', String(params.holdPeriodYears))
+      return apiRequest<any>(`/api/v1/proforma/property/${params.propertyId}?${searchParams}`)
+    },
+  },
+
   // LOI (Letter of Intent) endpoints
   loi: {
     generate: (data: GenerateLOIRequest) =>

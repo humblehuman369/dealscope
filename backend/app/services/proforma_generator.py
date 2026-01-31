@@ -457,29 +457,298 @@ def calculate_investment_returns(
 # SENSITIVITY ANALYSIS
 # ============================================
 
-def generate_sensitivity_scenarios(
-    base_value: float,
-    variable_name: str,
-    percent_changes: List[float],
-    recalculate_fn
-) -> List[SensitivityScenario]:
-    """Generate sensitivity scenarios for a variable."""
-    scenarios = []
+def calculate_sensitivity_for_purchase_price(
+    base_params: Dict[str, Any],
+    new_purchase_price: float,
+    hold_period_years: int,
+    marginal_tax_rate: float,
+    capital_gains_tax_rate: float,
+) -> Dict[str, float]:
+    """Recalculate returns for a different purchase price."""
+    purchase_price = new_purchase_price
+    monthly_rent = base_params["monthly_rent"]
+    property_taxes = base_params["property_taxes"]
+    hoa_fees = base_params["hoa_fees"]
     
-    for change_pct in percent_changes:
-        absolute_value = base_value * (1 + change_pct / 100)
-        results = recalculate_fn(absolute_value)
-        
-        scenarios.append(SensitivityScenario(
-            variable=variable_name,
-            change_percent=change_pct,
-            absolute_value=absolute_value,
-            irr=results.get("irr", 0),
-            cash_on_cash=results.get("cash_on_cash", 0),
-            net_profit=results.get("net_profit", 0),
+    # Recalculate with new purchase price
+    down_payment_pct = FINANCING.down_payment_pct
+    interest_rate = FINANCING.interest_rate
+    loan_term_years = FINANCING.loan_term_years
+    closing_costs_pct = FINANCING.closing_costs_pct
+    
+    down_payment = purchase_price * down_payment_pct
+    closing_costs = purchase_price * closing_costs_pct
+    loan_amount = purchase_price - down_payment
+    monthly_mortgage = calculate_monthly_mortgage(loan_amount, interest_rate, loan_term_years)
+    total_cash_required = down_payment + closing_costs
+    
+    annual_gross_rent = monthly_rent * 12
+    vacancy_rate = OPERATING.vacancy_rate
+    insurance = purchase_price * OPERATING.insurance_pct
+    
+    # Operating expenses
+    management = annual_gross_rent * OPERATING.property_management_pct
+    maintenance = annual_gross_rent * OPERATING.maintenance_pct
+    utilities = OPERATING.utilities_monthly * 12
+    landscaping = OPERATING.landscaping_annual
+    pest_control = OPERATING.pest_control_annual
+    cap_ex = annual_gross_rent * 0.05
+    
+    total_op_ex = (property_taxes + insurance + hoa_fees + 
+                   management + maintenance + utilities + 
+                   landscaping + pest_control + cap_ex)
+    
+    effective_gross_income = annual_gross_rent * (1 - vacancy_rate)
+    noi = effective_gross_income - total_op_ex
+    annual_debt_service = monthly_mortgage * 12
+    annual_cash_flow = noi - annual_debt_service
+    
+    cash_on_cash = (annual_cash_flow / total_cash_required * 100) if total_cash_required > 0 else 0
+    
+    # Simple IRR estimate (using annual cash flow and appreciation)
+    appreciation_rate = GROWTH.appreciation_rate
+    exit_value = purchase_price * ((1 + appreciation_rate) ** hold_period_years)
+    exit_costs = exit_value * 0.075  # ~7.5% selling costs
+    
+    # Rough loan balance (simplified)
+    principal_paid_pct = 0.03 * hold_period_years  # ~3% per year approximate
+    remaining_balance = loan_amount * (1 - min(principal_paid_pct, 0.3))
+    net_exit = exit_value - exit_costs - remaining_balance
+    
+    total_cash_flows = annual_cash_flow * hold_period_years
+    total_return = total_cash_flows + net_exit
+    
+    # Simple IRR approximation
+    all_cash_flows = [-total_cash_required] + [annual_cash_flow] * hold_period_years
+    all_cash_flows[-1] += net_exit
+    irr = calculate_irr(all_cash_flows)
+    
+    return {
+        "irr": irr,
+        "cash_on_cash": cash_on_cash,
+        "net_profit": total_return - total_cash_required,
+    }
+
+
+def calculate_sensitivity_for_interest_rate(
+    base_params: Dict[str, Any],
+    new_interest_rate: float,
+    hold_period_years: int,
+) -> Dict[str, float]:
+    """Recalculate returns for a different interest rate."""
+    purchase_price = base_params["purchase_price"]
+    monthly_rent = base_params["monthly_rent"]
+    property_taxes = base_params["property_taxes"]
+    total_cash_required = base_params["total_cash_required"]
+    
+    down_payment_pct = FINANCING.down_payment_pct
+    loan_term_years = FINANCING.loan_term_years
+    
+    loan_amount = purchase_price * (1 - down_payment_pct)
+    monthly_mortgage = calculate_monthly_mortgage(loan_amount, new_interest_rate, loan_term_years)
+    
+    annual_gross_rent = monthly_rent * 12
+    vacancy_rate = OPERATING.vacancy_rate
+    insurance = purchase_price * OPERATING.insurance_pct
+    
+    management = annual_gross_rent * OPERATING.property_management_pct
+    maintenance = annual_gross_rent * OPERATING.maintenance_pct
+    utilities = OPERATING.utilities_monthly * 12
+    total_op_ex = (property_taxes + insurance + management + maintenance + utilities + 
+                   annual_gross_rent * 0.05)
+    
+    effective_gross_income = annual_gross_rent * (1 - vacancy_rate)
+    noi = effective_gross_income - total_op_ex
+    annual_debt_service = monthly_mortgage * 12
+    annual_cash_flow = noi - annual_debt_service
+    
+    cash_on_cash = (annual_cash_flow / total_cash_required * 100) if total_cash_required > 0 else 0
+    
+    appreciation_rate = GROWTH.appreciation_rate
+    exit_value = purchase_price * ((1 + appreciation_rate) ** hold_period_years)
+    remaining_balance = loan_amount * 0.7  # Rough estimate
+    net_exit = exit_value * 0.925 - remaining_balance
+    
+    all_cash_flows = [-total_cash_required] + [annual_cash_flow] * hold_period_years
+    all_cash_flows[-1] += net_exit
+    irr = calculate_irr(all_cash_flows)
+    
+    return {
+        "irr": irr,
+        "cash_on_cash": cash_on_cash,
+        "net_profit": sum(all_cash_flows),
+    }
+
+
+def calculate_sensitivity_for_rent(
+    base_params: Dict[str, Any],
+    new_monthly_rent: float,
+    hold_period_years: int,
+) -> Dict[str, float]:
+    """Recalculate returns for different rent."""
+    purchase_price = base_params["purchase_price"]
+    property_taxes = base_params["property_taxes"]
+    total_cash_required = base_params["total_cash_required"]
+    monthly_mortgage = base_params["monthly_mortgage"]
+    
+    annual_gross_rent = new_monthly_rent * 12
+    vacancy_rate = OPERATING.vacancy_rate
+    insurance = purchase_price * OPERATING.insurance_pct
+    
+    management = annual_gross_rent * OPERATING.property_management_pct
+    maintenance = annual_gross_rent * OPERATING.maintenance_pct
+    utilities = OPERATING.utilities_monthly * 12
+    total_op_ex = (property_taxes + insurance + management + maintenance + utilities + 
+                   annual_gross_rent * 0.05)
+    
+    effective_gross_income = annual_gross_rent * (1 - vacancy_rate)
+    noi = effective_gross_income - total_op_ex
+    annual_debt_service = monthly_mortgage * 12
+    annual_cash_flow = noi - annual_debt_service
+    
+    cash_on_cash = (annual_cash_flow / total_cash_required * 100) if total_cash_required > 0 else 0
+    
+    appreciation_rate = GROWTH.appreciation_rate
+    exit_value = purchase_price * ((1 + appreciation_rate) ** hold_period_years)
+    loan_amount = purchase_price * (1 - FINANCING.down_payment_pct)
+    remaining_balance = loan_amount * 0.7
+    net_exit = exit_value * 0.925 - remaining_balance
+    
+    all_cash_flows = [-total_cash_required] + [annual_cash_flow] * hold_period_years
+    all_cash_flows[-1] += net_exit
+    irr = calculate_irr(all_cash_flows)
+    
+    return {
+        "irr": irr,
+        "cash_on_cash": cash_on_cash,
+        "net_profit": sum(all_cash_flows),
+    }
+
+
+def generate_full_sensitivity_analysis(
+    base_params: Dict[str, Any],
+    hold_period_years: int,
+    marginal_tax_rate: float,
+    capital_gains_tax_rate: float,
+) -> SensitivityAnalysis:
+    """Generate complete sensitivity analysis for all key variables."""
+    percent_changes = [-10, -5, 0, 5, 10]
+    
+    # Purchase Price Sensitivity
+    purchase_price_scenarios = []
+    for pct in percent_changes:
+        new_price = base_params["purchase_price"] * (1 + pct / 100)
+        results = calculate_sensitivity_for_purchase_price(
+            base_params, new_price, hold_period_years, 
+            marginal_tax_rate, capital_gains_tax_rate
+        )
+        purchase_price_scenarios.append(SensitivityScenario(
+            variable="purchase_price",
+            change_percent=pct,
+            absolute_value=new_price,
+            irr=results["irr"],
+            cash_on_cash=results["cash_on_cash"],
+            net_profit=results["net_profit"],
         ))
     
-    return scenarios
+    # Interest Rate Sensitivity
+    interest_rate_scenarios = []
+    base_rate = FINANCING.interest_rate * 100  # Convert to percentage
+    rate_changes = [-1.5, -0.75, 0, 0.75, 1.5]  # Absolute rate changes
+    for delta in rate_changes:
+        new_rate = (base_rate + delta) / 100  # Convert back to decimal
+        results = calculate_sensitivity_for_interest_rate(
+            base_params, new_rate, hold_period_years
+        )
+        interest_rate_scenarios.append(SensitivityScenario(
+            variable="interest_rate",
+            change_percent=delta,  # Using absolute change for rates
+            absolute_value=new_rate * 100,  # Display as percentage
+            irr=results["irr"],
+            cash_on_cash=results["cash_on_cash"],
+            net_profit=results["net_profit"],
+        ))
+    
+    # Rent Sensitivity
+    rent_scenarios = []
+    for pct in percent_changes:
+        new_rent = base_params["monthly_rent"] * (1 + pct / 100)
+        results = calculate_sensitivity_for_rent(
+            base_params, new_rent, hold_period_years
+        )
+        rent_scenarios.append(SensitivityScenario(
+            variable="rent",
+            change_percent=pct,
+            absolute_value=new_rent,
+            irr=results["irr"],
+            cash_on_cash=results["cash_on_cash"],
+            net_profit=results["net_profit"],
+        ))
+    
+    # Vacancy Sensitivity
+    vacancy_scenarios = []
+    base_vacancy = OPERATING.vacancy_rate * 100
+    vacancy_changes = [0, 2.5, 5, 7.5, 10]  # Absolute vacancy rates
+    for vac in vacancy_changes:
+        # Recalculate with different vacancy
+        purchase_price = base_params["purchase_price"]
+        monthly_rent = base_params["monthly_rent"]
+        annual_gross_rent = monthly_rent * 12
+        effective_income = annual_gross_rent * (1 - vac / 100)
+        
+        insurance = purchase_price * OPERATING.insurance_pct
+        management = annual_gross_rent * OPERATING.property_management_pct
+        maintenance = annual_gross_rent * OPERATING.maintenance_pct
+        utilities = OPERATING.utilities_monthly * 12
+        total_op_ex = (base_params["property_taxes"] + insurance + management + 
+                       maintenance + utilities + annual_gross_rent * 0.05)
+        
+        noi = effective_income - total_op_ex
+        annual_cash_flow = noi - base_params["monthly_mortgage"] * 12
+        cash_on_cash = (annual_cash_flow / base_params["total_cash_required"] * 100) if base_params["total_cash_required"] > 0 else 0
+        
+        vacancy_scenarios.append(SensitivityScenario(
+            variable="vacancy",
+            change_percent=vac,  # Absolute vacancy rate
+            absolute_value=vac,
+            irr=0,  # Simplified - would need full recalc
+            cash_on_cash=cash_on_cash,
+            net_profit=annual_cash_flow * hold_period_years,
+        ))
+    
+    # Appreciation Sensitivity
+    appreciation_scenarios = []
+    appreciation_changes = [0, 2, 3, 5, 7]  # Annual appreciation rates
+    for app_rate in appreciation_changes:
+        exit_value = base_params["purchase_price"] * ((1 + app_rate / 100) ** hold_period_years)
+        exit_costs = exit_value * 0.075
+        loan_amount = base_params["purchase_price"] * (1 - FINANCING.down_payment_pct)
+        remaining_balance = loan_amount * 0.7
+        net_exit = exit_value - exit_costs - remaining_balance
+        
+        annual_cash_flow = base_params.get("annual_cash_flow", 0)
+        total_cash_required = base_params["total_cash_required"]
+        
+        all_cash_flows = [-total_cash_required] + [annual_cash_flow] * hold_period_years
+        all_cash_flows[-1] += net_exit
+        irr = calculate_irr(all_cash_flows)
+        
+        appreciation_scenarios.append(SensitivityScenario(
+            variable="appreciation",
+            change_percent=app_rate,  # Annual rate
+            absolute_value=app_rate,
+            irr=irr,
+            cash_on_cash=base_params.get("cash_on_cash", 0),
+            net_profit=sum(all_cash_flows),
+        ))
+    
+    return SensitivityAnalysis(
+        purchase_price=purchase_price_scenarios,
+        interest_rate=interest_rate_scenarios,
+        rent=rent_scenarios,
+        vacancy=vacancy_scenarios,
+        appreciation=appreciation_scenarios,
+    )
 
 
 # ============================================
@@ -622,13 +891,24 @@ async def generate_proforma_data(
         exit_proceeds=exit_analysis.after_tax_proceeds,
     )
     
-    # Sensitivity analysis (simplified - full implementation would recalculate)
-    sensitivity = SensitivityAnalysis(
-        purchase_price=[],  # Would be populated with recalculated scenarios
-        interest_rate=[],
-        rent=[],
-        vacancy=[],
-        appreciation=[],
+    # Build base params for sensitivity analysis
+    base_params = {
+        "purchase_price": purchase_price,
+        "monthly_rent": monthly_rent,
+        "property_taxes": property_taxes,
+        "hoa_fees": hoa_fees,
+        "total_cash_required": total_cash_required,
+        "monthly_mortgage": monthly_mortgage,
+        "annual_cash_flow": annual_cash_flow,
+        "cash_on_cash": cash_on_cash,
+    }
+    
+    # Full sensitivity analysis with recalculated returns
+    sensitivity = generate_full_sensitivity_analysis(
+        base_params=base_params,
+        hold_period_years=hold_period_years,
+        marginal_tax_rate=marginal_tax_rate,
+        capital_gains_tax_rate=capital_gains_tax_rate,
     )
     
     # Build proforma

@@ -18,7 +18,8 @@
 
 import React, { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Download, TrendingDown, Target, Clock, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowRight, Download, TrendingDown, Target, Clock, AlertTriangle, ChevronDown, ChevronUp, FileSpreadsheet, FileText, Loader2 } from 'lucide-react'
+import api from '@/lib/api'
 import { CompactHeader, PropertyData } from '../layout/CompactHeader'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { ScoreMethodologySheet } from './ScoreMethodologySheet'
@@ -98,6 +99,9 @@ export function VerdictIQCombined({
   const [showFactors, setShowFactors] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState(HEADER_STRATEGIES[0].short)
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
+  const [showExportMenu, setShowExportMenu] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
   
   // Override values from DealMaker popup (for recalculation)
   const [overrideValues, setOverrideValues] = useState<Partial<DealMakerValues> | null>(null)

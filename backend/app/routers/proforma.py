@@ -18,6 +18,7 @@ from app.schemas.proforma import (
 )
 from app.services.proforma_generator import generate_proforma_data
 from app.services.proforma_exporter import ProformaExcelExporter
+from app.services.proforma_pdf_exporter import ProformaPDFExporter, WEASYPRINT_AVAILABLE
 from app.services.property_service import property_service
 from app.core.deps import CurrentUser, OptionalUser
 
@@ -98,9 +99,24 @@ async def generate_proforma(
             )
         
         elif request.format == "pdf":
-            raise HTTPException(
-                status_code=status.HTTP_501_NOT_IMPLEMENTED,
-                detail="PDF export coming soon"
+            if not WEASYPRINT_AVAILABLE:
+                raise HTTPException(
+                    status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                    detail="PDF export requires WeasyPrint. Install with: pip install weasyprint"
+                )
+            
+            # Generate PDF file
+            exporter = ProformaPDFExporter(proforma)
+            buffer = exporter.generate()
+            
+            filename = f"proforma_{request.property_id}_{request.strategy}_{datetime.now().strftime('%Y%m%d')}.pdf"
+            
+            return StreamingResponse(
+                buffer,
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f"attachment; filename={filename}"
+                }
             )
         
         else:
@@ -244,4 +260,84 @@ async def download_proforma_excel(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating Excel proforma: {str(e)}"
+        )
+
+
+@router.get(
+    "/property/{property_id}/pdf",
+    summary="Download PDF proforma",
+)
+async def download_proforma_pdf(
+    property_id: str,
+    current_user: OptionalUser,
+    strategy: str = Query("ltr", description="Investment strategy"),
+    land_value_percent: float = Query(0.20, ge=0, le=0.50),
+    marginal_tax_rate: float = Query(0.24, ge=0, le=0.50),
+    capital_gains_tax_rate: float = Query(0.15, ge=0, le=0.30),
+    hold_period_years: int = Query(10, ge=1, le=30),
+):
+    """
+    Download a professional PDF financial proforma.
+    
+    The PDF includes:
+    - Property summary with key details
+    - Acquisition and financing breakdown
+    - Year 1 income statement
+    - Key investment metrics
+    - Multi-year cash flow projections
+    - Exit analysis with capital gains
+    - Investment returns summary
+    - Sensitivity analysis
+    
+    Note: Requires WeasyPrint to be installed on the server.
+    """
+    if not WEASYPRINT_AVAILABLE:
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="PDF export requires WeasyPrint. Contact support to enable this feature."
+        )
+    
+    try:
+        # Fetch property data
+        property_data = await property_service.get_property_by_id(property_id)
+        
+        if not property_data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Property not found: {property_id}"
+            )
+        
+        # Generate proforma data
+        proforma = await generate_proforma_data(
+            property_data=property_data,
+            strategy=strategy,
+            land_value_percent=land_value_percent,
+            marginal_tax_rate=marginal_tax_rate,
+            capital_gains_tax_rate=capital_gains_tax_rate,
+            hold_period_years=hold_period_years,
+        )
+        
+        # Generate PDF file
+        exporter = ProformaPDFExporter(proforma)
+        buffer = exporter.generate()
+        
+        # Create filename
+        address_slug = property_data.address.street.replace(" ", "_")[:30] if property_data.address else property_id
+        filename = f"Proforma_{address_slug}_{strategy.upper()}_{datetime.now().strftime('%Y%m%d')}.pdf"
+        
+        return StreamingResponse(
+            buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=\"{filename}\""
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating PDF proforma: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating PDF proforma: {str(e)}"
         )
