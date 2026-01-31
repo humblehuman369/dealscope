@@ -29,7 +29,7 @@ export function DealMakerHeader({ hideSearch = false, className = '' }: DealMake
 
   return (
     <>
-      <header className={`w-full bg-white dark:bg-[#0b1426] border-b border-gray-200 dark:border-white/[0.08] ${className}`}>
+      <header className={`fixed top-0 left-0 right-0 w-full bg-white/95 dark:bg-[#0b1426]/95 backdrop-blur-xl border-b border-gray-200 dark:border-white/[0.08] z-50 transition-colors duration-200 ${className}`}>
         <div className="max-w-[480px] mx-auto px-4 h-14 flex items-center justify-between">
           {/* Logo / Branding */}
           <Link href="/" className="flex flex-col">
@@ -81,6 +81,9 @@ export function DealMakerHeader({ hideSearch = false, className = '' }: DealMake
           </div>
         </div>
       </header>
+
+      {/* Spacer to prevent content from being hidden under fixed header */}
+      <div className="h-14" aria-hidden="true" />
 
       {/* Search Property Modal */}
       <SearchPropertyModal
