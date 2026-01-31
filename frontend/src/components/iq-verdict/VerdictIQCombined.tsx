@@ -469,6 +469,65 @@ export function VerdictIQCombined({
     handleOpenDealMakerPopup()
   }, [handleOpenDealMakerPopup])
 
+  // Export proforma handlers
+  const handleExportProforma = useCallback(async (format: 'excel' | 'pdf') => {
+    if (!analysis.propertyId) {
+      setExportError('Property ID not found')
+      return
+    }
+
+    setIsExporting(true)
+    setExportError(null)
+    setShowExportMenu(false)
+
+    try {
+      // Map current strategy to API format
+      const strategyMap: Record<string, string> = {
+        'Long-term': 'ltr',
+        'Short-term': 'str',
+        'BRRRR': 'brrrr',
+        'Fix & Flip': 'flip',
+        'House Hack': 'house_hack',
+        'Wholesale': 'wholesale',
+      }
+      const strategy = strategyMap[currentStrategy] || 'ltr'
+
+      let blob: Blob
+      let filename: string
+      
+      if (format === 'excel') {
+        blob = await api.proforma.downloadExcel({
+          propertyId: analysis.propertyId,
+          strategy,
+          holdPeriodYears: 10,
+        })
+        filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_${strategy.toUpperCase()}.xlsx`
+      } else {
+        blob = await api.proforma.downloadPdf({
+          propertyId: analysis.propertyId,
+          strategy,
+          holdPeriodYears: 10,
+        })
+        filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_${strategy.toUpperCase()}.pdf`
+      }
+
+      // Create download link and trigger download
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Export failed:', error)
+      setExportError(error instanceof Error ? error.message : 'Export failed')
+    } finally {
+      setIsExporting(false)
+    }
+  }, [analysis.propertyId, currentStrategy, property.address])
+
   return (
     <div 
       className="min-h-screen flex flex-col max-w-[480px] mx-auto"
