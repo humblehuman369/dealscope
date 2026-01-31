@@ -266,28 +266,58 @@ export function VerdictIQCombined({
     { label: 'Downside Risk', value: Math.min(100, Math.max(0, 100 - metrics.breakevenOcc)) },
   ], [metrics])
 
-  // Benchmark metrics
+  // Calculate Total ROI (5yr) - simplified estimate
+  const totalRoi5yr = useMemo(() => {
+    // Estimate: cash flow return + appreciation (3%/yr) + principal paydown
+    const annualCashFlowReturn = metrics.cashOnCash
+    const annualAppreciation = 3 // Assume 3% annual appreciation
+    const annualPrincipalPaydown = 2 // Rough estimate
+    return (annualCashFlowReturn + annualAppreciation + annualPrincipalPaydown) * 5
+  }, [metrics])
+
+  // Benchmark metrics - 7 metrics with categories
   const benchmarkMetrics = useMemo(() => [
+    // Returns Category
+    {
+      key: 'cashOnCash',
+      label: 'Cash on Cash Return',
+      value: metrics.cashOnCash,
+      displayValue: `${metrics.cashOnCash.toFixed(1)}%`,
+      range: NATIONAL_RANGES.cashOnCash,
+      category: 'returns' as const,
+    },
     {
       key: 'capRate',
       label: 'Cap Rate',
       value: metrics.capRate,
       displayValue: `${metrics.capRate.toFixed(1)}%`,
       range: NATIONAL_RANGES.capRate,
+      category: 'returns' as const,
     },
     {
-      key: 'cashOnCash',
-      label: 'Cash-on-Cash',
-      value: metrics.cashOnCash,
-      displayValue: `${metrics.cashOnCash.toFixed(1)}%`,
-      range: NATIONAL_RANGES.cashOnCash,
+      key: 'totalRoi',
+      label: 'Total ROI (5yr)',
+      value: totalRoi5yr,
+      displayValue: `${totalRoi5yr.toFixed(0)}%`,
+      range: NATIONAL_RANGES.totalRoi,
+      category: 'returns' as const,
+    },
+    // Cash Flow & Risk Category
+    {
+      key: 'cashFlowYield',
+      label: 'Cash Flow Yield',
+      value: metrics.cashFlowYield,
+      displayValue: `${metrics.cashFlowYield.toFixed(1)}%`,
+      range: NATIONAL_RANGES.cashFlowYield,
+      category: 'cashflow' as const,
     },
     {
       key: 'dscr',
-      label: 'DSCR',
+      label: 'Debt Service Coverage',
       value: metrics.dscr,
       displayValue: metrics.dscr.toFixed(2),
       range: NATIONAL_RANGES.dscr,
+      category: 'cashflow' as const,
     },
     {
       key: 'expenseRatio',
@@ -295,8 +325,17 @@ export function VerdictIQCombined({
       value: metrics.expenseRatio,
       displayValue: `${metrics.expenseRatio.toFixed(0)}%`,
       range: NATIONAL_RANGES.expenseRatio,
+      category: 'cashflow' as const,
     },
-  ], [metrics])
+    {
+      key: 'breakevenOcc',
+      label: 'Breakeven Occupancy',
+      value: metrics.breakevenOcc,
+      displayValue: `${metrics.breakevenOcc.toFixed(0)}%`,
+      range: NATIONAL_RANGES.breakevenOcc,
+      category: 'cashflow' as const,
+    },
+  ], [metrics, totalRoi5yr])
 
   // Composite score
   const compositeScore = useMemo(() => {
@@ -525,6 +564,7 @@ export function VerdictIQCombined({
         {/* Performance Benchmarks */}
         <PerformanceBenchmarksSection
           metrics={benchmarkMetrics}
+          onNavigateToDealMaker={handleNavigateToDealMaker}
         />
       </main>
 
