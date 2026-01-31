@@ -28,6 +28,7 @@ import { InvestmentAnalysis } from './InvestmentAnalysis'
 import { SummarySnapshot } from './SummarySnapshot'
 import { AtAGlanceSection } from './AtAGlanceSection'
 import { PerformanceBenchmarksSection, NATIONAL_RANGES } from './PerformanceBenchmarksSection'
+import { DealMakerPopup, DealMakerValues } from '../deal-maker/DealMakerPopup'
 import {
   IQProperty,
   IQAnalysisResult,
@@ -96,14 +97,35 @@ export function VerdictIQCombined({
   const [showMethodology, setShowMethodology] = useState(false)
   const [showFactors, setShowFactors] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState(HEADER_STRATEGIES[0].short)
+  const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
+  
+  // Override values from DealMaker popup (for recalculation)
+  const [overrideValues, setOverrideValues] = useState<Partial<DealMakerValues> | null>(null)
 
   // Deal Maker Store for saved properties
   const { record } = useDealMakerStore()
   const { hasRecord } = useDealMakerReady()
   const isSavedPropertyMode = !!savedPropertyId && hasRecord
 
-  // Build defaults from store or fallback
+  // Build defaults from store, override values, or fallback
   const defaults = useMemo(() => {
+    // If we have override values from the popup, use those
+    if (overrideValues) {
+      return {
+        financing: {
+          down_payment_pct: overrideValues.downPayment! / 100,
+          interest_rate: overrideValues.interestRate! / 100,
+          loan_term_years: overrideValues.loanTerm!,
+          closing_costs_pct: overrideValues.closingCosts! / 100,
+        },
+        operating: {
+          vacancy_rate: overrideValues.vacancyRate! / 100,
+          maintenance_pct: 0.05, // Default maintenance
+          property_management_pct: overrideValues.managementRate! / 100,
+        },
+      }
+    }
+    
     if (isSavedPropertyMode && record?.initial_assumptions) {
       const initial = record.initial_assumptions
       return {
@@ -133,7 +155,7 @@ export function VerdictIQCombined({
         property_management_pct: 0.00,
       },
     }
-  }, [isSavedPropertyMode, record])
+  }, [isSavedPropertyMode, record, overrideValues])
 
   // Build property data for CompactHeader
   const headerPropertyData: PropertyData = useMemo(() => ({
@@ -203,12 +225,18 @@ export function VerdictIQCombined({
 
   // Calculate metrics for snapshots and benchmarks
   const metrics = useMemo(() => {
-    const effectivePrice = isSavedPropertyMode && record?.buy_price
-      ? record.buy_price
-      : buyPrice
-    const monthlyRent = property.monthlyRent || effectivePrice * 0.007
-    const propertyTaxes = property.propertyTaxes || effectivePrice * 0.012
-    const insurance = property.insurance || effectivePrice * 0.01
+    // Use override values if available, otherwise fall back to defaults
+    const effectivePrice = overrideValues?.buyPrice 
+      ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : buyPrice)
+    const monthlyRent = overrideValues?.monthlyRent 
+      ?? property.monthlyRent 
+      ?? effectivePrice * 0.007
+    const propertyTaxes = overrideValues?.propertyTaxes 
+      ?? property.propertyTaxes 
+      ?? effectivePrice * 0.012
+    const insurance = overrideValues?.insurance 
+      ?? property.insurance 
+      ?? effectivePrice * 0.01
 
     const annualRent = monthlyRent * 12
     const noi = annualRent - propertyTaxes - insurance - (annualRent * defaults.operating.vacancy_rate) - (annualRent * defaults.operating.maintenance_pct)
@@ -254,7 +282,7 @@ export function VerdictIQCombined({
       breakevenOcc,
       cashFlowYield,
     }
-  }, [property, buyPrice, defaults, isSavedPropertyMode, record])
+  }, [property, buyPrice, defaults, isSavedPropertyMode, record, overrideValues])
 
   // Performance bars for At-a-Glance
   const performanceBars = useMemo(() => [
