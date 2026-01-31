@@ -1,0 +1,744 @@
+"""
+Financial Proforma Generator Service
+Compiles property data, calculations, and projections into a complete proforma
+"""
+from typing import Dict, Any, Optional, List
+from datetime import datetime
+import math
+
+from app.schemas.proforma import (
+    FinancialProforma,
+    DepreciationConfig,
+    DepreciationMethod,
+    AnnualTaxProjection,
+    AmortizationRow,
+    AmortizationSummary,
+    ExitAnalysis,
+    InvestmentReturns,
+    SensitivityScenario,
+    SensitivityAnalysis,
+    PropertySummary,
+    AcquisitionDetails,
+    FinancingDetails,
+    IncomeDetails,
+    ExpenseDetails,
+    KeyMetrics,
+    Projections,
+    DealScoreSummary,
+    DataSources,
+)
+from app.schemas.property import PropertyResponse
+from app.services.calculators import calculate_monthly_mortgage, calculate_ltr
+
+# Import centralized defaults
+from app.core.defaults import FINANCING, OPERATING, GROWTH
+
+
+# ============================================
+# DEPRECIATION CALCULATIONS
+# ============================================
+
+def calculate_depreciation(
+    purchase_price: float,
+    land_value_percent: float = 0.20,
+    closing_costs: float = 0,
+    rehab_costs: float = 0,
+    is_residential: bool = True
+) -> DepreciationConfig:
+    """Calculate depreciation configuration for tax purposes."""
+    land_value = purchase_price * land_value_percent
+    improvement_value = purchase_price - land_value
+    depreciation_years = 27.5 if is_residential else 39.0
+    
+    # Typically ~60% of closing costs are capitalizable
+    capitalized_closing_costs = closing_costs * 0.6
+    
+    total_depreciable_basis = improvement_value + capitalized_closing_costs + rehab_costs
+    annual_depreciation = total_depreciable_basis / depreciation_years
+    
+    return DepreciationConfig(
+        purchase_price=purchase_price,
+        land_value_percent=land_value_percent,
+        land_value=land_value,
+        improvement_value=improvement_value,
+        capitalized_closing_costs=capitalized_closing_costs,
+        rehab_costs=rehab_costs,
+        total_depreciable_basis=total_depreciable_basis,
+        depreciation_method=DepreciationMethod.STRAIGHT_LINE,
+        depreciation_years=depreciation_years,
+        annual_depreciation=annual_depreciation,
+        monthly_depreciation=annual_depreciation / 12,
+    )
+
+
+# ============================================
+# AMORTIZATION CALCULATIONS
+# ============================================
+
+def calculate_amortization_schedule(
+    principal: float,
+    annual_rate: float,
+    term_years: int
+) -> tuple[List[AmortizationRow], AmortizationSummary]:
+    """Generate full amortization schedule."""
+    monthly_payment = calculate_monthly_mortgage(principal, annual_rate, term_years)
+    monthly_rate = annual_rate / 12
+    total_months = term_years * 12
+    
+    balance = principal
+    cumulative_principal = 0
+    cumulative_interest = 0
+    schedule = []
+    
+    for month in range(1, total_months + 1):
+        beginning_balance = balance
+        interest_payment = balance * monthly_rate
+        principal_payment = monthly_payment - interest_payment
+        
+        cumulative_principal += principal_payment
+        cumulative_interest += interest_payment
+        balance = max(0, balance - principal_payment)
+        
+        schedule.append(AmortizationRow(
+            month=month,
+            year=math.ceil(month / 12),
+            payment_number=month,
+            beginning_balance=beginning_balance,
+            scheduled_payment=monthly_payment,
+            principal_payment=principal_payment,
+            interest_payment=interest_payment,
+            ending_balance=balance,
+            cumulative_principal=cumulative_principal,
+            cumulative_interest=cumulative_interest,
+        ))
+    
+    # Payoff date
+    payoff_date = datetime.now()
+    payoff_date = payoff_date.replace(year=payoff_date.year + term_years)
+    
+    summary = AmortizationSummary(
+        monthly_payment=monthly_payment,
+        total_payments=monthly_payment * total_months,
+        total_principal=principal,
+        total_interest=cumulative_interest,
+        principal_percent=(principal / (monthly_payment * total_months)) * 100,
+        interest_percent=(cumulative_interest / (monthly_payment * total_months)) * 100,
+        payoff_date=payoff_date.strftime("%Y-%m-%d"),
+    )
+    
+    return schedule, summary
+
+
+def get_yearly_amortization(
+    schedule: List[AmortizationRow],
+    year: int
+) -> tuple[float, float, float]:
+    """Get interest, principal, and ending balance for a specific year."""
+    year_payments = [row for row in schedule if row.year == year]
+    
+    if not year_payments:
+        return 0, 0, 0
+    
+    interest = sum(row.interest_payment for row in year_payments)
+    principal = sum(row.principal_payment for row in year_payments)
+    ending_balance = year_payments[-1].ending_balance
+    
+    return interest, principal, ending_balance
+
+
+# ============================================
+# TAX PROJECTIONS
+# ============================================
+
+def calculate_annual_projection(
+    year: int,
+    gross_rent: float,
+    vacancy_rate: float,
+    expenses: Dict[str, float],
+    mortgage_interest: float,
+    mortgage_principal: float,
+    depreciation: float,
+    marginal_tax_rate: float = 0.24
+) -> AnnualTaxProjection:
+    """Calculate after-tax cash flow for a single year."""
+    # Income
+    vacancy_loss = gross_rent * vacancy_rate
+    effective_gross_income = gross_rent - vacancy_loss
+    other_income = 0
+    total_income = effective_gross_income + other_income
+    
+    # Operating expenses
+    total_operating_expenses = sum(expenses.values())
+    
+    # NOI
+    net_operating_income = total_income - total_operating_expenses
+    
+    # Debt service
+    total_debt_service = mortgage_interest + mortgage_principal
+    
+    # Pre-tax cash flow
+    pre_tax_cash_flow = net_operating_income - total_debt_service
+    
+    # Taxable income (NOI - Interest - Depreciation)
+    taxable_income = net_operating_income - mortgage_interest - depreciation
+    
+    # Tax liability
+    estimated_tax_liability = taxable_income * marginal_tax_rate
+    tax_benefit = abs(estimated_tax_liability) if taxable_income < 0 else 0
+    
+    # After-tax cash flow
+    after_tax_cash_flow = pre_tax_cash_flow - estimated_tax_liability
+    
+    return AnnualTaxProjection(
+        year=year,
+        gross_rental_income=gross_rent,
+        effective_gross_income=effective_gross_income,
+        other_income=other_income,
+        total_income=total_income,
+        operating_expenses=total_operating_expenses,
+        property_taxes=expenses.get("property_taxes", 0),
+        insurance=expenses.get("insurance", 0),
+        management=expenses.get("management", 0),
+        maintenance=expenses.get("maintenance", 0),
+        utilities=expenses.get("utilities", 0),
+        hoa_fees=expenses.get("hoa_fees", 0),
+        other_expenses=expenses.get("other", 0),
+        mortgage_interest=mortgage_interest,
+        mortgage_principal=mortgage_principal,
+        total_debt_service=total_debt_service,
+        depreciation=depreciation,
+        net_operating_income=net_operating_income,
+        taxable_income=taxable_income,
+        marginal_tax_rate=marginal_tax_rate,
+        estimated_tax_liability=estimated_tax_liability,
+        tax_benefit=tax_benefit,
+        pre_tax_cash_flow=pre_tax_cash_flow,
+        after_tax_cash_flow=after_tax_cash_flow,
+    )
+
+
+def generate_multi_year_projections(
+    base_year_expenses: Dict[str, float],
+    annual_gross_rent: float,
+    vacancy_rate: float,
+    amortization_schedule: List[AmortizationRow],
+    annual_depreciation: float,
+    hold_period_years: int,
+    rent_growth_rate: float,
+    expense_growth_rate: float,
+    appreciation_rate: float,
+    purchase_price: float,
+    marginal_tax_rate: float = 0.24
+) -> Projections:
+    """Generate multi-year projections with growth rates."""
+    annual_projections = []
+    cumulative_cash_flow = []
+    property_values = []
+    equity_positions = []
+    loan_balances = []
+    
+    cumulative_cf = 0
+    
+    for year in range(1, hold_period_years + 1):
+        # Apply growth rates
+        rent_growth_factor = (1 + rent_growth_rate / 100) ** (year - 1)
+        expense_growth_factor = (1 + expense_growth_rate / 100) ** (year - 1)
+        
+        gross_rent = annual_gross_rent * rent_growth_factor
+        
+        # Apply expense growth (management/maintenance tied to rent)
+        expenses = {
+            "property_taxes": base_year_expenses.get("property_taxes", 0) * expense_growth_factor,
+            "insurance": base_year_expenses.get("insurance", 0) * expense_growth_factor,
+            "management": base_year_expenses.get("management", 0) * rent_growth_factor,
+            "maintenance": base_year_expenses.get("maintenance", 0) * rent_growth_factor,
+            "utilities": base_year_expenses.get("utilities", 0) * expense_growth_factor,
+            "hoa_fees": base_year_expenses.get("hoa_fees", 0) * expense_growth_factor,
+            "other": base_year_expenses.get("other", 0) * expense_growth_factor,
+        }
+        
+        # Get mortgage breakdown
+        interest, principal, ending_balance = get_yearly_amortization(amortization_schedule, year)
+        
+        # Calculate projection
+        projection = calculate_annual_projection(
+            year=year,
+            gross_rent=gross_rent,
+            vacancy_rate=vacancy_rate / 100,
+            expenses=expenses,
+            mortgage_interest=interest,
+            mortgage_principal=principal,
+            depreciation=annual_depreciation,
+            marginal_tax_rate=marginal_tax_rate,
+        )
+        annual_projections.append(projection)
+        
+        # Cumulative cash flow
+        cumulative_cf += projection.after_tax_cash_flow
+        cumulative_cash_flow.append(cumulative_cf)
+        
+        # Property value
+        property_value = purchase_price * ((1 + appreciation_rate / 100) ** year)
+        property_values.append(property_value)
+        
+        # Loan balance
+        loan_balances.append(ending_balance)
+        
+        # Equity position
+        equity = property_value - ending_balance
+        equity_positions.append(equity)
+    
+    return Projections(
+        hold_period_years=hold_period_years,
+        appreciation_rate=appreciation_rate,
+        rent_growth_rate=rent_growth_rate,
+        expense_growth_rate=expense_growth_rate,
+        annual_projections=annual_projections,
+        cumulative_cash_flow=cumulative_cash_flow,
+        property_values=property_values,
+        equity_positions=equity_positions,
+        loan_balances=loan_balances,
+    )
+
+
+# ============================================
+# EXIT ANALYSIS
+# ============================================
+
+def calculate_exit_analysis(
+    purchase_price: float,
+    hold_period_years: int,
+    appreciation_rate: float,
+    accumulated_depreciation: float,
+    remaining_loan_balance: float,
+    rehab_costs: float = 0,
+    broker_commission_percent: float = 0.06,
+    closing_costs_percent: float = 0.015,
+    capital_gains_tax_rate: float = 0.15
+) -> ExitAnalysis:
+    """Calculate exit/disposition analysis with capital gains."""
+    # Projected sale price
+    projected_sale_price = purchase_price * ((1 + appreciation_rate / 100) ** hold_period_years)
+    
+    # Sale costs
+    broker_commission = projected_sale_price * broker_commission_percent
+    closing_costs = projected_sale_price * closing_costs_percent
+    total_sale_costs = broker_commission + closing_costs
+    
+    # Net proceeds before tax
+    net_sale_proceeds = projected_sale_price - total_sale_costs - remaining_loan_balance
+    
+    # Cost basis
+    original_cost_basis = purchase_price + rehab_costs
+    adjusted_cost_basis = original_cost_basis - accumulated_depreciation
+    
+    # Total gain
+    total_gain = projected_sale_price - total_sale_costs - adjusted_cost_basis
+    
+    # Depreciation recapture (taxed at 25%)
+    depreciation_recapture = min(accumulated_depreciation, max(0, total_gain))
+    depreciation_recapture_tax = depreciation_recapture * 0.25
+    
+    # Capital gain
+    capital_gain = max(0, total_gain - depreciation_recapture)
+    capital_gains_tax = capital_gain * capital_gains_tax_rate
+    
+    # Total tax
+    total_tax_on_sale = depreciation_recapture_tax + capital_gains_tax
+    after_tax_proceeds = net_sale_proceeds - total_tax_on_sale
+    
+    return ExitAnalysis(
+        hold_period_years=hold_period_years,
+        initial_value=purchase_price,
+        appreciation_rate=appreciation_rate,
+        projected_sale_price=projected_sale_price,
+        broker_commission_percent=broker_commission_percent,
+        broker_commission=broker_commission,
+        closing_costs_percent=closing_costs_percent,
+        closing_costs=closing_costs,
+        total_sale_costs=total_sale_costs,
+        remaining_loan_balance=remaining_loan_balance,
+        prepayment_penalty=0,
+        gross_sale_proceeds=projected_sale_price,
+        net_sale_proceeds=net_sale_proceeds,
+        adjusted_cost_basis=adjusted_cost_basis,
+        accumulated_depreciation=accumulated_depreciation,
+        total_gain=total_gain,
+        depreciation_recapture=depreciation_recapture,
+        depreciation_recapture_tax=depreciation_recapture_tax,
+        capital_gain=capital_gain,
+        capital_gains_tax_rate=capital_gains_tax_rate,
+        capital_gains_tax=capital_gains_tax,
+        total_tax_on_sale=total_tax_on_sale,
+        after_tax_proceeds=after_tax_proceeds,
+    )
+
+
+# ============================================
+# INVESTMENT RETURNS
+# ============================================
+
+def calculate_irr(cash_flows: List[float], guess: float = 0.1) -> float:
+    """Calculate IRR using Newton-Raphson method."""
+    max_iterations = 100
+    tolerance = 0.0001
+    rate = guess
+    
+    for _ in range(max_iterations):
+        npv = 0
+        derivative_npv = 0
+        
+        for j, cf in enumerate(cash_flows):
+            discount_factor = (1 + rate) ** j
+            npv += cf / discount_factor
+            if j > 0:
+                derivative_npv -= (j * cf) / ((1 + rate) ** (j + 1))
+        
+        if abs(derivative_npv) < 0.0001:
+            break
+        
+        new_rate = rate - npv / derivative_npv
+        
+        if abs(new_rate - rate) < tolerance:
+            return new_rate * 100
+        
+        # Prevent divergence
+        rate = max(-0.99, min(10, new_rate))
+    
+    return rate * 100
+
+
+def calculate_investment_returns(
+    initial_investment: float,
+    annual_cash_flows: List[float],
+    exit_proceeds: float
+) -> InvestmentReturns:
+    """Calculate complete investment returns."""
+    # Build cash flow array
+    all_cash_flows = [-initial_investment] + annual_cash_flows
+    all_cash_flows[-1] += exit_proceeds
+    
+    irr = calculate_irr(all_cash_flows)
+    
+    total_cash_flows = sum(annual_cash_flows)
+    total_distributions = total_cash_flows + exit_proceeds
+    equity_multiple = total_distributions / initial_investment if initial_investment > 0 else 0
+    
+    # Payback period
+    cumulative = 0
+    payback_period_months = None
+    for i, cf in enumerate(annual_cash_flows):
+        cumulative += cf
+        if cumulative >= initial_investment and payback_period_months is None:
+            prior_cumulative = cumulative - cf
+            remaining = initial_investment - prior_cumulative
+            months_in_year = (remaining / cf) * 12 if cf > 0 else 12
+            payback_period_months = (i * 12) + int(months_in_year)
+    
+    if payback_period_months is None and cumulative + exit_proceeds >= initial_investment:
+        payback_period_months = len(annual_cash_flows) * 12
+    
+    average_annual_return = (total_cash_flows / len(annual_cash_flows)) / initial_investment * 100 if annual_cash_flows and initial_investment > 0 else 0
+    cagr = ((equity_multiple ** (1 / len(annual_cash_flows))) - 1) * 100 if annual_cash_flows else 0
+    
+    return InvestmentReturns(
+        irr=irr,
+        mirr=None,
+        total_cash_flows=total_cash_flows,
+        total_distributions=total_distributions,
+        equity_multiple=equity_multiple,
+        payback_period_months=payback_period_months,
+        average_annual_return=average_annual_return,
+        cagr=cagr,
+    )
+
+
+# ============================================
+# SENSITIVITY ANALYSIS
+# ============================================
+
+def generate_sensitivity_scenarios(
+    base_value: float,
+    variable_name: str,
+    percent_changes: List[float],
+    recalculate_fn
+) -> List[SensitivityScenario]:
+    """Generate sensitivity scenarios for a variable."""
+    scenarios = []
+    
+    for change_pct in percent_changes:
+        absolute_value = base_value * (1 + change_pct / 100)
+        results = recalculate_fn(absolute_value)
+        
+        scenarios.append(SensitivityScenario(
+            variable=variable_name,
+            change_percent=change_pct,
+            absolute_value=absolute_value,
+            irr=results.get("irr", 0),
+            cash_on_cash=results.get("cash_on_cash", 0),
+            net_profit=results.get("net_profit", 0),
+        ))
+    
+    return scenarios
+
+
+# ============================================
+# MAIN PROFORMA GENERATOR
+# ============================================
+
+async def generate_proforma_data(
+    property_data: PropertyResponse,
+    strategy: str = "ltr",
+    land_value_percent: float = 0.20,
+    marginal_tax_rate: float = 0.24,
+    capital_gains_tax_rate: float = 0.15,
+    hold_period_years: int = 10,
+    purchase_price_override: Optional[float] = None,
+    monthly_rent_override: Optional[float] = None,
+) -> FinancialProforma:
+    """Generate complete financial proforma from property data."""
+    
+    # Extract property values
+    purchase_price = purchase_price_override or property_data.valuations.current_value_avm or 0
+    list_price = property_data.listing.list_price if property_data.listing else purchase_price
+    monthly_rent = monthly_rent_override or property_data.rentals.monthly_rent_ltr or 0
+    annual_gross_rent = monthly_rent * 12
+    property_taxes = property_data.market.property_taxes_annual or (purchase_price * 0.01)
+    hoa_fees = (property_data.market.hoa_fees_monthly or 0) * 12
+    
+    # Financing parameters
+    down_payment_pct = FINANCING.down_payment_pct
+    interest_rate = FINANCING.interest_rate
+    loan_term_years = FINANCING.loan_term_years
+    closing_costs_pct = FINANCING.closing_costs_pct
+    
+    # Calculate financing
+    down_payment = purchase_price * down_payment_pct
+    closing_costs = purchase_price * closing_costs_pct
+    loan_amount = purchase_price - down_payment
+    monthly_mortgage = calculate_monthly_mortgage(loan_amount, interest_rate, loan_term_years)
+    total_cash_required = down_payment + closing_costs
+    
+    # Operating assumptions
+    vacancy_rate = OPERATING.vacancy_rate * 100  # Convert to percent
+    management_pct = OPERATING.property_management_pct
+    maintenance_pct = OPERATING.maintenance_pct
+    insurance = purchase_price * OPERATING.insurance_pct
+    utilities = OPERATING.utilities_monthly * 12
+    landscaping = OPERATING.landscaping_annual
+    pest_control = OPERATING.pest_control_annual
+    
+    # Calculate expenses
+    management = annual_gross_rent * management_pct
+    maintenance = annual_gross_rent * maintenance_pct
+    cap_ex_reserve = annual_gross_rent * 0.05  # 5% CapEx reserve
+    total_operating_expenses = (
+        property_taxes + insurance + hoa_fees + 
+        management + maintenance + utilities + 
+        landscaping + pest_control + cap_ex_reserve
+    )
+    
+    # Key metrics
+    vacancy_allowance = annual_gross_rent * (vacancy_rate / 100)
+    effective_gross_income = annual_gross_rent - vacancy_allowance
+    noi = effective_gross_income - total_operating_expenses
+    annual_debt_service = monthly_mortgage * 12
+    annual_cash_flow = noi - annual_debt_service
+    monthly_cash_flow = annual_cash_flow / 12
+    
+    cap_rate = (noi / purchase_price * 100) if purchase_price > 0 else 0
+    cash_on_cash = (annual_cash_flow / total_cash_required * 100) if total_cash_required > 0 else 0
+    dscr = noi / annual_debt_service if annual_debt_service > 0 else 0
+    grm = purchase_price / annual_gross_rent if annual_gross_rent > 0 else 0
+    one_percent_rule = (monthly_rent / purchase_price * 100) if purchase_price > 0 else 0
+    break_even_occupancy = ((total_operating_expenses + annual_debt_service) / annual_gross_rent * 100) if annual_gross_rent > 0 else 0
+    
+    sqft = property_data.details.square_footage or 1
+    price_per_sqft = purchase_price / sqft
+    rent_per_sqft = annual_gross_rent / sqft
+    
+    # Depreciation
+    depreciation = calculate_depreciation(
+        purchase_price=purchase_price,
+        land_value_percent=land_value_percent,
+        closing_costs=closing_costs,
+        rehab_costs=0,
+        is_residential=True,
+    )
+    
+    # Amortization
+    amortization_schedule, amortization_summary = calculate_amortization_schedule(
+        loan_amount, interest_rate, loan_term_years
+    )
+    
+    # Base year expenses for projections
+    base_year_expenses = {
+        "property_taxes": property_taxes,
+        "insurance": insurance,
+        "management": management,
+        "maintenance": maintenance,
+        "utilities": utilities,
+        "hoa_fees": hoa_fees,
+        "other": landscaping + pest_control + cap_ex_reserve,
+    }
+    
+    # Multi-year projections
+    projections = generate_multi_year_projections(
+        base_year_expenses=base_year_expenses,
+        annual_gross_rent=annual_gross_rent,
+        vacancy_rate=vacancy_rate,
+        amortization_schedule=amortization_schedule,
+        annual_depreciation=depreciation.annual_depreciation,
+        hold_period_years=hold_period_years,
+        rent_growth_rate=GROWTH.rent_growth_rate * 100,
+        expense_growth_rate=GROWTH.expense_growth_rate * 100,
+        appreciation_rate=GROWTH.appreciation_rate * 100,
+        purchase_price=purchase_price,
+        marginal_tax_rate=marginal_tax_rate,
+    )
+    
+    # Accumulated depreciation at exit
+    accumulated_depreciation = depreciation.annual_depreciation * hold_period_years
+    remaining_loan_balance = projections.loan_balances[-1] if projections.loan_balances else 0
+    
+    # Exit analysis
+    exit_analysis = calculate_exit_analysis(
+        purchase_price=purchase_price,
+        hold_period_years=hold_period_years,
+        appreciation_rate=GROWTH.appreciation_rate * 100,
+        accumulated_depreciation=accumulated_depreciation,
+        remaining_loan_balance=remaining_loan_balance,
+        rehab_costs=0,
+        broker_commission_percent=0.06,
+        closing_costs_percent=0.015,
+        capital_gains_tax_rate=capital_gains_tax_rate,
+    )
+    
+    # Investment returns
+    annual_cash_flows = [p.after_tax_cash_flow for p in projections.annual_projections]
+    returns = calculate_investment_returns(
+        initial_investment=total_cash_required,
+        annual_cash_flows=annual_cash_flows,
+        exit_proceeds=exit_analysis.after_tax_proceeds,
+    )
+    
+    # Sensitivity analysis (simplified - full implementation would recalculate)
+    sensitivity = SensitivityAnalysis(
+        purchase_price=[],  # Would be populated with recalculated scenarios
+        interest_rate=[],
+        rent=[],
+        vacancy=[],
+        appreciation=[],
+    )
+    
+    # Build proforma
+    return FinancialProforma(
+        generated_at=datetime.now().isoformat(),
+        property_id=property_data.property_id,
+        property_address=property_data.address.full_address,
+        strategy_type=strategy,
+        
+        property=PropertySummary(
+            address=property_data.address.street,
+            city=property_data.address.city,
+            state=property_data.address.state,
+            zip=property_data.address.zip_code,
+            property_type=property_data.details.property_type or "Single Family",
+            bedrooms=property_data.details.bedrooms or 0,
+            bathrooms=property_data.details.bathrooms or 0,
+            square_feet=property_data.details.square_footage or 0,
+            year_built=property_data.details.year_built or 0,
+            lot_size=property_data.details.lot_size or 0,
+        ),
+        
+        acquisition=AcquisitionDetails(
+            purchase_price=purchase_price,
+            list_price=list_price,
+            discount_from_list=((list_price - purchase_price) / list_price * 100) if list_price > 0 else 0,
+            closing_costs=closing_costs,
+            closing_costs_percent=closing_costs_pct * 100,
+            inspection_costs=0,
+            rehab_costs=0,
+            total_acquisition_cost=purchase_price + closing_costs,
+        ),
+        
+        financing=FinancingDetails(
+            down_payment=down_payment,
+            down_payment_percent=down_payment_pct * 100,
+            loan_amount=loan_amount,
+            interest_rate=interest_rate * 100,
+            loan_term_years=loan_term_years,
+            loan_type="Conventional",
+            monthly_payment=monthly_mortgage,
+            monthly_payment_with_escrow=monthly_mortgage + (property_taxes + insurance) / 12,
+            total_interest_over_life=amortization_summary.total_interest,
+            apr=interest_rate * 100,
+        ),
+        
+        income=IncomeDetails(
+            monthly_rent=monthly_rent,
+            annual_gross_rent=annual_gross_rent,
+            other_income=0,
+            vacancy_allowance=vacancy_allowance,
+            vacancy_percent=vacancy_rate,
+            effective_gross_income=effective_gross_income,
+        ),
+        
+        expenses=ExpenseDetails(
+            property_taxes=property_taxes,
+            insurance=insurance,
+            hoa_fees=hoa_fees,
+            management=management,
+            management_percent=management_pct * 100,
+            maintenance=maintenance,
+            maintenance_percent=maintenance_pct * 100,
+            utilities=utilities,
+            landscaping=landscaping,
+            pest_control=pest_control,
+            cap_ex_reserve=cap_ex_reserve,
+            cap_ex_reserve_percent=5.0,
+            other_expenses=0,
+            total_operating_expenses=total_operating_expenses,
+            expense_ratio=(total_operating_expenses / effective_gross_income * 100) if effective_gross_income > 0 else 0,
+        ),
+        
+        metrics=KeyMetrics(
+            net_operating_income=noi,
+            annual_debt_service=annual_debt_service,
+            annual_cash_flow=annual_cash_flow,
+            monthly_cash_flow=monthly_cash_flow,
+            cap_rate=cap_rate,
+            cash_on_cash_return=cash_on_cash,
+            dscr=dscr,
+            gross_rent_multiplier=grm,
+            one_percent_rule=one_percent_rule,
+            break_even_occupancy=break_even_occupancy,
+            price_per_unit=purchase_price,
+            price_per_sqft=price_per_sqft,
+            rent_per_sqft=rent_per_sqft,
+        ),
+        
+        depreciation=depreciation,
+        projections=projections,
+        amortization_schedule=amortization_schedule,
+        amortization_summary=amortization_summary,
+        exit=exit_analysis,
+        returns=returns,
+        sensitivity=sensitivity,
+        
+        deal_score=DealScoreSummary(
+            score=0,  # Would be populated from deal score calculation
+            grade="",
+            verdict="",
+            breakeven_price=0,
+            discount_required=0,
+        ),
+        
+        sources=DataSources(
+            rent_estimate_source="RentCast/Zillow",
+            property_value_source="AVM",
+            tax_data_source="County Records",
+            market_data_source="RentCast",
+            data_freshness=datetime.now().strftime("%Y-%m-%d"),
+        ),
+    )

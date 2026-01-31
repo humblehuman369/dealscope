@@ -105,6 +105,15 @@ except Exception as e:
     logger.warning(f"Reports router failed to load: {e}")
     reports_router = None
 
+# Import Proforma router (Financial Proforma Export)
+proforma_router = None
+try:
+    from app.routers.proforma import router as proforma_router
+    logger.info("Proforma router loaded successfully")
+except Exception as e:
+    logger.warning(f"Proforma router failed to load: {e}")
+    proforma_router = None
+
 # Import Documents router
 documents_router = None
 try:
@@ -366,6 +375,11 @@ if search_history_router is not None:
 if reports_router is not None:
     app.include_router(reports_router)
     logger.info("Reports router included")
+
+# Proforma router (Financial Proforma Export)
+if proforma_router is not None:
+    app.include_router(proforma_router)
+    logger.info("Proforma router included")
 
 # Documents router
 if documents_router is not None:
