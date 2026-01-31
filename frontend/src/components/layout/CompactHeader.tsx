@@ -37,7 +37,7 @@ export interface Strategy {
   full: string;
 }
 
-export type NavItemId = 'search' | 'home' | 'trends' | 'analysis' | 'compare' | 'rentals' | 'reports' | 'deals';
+export type NavItemId = 'home' | 'analysis' | 'compare' | 'rentals' | 'reports' | 'deals';
 
 interface CompactHeaderProps {
   property?: PropertyData;
@@ -63,13 +63,11 @@ const STRATEGIES: Strategy[] = [
 ];
 
 const NAV_ITEMS = [
-  { id: 'search' as NavItemId, label: 'Search' },
   { id: 'home' as NavItemId, label: 'Home' },
-  { id: 'trends' as NavItemId, label: 'Trends' },
   { id: 'analysis' as NavItemId, label: 'Analysis' },
   { id: 'compare' as NavItemId, label: 'Compare' },
   { id: 'rentals' as NavItemId, label: 'Rentals' },
-  { id: 'reports' as NavItemId, label: 'Reports' },
+  { id: 'reports' as NavItemId, label: 'Reports', disabled: true },
   { id: 'deals' as NavItemId, label: 'Deals' },
 ];
 
@@ -155,9 +153,7 @@ const DealsIcon = ({ active }: { active?: boolean }) => (
 );
 
 const NAV_ICONS: Record<NavItemId, React.FC<{ active?: boolean }>> = {
-  search: SearchIcon,
   home: HomeIcon,
-  trends: TrendsIcon,
   analysis: AnalysisIcon,
   compare: CompareIcon,
   rentals: RentalsIcon,
@@ -369,18 +365,25 @@ export function CompactHeader({
         {NAV_ITEMS.map((item) => {
           const IconComponent = NAV_ICONS[item.id];
           const isActive = activeNav === item.id;
+          const isDisabled = 'disabled' in item && item.disabled;
           return (
             <button
               key={item.id}
               className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${
-                isActive ? 'bg-[#0891B2]/10' : 'hover:bg-slate-100'
+                isDisabled 
+                  ? 'opacity-40 cursor-not-allowed' 
+                  : isActive 
+                    ? 'bg-[#0891B2]/10' 
+                    : 'hover:bg-slate-100'
               }`}
               onClick={() => {
+                // Reports is disabled - no action
+                if (isDisabled) return;
                 const route = getToolbarRoute(item.id as ToolbarNavId, navContext);
-                // All routes enabled - navigate directly
                 router.push(route);
               }}
-              title={item.label}
+              title={isDisabled ? `${item.label} (Coming Soon)` : item.label}
+              disabled={isDisabled}
             >
               <IconComponent active={isActive} />
             </button>

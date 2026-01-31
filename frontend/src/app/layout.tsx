@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { Providers } from './providers'
-import Header from '@/components/Header'
+import { DealMakerHeader } from '@/components/DealMakerHeader'
 import { Toaster } from '@/components/feedback'
 
 export const metadata: Metadata = {
@@ -37,8 +37,8 @@ export default function RootLayout({
       </head>
       <body className="font-sans bg-neutral-50 text-navy-900 dark:bg-navy-900 dark:text-neutral-100 transition-colors duration-300">
         <Providers>
-          {/* Header - conditionally rendered based on route (hidden on landing pages) */}
-          <Header />
+          {/* Universal DealMakerIQ Header */}
+          <DealMakerHeader />
 
           {/* Main content */}
           {children}

@@ -63,7 +63,7 @@ export const ROUTES = {
 /**
  * Toolbar navigation item IDs
  */
-export type ToolbarNavId = 'search' | 'home' | 'trends' | 'analysis' | 'compare' | 'rentals' | 'reports' | 'deals';
+export type ToolbarNavId = 'home' | 'analysis' | 'compare' | 'rentals' | 'reports' | 'deals';
 
 /**
  * Get the route for a toolbar navigation item
@@ -74,8 +74,6 @@ export type ToolbarNavId = 'search' | 'home' | 'trends' | 'analysis' | 'compare'
  */
 export function getToolbarRoute(navId: ToolbarNavId, ctx: NavContext): string {
   switch (navId) {
-    case 'search':
-      return ROUTES.search;
     case 'home':
       return ROUTES.property(ctx);
     case 'analysis':
@@ -87,9 +85,8 @@ export function getToolbarRoute(navId: ToolbarNavId, ctx: NavContext): string {
       return ROUTES.compare(ctx);
     case 'rentals':
       return ROUTES.rentalComps(ctx);
-    case 'trends':
-      return ROUTES.verdict(ctx);
     case 'reports':
+      // Reports is disabled in the UI, but route to verdict as fallback
       return ROUTES.verdict(ctx);
     default:
       return ROUTES.search;
