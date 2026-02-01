@@ -41,27 +41,27 @@ export function SummarySnapshot({
         )}
       </div>
       
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         {/* Cap Rate */}
-        <div className="bg-[#F8FAFC] rounded-lg p-3 text-center border border-[#E2E8F0]">
-          <div className="text-lg font-bold text-[#0A1628]">{capRate.toFixed(1)}%</div>
-          <div className="text-[10px] text-[#64748B] uppercase tracking-wide">Cap Rate</div>
+        <div className="bg-white rounded-lg p-3 text-center border-2 border-[#0891B2]">
+          <div className="text-base font-bold text-[#0891B2]">{capRate.toFixed(1)}%</div>
+          <div className="text-[9px] text-[#64748B] uppercase tracking-wide">Cap Rate</div>
         </div>
         
         {/* Cash on Cash */}
-        <div className="bg-[#F8FAFC] rounded-lg p-3 text-center border border-[#E2E8F0]">
-          <div className={`text-lg font-bold ${cashOnCash >= 0 ? 'text-[#10B981]' : 'text-[#E11D48]'}`}>
+        <div className="bg-white rounded-lg p-3 text-center border-2 border-[#0891B2]">
+          <div className="text-base font-bold text-[#0891B2]">
             {cashOnCash.toFixed(1)}%
           </div>
-          <div className="text-[10px] text-[#64748B] uppercase tracking-wide">Cash-on-Cash</div>
+          <div className="text-[9px] text-[#64748B] uppercase tracking-wide">Cash-on-Cash</div>
         </div>
         
         {/* DSCR */}
-        <div className="bg-[#F8FAFC] rounded-lg p-3 text-center border border-[#E2E8F0]">
-          <div className={`text-lg font-bold ${dscr >= 1.0 ? 'text-[#10B981]' : 'text-[#E11D48]'}`}>
+        <div className="bg-white rounded-lg p-3 text-center border-2 border-[#0891B2]">
+          <div className="text-base font-bold text-[#0891B2]">
             {dscr.toFixed(2)}
           </div>
-          <div className="text-[10px] text-[#64748B] uppercase tracking-wide">DSCR</div>
+          <div className="text-[9px] text-[#64748B] uppercase tracking-wide">DSCR</div>
         </div>
       </div>
 
