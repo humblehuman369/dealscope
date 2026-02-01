@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verdict IQ | DealMaker IQ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal: #007ea7;
+            --teal-dark: #006080;
+            --teal-light: #e8f7fa;
+            --teal-bg: #e5f6f8;
+            --navy: #0a1628;
+            --navy-light: #1a2a40;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --green: #10b981;
+            --green-light: #d1fae5;
+            --yellow: #f59e0b;
+            --yellow-light: #fef3c7;
+            --red: #ef4444;
+            --red-light: #fee2e2;
+            --blue: #3b82f6;
+            --purple: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-800);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--navy);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-main {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--white);
+        }
+
+        .logo-main span {
+            color: var(--teal);
+        }
+
+        .logo-sub {
+            font-size: 0.65rem;
+            color: var(--gray-400);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-link {
+            color: var(--gray-300);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .avatar {
+            width: 28px;
+            height: 28px;
+            background: var(--teal);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        /* Sub Header */
+        .sub-header {
+            background: var(--navy);
+            padding: 8px 16px 16px;
+        }
+
+        .back-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .back-btn {
+            color: var(--gray-400);
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .verdict-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--teal);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        .strategy-dropdown {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: var(--white);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        /* Property Card */
+        .property-card {
+            background: var(--navy-light);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .property-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .property-address {
+            font-size: 0.85rem;
+            color: var(--white);
+            flex: 1;
+        }
+
+        .property-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            background: var(--gray-600);
+        }
+
+        .property-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        .stat-value.teal {
+            color: var(--teal);
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--gray-400);
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--yellow);
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            background: var(--navy);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tab-item {
+            color: var(--gray-500);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .tab-item.active {
+            color: var(--teal);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 16px;
+        }
+
+        /* Score Section */
+        .score-section {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .score-badge {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .score-number {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--white);
+        }
+
+        .score-info h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .score-subtitle {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin-bottom: 4px;
+        }
+
+        .score-meta {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        .score-meta span {
+            color: var(--teal);
+        }
+
+        .score-link {
+            font-size: 0.8rem;
+            color: var(--teal);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        /* Accordion */
+        .accordion {
+            background: var(--white);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .accordion-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .accordion-icon {
+            color: var(--gray-400);
+        }
+
+        /* Section Card */
+        .section-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .section-link {
+            font-size: 0.8rem;
+            color: var(--teal);
+            text-decoration: none;
+        }
+
+        .section-subtitle {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            margin-bottom: 16px;
+        }
+
+        .section-question {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--teal);
+            margin-bottom: 12px;
+        }
+
+        /* Info Alert */
+        .info-alert {
+            background: var(--teal-light);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .info-alert-icon {
+            color: var(--teal);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .info-alert-text {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+        }
+
+        .info-alert-text strong {
+            color: var(--gray-700);
+        }
+
+        /* Price Cards */
+        .price-cards-intro {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            margin-bottom: 12px;
+        }
+
+        .price-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .price-card {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            padding: 12px 8px;
+            text-align: center;
+        }
+
+        .price-card.highlight {
+            background: var(--teal-light);
+            border-color: var(--teal);
+        }
+
+        .price-card-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .price-card.highlight .price-card-label {
+            color: var(--teal);
+        }
+
+        .price-card-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .price-card-meta {
+            font-size: 0.65rem;
+            color: var(--gray-500);
+        }
+
+        .see-calculation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            margin-bottom: 20px;
+        }
+
+        /* Deal Gap Section */
+        .deal-gap-header {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--teal);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .deal-gap-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .deal-gap-row:last-child {
+            border-bottom: none;
+        }
+
+        .deal-gap-label {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .deal-gap-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .deal-gap-value.negative {
+            color: var(--red);
+        }
+
+        .deal-gap-value.teal {
+            color: var(--teal);
+        }
+
+        /* Motivation Section */
+        .motivation-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .motivation-label {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
+
+        .motivation-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--yellow);
+        }
+
+        .motivation-score {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+        }
+
+        .max-discount-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+        }
+
+        .max-discount-label {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
+
+        .max-discount-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        /* Suggested Offer */
+        .suggested-offer {
+            background: var(--gray-50);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 12px;
+        }
+
+        .suggested-badge {
+            display: inline-block;
+            background: var(--teal);
+            color: var(--white);
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .suggested-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .suggested-label {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
+
+        .suggested-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--teal);
+        }
+
+        /* Summary Snapshot */
+        .snapshot-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .snapshot-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .snapshot-item {
+            text-align: center;
+        }
+
+        .snapshot-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .snapshot-label {
+            font-size: 0.65rem;
+            color: var(--gray-500);
+            text-transform: uppercase;
+        }
+
+        .snapshot-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--gray-100);
+        }
+
+        .snapshot-item-lg .snapshot-value {
+            font-size: 1rem;
+            color: var(--teal);
+        }
+
+        /* At-a-Glance */
+        .glance-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .glance-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--teal);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+        }
+
+        .glance-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .glance-subtitle {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .metric-row {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            width: 100px;
+            font-size: 0.8rem;
+            color: var(--gray-600);
+        }
+
+        .metric-bar-container {
+            flex: 1;
+            height: 8px;
+            background: var(--gray-200);
+            border-radius: 4px;
+            margin: 0 12px;
+            overflow: hidden;
+        }
+
+        .metric-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .metric-bar.green { background: var(--green); }
+        .metric-bar.red { background: var(--red); }
+        .metric-bar.yellow { background: var(--yellow); }
+
+        .metric-value {
+            width: 45px;
+            text-align: right;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .composite-note {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--gray-100);
+        }
+
+        .composite-note strong {
+            color: var(--gray-700);
+        }
+
+        /* Performance Benchmarks */
+        .benchmark-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .benchmark-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .benchmark-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--gray-100);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-500);
+        }
+
+        .benchmark-description {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            margin-bottom: 16px;
+        }
+
+        .benchmark-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: var(--gray-400);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .benchmark-track {
+            height: 10px;
+            background: linear-gradient(90deg, var(--red-light) 0%, var(--yellow-light) 50%, var(--green-light) 100%);
+            border-radius: 5px;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .benchmark-marker {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 16px;
+            background: var(--gray-800);
+            border-radius: 2px;
+        }
+
+        /* Metrics List */
+        .metrics-section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 20px 0 12px;
+            text-align: center;
+        }
+
+        .metric-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .metric-item-label {
+            width: 100px;
+            font-size: 0.8rem;
+            color: var(--gray-600);
+        }
+
+        .metric-item-track {
+            flex: 1;
+            height: 6px;
+            background: var(--gray-200);
+            border-radius: 3px;
+            margin: 0 12px;
+            position: relative;
+        }
+
+        .metric-item-fill {
+            height: 100%;
+            background: var(--teal);
+            border-radius: 3px;
+        }
+
+        .metric-item-marker {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            background: var(--white);
+            border: 2px solid var(--teal);
+            border-radius: 50%;
+        }
+
+        .metric-item-value {
+            width: 50px;
+            text-align: right;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        /* Take Action */
+        .take-action {
+            background: var(--teal-light);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .take-action-badge {
+            display: inline-block;
+            background: var(--teal);
+            color: var(--white);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .take-action-text {
+            font-size: 0.9rem;
+            color: var(--gray-700);
+            margin-bottom: 16px;
+        }
+
+        .btn-primary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background: var(--teal);
+            color: var(--white);
+            border: none;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--teal-dark);
+        }
+
+        /* Footer Links */
+        .footer-links {
+            text-align: center;
+            padding: 16px;
+        }
+
+        .footer-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: var(--teal);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .footer-link.secondary {
+            color: var(--gray-500);
+            font-weight: 500;
+        }
+
+        /* Utility */
+        .icon-sm {
+            width: 16px;
+            height: 16px;
+        }
+
+        .icon-md {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Responsive */
+        @media (min-width: 480px) {
+            body {
+                display: flex;
+                justify-content: center;
+                background: var(--gray-200);
+                padding: 20px;
+            }
+
+            .page-container {
+                max-width: 420px;
+                width: 100%;
+                background: var(--gray-100);
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-main">DealMaker<span>IQ</span></div>
+                <div class="logo-sub">by InvestIQ</div>
+            </div>
+            <div class="header-actions">
+                <a href="#" class="header-link">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                    </svg>
+                </a>
+                <a href="#" class="header-link">Dashboard</a>
+                <div class="avatar">H</div>
+            </div>
+        </header>
+
+        <!-- Sub Header -->
+        <div class="sub-header">
+            <div class="back-row">
+                <button class="back-btn">
+                    <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <div class="verdict-badge">
+                    VERDICT IQ
+                    <select class="strategy-dropdown">
+                        <option>Long-term</option>
+                        <option>Short-term</option>
+                        <option>BRRRR</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Property Card -->
+            <div class="property-card">
+                <div class="property-header">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--gray-400)">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span class="property-address">1451 Sw 10th St, Boca Raton, FL 33486</span>
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--gray-400)">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </div>
+                <div class="property-image" style="background: linear-gradient(135deg, #4a7c59 0%, #2d5a3d 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem;">Property Image</div>
+                <div class="property-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">4</div>
+                        <div class="stat-label">Beds</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">2</div>
+                        <div class="stat-label">Baths</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">1,722</div>
+                        <div class="stat-label">Sqft</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value teal">$821,000</div>
+                        <div class="stat-label">Est. Value</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value teal">$5,555</div>
+                        <div class="stat-label">Est. Rent</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="status-badge">Off-Market</div>
+                        <div class="stat-label">Status</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-nav">
+            <button class="tab-item">
+                <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+            </button>
+            <button class="tab-item active">
+                <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </button>
+            <button class="tab-item">
+                <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+            </button>
+            <button class="tab-item">
+                <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>
+                </svg>
+            </button>
+            <button class="tab-item">
+                <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Score Section -->
+            <div class="score-section">
+                <div class="score-badge">
+                    <span class="score-number">89</span>
+                </div>
+                <div class="score-info">
+                    <h2>Good Buy</h2>
+                    <p class="score-subtitle">Deal Gap likely achievable</p>
+                    <p class="score-meta">Gap: <span>-5.5%</span> · Motivation: <span>Medium</span></p>
+                    <a href="#" class="score-link">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        How Verdict IQ Works
+                    </a>
+                </div>
+            </div>
+
+            <!-- How We Score Accordion -->
+            <div class="accordion">
+                <button class="accordion-header">
+                    <span class="accordion-title">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                        How We Score
+                    </span>
+                    <svg class="accordion-icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Your Investment Analysis -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title">YOUR INVESTMENT ANALYSIS</h3>
+                    <a href="#" class="section-link">Change terms</a>
+                </div>
+                <p class="section-subtitle">Based on YOUR financing terms (25% down, 6.0%)</p>
+                <p class="section-question">WHAT PRICE MAKES THIS DEAL WORK?</p>
+
+                <div class="info-alert">
+                    <svg class="info-alert-icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    <p class="info-alert-text"><strong>Off-Market Property:</strong> No asking price available. Using Market Estimate of $821,000 for Deal Gap calculation.</p>
+                </div>
+
+                <p class="price-cards-intro">Three ways to approach this deal:</p>
+
+                <div class="price-cards">
+                    <div class="price-card">
+                        <div class="price-card-label">BREAKEVEN ⓘ</div>
+                        <div class="price-card-value">$775,437</div>
+                        <div class="price-card-meta">Max price for $0 cashflow<br>5.5% discount</div>
+                    </div>
+                    <div class="price-card highlight">
+                        <div class="price-card-label">TARGET BUY ⓘ</div>
+                        <div class="price-card-value">$736,665</div>
+                        <div class="price-card-meta">5% discount for profit</div>
+                    </div>
+                    <div class="price-card">
+                        <div class="price-card-label">WHOLESALE ⓘ</div>
+                        <div class="price-card-value">$542,806</div>
+                        <div class="price-card-meta">30% discount for assignment</div>
+                    </div>
+                </div>
+
+                <div class="see-calculation">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                    See how we calculated this
+                </div>
+
+                <!-- Deal Gap Analysis -->
+                <div class="deal-gap-header">HOW LIKELY CAN YOU GET THIS PRICE?</div>
+                
+                <div class="deal-gap-row">
+                    <span class="deal-gap-label">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                        </svg>
+                        Deal Gap
+                    </span>
+                    <span class="deal-gap-value negative">-5.5%</span>
+                </div>
+                <div class="deal-gap-row">
+                    <span class="deal-gap-label">Market Estimate</span>
+                    <span class="deal-gap-value">$821,000</span>
+                </div>
+                <div class="deal-gap-row">
+                    <span class="deal-gap-label">Your Target</span>
+                    <span class="deal-gap-value teal">$775,437</span>
+                </div>
+                <div class="deal-gap-row">
+                    <span class="deal-gap-label">Discount needed</span>
+                    <span class="deal-gap-value">$45,563</span>
+                </div>
+
+                <!-- Motivation -->
+                <div class="motivation-row">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="var(--yellow)" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 8v4M12 16h.01"/>
+                    </svg>
+                    <span class="motivation-label">Seller Motivation</span>
+                    <span class="motivation-value">Medium</span>
+                    <span class="motivation-score">50/100</span>
+                </div>
+
+                <div class="max-discount-row">
+                    <span class="max-discount-label">Max achievable discount</span>
+                    <span class="max-discount-value">Up to 13%</span>
+                </div>
+
+                <div class="suggested-offer">
+                    <span class="suggested-badge">Recommended</span>
+                    <div class="suggested-row">
+                        <span class="suggested-label">Suggested opening offer</span>
+                        <span class="suggested-value">10% - 18% below asking</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Opportunity Factors -->
+            <div class="accordion">
+                <button class="accordion-header">
+                    <span class="accordion-title">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                        Additional Opportunity Factors
+                    </span>
+                    <span style="font-size: 0.75rem; color: var(--gray-400);">Show ▾</span>
+                </button>
+            </div>
+
+            <!-- Summary Snapshot -->
+            <div class="section-card">
+                <div class="snapshot-title">SUMMARY SNAPSHOT</div>
+                <div class="snapshot-grid">
+                    <div class="snapshot-item">
+                        <div class="snapshot-value">6.3%</div>
+                        <div class="snapshot-label">Cap Rate</div>
+                    </div>
+                    <div class="snapshot-item">
+                        <div class="snapshot-value">2.4%</div>
+                        <div class="snapshot-label">Cash-on-Cash</div>
+                    </div>
+                    <div class="snapshot-item">
+                        <div class="snapshot-value">1.10</div>
+                        <div class="snapshot-label">DSCR</div>
+                    </div>
+                </div>
+                <div class="snapshot-row">
+                    <div class="snapshot-item snapshot-item-lg">
+                        <div class="snapshot-value">$337.804/mo</div>
+                        <div class="snapshot-label">Cash Flow</div>
+                    </div>
+                    <div class="snapshot-item snapshot-item-lg">
+                        <div class="snapshot-value">$46,453.77</div>
+                        <div class="snapshot-label">Annual NOI</div>
+                    </div>
+                    <div class="snapshot-item snapshot-item-lg">
+                        <div class="snapshot-value">$169,432.95</div>
+                        <div class="snapshot-label">Cash Needed</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- At-a-Glance -->
+            <div class="section-card">
+                <div class="glance-header">
+                    <div class="glance-icon">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="glance-title">At-a-Glance</div>
+                        <div class="glance-subtitle">Performance breakdown</div>
+                    </div>
+                </div>
+
+                <div class="metric-row">
+                    <span class="metric-label">Returns</span>
+                    <div class="metric-bar-container">
+                        <div class="metric-bar green" style="width: 76%;"></div>
+                    </div>
+                    <span class="metric-value">76%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Cash Flow</span>
+                    <div class="metric-bar-container">
+                        <div class="metric-bar red" style="width: 12%;"></div>
+                    </div>
+                    <span class="metric-value">12%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Equity Gain</span>
+                    <div class="metric-bar-container">
+                        <div class="metric-bar green" style="width: 100%;"></div>
+                    </div>
+                    <span class="metric-value">100%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Debt Safety</span>
+                    <div class="metric-bar-container">
+                        <div class="metric-bar green" style="width: 77%;"></div>
+                    </div>
+                    <span class="metric-value">77%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Cost Control</span>
+                    <div class="metric-bar-container">
+                        <div class="metric-bar red" style="width: 39%;"></div>
+                    </div>
+                    <span class="metric-value">39%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Downside Risk</span>
+                    <div class="metric-bar-container">
+                        <div class="metric-bar red" style="width: 12%;"></div>
+                    </div>
+                    <span class="metric-value">12%</span>
+                </div>
+
+                <p class="composite-note"><strong>Composite:</strong> 80% score across returns and risk protection.</p>
+            </div>
+
+            <!-- Performance Benchmarks -->
+            <div class="section-card">
+                <div class="benchmark-header">
+                    <div class="benchmark-title-row">
+                        <div class="benchmark-icon">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>
+                            </svg>
+                        </div>
+                        <h3 class="section-title">Performance Benchmarks</h3>
+                    </div>
+                    <a href="#" class="section-link">▾ How to read</a>
+                </div>
+                <p class="glance-subtitle" style="margin-bottom: 12px;">How this deal compares</p>
+
+                <h4 class="section-title" style="font-size: 0.85rem; margin-bottom: 8px;">How This Deal Compares to National Average</h4>
+                <p class="benchmark-description">The center represents the national average. Markers to the left are below average, markers to the right are above average.</p>
+
+                <div class="benchmark-labels">
+                    <span>Below</span>
+                    <span>National Avg</span>
+                    <span>Average</span>
+                    <span>Above</span>
+                </div>
+                <div class="benchmark-track">
+                    <div class="benchmark-marker" style="left: 50%;"></div>
+                </div>
+
+                <!-- Returns Metrics -->
+                <div class="metrics-section-title">RETURNS</div>
+                
+                <div class="metric-item">
+                    <span class="metric-item-label">Cash on Cash Return</span>
+                    <div class="metric-item-track">
+                        <div class="metric-item-fill" style="width: 24%;"></div>
+                        <div class="metric-item-marker" style="right: 76%;"></div>
+                    </div>
+                    <span class="metric-item-value">2.4%</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-item-label">Cap Rate</span>
+                    <div class="metric-item-track">
+                        <div class="metric-item-fill" style="width: 63%;"></div>
+                        <div class="metric-item-marker" style="right: 37%;"></div>
+                    </div>
+                    <span class="metric-item-value">6.3%</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-item-label">Total ROI (5yr)</span>
+                    <div class="metric-item-track">
+                        <div class="metric-item-fill" style="width: 37%;"></div>
+                        <div class="metric-item-marker" style="right: 63%;"></div>
+                    </div>
+                    <span class="metric-item-value">37%</span>
+                </div>
+
+                <!-- Cash Flow & Risk Metrics -->
+                <div class="metrics-section-title">CASH FLOW & RISK</div>
+
+                <div class="metric-item">
+                    <span class="metric-item-label">Cash Flow Yield</span>
+                    <div class="metric-item-track">
+                        <div class="metric-item-fill" style="width: 24%;"></div>
+                        <div class="metric-item-marker" style="right: 76%;"></div>
+                    </div>
+                    <span class="metric-item-value">2.4%</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-item-label">Debt Service Coverage</span>
+                    <div class="metric-item-track">
+                        <div class="metric-item-fill" style="width: 55%;"></div>
+                        <div class="metric-item-marker" style="right: 45%;"></div>
+                    </div>
+                    <span class="metric-item-value">1.10</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-item-label">Expense Ratio</span>
+                    <div class="metric-item-track">
+                        <div class="metric-item-fill" style="width: 30%;"></div>
+                        <div class="metric-item-marker" style="right: 70%;"></div>
+                    </div>
+                    <span class="metric-item-value">30%</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-item-label">Breakeven Occupancy</span>
+                    <div class="metric-item-track">
+                        <div class="metric-item-fill" style="width: 88%;"></div>
+                        <div class="metric-item-marker" style="right: 12%;"></div>
+                    </div>
+                    <span class="metric-item-value">88%</span>
+                </div>
+            </div>
+
+            <!-- Take Action -->
+            <div class="take-action">
+                <span class="take-action-badge">Take Action</span>
+                <p class="take-action-text">Want to improve this deal? Adjust pricing, financing, and strategy to push these metrics above average.</p>
+                <a href="#" class="btn-primary">
+                    Go to Deal Maker IQ
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+
+            <!-- Footer Links -->
+            <div class="footer-links">
+                <a href="#" class="footer-link">
+                    Go to Deal Maker IQ
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                <a href="#" class="footer-link secondary">
+                    <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                    </svg>
+                    Export Financial Proforma
+                </a>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -160,6 +160,21 @@ class DealMakerRecord(BaseModel):
     monthly_hoa: float = Field(0, description="Monthly HOA fees")
     monthly_utilities: float = Field(0, description="Monthly utilities (if landlord pays)")
     
+    # === STR-Specific Fields (optional - only used for Short-term Rental strategy) ===
+    furniture_setup_cost: Optional[float] = Field(None, description="One-time furniture & setup cost")
+    average_daily_rate: Optional[float] = Field(None, description="Nightly rental rate")
+    occupancy_rate: Optional[float] = Field(None, description="Expected occupancy rate (0.70 = 70%)")
+    cleaning_fee_revenue: Optional[float] = Field(None, description="Cleaning fee charged per booking")
+    avg_length_of_stay_days: Optional[int] = Field(None, description="Average guest stay length in days")
+    platform_fee_rate: Optional[float] = Field(None, description="Platform fees as % of revenue (e.g., Airbnb)")
+    str_management_rate: Optional[float] = Field(None, description="STR management fee as % of revenue")
+    cleaning_cost_per_turnover: Optional[float] = Field(None, description="Cleaning cost per turnover")
+    supplies_monthly: Optional[float] = Field(None, description="Monthly supplies & consumables cost")
+    additional_utilities_monthly: Optional[float] = Field(None, description="Additional utilities for STR")
+    
+    # Strategy type
+    strategy_type: Optional[str] = Field(None, description="Investment strategy type (ltr, str, brrrr, flip, house_hack, wholesale)")
+    
     # === Cached Metrics ===
     cached_metrics: Optional[CachedMetrics] = Field(
         None,
@@ -218,7 +233,7 @@ class DealMakerRecordUpdate(BaseModel):
     rehab_budget: Optional[float] = Field(None, ge=0)
     arv: Optional[float] = Field(None, ge=0)
     
-    # Income
+    # Income (LTR)
     monthly_rent: Optional[float] = Field(None, ge=0)
     other_income: Optional[float] = Field(None, ge=0)
     
@@ -233,6 +248,21 @@ class DealMakerRecordUpdate(BaseModel):
     annual_insurance: Optional[float] = Field(None, ge=0)
     monthly_hoa: Optional[float] = Field(None, ge=0)
     monthly_utilities: Optional[float] = Field(None, ge=0)
+    
+    # STR-Specific Fields
+    furniture_setup_cost: Optional[float] = Field(None, ge=0, description="One-time furniture & setup cost")
+    average_daily_rate: Optional[float] = Field(None, ge=0, description="Nightly rental rate")
+    occupancy_rate: Optional[float] = Field(None, ge=0, le=1, description="Expected occupancy rate")
+    cleaning_fee_revenue: Optional[float] = Field(None, ge=0, description="Cleaning fee per booking")
+    avg_length_of_stay_days: Optional[int] = Field(None, ge=1, le=365, description="Average stay length")
+    platform_fee_rate: Optional[float] = Field(None, ge=0, le=0.5, description="Platform fees %")
+    str_management_rate: Optional[float] = Field(None, ge=0, le=0.5, description="STR management %")
+    cleaning_cost_per_turnover: Optional[float] = Field(None, ge=0, description="Cleaning cost per turnover")
+    supplies_monthly: Optional[float] = Field(None, ge=0, description="Monthly supplies cost")
+    additional_utilities_monthly: Optional[float] = Field(None, ge=0, description="Additional utilities")
+    
+    # Strategy type
+    strategy_type: Optional[str] = Field(None, description="Strategy type")
 
 
 class DealMakerResponse(BaseModel):

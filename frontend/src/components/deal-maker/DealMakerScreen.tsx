@@ -23,6 +23,13 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CompactHeader, type PropertyData as HeaderPropertyData } from '@/components/layout/CompactHeader'
 import { useDealMakerStore, useDealMakerDerived, useDealMakerReady } from '@/stores/dealMakerStore'
+import { 
+  StrategyType,
+  STRDealMakerState,
+  DEFAULT_STR_DEAL_MAKER_STATE,
+  isSTRState,
+} from './types'
+import { calculateSTRMetrics, STRMetrics } from './calculations/strCalculations'
 
 // Types
 export interface DealMakerPropertyData {
@@ -51,7 +58,7 @@ interface DealMakerScreenProps {
   savedPropertyId?: string
 }
 
-interface DealMakerState {
+interface LTRDealMakerState {
   buyPrice: number
   downPaymentPercent: number
   closingCostsPercent: number
@@ -69,7 +76,10 @@ interface DealMakerState {
   monthlyHoa: number
 }
 
-interface DealMakerMetrics {
+// Union type for any strategy state
+type DealMakerState = LTRDealMakerState | STRDealMakerState
+
+interface LTRDealMakerMetrics {
   cashNeeded: number
   dealGap: number
   annualProfit: number
@@ -82,7 +92,25 @@ interface DealMakerMetrics {
   totalMonthlyExpenses: number
 }
 
+// Union type for any strategy metrics
+type DealMakerMetrics = LTRDealMakerMetrics | STRMetrics
+
 type AccordionSection = 'buyPrice' | 'financing' | 'rehab' | 'income' | 'expenses' | null
+
+// Map display strategy names to internal strategy types
+function getStrategyType(displayName: string): StrategyType {
+  const map: Record<string, StrategyType> = {
+    'Long-term': 'ltr',
+    'Long-term Rental': 'ltr',
+    'Short-term': 'str',
+    'Short-term Rental': 'str',
+    'BRRRR': 'brrrr',
+    'Fix & Flip': 'flip',
+    'House Hack': 'house_hack',
+    'Wholesale': 'wholesale',
+  }
+  return map[displayName] || 'ltr'
+}
 
 // Helper functions
 function formatPrice(price: number): string {
@@ -219,8 +247,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   // Determine if we're in "saved property mode" (use store) or "unsaved mode" (use local state)
   const isSavedPropertyMode = !!savedPropertyId
   
-  // Initialize local state for unsaved properties (backward compatibility)
-  const getInitialLocalState = (): DealMakerState => {
+  // Initialize LTR local state for unsaved properties
+  const getInitialLTRState = (): LTRDealMakerState => {
     return {
       buyPrice: listPrice ?? property.price ?? 350000,
       downPaymentPercent: 0.20,
@@ -239,11 +267,33 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       monthlyHoa: 0,
     }
   }
+
+  // Initialize STR local state for unsaved properties
+  const getInitialSTRState = (): STRDealMakerState => {
+    const basePrice = listPrice ?? property.price ?? 350000
+    return {
+      ...DEFAULT_STR_DEAL_MAKER_STATE,
+      buyPrice: basePrice,
+      arv: basePrice * 1.0,
+      annualPropertyTax: property.propertyTax || 4200,
+      annualInsurance: (property.insurance || 1800) * 1.5, // Higher for STR
+    }
+  }
+
+  // Get initial state based on strategy
+  const getInitialLocalState = (strategy: StrategyType): DealMakerState => {
+    if (strategy === 'str') {
+      return getInitialSTRState()
+    }
+    return getInitialLTRState()
+  }
   
   // State
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
   const [activeAccordion, setActiveAccordion] = useState<AccordionSection>('buyPrice')
-  const [localState, setLocalState] = useState<DealMakerState>(getInitialLocalState)
+  const strategyType = getStrategyType(currentStrategy)
+  const [localLTRState, setLocalLTRState] = useState<LTRDealMakerState>(getInitialLTRState)
+  const [localSTRState, setLocalSTRState] = useState<STRDealMakerState>(getInitialSTRState)
   
   // Load Deal Maker record from backend for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property
@@ -261,6 +311,36 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   const state: DealMakerState = useMemo(() => {
     if (isSavedPropertyMode && hasRecord) {
       const record = dealMakerStore.record!
+      
+      // For STR strategy, return STR state from store
+      if (strategyType === 'str') {
+        return {
+          buyPrice: record.buy_price,
+          downPaymentPercent: record.down_payment_pct,
+          closingCostsPercent: record.closing_costs_pct,
+          loanType: '30-year' as const,
+          interestRate: record.interest_rate,
+          loanTermYears: record.loan_term_years,
+          rehabBudget: record.rehab_budget,
+          arv: record.arv,
+          furnitureSetupCost: record.furniture_setup_cost ?? DEFAULT_STR_DEAL_MAKER_STATE.furnitureSetupCost,
+          averageDailyRate: record.average_daily_rate ?? DEFAULT_STR_DEAL_MAKER_STATE.averageDailyRate,
+          occupancyRate: record.occupancy_rate ?? DEFAULT_STR_DEAL_MAKER_STATE.occupancyRate,
+          cleaningFeeRevenue: record.cleaning_fee_revenue ?? DEFAULT_STR_DEAL_MAKER_STATE.cleaningFeeRevenue,
+          avgLengthOfStayDays: record.avg_length_of_stay_days ?? DEFAULT_STR_DEAL_MAKER_STATE.avgLengthOfStayDays,
+          platformFeeRate: record.platform_fee_rate ?? DEFAULT_STR_DEAL_MAKER_STATE.platformFeeRate,
+          strManagementRate: record.str_management_rate ?? DEFAULT_STR_DEAL_MAKER_STATE.strManagementRate,
+          cleaningCostPerTurnover: record.cleaning_cost_per_turnover ?? DEFAULT_STR_DEAL_MAKER_STATE.cleaningCostPerTurnover,
+          suppliesMonthly: record.supplies_monthly ?? DEFAULT_STR_DEAL_MAKER_STATE.suppliesMonthly,
+          additionalUtilitiesMonthly: record.additional_utilities_monthly ?? DEFAULT_STR_DEAL_MAKER_STATE.additionalUtilitiesMonthly,
+          maintenanceRate: record.maintenance_pct,
+          annualPropertyTax: record.annual_property_tax,
+          annualInsurance: record.annual_insurance,
+          monthlyHoa: record.monthly_hoa,
+        } as STRDealMakerState
+      }
+      
+      // Default: LTR state
       return {
         buyPrice: record.buy_price,
         downPaymentPercent: record.down_payment_pct,
@@ -277,10 +357,15 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         annualPropertyTax: record.annual_property_tax,
         annualInsurance: record.annual_insurance,
         monthlyHoa: record.monthly_hoa,
-      }
+      } as LTRDealMakerState
     }
-    return localState
-  }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, localState])
+    
+    // For unsaved properties, return the appropriate local state
+    if (strategyType === 'str') {
+      return localSTRState
+    }
+    return localLTRState
+  }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, localLTRState, localSTRState])
   
   // Navigate to Verdict IQ page
   // For saved properties, Verdict will read from the store (same data source)
@@ -369,8 +454,13 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   
   // Calculate metrics - prefer store values for saved properties
   const metrics = useMemo<DealMakerMetrics>(() => {
-    // For saved properties, use cached metrics from store
-    if (isSavedPropertyMode && hasRecord && dealMakerStore.record?.cached_metrics) {
+    // For STR strategy, use STR calculations
+    if (strategyType === 'str' && isSTRState(state)) {
+      return calculateSTRMetrics(state)
+    }
+    
+    // For saved properties with LTR, use cached metrics from store
+    if (isSavedPropertyMode && hasRecord && dealMakerStore.record?.cached_metrics && strategyType === 'ltr') {
       const cachedMetrics = dealMakerStore.record.cached_metrics
       const effectiveListPrice = dealMakerStore.record.list_price || state.buyPrice
       const dealGap = effectiveListPrice > 0 
@@ -388,45 +478,46 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         equityCreated: cachedMetrics.equity_after_rehab || 0,
         grossMonthlyIncome: (cachedMetrics.gross_income || 0) / 12,
         totalMonthlyExpenses: ((cachedMetrics.total_expenses || 0) + (cachedMetrics.monthly_payment || 0) * 12) / 12,
-      }
+      } as LTRDealMakerMetrics
     }
     
-    // For unsaved properties, calculate locally
-    const downPaymentAmount = state.buyPrice * state.downPaymentPercent
-    const closingCostsAmount = state.buyPrice * state.closingCostsPercent
+    // For unsaved LTR properties, calculate locally
+    const ltrState = state as LTRDealMakerState
+    const downPaymentAmount = ltrState.buyPrice * ltrState.downPaymentPercent
+    const closingCostsAmount = ltrState.buyPrice * ltrState.closingCostsPercent
     const cashNeeded = downPaymentAmount + closingCostsAmount
 
-    const loanAmount = state.buyPrice - downPaymentAmount
-    const monthlyPayment = calculateMortgagePayment(loanAmount, state.interestRate, state.loanTermYears)
+    const loanAmount = ltrState.buyPrice - downPaymentAmount
+    const monthlyPayment = calculateMortgagePayment(loanAmount, ltrState.interestRate, ltrState.loanTermYears)
 
-    const totalInvestment = state.buyPrice + state.rehabBudget
-    const equityCreated = state.arv - totalInvestment
+    const totalInvestment = ltrState.buyPrice + ltrState.rehabBudget
+    const equityCreated = ltrState.arv - totalInvestment
 
-    const grossMonthlyIncome = state.monthlyRent + state.otherIncome
+    const grossMonthlyIncome = ltrState.monthlyRent + ltrState.otherIncome
 
     // Calculate operating expenses
-    const vacancy = grossMonthlyIncome * state.vacancyRate
-    const maintenance = grossMonthlyIncome * state.maintenanceRate
-    const management = grossMonthlyIncome * state.managementRate
-    const propertyTaxMonthly = state.annualPropertyTax / 12
-    const insuranceMonthly = state.annualInsurance / 12
+    const vacancy = grossMonthlyIncome * ltrState.vacancyRate
+    const maintenance = grossMonthlyIncome * ltrState.maintenanceRate
+    const management = grossMonthlyIncome * ltrState.managementRate
+    const propertyTaxMonthly = ltrState.annualPropertyTax / 12
+    const insuranceMonthly = ltrState.annualInsurance / 12
     const monthlyOperatingExpenses = vacancy + maintenance + management + 
-      propertyTaxMonthly + insuranceMonthly + state.monthlyHoa
+      propertyTaxMonthly + insuranceMonthly + ltrState.monthlyHoa
     const totalMonthlyExpenses = monthlyOperatingExpenses + monthlyPayment
 
     const annualCashFlow = (grossMonthlyIncome - totalMonthlyExpenses) * 12
 
-    const capRate = state.buyPrice > 0 
-      ? (((grossMonthlyIncome - monthlyOperatingExpenses) * 12) / state.buyPrice) * 100 
+    const capRate = ltrState.buyPrice > 0 
+      ? (((grossMonthlyIncome - monthlyOperatingExpenses) * 12) / ltrState.buyPrice) * 100 
       : 0
     
     const cocReturn = cashNeeded > 0 
       ? (annualCashFlow / cashNeeded) * 100 
       : 0
 
-    const effectiveListPrice = listPrice ?? state.buyPrice
+    const effectiveListPrice = listPrice ?? ltrState.buyPrice
     const dealGap = effectiveListPrice > 0 
-      ? (effectiveListPrice - state.buyPrice) / effectiveListPrice 
+      ? (effectiveListPrice - ltrState.buyPrice) / effectiveListPrice 
       : 0
 
     return {
@@ -440,14 +531,15 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       equityCreated,
       grossMonthlyIncome,
       totalMonthlyExpenses,
-    }
-  }, [state, listPrice, isSavedPropertyMode, hasRecord, dealMakerStore.record])
+    } as LTRDealMakerMetrics
+  }, [state, listPrice, isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType])
 
   // Update state - use store for saved properties, local state for unsaved
-  const updateState = useCallback(<K extends keyof DealMakerState>(key: K, value: DealMakerState[K]) => {
+  const updateState = useCallback((key: string, value: number) => {
     if (isSavedPropertyMode && hasRecord) {
-      // Map local field names to store field names
+      // Map local field names to store field names (includes both LTR and STR fields)
       const fieldMap: Record<string, string> = {
+        // Shared fields
         buyPrice: 'buy_price',
         downPaymentPercent: 'down_payment_pct',
         closingCostsPercent: 'closing_costs_pct',
@@ -455,25 +547,41 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         loanTermYears: 'loan_term_years',
         rehabBudget: 'rehab_budget',
         arv: 'arv',
-        monthlyRent: 'monthly_rent',
-        otherIncome: 'other_income',
-        vacancyRate: 'vacancy_rate',
         maintenanceRate: 'maintenance_pct',
-        managementRate: 'management_pct',
         annualPropertyTax: 'annual_property_tax',
         annualInsurance: 'annual_insurance',
         monthlyHoa: 'monthly_hoa',
+        // LTR-specific
+        monthlyRent: 'monthly_rent',
+        otherIncome: 'other_income',
+        vacancyRate: 'vacancy_rate',
+        managementRate: 'management_pct',
+        // STR-specific
+        furnitureSetupCost: 'furniture_setup_cost',
+        averageDailyRate: 'average_daily_rate',
+        occupancyRate: 'occupancy_rate',
+        cleaningFeeRevenue: 'cleaning_fee_revenue',
+        avgLengthOfStayDays: 'avg_length_of_stay_days',
+        platformFeeRate: 'platform_fee_rate',
+        strManagementRate: 'str_management_rate',
+        cleaningCostPerTurnover: 'cleaning_cost_per_turnover',
+        suppliesMonthly: 'supplies_monthly',
+        additionalUtilitiesMonthly: 'additional_utilities_monthly',
       }
       
-      const storeField = fieldMap[key as string]
+      const storeField = fieldMap[key]
       if (storeField) {
-        dealMakerStore.updateField(storeField as keyof typeof dealMakerStore.pendingUpdates, value as number)
+        dealMakerStore.updateField(storeField as keyof typeof dealMakerStore.pendingUpdates, value)
       }
     } else {
-      // Local state for unsaved properties
-      setLocalState(prev => ({ ...prev, [key]: value }))
+      // Local state for unsaved properties - update the appropriate state based on strategy
+      if (strategyType === 'str') {
+        setLocalSTRState(prev => ({ ...prev, [key]: value }))
+      } else {
+        setLocalLTRState(prev => ({ ...prev, [key]: value }))
+      }
     }
-  }, [isSavedPropertyMode, hasRecord, dealMakerStore])
+  }, [isSavedPropertyMode, hasRecord, dealMakerStore, strategyType])
 
   const handleStrategyChange = (strategy: string) => {
     setCurrentStrategy(strategy)
@@ -507,15 +615,31 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     }
   }
 
-  // Key metrics for header - cap rate and COC are now in % format from worksheetStore
-  const headerMetrics = [
-    { label: 'Buy Price', value: formatPrice(state.buyPrice), color: 'white' },
-    { label: 'Cash Needed', value: formatPrice(metrics.cashNeeded), color: 'white' },
-    { label: 'Deal Gap', value: `${metrics.dealGap >= 0 ? '+' : ''}${formatPercent(metrics.dealGap)}`, color: 'cyan' },
-    { label: 'Annual Profit', value: formatPrice(metrics.annualProfit), color: metrics.annualProfit >= 0 ? 'teal' : 'rose' },
-    { label: 'CAP Rate', value: `${metrics.capRate.toFixed(1)}%`, color: 'white' },
-    { label: 'COC Return', value: `${metrics.cocReturn.toFixed(1)}%`, color: metrics.cocReturn >= 0 ? 'white' : 'rose' },
-  ]
+  // Key metrics for header - varies by strategy
+  const headerMetrics = useMemo(() => {
+    if (strategyType === 'str' && 'revPAR' in metrics) {
+      const strMetrics = metrics as STRMetrics
+      return [
+        { label: 'Buy Price', value: formatPrice(state.buyPrice), color: 'white' },
+        { label: 'Cash Needed', value: formatPrice(strMetrics.cashNeeded), color: 'white' },
+        { label: 'RevPAR', value: formatPrice(strMetrics.revPAR), color: 'cyan' },
+        { label: 'Annual Profit', value: formatPrice(strMetrics.annualCashFlow), color: strMetrics.annualCashFlow >= 0 ? 'teal' : 'rose' },
+        { label: 'CAP Rate', value: `${strMetrics.capRate.toFixed(1)}%`, color: 'white' },
+        { label: 'COC Return', value: `${strMetrics.cocReturn.toFixed(1)}%`, color: strMetrics.cocReturn >= 0 ? 'white' : 'rose' },
+      ]
+    }
+    
+    // LTR metrics
+    const ltrMetrics = metrics as LTRDealMakerMetrics
+    return [
+      { label: 'Buy Price', value: formatPrice(state.buyPrice), color: 'white' },
+      { label: 'Cash Needed', value: formatPrice(ltrMetrics.cashNeeded), color: 'white' },
+      { label: 'Deal Gap', value: `${ltrMetrics.dealGap >= 0 ? '+' : ''}${formatPercent(ltrMetrics.dealGap)}`, color: 'cyan' },
+      { label: 'Annual Profit', value: formatPrice(ltrMetrics.annualProfit), color: ltrMetrics.annualProfit >= 0 ? 'teal' : 'rose' },
+      { label: 'CAP Rate', value: `${ltrMetrics.capRate.toFixed(1)}%`, color: 'white' },
+      { label: 'COC Return', value: `${ltrMetrics.cocReturn.toFixed(1)}%`, color: ltrMetrics.cocReturn >= 0 ? 'white' : 'rose' },
+    ]
+  }, [strategyType, metrics, state.buyPrice])
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] max-w-[480px] mx-auto font-['Inter',sans-serif]">
@@ -685,9 +809,24 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                       maxLabel={formatPrice(state.buyPrice * 2)}
                       onChange={(v) => updateState('arv', v)}
                     />
+                    {/* STR-specific: Furniture & Setup */}
+                    {strategyType === 'str' && isSTRState(state) && (
+                      <SliderInput
+                        label="Furniture & Setup"
+                        value={state.furnitureSetupCost}
+                        displayValue={formatPrice(state.furnitureSetupCost)}
+                        min={0}
+                        max={30000}
+                        minLabel="$0"
+                        maxLabel="$30,000"
+                        onChange={(v) => updateState('furnitureSetupCost', v)}
+                      />
+                    )}
                     <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
                       <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">EQUITY CAPTURE</div>
-                      <div className="text-2xl font-bold text-[#0A1628] tabular-nums">{formatPrice(metrics.equityCreated)}</div>
+                      <div className="text-2xl font-bold text-[#0A1628] tabular-nums">
+                        {formatPrice('equityCreated' in metrics ? metrics.equityCreated : 0)}
+                      </div>
                     </div>
                   </>
                 )}
@@ -695,70 +834,224 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                 {/* Income Section */}
                 {section.id === 'income' && (
                   <>
-                    <SliderInput
-                      label="Monthly Rent"
-                      value={state.monthlyRent}
-                      displayValue={formatPrice(state.monthlyRent)}
-                      min={500}
-                      max={10000}
-                      minLabel="$500"
-                      maxLabel="$10,000"
-                      onChange={(v) => updateState('monthlyRent', v)}
-                    />
-                    <SliderInput
-                      label="Vacancy Rate"
-                      value={state.vacancyRate * 100}
-                      displayValue={`${(state.vacancyRate * 100).toFixed(0)}%`}
-                      min={0}
-                      max={20}
-                      minLabel="0%"
-                      maxLabel="20%"
-                      onChange={(v) => updateState('vacancyRate', v / 100)}
-                    />
-                    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
-                      <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">ANNUAL INCOME</div>
-                      <div className="text-2xl font-bold text-[#0A1628] tabular-nums">{formatPrice(metrics.grossMonthlyIncome * 12 * (1 - state.vacancyRate))}</div>
-                    </div>
+                    {strategyType === 'str' && isSTRState(state) ? (
+                      // STR Income fields
+                      <>
+                        <SliderInput
+                          label="Average Daily Rate (ADR)"
+                          value={state.averageDailyRate}
+                          displayValue={formatPrice(state.averageDailyRate)}
+                          min={50}
+                          max={1000}
+                          minLabel="$50"
+                          maxLabel="$1,000"
+                          onChange={(v) => updateState('averageDailyRate', v)}
+                        />
+                        <SliderInput
+                          label="Occupancy Rate"
+                          value={state.occupancyRate * 100}
+                          displayValue={`${(state.occupancyRate * 100).toFixed(0)}%`}
+                          min={30}
+                          max={95}
+                          minLabel="30%"
+                          maxLabel="95%"
+                          onChange={(v) => updateState('occupancyRate', v / 100)}
+                        />
+                        <SliderInput
+                          label="Cleaning Fee (Revenue)"
+                          value={state.cleaningFeeRevenue}
+                          displayValue={formatPrice(state.cleaningFeeRevenue)}
+                          min={0}
+                          max={300}
+                          minLabel="$0"
+                          maxLabel="$300"
+                          onChange={(v) => updateState('cleaningFeeRevenue', v)}
+                        />
+                        <SliderInput
+                          label="Avg Length of Stay"
+                          value={state.avgLengthOfStayDays}
+                          displayValue={`${state.avgLengthOfStayDays} days`}
+                          min={1}
+                          max={30}
+                          minLabel="1 day"
+                          maxLabel="30 days"
+                          onChange={(v) => updateState('avgLengthOfStayDays', Math.round(v))}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
+                          <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">ANNUAL GROSS REVENUE</div>
+                          <div className="text-2xl font-bold text-[#0A1628] tabular-nums">
+                            {formatPrice('annualGrossRevenue' in metrics ? (metrics as STRMetrics).annualGrossRevenue : 0)}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      // LTR Income fields
+                      <>
+                        <SliderInput
+                          label="Monthly Rent"
+                          value={'monthlyRent' in state ? state.monthlyRent : 0}
+                          displayValue={formatPrice('monthlyRent' in state ? state.monthlyRent : 0)}
+                          min={500}
+                          max={10000}
+                          minLabel="$500"
+                          maxLabel="$10,000"
+                          onChange={(v) => updateState('monthlyRent', v)}
+                        />
+                        <SliderInput
+                          label="Vacancy Rate"
+                          value={('vacancyRate' in state ? state.vacancyRate : 0) * 100}
+                          displayValue={`${(('vacancyRate' in state ? state.vacancyRate : 0) * 100).toFixed(0)}%`}
+                          min={0}
+                          max={20}
+                          minLabel="0%"
+                          maxLabel="20%"
+                          onChange={(v) => updateState('vacancyRate', v / 100)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
+                          <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">ANNUAL INCOME</div>
+                          <div className="text-2xl font-bold text-[#0A1628] tabular-nums">
+                            {formatPrice('grossMonthlyIncome' in metrics 
+                              ? (metrics as LTRDealMakerMetrics).grossMonthlyIncome * 12 * (1 - ('vacancyRate' in state ? state.vacancyRate : 0))
+                              : 0)}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
 
                 {/* Expenses Section */}
                 {section.id === 'expenses' && (
                   <>
-                    <SliderInput
-                      label="Property Taxes"
-                      value={state.annualPropertyTax}
-                      displayValue={`${formatPrice(state.annualPropertyTax)}/yr`}
-                      min={0}
-                      max={20000}
-                      minLabel="$0"
-                      maxLabel="$20,000"
-                      onChange={(v) => updateState('annualPropertyTax', v)}
-                    />
-                    <SliderInput
-                      label="Insurance"
-                      value={state.annualInsurance}
-                      displayValue={`${formatPrice(state.annualInsurance)}/yr`}
-                      min={0}
-                      max={10000}
-                      minLabel="$0"
-                      maxLabel="$10,000"
-                      onChange={(v) => updateState('annualInsurance', v)}
-                    />
-                    <SliderInput
-                      label="Management Rate"
-                      value={state.managementRate * 100}
-                      displayValue={`${(state.managementRate * 100).toFixed(0)}%`}
-                      min={0}
-                      max={15}
-                      minLabel="0%"
-                      maxLabel="15%"
-                      onChange={(v) => updateState('managementRate', v / 100)}
-                    />
-                    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
-                      <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">TOTAL EXPENSES</div>
-                      <div className="text-2xl font-bold text-[#0A1628] tabular-nums">{formatPrice(metrics.totalMonthlyExpenses * 12)}/yr</div>
-                    </div>
+                    {strategyType === 'str' && isSTRState(state) ? (
+                      // STR Expenses fields
+                      <>
+                        <SliderInput
+                          label="Platform Fees (Airbnb/VRBO)"
+                          value={state.platformFeeRate * 100}
+                          displayValue={`${(state.platformFeeRate * 100).toFixed(0)}%`}
+                          min={10}
+                          max={20}
+                          minLabel="10%"
+                          maxLabel="20%"
+                          onChange={(v) => updateState('platformFeeRate', v / 100)}
+                        />
+                        <SliderInput
+                          label="STR Management"
+                          value={state.strManagementRate * 100}
+                          displayValue={`${(state.strManagementRate * 100).toFixed(0)}%`}
+                          min={0}
+                          max={25}
+                          minLabel="0%"
+                          maxLabel="25%"
+                          onChange={(v) => updateState('strManagementRate', v / 100)}
+                        />
+                        <SliderInput
+                          label="Cleaning Cost (per turnover)"
+                          value={state.cleaningCostPerTurnover}
+                          displayValue={formatPrice(state.cleaningCostPerTurnover)}
+                          min={50}
+                          max={400}
+                          minLabel="$50"
+                          maxLabel="$400"
+                          onChange={(v) => updateState('cleaningCostPerTurnover', v)}
+                        />
+                        <SliderInput
+                          label="Supplies & Consumables"
+                          value={state.suppliesMonthly}
+                          displayValue={`${formatPrice(state.suppliesMonthly)}/mo`}
+                          min={0}
+                          max={500}
+                          minLabel="$0"
+                          maxLabel="$500"
+                          onChange={(v) => updateState('suppliesMonthly', v)}
+                        />
+                        <SliderInput
+                          label="Additional Utilities"
+                          value={state.additionalUtilitiesMonthly}
+                          displayValue={`${formatPrice(state.additionalUtilitiesMonthly)}/mo`}
+                          min={0}
+                          max={500}
+                          minLabel="$0"
+                          maxLabel="$500"
+                          onChange={(v) => updateState('additionalUtilitiesMonthly', v)}
+                        />
+                        <SliderInput
+                          label="Property Taxes"
+                          value={state.annualPropertyTax}
+                          displayValue={`${formatPrice(state.annualPropertyTax)}/yr`}
+                          min={0}
+                          max={20000}
+                          minLabel="$0"
+                          maxLabel="$20,000"
+                          onChange={(v) => updateState('annualPropertyTax', v)}
+                        />
+                        <SliderInput
+                          label="Insurance"
+                          value={state.annualInsurance}
+                          displayValue={`${formatPrice(state.annualInsurance)}/yr`}
+                          min={0}
+                          max={10000}
+                          minLabel="$0"
+                          maxLabel="$10,000"
+                          onChange={(v) => updateState('annualInsurance', v)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">TOTAL EXPENSES</div>
+                            <div className="text-xl font-bold text-[#0A1628] tabular-nums">
+                              {formatPrice('totalAnnualExpenses' in metrics ? (metrics as STRMetrics).totalAnnualExpenses : 0)}/yr
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">BREAK-EVEN OCC.</div>
+                            <div className="text-base font-bold text-[#0891B2] tabular-nums">
+                              {formatPercent('breakEvenOccupancy' in metrics ? (metrics as STRMetrics).breakEvenOccupancy : 0)}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      // LTR Expenses fields
+                      <>
+                        <SliderInput
+                          label="Property Taxes"
+                          value={state.annualPropertyTax}
+                          displayValue={`${formatPrice(state.annualPropertyTax)}/yr`}
+                          min={0}
+                          max={20000}
+                          minLabel="$0"
+                          maxLabel="$20,000"
+                          onChange={(v) => updateState('annualPropertyTax', v)}
+                        />
+                        <SliderInput
+                          label="Insurance"
+                          value={state.annualInsurance}
+                          displayValue={`${formatPrice(state.annualInsurance)}/yr`}
+                          min={0}
+                          max={10000}
+                          minLabel="$0"
+                          maxLabel="$10,000"
+                          onChange={(v) => updateState('annualInsurance', v)}
+                        />
+                        <SliderInput
+                          label="Management Rate"
+                          value={('managementRate' in state ? state.managementRate : 0) * 100}
+                          displayValue={`${(('managementRate' in state ? state.managementRate : 0) * 100).toFixed(0)}%`}
+                          min={0}
+                          max={15}
+                          minLabel="0%"
+                          maxLabel="15%"
+                          onChange={(v) => updateState('managementRate', v / 100)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
+                          <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">TOTAL EXPENSES</div>
+                          <div className="text-2xl font-bold text-[#0A1628] tabular-nums">
+                            {formatPrice('totalMonthlyExpenses' in metrics ? (metrics as LTRDealMakerMetrics).totalMonthlyExpenses * 12 : 0)}/yr
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
 

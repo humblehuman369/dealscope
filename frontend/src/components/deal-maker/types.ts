@@ -272,3 +272,232 @@ export const CTA_BUTTON_TEXT: Record<TabId, string> = {
   income: 'Continue to Expenses →',
   expenses: 'Finish & Save Deal ✓',
 }
+
+// =============================================================================
+// STRATEGY TYPES
+// =============================================================================
+
+export type StrategyType = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
+
+// =============================================================================
+// SHORT-TERM RENTAL (STR) STATE
+// =============================================================================
+
+export interface STRDealMakerState {
+  // Tab 1: Buy Price (same as LTR)
+  buyPrice: number
+  downPaymentPercent: number
+  closingCostsPercent: number
+  
+  // Tab 2: Financing (same as LTR)
+  loanType: LoanType
+  interestRate: number
+  loanTermYears: number
+  
+  // Tab 3: Rehab & Valuation (add furniture)
+  rehabBudget: number
+  arv: number
+  furnitureSetupCost: number  // STR-specific
+  
+  // Tab 4: Income (STR-specific)
+  averageDailyRate: number
+  occupancyRate: number
+  cleaningFeeRevenue: number
+  avgLengthOfStayDays: number
+  
+  // Tab 5: Expenses (STR-specific)
+  platformFeeRate: number
+  strManagementRate: number
+  cleaningCostPerTurnover: number
+  suppliesMonthly: number
+  additionalUtilitiesMonthly: number
+  maintenanceRate: number
+  annualPropertyTax: number
+  annualInsurance: number
+  monthlyHoa: number
+}
+
+// Union type for any strategy state
+export type AnyDealMakerState = DealMakerState | STRDealMakerState
+
+// =============================================================================
+// STR CALCULATED METRICS
+// =============================================================================
+
+export interface STRMonthlyExpenses {
+  mortgage: number
+  taxes: number
+  insurance: number
+  hoa: number
+  utilities: number
+  maintenance: number
+  management: number
+  platformFees: number
+  cleaning: number
+  supplies: number
+}
+
+export interface STRMetrics {
+  // Investment
+  cashNeeded: number
+  totalInvestmentWithFurniture: number
+  downPaymentAmount: number
+  closingCostsAmount: number
+  loanAmount: number
+  monthlyPayment: number
+  
+  // Revenue
+  grossNightlyRevenue: number
+  monthlyGrossRevenue: number
+  annualGrossRevenue: number
+  revPAR: number
+  numberOfTurnovers: number
+  nightsOccupied: number
+  
+  // Expenses breakdown
+  monthlyExpenses: STRMonthlyExpenses
+  totalMonthlyExpenses: number
+  totalAnnualExpenses: number
+  
+  // Performance
+  monthlyCashFlow: number
+  annualCashFlow: number
+  noi: number
+  capRate: number
+  cocReturn: number
+  breakEvenOccupancy: number
+  
+  // From Rehab & Valuation tab
+  equityCreated: number
+  
+  // Scores
+  dealScore: number
+  dealGrade: DealGrade
+  profitQuality: ProfitGrade
+}
+
+// Union type for any strategy metrics
+export type AnyDealMakerMetrics = DealMakerMetrics | STRMetrics
+
+// =============================================================================
+// STR SLIDER CONFIGURATION
+// =============================================================================
+
+// Extended slider config to support STR-specific field IDs
+export interface STRSliderConfig {
+  id: keyof STRDealMakerState
+  label: string
+  min: number
+  max: number
+  step: number
+  format: SliderFormat | 'days'
+  defaultValue?: number
+  sourceLabel?: string
+  isEstimate?: boolean
+  lastUpdated?: Date
+  staleThresholdDays?: number
+}
+
+// Tab 3: STR Rehab & Valuation sliders (includes furniture)
+export const STR_REHAB_VALUATION_SLIDERS: STRSliderConfig[] = [
+  { id: 'rehabBudget', label: 'Rehab Budget', min: 0, max: 150000, step: 5000, format: 'currency', sourceLabel: '5% of ARV estimate', isEstimate: true },
+  { id: 'arv', label: 'After Repair Value (ARV)', min: 50000, max: 3000000, step: 10000, format: 'currency', sourceLabel: 'Sales comps analysis' },
+  { id: 'furnitureSetupCost', label: 'Furniture & Setup', min: 0, max: 30000, step: 1000, format: 'currency', sourceLabel: 'STR furnishing estimate' },
+]
+
+// Tab 4: STR Income sliders
+export const STR_INCOME_SLIDERS: STRSliderConfig[] = [
+  { id: 'averageDailyRate', label: 'Average Daily Rate (ADR)', min: 50, max: 1000, step: 10, format: 'currency', sourceLabel: 'Market ADR analysis' },
+  { id: 'occupancyRate', label: 'Occupancy Rate', min: 0.30, max: 0.95, step: 0.01, format: 'percentage', sourceLabel: 'Market average' },
+  { id: 'cleaningFeeRevenue', label: 'Cleaning Fee (Revenue)', min: 0, max: 300, step: 25, format: 'currency', sourceLabel: 'Per booking' },
+  { id: 'avgLengthOfStayDays', label: 'Avg Length of Stay', min: 1, max: 30, step: 1, format: 'days', sourceLabel: 'Market data' },
+]
+
+// Tab 5: STR Expenses sliders
+export const STR_EXPENSES_SLIDERS: STRSliderConfig[] = [
+  { id: 'platformFeeRate', label: 'Platform Fees (Airbnb/VRBO)', min: 0.10, max: 0.20, step: 0.01, format: 'percentage', sourceLabel: 'Airbnb host fee' },
+  { id: 'strManagementRate', label: 'STR Management', min: 0, max: 0.25, step: 0.01, format: 'percentage', sourceLabel: 'STR manager rate' },
+  { id: 'cleaningCostPerTurnover', label: 'Cleaning Cost', min: 50, max: 400, step: 25, format: 'currency', sourceLabel: 'Per turnover' },
+  { id: 'suppliesMonthly', label: 'Supplies & Consumables', min: 0, max: 500, step: 25, format: 'currencyPerMonth' },
+  { id: 'additionalUtilitiesMonthly', label: 'Additional Utilities', min: 0, max: 500, step: 25, format: 'currencyPerMonth' },
+  { id: 'maintenanceRate', label: 'Maintenance', min: 0.03, max: 0.15, step: 0.01, format: 'percentage', sourceLabel: 'Industry standard' },
+  { id: 'annualPropertyTax', label: 'Property Taxes', min: 0, max: 20000, step: 100, format: 'currencyPerYear', sourceLabel: 'County assessment' },
+  { id: 'annualInsurance', label: 'Insurance', min: 0, max: 8000, step: 100, format: 'currencyPerYear', sourceLabel: 'ZIP-based estimate', isEstimate: true },
+  { id: 'monthlyHoa', label: 'HOA', min: 0, max: 500, step: 25, format: 'currencyPerMonth' },
+]
+
+// =============================================================================
+// STR DEFAULT STATE
+// =============================================================================
+
+/**
+ * STR FALLBACK DEFAULT STATE
+ * 
+ * These values are used only when the API hasn't loaded yet.
+ * Values should match backend/app/core/defaults.py to minimize visual jumps.
+ * DO NOT change these values here - update backend/app/core/defaults.py instead.
+ */
+export const DEFAULT_STR_DEAL_MAKER_STATE: STRDealMakerState = {
+  // Tab 1: Buy Price (same as LTR)
+  buyPrice: 300000,
+  downPaymentPercent: 0.20,
+  closingCostsPercent: 0.03,
+  
+  // Tab 2: Financing (same as LTR)
+  loanType: '30-year',
+  interestRate: 0.06,
+  loanTermYears: 30,
+  
+  // Tab 3: Rehab & Valuation (with furniture)
+  rehabBudget: 25000,
+  arv: 350000,
+  furnitureSetupCost: 6000,      // Matches STR.furniture_setup_cost
+  
+  // Tab 4: Income (STR-specific)
+  averageDailyRate: 200,         // Typical STR nightly rate
+  occupancyRate: 0.70,           // 70% occupancy
+  cleaningFeeRevenue: 75,        // Matches STR.cleaning_fee_revenue
+  avgLengthOfStayDays: 6,        // Matches STR.avg_length_of_stay_days
+  
+  // Tab 5: Expenses (STR-specific)
+  platformFeeRate: 0.15,         // Matches STR.platform_fees_pct
+  strManagementRate: 0.10,       // Matches STR.str_management_pct
+  cleaningCostPerTurnover: 150,  // Matches STR.cleaning_cost_per_turnover
+  suppliesMonthly: 100,          // Matches STR.supplies_monthly
+  additionalUtilitiesMonthly: 0, // Matches STR.additional_utilities_monthly
+  maintenanceRate: 0.05,
+  annualPropertyTax: 3600,
+  annualInsurance: 3000,         // Higher for STR (1% of price)
+  monthlyHoa: 0,
+}
+
+// =============================================================================
+// STRATEGY HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Get the default state for a given strategy type
+ */
+export function getDefaultStateForStrategy(strategy: StrategyType): DealMakerState | STRDealMakerState {
+  switch (strategy) {
+    case 'str':
+      return { ...DEFAULT_STR_DEAL_MAKER_STATE }
+    case 'ltr':
+    default:
+      return { ...DEFAULT_DEAL_MAKER_STATE }
+  }
+}
+
+/**
+ * Check if a state is an STR state
+ */
+export function isSTRState(state: AnyDealMakerState): state is STRDealMakerState {
+  return 'averageDailyRate' in state && 'occupancyRate' in state
+}
+
+/**
+ * Check if metrics are STR metrics
+ */
+export function isSTRMetrics(metrics: AnyDealMakerMetrics): metrics is STRMetrics {
+  return 'revPAR' in metrics && 'breakEvenOccupancy' in metrics
+}

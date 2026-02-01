@@ -88,7 +88,7 @@ export interface DealMakerRecord {
   // Initial assumptions (locked at creation)
   initial_assumptions: InitialAssumptions
   
-  // User adjustments (editable via Deal Maker)
+  // User adjustments (editable via Deal Maker) - Shared fields
   buy_price: number
   down_payment_pct: number
   closing_costs_pct: number
@@ -96,16 +96,33 @@ export interface DealMakerRecord {
   loan_term_years: number
   rehab_budget: number
   arv: number
-  monthly_rent: number
-  other_income: number
-  vacancy_rate: number
   maintenance_pct: number
-  management_pct: number
   capex_pct: number
   annual_property_tax: number
   annual_insurance: number
   monthly_hoa: number
   monthly_utilities: number
+  
+  // LTR-specific adjustments
+  monthly_rent: number
+  other_income: number
+  vacancy_rate: number
+  management_pct: number
+  
+  // STR-specific adjustments (optional - only present for STR strategy)
+  furniture_setup_cost?: number
+  average_daily_rate?: number
+  occupancy_rate?: number
+  cleaning_fee_revenue?: number
+  avg_length_of_stay_days?: number
+  platform_fee_rate?: number
+  str_management_rate?: number
+  cleaning_cost_per_turnover?: number
+  supplies_monthly?: number
+  additional_utilities_monthly?: number
+  
+  // Strategy type
+  strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
   
   // Cached metrics
   cached_metrics: CachedMetrics | null
@@ -128,6 +145,7 @@ export interface DealMakerResponse {
 
 // Update payload (only user-adjustable fields)
 export interface DealMakerUpdate {
+  // Shared fields
   buy_price?: number
   down_payment_pct?: number
   closing_costs_pct?: number
@@ -135,16 +153,33 @@ export interface DealMakerUpdate {
   loan_term_years?: number
   rehab_budget?: number
   arv?: number
-  monthly_rent?: number
-  other_income?: number
-  vacancy_rate?: number
   maintenance_pct?: number
-  management_pct?: number
   capex_pct?: number
   annual_property_tax?: number
   annual_insurance?: number
   monthly_hoa?: number
   monthly_utilities?: number
+  
+  // LTR-specific fields
+  monthly_rent?: number
+  other_income?: number
+  vacancy_rate?: number
+  management_pct?: number
+  
+  // STR-specific fields
+  furniture_setup_cost?: number
+  average_daily_rate?: number
+  occupancy_rate?: number
+  cleaning_fee_revenue?: number
+  avg_length_of_stay_days?: number
+  platform_fee_rate?: number
+  str_management_rate?: number
+  cleaning_cost_per_turnover?: number
+  supplies_monthly?: number
+  additional_utilities_monthly?: number
+  
+  // Strategy type
+  strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
 }
 
 // ============================================
