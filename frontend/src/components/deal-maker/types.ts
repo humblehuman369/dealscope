@@ -478,7 +478,7 @@ export const DEFAULT_STR_DEAL_MAKER_STATE: STRDealMakerState = {
 /**
  * Get the default state for a given strategy type
  */
-export function getDefaultStateForStrategy(strategy: StrategyType): DealMakerState | STRDealMakerState | BRRRRDealMakerState | FlipDealMakerState | HouseHackDealMakerState {
+export function getDefaultStateForStrategy(strategy: StrategyType): DealMakerState | STRDealMakerState | BRRRRDealMakerState | FlipDealMakerState | HouseHackDealMakerState | WholesaleDealMakerState {
   switch (strategy) {
     case 'str':
       return { ...DEFAULT_STR_DEAL_MAKER_STATE }
@@ -488,6 +488,8 @@ export function getDefaultStateForStrategy(strategy: StrategyType): DealMakerSta
       return { ...DEFAULT_FLIP_DEAL_MAKER_STATE }
     case 'house_hack':
       return { ...DEFAULT_HOUSEHACK_DEAL_MAKER_STATE }
+    case 'wholesale':
+      return { ...DEFAULT_WHOLESALE_DEAL_MAKER_STATE }
     case 'ltr':
     default:
       return { ...DEFAULT_DEAL_MAKER_STATE }
@@ -1081,4 +1083,141 @@ export function isHouseHackState(state: AnyDealMakerState | BRRRRDealMakerState 
  */
 export function isHouseHackMetrics(metrics: AnyDealMakerMetrics | BRRRRMetrics | FlipMetrics | HouseHackMetrics): metrics is HouseHackMetrics {
   return 'effectiveHousingCost' in metrics && 'housingOffsetPercent' in metrics && 'livesForFree' in metrics
+}
+
+// =============================================================================
+// WHOLESALE STATE
+// =============================================================================
+
+export type WholesaleDealViability = 'strong' | 'moderate' | 'tight' | 'notViable'
+
+export interface WholesaleDealMakerState {
+  // Phase 1: Property Analysis
+  arv: number                       // After Repair Value
+  estimatedRepairs: number          // Rehab cost estimate
+  squareFootage: number             // For $/sqft calculations
+  
+  // Phase 2: Contract Terms
+  contractPrice: number             // Your contract price with seller
+  earnestMoney: number              // Earnest money deposit (at risk)
+  inspectionPeriodDays: number      // Days for due diligence
+  daysToClose: number               // Total timeline to close
+  
+  // Phase 3: Assignment
+  assignmentFee: number             // Your wholesale fee
+  marketingCosts: number            // Marketing/acquisition costs
+  closingCosts: number              // Your closing costs (minimal)
+}
+
+// =============================================================================
+// WHOLESALE CALCULATED METRICS
+// =============================================================================
+
+export interface WholesaleMetrics {
+  // 70% Rule Analysis
+  maxAllowableOffer: number         // MAO = ARV × 70% - Repairs
+  contractVsMAO: number             // Contract price - MAO (negative = under)
+  meets70PercentRule: boolean       // contractPrice <= MAO
+  
+  // End Buyer Analysis
+  endBuyerPrice: number             // Contract + Assignment Fee
+  endBuyerAllIn: number             // End buyer's total investment
+  endBuyerProfit: number            // Buyer's potential profit
+  endBuyerROI: number               // Buyer's ROI
+  
+  // Your Profit
+  totalCashAtRisk: number           // Earnest Money + Marketing + Closing
+  grossProfit: number               // Assignment Fee
+  netProfit: number                 // Assignment Fee - Marketing - Closing
+  roi: number                       // (Net Profit / Cash At Risk) × 100
+  annualizedROI: number             // ROI × (365 / Days to Close)
+  
+  // Deal Quality
+  dealViability: WholesaleDealViability
+  dealScore: number
+  dealGrade: DealGrade
+}
+
+// =============================================================================
+// WHOLESALE SLIDER CONFIGURATION
+// =============================================================================
+
+export interface WholesaleSliderConfig {
+  id: keyof WholesaleDealMakerState
+  label: string
+  min: number
+  max: number
+  step: number
+  format: SliderFormat | 'days'
+  defaultValue?: number
+  sourceLabel?: string
+  isEstimate?: boolean
+}
+
+// Phase 1: Property sliders
+export const WHOLESALE_PROPERTY_SLIDERS: WholesaleSliderConfig[] = [
+  { id: 'arv', label: 'After Repair Value', min: 50000, max: 2000000, step: 10000, format: 'currency', sourceLabel: 'Comps analysis' },
+  { id: 'estimatedRepairs', label: 'Estimated Repairs', min: 0, max: 200000, step: 5000, format: 'currency', sourceLabel: 'Contractor estimate' },
+  { id: 'squareFootage', label: 'Square Footage', min: 500, max: 5000, step: 100, format: 'number', sourceLabel: 'Property details' },
+]
+
+// Phase 2: Contract sliders
+export const WHOLESALE_CONTRACT_SLIDERS: WholesaleSliderConfig[] = [
+  { id: 'contractPrice', label: 'Contract Price', min: 25000, max: 1500000, step: 5000, format: 'currency', sourceLabel: 'Negotiated with seller' },
+  { id: 'earnestMoney', label: 'Earnest Money', min: 100, max: 10000, step: 100, format: 'currency', sourceLabel: 'At risk if deal fails' },
+  { id: 'inspectionPeriodDays', label: 'Inspection Period', min: 7, max: 30, step: 1, format: 'days', sourceLabel: 'Due diligence window' },
+  { id: 'daysToClose', label: 'Days to Close', min: 21, max: 90, step: 7, format: 'days', sourceLabel: 'Total timeline' },
+]
+
+// Phase 3: Assignment sliders
+export const WHOLESALE_ASSIGNMENT_SLIDERS: WholesaleSliderConfig[] = [
+  { id: 'assignmentFee', label: 'Assignment Fee', min: 5000, max: 50000, step: 1000, format: 'currency', sourceLabel: 'Your wholesale fee' },
+  { id: 'marketingCosts', label: 'Marketing Costs', min: 0, max: 5000, step: 100, format: 'currency', sourceLabel: 'Finding the deal' },
+  { id: 'closingCosts', label: 'Closing Costs', min: 0, max: 2000, step: 100, format: 'currency', sourceLabel: 'Minimal for assignment' },
+]
+
+// =============================================================================
+// WHOLESALE DEFAULT STATE
+// =============================================================================
+
+/**
+ * WHOLESALE FALLBACK DEFAULT STATE
+ * 
+ * These values are used only when the API hasn't loaded yet.
+ * Values should match backend/app/core/defaults.py to minimize visual jumps.
+ */
+export const DEFAULT_WHOLESALE_DEAL_MAKER_STATE: WholesaleDealMakerState = {
+  // Phase 1: Property Analysis
+  arv: 300000,
+  estimatedRepairs: 40000,
+  squareFootage: 1500,
+  
+  // Phase 2: Contract Terms
+  contractPrice: 170000,            // Under 70% rule MAO
+  earnestMoney: 1000,
+  inspectionPeriodDays: 14,
+  daysToClose: 45,
+  
+  // Phase 3: Assignment
+  assignmentFee: 15000,
+  marketingCosts: 500,
+  closingCosts: 500,
+}
+
+// =============================================================================
+// WHOLESALE HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Check if a state is a Wholesale state
+ */
+export function isWholesaleState(state: AnyDealMakerState | BRRRRDealMakerState | FlipDealMakerState | HouseHackDealMakerState | WholesaleDealMakerState): state is WholesaleDealMakerState {
+  return 'assignmentFee' in state && 'earnestMoney' in state && 'contractPrice' in state && !('sellingCostsPct' in state)
+}
+
+/**
+ * Check if metrics are Wholesale metrics
+ */
+export function isWholesaleMetrics(metrics: AnyDealMakerMetrics | BRRRRMetrics | FlipMetrics | HouseHackMetrics | WholesaleMetrics): metrics is WholesaleMetrics {
+  return 'endBuyerPrice' in metrics && 'meets70PercentRule' in metrics && 'dealViability' in metrics
 }

@@ -319,7 +319,7 @@ export function VerdictIQPage({
           </div>
 
           <button 
-            className="flex items-center justify-center gap-1.5 w-full py-2 text-[#64748B] text-xs font-medium bg-transparent border-none cursor-pointer"
+            className="flex items-center justify-center gap-1.5 w-full py-2 text-[#0891B2] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => setShowCalculation(!showCalculation)}
           >
             <svg 

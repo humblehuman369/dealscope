@@ -37,11 +37,15 @@ import {
   HouseHackDealMakerState,
   HouseHackMetrics,
   DEFAULT_HOUSEHACK_DEAL_MAKER_STATE,
+  WholesaleDealMakerState,
+  WholesaleMetrics,
+  DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
 } from './types'
 import { calculateSTRMetrics } from './calculations/strCalculations'
 import { calculateBRRRRMetrics } from './calculations/brrrrCalculations'
 import { calculateFlipMetrics } from './calculations/flipCalculations'
 import { calculateHouseHackMetrics } from './calculations/houseHackCalculations'
+import { calculateWholesaleMetrics, getViabilityDisplay } from './calculations/wholesaleCalculations'
 
 // Types
 export interface DealMakerPropertyData {
@@ -90,7 +94,7 @@ interface LTRDealMakerState {
 }
 
 // Union type for any strategy state
-type DealMakerState = LTRDealMakerState | STRDealMakerState | BRRRRDealMakerState | FlipDealMakerState | HouseHackDealMakerState
+type DealMakerState = LTRDealMakerState | STRDealMakerState | BRRRRDealMakerState | FlipDealMakerState | HouseHackDealMakerState | WholesaleDealMakerState
 
 // Local type guard for STR state
 function isSTRState(state: DealMakerState): state is STRDealMakerState {
@@ -112,6 +116,11 @@ function isHouseHackState(state: DealMakerState): state is HouseHackDealMakerSta
   return 'totalUnits' in state && 'ownerOccupiedUnits' in state && 'pmiRate' in state
 }
 
+// Local type guard for Wholesale state
+function isWholesaleState(state: DealMakerState): state is WholesaleDealMakerState {
+  return 'assignmentFee' in state && 'earnestMoney' in state && 'contractPrice' in state && !('sellingCostsPct' in state)
+}
+
 interface LTRDealMakerMetrics {
   cashNeeded: number
   dealGap: number
@@ -126,7 +135,7 @@ interface LTRDealMakerMetrics {
 }
 
 // Union type for any strategy metrics
-type DealMakerMetrics = LTRDealMakerMetrics | STRMetrics | BRRRRMetrics | FlipMetrics | HouseHackMetrics
+type DealMakerMetrics = LTRDealMakerMetrics | STRMetrics | BRRRRMetrics | FlipMetrics | HouseHackMetrics | WholesaleMetrics
 
 type AccordionSection = 'buyPrice' | 'financing' | 'rehab' | 'income' | 'expenses' | null
 
@@ -354,6 +363,27 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     }
   }
 
+  // Initialize Wholesale local state for unsaved properties
+  const getInitialWholesaleState = (): WholesaleDealMakerState => {
+    const basePrice = listPrice ?? property.price ?? 300000
+    // Estimate ARV as 15% above list price
+    const estimatedArv = basePrice * 1.15
+    // Estimate repairs based on property condition (10-20% of ARV)
+    const estimatedRepairs = estimatedArv * 0.15
+    // MAO calculation: ARV × 70% - Repairs
+    const mao = (estimatedArv * 0.70) - estimatedRepairs
+    // Contract should be at or below MAO
+    const contractPrice = Math.min(basePrice * 0.85, mao * 0.95)
+    
+    return {
+      ...DEFAULT_WHOLESALE_DEAL_MAKER_STATE,
+      arv: estimatedArv,
+      estimatedRepairs,
+      contractPrice,
+      squareFootage: property.sqft || 1500,
+    }
+  }
+
   // Get initial state based on strategy
   const getInitialLocalState = (strategy: StrategyType): DealMakerState => {
     if (strategy === 'str') {
@@ -368,6 +398,9 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     if (strategy === 'house_hack') {
       return getInitialHouseHackState()
     }
+    if (strategy === 'wholesale') {
+      return getInitialWholesaleState()
+    }
     return getInitialLTRState()
   }
   
@@ -379,6 +412,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   const [localSTRState, setLocalSTRState] = useState<STRDealMakerState>(getInitialSTRState)
   const [localFlipState, setLocalFlipState] = useState<FlipDealMakerState>(getInitialFlipState)
   const [localHouseHackState, setLocalHouseHackState] = useState<HouseHackDealMakerState>(getInitialHouseHackState)
+  const [localWholesaleState, setLocalWholesaleState] = useState<WholesaleDealMakerState>(getInitialWholesaleState)
   const [localBRRRRState, setLocalBRRRRState] = useState<BRRRRDealMakerState>(getInitialBRRRRState)
   
   // Load Deal Maker record from backend for saved properties
@@ -500,6 +534,22 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         } as HouseHackDealMakerState
       }
       
+      // For Wholesale strategy, return Wholesale state from store
+      if (strategyType === 'wholesale') {
+        return {
+          arv: record.arv,
+          estimatedRepairs: record.estimated_repairs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.estimatedRepairs,
+          squareFootage: record.sqft ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.squareFootage,
+          contractPrice: record.contract_price ?? record.buy_price ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.contractPrice,
+          earnestMoney: record.earnest_money ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.earnestMoney,
+          inspectionPeriodDays: record.inspection_period_days ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.inspectionPeriodDays,
+          daysToClose: record.days_to_close ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.daysToClose,
+          assignmentFee: record.assignment_fee ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.assignmentFee,
+          marketingCosts: record.marketing_costs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.marketingCosts,
+          closingCosts: record.wholesale_closing_costs ?? DEFAULT_WHOLESALE_DEAL_MAKER_STATE.closingCosts,
+        } as WholesaleDealMakerState
+      }
+      
       // Default: LTR state
       return {
         buyPrice: record.buy_price,
@@ -533,8 +583,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     if (strategyType === 'house_hack') {
       return localHouseHackState
     }
+    if (strategyType === 'wholesale') {
+      return localWholesaleState
+    }
     return localLTRState
-  }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, localLTRState, localSTRState, localBRRRRState, localFlipState, localHouseHackState])
+  }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, localLTRState, localSTRState, localBRRRRState, localFlipState, localHouseHackState, localWholesaleState])
   
   // Navigate to Verdict IQ page
   // For saved properties, Verdict will read from the store (same data source)
@@ -555,7 +608,34 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       // Build session data based on strategy type
       let sessionData: Record<string, unknown>
       
-      if (strategyType === 'house_hack' && isHouseHackState(state)) {
+      if (strategyType === 'wholesale' && isWholesaleState(state)) {
+        // Wholesale-specific session data
+        const wsMetrics = metrics as WholesaleMetrics
+        sessionData = {
+          address: fullAddr,
+          purchasePrice: state.contractPrice,
+          monthlyRent: 0, // Wholesale has no rental income
+          propertyTaxes: 0,
+          insurance: 0,
+          arv: state.arv,
+          zpid: property.zpid,
+          strategy: 'wholesale',
+          // Wholesale-specific values
+          contractPrice: state.contractPrice,
+          estimatedRepairs: state.estimatedRepairs,
+          earnestMoney: state.earnestMoney,
+          assignmentFee: state.assignmentFee,
+          marketingCosts: state.marketingCosts,
+          closingCosts: state.closingCosts,
+          daysToClose: state.daysToClose,
+          maxAllowableOffer: wsMetrics.maxAllowableOffer,
+          meets70PercentRule: wsMetrics.meets70PercentRule,
+          endBuyerProfit: wsMetrics.endBuyerProfit,
+          netProfit: wsMetrics.netProfit,
+          roi: wsMetrics.roi,
+          timestamp: Date.now(),
+        }
+      } else if (strategyType === 'house_hack' && isHouseHackState(state)) {
         // HouseHack-specific session data
         const hhMetrics = metrics as HouseHackMetrics
         sessionData = {
@@ -722,7 +802,10 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       let monthlyRentValue: number
       let purchasePriceValue: number
       
-      if (strategyType === 'house_hack' && isHouseHackState(state)) {
+      if (strategyType === 'wholesale' && isWholesaleState(state)) {
+        monthlyRentValue = 0 // Wholesale has no rental income
+        purchasePriceValue = state.contractPrice
+      } else if (strategyType === 'house_hack' && isHouseHackState(state)) {
         monthlyRentValue = state.avgRentPerUnit * (state.totalUnits - state.ownerOccupiedUnits)
         purchasePriceValue = state.purchasePrice
       } else if (strategyType === 'flip' && isFlipState(state)) {
@@ -749,7 +832,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       let insuranceValue = 0
       let arvValue = 0
       
-      if (strategyType === 'house_hack' && isHouseHackState(state)) {
+      if (strategyType === 'wholesale' && isWholesaleState(state)) {
+        propertyTaxValue = 0
+        insuranceValue = 0
+        arvValue = state.arv
+      } else if (strategyType === 'house_hack' && isHouseHackState(state)) {
         propertyTaxValue = state.annualPropertyTax
         insuranceValue = state.annualInsurance
         arvValue = 0
@@ -830,6 +917,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     // For HouseHack strategy, use HouseHack calculations
     if (strategyType === 'house_hack' && isHouseHackState(state)) {
       return calculateHouseHackMetrics(state)
+    }
+    
+    // For Wholesale strategy, use Wholesale calculations
+    if (strategyType === 'wholesale' && isWholesaleState(state)) {
+      return calculateWholesaleMetrics(state)
     }
     
     // For saved properties with LTR, use cached metrics from store
@@ -973,6 +1065,16 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         currentHousingPayment: 'current_housing_payment',
         utilitiesMonthly: 'utilities_monthly',
         capexRate: 'capex_rate',
+        // Wholesale-specific
+        estimatedRepairs: 'estimated_repairs',
+        squareFootage: 'sqft',
+        contractPrice: 'contract_price',
+        earnestMoney: 'earnest_money',
+        inspectionPeriodDays: 'inspection_period_days',
+        daysToClose: 'days_to_close',
+        assignmentFee: 'assignment_fee',
+        marketingCosts: 'marketing_costs',
+        wholesaleClosingCosts: 'wholesale_closing_costs',
       }
       
       const storeField = fieldMap[key]
@@ -989,6 +1091,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         setLocalFlipState(prev => ({ ...prev, [key]: value }))
       } else if (strategyType === 'house_hack') {
         setLocalHouseHackState(prev => ({ ...prev, [key]: value }))
+      } else if (strategyType === 'wholesale') {
+        setLocalWholesaleState(prev => ({ ...prev, [key]: value }))
       } else {
         setLocalLTRState(prev => ({ ...prev, [key]: value }))
       }
@@ -1086,6 +1190,19 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         { label: 'Cash to Close', value: formatPrice(hhMetrics.cashToClose), color: 'white' },
         { label: 'CoC Return', value: `${hhMetrics.cashOnCashReturn.toFixed(1)}%`, color: hhMetrics.cashOnCashReturn >= 10 ? 'teal' : 'white' },
         { label: 'Full CF', value: formatPrice(hhMetrics.fullRentalCashFlow), color: hhMetrics.fullRentalCashFlow > 0 ? 'cyan' : 'rose' },
+      ]
+    }
+    
+    // Wholesale metrics - focus on assignment profit
+    if (strategyType === 'wholesale' && 'endBuyerPrice' in metrics) {
+      const wsMetrics = metrics as WholesaleMetrics
+      return [
+        { label: 'Net Profit', value: formatPrice(wsMetrics.netProfit), color: wsMetrics.netProfit > 0 ? 'teal' : 'rose' },
+        { label: 'ROI', value: `${wsMetrics.roi.toFixed(0)}%`, color: wsMetrics.roi >= 500 ? 'teal' : wsMetrics.roi >= 200 ? 'cyan' : 'white' },
+        { label: '70% Rule', value: wsMetrics.meets70PercentRule ? 'PASS' : 'FAIL', color: wsMetrics.meets70PercentRule ? 'teal' : 'rose' },
+        { label: 'Buyer Profit', value: formatPrice(wsMetrics.endBuyerProfit), color: wsMetrics.endBuyerProfit >= 20000 ? 'teal' : wsMetrics.endBuyerProfit >= 10000 ? 'cyan' : 'rose' },
+        { label: 'Cash at Risk', value: formatPrice(wsMetrics.totalCashAtRisk), color: 'white' },
+        { label: 'Timeline', value: `${(state as WholesaleDealMakerState).daysToClose} days`, color: 'white' },
       ]
     }
     
@@ -1322,6 +1439,54 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                             <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">RENTED UNITS</div>
                             <div className="text-xl font-bold text-[#0891B2] tabular-nums">
                               {'rentedUnits' in metrics ? (metrics as HouseHackMetrics).rentedUnits : state.totalUnits - state.ownerOccupiedUnits}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : strategyType === 'wholesale' && isWholesaleState(state) ? (
+                      // Wholesale Phase 1: Property Analysis
+                      <>
+                        <SliderInput
+                          label="After Repair Value (ARV)"
+                          value={state.arv}
+                          displayValue={formatPrice(state.arv)}
+                          min={50000}
+                          max={2000000}
+                          minLabel="$50,000"
+                          maxLabel="$2,000,000"
+                          onChange={(v) => updateState('arv', v)}
+                        />
+                        <SliderInput
+                          label="Estimated Repairs"
+                          value={state.estimatedRepairs}
+                          displayValue={formatPrice(state.estimatedRepairs)}
+                          min={0}
+                          max={200000}
+                          minLabel="$0"
+                          maxLabel="$200,000"
+                          onChange={(v) => updateState('estimatedRepairs', v)}
+                        />
+                        <SliderInput
+                          label="Square Footage"
+                          value={state.squareFootage}
+                          displayValue={`${state.squareFootage.toLocaleString()} sqft`}
+                          min={500}
+                          max={5000}
+                          minLabel="500"
+                          maxLabel="5,000"
+                          onChange={(v) => updateState('squareFootage', Math.round(v))}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">70% RULE MAO</div>
+                            <div className="text-xl font-bold text-[#0A1628] tabular-nums">
+                              {formatPrice('maxAllowableOffer' in metrics ? (metrics as WholesaleMetrics).maxAllowableOffer : 0)}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">REPAIR $/SQFT</div>
+                            <div className="text-base font-bold text-[#64748B] tabular-nums">
+                              {formatPrice(state.squareFootage > 0 ? state.estimatedRepairs / state.squareFootage : 0)}/sqft
                             </div>
                           </div>
                         </div>
