@@ -172,6 +172,19 @@ class DealMakerRecord(BaseModel):
     supplies_monthly: Optional[float] = Field(None, description="Monthly supplies & consumables cost")
     additional_utilities_monthly: Optional[float] = Field(None, description="Additional utilities for STR")
     
+    # === BRRRR-Specific Fields (optional - only used for BRRRR strategy) ===
+    buy_discount_pct: Optional[float] = Field(None, description="Discount from market value (0.05 = 5%)")
+    hard_money_rate: Optional[float] = Field(None, description="Hard money loan interest rate")
+    contingency_pct: Optional[float] = Field(None, description="Rehab contingency percentage")
+    holding_period_months: Optional[int] = Field(None, description="Months to hold before refinance")
+    holding_costs_monthly: Optional[float] = Field(None, description="Monthly holding costs during rehab")
+    post_rehab_monthly_rent: Optional[float] = Field(None, description="Expected rent after rehab")
+    post_rehab_rent_increase_pct: Optional[float] = Field(None, description="Rent increase from rehab")
+    refinance_ltv: Optional[float] = Field(None, description="Refinance loan-to-value ratio")
+    refinance_interest_rate: Optional[float] = Field(None, description="Refinance interest rate")
+    refinance_term_years: Optional[int] = Field(None, description="Refinance loan term in years")
+    refinance_closing_costs_pct: Optional[float] = Field(None, description="Refinance closing costs percentage")
+    
     # Strategy type
     strategy_type: Optional[str] = Field(None, description="Investment strategy type (ltr, str, brrrr, flip, house_hack, wholesale)")
     
@@ -260,6 +273,19 @@ class DealMakerRecordUpdate(BaseModel):
     cleaning_cost_per_turnover: Optional[float] = Field(None, ge=0, description="Cleaning cost per turnover")
     supplies_monthly: Optional[float] = Field(None, ge=0, description="Monthly supplies cost")
     additional_utilities_monthly: Optional[float] = Field(None, ge=0, description="Additional utilities")
+    
+    # BRRRR-Specific Fields
+    buy_discount_pct: Optional[float] = Field(None, ge=0, le=0.5, description="Discount from market value")
+    hard_money_rate: Optional[float] = Field(None, ge=0, le=0.25, description="Hard money interest rate")
+    contingency_pct: Optional[float] = Field(None, ge=0, le=0.5, description="Rehab contingency %")
+    holding_period_months: Optional[int] = Field(None, ge=1, le=24, description="Holding period months")
+    holding_costs_monthly: Optional[float] = Field(None, ge=0, description="Monthly holding costs")
+    post_rehab_monthly_rent: Optional[float] = Field(None, ge=0, description="Post-rehab monthly rent")
+    post_rehab_rent_increase_pct: Optional[float] = Field(None, ge=0, le=1, description="Rent increase from rehab")
+    refinance_ltv: Optional[float] = Field(None, ge=0.5, le=0.9, description="Refinance LTV")
+    refinance_interest_rate: Optional[float] = Field(None, ge=0, le=0.2, description="Refinance rate")
+    refinance_term_years: Optional[int] = Field(None, ge=10, le=40, description="Refinance term years")
+    refinance_closing_costs_pct: Optional[float] = Field(None, ge=0, le=0.1, description="Refinance closing costs %")
     
     # Strategy type
     strategy_type: Optional[str] = Field(None, description="Strategy type")

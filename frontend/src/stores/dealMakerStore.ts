@@ -121,6 +121,19 @@ export interface DealMakerRecord {
   supplies_monthly?: number
   additional_utilities_monthly?: number
   
+  // BRRRR-specific adjustments (optional - only present for BRRRR strategy)
+  buy_discount_pct?: number
+  hard_money_rate?: number
+  contingency_pct?: number
+  holding_period_months?: number
+  holding_costs_monthly?: number
+  post_rehab_monthly_rent?: number
+  post_rehab_rent_increase_pct?: number
+  refinance_ltv?: number
+  refinance_interest_rate?: number
+  refinance_term_years?: number
+  refinance_closing_costs_pct?: number
+  
   // Strategy type
   strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
   
@@ -177,6 +190,19 @@ export interface DealMakerUpdate {
   cleaning_cost_per_turnover?: number
   supplies_monthly?: number
   additional_utilities_monthly?: number
+  
+  // BRRRR-specific fields
+  buy_discount_pct?: number
+  hard_money_rate?: number
+  contingency_pct?: number
+  holding_period_months?: number
+  holding_costs_monthly?: number
+  post_rehab_monthly_rent?: number
+  post_rehab_rent_increase_pct?: number
+  refinance_ltv?: number
+  refinance_interest_rate?: number
+  refinance_term_years?: number
+  refinance_closing_costs_pct?: number
   
   // Strategy type
   strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'

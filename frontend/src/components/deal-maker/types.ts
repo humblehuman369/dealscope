@@ -478,10 +478,12 @@ export const DEFAULT_STR_DEAL_MAKER_STATE: STRDealMakerState = {
 /**
  * Get the default state for a given strategy type
  */
-export function getDefaultStateForStrategy(strategy: StrategyType): DealMakerState | STRDealMakerState {
+export function getDefaultStateForStrategy(strategy: StrategyType): DealMakerState | STRDealMakerState | BRRRRDealMakerState {
   switch (strategy) {
     case 'str':
       return { ...DEFAULT_STR_DEAL_MAKER_STATE }
+    case 'brrrr':
+      return { ...DEFAULT_BRRRR_DEAL_MAKER_STATE }
     case 'ltr':
     default:
       return { ...DEFAULT_DEAL_MAKER_STATE }
@@ -500,4 +502,205 @@ export function isSTRState(state: AnyDealMakerState): state is STRDealMakerState
  */
 export function isSTRMetrics(metrics: AnyDealMakerMetrics): metrics is STRMetrics {
   return 'revPAR' in metrics && 'breakEvenOccupancy' in metrics
+}
+
+// =============================================================================
+// BRRRR (BUY, REHAB, RENT, REFINANCE, REPEAT) STATE
+// =============================================================================
+
+export interface BRRRRDealMakerState {
+  // Phase 1: Buy
+  purchasePrice: number
+  buyDiscountPct: number         // Discount below market (5% default)
+  downPaymentPercent: number     // Hard money down (10-20%)
+  closingCostsPercent: number
+  hardMoneyRate: number          // Short-term financing rate (10-12%)
+  
+  // Phase 2: Rehab
+  rehabBudget: number
+  contingencyPct: number         // Contingency (10% default)
+  holdingPeriodMonths: number    // Rehab + stabilization period (4-6 months)
+  holdingCostsMonthly: number    // Monthly carrying costs during rehab
+  arv: number
+  
+  // Phase 3: Rent
+  postRehabMonthlyRent: number
+  postRehabRentIncreasePct: number  // Rent bump from rehab (10% default)
+  
+  // Phase 4: Refinance
+  refinanceLtv: number           // Loan-to-value for refinance (75% default)
+  refinanceInterestRate: number  // Conventional rate (6% default)
+  refinanceTermYears: number     // New loan term (30 years)
+  refinanceClosingCostsPct: number  // Closing costs (3% default)
+  
+  // Phase 5: Rent expenses (post-refinance)
+  vacancyRate: number
+  maintenanceRate: number
+  managementRate: number
+  annualPropertyTax: number
+  annualInsurance: number
+  monthlyHoa: number
+}
+
+// =============================================================================
+// BRRRR CALCULATED METRICS
+// =============================================================================
+
+export interface BRRRRMetrics {
+  // Phase 1: Buy
+  initialLoanAmount: number
+  initialDownPayment: number
+  initialClosingCosts: number
+  cashRequiredPhase1: number
+  
+  // Phase 2: Rehab
+  totalRehabCost: number        // Rehab + contingency
+  holdingCosts: number          // Monthly costs * holding period
+  cashRequiredPhase2: number
+  allInCost: number             // Purchase + rehab + holding
+  
+  // Phase 3: Rent
+  estimatedNoi: number
+  estimatedCapRate: number
+  
+  // Phase 4: Refinance
+  refinanceLoanAmount: number
+  refinanceClosingCosts: number
+  cashOutAtRefinance: number
+  newMonthlyPayment: number
+  
+  // Phase 5: Repeat (Capital Recycling)
+  totalCashInvested: number
+  cashLeftInDeal: number
+  capitalRecycledPct: number
+  infiniteRoiAchieved: boolean
+  equityPosition: number
+  equityPct: number
+  
+  // Post-Refinance Performance
+  postRefiMonthlyCashFlow: number
+  postRefiAnnualCashFlow: number
+  postRefiCashOnCash: number    // Uses cash_left_in_deal as denominator
+  
+  // Scores
+  dealScore: number
+  dealGrade: DealGrade
+}
+
+// =============================================================================
+// BRRRR SLIDER CONFIGURATION
+// =============================================================================
+
+export interface BRRRRSliderConfig {
+  id: keyof BRRRRDealMakerState
+  label: string
+  min: number
+  max: number
+  step: number
+  format: SliderFormat | 'months'
+  defaultValue?: number
+  sourceLabel?: string
+  isEstimate?: boolean
+}
+
+// Phase 1: Buy sliders
+export const BRRRR_BUY_SLIDERS: BRRRRSliderConfig[] = [
+  { id: 'purchasePrice', label: 'Purchase Price', min: 50000, max: 2000000, step: 5000, format: 'currency', sourceLabel: 'Discounted from ARV' },
+  { id: 'buyDiscountPct', label: 'Discount from Market', min: 0, max: 0.30, step: 0.01, format: 'percentage', sourceLabel: 'Target: 5-15%' },
+  { id: 'downPaymentPercent', label: 'Down Payment', min: 0.10, max: 0.30, step: 0.05, format: 'percentage', sourceLabel: 'Hard money typical' },
+  { id: 'hardMoneyRate', label: 'Hard Money Rate', min: 0.08, max: 0.15, step: 0.005, format: 'percentage', sourceLabel: 'Short-term rate' },
+]
+
+// Phase 2: Rehab sliders
+export const BRRRR_REHAB_SLIDERS: BRRRRSliderConfig[] = [
+  { id: 'rehabBudget', label: 'Rehab Budget', min: 0, max: 200000, step: 5000, format: 'currency', sourceLabel: 'Contractor estimate' },
+  { id: 'contingencyPct', label: 'Contingency', min: 0, max: 0.25, step: 0.05, format: 'percentage', sourceLabel: 'Recommended: 10%' },
+  { id: 'holdingPeriodMonths', label: 'Holding Period', min: 2, max: 12, step: 1, format: 'months', sourceLabel: 'Rehab + stabilize' },
+  { id: 'holdingCostsMonthly', label: 'Monthly Holding Costs', min: 0, max: 3000, step: 100, format: 'currencyPerMonth', sourceLabel: 'Taxes, ins, utilities' },
+  { id: 'arv', label: 'After Repair Value', min: 50000, max: 3000000, step: 10000, format: 'currency', sourceLabel: 'Sales comps analysis' },
+]
+
+// Phase 3: Rent sliders
+export const BRRRR_RENT_SLIDERS: BRRRRSliderConfig[] = [
+  { id: 'postRehabMonthlyRent', label: 'Post-Rehab Rent', min: 500, max: 10000, step: 50, format: 'currencyPerMonth', sourceLabel: 'After improvements' },
+  { id: 'vacancyRate', label: 'Vacancy Rate', min: 0, max: 0.15, step: 0.01, format: 'percentage', sourceLabel: 'Market average' },
+  { id: 'managementRate', label: 'Property Management', min: 0, max: 0.12, step: 0.01, format: 'percentage', sourceLabel: 'Industry standard' },
+  { id: 'maintenanceRate', label: 'Maintenance', min: 0.03, max: 0.10, step: 0.01, format: 'percentage', sourceLabel: 'Industry standard' },
+]
+
+// Phase 4: Refinance sliders
+export const BRRRR_REFINANCE_SLIDERS: BRRRRSliderConfig[] = [
+  { id: 'refinanceLtv', label: 'Refinance LTV', min: 0.65, max: 0.80, step: 0.05, format: 'percentage', sourceLabel: 'Conventional limit' },
+  { id: 'refinanceInterestRate', label: 'Refinance Rate', min: 0.04, max: 0.10, step: 0.00125, format: 'percentage', sourceLabel: 'Conventional 30-yr' },
+  { id: 'refinanceTermYears', label: 'Loan Term', min: 15, max: 30, step: 5, format: 'years', sourceLabel: 'Standard terms' },
+  { id: 'refinanceClosingCostsPct', label: 'Closing Costs', min: 0.01, max: 0.05, step: 0.005, format: 'percentage', sourceLabel: 'Refi costs' },
+]
+
+// Phase 5: Expenses sliders (shared with rent phase for post-refi analysis)
+export const BRRRR_EXPENSES_SLIDERS: BRRRRSliderConfig[] = [
+  { id: 'annualPropertyTax', label: 'Property Taxes', min: 0, max: 20000, step: 100, format: 'currencyPerYear', sourceLabel: 'County assessment' },
+  { id: 'annualInsurance', label: 'Insurance', min: 0, max: 5000, step: 100, format: 'currencyPerYear', sourceLabel: 'ZIP-based estimate', isEstimate: true },
+  { id: 'monthlyHoa', label: 'HOA', min: 0, max: 500, step: 25, format: 'currencyPerMonth' },
+]
+
+// =============================================================================
+// BRRRR DEFAULT STATE
+// =============================================================================
+
+/**
+ * BRRRR FALLBACK DEFAULT STATE
+ * 
+ * These values are used only when the API hasn't loaded yet.
+ * Values should match backend/app/core/defaults.py to minimize visual jumps.
+ */
+export const DEFAULT_BRRRR_DEAL_MAKER_STATE: BRRRRDealMakerState = {
+  // Phase 1: Buy
+  purchasePrice: 250000,         // Typically bought at discount
+  buyDiscountPct: 0.05,          // Matches BRRRR.buy_discount_pct
+  downPaymentPercent: 0.20,      // Hard money typical
+  closingCostsPercent: 0.02,     // Lower for investment
+  hardMoneyRate: 0.12,           // 12% hard money rate
+  
+  // Phase 2: Rehab
+  rehabBudget: 40000,
+  contingencyPct: 0.10,          // 10% contingency
+  holdingPeriodMonths: 4,        // 4 months rehab + stabilize
+  holdingCostsMonthly: 1500,     // Monthly carrying costs
+  arv: 350000,
+  
+  // Phase 3: Rent
+  postRehabMonthlyRent: 2800,    // 10% higher than before rehab
+  postRehabRentIncreasePct: 0.10, // Matches BRRRR.post_rehab_rent_increase_pct
+  
+  // Phase 4: Refinance
+  refinanceLtv: 0.75,            // Matches BRRRR.refinance_ltv
+  refinanceInterestRate: 0.06,   // Matches BRRRR.refinance_interest_rate
+  refinanceTermYears: 30,        // Matches BRRRR.refinance_term_years
+  refinanceClosingCostsPct: 0.03, // Matches BRRRR.refinance_closing_costs_pct
+  
+  // Phase 5: Rent expenses (post-refinance)
+  vacancyRate: 0.05,
+  maintenanceRate: 0.05,
+  managementRate: 0.08,
+  annualPropertyTax: 4200,
+  annualInsurance: 1800,
+  monthlyHoa: 0,
+}
+
+// =============================================================================
+// EXTENDED STRATEGY HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Check if a state is a BRRRR state
+ */
+export function isBRRRRState(state: AnyDealMakerState | BRRRRDealMakerState): state is BRRRRDealMakerState {
+  return 'refinanceLtv' in state && 'holdingPeriodMonths' in state && 'cashLeftInDeal' in state === false
+}
+
+/**
+ * Check if metrics are BRRRR metrics
+ */
+export function isBRRRRMetrics(metrics: AnyDealMakerMetrics | BRRRRMetrics): metrics is BRRRRMetrics {
+  return 'capitalRecycledPct' in metrics && 'infiniteRoiAchieved' in metrics
 }

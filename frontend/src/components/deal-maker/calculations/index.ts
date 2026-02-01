@@ -4,3 +4,4 @@
  */
 
 export * from './strCalculations'
+export * from './brrrrCalculations'

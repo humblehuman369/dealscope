@@ -28,8 +28,12 @@ import {
   STRDealMakerState,
   STRMetrics,
   DEFAULT_STR_DEAL_MAKER_STATE,
+  BRRRRDealMakerState,
+  BRRRRMetrics,
+  DEFAULT_BRRRR_DEAL_MAKER_STATE,
 } from './types'
 import { calculateSTRMetrics } from './calculations/strCalculations'
+import { calculateBRRRRMetrics } from './calculations/brrrrCalculations'
 
 // Types
 export interface DealMakerPropertyData {
@@ -78,11 +82,16 @@ interface LTRDealMakerState {
 }
 
 // Union type for any strategy state
-type DealMakerState = LTRDealMakerState | STRDealMakerState
+type DealMakerState = LTRDealMakerState | STRDealMakerState | BRRRRDealMakerState
 
 // Local type guard for STR state
 function isSTRState(state: DealMakerState): state is STRDealMakerState {
   return 'averageDailyRate' in state && 'occupancyRate' in state
+}
+
+// Local type guard for BRRRR state
+function isBRRRRState(state: DealMakerState): state is BRRRRDealMakerState {
+  return 'refinanceLtv' in state && 'holdingPeriodMonths' in state
 }
 
 interface LTRDealMakerMetrics {
@@ -99,7 +108,7 @@ interface LTRDealMakerMetrics {
 }
 
 // Union type for any strategy metrics
-type DealMakerMetrics = LTRDealMakerMetrics | STRMetrics
+type DealMakerMetrics = LTRDealMakerMetrics | STRMetrics | BRRRRMetrics
 
 type AccordionSection = 'buyPrice' | 'financing' | 'rehab' | 'income' | 'expenses' | null
 
@@ -286,10 +295,28 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     }
   }
 
+  // Initialize BRRRR local state for unsaved properties
+  const getInitialBRRRRState = (): BRRRRDealMakerState => {
+    const basePrice = listPrice ?? property.price ?? 350000
+    // BRRRR typically purchases at 20-30% below ARV
+    const discountedPrice = basePrice * 0.85
+    return {
+      ...DEFAULT_BRRRR_DEAL_MAKER_STATE,
+      purchasePrice: discountedPrice,
+      arv: basePrice * 1.15, // Assume ARV is 15% above list
+      postRehabMonthlyRent: property.rent ? property.rent * 1.1 : 2800, // 10% rent increase after rehab
+      annualPropertyTax: property.propertyTax || 4200,
+      annualInsurance: property.insurance || 1800,
+    }
+  }
+
   // Get initial state based on strategy
   const getInitialLocalState = (strategy: StrategyType): DealMakerState => {
     if (strategy === 'str') {
       return getInitialSTRState()
+    }
+    if (strategy === 'brrrr') {
+      return getInitialBRRRRState()
     }
     return getInitialLTRState()
   }
@@ -300,6 +327,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   const strategyType = getStrategyType(currentStrategy)
   const [localLTRState, setLocalLTRState] = useState<LTRDealMakerState>(getInitialLTRState)
   const [localSTRState, setLocalSTRState] = useState<STRDealMakerState>(getInitialSTRState)
+  const [localBRRRRState, setLocalBRRRRState] = useState<BRRRRDealMakerState>(getInitialBRRRRState)
   
   // Load Deal Maker record from backend for saved properties
   // Check both hasRecord AND if the loaded record is for the correct property
@@ -346,6 +374,34 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         } as STRDealMakerState
       }
       
+      // For BRRRR strategy, return BRRRR state from store
+      if (strategyType === 'brrrr') {
+        return {
+          purchasePrice: record.buy_price,
+          buyDiscountPct: record.buy_discount_pct ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.buyDiscountPct,
+          downPaymentPercent: record.down_payment_pct,
+          closingCostsPercent: record.closing_costs_pct,
+          hardMoneyRate: record.hard_money_rate ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.hardMoneyRate,
+          rehabBudget: record.rehab_budget,
+          contingencyPct: record.contingency_pct ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.contingencyPct,
+          holdingPeriodMonths: record.holding_period_months ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.holdingPeriodMonths,
+          holdingCostsMonthly: record.holding_costs_monthly ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.holdingCostsMonthly,
+          arv: record.arv,
+          postRehabMonthlyRent: record.post_rehab_monthly_rent ?? record.monthly_rent ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.postRehabMonthlyRent,
+          postRehabRentIncreasePct: record.post_rehab_rent_increase_pct ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.postRehabRentIncreasePct,
+          refinanceLtv: record.refinance_ltv ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceLtv,
+          refinanceInterestRate: record.refinance_interest_rate ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceInterestRate,
+          refinanceTermYears: record.refinance_term_years ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceTermYears,
+          refinanceClosingCostsPct: record.refinance_closing_costs_pct ?? DEFAULT_BRRRR_DEAL_MAKER_STATE.refinanceClosingCostsPct,
+          vacancyRate: record.vacancy_rate,
+          maintenanceRate: record.maintenance_pct,
+          managementRate: record.management_pct,
+          annualPropertyTax: record.annual_property_tax,
+          annualInsurance: record.annual_insurance,
+          monthlyHoa: record.monthly_hoa,
+        } as BRRRRDealMakerState
+      }
+      
       // Default: LTR state
       return {
         buyPrice: record.buy_price,
@@ -370,8 +426,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     if (strategyType === 'str') {
       return localSTRState
     }
+    if (strategyType === 'brrrr') {
+      return localBRRRRState
+    }
     return localLTRState
-  }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, localLTRState, localSTRState])
+  }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, localLTRState, localSTRState, localBRRRRState])
   
   // Navigate to Verdict IQ page
   // For saved properties, Verdict will read from the store (same data source)
@@ -392,7 +451,39 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       // Build session data based on strategy type
       let sessionData: Record<string, unknown>
       
-      if (strategyType === 'str' && isSTRState(state)) {
+      if (strategyType === 'brrrr' && isBRRRRState(state)) {
+        // BRRRR-specific session data
+        sessionData = {
+          address: fullAddr,
+          purchasePrice: state.purchasePrice,
+          monthlyRent: state.postRehabMonthlyRent,
+          propertyTaxes: state.annualPropertyTax,
+          insurance: state.annualInsurance,
+          arv: state.arv,
+          zpid: property.zpid,
+          strategy: 'brrrr',
+          // BRRRR-specific values
+          buyDiscountPct: state.buyDiscountPct,
+          hardMoneyRate: state.hardMoneyRate,
+          contingencyPct: state.contingencyPct,
+          holdingPeriodMonths: state.holdingPeriodMonths,
+          holdingCostsMonthly: state.holdingCostsMonthly,
+          postRehabMonthlyRent: state.postRehabMonthlyRent,
+          refinanceLtv: state.refinanceLtv,
+          refinanceInterestRate: state.refinanceInterestRate,
+          refinanceTermYears: state.refinanceTermYears,
+          refinanceClosingCostsPct: state.refinanceClosingCostsPct,
+          // Shared values
+          downPaymentPct: state.downPaymentPercent,
+          closingCostsPct: state.closingCostsPercent,
+          rehabBudget: state.rehabBudget,
+          vacancyRate: state.vacancyRate,
+          maintenancePct: state.maintenanceRate,
+          managementPct: state.managementRate,
+          monthlyHoa: state.monthlyHoa,
+          timestamp: Date.now(),
+        }
+      } else if (strategyType === 'str' && isSTRState(state)) {
         // STR-specific session data
         // Calculate equivalent monthly revenue for display purposes
         const nightsOccupied = 365 * state.occupancyRate
@@ -464,21 +555,29 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         console.warn('Failed to save to sessionStorage:', e)
       }
       
-      // Calculate monthly rent/revenue for URL params
+      // Calculate monthly rent/revenue and purchase price for URL params
       let monthlyRentValue: number
-      if (strategyType === 'str' && isSTRState(state)) {
+      let purchasePriceValue: number
+      
+      if (strategyType === 'brrrr' && isBRRRRState(state)) {
+        monthlyRentValue = state.postRehabMonthlyRent
+        purchasePriceValue = state.purchasePrice
+      } else if (strategyType === 'str' && isSTRState(state)) {
         const nightsOccupied = 365 * state.occupancyRate
         const numberOfTurnovers = Math.floor(nightsOccupied / state.avgLengthOfStayDays)
         const annualRevenue = (state.averageDailyRate * nightsOccupied) + (state.cleaningFeeRevenue * numberOfTurnovers)
         monthlyRentValue = annualRevenue / 12
+        purchasePriceValue = state.buyPrice
       } else {
-        monthlyRentValue = 'monthlyRent' in state ? state.monthlyRent : 0
+        const ltrState = state as LTRDealMakerState
+        monthlyRentValue = ltrState.monthlyRent ?? 0
+        purchasePriceValue = ltrState.buyPrice
       }
       
       // Navigate with URL params (for initial load and bookmarkability)
       const params = new URLSearchParams({
         address: fullAddr,
-        purchasePrice: String(state.buyPrice),
+        purchasePrice: String(purchasePriceValue),
         monthlyRent: String(monthlyRentValue),
         propertyTaxes: String(state.annualPropertyTax),
         insurance: String(state.annualInsurance),
@@ -524,12 +623,18 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       return calculateSTRMetrics(state)
     }
     
+    // For BRRRR strategy, use BRRRR calculations
+    if (strategyType === 'brrrr' && isBRRRRState(state)) {
+      return calculateBRRRRMetrics(state)
+    }
+    
     // For saved properties with LTR, use cached metrics from store
     if (isSavedPropertyMode && hasRecord && dealMakerStore.record?.cached_metrics && strategyType === 'ltr') {
+      const ltrState = state as LTRDealMakerState
       const cachedMetrics = dealMakerStore.record.cached_metrics
-      const effectiveListPrice = dealMakerStore.record.list_price || state.buyPrice
+      const effectiveListPrice = dealMakerStore.record.list_price || ltrState.buyPrice
       const dealGap = effectiveListPrice > 0 
-        ? (effectiveListPrice - state.buyPrice) / effectiveListPrice 
+        ? (effectiveListPrice - ltrState.buyPrice) / effectiveListPrice 
         : 0
       
       return {
@@ -602,7 +707,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   // Update state - use store for saved properties, local state for unsaved
   const updateState = useCallback((key: string, value: number) => {
     if (isSavedPropertyMode && hasRecord) {
-      // Map local field names to store field names (includes both LTR and STR fields)
+      // Map local field names to store field names (includes LTR, STR, and BRRRR fields)
       const fieldMap: Record<string, string> = {
         // Shared fields
         buyPrice: 'buy_price',
@@ -616,11 +721,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         annualPropertyTax: 'annual_property_tax',
         annualInsurance: 'annual_insurance',
         monthlyHoa: 'monthly_hoa',
+        vacancyRate: 'vacancy_rate',
+        managementRate: 'management_pct',
         // LTR-specific
         monthlyRent: 'monthly_rent',
         otherIncome: 'other_income',
-        vacancyRate: 'vacancy_rate',
-        managementRate: 'management_pct',
         // STR-specific
         furnitureSetupCost: 'furniture_setup_cost',
         averageDailyRate: 'average_daily_rate',
@@ -632,6 +737,19 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         cleaningCostPerTurnover: 'cleaning_cost_per_turnover',
         suppliesMonthly: 'supplies_monthly',
         additionalUtilitiesMonthly: 'additional_utilities_monthly',
+        // BRRRR-specific
+        purchasePrice: 'buy_price',  // Maps to same field
+        buyDiscountPct: 'buy_discount_pct',
+        hardMoneyRate: 'hard_money_rate',
+        contingencyPct: 'contingency_pct',
+        holdingPeriodMonths: 'holding_period_months',
+        holdingCostsMonthly: 'holding_costs_monthly',
+        postRehabMonthlyRent: 'post_rehab_monthly_rent',
+        postRehabRentIncreasePct: 'post_rehab_rent_increase_pct',
+        refinanceLtv: 'refinance_ltv',
+        refinanceInterestRate: 'refinance_interest_rate',
+        refinanceTermYears: 'refinance_term_years',
+        refinanceClosingCostsPct: 'refinance_closing_costs_pct',
       }
       
       const storeField = fieldMap[key]
@@ -642,6 +760,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       // Local state for unsaved properties - update the appropriate state based on strategy
       if (strategyType === 'str') {
         setLocalSTRState(prev => ({ ...prev, [key]: value }))
+      } else if (strategyType === 'brrrr') {
+        setLocalBRRRRState(prev => ({ ...prev, [key]: value }))
       } else {
         setLocalLTRState(prev => ({ ...prev, [key]: value }))
       }
@@ -684,8 +804,9 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   const headerMetrics = useMemo(() => {
     if (strategyType === 'str' && 'revPAR' in metrics) {
       const strMetrics = metrics as STRMetrics
+      const strState = state as STRDealMakerState
       return [
-        { label: 'Buy Price', value: formatPrice(state.buyPrice), color: 'white' },
+        { label: 'Buy Price', value: formatPrice(strState.buyPrice), color: 'white' },
         { label: 'Cash Needed', value: formatPrice(strMetrics.cashNeeded), color: 'white' },
         { label: 'RevPAR', value: formatPrice(strMetrics.revPAR), color: 'cyan' },
         { label: 'Annual Profit', value: formatPrice(strMetrics.annualCashFlow), color: strMetrics.annualCashFlow >= 0 ? 'teal' : 'rose' },
@@ -694,17 +815,35 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       ]
     }
     
+    // BRRRR metrics - focus on capital recycling
+    if (strategyType === 'brrrr' && 'capitalRecycledPct' in metrics) {
+      const brrrrMetrics = metrics as BRRRRMetrics
+      const brrrrState = state as BRRRRDealMakerState
+      const cocDisplay = isFinite(brrrrMetrics.postRefiCashOnCash) 
+        ? `${brrrrMetrics.postRefiCashOnCash.toFixed(1)}%` 
+        : 'Infinite'
+      return [
+        { label: 'All-In Cost', value: formatPrice(brrrrMetrics.allInCost), color: 'white' },
+        { label: 'Cash Invested', value: formatPrice(brrrrMetrics.totalCashInvested), color: 'white' },
+        { label: 'Cash Out', value: formatPrice(brrrrMetrics.cashOutAtRefinance), color: brrrrMetrics.cashOutAtRefinance > 0 ? 'cyan' : 'rose' },
+        { label: 'Cash Left', value: formatPrice(brrrrMetrics.cashLeftInDeal), color: brrrrMetrics.infiniteRoiAchieved ? 'teal' : 'white' },
+        { label: 'Capital Recycled', value: `${brrrrMetrics.capitalRecycledPct.toFixed(0)}%`, color: brrrrMetrics.capitalRecycledPct >= 100 ? 'teal' : brrrrMetrics.capitalRecycledPct >= 80 ? 'cyan' : 'white' },
+        { label: 'Post-Refi CoC', value: cocDisplay, color: brrrrMetrics.infiniteRoiAchieved ? 'teal' : 'white' },
+      ]
+    }
+    
     // LTR metrics
     const ltrMetrics = metrics as LTRDealMakerMetrics
+    const ltrState = state as LTRDealMakerState
     return [
-      { label: 'Buy Price', value: formatPrice(state.buyPrice), color: 'white' },
+      { label: 'Buy Price', value: formatPrice(ltrState.buyPrice), color: 'white' },
       { label: 'Cash Needed', value: formatPrice(ltrMetrics.cashNeeded), color: 'white' },
       { label: 'Deal Gap', value: `${ltrMetrics.dealGap >= 0 ? '+' : ''}${formatPercent(ltrMetrics.dealGap)}`, color: 'cyan' },
       { label: 'Annual Profit', value: formatPrice(ltrMetrics.annualProfit), color: ltrMetrics.annualProfit >= 0 ? 'teal' : 'rose' },
       { label: 'CAP Rate', value: `${ltrMetrics.capRate.toFixed(1)}%`, color: 'white' },
       { label: 'COC Return', value: `${ltrMetrics.cocReturn.toFixed(1)}%`, color: ltrMetrics.cocReturn >= 0 ? 'white' : 'rose' },
     ]
-  }, [strategyType, metrics, state.buyPrice])
+  }, [strategyType, metrics, state])
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] max-w-[480px] mx-auto font-['Inter',sans-serif]">
@@ -780,126 +919,379 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                 {/* Buy Price Section */}
                 {section.id === 'buyPrice' && (
                   <>
-                    <SliderInput
-                      label="Buy Price"
-                      value={state.buyPrice}
-                      displayValue={formatPrice(state.buyPrice)}
-                      min={50000}
-                      max={2000000}
-                      minLabel="$50,000"
-                      maxLabel="$2,000,000"
-                      onChange={(v) => updateState('buyPrice', v)}
-                    />
-                    <SliderInput
-                      label="Down Payment"
-                      value={state.downPaymentPercent * 100}
-                      displayValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`}
-                      min={5}
-                      max={50}
-                      minLabel="5.0%"
-                      maxLabel="50.0%"
-                      onChange={(v) => updateState('downPaymentPercent', v / 100)}
-                    />
-                    <SliderInput
-                      label="Closing Costs"
-                      value={state.closingCostsPercent * 100}
-                      displayValue={`${(state.closingCostsPercent * 100).toFixed(2)}%`}
-                      min={2}
-                      max={5}
-                      minLabel="2.00%"
-                      maxLabel="5.00%"
-                      onChange={(v) => updateState('closingCostsPercent', v / 100)}
-                    />
-                    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
-                      <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">CASH NEEDED</div>
-                      <div className="text-2xl font-bold text-[#0A1628] tabular-nums">{formatPrice(metrics.cashNeeded)}</div>
-                    </div>
+                    {strategyType === 'brrrr' && isBRRRRState(state) ? (
+                      // BRRRR Phase 1: Buy
+                      <>
+                        <SliderInput
+                          label="Purchase Price"
+                          value={state.purchasePrice}
+                          displayValue={formatPrice(state.purchasePrice)}
+                          min={50000}
+                          max={2000000}
+                          minLabel="$50,000"
+                          maxLabel="$2,000,000"
+                          onChange={(v) => updateState('purchasePrice', v)}
+                        />
+                        <SliderInput
+                          label="Discount from Market"
+                          value={state.buyDiscountPct * 100}
+                          displayValue={`${(state.buyDiscountPct * 100).toFixed(0)}%`}
+                          min={0}
+                          max={30}
+                          minLabel="0%"
+                          maxLabel="30%"
+                          onChange={(v) => updateState('buyDiscountPct', v / 100)}
+                        />
+                        <SliderInput
+                          label="Down Payment (Hard Money)"
+                          value={state.downPaymentPercent * 100}
+                          displayValue={`${(state.downPaymentPercent * 100).toFixed(0)}%`}
+                          min={10}
+                          max={30}
+                          minLabel="10%"
+                          maxLabel="30%"
+                          onChange={(v) => updateState('downPaymentPercent', v / 100)}
+                        />
+                        <SliderInput
+                          label="Hard Money Rate"
+                          value={state.hardMoneyRate * 100}
+                          displayValue={`${(state.hardMoneyRate * 100).toFixed(1)}%`}
+                          min={8}
+                          max={15}
+                          minLabel="8%"
+                          maxLabel="15%"
+                          onChange={(v) => updateState('hardMoneyRate', v / 100)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
+                          <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">PHASE 1 CASH NEEDED</div>
+                          <div className="text-2xl font-bold text-[#0A1628] tabular-nums">
+                            {formatPrice('cashRequiredPhase1' in metrics ? (metrics as BRRRRMetrics).cashRequiredPhase1 : 0)}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      // LTR/STR Buy Price
+                      (() => {
+                        const ltrStrState = state as LTRDealMakerState | STRDealMakerState
+                        return (
+                          <>
+                            <SliderInput
+                              label="Buy Price"
+                              value={ltrStrState.buyPrice}
+                              displayValue={formatPrice(ltrStrState.buyPrice)}
+                              min={50000}
+                              max={2000000}
+                              minLabel="$50,000"
+                              maxLabel="$2,000,000"
+                              onChange={(v) => updateState('buyPrice', v)}
+                            />
+                            <SliderInput
+                              label="Down Payment"
+                              value={ltrStrState.downPaymentPercent * 100}
+                              displayValue={`${(ltrStrState.downPaymentPercent * 100).toFixed(1)}%`}
+                              min={5}
+                              max={50}
+                              minLabel="5.0%"
+                              maxLabel="50.0%"
+                              onChange={(v) => updateState('downPaymentPercent', v / 100)}
+                            />
+                            <SliderInput
+                              label="Closing Costs"
+                              value={ltrStrState.closingCostsPercent * 100}
+                              displayValue={`${(ltrStrState.closingCostsPercent * 100).toFixed(2)}%`}
+                              min={2}
+                              max={5}
+                              minLabel="2.00%"
+                              maxLabel="5.00%"
+                              onChange={(v) => updateState('closingCostsPercent', v / 100)}
+                            />
+                            <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
+                              <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">CASH NEEDED</div>
+                              <div className="text-2xl font-bold text-[#0A1628] tabular-nums">{formatPrice('cashNeeded' in metrics ? metrics.cashNeeded : 0)}</div>
+                            </div>
+                          </>
+                        )
+                      })()
+                    )}
                   </>
                 )}
 
                 {/* Financing Section */}
                 {section.id === 'financing' && (
                   <>
-                    <div className="flex justify-between items-center py-3 mt-4 mb-2 border-b border-[#E2E8F0]">
-                      <span className="text-sm font-semibold text-[#0A1628]">Loan Amount</span>
-                      <span className="text-base font-bold text-[#0891B2] tabular-nums">{formatPrice(metrics.loanAmount)}</span>
-                    </div>
-                    <SliderInput
-                      label="Interest Rate"
-                      value={state.interestRate * 100}
-                      displayValue={`${(state.interestRate * 100).toFixed(2)}%`}
-                      min={5}
-                      max={12}
-                      minLabel="5.00%"
-                      maxLabel="12.00%"
-                      onChange={(v) => updateState('interestRate', v / 100)}
-                    />
-                    <SliderInput
-                      label="Loan Term"
-                      value={state.loanTermYears}
-                      displayValue={`${state.loanTermYears} years`}
-                      min={10}
-                      max={30}
-                      minLabel="10 years"
-                      maxLabel="30 years"
-                      onChange={(v) => updateState('loanTermYears', Math.round(v))}
-                    />
-                    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
-                      <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">MONTHLY PAYMENT</div>
-                      <div className="text-2xl font-bold text-[#0A1628] tabular-nums">{formatPrice(metrics.monthlyPayment)}</div>
-                    </div>
+                    {strategyType === 'brrrr' && isBRRRRState(state) ? (
+                      // BRRRR: Show refinance loan details preview
+                      <>
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-4 mt-4">
+                          <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-3">FINANCING OVERVIEW</div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#64748B]">Initial Hard Money Loan</span>
+                              <span className="font-bold text-[#0891B2] tabular-nums">
+                                {formatPrice('initialLoanAmount' in metrics ? (metrics as BRRRRMetrics).initialLoanAmount : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#64748B]">Hard Money Rate</span>
+                              <span className="font-bold text-[#0A1628] tabular-nums">
+                                {(state.hardMoneyRate * 100).toFixed(1)}%
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                              <span className="text-sm text-[#64748B]">Refinance Loan (at ARV)</span>
+                              <span className="font-bold text-[#10B981] tabular-nums">
+                                {formatPrice('refinanceLoanAmount' in metrics ? (metrics as BRRRRMetrics).refinanceLoanAmount : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#64748B]">New Monthly Payment</span>
+                              <span className="font-bold text-[#0A1628] tabular-nums">
+                                {formatPrice('newMonthlyPayment' in metrics ? (metrics as BRRRRMetrics).newMonthlyPayment : 0)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-xs text-[#64748B] mt-2 italic">
+                          BRRRR uses hard money for purchase + refinance after rehab. Adjust rates in Buy and Income sections.
+                        </p>
+                      </>
+                    ) : (
+                      // LTR/STR Financing
+                      (() => {
+                        const ltrStrState = state as LTRDealMakerState | STRDealMakerState
+                        const ltrStrMetrics = metrics as LTRDealMakerMetrics | STRMetrics
+                        return (
+                          <>
+                            <div className="flex justify-between items-center py-3 mt-4 mb-2 border-b border-[#E2E8F0]">
+                              <span className="text-sm font-semibold text-[#0A1628]">Loan Amount</span>
+                              <span className="text-base font-bold text-[#0891B2] tabular-nums">{formatPrice('loanAmount' in ltrStrMetrics ? ltrStrMetrics.loanAmount : 0)}</span>
+                            </div>
+                            <SliderInput
+                              label="Interest Rate"
+                              value={ltrStrState.interestRate * 100}
+                              displayValue={`${(ltrStrState.interestRate * 100).toFixed(2)}%`}
+                              min={5}
+                              max={12}
+                              minLabel="5.00%"
+                              maxLabel="12.00%"
+                              onChange={(v) => updateState('interestRate', v / 100)}
+                            />
+                            <SliderInput
+                              label="Loan Term"
+                              value={ltrStrState.loanTermYears}
+                              displayValue={`${ltrStrState.loanTermYears} years`}
+                              min={10}
+                              max={30}
+                              minLabel="10 years"
+                              maxLabel="30 years"
+                              onChange={(v) => updateState('loanTermYears', Math.round(v))}
+                            />
+                            <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
+                              <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">MONTHLY PAYMENT</div>
+                              <div className="text-2xl font-bold text-[#0A1628] tabular-nums">{formatPrice('monthlyPayment' in ltrStrMetrics ? ltrStrMetrics.monthlyPayment : 0)}</div>
+                            </div>
+                          </>
+                        )
+                      })()
+                    )}
                   </>
                 )}
 
                 {/* Rehab & Valuation Section */}
                 {section.id === 'rehab' && (
                   <>
-                    <SliderInput
-                      label="Rehab Budget"
-                      value={state.rehabBudget}
-                      displayValue={formatPrice(state.rehabBudget)}
-                      min={0}
-                      max={100000}
-                      minLabel="$0"
-                      maxLabel="$100,000"
-                      onChange={(v) => updateState('rehabBudget', v)}
-                    />
-                    <SliderInput
-                      label="ARV"
-                      value={state.arv}
-                      displayValue={formatPrice(state.arv)}
-                      min={state.buyPrice}
-                      max={state.buyPrice * 2}
-                      minLabel={formatPrice(state.buyPrice)}
-                      maxLabel={formatPrice(state.buyPrice * 2)}
-                      onChange={(v) => updateState('arv', v)}
-                    />
-                    {/* STR-specific: Furniture & Setup */}
-                    {strategyType === 'str' && isSTRState(state) && (
-                      <SliderInput
-                        label="Furniture & Setup"
-                        value={state.furnitureSetupCost}
-                        displayValue={formatPrice(state.furnitureSetupCost)}
-                        min={0}
-                        max={30000}
-                        minLabel="$0"
-                        maxLabel="$30,000"
-                        onChange={(v) => updateState('furnitureSetupCost', v)}
-                      />
+                    {strategyType === 'brrrr' && isBRRRRState(state) ? (
+                      // BRRRR Phase 2: Rehab
+                      <>
+                        <SliderInput
+                          label="Rehab Budget"
+                          value={state.rehabBudget}
+                          displayValue={formatPrice(state.rehabBudget)}
+                          min={0}
+                          max={200000}
+                          minLabel="$0"
+                          maxLabel="$200,000"
+                          onChange={(v) => updateState('rehabBudget', v)}
+                        />
+                        <SliderInput
+                          label="Contingency"
+                          value={state.contingencyPct * 100}
+                          displayValue={`${(state.contingencyPct * 100).toFixed(0)}%`}
+                          min={0}
+                          max={25}
+                          minLabel="0%"
+                          maxLabel="25%"
+                          onChange={(v) => updateState('contingencyPct', v / 100)}
+                        />
+                        <SliderInput
+                          label="Holding Period"
+                          value={state.holdingPeriodMonths}
+                          displayValue={`${state.holdingPeriodMonths} months`}
+                          min={2}
+                          max={12}
+                          minLabel="2 mo"
+                          maxLabel="12 mo"
+                          onChange={(v) => updateState('holdingPeriodMonths', Math.round(v))}
+                        />
+                        <SliderInput
+                          label="Monthly Holding Costs"
+                          value={state.holdingCostsMonthly}
+                          displayValue={`${formatPrice(state.holdingCostsMonthly)}/mo`}
+                          min={0}
+                          max={3000}
+                          minLabel="$0"
+                          maxLabel="$3,000"
+                          onChange={(v) => updateState('holdingCostsMonthly', v)}
+                        />
+                        <SliderInput
+                          label="After Repair Value (ARV)"
+                          value={state.arv}
+                          displayValue={formatPrice(state.arv)}
+                          min={state.purchasePrice}
+                          max={state.purchasePrice * 2}
+                          minLabel={formatPrice(state.purchasePrice)}
+                          maxLabel={formatPrice(state.purchasePrice * 2)}
+                          onChange={(v) => updateState('arv', v)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">TOTAL REHAB COST</div>
+                            <div className="text-xl font-bold text-[#0A1628] tabular-nums">
+                              {formatPrice('totalRehabCost' in metrics ? (metrics as BRRRRMetrics).totalRehabCost : 0)}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">HOLDING COSTS</div>
+                            <div className="text-base font-bold text-[#0891B2] tabular-nums">
+                              {formatPrice('holdingCosts' in metrics ? (metrics as BRRRRMetrics).holdingCosts : 0)}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      // LTR/STR Rehab
+                      (() => {
+                        const ltrStrState = state as LTRDealMakerState | STRDealMakerState
+                        return (
+                          <>
+                            <SliderInput
+                              label="Rehab Budget"
+                              value={ltrStrState.rehabBudget}
+                              displayValue={formatPrice(ltrStrState.rehabBudget)}
+                              min={0}
+                              max={100000}
+                              minLabel="$0"
+                              maxLabel="$100,000"
+                              onChange={(v) => updateState('rehabBudget', v)}
+                            />
+                            <SliderInput
+                              label="ARV"
+                              value={ltrStrState.arv}
+                              displayValue={formatPrice(ltrStrState.arv)}
+                              min={ltrStrState.buyPrice}
+                              max={ltrStrState.buyPrice * 2}
+                              minLabel={formatPrice(ltrStrState.buyPrice)}
+                              maxLabel={formatPrice(ltrStrState.buyPrice * 2)}
+                              onChange={(v) => updateState('arv', v)}
+                            />
+                            {/* STR-specific: Furniture & Setup */}
+                            {strategyType === 'str' && isSTRState(state) && (
+                              <SliderInput
+                                label="Furniture & Setup"
+                                value={(state as STRDealMakerState).furnitureSetupCost}
+                                displayValue={formatPrice((state as STRDealMakerState).furnitureSetupCost)}
+                                min={0}
+                                max={30000}
+                                minLabel="$0"
+                                maxLabel="$30,000"
+                                onChange={(v) => updateState('furnitureSetupCost', v)}
+                              />
+                            )}
+                            <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
+                              <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">EQUITY CAPTURE</div>
+                              <div className="text-2xl font-bold text-[#0A1628] tabular-nums">
+                                {formatPrice('equityCreated' in metrics ? metrics.equityCreated : ('equityPosition' in metrics ? (metrics as BRRRRMetrics).equityPosition : 0))}
+                              </div>
+                            </div>
+                          </>
+                        )
+                      })()
                     )}
-                    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
-                      <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">EQUITY CAPTURE</div>
-                      <div className="text-2xl font-bold text-[#0A1628] tabular-nums">
-                        {formatPrice('equityCreated' in metrics ? metrics.equityCreated : 0)}
-                      </div>
-                    </div>
                   </>
                 )}
 
                 {/* Income Section */}
                 {section.id === 'income' && (
                   <>
-                    {strategyType === 'str' && isSTRState(state) ? (
+                    {strategyType === 'brrrr' && isBRRRRState(state) ? (
+                      // BRRRR Phase 3: Rent + Phase 4: Refinance
+                      <>
+                        <SliderInput
+                          label="Post-Rehab Monthly Rent"
+                          value={state.postRehabMonthlyRent}
+                          displayValue={formatPrice(state.postRehabMonthlyRent)}
+                          min={500}
+                          max={10000}
+                          minLabel="$500"
+                          maxLabel="$10,000"
+                          onChange={(v) => updateState('postRehabMonthlyRent', v)}
+                        />
+                        <SliderInput
+                          label="Vacancy Rate"
+                          value={state.vacancyRate * 100}
+                          displayValue={`${(state.vacancyRate * 100).toFixed(0)}%`}
+                          min={0}
+                          max={15}
+                          minLabel="0%"
+                          maxLabel="15%"
+                          onChange={(v) => updateState('vacancyRate', v / 100)}
+                        />
+                        <SliderInput
+                          label="Property Management"
+                          value={state.managementRate * 100}
+                          displayValue={`${(state.managementRate * 100).toFixed(0)}%`}
+                          min={0}
+                          max={12}
+                          minLabel="0%"
+                          maxLabel="12%"
+                          onChange={(v) => updateState('managementRate', v / 100)}
+                        />
+                        <SliderInput
+                          label="Refinance LTV"
+                          value={state.refinanceLtv * 100}
+                          displayValue={`${(state.refinanceLtv * 100).toFixed(0)}%`}
+                          min={65}
+                          max={80}
+                          minLabel="65%"
+                          maxLabel="80%"
+                          onChange={(v) => updateState('refinanceLtv', v / 100)}
+                        />
+                        <SliderInput
+                          label="Refinance Rate"
+                          value={state.refinanceInterestRate * 100}
+                          displayValue={`${(state.refinanceInterestRate * 100).toFixed(2)}%`}
+                          min={4}
+                          max={10}
+                          minLabel="4%"
+                          maxLabel="10%"
+                          onChange={(v) => updateState('refinanceInterestRate', v / 100)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">REFINANCE LOAN</div>
+                            <div className="text-xl font-bold text-[#0A1628] tabular-nums">
+                              {formatPrice('refinanceLoanAmount' in metrics ? (metrics as BRRRRMetrics).refinanceLoanAmount : 0)}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">CASH OUT AT REFI</div>
+                            <div className={`text-base font-bold tabular-nums ${'cashOutAtRefinance' in metrics && (metrics as BRRRRMetrics).cashOutAtRefinance > 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
+                              {formatPrice('cashOutAtRefinance' in metrics ? (metrics as BRRRRMetrics).cashOutAtRefinance : 0)}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : strategyType === 'str' && isSTRState(state) ? (
                       // STR Income fields
                       <>
                         <SliderInput
@@ -988,7 +1380,106 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                 {/* Expenses Section */}
                 {section.id === 'expenses' && (
                   <>
-                    {strategyType === 'str' && isSTRState(state) ? (
+                    {strategyType === 'brrrr' && isBRRRRState(state) ? (
+                      // BRRRR Phase 5: Results Summary
+                      <>
+                        <SliderInput
+                          label="Maintenance Rate"
+                          value={state.maintenanceRate * 100}
+                          displayValue={`${(state.maintenanceRate * 100).toFixed(0)}%`}
+                          min={3}
+                          max={10}
+                          minLabel="3%"
+                          maxLabel="10%"
+                          onChange={(v) => updateState('maintenanceRate', v / 100)}
+                        />
+                        <SliderInput
+                          label="Property Taxes"
+                          value={state.annualPropertyTax}
+                          displayValue={`${formatPrice(state.annualPropertyTax)}/yr`}
+                          min={0}
+                          max={20000}
+                          minLabel="$0"
+                          maxLabel="$20,000"
+                          onChange={(v) => updateState('annualPropertyTax', v)}
+                        />
+                        <SliderInput
+                          label="Insurance"
+                          value={state.annualInsurance}
+                          displayValue={`${formatPrice(state.annualInsurance)}/yr`}
+                          min={0}
+                          max={5000}
+                          minLabel="$0"
+                          maxLabel="$5,000"
+                          onChange={(v) => updateState('annualInsurance', v)}
+                        />
+                        <SliderInput
+                          label="HOA"
+                          value={state.monthlyHoa}
+                          displayValue={`${formatPrice(state.monthlyHoa)}/mo`}
+                          min={0}
+                          max={500}
+                          minLabel="$0"
+                          maxLabel="$500"
+                          onChange={(v) => updateState('monthlyHoa', v)}
+                        />
+                        
+                        {/* BRRRR Capital Recycling Summary */}
+                        <div className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-lg p-4 mt-4 text-white">
+                          <div className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider mb-3">CAPITAL RECYCLING SUMMARY</div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Total Cash Invested</span>
+                              <span className="font-bold tabular-nums">
+                                {formatPrice('totalCashInvested' in metrics ? (metrics as BRRRRMetrics).totalCashInvested : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Cash Out at Refi</span>
+                              <span className="font-bold text-[#22D3EE] tabular-nums">
+                                {formatPrice('cashOutAtRefinance' in metrics ? (metrics as BRRRRMetrics).cashOutAtRefinance : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-[#334155]">
+                              <span className="text-sm text-[#94A3B8]">Cash Left in Deal</span>
+                              <span className={`font-bold tabular-nums ${'infiniteRoiAchieved' in metrics && (metrics as BRRRRMetrics).infiniteRoiAchieved ? 'text-[#10B981]' : ''}`}>
+                                {formatPrice('cashLeftInDeal' in metrics ? (metrics as BRRRRMetrics).cashLeftInDeal : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Capital Recycled</span>
+                              <span className={`font-bold tabular-nums ${'capitalRecycledPct' in metrics && (metrics as BRRRRMetrics).capitalRecycledPct >= 100 ? 'text-[#10B981]' : (metrics as BRRRRMetrics).capitalRecycledPct >= 80 ? 'text-[#22D3EE]' : ''}`}>
+                                {'capitalRecycledPct' in metrics ? `${(metrics as BRRRRMetrics).capitalRecycledPct.toFixed(0)}%` : '0%'}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {'infiniteRoiAchieved' in metrics && (metrics as BRRRRMetrics).infiniteRoiAchieved && (
+                            <div className="mt-3 pt-3 border-t border-[#334155] text-center">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#10B981]/20 text-[#10B981] text-sm font-semibold">
+                                ✓ Infinite ROI Achieved
+                              </span>
+                            </div>
+                          )}
+                          
+                          <div className="mt-3 pt-3 border-t border-[#334155] space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Equity Position</span>
+                              <span className="font-bold text-[#22D3EE] tabular-nums">
+                                {formatPrice('equityPosition' in metrics ? (metrics as BRRRRMetrics).equityPosition : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Monthly Cash Flow</span>
+                              <span className={`font-bold tabular-nums ${'postRefiMonthlyCashFlow' in metrics && (metrics as BRRRRMetrics).postRefiMonthlyCashFlow >= 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
+                                {formatPrice('postRefiMonthlyCashFlow' in metrics ? (metrics as BRRRRMetrics).postRefiMonthlyCashFlow : 0)}/mo
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : strategyType === 'str' && isSTRState(state) ? (
                       // STR Expenses fields
                       <>
                         <SliderInput
