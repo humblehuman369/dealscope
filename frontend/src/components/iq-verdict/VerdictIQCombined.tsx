@@ -583,6 +583,7 @@ export function VerdictIQCombined({
           monthlyCashFlow={metrics.monthlyCashFlow}
           noi={metrics.noi}
           totalInvestment={metrics.totalInvestment}
+          targetBuyPrice={buyPrice}
         />
 
         {/* Deal Gap & Motivation Section */}

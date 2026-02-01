@@ -560,6 +560,7 @@ export function IQVerdictScreen({
           monthlyCashFlow={metrics.monthlyCashFlow}
           noi={metrics.noi}
           totalInvestment={metrics.totalInvestment}
+          targetBuyPrice={buyPrice}
         />
 
         {/* How Likely Section */}

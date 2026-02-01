@@ -16,6 +16,7 @@ interface SummarySnapshotProps {
   monthlyCashFlow: number
   noi: number
   totalInvestment: number
+  targetBuyPrice?: number
 }
 
 export function SummarySnapshot({
@@ -25,11 +26,19 @@ export function SummarySnapshot({
   monthlyCashFlow,
   noi,
   totalInvestment,
+  targetBuyPrice,
 }: SummarySnapshotProps) {
   return (
-    <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
-      <div className="text-xs font-semibold text-[#0891B2] mb-3 uppercase tracking-wide">
-        SUMMARY SNAPSHOT
+    <div className="bg-white p-4 px-6 border-b border-[#E2E8F0] border-l-[3px] border-l-[#0891B2]">
+      <div className="flex items-baseline justify-between mb-3">
+        <div className="text-xs font-semibold text-[#0891B2] uppercase tracking-wide">
+          SUMMARY SNAPSHOT
+        </div>
+        {targetBuyPrice && (
+          <div className="text-[11px] text-[#64748B]">
+            Based on <span className="font-semibold text-[#0891B2]">{formatPrice(targetBuyPrice)}</span> Target Buy
+          </div>
+        )}
       </div>
       
       <div className="grid grid-cols-3 gap-3">
