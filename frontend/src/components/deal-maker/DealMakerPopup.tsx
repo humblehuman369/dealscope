@@ -12,10 +12,20 @@ import { X, RotateCcw, Check, Info } from 'lucide-react'
 import { SliderInput } from './SliderInput'
 
 // Strategy type - matches VerdictIQ header options
-export type PopupStrategyType = 'ltr' | 'str'
+export type PopupStrategyType = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
+
+// Strategy display labels
+export const STRATEGY_LABELS: Record<PopupStrategyType, string> = {
+  ltr: 'LTR',
+  str: 'STR',
+  brrrr: 'BRRRR',
+  flip: 'Flip',
+  house_hack: 'House Hack',
+  wholesale: 'Wholesale',
+}
 
 export interface DealMakerValues {
-  // Common fields (LTR and STR)
+  // Common fields (all strategies)
   buyPrice: number
   downPayment: number
   closingCosts: number
@@ -42,6 +52,51 @@ export interface DealMakerValues {
   suppliesMonthly: number
   additionalUtilitiesMonthly: number
   furnitureSetupCost: number
+  
+  // BRRRR-specific fields
+  buyDiscountPct: number
+  hardMoneyRate: number
+  holdingPeriodMonths: number
+  holdingCostsMonthly: number
+  postRehabMonthlyRent: number
+  refinanceLtv: number
+  refinanceInterestRate: number
+  refinanceTermYears: number
+  refinanceClosingCostsPct: number
+  contingencyPct: number
+  maintenanceRate: number
+  monthlyHoa: number
+  
+  // Fix & Flip-specific fields
+  financingType: 'cash' | 'hardMoney'
+  hardMoneyLtv: number
+  loanPoints: number
+  rehabTimeMonths: number
+  daysOnMarket: number
+  sellingCostsPct: number
+  capitalGainsRate: number
+  
+  // House Hack-specific fields
+  totalUnits: number
+  ownerOccupiedUnits: number
+  ownerUnitMarketRent: number
+  loanType: 'fha' | 'conventional' | 'va'
+  pmiRate: number
+  avgRentPerUnit: number
+  currentHousingPayment: number
+  utilitiesMonthly: number
+  capexRate: number
+  
+  // Wholesale-specific fields
+  estimatedRepairs: number
+  squareFootage: number
+  contractPrice: number
+  earnestMoney: number
+  inspectionPeriodDays: number
+  daysToClose: number
+  assignmentFee: number
+  marketingCosts: number
+  wholesaleClosingCosts: number
 }
 
 interface DealMakerPopupProps {
@@ -53,8 +108,8 @@ interface DealMakerPopupProps {
   onStrategyChange?: (strategy: PopupStrategyType) => void
 }
 
-// Default values for LTR strategy
-const DEFAULT_LTR_VALUES: DealMakerValues = {
+// Base default values shared across all strategies
+const BASE_DEFAULTS: DealMakerValues = {
   // Common fields
   buyPrice: 350000,
   downPayment: 20,
@@ -65,11 +120,11 @@ const DEFAULT_LTR_VALUES: DealMakerValues = {
   arv: 350000,
   propertyTaxes: 4200,
   insurance: 1800,
-  // LTR-specific
+  // LTR
   monthlyRent: 2800,
-  vacancyRate: 1,
-  managementRate: 0,
-  // STR fields (not used for LTR, but need defaults)
+  vacancyRate: 5,
+  managementRate: 8,
+  // STR
   averageDailyRate: 200,
   occupancyRate: 65,
   cleaningFeeRevenue: 150,
@@ -80,40 +135,133 @@ const DEFAULT_LTR_VALUES: DealMakerValues = {
   suppliesMonthly: 150,
   additionalUtilitiesMonthly: 200,
   furnitureSetupCost: 6000,
+  // BRRRR
+  buyDiscountPct: 15,
+  hardMoneyRate: 12,
+  holdingPeriodMonths: 6,
+  holdingCostsMonthly: 1500,
+  postRehabMonthlyRent: 2800,
+  refinanceLtv: 75,
+  refinanceInterestRate: 6.5,
+  refinanceTermYears: 30,
+  refinanceClosingCostsPct: 2,
+  contingencyPct: 10,
+  maintenanceRate: 5,
+  monthlyHoa: 0,
+  // Fix & Flip
+  financingType: 'hardMoney',
+  hardMoneyLtv: 90,
+  loanPoints: 2,
+  rehabTimeMonths: 4,
+  daysOnMarket: 45,
+  sellingCostsPct: 8,
+  capitalGainsRate: 25,
+  // House Hack
+  totalUnits: 4,
+  ownerOccupiedUnits: 1,
+  ownerUnitMarketRent: 1500,
+  loanType: 'fha',
+  pmiRate: 0.85,
+  avgRentPerUnit: 1500,
+  currentHousingPayment: 2000,
+  utilitiesMonthly: 200,
+  capexRate: 5,
+  // Wholesale
+  estimatedRepairs: 40000,
+  squareFootage: 1500,
+  contractPrice: 170000,
+  earnestMoney: 1000,
+  inspectionPeriodDays: 14,
+  daysToClose: 45,
+  assignmentFee: 15000,
+  marketingCosts: 500,
+  wholesaleClosingCosts: 500,
+}
+
+// Default values for LTR strategy
+const DEFAULT_LTR_VALUES: DealMakerValues = {
+  ...BASE_DEFAULTS,
+  vacancyRate: 5,
+  managementRate: 0,
 }
 
 // Default values for STR strategy
 const DEFAULT_STR_VALUES: DealMakerValues = {
-  // Common fields
-  buyPrice: 350000,
-  downPayment: 20,
-  closingCosts: 3,
-  interestRate: 6,
-  loanTerm: 30,
-  rehabBudget: 0,
-  arv: 350000,
-  propertyTaxes: 4200,
+  ...BASE_DEFAULTS,
   insurance: 2400, // Higher for STR
-  // LTR fields (not used for STR, but need defaults)
-  monthlyRent: 2800,
-  vacancyRate: 1,
-  managementRate: 0,
-  // STR-specific
-  averageDailyRate: 200,
-  occupancyRate: 65,
-  cleaningFeeRevenue: 150,
-  avgLengthOfStayDays: 3,
-  platformFeeRate: 15,
-  strManagementRate: 20,
-  cleaningCostPerTurnover: 100,
-  suppliesMonthly: 150,
-  additionalUtilitiesMonthly: 200,
-  furnitureSetupCost: 6000,
+}
+
+// Default values for BRRRR strategy
+const DEFAULT_BRRRR_VALUES: DealMakerValues = {
+  ...BASE_DEFAULTS,
+  downPayment: 20, // Hard money typically 10-30%
+  buyDiscountPct: 15,
+  hardMoneyRate: 12,
+  holdingPeriodMonths: 6,
+  holdingCostsMonthly: 1500,
+  postRehabMonthlyRent: 2800,
+  refinanceLtv: 75,
+  refinanceInterestRate: 6.5,
+  refinanceTermYears: 30,
+  refinanceClosingCostsPct: 2,
+  contingencyPct: 10,
+}
+
+// Default values for Fix & Flip strategy
+const DEFAULT_FLIP_VALUES: DealMakerValues = {
+  ...BASE_DEFAULTS,
+  financingType: 'hardMoney',
+  hardMoneyLtv: 90,
+  hardMoneyRate: 12,
+  loanPoints: 2,
+  rehabTimeMonths: 4,
+  daysOnMarket: 45,
+  sellingCostsPct: 8,
+  capitalGainsRate: 25,
+  contingencyPct: 10,
+}
+
+// Default values for House Hack strategy
+const DEFAULT_HOUSEHACK_VALUES: DealMakerValues = {
+  ...BASE_DEFAULTS,
+  buyPrice: 400000,
+  totalUnits: 4,
+  ownerOccupiedUnits: 1,
+  ownerUnitMarketRent: 1500,
+  loanType: 'fha',
+  downPayment: 3.5, // FHA minimum
+  pmiRate: 0.85,
+  avgRentPerUnit: 1500,
+  currentHousingPayment: 2000,
+  utilitiesMonthly: 200,
+  capexRate: 5,
+}
+
+// Default values for Wholesale strategy
+const DEFAULT_WHOLESALE_VALUES: DealMakerValues = {
+  ...BASE_DEFAULTS,
+  arv: 300000,
+  estimatedRepairs: 40000,
+  squareFootage: 1500,
+  contractPrice: 170000,
+  earnestMoney: 1000,
+  inspectionPeriodDays: 14,
+  daysToClose: 45,
+  assignmentFee: 15000,
+  marketingCosts: 500,
+  wholesaleClosingCosts: 500,
 }
 
 // Get defaults based on strategy
 function getDefaultValues(strategy: PopupStrategyType): DealMakerValues {
-  return strategy === 'str' ? DEFAULT_STR_VALUES : DEFAULT_LTR_VALUES
+  switch (strategy) {
+    case 'str': return DEFAULT_STR_VALUES
+    case 'brrrr': return DEFAULT_BRRRR_VALUES
+    case 'flip': return DEFAULT_FLIP_VALUES
+    case 'house_hack': return DEFAULT_HOUSEHACK_VALUES
+    case 'wholesale': return DEFAULT_WHOLESALE_VALUES
+    default: return DEFAULT_LTR_VALUES
+  }
 }
 
 // Calculate monthly mortgage payment
@@ -228,8 +376,149 @@ export function DealMakerPopup({
     }
   }, [strategyType, values])
 
-  // Handle value change
-  const handleChange = useCallback((field: keyof DealMakerValues, value: number) => {
+  // BRRRR-specific calculations
+  const brrrrCalculations = useMemo(() => {
+    if (strategyType !== 'brrrr') return null
+    
+    // Total acquisition cost
+    const totalRehabCost = values.rehabBudget * (1 + values.contingencyPct / 100)
+    const holdingCosts = values.holdingCostsMonthly * values.holdingPeriodMonths
+    const acquisitionCost = values.buyPrice + values.closingCosts / 100 * values.buyPrice
+    const totalInvestment = acquisitionCost + totalRehabCost + holdingCosts
+    
+    // Refinance
+    const refinanceLoanAmount = values.arv * (values.refinanceLtv / 100)
+    const refinanceClosingCosts = refinanceLoanAmount * (values.refinanceClosingCostsPct / 100)
+    const cashOutAtRefi = refinanceLoanAmount - refinanceClosingCosts
+    const moneyLeftInDeal = Math.max(0, totalInvestment - cashOutAtRefi)
+    
+    return {
+      totalInvestment,
+      cashOutAtRefi,
+      moneyLeftInDeal,
+    }
+  }, [strategyType, values])
+
+  // Fix & Flip-specific calculations
+  const flipCalculations = useMemo(() => {
+    if (strategyType !== 'flip') return null
+    
+    // Costs
+    const totalRehabCost = values.rehabBudget * (1 + values.contingencyPct / 100)
+    const acquisitionCost = values.buyPrice * (1 + values.closingCosts / 100)
+    const holdingMonths = values.rehabTimeMonths + (values.daysOnMarket / 30)
+    const holdingCosts = values.holdingCostsMonthly * holdingMonths
+    
+    // Financing costs (if hard money)
+    let financingCosts = 0
+    if (values.financingType === 'hardMoney') {
+      const loanAmount = values.buyPrice * (values.hardMoneyLtv / 100)
+      const points = loanAmount * (values.loanPoints / 100)
+      const interest = loanAmount * (values.hardMoneyRate / 100 / 12) * holdingMonths
+      financingCosts = points + interest
+    }
+    
+    const totalCost = acquisitionCost + totalRehabCost + holdingCosts + financingCosts
+    
+    // Sale
+    const salePrice = values.arv
+    const sellingCosts = salePrice * (values.sellingCostsPct / 100)
+    const grossProfit = salePrice - sellingCosts - totalCost
+    const taxes = grossProfit > 0 ? grossProfit * (values.capitalGainsRate / 100) : 0
+    const netProfit = grossProfit - taxes
+    
+    // 70% Rule
+    const maxAllowableOffer = values.arv * 0.70 - values.rehabBudget
+    const meets70PercentRule = values.buyPrice <= maxAllowableOffer
+    
+    // ROI
+    const cashInvested = values.financingType === 'cash' 
+      ? totalCost 
+      : acquisitionCost * (1 - values.hardMoneyLtv / 100) + totalRehabCost + holdingCosts + financingCosts
+    const roi = cashInvested > 0 ? (netProfit / cashInvested) * 100 : 0
+    
+    return {
+      totalCost,
+      netProfit,
+      roi,
+      meets70PercentRule,
+    }
+  }, [strategyType, values])
+
+  // House Hack-specific calculations
+  const houseHackCalculations = useMemo(() => {
+    if (strategyType !== 'house_hack') return null
+    
+    // Calculate PITI
+    const loanAmount = values.buyPrice * (1 - values.downPayment / 100)
+    const monthlyMortgage = calculateMonthlyMortgage(loanAmount, values.interestRate / 100, values.loanTerm)
+    const monthlyTaxes = values.propertyTaxes / 12
+    const monthlyInsurance = values.insurance / 12
+    const monthlyPMI = loanAmount * (values.pmiRate / 100) / 12
+    const monthlyPITI = monthlyMortgage + monthlyTaxes + monthlyInsurance + monthlyPMI
+    
+    // Rental income from rented units only
+    const rentedUnits = values.totalUnits - values.ownerOccupiedUnits
+    const grossRentalIncome = values.avgRentPerUnit * rentedUnits
+    const effectiveRentalIncome = grossRentalIncome * (1 - values.vacancyRate / 100)
+    
+    // Operating expenses
+    const operatingExpenses = values.utilitiesMonthly
+    
+    // Net rental income
+    const netRentalIncome = effectiveRentalIncome - operatingExpenses
+    
+    // Effective housing cost
+    const effectiveHousingCost = monthlyPITI - netRentalIncome
+    const livesForFree = effectiveHousingCost <= 0
+    
+    // Housing offset percentage
+    const housingOffsetPercent = monthlyPITI > 0 
+      ? (netRentalIncome / monthlyPITI) * 100 
+      : 0
+    
+    // Savings vs current housing
+    const housingCostSavings = values.currentHousingPayment - effectiveHousingCost
+    
+    return {
+      monthlyPITI,
+      effectiveHousingCost,
+      livesForFree,
+      housingOffsetPercent,
+      housingCostSavings,
+    }
+  }, [strategyType, values])
+
+  // Wholesale-specific calculations
+  const wholesaleCalculations = useMemo(() => {
+    if (strategyType !== 'wholesale') return null
+    
+    // 70% Rule MAO
+    const maxAllowableOffer = values.arv * 0.70 - values.estimatedRepairs
+    const meets70PercentRule = values.contractPrice <= maxAllowableOffer
+    
+    // End buyer analysis
+    const endBuyerPrice = values.contractPrice + values.assignmentFee
+    const endBuyerAllIn = endBuyerPrice + values.estimatedRepairs + (endBuyerPrice * 0.03)
+    const buyerSellingCosts = values.arv * 0.08
+    const endBuyerProfit = values.arv - buyerSellingCosts - endBuyerAllIn
+    
+    // Your profit
+    const totalCashAtRisk = values.earnestMoney + values.marketingCosts + values.wholesaleClosingCosts
+    const netProfit = values.assignmentFee - values.marketingCosts - values.wholesaleClosingCosts
+    const roi = totalCashAtRisk > 0 ? (netProfit / totalCashAtRisk) * 100 : 0
+    
+    return {
+      maxAllowableOffer,
+      meets70PercentRule,
+      endBuyerProfit,
+      netProfit,
+      roi,
+    }
+  }, [strategyType, values])
+
+  // Handle value change (accepts number or string for special fields like financingType, loanType)
+  const handleChange = useCallback((field: keyof DealMakerValues, value: number | string) => {
     setValues(prev => ({ ...prev, [field]: value }))
   }, [])
 
@@ -286,27 +575,22 @@ export function DealMakerPopup({
                 <span className="text-[#0891B2]">IQ</span>
               </h2>
               {/* Strategy Toggle */}
-              <div className="flex items-center gap-1 mt-1">
-                <button
-                  onClick={() => onStrategyChange?.('ltr')}
-                  className={`px-2 py-0.5 text-[10px] font-semibold rounded-l-md transition-colors ${
-                    strategyType === 'ltr'
-                      ? 'bg-[#0891B2] text-white'
-                      : 'bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0]'
-                  }`}
-                >
-                  LTR
-                </button>
-                <button
-                  onClick={() => onStrategyChange?.('str')}
-                  className={`px-2 py-0.5 text-[10px] font-semibold rounded-r-md transition-colors ${
-                    strategyType === 'str'
-                      ? 'bg-[#0891B2] text-white'
-                      : 'bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0]'
-                  }`}
-                >
-                  STR
-                </button>
+              <div className="flex flex-wrap items-center gap-0.5 mt-1">
+                {(['ltr', 'str', 'brrrr', 'flip', 'house_hack', 'wholesale'] as PopupStrategyType[]).map((s, idx, arr) => (
+                  <button
+                    key={s}
+                    onClick={() => onStrategyChange?.(s)}
+                    className={`px-1.5 py-0.5 text-[9px] font-semibold transition-colors ${
+                      idx === 0 ? 'rounded-l-md' : ''
+                    } ${idx === arr.length - 1 ? 'rounded-r-md' : ''} ${
+                      strategyType === s
+                        ? 'bg-[#0891B2] text-white'
+                        : 'bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0]'
+                    }`}
+                  >
+                    {STRATEGY_LABELS[s]}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -331,103 +615,789 @@ export function DealMakerPopup({
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-5 pb-5 overscroll-contain">
           
-          {/* Purchase Terms Section */}
-          <SectionDivider text="Purchase Terms" />
-          
-          <SliderInput
-            label="Buy Price"
-            value={values.buyPrice}
-            min={50000}
-            max={2000000}
-            step={5000}
-            format="currency"
-            onChange={(val) => handleChange('buyPrice', val)}
-          />
-          
-          <SliderInput
-            label="Down Payment"
-            value={values.downPayment}
-            min={5}
-            max={50}
-            step={0.5}
-            format="percent"
-            onChange={(val) => handleChange('downPayment', val)}
-          />
-          
-          <SliderInput
-            label="Closing Costs"
-            value={values.closingCosts}
-            min={2}
-            max={5}
-            step={0.25}
-            format="percent"
-            onChange={(val) => handleChange('closingCosts', val)}
-          />
+          {/* ============================================================== */}
+          {/* LTR / STR SECTIONS */}
+          {/* ============================================================== */}
+          {(strategyType === 'ltr' || strategyType === 'str') && (
+            <>
+              {/* Purchase Terms Section */}
+              <SectionDivider text="Purchase Terms" />
+              
+              <SliderInput
+                label="Buy Price"
+                value={values.buyPrice}
+                min={50000}
+                max={2000000}
+                step={5000}
+                format="currency"
+                onChange={(val) => handleChange('buyPrice', val)}
+              />
+              
+              <SliderInput
+                label="Down Payment"
+                value={values.downPayment}
+                min={5}
+                max={50}
+                step={0.5}
+                format="percent"
+                onChange={(val) => handleChange('downPayment', val)}
+              />
+              
+              <SliderInput
+                label="Closing Costs"
+                value={values.closingCosts}
+                min={2}
+                max={5}
+                step={0.25}
+                format="percent"
+                onChange={(val) => handleChange('closingCosts', val)}
+              />
 
-          {/* Financing Section */}
-          <SectionDivider text="Financing" />
-          
-          <CalculatedField 
-            label="Loan Amount" 
-            value={`$${loanAmount.toLocaleString()}`} 
-          />
-          
-          <SliderInput
-            label="Interest Rate"
-            value={values.interestRate}
-            min={5}
-            max={12}
-            step={0.125}
-            format="percent"
-            onChange={(val) => handleChange('interestRate', val)}
-          />
-          
-          <SliderInput
-            label="Loan Term"
-            value={values.loanTerm}
-            min={10}
-            max={30}
-            step={5}
-            format="years"
-            onChange={(val) => handleChange('loanTerm', val)}
-          />
+              {/* Financing Section */}
+              <SectionDivider text="Financing" />
+              
+              <CalculatedField 
+                label="Loan Amount" 
+                value={`$${loanAmount.toLocaleString()}`} 
+              />
+              
+              <SliderInput
+                label="Interest Rate"
+                value={values.interestRate}
+                min={5}
+                max={12}
+                step={0.125}
+                format="percent"
+                onChange={(val) => handleChange('interestRate', val)}
+              />
+              
+              <SliderInput
+                label="Loan Term"
+                value={values.loanTerm}
+                min={10}
+                max={30}
+                step={5}
+                format="years"
+                onChange={(val) => handleChange('loanTerm', val)}
+              />
 
-          {/* Rehab & Value Section */}
-          <SectionDivider text="Rehab & Value" />
-          
-          <SliderInput
-            label="Rehab Budget"
-            value={values.rehabBudget}
-            min={0}
-            max={100000}
-            step={1000}
-            format="currency"
-            onChange={(val) => handleChange('rehabBudget', val)}
-          />
-          
-          <SliderInput
-            label="ARV"
-            sublabel="After Repair Value"
-            value={values.arv}
-            min={values.buyPrice}
-            max={Math.max(700000, values.buyPrice * 1.5)}
-            step={5000}
-            format="currency"
-            onChange={(val) => handleChange('arv', val)}
-          />
-          
-          {/* Furniture & Setup - STR only */}
-          {strategyType === 'str' && (
-            <SliderInput
-              label="Furniture & Setup"
-              sublabel="STR furnishing costs"
-              value={values.furnitureSetupCost}
-              min={0}
-              max={30000}
-              step={1000}
-              format="currency"
-              onChange={(val) => handleChange('furnitureSetupCost', val)}
-            />
+              {/* Rehab & Value Section */}
+              <SectionDivider text="Rehab & Value" />
+              
+              <SliderInput
+                label="Rehab Budget"
+                value={values.rehabBudget}
+                min={0}
+                max={100000}
+                step={1000}
+                format="currency"
+                onChange={(val) => handleChange('rehabBudget', val)}
+              />
+              
+              <SliderInput
+                label="ARV"
+                sublabel="After Repair Value"
+                value={values.arv}
+                min={values.buyPrice}
+                max={Math.max(700000, values.buyPrice * 1.5)}
+                step={5000}
+                format="currency"
+                onChange={(val) => handleChange('arv', val)}
+              />
+              
+              {/* Furniture & Setup - STR only */}
+              {strategyType === 'str' && (
+                <SliderInput
+                  label="Furniture & Setup"
+                  sublabel="STR furnishing costs"
+                  value={values.furnitureSetupCost}
+                  min={0}
+                  max={30000}
+                  step={1000}
+                  format="currency"
+                  onChange={(val) => handleChange('furnitureSetupCost', val)}
+                />
+              )}
+            </>
+          )}
+
+          {/* ============================================================== */}
+          {/* BRRRR SECTIONS */}
+          {/* ============================================================== */}
+          {strategyType === 'brrrr' && (
+            <>
+              {/* Phase 1: Buy */}
+              <SectionDivider text="Phase 1: Buy" />
+              
+              <SliderInput
+                label="Purchase Price"
+                value={values.buyPrice}
+                min={50000}
+                max={2000000}
+                step={5000}
+                format="currency"
+                onChange={(val) => handleChange('buyPrice', val)}
+              />
+              
+              <SliderInput
+                label="Buy Discount"
+                sublabel="Below market value"
+                value={values.buyDiscountPct}
+                min={0}
+                max={30}
+                step={1}
+                format="percent-int"
+                onChange={(val) => handleChange('buyDiscountPct', val)}
+              />
+              
+              <SliderInput
+                label="Hard Money Rate"
+                value={values.hardMoneyRate}
+                min={8}
+                max={15}
+                step={0.5}
+                format="percent"
+                onChange={(val) => handleChange('hardMoneyRate', val)}
+              />
+              
+              <SliderInput
+                label="Down Payment"
+                sublabel="Hard money LTV"
+                value={values.downPayment}
+                min={10}
+                max={30}
+                step={5}
+                format="percent-int"
+                onChange={(val) => handleChange('downPayment', val)}
+              />
+
+              {/* Phase 2: Rehab */}
+              <SectionDivider text="Phase 2: Rehab" />
+              
+              <SliderInput
+                label="Rehab Budget"
+                value={values.rehabBudget}
+                min={0}
+                max={200000}
+                step={5000}
+                format="currency"
+                onChange={(val) => handleChange('rehabBudget', val)}
+              />
+              
+              <SliderInput
+                label="Contingency"
+                value={values.contingencyPct}
+                min={0}
+                max={25}
+                step={5}
+                format="percent-int"
+                onChange={(val) => handleChange('contingencyPct', val)}
+              />
+              
+              <SliderInput
+                label="Holding Period"
+                value={values.holdingPeriodMonths}
+                min={2}
+                max={12}
+                step={1}
+                format="currency-month"
+                onChange={(val) => handleChange('holdingPeriodMonths', val)}
+              />
+              
+              <SliderInput
+                label="ARV"
+                sublabel="After Repair Value"
+                value={values.arv}
+                min={values.buyPrice}
+                max={Math.max(1000000, values.buyPrice * 1.5)}
+                step={10000}
+                format="currency"
+                onChange={(val) => handleChange('arv', val)}
+              />
+
+              {/* Phase 3: Rent */}
+              <SectionDivider text="Phase 3: Rent" />
+              
+              <SliderInput
+                label="Post-Rehab Rent"
+                value={values.postRehabMonthlyRent}
+                min={500}
+                max={10000}
+                step={50}
+                format="currency"
+                onChange={(val) => handleChange('postRehabMonthlyRent', val)}
+              />
+              
+              <SliderInput
+                label="Vacancy Rate"
+                value={values.vacancyRate}
+                min={0}
+                max={15}
+                step={1}
+                format="percent-int"
+                onChange={(val) => handleChange('vacancyRate', val)}
+              />
+              
+              <SliderInput
+                label="Management Rate"
+                value={values.managementRate}
+                min={0}
+                max={12}
+                step={1}
+                format="percent-int"
+                onChange={(val) => handleChange('managementRate', val)}
+              />
+
+              {/* Phase 4: Refinance */}
+              <SectionDivider text="Phase 4: Refinance" />
+              
+              <SliderInput
+                label="Refinance LTV"
+                value={values.refinanceLtv}
+                min={65}
+                max={80}
+                step={5}
+                format="percent-int"
+                onChange={(val) => handleChange('refinanceLtv', val)}
+              />
+              
+              <SliderInput
+                label="Refinance Rate"
+                value={values.refinanceInterestRate}
+                min={4}
+                max={10}
+                step={0.125}
+                format="percent"
+                onChange={(val) => handleChange('refinanceInterestRate', val)}
+              />
+              
+              <SliderInput
+                label="Loan Term"
+                value={values.refinanceTermYears}
+                min={15}
+                max={30}
+                step={5}
+                format="years"
+                onChange={(val) => handleChange('refinanceTermYears', val)}
+              />
+              
+              {brrrrCalculations && (
+                <>
+                  <CalculatedField 
+                    label="Cash Out at Refi" 
+                    value={`$${brrrrCalculations.cashOutAtRefi.toLocaleString()}`} 
+                  />
+                  <CalculatedField 
+                    label="Money Left in Deal" 
+                    value={`$${brrrrCalculations.moneyLeftInDeal.toLocaleString()}`} 
+                  />
+                </>
+              )}
+            </>
+          )}
+
+          {/* ============================================================== */}
+          {/* FIX & FLIP SECTIONS */}
+          {/* ============================================================== */}
+          {strategyType === 'flip' && (
+            <>
+              {/* Phase 1: Buy */}
+              <SectionDivider text="Phase 1: Buy" />
+              
+              <SliderInput
+                label="Purchase Price"
+                value={values.buyPrice}
+                min={50000}
+                max={2000000}
+                step={5000}
+                format="currency"
+                onChange={(val) => handleChange('buyPrice', val)}
+              />
+              
+              <SliderInput
+                label="Closing Costs"
+                value={values.closingCosts}
+                min={2}
+                max={5}
+                step={0.25}
+                format="percent"
+                onChange={(val) => handleChange('closingCosts', val)}
+              />
+
+              {/* Phase 2: Financing */}
+              <SectionDivider text="Phase 2: Financing" />
+              
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => handleChange('financingType', 'cash')}
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-colors ${
+                    values.financingType === 'cash'
+                      ? 'bg-[#0891B2] text-white'
+                      : 'bg-[#F1F5F9] text-[#64748B]'
+                  }`}
+                >
+                  Cash
+                </button>
+                <button
+                  onClick={() => handleChange('financingType', 'hardMoney')}
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-colors ${
+                    values.financingType === 'hardMoney'
+                      ? 'bg-[#0891B2] text-white'
+                      : 'bg-[#F1F5F9] text-[#64748B]'
+                  }`}
+                >
+                  Hard Money
+                </button>
+              </div>
+              
+              {values.financingType === 'hardMoney' && (
+                <>
+                  <SliderInput
+                    label="Loan-to-Value"
+                    value={values.hardMoneyLtv}
+                    min={70}
+                    max={100}
+                    step={5}
+                    format="percent-int"
+                    onChange={(val) => handleChange('hardMoneyLtv', val)}
+                  />
+                  
+                  <SliderInput
+                    label="Interest Rate"
+                    value={values.hardMoneyRate}
+                    min={8}
+                    max={18}
+                    step={0.5}
+                    format="percent"
+                    onChange={(val) => handleChange('hardMoneyRate', val)}
+                  />
+                  
+                  <SliderInput
+                    label="Loan Points"
+                    value={values.loanPoints}
+                    min={0}
+                    max={5}
+                    step={0.5}
+                    format="percent-int"
+                    onChange={(val) => handleChange('loanPoints', val)}
+                  />
+                </>
+              )}
+
+              {/* Phase 3: Rehab */}
+              <SectionDivider text="Phase 3: Rehab" />
+              
+              <SliderInput
+                label="Rehab Budget"
+                value={values.rehabBudget}
+                min={0}
+                max={200000}
+                step={5000}
+                format="currency"
+                onChange={(val) => handleChange('rehabBudget', val)}
+              />
+              
+              <SliderInput
+                label="Contingency"
+                value={values.contingencyPct}
+                min={0}
+                max={25}
+                step={5}
+                format="percent-int"
+                onChange={(val) => handleChange('contingencyPct', val)}
+              />
+              
+              <SliderInput
+                label="Rehab Timeline"
+                value={values.rehabTimeMonths}
+                min={1}
+                max={12}
+                step={1}
+                format="currency-month"
+                onChange={(val) => handleChange('rehabTimeMonths', val)}
+              />
+              
+              <SliderInput
+                label="ARV"
+                sublabel="After Repair Value"
+                value={values.arv}
+                min={values.buyPrice}
+                max={Math.max(1000000, values.buyPrice * 1.5)}
+                step={10000}
+                format="currency"
+                onChange={(val) => handleChange('arv', val)}
+              />
+
+              {/* Phase 4: Hold & Sell */}
+              <SectionDivider text="Phase 4: Hold & Sell" />
+              
+              <SliderInput
+                label="Holding Costs"
+                sublabel="Monthly"
+                value={values.holdingCostsMonthly}
+                min={0}
+                max={5000}
+                step={100}
+                format="currency"
+                onChange={(val) => handleChange('holdingCostsMonthly', val)}
+              />
+              
+              <SliderInput
+                label="Days on Market"
+                value={values.daysOnMarket}
+                min={15}
+                max={180}
+                step={15}
+                format="days"
+                onChange={(val) => handleChange('daysOnMarket', val)}
+              />
+              
+              <SliderInput
+                label="Selling Costs"
+                sublabel="Agent + closing"
+                value={values.sellingCostsPct}
+                min={4}
+                max={10}
+                step={0.5}
+                format="percent"
+                onChange={(val) => handleChange('sellingCostsPct', val)}
+              />
+              
+              <SliderInput
+                label="Capital Gains Tax"
+                value={values.capitalGainsRate}
+                min={0}
+                max={40}
+                step={5}
+                format="percent-int"
+                onChange={(val) => handleChange('capitalGainsRate', val)}
+              />
+              
+              {flipCalculations && (
+                <>
+                  <CalculatedField 
+                    label="Net Profit" 
+                    value={`$${flipCalculations.netProfit.toLocaleString()}`} 
+                  />
+                  <CalculatedField 
+                    label="ROI" 
+                    value={`${flipCalculations.roi.toFixed(1)}%`} 
+                  />
+                  <CalculatedField 
+                    label="70% Rule" 
+                    value={flipCalculations.meets70PercentRule ? 'PASS' : 'FAIL'} 
+                  />
+                </>
+              )}
+            </>
+          )}
+
+          {/* ============================================================== */}
+          {/* HOUSE HACK SECTIONS */}
+          {/* ============================================================== */}
+          {strategyType === 'house_hack' && (
+            <>
+              {/* Phase 1: Property */}
+              <SectionDivider text="Phase 1: Property" />
+              
+              <SliderInput
+                label="Purchase Price"
+                value={values.buyPrice}
+                min={100000}
+                max={2000000}
+                step={10000}
+                format="currency"
+                onChange={(val) => handleChange('buyPrice', val)}
+              />
+              
+              <SliderInput
+                label="Total Units"
+                value={values.totalUnits}
+                min={2}
+                max={8}
+                step={1}
+                format="currency"
+                onChange={(val) => handleChange('totalUnits', val)}
+              />
+              
+              <SliderInput
+                label="Owner Units"
+                value={values.ownerOccupiedUnits}
+                min={1}
+                max={2}
+                step={1}
+                format="currency"
+                onChange={(val) => handleChange('ownerOccupiedUnits', val)}
+              />
+
+              {/* Phase 2: Financing */}
+              <SectionDivider text="Phase 2: Financing" />
+              
+              <div className="flex gap-2 mb-4">
+                {(['fha', 'conventional', 'va'] as const).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => handleChange('loanType', type)}
+                    className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold transition-colors ${
+                      values.loanType === type
+                        ? 'bg-[#0891B2] text-white'
+                        : 'bg-[#F1F5F9] text-[#64748B]'
+                    }`}
+                  >
+                    {type.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+              
+              <SliderInput
+                label="Down Payment"
+                value={values.downPayment}
+                min={values.loanType === 'va' ? 0 : values.loanType === 'fha' ? 3.5 : 5}
+                max={25}
+                step={0.5}
+                format="percent"
+                onChange={(val) => handleChange('downPayment', val)}
+              />
+              
+              <SliderInput
+                label="Interest Rate"
+                value={values.interestRate}
+                min={4}
+                max={10}
+                step={0.125}
+                format="percent"
+                onChange={(val) => handleChange('interestRate', val)}
+              />
+              
+              <SliderInput
+                label="PMI/MIP Rate"
+                value={values.pmiRate}
+                min={0}
+                max={1.5}
+                step={0.1}
+                format="percent"
+                onChange={(val) => handleChange('pmiRate', val)}
+              />
+
+              {/* Phase 3: Rent */}
+              <SectionDivider text="Phase 3: Rent" />
+              
+              <SliderInput
+                label="Avg Rent Per Unit"
+                value={values.avgRentPerUnit}
+                min={500}
+                max={5000}
+                step={50}
+                format="currency"
+                onChange={(val) => handleChange('avgRentPerUnit', val)}
+              />
+              
+              <SliderInput
+                label="Vacancy Rate"
+                value={values.vacancyRate}
+                min={0}
+                max={15}
+                step={1}
+                format="percent-int"
+                onChange={(val) => handleChange('vacancyRate', val)}
+              />
+              
+              <SliderInput
+                label="Current Housing Cost"
+                sublabel="What you pay now"
+                value={values.currentHousingPayment}
+                min={0}
+                max={5000}
+                step={100}
+                format="currency"
+                onChange={(val) => handleChange('currentHousingPayment', val)}
+              />
+
+              {/* Phase 4: Expenses */}
+              <SectionDivider text="Phase 4: Expenses" />
+              
+              <SliderInput
+                label="Property Taxes"
+                value={values.propertyTaxes}
+                min={0}
+                max={30000}
+                step={500}
+                format="currency-year"
+                onChange={(val) => handleChange('propertyTaxes', val)}
+              />
+              
+              <SliderInput
+                label="Insurance"
+                value={values.insurance}
+                min={0}
+                max={10000}
+                step={100}
+                format="currency-year"
+                onChange={(val) => handleChange('insurance', val)}
+              />
+              
+              <SliderInput
+                label="Utilities"
+                sublabel="Owner paid"
+                value={values.utilitiesMonthly}
+                min={0}
+                max={1000}
+                step={25}
+                format="currency-month"
+                onChange={(val) => handleChange('utilitiesMonthly', val)}
+              />
+              
+              {houseHackCalculations && (
+                <>
+                  <CalculatedField 
+                    label="Effective Housing Cost" 
+                    value={houseHackCalculations.livesForFree ? 'FREE!' : `$${houseHackCalculations.effectiveHousingCost.toLocaleString()}/mo`} 
+                  />
+                  <CalculatedField 
+                    label="Housing Offset" 
+                    value={`${houseHackCalculations.housingOffsetPercent.toFixed(0)}%`} 
+                  />
+                </>
+              )}
+            </>
+          )}
+
+          {/* ============================================================== */}
+          {/* WHOLESALE SECTIONS */}
+          {/* ============================================================== */}
+          {strategyType === 'wholesale' && (
+            <>
+              {/* Phase 1: Property Analysis */}
+              <SectionDivider text="Phase 1: Property" />
+              
+              <SliderInput
+                label="ARV"
+                sublabel="After Repair Value"
+                value={values.arv}
+                min={50000}
+                max={2000000}
+                step={10000}
+                format="currency"
+                onChange={(val) => handleChange('arv', val)}
+              />
+              
+              <SliderInput
+                label="Estimated Repairs"
+                value={values.estimatedRepairs}
+                min={0}
+                max={200000}
+                step={5000}
+                format="currency"
+                onChange={(val) => handleChange('estimatedRepairs', val)}
+              />
+              
+              {wholesaleCalculations && (
+                <CalculatedField 
+                  label="70% Rule MAO" 
+                  value={`$${wholesaleCalculations.maxAllowableOffer.toLocaleString()}`} 
+                />
+              )}
+
+              {/* Phase 2: Contract */}
+              <SectionDivider text="Phase 2: Contract" />
+              
+              <SliderInput
+                label="Contract Price"
+                value={values.contractPrice}
+                min={25000}
+                max={1500000}
+                step={5000}
+                format="currency"
+                onChange={(val) => handleChange('contractPrice', val)}
+              />
+              
+              <SliderInput
+                label="Earnest Money"
+                value={values.earnestMoney}
+                min={100}
+                max={10000}
+                step={100}
+                format="currency"
+                onChange={(val) => handleChange('earnestMoney', val)}
+              />
+              
+              <SliderInput
+                label="Inspection Period"
+                value={values.inspectionPeriodDays}
+                min={7}
+                max={30}
+                step={1}
+                format="days"
+                onChange={(val) => handleChange('inspectionPeriodDays', val)}
+              />
+              
+              <SliderInput
+                label="Days to Close"
+                value={values.daysToClose}
+                min={21}
+                max={90}
+                step={7}
+                format="days"
+                onChange={(val) => handleChange('daysToClose', val)}
+              />
+              
+              {wholesaleCalculations && (
+                <CalculatedField 
+                  label="70% Rule" 
+                  value={wholesaleCalculations.meets70PercentRule ? 'PASS' : 'FAIL'} 
+                />
+              )}
+
+              {/* Phase 3: Assignment */}
+              <SectionDivider text="Phase 3: Assignment" />
+              
+              <SliderInput
+                label="Assignment Fee"
+                value={values.assignmentFee}
+                min={5000}
+                max={50000}
+                step={1000}
+                format="currency"
+                onChange={(val) => handleChange('assignmentFee', val)}
+              />
+              
+              <SliderInput
+                label="Marketing Costs"
+                value={values.marketingCosts}
+                min={0}
+                max={5000}
+                step={100}
+                format="currency"
+                onChange={(val) => handleChange('marketingCosts', val)}
+              />
+              
+              <SliderInput
+                label="Closing Costs"
+                value={values.wholesaleClosingCosts}
+                min={0}
+                max={2000}
+                step={100}
+                format="currency"
+                onChange={(val) => handleChange('wholesaleClosingCosts', val)}
+              />
+              
+              {wholesaleCalculations && (
+                <>
+                  <CalculatedField 
+                    label="Net Profit" 
+                    value={`$${wholesaleCalculations.netProfit.toLocaleString()}`} 
+                  />
+                  <CalculatedField 
+                    label="ROI" 
+                    value={`${wholesaleCalculations.roi.toFixed(0)}%`} 
+                  />
+                  <CalculatedField 
+                    label="Buyer Profit" 
+                    value={`$${wholesaleCalculations.endBuyerProfit.toLocaleString()}`} 
+                  />
+                </>
+              )}
+            </>
           )}
 
           {/* Rental Income Section - Conditional based on strategy */}

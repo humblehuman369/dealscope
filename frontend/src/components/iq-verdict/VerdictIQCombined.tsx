@@ -60,8 +60,14 @@ const HEADER_STRATEGIES = [
 
 // Map header strategy to popup strategy type
 function getPopupStrategyType(headerStrategy: string): PopupStrategyType {
-  if (headerStrategy === 'Short-term') return 'str'
-  return 'ltr' // Default to LTR for all other strategies
+  switch (headerStrategy) {
+    case 'Short-term': return 'str'
+    case 'BRRRR': return 'brrrr'
+    case 'Fix & Flip': return 'flip'
+    case 'House Hack': return 'house_hack'
+    case 'Wholesale': return 'wholesale'
+    default: return 'ltr'
+  }
 }
 
 // =============================================================================
@@ -456,8 +462,15 @@ export function VerdictIQCombined({
 
   // Handle strategy change from popup (maps popup type back to header format)
   const handlePopupStrategyChange = useCallback((popupStrategy: PopupStrategyType) => {
-    const headerStrategy = popupStrategy === 'str' ? 'Short-term' : 'Long-term'
-    setCurrentStrategy(headerStrategy)
+    const headerMap: Record<PopupStrategyType, string> = {
+      ltr: 'Long-term',
+      str: 'Short-term',
+      brrrr: 'BRRRR',
+      flip: 'Fix & Flip',
+      house_hack: 'House Hack',
+      wholesale: 'Wholesale',
+    }
+    setCurrentStrategy(headerMap[popupStrategy])
   }, [])
 
   // Open DealMaker popup instead of navigating to page
