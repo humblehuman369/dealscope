@@ -7,27 +7,26 @@
  * Features:
  * - DealMakerIQ branding with "by InvestIQ" subtext
  * - Search icon that opens SearchPropertyModal
- * - Auth-aware buttons (Dashboard when signed in, Sign In/Get Started when not)
+ * - Sign In / Register buttons (unauthenticated)
+ * - Dashboard button + User dropdown with Logout (authenticated)
  * 
  * Auto-hides on pages that use CompactHeader to avoid duplicate headers.
  */
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Search } from 'lucide-react'
+import { Search, User, LogOut, ChevronDown } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
-// Pages that have their own header and should not show DealMakerHeader
-const PAGES_WITH_OWN_HEADER = [
-  '/',               // Landing page (has its own header)
-  '/compare',        // Sales Comps (uses CompactHeader)
-  '/rental-comps',   // Rental Comps (uses CompactHeader)
-  '/verdict',        // Verdict IQ (uses CompactHeader)
-  '/deal-maker',     // Deal Maker (uses CompactHeader)
-  '/property',       // Property Details (uses CompactHeader)
-  '/analyzing',      // Analyzing page (full-screen)
+// Pages that use CompactHeader and should not show DealMakerHeader
+const PAGES_WITH_COMPACT_HEADER = [
+  '/compare',        // Sales Comps
+  '/rental-comps',   // Rental Comps
+  '/verdict',        // Verdict IQ
+  '/deal-maker',     // Deal Maker
+  '/property',       // Property Details
 ]
 
 interface DealMakerHeaderProps {
@@ -38,23 +37,43 @@ interface DealMakerHeaderProps {
 }
 
 export function DealMakerHeader({ hideSearch = false, className = '' }: DealMakerHeaderProps) {
-  const { user, isAuthenticated, setShowAuthModal } = useAuth()
+  const { user, isAuthenticated, logout, setShowAuthModal } = useAuth()
   const [showSearchModal, setShowSearchModal] = useState(false)
+  const [showUserDropdown, setShowUserDropdown] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
 
-  // Hide header on pages that have their own header
-  const shouldHide = PAGES_WITH_OWN_HEADER.some(path => 
-    path === '/' ? pathname === '/' : pathname?.startsWith(path)
-  )
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowUserDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Hide header on pages that have CompactHeader
+  const shouldHide = PAGES_WITH_COMPACT_HEADER.some(path => pathname?.startsWith(path))
   
   if (shouldHide) {
     return null
   }
 
+  // Get user initial for avatar
+  const userInitial = user?.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'
+  const displayName = user?.full_name || user?.email || 'User'
+
+  const handleLogout = () => {
+    setShowUserDropdown(false)
+    logout()
+  }
+
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 w-full bg-white/95 dark:bg-[#0b1426]/95 backdrop-blur-xl border-b border-gray-200 dark:border-white/[0.08] z-50 transition-colors duration-200 ${className}`}>
-        <div className="max-w-[480px] mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           {/* Logo / Branding */}
           <Link href="/" className="flex flex-col">
             <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
@@ -78,14 +97,55 @@ export function DealMakerHeader({ hideSearch = false, className = '' }: DealMake
               </button>
             )}
 
-            {/* Auth Buttons */}
+            {/* Auth Section */}
             {isAuthenticated && user ? (
-              <Link
-                href="/dashboard"
-                className="px-4 py-2 text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-full hover:opacity-90 transition-all border border-gray-900 dark:border-white"
-              >
-                Dashboard
-              </Link>
+              <div className="flex items-center gap-2">
+                {/* Dashboard Button */}
+                <Link
+                  href="/dashboard"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-cyan-500 hover:bg-cyan-600 rounded-full transition-all"
+                >
+                  Dashboard
+                </Link>
+
+                {/* User Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setShowUserDropdown(!showUserDropdown)}
+                    className="flex items-center gap-1.5 py-1 px-2 pl-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-colors"
+                  >
+                    {/* User Avatar */}
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center text-white text-sm font-semibold">
+                      {userInitial}
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showUserDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {showUserDropdown && (
+                    <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-lg dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] overflow-hidden z-[100]">
+                      {/* User Info */}
+                      <div className="px-4 py-3 border-b border-gray-100 dark:border-white/[0.06]">
+                        <p className="font-medium text-gray-900 dark:text-white truncate">{displayName}</p>
+                        {user?.email && user?.full_name && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                        )}
+                      </div>
+                      
+                      {/* Menu Items */}
+                      <div className="py-1">
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors text-left"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             ) : (
               <div className="flex items-center gap-2">
                 <button
@@ -98,7 +158,7 @@ export function DealMakerHeader({ hideSearch = false, className = '' }: DealMake
                   onClick={() => setShowAuthModal('register')}
                   className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-full hover:opacity-90 transition-all"
                 >
-                  Get Started
+                  Register
                 </button>
               </div>
             )}
