@@ -10,6 +10,12 @@
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
+// #region agent log - Check which API URL is being used
+if (typeof window !== 'undefined') {
+  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:init',message:'API_BASE_URL resolved',data:{apiUrl:API_BASE_URL,envValue:process.env.NEXT_PUBLIC_API_URL},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-3',hypothesisId:'K'})}).catch(()=>{});
+}
+// #endregion
+
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: any
