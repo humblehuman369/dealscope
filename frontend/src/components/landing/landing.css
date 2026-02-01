@@ -218,10 +218,16 @@
    HERO SECTION
    ===================================================== */
 .landing-page .hero {
-  padding: 160px 0 96px;
+  padding: 100px 0 64px;
   background: linear-gradient(to bottom, var(--bg-secondary), var(--bg-primary));
   position: relative;
   overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .landing-page .hero {
+    padding: 160px 0 96px;
+  }
 }
 
 .landing-page .hero::before {
