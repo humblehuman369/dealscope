@@ -29,7 +29,7 @@ export function SummarySnapshot({
   targetBuyPrice,
 }: SummarySnapshotProps) {
   return (
-    <div className="bg-white p-4 px-6 border-l-[3px] border-l-[#0891B2] border-b border-[#E2E8F0]">
+    <div className="bg-white px-6 pb-4 border-l-[3px] border-l-[#0891B2] border-b border-[#E2E8F0] ml-4">
       <div className="flex items-baseline justify-between mb-3">
         <div className="text-xs font-semibold text-[#0891B2] uppercase tracking-wide">
           SUMMARY SNAPSHOT
