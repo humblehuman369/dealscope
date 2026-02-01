@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verdict IQ - Redesign Preview</title>
+  <style>
+    /* Reset & Base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    /* Phone Frame */
+    .phone-frame {
+      width: 390px;
+      max-width: 100%;
+      background: #0f0f1a;
+      border-radius: 40px;
+      padding: 12px;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+    }
+    
+    .phone-screen {
+      background: #111827;
+      border-radius: 32px;
+      overflow: hidden;
+      min-height: 800px;
+    }
+    
+    /* Color Variables */
+    :root {
+      --teal-500: #0891B2;
+      --teal-400: #22D3EE;
+      --teal-600: #0E7490;
+      --grey-900: #111827;
+      --grey-800: #1F2937;
+      --grey-700: #374151;
+      --grey-600: #4B5563;
+      --grey-500: #6B7280;
+      --grey-400: #9CA3AF;
+      --grey-300: #D1D5DB;
+      --green-500: #22C55E;
+      --green-400: #4ADE80;
+      --amber-500: #F59E0B;
+      --white: #FFFFFF;
+    }
+    
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--grey-900);
+      border-bottom: 1px solid var(--grey-800);
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .back-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--grey-400);
+      font-size: 20px;
+    }
+    
+    .header-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.5px;
+    }
+    
+    .term-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--teal-600);
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--white);
+    }
+    
+    .term-toggle svg {
+      width: 12px;
+      height: 12px;
+    }
+    
+    /* Property Card - Compact */
+    .property-card {
+      display: flex;
+      gap: 12px;
+      padding: 16px 20px;
+      background: var(--grey-800);
+      border-bottom: 1px solid var(--grey-700);
+    }
+    
+    .property-image {
+      width: 72px;
+      height: 54px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #2d5a3d 0%, #1a3a2a 100%);
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .property-image-placeholder {
+      font-size: 24px;
+    }
+    
+    .property-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .property-address {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .property-location {
+      font-size: 12px;
+      color: var(--grey-400);
+      margin-bottom: 6px;
+    }
+    
+    .property-details {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--grey-300);
+    }
+    
+    .property-details .separator {
+      color: var(--grey-600);
+    }
+    
+    .property-price {
+      color: var(--teal-400);
+      font-weight: 600;
+    }
+    
+    /* Content Area */
+    .content {
+      padding: 20px;
+    }
+    
+    /* Verdict Hero */
+    .verdict-hero {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    
+    .score-ring {
+      position: relative;
+      width: 88px;
+      height: 88px;
+      flex-shrink: 0;
+    }
+    
+    .score-ring svg {
+      transform: rotate(-90deg);
+    }
+    
+    .score-ring-bg {
+      fill: none;
+      stroke: var(--grey-700);
+      stroke-width: 6;
+    }
+    
+    .score-ring-progress {
+      fill: none;
+      stroke: var(--teal-400);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 251.2;
+      stroke-dashoffset: 27.6; /* 89% fill = 251.2 * (1 - 0.89) */
+      filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.4));
+    }
+    
+    .score-value {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--white);
+    }
+    
+    .verdict-text {
+      flex: 1;
+      padding-top: 4px;
+    }
+    
+    .verdict-label {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    
+    .verdict-insight {
+      font-size: 14px;
+      color: var(--grey-400);
+      line-height: 1.4;
+    }
+    
+    .verdict-insight strong {
+      color: var(--teal-400);
+      font-weight: 600;
+    }
+    
+    .info-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 12px;
+      background: var(--grey-700);
+      color: var(--grey-400);
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+    
+    /* Target Price Card */
+    .target-price-card {
+      background: linear-gradient(135deg, var(--grey-800) 0%, #1a2a35 100%);
+      border: 2px solid var(--teal-500);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .target-price-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--teal-400), var(--teal-600));
+    }
+    
+    .target-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .target-label-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--teal-400);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .recommended-badge {
+      background: var(--teal-600);
+      color: var(--white);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    
+    .target-price {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    
+    .target-discount {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .discount-badge {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--green-400);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    
+    .discount-text {
+      font-size: 13px;
+      color: var(--grey-400);
+    }
+    
+    .target-explanation {
+      font-size: 12px;
+      color: var(--grey-500);
+      padding-top: 12px;
+      border-top: 1px solid var(--grey-700);
+    }
+    
+    /* Breakeven Reference */
+    .breakeven-ref {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--grey-800);
+      border-radius: 10px;
+      margin-bottom: 24px;
+    }
+    
+    .breakeven-label {
+      font-size: 12px;
+      color: var(--grey-500);
+    }
+    
+    .breakeven-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--grey-300);
+    }
+    
+    .breakeven-hint {
+      font-size: 11px;
+      color: var(--grey-600);
+    }
+    
+    /* Section Header */
+    .section-header {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--grey-500);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 12px;
+    }
+    
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    
+    .metric-card {
+      background: var(--grey-800);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    
+    .metric-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    
+    .metric-label {
+      font-size: 11px;
+      color: var(--grey-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .metric-indicator {
+      width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+    
+    .metric-indicator.good {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--green-400);
+    }
+    
+    .metric-indicator.warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--amber-500);
+    }
+    
+    .metric-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 2px;
+    }
+    
+    .metric-benchmark {
+      font-size: 11px;
+      color: var(--grey-500);
+    }
+    
+    .metric-benchmark.good {
+      color: var(--green-400);
+    }
+    
+    /* Accordion Items */
+    .accordion-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .accordion-item {
+      background: var(--grey-800);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .accordion-item:hover {
+      background: var(--grey-700);
+    }
+    
+    .accordion-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .accordion-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--white);
+    }
+    
+    .accordion-subtitle {
+      font-size: 12px;
+      color: var(--grey-500);
+    }
+    
+    .accordion-arrow {
+      color: var(--grey-500);
+      font-size: 16px;
+    }
+    
+    /* Comparison Label */
+    .comparison-note {
+      text-align: center;
+      padding: 20px;
+      margin-top: 20px;
+      border-top: 1px dashed var(--grey-700);
+    }
+    
+    .comparison-note-title {
+      font-size: 10px;
+      color: var(--grey-600);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    
+    .comparison-note-text {
+      font-size: 12px;
+      color: var(--grey-500);
+    }
+    
+    /* Design Notes Panel */
+    .design-notes {
+      margin-top: 40px;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 600px;
+    }
+    
+    .design-notes h2 {
+      color: var(--white);
+      font-size: 18px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .design-notes h3 {
+      color: var(--teal-400);
+      font-size: 14px;
+      margin: 16px 0 8px;
+    }
+    
+    .design-notes ul {
+      color: var(--grey-300);
+      font-size: 13px;
+      line-height: 1.6;
+      padding-left: 20px;
+    }
+    
+    .design-notes li {
+      margin-bottom: 6px;
+    }
+    
+    /* Layout Container */
+    .preview-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+    
+    @media (min-width: 1024px) {
+      .preview-container {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+    }
+    
+    /* Title */
+    .page-title {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .page-title h1 {
+      color: var(--white);
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+    
+    .page-title p {
+      color: var(--grey-400);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="page-title">
+      <h1>Verdict IQ - Redesign Preview</h1>
+      <p>Simplified hierarchy with answer-first, details-second approach</p>
+    </div>
+    
+    <div class="preview-container">
+      <!-- Phone Mockup -->
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <!-- Header -->
+          <div class="header">
+            <div class="header-left">
+              <div class="back-btn">‹</div>
+              <span class="header-title">VERDICT IQ</span>
+            </div>
+            <div class="term-toggle">
+              Long-term
+              <svg viewBox="0 0 12 12" fill="currentColor">
+                <path d="M3 5l3 3 3-3"/>
+              </svg>
+            </div>
+          </div>
+          
+          <!-- Compact Property Card -->
+          <div class="property-card">
+            <div class="property-image">
+              <span class="property-image-placeholder">🏠</span>
+            </div>
+            <div class="property-info">
+              <div class="property-address">1451 Sw 10th St</div>
+              <div class="property-location">Boca Raton, FL 33486</div>
+              <div class="property-details">
+                <span>4 bd · 2 ba · 1,722 sqft</span>
+                <span class="separator">•</span>
+                <span class="property-price">$821,000</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Content -->
+          <div class="content">
+            <!-- Verdict Hero -->
+            <div class="verdict-hero">
+              <div class="score-ring">
+                <svg width="88" height="88" viewBox="0 0 88 88">
+                  <circle class="score-ring-bg" cx="44" cy="44" r="40"/>
+                  <circle class="score-ring-progress" cx="44" cy="44" r="40"/>
+                </svg>
+                <div class="score-value">89</div>
+              </div>
+              <div class="verdict-text">
+                <div class="verdict-label">Good Buy</div>
+                <div class="verdict-insight">
+                  The <strong>10.3% deal gap</strong> is achievable with moderate negotiation. Seller motivation is medium.
+                </div>
+                <div class="info-btn">?</div>
+              </div>
+            </div>
+            
+            <!-- Target Price Card -->
+            <div class="target-price-card">
+              <div class="target-label">
+                <span class="target-label-text">Your Target Price</span>
+                <span class="recommended-badge">Recommended</span>
+              </div>
+              <div class="target-price">$736,665</div>
+              <div class="target-discount">
+                <span class="discount-badge">↓ 10.3%</span>
+                <span class="discount-text">below asking price</span>
+              </div>
+              <div class="target-explanation">
+                Based on 5% discount for target profit with your financing terms (20% down, 6.0% rate)
+              </div>
+            </div>
+            
+            <!-- Breakeven Reference -->
+            <div class="breakeven-ref">
+              <div>
+                <div class="breakeven-label">Breakeven Ceiling</div>
+                <div class="breakeven-hint">Max price for $0 cash flow</div>
+              </div>
+              <div class="breakeven-value">$1,374,450</div>
+            </div>
+            
+            <!-- Key Metrics -->
+            <div class="section-header">Key Returns at Target Price</div>
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">Cash-on-Cash</span>
+                  <span class="metric-indicator good">✓</span>
+                </div>
+                <div class="metric-value">21.7%</div>
+                <div class="metric-benchmark good">Excellent (target: 8%+)</div>
+              </div>
+              
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">Cap Rate</span>
+                  <span class="metric-indicator good">✓</span>
+                </div>
+                <div class="metric-value">10.7%</div>
+                <div class="metric-benchmark good">Strong (target: 6%+)</div>
+              </div>
+              
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">Monthly Flow</span>
+                  <span class="metric-indicator good">✓</span>
+                </div>
+                <div class="metric-value">$3,059</div>
+                <div class="metric-benchmark">After expenses</div>
+              </div>
+              
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-label">Cash Needed</span>
+                  <span class="metric-indicator warning">!</span>
+                </div>
+                <div class="metric-value">$169,433</div>
+                <div class="metric-benchmark">To close</div>
+              </div>
+            </div>
+            
+            <!-- Accordions -->
+            <div class="accordion-group">
+              <div class="accordion-item">
+                <div class="accordion-left">
+                  <span class="accordion-title">Compare All Strategies</span>
+                  <span class="accordion-subtitle">Wholesale, BRRRR, Flip, STR</span>
+                </div>
+                <span class="accordion-arrow">›</span>
+              </div>
+              
+              <div class="accordion-item">
+                <div class="accordion-left">
+                  <span class="accordion-title">Financial Breakdown</span>
+                  <span class="accordion-subtitle">Full income & expense details</span>
+                </div>
+                <span class="accordion-arrow">›</span>
+              </div>
+              
+              <div class="accordion-item">
+                <div class="accordion-left">
+                  <span class="accordion-title">Price Probability</span>
+                  <span class="accordion-subtitle">How likely to get this price?</span>
+                </div>
+                <span class="accordion-arrow">›</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Design Notes -->
+      <div class="design-notes">
+        <h2>📋 Redesign Rationale</h2>
+        
+        <h3>1. Hierarchy Improvements</h3>
+        <ul>
+          <li><strong>Verdict Hero</strong> — Score (89) + plain-English insight merged into one scannable section</li>
+          <li><strong>Single Target Price</strong> — Elevated as the primary action; no longer competing with 2 other strategies</li>
+          <li><strong>Breakeven as Reference</strong> — Demoted to supporting context, not a choice</li>
+        </ul>
+        
+        <h3>2. Cognitive Load Reduction</h3>
+        <ul>
+          <li>Reduced visible metrics from <strong>9 → 4</strong></li>
+          <li>Added benchmark indicators (✓/!) so users don't need to interpret raw numbers</li>
+          <li>Moved alternative strategies to accordion (progressive disclosure)</li>
+        </ul>
+        
+        <h3>3. Visual Clarity</h3>
+        <ul>
+          <li><strong>Property card:</strong> Compressed to single line; details on one row</li>
+          <li><strong>Color discipline:</strong> Teal used only for primary price + positive indicators</li>
+          <li><strong>Typography:</strong> Target price at 36px dominates; metrics at 20px</li>
+        </ul>
+        
+        <h3>4. Information Architecture</h3>
+        <ul>
+          <li><strong>Zone A:</strong> Property Context (who/what)</li>
+          <li><strong>Zone B:</strong> Verdict (should I pursue?)</li>
+          <li><strong>Zone C:</strong> Target Price (what price?)</li>
+          <li><strong>Zone D:</strong> Evidence (why this price?)</li>
+          <li><strong>Zone E:</strong> Deep Dive (more details)</li>
+        </ul>
+        
+        <h3>5. What Was Removed/Relocated</h3>
+        <ul>
+          <li>Horizontal icon bar — functionality unclear, adds visual noise</li>
+          <li>"How Verdict IQ Works" + "How We Score" — consolidated into single ? icon</li>
+          <li>Duplicate term controls — single toggle in header</li>
+          <li>WHOLESALE card — moved to "Compare All Strategies"</li>
+          <li>ANNUAL NOI, DSCR — moved to Financial Breakdown accordion</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="comparison-note">
+      <div class="comparison-note-title">Design Preview</div>
+      <div class="comparison-note-text">Open this file in a browser to view the redesigned layout concept</div>
+    </div>
+  </div>
+</body>
+</html>
