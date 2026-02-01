@@ -78,7 +78,7 @@ export function InvestmentAnalysis({
   const [showCalculation, setShowCalculation] = useState(false)
 
   return (
-    <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
+    <div className="bg-white p-4 px-6 border-l-[3px] border-l-[#0891B2]">
       {/* Header */}
       <div className="flex justify-between items-start mb-1">
         <div>
