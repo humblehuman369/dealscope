@@ -479,10 +479,17 @@ export const api = {
         headers['Authorization'] = `Bearer ${token}`
       }
       
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/proforma/property/${params.propertyId}/excel?${searchParams}`,
-        { headers }
-      )
+      const url = `${API_BASE_URL}/api/v1/proforma/property/${params.propertyId}/excel?${searchParams}`
+      // #region agent log - Hypothesis F,G,H,I,J: Check API request/response
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:downloadExcel',message:'Making proforma API request',data:{url,propertyId:params.propertyId,hasToken:!!headers.Authorization},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-2',hypothesisId:'F,G,J'})}).catch(()=>{});
+      // #endregion
+      
+      const response = await fetch(url, { headers })
+      
+      // #region agent log - Hypothesis G,H,I: Check response status
+      const responseText = !response.ok ? await response.clone().text() : null;
+      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:downloadExcel:response',message:'Proforma API response',data:{status:response.status,statusText:response.statusText,ok:response.ok,errorBody:responseText?.slice(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-2',hypothesisId:'G,H,I'})}).catch(()=>{});
+      // #endregion
       
       if (!response.ok) {
         throw new Error(`Failed to download proforma: ${response.statusText}`)
