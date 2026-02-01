@@ -12,6 +12,45 @@ export interface NavContext {
 }
 
 /**
+ * Validates that a navigation context has the required fields for navigation.
+ * Returns true if the context has a valid address (non-empty string).
+ * 
+ * @param ctx - The navigation context to validate
+ * @returns true if the context is valid for navigation
+ */
+export function isValidNavContext(ctx: NavContext | undefined | null): boolean {
+  if (!ctx) return false;
+  
+  // Address is required for most routes
+  const hasValidAddress = typeof ctx.address === 'string' && ctx.address.trim().length > 0;
+  
+  return hasValidAddress;
+}
+
+/**
+ * Validates that a navigation context has required fields and logs warnings if invalid.
+ * This is a development helper that also returns the validation result.
+ * 
+ * @param ctx - The navigation context to validate
+ * @param navId - Optional navigation ID for better error messages
+ * @returns true if the context is valid for navigation
+ */
+export function validateNavContextWithWarning(ctx: NavContext | undefined | null, navId?: string): boolean {
+  const isValid = isValidNavContext(ctx);
+  
+  if (!isValid && process.env.NODE_ENV === 'development') {
+    console.warn(
+      `[Navigation] Invalid navigation context${navId ? ` for "${navId}"` : ''}.`,
+      'Expected address to be a non-empty string.',
+      'Context:',
+      ctx
+    );
+  }
+  
+  return isValid;
+}
+
+/**
  * Route builders for all app screens
  */
 export const ROUTES = {
@@ -70,9 +109,14 @@ export type ToolbarNavId = 'home' | 'analysis' | 'compare' | 'rentals' | 'report
  * 
  * @param navId - The toolbar item ID
  * @param ctx - Navigation context with address/zpid
- * @returns The route to navigate to
+ * @returns The route to navigate to, or search page if context is invalid
  */
 export function getToolbarRoute(navId: ToolbarNavId, ctx: NavContext): string {
+  // Validate context - return to search if invalid
+  if (!validateNavContextWithWarning(ctx, navId)) {
+    return ROUTES.search;
+  }
+  
   switch (navId) {
     case 'home':
       return ROUTES.property(ctx);

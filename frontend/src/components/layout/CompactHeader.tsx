@@ -12,9 +12,9 @@
  * Navigation is handled directly via centralized navigation config.
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { getToolbarRoute, type ToolbarNavId, type NavContext } from '@/lib/navigation';
+import { getToolbarRoute, isValidNavContext, type ToolbarNavId, type NavContext } from '@/lib/navigation';
 
 // Types
 export interface PropertyData {
@@ -182,11 +182,14 @@ export function CompactHeader({
   
   // Navigation context for toolbar
   // Include propertyId for saved properties so Deal Maker values persist across pages
-  const navContext: NavContext = {
+  const navContext: NavContext = useMemo(() => ({
     address: fullAddress,
     zpid: property.zpid,
     propertyId: savedPropertyId,
-  };
+  }), [fullAddress, property.zpid, savedPropertyId]);
+  
+  // Validate navigation context - if invalid, toolbar buttons should be disabled
+  const hasValidNavContext = useMemo(() => isValidNavContext(navContext), [navContext]);
 
   // Format helpers
   const formatPrice = (price: number) => {
@@ -365,7 +368,17 @@ export function CompactHeader({
         {NAV_ITEMS.map((item) => {
           const IconComponent = NAV_ICONS[item.id];
           const isActive = activeNav === item.id;
-          const isDisabled = 'disabled' in item && item.disabled;
+          const isExplicitlyDisabled = 'disabled' in item && item.disabled;
+          // Disable all navigation items (except current active) if context is invalid
+          const isDisabled = isExplicitlyDisabled || (!hasValidNavContext && !isActive);
+          
+          // Determine tooltip text
+          const tooltipText = isExplicitlyDisabled 
+            ? `${item.label} (Coming Soon)` 
+            : !hasValidNavContext && !isActive
+              ? `${item.label} (No property selected)`
+              : item.label;
+              
           return (
             <button
               key={item.id}
@@ -377,12 +390,12 @@ export function CompactHeader({
                     : 'hover:bg-slate-100'
               }`}
               onClick={() => {
-                // Reports is disabled - no action
+                // Don't navigate if disabled or context is invalid
                 if (isDisabled) return;
                 const route = getToolbarRoute(item.id as ToolbarNavId, navContext);
                 router.push(route);
               }}
-              title={isDisabled ? `${item.label} (Coming Soon)` : item.label}
+              title={tooltipText}
               disabled={isDisabled}
             >
               <IconComponent active={isActive} />

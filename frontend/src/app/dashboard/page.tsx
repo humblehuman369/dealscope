@@ -147,13 +147,16 @@ export default function DashboardPage() {
   ])
   
   // Redirect if not authenticated or needs onboarding
+  // Only redirect AFTER auth has fully loaded to prevent race conditions
   useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated) {
-        router.push('/')
-      } else if (needsOnboarding) {
-        router.push('/onboarding')
-      }
+    // Wait for auth to fully load before making redirect decisions
+    if (authLoading) return;
+    
+    if (!isAuthenticated) {
+      // Redirect to landing with auth modal open
+      router.push('/?auth=login')
+    } else if (needsOnboarding) {
+      router.push('/onboarding')
     }
   }, [authLoading, isAuthenticated, needsOnboarding, router])
 
@@ -276,6 +279,8 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, authLoading, fetchDashboardData])
 
+  // Show loading state while auth is being determined
+  // This prevents premature redirects and flash of content
   if (authLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-navy-900 flex items-center justify-center">
@@ -284,8 +289,14 @@ export default function DashboardPage() {
     )
   }
 
+  // After auth loading completes, if not authenticated, 
+  // show nothing while redirect happens (redirect is handled in useEffect)
   if (!isAuthenticated || !user) {
-    return null
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-navy-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+      </div>
+    )
   }
 
   const isAdmin = user.is_superuser
