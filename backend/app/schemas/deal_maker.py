@@ -185,6 +185,16 @@ class DealMakerRecord(BaseModel):
     refinance_term_years: Optional[int] = Field(None, description="Refinance loan term in years")
     refinance_closing_costs_pct: Optional[float] = Field(None, description="Refinance closing costs percentage")
     
+    # === Flip-Specific Fields (optional - only used for Flip strategy) ===
+    purchase_discount_pct: Optional[float] = Field(None, description="Discount from ARV for purchase")
+    financing_type: Optional[str] = Field(None, description="Financing type: cash, hardMoney, conventional")
+    hard_money_ltv: Optional[float] = Field(None, description="Hard money loan-to-value ratio")
+    loan_points: Optional[float] = Field(None, description="Loan origination points")
+    rehab_time_months: Optional[int] = Field(None, description="Expected rehab duration in months")
+    days_on_market: Optional[int] = Field(None, description="Expected days on market to sell")
+    selling_costs_pct: Optional[float] = Field(None, description="Selling costs as percentage of sale price")
+    capital_gains_rate: Optional[float] = Field(None, description="Capital gains tax rate")
+    
     # Strategy type
     strategy_type: Optional[str] = Field(None, description="Investment strategy type (ltr, str, brrrr, flip, house_hack, wholesale)")
     
@@ -286,6 +296,16 @@ class DealMakerRecordUpdate(BaseModel):
     refinance_interest_rate: Optional[float] = Field(None, ge=0, le=0.2, description="Refinance rate")
     refinance_term_years: Optional[int] = Field(None, ge=10, le=40, description="Refinance term years")
     refinance_closing_costs_pct: Optional[float] = Field(None, ge=0, le=0.1, description="Refinance closing costs %")
+    
+    # Flip-Specific Fields
+    purchase_discount_pct: Optional[float] = Field(None, ge=0, le=0.5, description="Discount from ARV")
+    financing_type: Optional[str] = Field(None, description="Financing type: cash, hardMoney, conventional")
+    hard_money_ltv: Optional[float] = Field(None, ge=0.5, le=1.0, description="Hard money LTV")
+    loan_points: Optional[float] = Field(None, ge=0, le=10, description="Loan origination points")
+    rehab_time_months: Optional[int] = Field(None, ge=1, le=24, description="Rehab time in months")
+    days_on_market: Optional[int] = Field(None, ge=0, le=365, description="Expected days on market")
+    selling_costs_pct: Optional[float] = Field(None, ge=0, le=0.15, description="Selling costs %")
+    capital_gains_rate: Optional[float] = Field(None, ge=0, le=0.5, description="Capital gains tax rate")
     
     # Strategy type
     strategy_type: Optional[str] = Field(None, description="Strategy type")

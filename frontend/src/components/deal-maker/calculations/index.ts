@@ -5,3 +5,4 @@
 
 export * from './strCalculations'
 export * from './brrrrCalculations'
+export * from './flipCalculations'

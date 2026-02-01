@@ -134,6 +134,16 @@ export interface DealMakerRecord {
   refinance_term_years?: number
   refinance_closing_costs_pct?: number
   
+  // Flip-specific adjustments (optional - only present for Flip strategy)
+  purchase_discount_pct?: number
+  financing_type?: string
+  hard_money_ltv?: number
+  loan_points?: number
+  rehab_time_months?: number
+  days_on_market?: number
+  selling_costs_pct?: number
+  capital_gains_rate?: number
+  
   // Strategy type
   strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
   
@@ -203,6 +213,16 @@ export interface DealMakerUpdate {
   refinance_interest_rate?: number
   refinance_term_years?: number
   refinance_closing_costs_pct?: number
+  
+  // Flip-specific fields
+  purchase_discount_pct?: number
+  financing_type?: string
+  hard_money_ltv?: number
+  loan_points?: number
+  rehab_time_months?: number
+  days_on_market?: number
+  selling_costs_pct?: number
+  capital_gains_rate?: number
   
   // Strategy type
   strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'

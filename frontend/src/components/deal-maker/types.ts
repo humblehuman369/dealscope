@@ -478,12 +478,14 @@ export const DEFAULT_STR_DEAL_MAKER_STATE: STRDealMakerState = {
 /**
  * Get the default state for a given strategy type
  */
-export function getDefaultStateForStrategy(strategy: StrategyType): DealMakerState | STRDealMakerState | BRRRRDealMakerState {
+export function getDefaultStateForStrategy(strategy: StrategyType): DealMakerState | STRDealMakerState | BRRRRDealMakerState | FlipDealMakerState {
   switch (strategy) {
     case 'str':
       return { ...DEFAULT_STR_DEAL_MAKER_STATE }
     case 'brrrr':
       return { ...DEFAULT_BRRRR_DEAL_MAKER_STATE }
+    case 'flip':
+      return { ...DEFAULT_FLIP_DEAL_MAKER_STATE }
     case 'ltr':
     default:
       return { ...DEFAULT_DEAL_MAKER_STATE }
@@ -703,4 +705,188 @@ export function isBRRRRState(state: AnyDealMakerState | BRRRRDealMakerState): st
  */
 export function isBRRRRMetrics(metrics: AnyDealMakerMetrics | BRRRRMetrics): metrics is BRRRRMetrics {
   return 'capitalRecycledPct' in metrics && 'infiniteRoiAchieved' in metrics
+}
+
+// =============================================================================
+// FIX & FLIP STATE
+// =============================================================================
+
+export type FlipFinancingType = 'cash' | 'hardMoney' | 'conventional'
+
+export interface FlipDealMakerState {
+  // Phase 1: Buy
+  purchasePrice: number
+  purchaseDiscountPct: number    // Target discount from ARV (20%)
+  closingCostsPercent: number
+  
+  // Phase 2: Financing
+  financingType: FlipFinancingType
+  hardMoneyLtv: number           // 90% typical
+  hardMoneyRate: number          // 12% typical
+  loanPoints: number             // 1-3 points
+  
+  // Phase 3: Rehab
+  rehabBudget: number
+  contingencyPct: number
+  rehabTimeMonths: number
+  arv: number
+  
+  // Phase 4: Hold
+  holdingCostsMonthly: number    // Taxes, insurance, utilities
+  daysOnMarket: number           // Expected DOM (30-60)
+  
+  // Phase 5: Sell
+  sellingCostsPct: number        // Agent + closing (6-8%)
+  capitalGainsRate: number       // Tax rate (15-25%)
+}
+
+// =============================================================================
+// FIX & FLIP CALCULATED METRICS
+// =============================================================================
+
+export interface FlipMetrics {
+  // Acquisition
+  loanAmount: number
+  downPayment: number
+  closingCosts: number
+  loanPointsCost: number
+  cashAtPurchase: number
+  
+  // Rehab
+  totalRehabCost: number         // Budget + contingency
+  
+  // Holding
+  holdingPeriodMonths: number    // Rehab + DOM
+  totalHoldingCosts: number
+  interestCosts: number
+  
+  // Sale
+  grossSaleProceeds: number
+  sellingCosts: number
+  netSaleProceeds: number
+  
+  // Profit Analysis
+  totalProjectCost: number
+  grossProfit: number
+  capitalGainsTax: number
+  netProfit: number
+  
+  // Return Metrics
+  cashRequired: number
+  roi: number
+  annualizedRoi: number
+  profitMargin: number
+  
+  // 70% Rule
+  maxAllowableOffer: number
+  meets70PercentRule: boolean
+  
+  // Scores
+  dealScore: number
+  dealGrade: DealGrade
+}
+
+// =============================================================================
+// FIX & FLIP SLIDER CONFIGURATION
+// =============================================================================
+
+export interface FlipSliderConfig {
+  id: keyof FlipDealMakerState
+  label: string
+  min: number
+  max: number
+  step: number
+  format: SliderFormat | 'months' | 'days' | 'points'
+  defaultValue?: number
+  sourceLabel?: string
+  isEstimate?: boolean
+}
+
+// Phase 1: Buy sliders
+export const FLIP_BUY_SLIDERS: FlipSliderConfig[] = [
+  { id: 'purchasePrice', label: 'Purchase Price', min: 50000, max: 2000000, step: 5000, format: 'currency', sourceLabel: 'Discounted from ARV' },
+  { id: 'purchaseDiscountPct', label: 'Discount from ARV', min: 0, max: 0.40, step: 0.01, format: 'percentage', sourceLabel: 'Target: 20-30%' },
+  { id: 'closingCostsPercent', label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage', sourceLabel: 'Buyer closing' },
+]
+
+// Phase 2: Financing sliders
+export const FLIP_FINANCING_SLIDERS: FlipSliderConfig[] = [
+  { id: 'hardMoneyLtv', label: 'Loan-to-Value', min: 0.70, max: 1.0, step: 0.05, format: 'percentage', sourceLabel: 'Hard money LTV' },
+  { id: 'hardMoneyRate', label: 'Interest Rate', min: 0.08, max: 0.18, step: 0.005, format: 'percentage', sourceLabel: 'Hard money rate' },
+  { id: 'loanPoints', label: 'Points', min: 0, max: 5, step: 0.5, format: 'points', sourceLabel: 'Origination fee' },
+]
+
+// Phase 3: Rehab sliders
+export const FLIP_REHAB_SLIDERS: FlipSliderConfig[] = [
+  { id: 'rehabBudget', label: 'Rehab Budget', min: 0, max: 200000, step: 5000, format: 'currency', sourceLabel: 'Contractor estimate' },
+  { id: 'contingencyPct', label: 'Contingency', min: 0, max: 0.25, step: 0.05, format: 'percentage', sourceLabel: 'Recommended: 10-15%' },
+  { id: 'rehabTimeMonths', label: 'Rehab Time', min: 1, max: 12, step: 1, format: 'months', sourceLabel: 'Expected duration' },
+  { id: 'arv', label: 'After Repair Value', min: 50000, max: 3000000, step: 10000, format: 'currency', sourceLabel: 'Sales comps analysis' },
+]
+
+// Phase 4: Hold sliders
+export const FLIP_HOLD_SLIDERS: FlipSliderConfig[] = [
+  { id: 'holdingCostsMonthly', label: 'Monthly Holding Costs', min: 0, max: 5000, step: 100, format: 'currencyPerMonth', sourceLabel: 'Taxes, ins, utilities' },
+  { id: 'daysOnMarket', label: 'Days on Market', min: 15, max: 180, step: 15, format: 'days', sourceLabel: 'Market average' },
+]
+
+// Phase 5: Sell sliders
+export const FLIP_SELL_SLIDERS: FlipSliderConfig[] = [
+  { id: 'sellingCostsPct', label: 'Selling Costs', min: 0.04, max: 0.10, step: 0.01, format: 'percentage', sourceLabel: 'Agent + closing' },
+  { id: 'capitalGainsRate', label: 'Capital Gains Tax Rate', min: 0, max: 0.40, step: 0.01, format: 'percentage', sourceLabel: 'Short-term rate' },
+]
+
+// =============================================================================
+// FIX & FLIP DEFAULT STATE
+// =============================================================================
+
+/**
+ * FIX & FLIP FALLBACK DEFAULT STATE
+ * 
+ * These values are used only when the API hasn't loaded yet.
+ * Values should match backend/app/core/defaults.py to minimize visual jumps.
+ */
+export const DEFAULT_FLIP_DEAL_MAKER_STATE: FlipDealMakerState = {
+  // Phase 1: Buy
+  purchasePrice: 200000,
+  purchaseDiscountPct: 0.20,     // Matches FLIP.purchase_discount_pct
+  closingCostsPercent: 0.03,
+  
+  // Phase 2: Financing
+  financingType: 'hardMoney',
+  hardMoneyLtv: 0.90,            // Matches FLIP.hard_money_ltv
+  hardMoneyRate: 0.12,           // Matches FLIP.hard_money_rate
+  loanPoints: 2,                 // 2 points typical
+  
+  // Phase 3: Rehab
+  rehabBudget: 50000,
+  contingencyPct: 0.10,          // 10% contingency
+  rehabTimeMonths: 4,            // 4 months rehab
+  arv: 325000,
+  
+  // Phase 4: Hold
+  holdingCostsMonthly: 1500,     // Monthly carrying costs
+  daysOnMarket: 45,              // 45 days DOM
+  
+  // Phase 5: Sell
+  sellingCostsPct: 0.06,         // Matches FLIP.selling_costs_pct
+  capitalGainsRate: 0.22,        // 22% short-term cap gains (ordinary income)
+}
+
+// =============================================================================
+// FIX & FLIP HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Check if a state is a Flip state
+ */
+export function isFlipState(state: AnyDealMakerState | BRRRRDealMakerState | FlipDealMakerState): state is FlipDealMakerState {
+  return 'financingType' in state && 'sellingCostsPct' in state && 'daysOnMarket' in state
+}
+
+/**
+ * Check if metrics are Flip metrics
+ */
+export function isFlipMetrics(metrics: AnyDealMakerMetrics | BRRRRMetrics | FlipMetrics): metrics is FlipMetrics {
+  return 'maxAllowableOffer' in metrics && 'meets70PercentRule' in metrics
 }

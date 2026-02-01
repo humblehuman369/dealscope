@@ -31,9 +31,13 @@ import {
   BRRRRDealMakerState,
   BRRRRMetrics,
   DEFAULT_BRRRR_DEAL_MAKER_STATE,
+  FlipDealMakerState,
+  FlipMetrics,
+  DEFAULT_FLIP_DEAL_MAKER_STATE,
 } from './types'
 import { calculateSTRMetrics } from './calculations/strCalculations'
 import { calculateBRRRRMetrics } from './calculations/brrrrCalculations'
+import { calculateFlipMetrics } from './calculations/flipCalculations'
 
 // Types
 export interface DealMakerPropertyData {
@@ -82,7 +86,7 @@ interface LTRDealMakerState {
 }
 
 // Union type for any strategy state
-type DealMakerState = LTRDealMakerState | STRDealMakerState | BRRRRDealMakerState
+type DealMakerState = LTRDealMakerState | STRDealMakerState | BRRRRDealMakerState | FlipDealMakerState
 
 // Local type guard for STR state
 function isSTRState(state: DealMakerState): state is STRDealMakerState {
@@ -92,6 +96,11 @@ function isSTRState(state: DealMakerState): state is STRDealMakerState {
 // Local type guard for BRRRR state
 function isBRRRRState(state: DealMakerState): state is BRRRRDealMakerState {
   return 'refinanceLtv' in state && 'holdingPeriodMonths' in state
+}
+
+// Local type guard for Flip state
+function isFlipState(state: DealMakerState): state is FlipDealMakerState {
+  return 'financingType' in state && 'sellingCostsPct' in state && 'daysOnMarket' in state
 }
 
 interface LTRDealMakerMetrics {
@@ -108,7 +117,7 @@ interface LTRDealMakerMetrics {
 }
 
 // Union type for any strategy metrics
-type DealMakerMetrics = LTRDealMakerMetrics | STRMetrics | BRRRRMetrics
+type DealMakerMetrics = LTRDealMakerMetrics | STRMetrics | BRRRRMetrics | FlipMetrics
 
 type AccordionSection = 'buyPrice' | 'financing' | 'rehab' | 'income' | 'expenses' | null
 
@@ -310,6 +319,19 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     }
   }
 
+  // Initialize Flip local state for unsaved properties
+  const getInitialFlipState = (): FlipDealMakerState => {
+    const basePrice = listPrice ?? property.price ?? 350000
+    // Flip typically purchases at 20-30% below ARV
+    const discountedPrice = basePrice * 0.75
+    return {
+      ...DEFAULT_FLIP_DEAL_MAKER_STATE,
+      purchasePrice: discountedPrice,
+      arv: basePrice * 1.10, // Assume ARV is 10% above list after rehab
+      holdingCostsMonthly: (property.propertyTax || 4200) / 12 + (property.insurance || 1800) / 12 + 200, // Taxes + insurance + utilities
+    }
+  }
+
   // Get initial state based on strategy
   const getInitialLocalState = (strategy: StrategyType): DealMakerState => {
     if (strategy === 'str') {
@@ -317,6 +339,9 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     }
     if (strategy === 'brrrr') {
       return getInitialBRRRRState()
+    }
+    if (strategy === 'flip') {
+      return getInitialFlipState()
     }
     return getInitialLTRState()
   }
@@ -327,6 +352,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   const strategyType = getStrategyType(currentStrategy)
   const [localLTRState, setLocalLTRState] = useState<LTRDealMakerState>(getInitialLTRState)
   const [localSTRState, setLocalSTRState] = useState<STRDealMakerState>(getInitialSTRState)
+  const [localFlipState, setLocalFlipState] = useState<FlipDealMakerState>(getInitialFlipState)
   const [localBRRRRState, setLocalBRRRRState] = useState<BRRRRDealMakerState>(getInitialBRRRRState)
   
   // Load Deal Maker record from backend for saved properties
@@ -402,6 +428,27 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         } as BRRRRDealMakerState
       }
       
+      // For Flip strategy, return Flip state from store
+      if (strategyType === 'flip') {
+        return {
+          purchasePrice: record.buy_price,
+          purchaseDiscountPct: record.purchase_discount_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.purchaseDiscountPct,
+          closingCostsPercent: record.closing_costs_pct,
+          financingType: (record.financing_type as 'cash' | 'hardMoney' | 'conventional') ?? DEFAULT_FLIP_DEAL_MAKER_STATE.financingType,
+          hardMoneyLtv: record.hard_money_ltv ?? DEFAULT_FLIP_DEAL_MAKER_STATE.hardMoneyLtv,
+          hardMoneyRate: record.hard_money_rate ?? DEFAULT_FLIP_DEAL_MAKER_STATE.hardMoneyRate,
+          loanPoints: record.loan_points ?? DEFAULT_FLIP_DEAL_MAKER_STATE.loanPoints,
+          rehabBudget: record.rehab_budget,
+          contingencyPct: record.contingency_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.contingencyPct,
+          rehabTimeMonths: record.rehab_time_months ?? DEFAULT_FLIP_DEAL_MAKER_STATE.rehabTimeMonths,
+          arv: record.arv,
+          holdingCostsMonthly: record.holding_costs_monthly ?? DEFAULT_FLIP_DEAL_MAKER_STATE.holdingCostsMonthly,
+          daysOnMarket: record.days_on_market ?? DEFAULT_FLIP_DEAL_MAKER_STATE.daysOnMarket,
+          sellingCostsPct: record.selling_costs_pct ?? DEFAULT_FLIP_DEAL_MAKER_STATE.sellingCostsPct,
+          capitalGainsRate: record.capital_gains_rate ?? DEFAULT_FLIP_DEAL_MAKER_STATE.capitalGainsRate,
+        } as FlipDealMakerState
+      }
+      
       // Default: LTR state
       return {
         buyPrice: record.buy_price,
@@ -429,8 +476,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     if (strategyType === 'brrrr') {
       return localBRRRRState
     }
+    if (strategyType === 'flip') {
+      return localFlipState
+    }
     return localLTRState
-  }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, localLTRState, localSTRState, localBRRRRState])
+  }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, localLTRState, localSTRState, localBRRRRState, localFlipState])
   
   // Navigate to Verdict IQ page
   // For saved properties, Verdict will read from the store (same data source)
@@ -451,7 +501,34 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       // Build session data based on strategy type
       let sessionData: Record<string, unknown>
       
-      if (strategyType === 'brrrr' && isBRRRRState(state)) {
+      if (strategyType === 'flip' && isFlipState(state)) {
+        // Flip-specific session data
+        sessionData = {
+          address: fullAddr,
+          purchasePrice: state.purchasePrice,
+          monthlyRent: 0, // Flip has no rental income
+          propertyTaxes: 0,
+          insurance: 0,
+          arv: state.arv,
+          zpid: property.zpid,
+          strategy: 'flip',
+          // Flip-specific values
+          purchaseDiscountPct: state.purchaseDiscountPct,
+          closingCostsPct: state.closingCostsPercent,
+          financingType: state.financingType,
+          hardMoneyLtv: state.hardMoneyLtv,
+          hardMoneyRate: state.hardMoneyRate,
+          loanPoints: state.loanPoints,
+          rehabBudget: state.rehabBudget,
+          contingencyPct: state.contingencyPct,
+          rehabTimeMonths: state.rehabTimeMonths,
+          holdingCostsMonthly: state.holdingCostsMonthly,
+          daysOnMarket: state.daysOnMarket,
+          sellingCostsPct: state.sellingCostsPct,
+          capitalGainsRate: state.capitalGainsRate,
+          timestamp: Date.now(),
+        }
+      } else if (strategyType === 'brrrr' && isBRRRRState(state)) {
         // BRRRR-specific session data
         sessionData = {
           address: fullAddr,
@@ -559,7 +636,10 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       let monthlyRentValue: number
       let purchasePriceValue: number
       
-      if (strategyType === 'brrrr' && isBRRRRState(state)) {
+      if (strategyType === 'flip' && isFlipState(state)) {
+        monthlyRentValue = 0 // Flip has no rental income
+        purchasePriceValue = state.purchasePrice
+      } else if (strategyType === 'brrrr' && isBRRRRState(state)) {
         monthlyRentValue = state.postRehabMonthlyRent
         purchasePriceValue = state.purchasePrice
       } else if (strategyType === 'str' && isSTRState(state)) {
@@ -575,20 +655,41 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       }
       
       // Navigate with URL params (for initial load and bookmarkability)
+      // Get property tax and insurance values based on strategy
+      let propertyTaxValue = 0
+      let insuranceValue = 0
+      let arvValue = 0
+      
+      if (strategyType === 'flip' && isFlipState(state)) {
+        // Flip doesn't have annual property tax/insurance fields, use defaults
+        propertyTaxValue = 0
+        insuranceValue = 0
+        arvValue = state.arv
+      } else if (strategyType === 'brrrr' && isBRRRRState(state)) {
+        propertyTaxValue = state.annualPropertyTax
+        insuranceValue = state.annualInsurance
+        arvValue = state.arv
+      } else {
+        const otherState = state as LTRDealMakerState | STRDealMakerState
+        propertyTaxValue = otherState.annualPropertyTax
+        insuranceValue = otherState.annualInsurance
+        arvValue = otherState.arv
+      }
+      
       const params = new URLSearchParams({
         address: fullAddr,
         purchasePrice: String(purchasePriceValue),
         monthlyRent: String(monthlyRentValue),
-        propertyTaxes: String(state.annualPropertyTax),
-        insurance: String(state.annualInsurance),
+        propertyTaxes: String(propertyTaxValue),
+        insurance: String(insuranceValue),
         strategy: strategyType,
       })
       
       if (property.zpid) {
         params.set('zpid', property.zpid)
       }
-      if (state.arv > 0) {
-        params.set('arv', String(state.arv))
+      if (arvValue > 0) {
+        params.set('arv', String(arvValue))
       }
       
       router.push(`/verdict?${params.toString()}`)
@@ -626,6 +727,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     // For BRRRR strategy, use BRRRR calculations
     if (strategyType === 'brrrr' && isBRRRRState(state)) {
       return calculateBRRRRMetrics(state)
+    }
+    
+    // For Flip strategy, use Flip calculations
+    if (strategyType === 'flip' && isFlipState(state)) {
+      return calculateFlipMetrics(state)
     }
     
     // For saved properties with LTR, use cached metrics from store
@@ -705,7 +811,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   }, [state, listPrice, isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType])
 
   // Update state - use store for saved properties, local state for unsaved
-  const updateState = useCallback((key: string, value: number) => {
+  const updateState = useCallback((key: string, value: number | string) => {
     if (isSavedPropertyMode && hasRecord) {
       // Map local field names to store field names (includes LTR, STR, and BRRRR fields)
       const fieldMap: Record<string, string> = {
@@ -750,6 +856,15 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         refinanceInterestRate: 'refinance_interest_rate',
         refinanceTermYears: 'refinance_term_years',
         refinanceClosingCostsPct: 'refinance_closing_costs_pct',
+        // Flip-specific
+        purchaseDiscountPct: 'purchase_discount_pct',
+        financingType: 'financing_type',
+        hardMoneyLtv: 'hard_money_ltv',
+        loanPoints: 'loan_points',
+        rehabTimeMonths: 'rehab_time_months',
+        daysOnMarket: 'days_on_market',
+        sellingCostsPct: 'selling_costs_pct',
+        capitalGainsRate: 'capital_gains_rate',
       }
       
       const storeField = fieldMap[key]
@@ -762,6 +877,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         setLocalSTRState(prev => ({ ...prev, [key]: value }))
       } else if (strategyType === 'brrrr') {
         setLocalBRRRRState(prev => ({ ...prev, [key]: value }))
+      } else if (strategyType === 'flip') {
+        setLocalFlipState(prev => ({ ...prev, [key]: value }))
       } else {
         setLocalLTRState(prev => ({ ...prev, [key]: value }))
       }
@@ -829,6 +946,20 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         { label: 'Cash Left', value: formatPrice(brrrrMetrics.cashLeftInDeal), color: brrrrMetrics.infiniteRoiAchieved ? 'teal' : 'white' },
         { label: 'Capital Recycled', value: `${brrrrMetrics.capitalRecycledPct.toFixed(0)}%`, color: brrrrMetrics.capitalRecycledPct >= 100 ? 'teal' : brrrrMetrics.capitalRecycledPct >= 80 ? 'cyan' : 'white' },
         { label: 'Post-Refi CoC', value: cocDisplay, color: brrrrMetrics.infiniteRoiAchieved ? 'teal' : 'white' },
+      ]
+    }
+    
+    // Flip metrics - focus on profit
+    if (strategyType === 'flip' && 'maxAllowableOffer' in metrics) {
+      const flipMetrics = metrics as FlipMetrics
+      const flipState = state as FlipDealMakerState
+      return [
+        { label: 'Total Cost', value: formatPrice(flipMetrics.totalProjectCost), color: 'white' },
+        { label: 'ARV', value: formatPrice(flipState.arv), color: 'white' },
+        { label: 'Net Profit', value: formatPrice(flipMetrics.netProfit), color: flipMetrics.netProfit >= 0 ? 'teal' : 'rose' },
+        { label: 'ROI', value: `${flipMetrics.roi.toFixed(1)}%`, color: flipMetrics.roi >= 20 ? 'teal' : flipMetrics.roi >= 10 ? 'cyan' : 'white' },
+        { label: 'Ann. ROI', value: `${flipMetrics.annualizedRoi.toFixed(0)}%`, color: flipMetrics.annualizedRoi >= 30 ? 'teal' : 'white' },
+        { label: '70% Rule', value: flipMetrics.meets70PercentRule ? 'PASS' : 'FAIL', color: flipMetrics.meets70PercentRule ? 'teal' : 'rose' },
       ]
     }
     
@@ -969,6 +1100,54 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           </div>
                         </div>
                       </>
+                    ) : strategyType === 'flip' && isFlipState(state) ? (
+                      // Flip Phase 1: Buy
+                      <>
+                        <SliderInput
+                          label="Purchase Price"
+                          value={state.purchasePrice}
+                          displayValue={formatPrice(state.purchasePrice)}
+                          min={50000}
+                          max={2000000}
+                          minLabel="$50,000"
+                          maxLabel="$2,000,000"
+                          onChange={(v) => updateState('purchasePrice', v)}
+                        />
+                        <SliderInput
+                          label="Discount from ARV"
+                          value={state.purchaseDiscountPct * 100}
+                          displayValue={`${(state.purchaseDiscountPct * 100).toFixed(0)}%`}
+                          min={0}
+                          max={40}
+                          minLabel="0%"
+                          maxLabel="40%"
+                          onChange={(v) => updateState('purchaseDiscountPct', v / 100)}
+                        />
+                        <SliderInput
+                          label="Closing Costs"
+                          value={state.closingCostsPercent * 100}
+                          displayValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`}
+                          min={2}
+                          max={5}
+                          minLabel="2%"
+                          maxLabel="5%"
+                          onChange={(v) => updateState('closingCostsPercent', v / 100)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">CASH AT PURCHASE</div>
+                            <div className="text-xl font-bold text-[#0A1628] tabular-nums">
+                              {formatPrice('cashAtPurchase' in metrics ? (metrics as FlipMetrics).cashAtPurchase : 0)}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">70% RULE MAO</div>
+                            <div className={`text-base font-bold tabular-nums ${'meets70PercentRule' in metrics && (metrics as FlipMetrics).meets70PercentRule ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
+                              {formatPrice('maxAllowableOffer' in metrics ? (metrics as FlipMetrics).maxAllowableOffer : 0)}
+                            </div>
+                          </div>
+                        </div>
+                      </>
                     ) : (
                       // LTR/STR Buy Price
                       (() => {
@@ -1054,6 +1233,76 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                         <p className="text-xs text-[#64748B] mt-2 italic">
                           BRRRR uses hard money for purchase + refinance after rehab. Adjust rates in Buy and Income sections.
                         </p>
+                      </>
+                    ) : strategyType === 'flip' && isFlipState(state) ? (
+                      // Flip Financing
+                      <>
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-4 mt-4 mb-4">
+                          <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-2">FINANCING TYPE</div>
+                          <div className="flex gap-2">
+                            {(['cash', 'hardMoney'] as const).map((type) => (
+                              <button
+                                key={type}
+                                className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-colors ${
+                                  state.financingType === type
+                                    ? 'bg-[#0891B2] text-white'
+                                    : 'bg-white border border-[#E2E8F0] text-[#64748B]'
+                                }`}
+                                onClick={() => updateState('financingType', type)}
+                              >
+                                {type === 'cash' ? 'Cash' : 'Hard Money'}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        {state.financingType !== 'cash' && (
+                          <>
+                            <SliderInput
+                              label="Loan-to-Value (LTV)"
+                              value={state.hardMoneyLtv * 100}
+                              displayValue={`${(state.hardMoneyLtv * 100).toFixed(0)}%`}
+                              min={70}
+                              max={100}
+                              minLabel="70%"
+                              maxLabel="100%"
+                              onChange={(v) => updateState('hardMoneyLtv', v / 100)}
+                            />
+                            <SliderInput
+                              label="Interest Rate"
+                              value={state.hardMoneyRate * 100}
+                              displayValue={`${(state.hardMoneyRate * 100).toFixed(1)}%`}
+                              min={8}
+                              max={18}
+                              minLabel="8%"
+                              maxLabel="18%"
+                              onChange={(v) => updateState('hardMoneyRate', v / 100)}
+                            />
+                            <SliderInput
+                              label="Loan Points"
+                              value={state.loanPoints}
+                              displayValue={`${state.loanPoints.toFixed(1)} pts`}
+                              min={0}
+                              max={5}
+                              minLabel="0 pts"
+                              maxLabel="5 pts"
+                              onChange={(v) => updateState('loanPoints', v)}
+                            />
+                          </>
+                        )}
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">LOAN AMOUNT</div>
+                            <div className="text-xl font-bold text-[#0891B2] tabular-nums">
+                              {formatPrice('loanAmount' in metrics ? (metrics as FlipMetrics).loanAmount : 0)}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">INTEREST COSTS</div>
+                            <div className="text-base font-bold text-[#0A1628] tabular-nums">
+                              {formatPrice('interestCosts' in metrics ? (metrics as FlipMetrics).interestCosts : 0)}
+                            </div>
+                          </div>
+                        </div>
                       </>
                     ) : (
                       // LTR/STR Financing
@@ -1164,6 +1413,64 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                             <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">HOLDING COSTS</div>
                             <div className="text-base font-bold text-[#0891B2] tabular-nums">
                               {formatPrice('holdingCosts' in metrics ? (metrics as BRRRRMetrics).holdingCosts : 0)}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : strategyType === 'flip' && isFlipState(state) ? (
+                      // Flip Rehab
+                      <>
+                        <SliderInput
+                          label="Rehab Budget"
+                          value={state.rehabBudget}
+                          displayValue={formatPrice(state.rehabBudget)}
+                          min={0}
+                          max={200000}
+                          minLabel="$0"
+                          maxLabel="$200,000"
+                          onChange={(v) => updateState('rehabBudget', v)}
+                        />
+                        <SliderInput
+                          label="Contingency"
+                          value={state.contingencyPct * 100}
+                          displayValue={`${(state.contingencyPct * 100).toFixed(0)}%`}
+                          min={0}
+                          max={25}
+                          minLabel="0%"
+                          maxLabel="25%"
+                          onChange={(v) => updateState('contingencyPct', v / 100)}
+                        />
+                        <SliderInput
+                          label="Rehab Time"
+                          value={state.rehabTimeMonths}
+                          displayValue={`${state.rehabTimeMonths} months`}
+                          min={1}
+                          max={12}
+                          minLabel="1 mo"
+                          maxLabel="12 mo"
+                          onChange={(v) => updateState('rehabTimeMonths', Math.round(v))}
+                        />
+                        <SliderInput
+                          label="After Repair Value (ARV)"
+                          value={state.arv}
+                          displayValue={formatPrice(state.arv)}
+                          min={state.purchasePrice}
+                          max={state.purchasePrice * 2}
+                          minLabel={formatPrice(state.purchasePrice)}
+                          maxLabel={formatPrice(state.purchasePrice * 2)}
+                          onChange={(v) => updateState('arv', v)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">TOTAL REHAB COST</div>
+                            <div className="text-xl font-bold text-[#0A1628] tabular-nums">
+                              {formatPrice('totalRehabCost' in metrics ? (metrics as FlipMetrics).totalRehabCost : 0)}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">GROSS PROFIT (before costs)</div>
+                            <div className={`text-base font-bold tabular-nums ${'grossProfit' in metrics && (metrics as FlipMetrics).grossProfit >= 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
+                              {formatPrice('grossProfit' in metrics ? (metrics as FlipMetrics).grossProfit : 0)}
                             </div>
                           </div>
                         </div>
@@ -1287,6 +1594,60 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                             <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">CASH OUT AT REFI</div>
                             <div className={`text-base font-bold tabular-nums ${'cashOutAtRefinance' in metrics && (metrics as BRRRRMetrics).cashOutAtRefinance > 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
                               {formatPrice('cashOutAtRefinance' in metrics ? (metrics as BRRRRMetrics).cashOutAtRefinance : 0)}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : strategyType === 'flip' && isFlipState(state) ? (
+                      // Flip: Hold & Sell
+                      <>
+                        <SliderInput
+                          label="Monthly Holding Costs"
+                          value={state.holdingCostsMonthly}
+                          displayValue={`${formatPrice(state.holdingCostsMonthly)}/mo`}
+                          min={0}
+                          max={5000}
+                          minLabel="$0"
+                          maxLabel="$5,000"
+                          onChange={(v) => updateState('holdingCostsMonthly', v)}
+                        />
+                        <SliderInput
+                          label="Days on Market"
+                          value={state.daysOnMarket}
+                          displayValue={`${state.daysOnMarket} days`}
+                          min={15}
+                          max={180}
+                          minLabel="15 days"
+                          maxLabel="180 days"
+                          onChange={(v) => updateState('daysOnMarket', Math.round(v))}
+                        />
+                        <SliderInput
+                          label="Selling Costs"
+                          value={state.sellingCostsPct * 100}
+                          displayValue={`${(state.sellingCostsPct * 100).toFixed(0)}%`}
+                          min={4}
+                          max={10}
+                          minLabel="4%"
+                          maxLabel="10%"
+                          onChange={(v) => updateState('sellingCostsPct', v / 100)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">TOTAL HOLDING COSTS</div>
+                            <div className="text-xl font-bold text-[#0A1628] tabular-nums">
+                              {formatPrice('totalHoldingCosts' in metrics ? (metrics as FlipMetrics).totalHoldingCosts : 0)}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">SELLING COSTS</div>
+                            <div className="text-base font-bold text-[#0A1628] tabular-nums">
+                              {formatPrice('sellingCosts' in metrics ? (metrics as FlipMetrics).sellingCosts : 0)}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">HOLDING PERIOD</div>
+                            <div className="text-base font-bold text-[#0891B2] tabular-nums">
+                              {'holdingPeriodMonths' in metrics ? `${(metrics as FlipMetrics).holdingPeriodMonths.toFixed(1)} months` : '0 months'}
                             </div>
                           </div>
                         </div>
@@ -1479,6 +1840,93 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           </div>
                         </div>
                       </>
+                    ) : strategyType === 'flip' && isFlipState(state) ? (
+                      // Flip: Profit Summary
+                      <>
+                        <SliderInput
+                          label="Capital Gains Tax Rate"
+                          value={state.capitalGainsRate * 100}
+                          displayValue={`${(state.capitalGainsRate * 100).toFixed(0)}%`}
+                          min={0}
+                          max={40}
+                          minLabel="0%"
+                          maxLabel="40%"
+                          onChange={(v) => updateState('capitalGainsRate', v / 100)}
+                        />
+                        
+                        {/* Flip Profit Summary */}
+                        <div className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-lg p-4 mt-4 text-white">
+                          <div className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider mb-3">PROFIT ANALYSIS</div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Total Project Cost</span>
+                              <span className="font-bold tabular-nums">
+                                {formatPrice('totalProjectCost' in metrics ? (metrics as FlipMetrics).totalProjectCost : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Sale Price (ARV)</span>
+                              <span className="font-bold tabular-nums">
+                                {formatPrice(state.arv)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-[#334155]">
+                              <span className="text-sm text-[#94A3B8]">Gross Profit</span>
+                              <span className={`font-bold tabular-nums ${'grossProfit' in metrics && (metrics as FlipMetrics).grossProfit >= 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
+                                {formatPrice('grossProfit' in metrics ? (metrics as FlipMetrics).grossProfit : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Selling Costs</span>
+                              <span className="font-bold text-[#F43F5E] tabular-nums">
+                                -{formatPrice('sellingCosts' in metrics ? (metrics as FlipMetrics).sellingCosts : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Capital Gains Tax</span>
+                              <span className="font-bold text-[#F43F5E] tabular-nums">
+                                -{formatPrice('capitalGainsTax' in metrics ? (metrics as FlipMetrics).capitalGainsTax : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-[#334155]">
+                              <span className="text-sm font-semibold text-white">NET PROFIT</span>
+                              <span className={`text-xl font-bold tabular-nums ${'netProfit' in metrics && (metrics as FlipMetrics).netProfit >= 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
+                                {formatPrice('netProfit' in metrics ? (metrics as FlipMetrics).netProfit : 0)}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {'meets70PercentRule' in metrics && (metrics as FlipMetrics).meets70PercentRule && (
+                            <div className="mt-3 pt-3 border-t border-[#334155] text-center">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#10B981]/20 text-[#10B981] text-sm font-semibold">
+                                ✓ Meets 70% Rule
+                              </span>
+                            </div>
+                          )}
+                          
+                          <div className="mt-3 pt-3 border-t border-[#334155] space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Cash Required</span>
+                              <span className="font-bold text-[#22D3EE] tabular-nums">
+                                {formatPrice('cashRequired' in metrics ? (metrics as FlipMetrics).cashRequired : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">ROI</span>
+                              <span className={`font-bold tabular-nums ${'roi' in metrics && (metrics as FlipMetrics).roi >= 20 ? 'text-[#10B981]' : (metrics as FlipMetrics).roi >= 10 ? 'text-[#22D3EE]' : ''}`}>
+                                {'roi' in metrics ? `${(metrics as FlipMetrics).roi.toFixed(1)}%` : '0%'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Annualized ROI</span>
+                              <span className="font-bold tabular-nums">
+                                {'annualizedRoi' in metrics ? `${(metrics as FlipMetrics).annualizedRoi.toFixed(0)}%` : '0%'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </>
                     ) : strategyType === 'str' && isSTRState(state) ? (
                       // STR Expenses fields
                       <>
@@ -1569,44 +2017,49 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                       </>
                     ) : (
                       // LTR Expenses fields
-                      <>
-                        <SliderInput
-                          label="Property Taxes"
-                          value={state.annualPropertyTax}
-                          displayValue={`${formatPrice(state.annualPropertyTax)}/yr`}
-                          min={0}
-                          max={20000}
-                          minLabel="$0"
-                          maxLabel="$20,000"
-                          onChange={(v) => updateState('annualPropertyTax', v)}
-                        />
-                        <SliderInput
-                          label="Insurance"
-                          value={state.annualInsurance}
-                          displayValue={`${formatPrice(state.annualInsurance)}/yr`}
-                          min={0}
-                          max={10000}
-                          minLabel="$0"
-                          maxLabel="$10,000"
-                          onChange={(v) => updateState('annualInsurance', v)}
-                        />
-                        <SliderInput
-                          label="Management Rate"
-                          value={('managementRate' in state ? state.managementRate : 0) * 100}
-                          displayValue={`${(('managementRate' in state ? state.managementRate : 0) * 100).toFixed(0)}%`}
-                          min={0}
-                          max={15}
-                          minLabel="0%"
-                          maxLabel="15%"
-                          onChange={(v) => updateState('managementRate', v / 100)}
-                        />
-                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
-                          <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">TOTAL EXPENSES</div>
-                          <div className="text-2xl font-bold text-[#0A1628] tabular-nums">
-                            {formatPrice('totalMonthlyExpenses' in metrics ? (metrics as LTRDealMakerMetrics).totalMonthlyExpenses * 12 : 0)}/yr
-                          </div>
-                        </div>
-                      </>
+                      (() => {
+                        const ltrState = state as LTRDealMakerState
+                        return (
+                          <>
+                            <SliderInput
+                              label="Property Taxes"
+                              value={ltrState.annualPropertyTax}
+                              displayValue={`${formatPrice(ltrState.annualPropertyTax)}/yr`}
+                              min={0}
+                              max={20000}
+                              minLabel="$0"
+                              maxLabel="$20,000"
+                              onChange={(v) => updateState('annualPropertyTax', v)}
+                            />
+                            <SliderInput
+                              label="Insurance"
+                              value={ltrState.annualInsurance}
+                              displayValue={`${formatPrice(ltrState.annualInsurance)}/yr`}
+                              min={0}
+                              max={10000}
+                              minLabel="$0"
+                              maxLabel="$10,000"
+                              onChange={(v) => updateState('annualInsurance', v)}
+                            />
+                            <SliderInput
+                              label="Management Rate"
+                              value={(ltrState.managementRate ?? 0) * 100}
+                              displayValue={`${((ltrState.managementRate ?? 0) * 100).toFixed(0)}%`}
+                              min={0}
+                              max={15}
+                              minLabel="0%"
+                              maxLabel="15%"
+                              onChange={(v) => updateState('managementRate', v / 100)}
+                            />
+                            <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4 text-right">
+                              <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">TOTAL EXPENSES</div>
+                              <div className="text-2xl font-bold text-[#0A1628] tabular-nums">
+                                {formatPrice('totalMonthlyExpenses' in metrics ? (metrics as LTRDealMakerMetrics).totalMonthlyExpenses * 12 : 0)}/yr
+                              </div>
+                            </div>
+                          </>
+                        )
+                      })()
                     )}
                   </>
                 )}
