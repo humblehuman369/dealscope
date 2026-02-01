@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Verdict IQ Works | InvestIQ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal: #007ea7;
+            --teal-light: #e8f7fa;
+            --teal-bg: #e5f6f8;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --blue-50: #eff6ff;
+            --blue-100: #dbeafe;
+            --formula-bg: #f1f5f9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-800);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-container {
+            background: var(--white);
+            border-radius: 16px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .modal-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 24px 24px 20px;
+            position: relative;
+        }
+
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--teal);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .info-icon svg {
+            width: 20px;
+            height: 20px;
+            color: var(--white);
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .current-score {
+            font-size: 0.95rem;
+            color: var(--gray-500);
+        }
+
+        .current-score .score-value {
+            color: var(--teal);
+            font-weight: 600;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--gray-400);
+            transition: color 0.2s;
+        }
+
+        .close-button:hover {
+            color: var(--gray-600);
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            background: var(--teal-bg);
+            padding: 20px 24px;
+            text-align: center;
+        }
+
+        .hero-subtitle {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-bottom: 4px;
+        }
+
+        .hero-question {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--teal);
+        }
+
+        /* Content */
+        .modal-content {
+            padding: 24px;
+        }
+
+        /* Section Labels */
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--teal);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--teal-light);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .card-icon svg {
+            width: 20px;
+            height: 20px;
+            color: var(--teal);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            line-height: 1.4;
+        }
+
+        /* Assumptions Grid */
+        .assumptions-label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-bottom: 12px;
+        }
+
+        .assumptions-label strong {
+            font-weight: 600;
+        }
+
+        .assumptions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 24px;
+            margin-bottom: 16px;
+        }
+
+        .assumption-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .assumption-item::before {
+            content: '•';
+            color: var(--teal);
+            font-weight: 700;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: var(--blue-50);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+        }
+
+        .info-box p {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: var(--gray-700);
+        }
+
+        /* Footnote */
+        .footnote {
+            font-size: 0.8rem;
+            font-style: italic;
+            color: var(--gray-400);
+        }
+
+        /* Formula Box */
+        .formula-box {
+            background: var(--formula-bg);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 16px 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--gray-700);
+            line-height: 1.6;
+        }
+
+        .formula-line {
+            display: block;
+        }
+
+        .formula-line.indent {
+            padding-left: 24px;
+        }
+
+        /* Explanation Text */
+        .explanation-text {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            line-height: 1.6;
+            margin-top: 12px;
+        }
+
+        /* Numbered Section */
+        .numbered-section {
+            margin-top: 8px;
+        }
+
+        .numbered-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--teal);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            body {
+                padding: 0;
+                align-items: flex-start;
+            }
+
+            .modal-container {
+                border-radius: 0;
+                min-height: 100vh;
+            }
+
+            .assumptions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="modal-container">
+        <!-- Header -->
+        <div class="modal-header">
+            <div class="info-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+            </div>
+            <div class="header-text">
+                <h1 class="modal-title">How Verdict IQ Works</h1>
+                <p class="current-score">Your current score: <span class="score-value">89</span></p>
+            </div>
+            <button class="close-button" aria-label="Close">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Hero Banner -->
+        <div class="hero-banner">
+            <p class="hero-subtitle">The Verdict IQ Score answers:</p>
+            <p class="hero-question">"How likely can you negotiate the required discount?"</p>
+        </div>
+
+        <!-- Content -->
+        <div class="modal-content">
+            <!-- Understanding Breakeven Price Section -->
+            <div class="section-label">Understanding Breakeven Price</div>
+            
+            <div class="info-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="6" x2="12" y2="12"/>
+                            <line x1="12" y1="18" x2="12" y2="18"/>
+                            <path d="M9 10h6"/>
+                            <path d="M9 14h6"/>
+                        </svg>
+                    </div>
+                    <h2 class="card-title">The maximum price you can pay and still break even on monthly cash flow.</h2>
+                </div>
+
+                <p class="assumptions-label">Breakeven is calculated using <strong>YOUR</strong> assumptions:</p>
+                
+                <div class="assumptions-grid">
+                    <div class="assumption-item">Down payment %</div>
+                    <div class="assumption-item">Interest rate</div>
+                    <div class="assumption-item">Loan term</div>
+                    <div class="assumption-item">Vacancy rate</div>
+                    <div class="assumption-item">Management fees</div>
+                    <div class="assumption-item">Maintenance %</div>
+                </div>
+
+                <div class="info-box">
+                    <p><strong>At breakeven:</strong> Monthly rental income exactly covers all expenses (mortgage, taxes, insurance, vacancy, maintenance, management). Any price below breakeven = positive cash flow.</p>
+                </div>
+
+                <p class="footnote">Based on LTR (Long-Term Rental) revenue model using estimated market rent.</p>
+            </div>
+
+            <!-- Deal Gap Section -->
+            <div class="numbered-section">
+                <div class="numbered-label">1. Deal Gap %</div>
+                
+                <div class="info-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                                <polyline points="17 6 23 6 23 12"/>
+                            </svg>
+                        </div>
+                        <h2 class="card-title">The discount needed from asking price to reach your breakeven price.</h2>
+                    </div>
+
+                    <div class="formula-box">
+                        <span class="formula-line">Deal Gap = (List Price or Market Value − Breakeven) /</span>
+                        <span class="formula-line indent">List Price or Market Value × 100</span>
+                    </div>
+
+                    <p class="explanation-text">Breakeven is the maximum price where monthly cash flow = $0, calculated using YOUR financing terms (down payment, interest rate, vacancy, etc.).</p>
+                    
+                    <p class="explanation-text">For listed properties, List Price is used. For off-market properties, Market Value (Zestimate) is used.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
