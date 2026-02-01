@@ -110,7 +110,19 @@ export function InvestmentAnalysis({
       )}
 
       {/* Price Cards */}
-      <div className="text-[13px] text-[#64748B] mb-3">Three ways to approach this deal:</div>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[13px] text-[#64748B]">Three ways to approach this deal:</span>
+        <button 
+          className="flex items-center gap-1.5 text-[#0891B2] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => setShowCalculation(!showCalculation)}
+        >
+          <ChevronDown 
+            className="w-3.5 h-3.5 transition-transform" 
+            style={{ transform: showCalculation ? 'rotate(180deg)' : 'rotate(0deg)' }}
+          />
+          See how we calculated this
+        </button>
+      </div>
       <div className="grid grid-cols-3 gap-2 mb-3">
         <PriceCard 
           label="Breakeven" 
@@ -129,18 +141,6 @@ export function InvestmentAnalysis({
           desc="30% discount for assignment" 
         />
       </div>
-
-      {/* See Calculation Toggle */}
-      <button 
-        className="flex items-center justify-center gap-1.5 w-full py-2 text-[#0891B2] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-80 transition-opacity"
-        onClick={() => setShowCalculation(!showCalculation)}
-      >
-        <ChevronDown 
-          className="w-3.5 h-3.5 transition-transform" 
-          style={{ transform: showCalculation ? 'rotate(180deg)' : 'rotate(0deg)' }}
-        />
-        See how we calculated this
-      </button>
 
       {/* Calculation Breakdown */}
       {showCalculation && (
