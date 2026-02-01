@@ -220,7 +220,8 @@ def validate_settings(settings: Settings) -> None:
             errors.append("DATABASE_URL must be set to a production database in production mode")
         
         if not settings.STRIPE_WEBHOOK_SECRET:
-            errors.append("STRIPE_WEBHOOK_SECRET must be set in production for secure webhook handling")
+            # Warning only - Stripe webhooks will fail but app will start
+            logger.warning("STRIPE_WEBHOOK_SECRET not set - Stripe webhooks will not work")
     
     if errors:
         error_msg = "Configuration errors:\n" + "\n".join(f"  - {e}" for e in errors)
