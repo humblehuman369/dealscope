@@ -195,6 +195,17 @@ class DealMakerRecord(BaseModel):
     selling_costs_pct: Optional[float] = Field(None, description="Selling costs as percentage of sale price")
     capital_gains_rate: Optional[float] = Field(None, description="Capital gains tax rate")
     
+    # === HouseHack-Specific Fields (optional - only used for HouseHack strategy) ===
+    total_units: Optional[int] = Field(None, description="Total number of units in property")
+    owner_occupied_units: Optional[int] = Field(None, description="Number of units owner occupies")
+    owner_unit_market_rent: Optional[float] = Field(None, description="Market rent for owner's unit")
+    loan_type: Optional[str] = Field(None, description="Loan type: fha, conventional, va")
+    pmi_rate: Optional[float] = Field(None, description="PMI/MIP annual rate")
+    avg_rent_per_unit: Optional[float] = Field(None, description="Average rent per rented unit")
+    current_housing_payment: Optional[float] = Field(None, description="Owner's current housing payment")
+    utilities_monthly: Optional[float] = Field(None, description="Monthly shared utilities")
+    capex_rate: Optional[float] = Field(None, description="CapEx reserve as percentage of rent")
+    
     # Strategy type
     strategy_type: Optional[str] = Field(None, description="Investment strategy type (ltr, str, brrrr, flip, house_hack, wholesale)")
     
@@ -306,6 +317,17 @@ class DealMakerRecordUpdate(BaseModel):
     days_on_market: Optional[int] = Field(None, ge=0, le=365, description="Expected days on market")
     selling_costs_pct: Optional[float] = Field(None, ge=0, le=0.15, description="Selling costs %")
     capital_gains_rate: Optional[float] = Field(None, ge=0, le=0.5, description="Capital gains tax rate")
+    
+    # HouseHack-Specific Fields
+    total_units: Optional[int] = Field(None, ge=2, le=8, description="Total units in property")
+    owner_occupied_units: Optional[int] = Field(None, ge=1, le=2, description="Owner occupied units")
+    owner_unit_market_rent: Optional[float] = Field(None, ge=0, description="Owner unit market rent")
+    loan_type: Optional[str] = Field(None, description="Loan type: fha, conventional, va")
+    pmi_rate: Optional[float] = Field(None, ge=0, le=0.02, description="PMI/MIP rate")
+    avg_rent_per_unit: Optional[float] = Field(None, ge=0, description="Avg rent per unit")
+    current_housing_payment: Optional[float] = Field(None, ge=0, description="Current housing payment")
+    utilities_monthly: Optional[float] = Field(None, ge=0, description="Monthly utilities")
+    capex_rate: Optional[float] = Field(None, ge=0, le=0.15, description="CapEx reserve %")
     
     # Strategy type
     strategy_type: Optional[str] = Field(None, description="Strategy type")

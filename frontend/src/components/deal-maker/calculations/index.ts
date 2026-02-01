@@ -6,3 +6,4 @@
 export * from './strCalculations'
 export * from './brrrrCalculations'
 export * from './flipCalculations'
+export * from './houseHackCalculations'

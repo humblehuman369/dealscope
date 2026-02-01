@@ -478,7 +478,7 @@ export const DEFAULT_STR_DEAL_MAKER_STATE: STRDealMakerState = {
 /**
  * Get the default state for a given strategy type
  */
-export function getDefaultStateForStrategy(strategy: StrategyType): DealMakerState | STRDealMakerState | BRRRRDealMakerState | FlipDealMakerState {
+export function getDefaultStateForStrategy(strategy: StrategyType): DealMakerState | STRDealMakerState | BRRRRDealMakerState | FlipDealMakerState | HouseHackDealMakerState {
   switch (strategy) {
     case 'str':
       return { ...DEFAULT_STR_DEAL_MAKER_STATE }
@@ -486,6 +486,8 @@ export function getDefaultStateForStrategy(strategy: StrategyType): DealMakerSta
       return { ...DEFAULT_BRRRR_DEAL_MAKER_STATE }
     case 'flip':
       return { ...DEFAULT_FLIP_DEAL_MAKER_STATE }
+    case 'house_hack':
+      return { ...DEFAULT_HOUSEHACK_DEAL_MAKER_STATE }
     case 'ltr':
     default:
       return { ...DEFAULT_DEAL_MAKER_STATE }
@@ -889,4 +891,194 @@ export function isFlipState(state: AnyDealMakerState | BRRRRDealMakerState | Fli
  */
 export function isFlipMetrics(metrics: AnyDealMakerMetrics | BRRRRMetrics | FlipMetrics): metrics is FlipMetrics {
   return 'maxAllowableOffer' in metrics && 'meets70PercentRule' in metrics
+}
+
+// =============================================================================
+// HOUSE HACK STATE
+// =============================================================================
+
+export type HouseHackLoanType = 'fha' | 'conventional' | 'va'
+
+export interface HouseHackDealMakerState {
+  // Phase 1: Buy
+  purchasePrice: number
+  totalUnits: number              // Total units (2-8)
+  ownerOccupiedUnits: number      // Units owner lives in (1-2)
+  ownerUnitMarketRent: number     // Market rent for owner's unit (for comparison)
+  
+  // Phase 2: Finance (FHA/Low Down Payment)
+  loanType: HouseHackLoanType
+  downPaymentPercent: number      // 3.5% FHA min, 0% VA
+  interestRate: number
+  loanTermYears: number
+  pmiRate: number                 // PMI/MIP annual rate (0.85% FHA)
+  closingCostsPercent: number
+  
+  // Phase 3: Rent (Unit Income)
+  avgRentPerUnit: number          // Average rent per rented unit
+  vacancyRate: number
+  currentHousingPayment: number   // Owner's current rent (for comparison)
+  
+  // Phase 4: Expenses
+  annualPropertyTax: number
+  annualInsurance: number
+  monthlyHoa: number
+  utilitiesMonthly: number        // Shared utilities owner pays
+  maintenanceRate: number         // % of rent
+  capexRate: number               // % of rent for reserves
+}
+
+// =============================================================================
+// HOUSE HACK CALCULATED METRICS
+// =============================================================================
+
+export interface HouseHackMetrics {
+  // Financing
+  loanAmount: number
+  monthlyPrincipalInterest: number
+  monthlyPmi: number
+  monthlyTaxes: number
+  monthlyInsurance: number
+  monthlyPITI: number             // P&I + Taxes + Insurance + PMI + HOA
+  downPayment: number
+  closingCosts: number
+  cashToClose: number
+  
+  // Rental Income
+  rentedUnits: number
+  grossRentalIncome: number       // Total from rented units
+  effectiveRentalIncome: number   // After vacancy
+  
+  // Operating Expenses
+  monthlyMaintenance: number
+  monthlyCapex: number
+  monthlyOperatingExpenses: number  // Utilities + maintenance + capex
+  
+  // Net Income
+  netRentalIncome: number         // After all expenses
+  
+  // Core House Hack Metrics
+  effectiveHousingCost: number    // PITI - Net Rental Income (KEY METRIC)
+  housingCostSavings: number      // Current rent - effective cost
+  housingOffsetPercent: number    // Net income / PITI × 100
+  livesForFree: boolean           // effectiveHousingCost <= 0
+  
+  // Investment Returns (if treating as investment)
+  annualCashFlow: number
+  cashOnCashReturn: number
+  
+  // Move-Out Scenario (full rental)
+  fullRentalIncome: number        // If owner unit also rented
+  fullRentalCashFlow: number
+  fullRentalCoCReturn: number
+  
+  // Scores
+  dealScore: number
+  dealGrade: DealGrade
+}
+
+// =============================================================================
+// HOUSE HACK SLIDER CONFIGURATION
+// =============================================================================
+
+export interface HouseHackSliderConfig {
+  id: keyof HouseHackDealMakerState
+  label: string
+  min: number
+  max: number
+  step: number
+  format: SliderFormat | 'units'
+  defaultValue?: number
+  sourceLabel?: string
+  isEstimate?: boolean
+}
+
+// Phase 1: Buy sliders
+export const HOUSEHACK_BUY_SLIDERS: HouseHackSliderConfig[] = [
+  { id: 'purchasePrice', label: 'Purchase Price', min: 100000, max: 2000000, step: 10000, format: 'currency', sourceLabel: 'Multi-unit property' },
+  { id: 'totalUnits', label: 'Total Units', min: 2, max: 8, step: 1, format: 'units', sourceLabel: 'Duplex to 8-plex' },
+  { id: 'ownerOccupiedUnits', label: 'Owner Units', min: 1, max: 2, step: 1, format: 'units', sourceLabel: 'Units you live in' },
+  { id: 'ownerUnitMarketRent', label: 'Owner Unit Market Rent', min: 500, max: 5000, step: 50, format: 'currencyPerMonth', sourceLabel: 'For comparison' },
+]
+
+// Phase 2: Finance sliders
+export const HOUSEHACK_FINANCE_SLIDERS: HouseHackSliderConfig[] = [
+  { id: 'downPaymentPercent', label: 'Down Payment', min: 0, max: 0.25, step: 0.005, format: 'percentage', sourceLabel: 'FHA: 3.5% min' },
+  { id: 'interestRate', label: 'Interest Rate', min: 0.04, max: 0.10, step: 0.00125, format: 'percentage', sourceLabel: 'Current rates' },
+  { id: 'pmiRate', label: 'PMI/MIP Rate', min: 0, max: 0.015, step: 0.0005, format: 'percentage', sourceLabel: 'FHA: 0.85%' },
+  { id: 'closingCostsPercent', label: 'Closing Costs', min: 0.02, max: 0.05, step: 0.005, format: 'percentage', sourceLabel: 'Buyer closing' },
+]
+
+// Phase 3: Rent sliders
+export const HOUSEHACK_RENT_SLIDERS: HouseHackSliderConfig[] = [
+  { id: 'avgRentPerUnit', label: 'Avg Rent Per Unit', min: 500, max: 5000, step: 50, format: 'currencyPerMonth', sourceLabel: 'Market rent' },
+  { id: 'vacancyRate', label: 'Vacancy Rate', min: 0, max: 0.15, step: 0.01, format: 'percentage', sourceLabel: 'Area average' },
+  { id: 'currentHousingPayment', label: 'Current Housing Cost', min: 0, max: 5000, step: 100, format: 'currencyPerMonth', sourceLabel: 'What you pay now' },
+]
+
+// Phase 4: Expenses sliders
+export const HOUSEHACK_EXPENSES_SLIDERS: HouseHackSliderConfig[] = [
+  { id: 'annualPropertyTax', label: 'Property Taxes', min: 0, max: 30000, step: 500, format: 'currencyPerYear', sourceLabel: 'County assessment' },
+  { id: 'annualInsurance', label: 'Insurance', min: 0, max: 10000, step: 100, format: 'currencyPerYear', sourceLabel: 'Multi-unit rate' },
+  { id: 'monthlyHoa', label: 'HOA', min: 0, max: 1000, step: 25, format: 'currencyPerMonth' },
+  { id: 'utilitiesMonthly', label: 'Shared Utilities', min: 0, max: 1000, step: 25, format: 'currencyPerMonth', sourceLabel: 'Owner paid' },
+  { id: 'maintenanceRate', label: 'Maintenance', min: 0, max: 0.15, step: 0.01, format: 'percentage', sourceLabel: '% of rent' },
+  { id: 'capexRate', label: 'CapEx Reserve', min: 0, max: 0.10, step: 0.01, format: 'percentage', sourceLabel: '% of rent' },
+]
+
+// =============================================================================
+// HOUSE HACK DEFAULT STATE
+// =============================================================================
+
+/**
+ * HOUSE HACK FALLBACK DEFAULT STATE
+ * 
+ * These values are used only when the API hasn't loaded yet.
+ * Values should match backend/app/core/defaults.py to minimize visual jumps.
+ */
+export const DEFAULT_HOUSEHACK_DEAL_MAKER_STATE: HouseHackDealMakerState = {
+  // Phase 1: Buy
+  purchasePrice: 400000,
+  totalUnits: 4,
+  ownerOccupiedUnits: 1,
+  ownerUnitMarketRent: 1500,
+  
+  // Phase 2: Finance (FHA defaults)
+  loanType: 'fha',
+  downPaymentPercent: 0.035,      // FHA minimum
+  interestRate: 0.065,
+  loanTermYears: 30,
+  pmiRate: 0.0085,                // FHA MIP rate
+  closingCostsPercent: 0.03,
+  
+  // Phase 3: Rent
+  avgRentPerUnit: 1500,
+  vacancyRate: 0.05,
+  currentHousingPayment: 2000,    // What owner currently pays
+  
+  // Phase 4: Expenses
+  annualPropertyTax: 6000,
+  annualInsurance: 2400,
+  monthlyHoa: 0,
+  utilitiesMonthly: 200,
+  maintenanceRate: 0.05,
+  capexRate: 0.05,
+}
+
+// =============================================================================
+// HOUSE HACK HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Check if a state is a HouseHack state
+ */
+export function isHouseHackState(state: AnyDealMakerState | BRRRRDealMakerState | FlipDealMakerState | HouseHackDealMakerState): state is HouseHackDealMakerState {
+  return 'totalUnits' in state && 'ownerOccupiedUnits' in state && 'pmiRate' in state
+}
+
+/**
+ * Check if metrics are HouseHack metrics
+ */
+export function isHouseHackMetrics(metrics: AnyDealMakerMetrics | BRRRRMetrics | FlipMetrics | HouseHackMetrics): metrics is HouseHackMetrics {
+  return 'effectiveHousingCost' in metrics && 'housingOffsetPercent' in metrics && 'livesForFree' in metrics
 }

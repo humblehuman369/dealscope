@@ -144,6 +144,17 @@ export interface DealMakerRecord {
   selling_costs_pct?: number
   capital_gains_rate?: number
   
+  // HouseHack-specific adjustments (optional - only present for HouseHack strategy)
+  total_units?: number
+  owner_occupied_units?: number
+  owner_unit_market_rent?: number
+  loan_type?: string
+  pmi_rate?: number
+  avg_rent_per_unit?: number
+  current_housing_payment?: number
+  utilities_monthly?: number
+  capex_rate?: number
+  
   // Strategy type
   strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
   
@@ -223,6 +234,17 @@ export interface DealMakerUpdate {
   days_on_market?: number
   selling_costs_pct?: number
   capital_gains_rate?: number
+  
+  // HouseHack-specific fields
+  total_units?: number
+  owner_occupied_units?: number
+  owner_unit_market_rent?: number
+  loan_type?: string
+  pmi_rate?: number
+  avg_rent_per_unit?: number
+  current_housing_payment?: number
+  utilities_monthly?: number
+  capex_rate?: number
   
   // Strategy type
   strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'

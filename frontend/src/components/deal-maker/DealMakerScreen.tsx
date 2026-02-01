@@ -34,10 +34,14 @@ import {
   FlipDealMakerState,
   FlipMetrics,
   DEFAULT_FLIP_DEAL_MAKER_STATE,
+  HouseHackDealMakerState,
+  HouseHackMetrics,
+  DEFAULT_HOUSEHACK_DEAL_MAKER_STATE,
 } from './types'
 import { calculateSTRMetrics } from './calculations/strCalculations'
 import { calculateBRRRRMetrics } from './calculations/brrrrCalculations'
 import { calculateFlipMetrics } from './calculations/flipCalculations'
+import { calculateHouseHackMetrics } from './calculations/houseHackCalculations'
 
 // Types
 export interface DealMakerPropertyData {
@@ -86,7 +90,7 @@ interface LTRDealMakerState {
 }
 
 // Union type for any strategy state
-type DealMakerState = LTRDealMakerState | STRDealMakerState | BRRRRDealMakerState | FlipDealMakerState
+type DealMakerState = LTRDealMakerState | STRDealMakerState | BRRRRDealMakerState | FlipDealMakerState | HouseHackDealMakerState
 
 // Local type guard for STR state
 function isSTRState(state: DealMakerState): state is STRDealMakerState {
@@ -103,6 +107,11 @@ function isFlipState(state: DealMakerState): state is FlipDealMakerState {
   return 'financingType' in state && 'sellingCostsPct' in state && 'daysOnMarket' in state
 }
 
+// Local type guard for HouseHack state
+function isHouseHackState(state: DealMakerState): state is HouseHackDealMakerState {
+  return 'totalUnits' in state && 'ownerOccupiedUnits' in state && 'pmiRate' in state
+}
+
 interface LTRDealMakerMetrics {
   cashNeeded: number
   dealGap: number
@@ -117,7 +126,7 @@ interface LTRDealMakerMetrics {
 }
 
 // Union type for any strategy metrics
-type DealMakerMetrics = LTRDealMakerMetrics | STRMetrics | BRRRRMetrics | FlipMetrics
+type DealMakerMetrics = LTRDealMakerMetrics | STRMetrics | BRRRRMetrics | FlipMetrics | HouseHackMetrics
 
 type AccordionSection = 'buyPrice' | 'financing' | 'rehab' | 'income' | 'expenses' | null
 
@@ -332,6 +341,19 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     }
   }
 
+  // Initialize HouseHack local state for unsaved properties
+  const getInitialHouseHackState = (): HouseHackDealMakerState => {
+    const basePrice = listPrice ?? property.price ?? 400000
+    return {
+      ...DEFAULT_HOUSEHACK_DEAL_MAKER_STATE,
+      purchasePrice: basePrice,
+      ownerUnitMarketRent: property.rent ? Math.round(property.rent / 4) : 1500, // Assume 4 units, owner gets 1
+      avgRentPerUnit: property.rent ? Math.round(property.rent / 4) : 1500,
+      annualPropertyTax: property.propertyTax || 6000,
+      annualInsurance: property.insurance || 2400,
+    }
+  }
+
   // Get initial state based on strategy
   const getInitialLocalState = (strategy: StrategyType): DealMakerState => {
     if (strategy === 'str') {
@@ -343,6 +365,9 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     if (strategy === 'flip') {
       return getInitialFlipState()
     }
+    if (strategy === 'house_hack') {
+      return getInitialHouseHackState()
+    }
     return getInitialLTRState()
   }
   
@@ -353,6 +378,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
   const [localLTRState, setLocalLTRState] = useState<LTRDealMakerState>(getInitialLTRState)
   const [localSTRState, setLocalSTRState] = useState<STRDealMakerState>(getInitialSTRState)
   const [localFlipState, setLocalFlipState] = useState<FlipDealMakerState>(getInitialFlipState)
+  const [localHouseHackState, setLocalHouseHackState] = useState<HouseHackDealMakerState>(getInitialHouseHackState)
   const [localBRRRRState, setLocalBRRRRState] = useState<BRRRRDealMakerState>(getInitialBRRRRState)
   
   // Load Deal Maker record from backend for saved properties
@@ -449,6 +475,31 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         } as FlipDealMakerState
       }
       
+      // For HouseHack strategy, return HouseHack state from store
+      if (strategyType === 'house_hack') {
+        return {
+          purchasePrice: record.buy_price,
+          totalUnits: record.total_units ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.totalUnits,
+          ownerOccupiedUnits: record.owner_occupied_units ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.ownerOccupiedUnits,
+          ownerUnitMarketRent: record.owner_unit_market_rent ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.ownerUnitMarketRent,
+          loanType: (record.loan_type as 'fha' | 'conventional' | 'va') ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.loanType,
+          downPaymentPercent: record.down_payment_pct,
+          interestRate: record.interest_rate,
+          loanTermYears: record.loan_term_years,
+          pmiRate: record.pmi_rate ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.pmiRate,
+          closingCostsPercent: record.closing_costs_pct,
+          avgRentPerUnit: record.avg_rent_per_unit ?? record.monthly_rent ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.avgRentPerUnit,
+          vacancyRate: record.vacancy_rate,
+          currentHousingPayment: record.current_housing_payment ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.currentHousingPayment,
+          annualPropertyTax: record.annual_property_tax,
+          annualInsurance: record.annual_insurance,
+          monthlyHoa: record.monthly_hoa,
+          utilitiesMonthly: record.utilities_monthly ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.utilitiesMonthly,
+          maintenanceRate: record.maintenance_pct,
+          capexRate: record.capex_rate ?? DEFAULT_HOUSEHACK_DEAL_MAKER_STATE.capexRate,
+        } as HouseHackDealMakerState
+      }
+      
       // Default: LTR state
       return {
         buyPrice: record.buy_price,
@@ -479,8 +530,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     if (strategyType === 'flip') {
       return localFlipState
     }
+    if (strategyType === 'house_hack') {
+      return localHouseHackState
+    }
     return localLTRState
-  }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, localLTRState, localSTRState, localBRRRRState, localFlipState])
+  }, [isSavedPropertyMode, hasRecord, dealMakerStore.record, strategyType, localLTRState, localSTRState, localBRRRRState, localFlipState, localHouseHackState])
   
   // Navigate to Verdict IQ page
   // For saved properties, Verdict will read from the store (same data source)
@@ -501,7 +555,39 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       // Build session data based on strategy type
       let sessionData: Record<string, unknown>
       
-      if (strategyType === 'flip' && isFlipState(state)) {
+      if (strategyType === 'house_hack' && isHouseHackState(state)) {
+        // HouseHack-specific session data
+        const hhMetrics = metrics as HouseHackMetrics
+        sessionData = {
+          address: fullAddr,
+          purchasePrice: state.purchasePrice,
+          monthlyRent: state.avgRentPerUnit * (state.totalUnits - state.ownerOccupiedUnits),
+          propertyTaxes: state.annualPropertyTax,
+          insurance: state.annualInsurance,
+          arv: 0,
+          zpid: property.zpid,
+          strategy: 'house_hack',
+          // HouseHack-specific values
+          totalUnits: state.totalUnits,
+          ownerOccupiedUnits: state.ownerOccupiedUnits,
+          ownerUnitMarketRent: state.ownerUnitMarketRent,
+          loanType: state.loanType,
+          pmiRate: state.pmiRate,
+          avgRentPerUnit: state.avgRentPerUnit,
+          currentHousingPayment: state.currentHousingPayment,
+          utilitiesMonthly: state.utilitiesMonthly,
+          capexRate: state.capexRate,
+          effectiveHousingCost: hhMetrics.effectiveHousingCost,
+          housingOffsetPercent: hhMetrics.housingOffsetPercent,
+          livesForFree: hhMetrics.livesForFree,
+          downPaymentPct: state.downPaymentPercent,
+          closingCostsPct: state.closingCostsPercent,
+          vacancyRate: state.vacancyRate,
+          maintenancePct: state.maintenanceRate,
+          monthlyHoa: state.monthlyHoa,
+          timestamp: Date.now(),
+        }
+      } else if (strategyType === 'flip' && isFlipState(state)) {
         // Flip-specific session data
         sessionData = {
           address: fullAddr,
@@ -636,7 +722,10 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       let monthlyRentValue: number
       let purchasePriceValue: number
       
-      if (strategyType === 'flip' && isFlipState(state)) {
+      if (strategyType === 'house_hack' && isHouseHackState(state)) {
+        monthlyRentValue = state.avgRentPerUnit * (state.totalUnits - state.ownerOccupiedUnits)
+        purchasePriceValue = state.purchasePrice
+      } else if (strategyType === 'flip' && isFlipState(state)) {
         monthlyRentValue = 0 // Flip has no rental income
         purchasePriceValue = state.purchasePrice
       } else if (strategyType === 'brrrr' && isBRRRRState(state)) {
@@ -660,7 +749,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       let insuranceValue = 0
       let arvValue = 0
       
-      if (strategyType === 'flip' && isFlipState(state)) {
+      if (strategyType === 'house_hack' && isHouseHackState(state)) {
+        propertyTaxValue = state.annualPropertyTax
+        insuranceValue = state.annualInsurance
+        arvValue = 0
+      } else if (strategyType === 'flip' && isFlipState(state)) {
         // Flip doesn't have annual property tax/insurance fields, use defaults
         propertyTaxValue = 0
         insuranceValue = 0
@@ -732,6 +825,11 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     // For Flip strategy, use Flip calculations
     if (strategyType === 'flip' && isFlipState(state)) {
       return calculateFlipMetrics(state)
+    }
+    
+    // For HouseHack strategy, use HouseHack calculations
+    if (strategyType === 'house_hack' && isHouseHackState(state)) {
+      return calculateHouseHackMetrics(state)
     }
     
     // For saved properties with LTR, use cached metrics from store
@@ -865,6 +963,16 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         daysOnMarket: 'days_on_market',
         sellingCostsPct: 'selling_costs_pct',
         capitalGainsRate: 'capital_gains_rate',
+        // HouseHack-specific
+        totalUnits: 'total_units',
+        ownerOccupiedUnits: 'owner_occupied_units',
+        ownerUnitMarketRent: 'owner_unit_market_rent',
+        loanType: 'loan_type',
+        pmiRate: 'pmi_rate',
+        avgRentPerUnit: 'avg_rent_per_unit',
+        currentHousingPayment: 'current_housing_payment',
+        utilitiesMonthly: 'utilities_monthly',
+        capexRate: 'capex_rate',
       }
       
       const storeField = fieldMap[key]
@@ -879,6 +987,8 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         setLocalBRRRRState(prev => ({ ...prev, [key]: value }))
       } else if (strategyType === 'flip') {
         setLocalFlipState(prev => ({ ...prev, [key]: value }))
+      } else if (strategyType === 'house_hack') {
+        setLocalHouseHackState(prev => ({ ...prev, [key]: value }))
       } else {
         setLocalLTRState(prev => ({ ...prev, [key]: value }))
       }
@@ -960,6 +1070,22 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         { label: 'ROI', value: `${flipMetrics.roi.toFixed(1)}%`, color: flipMetrics.roi >= 20 ? 'teal' : flipMetrics.roi >= 10 ? 'cyan' : 'white' },
         { label: 'Ann. ROI', value: `${flipMetrics.annualizedRoi.toFixed(0)}%`, color: flipMetrics.annualizedRoi >= 30 ? 'teal' : 'white' },
         { label: '70% Rule', value: flipMetrics.meets70PercentRule ? 'PASS' : 'FAIL', color: flipMetrics.meets70PercentRule ? 'teal' : 'rose' },
+      ]
+    }
+    
+    // HouseHack metrics - focus on housing cost reduction
+    if (strategyType === 'house_hack' && 'effectiveHousingCost' in metrics) {
+      const hhMetrics = metrics as HouseHackMetrics
+      const effectiveCostDisplay = hhMetrics.livesForFree 
+        ? (hhMetrics.effectiveHousingCost < 0 ? `+${formatPrice(Math.abs(hhMetrics.effectiveHousingCost))}` : 'FREE')
+        : formatPrice(hhMetrics.effectiveHousingCost)
+      return [
+        { label: 'Eff. Housing', value: effectiveCostDisplay, color: hhMetrics.livesForFree ? 'teal' : 'white' },
+        { label: 'Savings/Mo', value: formatPrice(hhMetrics.housingCostSavings), color: hhMetrics.housingCostSavings > 0 ? 'teal' : 'rose' },
+        { label: 'Offset %', value: `${hhMetrics.housingOffsetPercent.toFixed(0)}%`, color: hhMetrics.housingOffsetPercent >= 75 ? 'teal' : hhMetrics.housingOffsetPercent >= 50 ? 'cyan' : 'white' },
+        { label: 'Cash to Close', value: formatPrice(hhMetrics.cashToClose), color: 'white' },
+        { label: 'CoC Return', value: `${hhMetrics.cashOnCashReturn.toFixed(1)}%`, color: hhMetrics.cashOnCashReturn >= 10 ? 'teal' : 'white' },
+        { label: 'Full CF', value: formatPrice(hhMetrics.fullRentalCashFlow), color: hhMetrics.fullRentalCashFlow > 0 ? 'cyan' : 'rose' },
       ]
     }
     
@@ -1148,6 +1274,58 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           </div>
                         </div>
                       </>
+                    ) : strategyType === 'house_hack' && isHouseHackState(state) ? (
+                      // HouseHack Phase 1: Buy
+                      <>
+                        <SliderInput
+                          label="Purchase Price"
+                          value={state.purchasePrice}
+                          displayValue={formatPrice(state.purchasePrice)}
+                          min={100000}
+                          max={2000000}
+                          minLabel="$100,000"
+                          maxLabel="$2,000,000"
+                          onChange={(v) => updateState('purchasePrice', v)}
+                        />
+                        <SliderInput
+                          label="Total Units"
+                          value={state.totalUnits}
+                          displayValue={`${state.totalUnits} units`}
+                          min={2}
+                          max={8}
+                          minLabel="2"
+                          maxLabel="8"
+                          onChange={(v) => updateState('totalUnits', Math.round(v))}
+                        />
+                        <SliderInput
+                          label="Owner Units"
+                          value={state.ownerOccupiedUnits}
+                          displayValue={`${state.ownerOccupiedUnits} unit${state.ownerOccupiedUnits > 1 ? 's' : ''}`}
+                          min={1}
+                          max={2}
+                          minLabel="1"
+                          maxLabel="2"
+                          onChange={(v) => updateState('ownerOccupiedUnits', Math.round(v))}
+                        />
+                        <SliderInput
+                          label="Owner Unit Market Rent"
+                          value={state.ownerUnitMarketRent}
+                          displayValue={`${formatPrice(state.ownerUnitMarketRent)}/mo`}
+                          min={500}
+                          max={5000}
+                          minLabel="$500"
+                          maxLabel="$5,000"
+                          onChange={(v) => updateState('ownerUnitMarketRent', v)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">RENTED UNITS</div>
+                            <div className="text-xl font-bold text-[#0891B2] tabular-nums">
+                              {'rentedUnits' in metrics ? (metrics as HouseHackMetrics).rentedUnits : state.totalUnits - state.ownerOccupiedUnits}
+                            </div>
+                          </div>
+                        </div>
+                      </>
                     ) : (
                       // LTR/STR Buy Price
                       (() => {
@@ -1300,6 +1478,82 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                             <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">INTEREST COSTS</div>
                             <div className="text-base font-bold text-[#0A1628] tabular-nums">
                               {formatPrice('interestCosts' in metrics ? (metrics as FlipMetrics).interestCosts : 0)}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : strategyType === 'house_hack' && isHouseHackState(state) ? (
+                      // HouseHack Phase 2: Financing
+                      <>
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-4 mt-4 mb-4">
+                          <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-2">LOAN TYPE</div>
+                          <div className="flex gap-2">
+                            {(['fha', 'conventional', 'va'] as const).map((type) => (
+                              <button
+                                key={type}
+                                className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-colors ${
+                                  state.loanType === type
+                                    ? 'bg-[#0891B2] text-white'
+                                    : 'bg-white border border-[#E2E8F0] text-[#64748B]'
+                                }`}
+                                onClick={() => updateState('loanType', type)}
+                              >
+                                {type.toUpperCase()}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <SliderInput
+                          label="Down Payment"
+                          value={state.downPaymentPercent * 100}
+                          displayValue={`${(state.downPaymentPercent * 100).toFixed(1)}%`}
+                          min={state.loanType === 'va' ? 0 : state.loanType === 'fha' ? 3.5 : 5}
+                          max={25}
+                          minLabel={state.loanType === 'va' ? '0%' : state.loanType === 'fha' ? '3.5%' : '5%'}
+                          maxLabel="25%"
+                          onChange={(v) => updateState('downPaymentPercent', v / 100)}
+                        />
+                        <SliderInput
+                          label="Interest Rate"
+                          value={state.interestRate * 100}
+                          displayValue={`${(state.interestRate * 100).toFixed(2)}%`}
+                          min={4}
+                          max={10}
+                          minLabel="4%"
+                          maxLabel="10%"
+                          onChange={(v) => updateState('interestRate', v / 100)}
+                        />
+                        <SliderInput
+                          label="PMI/MIP Rate"
+                          value={state.pmiRate * 100}
+                          displayValue={`${(state.pmiRate * 100).toFixed(2)}%`}
+                          min={0}
+                          max={1.5}
+                          minLabel="0%"
+                          maxLabel="1.5%"
+                          onChange={(v) => updateState('pmiRate', v / 100)}
+                        />
+                        <SliderInput
+                          label="Closing Costs"
+                          value={state.closingCostsPercent * 100}
+                          displayValue={`${(state.closingCostsPercent * 100).toFixed(1)}%`}
+                          min={2}
+                          max={5}
+                          minLabel="2%"
+                          maxLabel="5%"
+                          onChange={(v) => updateState('closingCostsPercent', v / 100)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">CASH TO CLOSE</div>
+                            <div className="text-xl font-bold text-[#0A1628] tabular-nums">
+                              {formatPrice('cashToClose' in metrics ? (metrics as HouseHackMetrics).cashToClose : 0)}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">MONTHLY PITI</div>
+                            <div className="text-base font-bold text-[#0891B2] tabular-nums">
+                              {formatPrice('monthlyPITI' in metrics ? (metrics as HouseHackMetrics).monthlyPITI : 0)}/mo
                             </div>
                           </div>
                         </div>
@@ -1471,6 +1725,37 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                             <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">GROSS PROFIT (before costs)</div>
                             <div className={`text-base font-bold tabular-nums ${'grossProfit' in metrics && (metrics as FlipMetrics).grossProfit >= 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
                               {formatPrice('grossProfit' in metrics ? (metrics as FlipMetrics).grossProfit : 0)}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : strategyType === 'house_hack' && isHouseHackState(state) ? (
+                      // HouseHack: This section becomes "Rent" - no rehab for house hack
+                      <>
+                        <p className="text-sm text-[#64748B] mb-4 italic">
+                          House Hack typically doesn&apos;t require major rehab. Set rental income for your rented units below.
+                        </p>
+                        <SliderInput
+                          label="Avg Rent Per Unit"
+                          value={state.avgRentPerUnit}
+                          displayValue={`${formatPrice(state.avgRentPerUnit)}/mo`}
+                          min={500}
+                          max={5000}
+                          minLabel="$500"
+                          maxLabel="$5,000"
+                          onChange={(v) => updateState('avgRentPerUnit', v)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">TOTAL RENTAL INCOME</div>
+                            <div className="text-xl font-bold text-[#10B981] tabular-nums">
+                              {formatPrice('grossRentalIncome' in metrics ? (metrics as HouseHackMetrics).grossRentalIncome : 0)}/mo
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">RENTED UNITS × AVG RENT</div>
+                            <div className="text-sm text-[#64748B]">
+                              {state.totalUnits - state.ownerOccupiedUnits} × {formatPrice(state.avgRentPerUnit)}
                             </div>
                           </div>
                         </div>
@@ -1648,6 +1933,45 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                             <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">HOLDING PERIOD</div>
                             <div className="text-base font-bold text-[#0891B2] tabular-nums">
                               {'holdingPeriodMonths' in metrics ? `${(metrics as FlipMetrics).holdingPeriodMonths.toFixed(1)} months` : '0 months'}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : strategyType === 'house_hack' && isHouseHackState(state) ? (
+                      // HouseHack: Vacancy and current housing comparison
+                      <>
+                        <SliderInput
+                          label="Vacancy Rate"
+                          value={state.vacancyRate * 100}
+                          displayValue={`${(state.vacancyRate * 100).toFixed(0)}%`}
+                          min={0}
+                          max={15}
+                          minLabel="0%"
+                          maxLabel="15%"
+                          onChange={(v) => updateState('vacancyRate', v / 100)}
+                        />
+                        <SliderInput
+                          label="Current Housing Payment"
+                          value={state.currentHousingPayment}
+                          displayValue={`${formatPrice(state.currentHousingPayment)}/mo`}
+                          min={0}
+                          max={5000}
+                          minLabel="$0"
+                          maxLabel="$5,000"
+                          onChange={(v) => updateState('currentHousingPayment', v)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">EFFECTIVE RENTAL INCOME</div>
+                            <div className="text-xl font-bold text-[#10B981] tabular-nums">
+                              {formatPrice('effectiveRentalIncome' in metrics ? (metrics as HouseHackMetrics).effectiveRentalIncome : 0)}/mo
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">VS CURRENT HOUSING</div>
+                            <div className={`text-base font-bold tabular-nums ${'housingCostSavings' in metrics && (metrics as HouseHackMetrics).housingCostSavings > 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
+                              {'housingCostSavings' in metrics && (metrics as HouseHackMetrics).housingCostSavings > 0 ? '+' : ''}
+                              {formatPrice('housingCostSavings' in metrics ? (metrics as HouseHackMetrics).housingCostSavings : 0)}/mo
                             </div>
                           </div>
                         </div>
@@ -1835,6 +2159,130 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                               <span className="text-sm text-[#94A3B8]">Monthly Cash Flow</span>
                               <span className={`font-bold tabular-nums ${'postRefiMonthlyCashFlow' in metrics && (metrics as BRRRRMetrics).postRefiMonthlyCashFlow >= 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
                                 {formatPrice('postRefiMonthlyCashFlow' in metrics ? (metrics as BRRRRMetrics).postRefiMonthlyCashFlow : 0)}/mo
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : strategyType === 'house_hack' && isHouseHackState(state) ? (
+                      // HouseHack: Expenses + Results Summary
+                      <>
+                        <SliderInput
+                          label="Property Taxes"
+                          value={state.annualPropertyTax}
+                          displayValue={`${formatPrice(state.annualPropertyTax)}/yr`}
+                          min={0}
+                          max={30000}
+                          minLabel="$0"
+                          maxLabel="$30,000"
+                          onChange={(v) => updateState('annualPropertyTax', v)}
+                        />
+                        <SliderInput
+                          label="Insurance"
+                          value={state.annualInsurance}
+                          displayValue={`${formatPrice(state.annualInsurance)}/yr`}
+                          min={0}
+                          max={10000}
+                          minLabel="$0"
+                          maxLabel="$10,000"
+                          onChange={(v) => updateState('annualInsurance', v)}
+                        />
+                        <SliderInput
+                          label="HOA"
+                          value={state.monthlyHoa}
+                          displayValue={`${formatPrice(state.monthlyHoa)}/mo`}
+                          min={0}
+                          max={1000}
+                          minLabel="$0"
+                          maxLabel="$1,000"
+                          onChange={(v) => updateState('monthlyHoa', v)}
+                        />
+                        <SliderInput
+                          label="Shared Utilities"
+                          value={state.utilitiesMonthly}
+                          displayValue={`${formatPrice(state.utilitiesMonthly)}/mo`}
+                          min={0}
+                          max={1000}
+                          minLabel="$0"
+                          maxLabel="$1,000"
+                          onChange={(v) => updateState('utilitiesMonthly', v)}
+                        />
+                        <SliderInput
+                          label="Maintenance"
+                          value={state.maintenanceRate * 100}
+                          displayValue={`${(state.maintenanceRate * 100).toFixed(0)}%`}
+                          min={0}
+                          max={15}
+                          minLabel="0%"
+                          maxLabel="15%"
+                          onChange={(v) => updateState('maintenanceRate', v / 100)}
+                        />
+                        <SliderInput
+                          label="CapEx Reserve"
+                          value={state.capexRate * 100}
+                          displayValue={`${(state.capexRate * 100).toFixed(0)}%`}
+                          min={0}
+                          max={10}
+                          minLabel="0%"
+                          maxLabel="10%"
+                          onChange={(v) => updateState('capexRate', v / 100)}
+                        />
+                        
+                        {/* HouseHack Results Summary */}
+                        <div className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-lg p-4 mt-4 text-white">
+                          <div className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider mb-3">HOUSING COST ANALYSIS</div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Monthly PITI</span>
+                              <span className="font-bold tabular-nums">
+                                {formatPrice('monthlyPITI' in metrics ? (metrics as HouseHackMetrics).monthlyPITI : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Net Rental Income</span>
+                              <span className="font-bold text-[#10B981] tabular-nums">
+                                -{formatPrice('netRentalIncome' in metrics ? (metrics as HouseHackMetrics).netRentalIncome : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-[#334155]">
+                              <span className="text-sm font-semibold text-white">EFFECTIVE HOUSING COST</span>
+                              <span className={`text-xl font-bold tabular-nums ${'livesForFree' in metrics && (metrics as HouseHackMetrics).livesForFree ? 'text-[#10B981]' : ''}`}>
+                                {'livesForFree' in metrics && (metrics as HouseHackMetrics).livesForFree 
+                                  ? ((metrics as HouseHackMetrics).effectiveHousingCost < 0 
+                                    ? `+${formatPrice(Math.abs((metrics as HouseHackMetrics).effectiveHousingCost))}/mo` 
+                                    : 'FREE!')
+                                  : `${formatPrice('effectiveHousingCost' in metrics ? (metrics as HouseHackMetrics).effectiveHousingCost : 0)}/mo`
+                                }
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {'livesForFree' in metrics && (metrics as HouseHackMetrics).livesForFree && (
+                            <div className="mt-3 pt-3 border-t border-[#334155] text-center">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#10B981]/20 text-[#10B981] text-sm font-semibold">
+                                🎉 Live For Free!
+                              </span>
+                            </div>
+                          )}
+                          
+                          <div className="mt-3 pt-3 border-t border-[#334155] space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Housing Offset</span>
+                              <span className={`font-bold tabular-nums ${'housingOffsetPercent' in metrics && (metrics as HouseHackMetrics).housingOffsetPercent >= 75 ? 'text-[#10B981]' : 'text-[#22D3EE]'}`}>
+                                {'housingOffsetPercent' in metrics ? `${(metrics as HouseHackMetrics).housingOffsetPercent.toFixed(0)}%` : '0%'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Cash-on-Cash Return</span>
+                              <span className="font-bold tabular-nums">
+                                {'cashOnCashReturn' in metrics ? `${(metrics as HouseHackMetrics).cashOnCashReturn.toFixed(1)}%` : '0%'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Full Rental Cash Flow</span>
+                              <span className={`font-bold tabular-nums ${'fullRentalCashFlow' in metrics && (metrics as HouseHackMetrics).fullRentalCashFlow > 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
+                                {formatPrice('fullRentalCashFlow' in metrics ? (metrics as HouseHackMetrics).fullRentalCashFlow : 0)}/mo
                               </span>
                             </div>
                           </div>
