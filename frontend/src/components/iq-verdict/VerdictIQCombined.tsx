@@ -18,7 +18,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Download, TrendingDown, Target, Clock, AlertTriangle, ChevronDown, ChevronUp, FileSpreadsheet, FileText, Loader2 } from 'lucide-react'
+import { ArrowRight, TrendingDown, Target, Clock, AlertTriangle, ChevronDown, ChevronUp, FileSpreadsheet, Loader2 } from 'lucide-react'
 import api from '@/lib/api'
 import { CompactHeader, PropertyData } from '../layout/CompactHeader'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
@@ -99,7 +99,6 @@ export function VerdictIQCombined({
   const [showFactors, setShowFactors] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState(HEADER_STRATEGIES[0].short)
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
-  const [showExportMenu, setShowExportMenu] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
   
@@ -502,23 +501,14 @@ export function VerdictIQCombined({
         .filter(Boolean)
         .join(', ')
       
-      if (format === 'excel') {
-        blob = await api.proforma.downloadExcel({
-          propertyId: propertyIdToUse,
-          address: fullAddress,
-          strategy,
-          holdPeriodYears: 10,
-        })
-        filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_${strategy.toUpperCase()}.xlsx`
-      } else {
-        blob = await api.proforma.downloadPdf({
-          propertyId: propertyIdToUse,
-          address: fullAddress,
-          strategy,
-          holdPeriodYears: 10,
-        })
-        filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_${strategy.toUpperCase()}.pdf`
-      }
+      // Excel export only
+      blob = await api.proforma.downloadExcel({
+        propertyId: propertyIdToUse,
+        address: fullAddress,
+        strategy,
+        holdPeriodYears: 10,
+      })
+      filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_${strategy.toUpperCase()}.xlsx`
 
       // Create download link and trigger download
       const url = window.URL.createObjectURL(blob)
@@ -724,11 +714,11 @@ export function VerdictIQCombined({
           <ArrowRight className="w-[18px] h-[18px]" />
         </button>
         
-        {/* Export Proforma Button with Menu */}
+        {/* Export Proforma Button - Direct Excel Download */}
         <div className="relative">
           <button 
             className="w-full flex items-center justify-center gap-2 bg-transparent text-[#64748B] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[#475569] transition-colors disabled:opacity-50"
-            onClick={() => setShowExportMenu(!showExportMenu)}
+            onClick={() => handleExportProforma('excel')}
             disabled={isExporting}
           >
             {isExporting ? (
@@ -738,38 +728,11 @@ export function VerdictIQCombined({
               </>
             ) : (
               <>
-                <Download className="w-4 h-4" />
+                <FileSpreadsheet className="w-4 h-4" />
                 Export Financial Proforma
-                <ChevronDown className="w-3.5 h-3.5" />
               </>
             )}
           </button>
-          
-          {/* Export Format Menu */}
-          {showExportMenu && !isExporting && (
-            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl shadow-lg border border-[#E2E8F0] overflow-hidden">
-              <button
-                className="w-full flex items-center gap-3 px-4 py-3 text-left text-[13px] hover:bg-[#F8FAFC] transition-colors border-none bg-transparent cursor-pointer"
-                onClick={() => handleExportProforma('excel')}
-              >
-                <FileSpreadsheet className="w-5 h-5 text-[#22C55E]" />
-                <div>
-                  <div className="font-semibold text-[#0A1628]">Excel Workbook</div>
-                  <div className="text-[11px] text-[#64748B]">8 tabs: Cash flow, depreciation, amortization, etc.</div>
-                </div>
-              </button>
-              <button
-                className="w-full flex items-center gap-3 px-4 py-3 text-left text-[13px] hover:bg-[#F8FAFC] transition-colors border-t border-[#E2E8F0] bg-transparent cursor-pointer"
-                onClick={() => handleExportProforma('pdf')}
-              >
-                <FileText className="w-5 h-5 text-[#EF4444]" />
-                <div>
-                  <div className="font-semibold text-[#0A1628]">PDF Report</div>
-                  <div className="text-[11px] text-[#64748B]">Professional summary for sharing</div>
-                </div>
-              </button>
-            </div>
-          )}
           
           {/* Export Error */}
           {exportError && (
