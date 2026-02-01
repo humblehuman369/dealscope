@@ -10,12 +10,6 @@
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
-// #region agent log - Check which API URL is being used
-if (typeof window !== 'undefined') {
-  fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:init',message:'API_BASE_URL resolved',data:{apiUrl:API_BASE_URL,envValue:process.env.NEXT_PUBLIC_API_URL},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-3',hypothesisId:'K'})}).catch(()=>{});
-}
-// #endregion
-
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: any
@@ -486,19 +480,11 @@ export const api = {
       }
       
       const url = `${API_BASE_URL}/api/v1/proforma/property/${params.propertyId}/excel?${searchParams}`
-      // #region agent log - Hypothesis F,G,H,I,J: Check API request/response
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:downloadExcel',message:'Making proforma API request',data:{url,propertyId:params.propertyId,hasToken:!!headers.Authorization},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-2',hypothesisId:'F,G,J'})}).catch(()=>{});
-      // #endregion
-      
       const response = await fetch(url, { headers })
       
-      // #region agent log - Hypothesis G,H,I: Check response status
-      const responseText = !response.ok ? await response.clone().text() : null;
-      fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:downloadExcel:response',message:'Proforma API response',data:{status:response.status,statusText:response.statusText,ok:response.ok,errorBody:responseText?.slice(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-2',hypothesisId:'G,H,I'})}).catch(()=>{});
-      // #endregion
-      
       if (!response.ok) {
-        throw new Error(`Failed to download proforma: ${response.statusText}`)
+        const errorText = await response.text()
+        throw new Error(`Failed to download proforma: ${response.status} - ${errorText}`)
       }
       
       return response.blob()

@@ -217,16 +217,9 @@ async def download_proforma_excel(
     7. Returns Summary - IRR, equity multiple, key metrics
     8. Assumptions - All inputs and data sources
     """
-    # #region agent log - Hypothesis F,G,H,I: Backend endpoint entry
-    import json as _json; open('/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug.log','a').write(_json.dumps({"location":"proforma.py:download_excel","message":"Endpoint called","data":{"property_id":property_id,"strategy":strategy},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"post-fix-2","hypothesisId":"F,G,H,I"})+'\n')
-    # #endregion
     try:
         # Fetch property data
         property_data = await property_service.get_property_by_id(property_id)
-        
-        # #region agent log - Hypothesis H: Property lookup result
-        import json as _json; open('/Users/bradgeisen/IQ-Data/dealscope/.cursor/debug.log','a').write(_json.dumps({"location":"proforma.py:download_excel:property_lookup","message":"Property lookup result","data":{"property_id":property_id,"found":property_data is not None},"timestamp":int(__import__('time').time()*1000),"sessionId":"debug-session","runId":"post-fix-2","hypothesisId":"H"})+'\n')
-        # #endregion
         
         if not property_data:
             raise HTTPException(

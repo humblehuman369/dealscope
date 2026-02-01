@@ -110,12 +110,6 @@ export function VerdictIQCombined({
   const { record } = useDealMakerStore()
   const { hasRecord } = useDealMakerReady()
   const isSavedPropertyMode = !!savedPropertyId && hasRecord
-  
-  // #region agent log - Hypothesis B,C: Check props on component mount
-  React.useEffect(() => {
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'VerdictIQCombined.tsx:mount',message:'Component mounted - checking IDs',data:{analysisPropertyId:analysis.propertyId,propertyId:property.id,savedPropertyIdProp:savedPropertyId,isSavedPropertyMode},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B,C'})}).catch(()=>{});
-  }, []);
-  // #endregion
 
   // Build defaults from store, override values, or fallback
   const defaults = useMemo(() => {
@@ -477,10 +471,6 @@ export function VerdictIQCombined({
 
   // Export proforma handlers
   const handleExportProforma = useCallback(async (format: 'excel' | 'pdf') => {
-    // #region agent log - Hypothesis A,B,C,D: Check available IDs
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'VerdictIQCombined.tsx:handleExportProforma',message:'Available IDs for export',data:{analysisPropertyId:analysis.propertyId,propertyId:property.id,savedPropertyIdProp:savedPropertyId,analysisKeys:Object.keys(analysis)},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A,B,C,D'})}).catch(()=>{});
-    // #endregion
-    
     // Use property.id (always available) or fallback to analysis.propertyId or savedPropertyId
     const propertyIdToUse = property.id || analysis.propertyId || savedPropertyId
     if (!propertyIdToUse) {
