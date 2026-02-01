@@ -573,6 +573,8 @@ export function VerdictIQCombined({
           financing={defaults.financing}
           operating={defaults.operating}
           onEditAssumptions={handleEditAssumptions}
+          currentStrategy={currentStrategy}
+          onStrategyChange={handleStrategyChange}
         />
 
         {/* Summary Snapshot - Key metrics at a glance */}

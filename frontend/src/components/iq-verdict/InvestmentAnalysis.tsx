@@ -23,6 +23,11 @@ interface OperatingDefaults {
   property_management_pct: number
 }
 
+interface Strategy {
+  short: string
+  full: string
+}
+
 interface InvestmentAnalysisProps {
   breakevenPrice: number
   targetBuyPrice: number
@@ -33,6 +38,9 @@ interface InvestmentAnalysisProps {
   financing: FinancingDefaults
   operating: OperatingDefaults
   onEditAssumptions?: () => void
+  currentStrategy?: string
+  strategies?: Strategy[]
+  onStrategyChange?: (strategy: string) => void
 }
 
 interface PriceCardProps {
@@ -63,6 +71,15 @@ function PriceCard({ label, value, desc, recommended = false }: PriceCardProps) 
   )
 }
 
+const DEFAULT_STRATEGIES: Strategy[] = [
+  { short: 'Long-term', full: 'Long-term Rental' },
+  { short: 'Short-term', full: 'Short-term Rental' },
+  { short: 'BRRRR', full: 'BRRRR' },
+  { short: 'Fix & Flip', full: 'Fix & Flip' },
+  { short: 'House Hack', full: 'House Hack' },
+  { short: 'Wholesale', full: 'Wholesale' },
+]
+
 export function InvestmentAnalysis({
   breakevenPrice,
   targetBuyPrice,
@@ -73,9 +90,13 @@ export function InvestmentAnalysis({
   financing,
   operating,
   onEditAssumptions,
+  currentStrategy = 'Long-term',
+  strategies = DEFAULT_STRATEGIES,
+  onStrategyChange,
 }: InvestmentAnalysisProps) {
   const [showAssumptions, setShowAssumptions] = useState(false)
   const [showCalculation, setShowCalculation] = useState(false)
+  const [showStrategyDropdown, setShowStrategyDropdown] = useState(false)
 
   return (
     <div className="bg-white">
@@ -89,12 +110,47 @@ export function InvestmentAnalysis({
               Based on YOUR financing terms ({(financing.down_payment_pct * 100).toFixed(0)}% down, {(financing.interest_rate * 100).toFixed(1)}%)
             </div>
           </div>
-          <button 
-            className="text-[#0891B2] text-[13px] font-medium bg-transparent border-none cursor-pointer hover:opacity-80"
-            onClick={onEditAssumptions}
-          >
-            Change terms
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            <button 
+              className="text-[#0891B2] text-[13px] font-medium bg-transparent border-none cursor-pointer hover:opacity-80"
+              onClick={onEditAssumptions}
+            >
+              Change terms
+            </button>
+            {/* Strategy Dropdown */}
+            <div className="relative">
+              <button
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0891B2] text-white text-[12px] font-medium rounded-full cursor-pointer border-none hover:bg-[#0E7490] transition-colors"
+                onClick={() => setShowStrategyDropdown(!showStrategyDropdown)}
+              >
+                {currentStrategy}
+                <ChevronDown 
+                  className="w-3.5 h-3.5 transition-transform" 
+                  style={{ transform: showStrategyDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                />
+              </button>
+              {showStrategyDropdown && (
+                <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-[#E2E8F0] py-1 z-50 min-w-[140px]">
+                  {strategies.map((strategy) => (
+                    <button
+                      key={strategy.short}
+                      className={`w-full text-left px-3 py-2 text-[12px] hover:bg-[#F1F5F9] border-none cursor-pointer ${
+                        currentStrategy === strategy.short 
+                          ? 'bg-[#F0FDFA] text-[#0891B2] font-semibold' 
+                          : 'bg-transparent text-[#475569]'
+                      }`}
+                      onClick={() => {
+                        onStrategyChange?.(strategy.short)
+                        setShowStrategyDropdown(false)
+                      }}
+                    >
+                      {strategy.full}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="text-xs font-semibold text-[#0891B2] mt-2 mb-3">
