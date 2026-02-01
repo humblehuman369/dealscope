@@ -479,7 +479,6 @@ export function VerdictIQCombined({
 
     setIsExporting(true)
     setExportError(null)
-    setShowExportMenu(false)
 
     try {
       // Map current strategy to API format
