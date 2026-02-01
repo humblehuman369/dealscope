@@ -1065,7 +1065,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         currentHousingPayment: 'current_housing_payment',
         utilitiesMonthly: 'utilities_monthly',
         capexRate: 'capex_rate',
-        // Wholesale-specific
+        // Wholesale-specific (note: closingCosts maps to wholesale_closing_costs to avoid collision with other strategies)
         estimatedRepairs: 'estimated_repairs',
         squareFootage: 'sqft',
         contractPrice: 'contract_price',
@@ -1074,7 +1074,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         daysToClose: 'days_to_close',
         assignmentFee: 'assignment_fee',
         marketingCosts: 'marketing_costs',
-        wholesaleClosingCosts: 'wholesale_closing_costs',
+        closingCosts: 'wholesale_closing_costs',
       }
       
       const storeField = fieldMap[key]
