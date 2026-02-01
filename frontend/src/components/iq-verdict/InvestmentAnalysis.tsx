@@ -112,8 +112,8 @@ export function InvestmentAnalysis({
         )}
       </div>
 
-      {/* Price Cards Section - With teal left border */}
-      <div className="px-6 pb-4 border-l-[3px] border-l-[#0891B2] ml-4">
+      {/* Price Cards Section */}
+      <div className="px-6 pb-0">
         <div className="flex items-center justify-between mb-3">
           <span className="text-[13px] text-[#64748B]">Three ways to approach this deal:</span>
           <button 
