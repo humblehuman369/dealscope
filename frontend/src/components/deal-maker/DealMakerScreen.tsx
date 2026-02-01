@@ -2228,6 +2228,88 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           </div>
                         </div>
                       </>
+                    ) : strategyType === 'wholesale' && isWholesaleState(state) ? (
+                      // Wholesale: End Buyer Analysis (read-only)
+                      <>
+                        <SliderInput
+                          label="Marketing Costs"
+                          value={state.marketingCosts}
+                          displayValue={formatPrice(state.marketingCosts)}
+                          min={0}
+                          max={5000}
+                          minLabel="$0"
+                          maxLabel="$5,000"
+                          onChange={(v) => updateState('marketingCosts', v)}
+                        />
+                        <SliderInput
+                          label="Closing Costs"
+                          value={state.closingCosts}
+                          displayValue={formatPrice(state.closingCosts)}
+                          min={0}
+                          max={2000}
+                          minLabel="$0"
+                          maxLabel="$2,000"
+                          onChange={(v) => updateState('closingCosts', v)}
+                        />
+                        
+                        {/* End Buyer Perspective */}
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-4 mt-4">
+                          <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-3">END BUYER ANALYSIS</div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#64748B]">Assignment Sale Price</span>
+                              <span className="font-bold text-[#0A1628] tabular-nums">
+                                {formatPrice('endBuyerPrice' in metrics ? (metrics as WholesaleMetrics).endBuyerPrice : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#64748B]">+ Repairs</span>
+                              <span className="font-bold text-[#0A1628] tabular-nums">
+                                {formatPrice(state.estimatedRepairs)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#64748B]">+ Purchase Costs (3%)</span>
+                              <span className="font-bold text-[#0A1628] tabular-nums">
+                                {formatPrice('endBuyerPrice' in metrics ? (metrics as WholesaleMetrics).endBuyerPrice * 0.03 : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                              <span className="text-sm font-semibold text-[#0A1628]">Buyer All-In Cost</span>
+                              <span className="font-bold text-[#0A1628] tabular-nums">
+                                {formatPrice('endBuyerAllIn' in metrics ? (metrics as WholesaleMetrics).endBuyerAllIn : 0)}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-3 pt-3 border-t border-[#E2E8F0] space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#64748B]">ARV (Sale Price)</span>
+                              <span className="font-bold text-[#0A1628] tabular-nums">
+                                {formatPrice(state.arv)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#64748B]">- Selling Costs (8%)</span>
+                              <span className="font-bold text-[#F43F5E] tabular-nums">
+                                -{formatPrice(state.arv * 0.08)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                              <span className="text-sm font-semibold text-[#0A1628]">Buyer Profit</span>
+                              <span className={`text-lg font-bold tabular-nums ${'endBuyerProfit' in metrics && (metrics as WholesaleMetrics).endBuyerProfit >= 20000 ? 'text-[#10B981]' : (metrics as WholesaleMetrics).endBuyerProfit >= 10000 ? 'text-[#0891B2]' : 'text-[#F43F5E]'}`}>
+                                {formatPrice('endBuyerProfit' in metrics ? (metrics as WholesaleMetrics).endBuyerProfit : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#64748B]">Buyer ROI</span>
+                              <span className="font-bold text-[#64748B] tabular-nums">
+                                {'endBuyerROI' in metrics ? `${(metrics as WholesaleMetrics).endBuyerROI.toFixed(1)}%` : '0%'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </>
                     ) : strategyType === 'str' && isSTRState(state) ? (
                       // STR Income fields
                       <>
@@ -2414,6 +2496,78 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                               </span>
                             </div>
                           </div>
+                        </div>
+                      </>
+                    ) : strategyType === 'wholesale' && isWholesaleState(state) ? (
+                      // Wholesale: Results Summary
+                      <>
+                        {/* Wholesale Profit Summary */}
+                        <div className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-lg p-4 mt-4 text-white">
+                          <div className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider mb-3">YOUR WHOLESALE PROFIT</div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Assignment Fee</span>
+                              <span className="font-bold text-[#10B981] tabular-nums">
+                                {formatPrice(state.assignmentFee)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">- Marketing Costs</span>
+                              <span className="font-bold text-[#F43F5E] tabular-nums">
+                                -{formatPrice(state.marketingCosts)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">- Closing Costs</span>
+                              <span className="font-bold text-[#F43F5E] tabular-nums">
+                                -{formatPrice(state.closingCosts)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-[#334155]">
+                              <span className="text-sm font-semibold text-white">NET PROFIT</span>
+                              <span className={`text-xl font-bold tabular-nums ${'netProfit' in metrics && (metrics as WholesaleMetrics).netProfit > 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
+                                {formatPrice('netProfit' in metrics ? (metrics as WholesaleMetrics).netProfit : 0)}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-3 pt-3 border-t border-[#334155] space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Cash at Risk</span>
+                              <span className="font-bold text-[#22D3EE] tabular-nums">
+                                {formatPrice('totalCashAtRisk' in metrics ? (metrics as WholesaleMetrics).totalCashAtRisk : 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">ROI</span>
+                              <span className={`font-bold tabular-nums ${'roi' in metrics && (metrics as WholesaleMetrics).roi >= 500 ? 'text-[#10B981]' : 'text-[#22D3EE]'}`}>
+                                {'roi' in metrics ? `${(metrics as WholesaleMetrics).roi.toFixed(0)}%` : '0%'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-[#94A3B8]">Annualized ROI</span>
+                              <span className="font-bold tabular-nums">
+                                {'annualizedROI' in metrics ? `${(metrics as WholesaleMetrics).annualizedROI.toFixed(0)}%` : '0%'}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {'dealViability' in metrics && (
+                            <div className="mt-3 pt-3 border-t border-[#334155] text-center">
+                              {(() => {
+                                const viability = getViabilityDisplay((metrics as WholesaleMetrics).dealViability)
+                                return (
+                                  <span 
+                                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold"
+                                    style={{ backgroundColor: `${viability.color}20`, color: viability.color }}
+                                  >
+                                    {viability.icon} {viability.label}
+                                  </span>
+                                )
+                              })()}
+                            </div>
+                          )}
                         </div>
                       </>
                     ) : strategyType === 'house_hack' && isHouseHackState(state) ? (

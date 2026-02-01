@@ -1148,7 +1148,7 @@ export interface WholesaleSliderConfig {
   min: number
   max: number
   step: number
-  format: SliderFormat | 'days'
+  format: SliderFormat | 'days' | 'sqft'
   defaultValue?: number
   sourceLabel?: string
   isEstimate?: boolean
@@ -1158,7 +1158,7 @@ export interface WholesaleSliderConfig {
 export const WHOLESALE_PROPERTY_SLIDERS: WholesaleSliderConfig[] = [
   { id: 'arv', label: 'After Repair Value', min: 50000, max: 2000000, step: 10000, format: 'currency', sourceLabel: 'Comps analysis' },
   { id: 'estimatedRepairs', label: 'Estimated Repairs', min: 0, max: 200000, step: 5000, format: 'currency', sourceLabel: 'Contractor estimate' },
-  { id: 'squareFootage', label: 'Square Footage', min: 500, max: 5000, step: 100, format: 'number', sourceLabel: 'Property details' },
+  { id: 'squareFootage', label: 'Square Footage', min: 500, max: 5000, step: 100, format: 'sqft', sourceLabel: 'Property details' },
 ]
 
 // Phase 2: Contract sliders

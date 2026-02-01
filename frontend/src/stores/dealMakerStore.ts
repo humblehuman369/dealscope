@@ -155,6 +155,16 @@ export interface DealMakerRecord {
   utilities_monthly?: number
   capex_rate?: number
   
+  // Wholesale-specific adjustments (optional - only present for Wholesale strategy)
+  estimated_repairs?: number
+  contract_price?: number
+  earnest_money?: number
+  inspection_period_days?: number
+  days_to_close?: number
+  assignment_fee?: number
+  marketing_costs?: number
+  wholesale_closing_costs?: number
+  
   // Strategy type
   strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
   
@@ -245,6 +255,16 @@ export interface DealMakerUpdate {
   current_housing_payment?: number
   utilities_monthly?: number
   capex_rate?: number
+  
+  // Wholesale-specific fields
+  estimated_repairs?: number
+  contract_price?: number
+  earnest_money?: number
+  inspection_period_days?: number
+  days_to_close?: number
+  assignment_fee?: number
+  marketing_costs?: number
+  wholesale_closing_costs?: number
   
   // Strategy type
   strategy_type?: 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'

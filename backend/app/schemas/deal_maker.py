@@ -206,6 +206,16 @@ class DealMakerRecord(BaseModel):
     utilities_monthly: Optional[float] = Field(None, description="Monthly shared utilities")
     capex_rate: Optional[float] = Field(None, description="CapEx reserve as percentage of rent")
     
+    # === Wholesale-Specific Fields (optional - only used for Wholesale strategy) ===
+    estimated_repairs: Optional[float] = Field(None, description="Estimated repair costs")
+    contract_price: Optional[float] = Field(None, description="Contract price with seller")
+    earnest_money: Optional[float] = Field(None, description="Earnest money deposit")
+    inspection_period_days: Optional[int] = Field(None, description="Inspection period in days")
+    days_to_close: Optional[int] = Field(None, description="Days to close transaction")
+    assignment_fee: Optional[float] = Field(None, description="Wholesale assignment fee")
+    marketing_costs: Optional[float] = Field(None, description="Marketing and acquisition costs")
+    wholesale_closing_costs: Optional[float] = Field(None, description="Wholesaler closing costs")
+    
     # Strategy type
     strategy_type: Optional[str] = Field(None, description="Investment strategy type (ltr, str, brrrr, flip, house_hack, wholesale)")
     
@@ -328,6 +338,16 @@ class DealMakerRecordUpdate(BaseModel):
     current_housing_payment: Optional[float] = Field(None, ge=0, description="Current housing payment")
     utilities_monthly: Optional[float] = Field(None, ge=0, description="Monthly utilities")
     capex_rate: Optional[float] = Field(None, ge=0, le=0.15, description="CapEx reserve %")
+    
+    # Wholesale-Specific Fields
+    estimated_repairs: Optional[float] = Field(None, ge=0, description="Estimated repairs")
+    contract_price: Optional[float] = Field(None, ge=0, description="Contract price")
+    earnest_money: Optional[float] = Field(None, ge=0, le=50000, description="Earnest money")
+    inspection_period_days: Optional[int] = Field(None, ge=0, le=60, description="Inspection period days")
+    days_to_close: Optional[int] = Field(None, ge=0, le=180, description="Days to close")
+    assignment_fee: Optional[float] = Field(None, ge=0, description="Assignment fee")
+    marketing_costs: Optional[float] = Field(None, ge=0, description="Marketing costs")
+    wholesale_closing_costs: Optional[float] = Field(None, ge=0, description="Wholesale closing costs")
     
     # Strategy type
     strategy_type: Optional[str] = Field(None, description="Strategy type")
