@@ -35,11 +35,6 @@ export function SummarySnapshot({
   
   return (
     <div className="bg-white px-6 pb-4 border-b border-[#E2E8F0]">
-      <div className="mb-3">
-        <div className="text-xs font-semibold text-[#0891B2] uppercase tracking-wide">
-          SUMMARY SNAPSHOT: TARGET BUY - {strategyLabel}
-        </div>
-      </div>
       
       <div className="grid grid-cols-3 gap-2">
         {/* Cap Rate */}
