@@ -19,13 +19,15 @@ import { Search } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
-// Pages that use CompactHeader and should not show DealMakerHeader
-const PAGES_WITH_COMPACT_HEADER = [
-  '/compare',        // Sales Comps
-  '/rental-comps',   // Rental Comps
-  '/verdict',        // Verdict IQ
-  '/deal-maker',     // Deal Maker
-  '/property',       // Property Details
+// Pages that have their own header and should not show DealMakerHeader
+const PAGES_WITH_OWN_HEADER = [
+  '/',               // Landing page (has its own header)
+  '/compare',        // Sales Comps (uses CompactHeader)
+  '/rental-comps',   // Rental Comps (uses CompactHeader)
+  '/verdict',        // Verdict IQ (uses CompactHeader)
+  '/deal-maker',     // Deal Maker (uses CompactHeader)
+  '/property',       // Property Details (uses CompactHeader)
+  '/analyzing',      // Analyzing page (full-screen)
 ]
 
 interface DealMakerHeaderProps {
@@ -40,8 +42,10 @@ export function DealMakerHeader({ hideSearch = false, className = '' }: DealMake
   const [showSearchModal, setShowSearchModal] = useState(false)
   const pathname = usePathname()
 
-  // Hide header on pages that have their own CompactHeader
-  const shouldHide = PAGES_WITH_COMPACT_HEADER.some(path => pathname?.startsWith(path))
+  // Hide header on pages that have their own header
+  const shouldHide = PAGES_WITH_OWN_HEADER.some(path => 
+    path === '/' ? pathname === '/' : pathname?.startsWith(path)
+  )
   
   if (shouldHide) {
     return null
