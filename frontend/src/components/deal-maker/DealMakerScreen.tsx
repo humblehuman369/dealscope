@@ -377,31 +377,78 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
     if (isSavedPropertyMode && savedPropertyId) {
       // For saved properties, navigate with just the propertyId
       // Verdict will load the DealMakerRecord from the same store
-      router.push(`/verdict?propertyId=${savedPropertyId}`)
+      router.push(`/verdict?propertyId=${savedPropertyId}&strategy=${strategyType}`)
     } else {
       // For unsaved properties:
       // 1. Store values in sessionStorage so they survive toolbar navigation
       // 2. Also pass via URL params for initial load
       const sessionKey = `dealMaker_${encodeURIComponent(fullAddr)}`
-      const sessionData = {
-        address: fullAddr,
-        purchasePrice: state.buyPrice,
-        monthlyRent: state.monthlyRent,
-        propertyTaxes: state.annualPropertyTax,
-        insurance: state.annualInsurance,
-        arv: state.arv,
-        zpid: property.zpid,
-        // Include all Deal Maker values for complete persistence
-        downPaymentPct: state.downPaymentPercent,
-        closingCostsPct: state.closingCostsPercent,
-        interestRate: state.interestRate,
-        loanTermYears: state.loanTermYears,
-        rehabBudget: state.rehabBudget,
-        vacancyRate: state.vacancyRate,
-        maintenancePct: state.maintenanceRate,
-        managementPct: state.managementRate,
-        monthlyHoa: state.monthlyHoa,
-        timestamp: Date.now(),
+      
+      // Build session data based on strategy type
+      let sessionData: Record<string, unknown>
+      
+      if (strategyType === 'str' && isSTRState(state)) {
+        // STR-specific session data
+        // Calculate equivalent monthly revenue for display purposes
+        const nightsOccupied = 365 * state.occupancyRate
+        const numberOfTurnovers = Math.floor(nightsOccupied / state.avgLengthOfStayDays)
+        const annualRevenue = (state.averageDailyRate * nightsOccupied) + (state.cleaningFeeRevenue * numberOfTurnovers)
+        const monthlyRevenue = annualRevenue / 12
+        
+        sessionData = {
+          address: fullAddr,
+          purchasePrice: state.buyPrice,
+          monthlyRent: monthlyRevenue, // Equivalent monthly revenue for STR
+          propertyTaxes: state.annualPropertyTax,
+          insurance: state.annualInsurance,
+          arv: state.arv,
+          zpid: property.zpid,
+          strategy: 'str',
+          // STR-specific values
+          averageDailyRate: state.averageDailyRate,
+          occupancyRate: state.occupancyRate,
+          cleaningFeeRevenue: state.cleaningFeeRevenue,
+          avgLengthOfStayDays: state.avgLengthOfStayDays,
+          platformFeeRate: state.platformFeeRate,
+          strManagementRate: state.strManagementRate,
+          cleaningCostPerTurnover: state.cleaningCostPerTurnover,
+          suppliesMonthly: state.suppliesMonthly,
+          additionalUtilitiesMonthly: state.additionalUtilitiesMonthly,
+          furnitureSetupCost: state.furnitureSetupCost,
+          // Shared values
+          downPaymentPct: state.downPaymentPercent,
+          closingCostsPct: state.closingCostsPercent,
+          interestRate: state.interestRate,
+          loanTermYears: state.loanTermYears,
+          rehabBudget: state.rehabBudget,
+          maintenancePct: state.maintenanceRate,
+          monthlyHoa: state.monthlyHoa,
+          timestamp: Date.now(),
+        }
+      } else {
+        // LTR session data
+        const ltrState = state as LTRDealMakerState
+        sessionData = {
+          address: fullAddr,
+          purchasePrice: ltrState.buyPrice,
+          monthlyRent: ltrState.monthlyRent,
+          propertyTaxes: ltrState.annualPropertyTax,
+          insurance: ltrState.annualInsurance,
+          arv: ltrState.arv,
+          zpid: property.zpid,
+          strategy: 'ltr',
+          // Include all Deal Maker values for complete persistence
+          downPaymentPct: ltrState.downPaymentPercent,
+          closingCostsPct: ltrState.closingCostsPercent,
+          interestRate: ltrState.interestRate,
+          loanTermYears: ltrState.loanTermYears,
+          rehabBudget: ltrState.rehabBudget,
+          vacancyRate: ltrState.vacancyRate,
+          maintenancePct: ltrState.maintenanceRate,
+          managementPct: ltrState.managementRate,
+          monthlyHoa: ltrState.monthlyHoa,
+          timestamp: Date.now(),
+        }
       }
       
       try {
@@ -412,13 +459,25 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
         console.warn('Failed to save to sessionStorage:', e)
       }
       
+      // Calculate monthly rent/revenue for URL params
+      let monthlyRentValue: number
+      if (strategyType === 'str' && isSTRState(state)) {
+        const nightsOccupied = 365 * state.occupancyRate
+        const numberOfTurnovers = Math.floor(nightsOccupied / state.avgLengthOfStayDays)
+        const annualRevenue = (state.averageDailyRate * nightsOccupied) + (state.cleaningFeeRevenue * numberOfTurnovers)
+        monthlyRentValue = annualRevenue / 12
+      } else {
+        monthlyRentValue = 'monthlyRent' in state ? state.monthlyRent : 0
+      }
+      
       // Navigate with URL params (for initial load and bookmarkability)
       const params = new URLSearchParams({
         address: fullAddr,
         purchasePrice: String(state.buyPrice),
-        monthlyRent: String(state.monthlyRent),
+        monthlyRent: String(monthlyRentValue),
         propertyTaxes: String(state.annualPropertyTax),
         insurance: String(state.annualInsurance),
+        strategy: strategyType,
       })
       
       if (property.zpid) {
@@ -430,7 +489,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
       
       router.push(`/verdict?${params.toString()}`)
     }
-  }, [router, property, state, isSavedPropertyMode, savedPropertyId])
+  }, [router, property, state, isSavedPropertyMode, savedPropertyId, strategyType])
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
 
