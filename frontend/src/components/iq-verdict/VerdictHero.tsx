@@ -74,14 +74,23 @@ export function VerdictHero({
           </span>
         </div>
         
-        {/* How We Score Link */}
-        <button 
-          className="flex items-center gap-1 text-[#0891B2] text-xs font-medium mt-1 bg-transparent border-none cursor-pointer p-0 hover:opacity-80 transition-opacity"
-          onClick={onShowMethodology}
-        >
-          <Info className="w-3.5 h-3.5" />
-          How Verdict IQ Works
-        </button>
+        {/* Info Links */}
+        <div className="flex items-center gap-3 mt-1">
+          <button 
+            className="flex items-center gap-1 text-[#0891B2] text-xs font-medium bg-transparent border-none cursor-pointer p-0 hover:opacity-80 transition-opacity"
+            onClick={onShowMethodology}
+          >
+            <Info className="w-3.5 h-3.5" />
+            How Verdict IQ Works
+          </button>
+          <span className="text-[#E2E8F0]">|</span>
+          <button 
+            className="flex items-center gap-1 text-[#0891B2] text-xs font-medium bg-transparent border-none cursor-pointer p-0 hover:opacity-80 transition-opacity"
+            onClick={onShowMethodology}
+          >
+            How We Score
+          </button>
+        </div>
       </div>
     </div>
   )

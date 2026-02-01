@@ -24,7 +24,6 @@ import { CompactHeader, PropertyData } from '../layout/CompactHeader'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { ScoreMethodologySheet } from './ScoreMethodologySheet'
 import { VerdictHero } from './VerdictHero'
-import { HowWeScoreDropdown } from './HowWeScoreDropdown'
 import { InvestmentAnalysis } from './InvestmentAnalysis'
 import { SummarySnapshot } from './SummarySnapshot'
 import { FinancialBreakdown } from './FinancialBreakdown'
@@ -585,9 +584,6 @@ export function VerdictIQCombined({
           motivationScore={opportunityFactors.motivation}
           onShowMethodology={() => setShowMethodology(true)}
         />
-
-        {/* How We Score Dropdown */}
-        <HowWeScoreDropdown />
 
         {/* Investment Analysis with Price Cards */}
         <InvestmentAnalysis
