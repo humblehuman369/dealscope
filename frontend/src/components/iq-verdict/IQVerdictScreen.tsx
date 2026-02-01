@@ -561,6 +561,7 @@ export function IQVerdictScreen({
           noi={metrics.noi}
           totalInvestment={metrics.totalInvestment}
           targetBuyPrice={buyPrice}
+          strategy={currentStrategy === 'Long-term' ? 'Long-term Rental' : currentStrategy === 'Short-term' ? 'Short-term Rental' : currentStrategy}
         />
 
         {/* How Likely Section */}

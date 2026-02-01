@@ -584,6 +584,7 @@ export function VerdictIQCombined({
           noi={metrics.noi}
           totalInvestment={metrics.totalInvestment}
           targetBuyPrice={buyPrice}
+          strategy={currentStrategy === 'Long-term' ? 'Long-term Rental' : currentStrategy === 'Short-term' ? 'Short-term Rental' : currentStrategy}
         />
 
         {/* Deal Gap & Motivation Section */}
