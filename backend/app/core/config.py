@@ -208,7 +208,6 @@ def validate_settings(settings: Settings) -> None:
                 "Generate with: openssl rand -hex 32"
             )
         else:
-            import warnings
             warnings.warn(
                 "SECRET_KEY is not set or too short. Using insecure default for development. "
                 "Set SECRET_KEY environment variable before deploying to production.",
