@@ -7,6 +7,7 @@ from pydantic import computed_field
 from functools import lru_cache
 from typing import Optional, List
 import os
+import warnings
 
 
 class Settings(BaseSettings):
@@ -221,7 +222,7 @@ def validate_settings(settings: Settings) -> None:
         
         if not settings.STRIPE_WEBHOOK_SECRET:
             # Warning only - Stripe webhooks will fail but app will start
-            logger.warning("STRIPE_WEBHOOK_SECRET not set - Stripe webhooks will not work")
+            warnings.warn("STRIPE_WEBHOOK_SECRET not set - Stripe webhooks will not work")
     
     if errors:
         error_msg = "Configuration errors:\n" + "\n".join(f"  - {e}" for e in errors)
