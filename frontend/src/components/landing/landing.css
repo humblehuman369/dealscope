@@ -466,15 +466,95 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* Phone Target Hero - Featured Number */
+.landing-page .phone-target-hero {
+  background: var(--pacific-teal);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.landing-page .phone-target-icon {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.landing-page .phone-target-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+
+.landing-page .phone-target-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.landing-page .phone-target-sub {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Phone Breakeven Row */
+.landing-page .phone-breakeven-row {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.landing-page .phone-breakeven-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-page .phone-breakeven-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.landing-page .phone-breakeven-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.landing-page .phone-breakeven-sub {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Phone Verdict */
 .landing-page .phone-verdict {
-  background: linear-gradient(135deg, var(--success), var(--success-dark));
+  background: linear-gradient(135deg, var(--pacific-teal), var(--teal-dark));
   border-radius: 12px;
   padding: 16px;
   text-align: center;
 }
 
 .landing-page .phone-verdict-label {
-  font-size: 0.625rem;
+  font-size: 0.6rem;
   color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -490,7 +570,7 @@
 }
 
 .landing-page .phone-verdict-desc {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.9);
 }
 

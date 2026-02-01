@@ -137,49 +137,43 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
                       <p className="phone-scan-label">
                         Scan<span className="iq-cyan">IQ</span> Detected
                       </p>
-                      <p className="phone-scan-address font-display">
-                        3742 Lighthouse Circle, Boca Raton
+                    </div>
+
+                    {/* Target Hero - Featured Number */}
+                    <div className="phone-target-hero">
+                      <div className="phone-target-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <circle cx="12" cy="12" r="6" />
+                          <circle cx="12" cy="12" r="2" />
+                        </svg>
+                      </div>
+                      <p className="phone-target-label font-display">
+                        Target<span style={{ color: 'white' }}>IQ</span>
                       </p>
+                      <p className="phone-target-value font-display">$766,733</p>
+                      <p className="phone-target-sub">Your optimal offer price</p>
                     </div>
 
-                    <div style={{ marginBottom: '16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                        <span className="font-display" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>
-                          Price<span className="iq-cyan">IQ</span> Analysis
-                        </span>
+                    {/* Breakeven Row */}
+                    <div className="phone-breakeven-row">
+                      <div className="phone-breakeven-left">
+                        <p className="phone-breakeven-label">
+                          Breakeven<span className="iq-cyan">IQ</span>
+                        </p>
+                        <p className="phone-breakeven-value font-display">$807,087</p>
                       </div>
-                      <div className="phone-price-grid">
-                        <div className="phone-price-card">
-                          <p className="phone-price-label">
-                            Breakeven<span className="iq-cyan">IQ</span>
-                          </p>
-                          <p className="phone-price-value font-display">$807K</p>
-                          <p className="phone-price-subtext">Ceiling</p>
-                        </div>
-                        <div className="phone-price-card featured">
-                          <p className="phone-price-label">
-                            Target<span style={{ color: 'white' }}>IQ</span>
-                          </p>
-                          <p className="phone-price-value font-display">$767K</p>
-                          <p className="phone-price-subtext">Your Offer</p>
-                        </div>
-                        <div className="phone-price-card">
-                          <p className="phone-price-label">
-                            Wholesale<span className="iq-cyan">IQ</span>
-                          </p>
-                          <p className="phone-price-value font-display">$565K</p>
-                          <p className="phone-price-subtext">Assignment</p>
-                        </div>
-                      </div>
+                      <p className="phone-breakeven-sub">Ceiling — don&apos;t cross it</p>
                     </div>
 
+                    {/* Verdict */}
                     <div className="phone-verdict">
                       <p className="phone-verdict-label">
                         Verdict<span style={{ color: 'white' }}>IQ</span>
                       </p>
                       <p className="phone-verdict-text font-display">✓ Strong Buy</p>
                       <p className="phone-verdict-desc">
-                        Asking below Target<span style={{ color: 'white' }}>IQ</span> — Move fast
+                        Starting offer - $699K below Target<span style={{ color: 'white' }}>IQ</span>
                       </p>
                     </div>
                   </div>
