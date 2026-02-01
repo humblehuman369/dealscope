@@ -27,6 +27,7 @@ import { VerdictHero } from './VerdictHero'
 import { HowWeScoreDropdown } from './HowWeScoreDropdown'
 import { InvestmentAnalysis } from './InvestmentAnalysis'
 import { SummarySnapshot } from './SummarySnapshot'
+import { FinancialBreakdown } from './FinancialBreakdown'
 import { AtAGlanceSection } from './AtAGlanceSection'
 import { PerformanceBenchmarksSection, NATIONAL_RANGES } from './PerformanceBenchmarksSection'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '../deal-maker/DealMakerPopup'
@@ -612,6 +613,27 @@ export function VerdictIQCombined({
           totalInvestment={metrics.totalInvestment}
           targetBuyPrice={buyPrice}
           strategy={currentStrategy === 'Long-term' ? 'Long-term Rental' : currentStrategy === 'Short-term' ? 'Short-term Rental' : currentStrategy}
+        />
+
+        {/* Financial Breakdown - Detailed breakdown synced with DealMakerIQ */}
+        <FinancialBreakdown
+          buyPrice={overrideValues?.buyPrice ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : buyPrice)}
+          downPaymentPct={defaults.financing.down_payment_pct * 100}
+          interestRate={defaults.financing.interest_rate * 100}
+          loanTermYears={defaults.financing.loan_term_years}
+          monthlyRent={overrideValues?.monthlyRent ?? property.monthlyRent ?? Math.round(buyPrice * 0.007)}
+          vacancyRate={defaults.operating.vacancy_rate * 100}
+          otherIncome={0}
+          propertyTaxes={overrideValues?.propertyTaxes ?? property.propertyTaxes ?? Math.round(buyPrice * 0.012)}
+          insurance={overrideValues?.insurance ?? property.insurance ?? Math.round(buyPrice * 0.01)}
+          hoaFees={property.hoa ?? 0}
+          managementRate={defaults.operating.property_management_pct * 100}
+          maintenanceRate={defaults.operating.maintenance_pct * 100}
+          utilities={overrideValues?.utilitiesMonthly ?? 100}
+          landscaping={0}
+          pestControl={0}
+          capexRate={overrideValues?.capexRate ?? 5}
+          otherExpenses={0}
         />
 
         {/* Deal Gap & Motivation Section */}
