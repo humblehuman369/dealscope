@@ -7,11 +7,15 @@
  * Contains sliders for all DealMaker parameters organized by section.
  */
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { X, RotateCcw, Check, Info } from 'lucide-react'
 import { SliderInput } from './SliderInput'
 
+// Strategy type - matches VerdictIQ header options
+export type PopupStrategyType = 'ltr' | 'str'
+
 export interface DealMakerValues {
+  // Common fields (LTR and STR)
   buyPrice: number
   downPayment: number
   closingCosts: number
@@ -19,11 +23,25 @@ export interface DealMakerValues {
   loanTerm: number
   rehabBudget: number
   arv: number
-  monthlyRent: number
-  vacancyRate: number
   propertyTaxes: number
   insurance: number
+  
+  // LTR-specific fields
+  monthlyRent: number
+  vacancyRate: number
   managementRate: number
+  
+  // STR-specific fields
+  averageDailyRate: number
+  occupancyRate: number
+  cleaningFeeRevenue: number
+  avgLengthOfStayDays: number
+  platformFeeRate: number
+  strManagementRate: number
+  cleaningCostPerTurnover: number
+  suppliesMonthly: number
+  additionalUtilitiesMonthly: number
+  furnitureSetupCost: number
 }
 
 interface DealMakerPopupProps {
@@ -31,10 +49,12 @@ interface DealMakerPopupProps {
   onClose: () => void
   onApply: (values: DealMakerValues) => void
   initialValues?: Partial<DealMakerValues>
+  strategyType?: PopupStrategyType
 }
 
-// Default values
-const DEFAULT_VALUES: DealMakerValues = {
+// Default values for LTR strategy
+const DEFAULT_LTR_VALUES: DealMakerValues = {
+  // Common fields
   buyPrice: 350000,
   downPayment: 20,
   closingCosts: 3,
@@ -42,11 +62,65 @@ const DEFAULT_VALUES: DealMakerValues = {
   loanTerm: 30,
   rehabBudget: 0,
   arv: 350000,
-  monthlyRent: 2800,
-  vacancyRate: 1,
   propertyTaxes: 4200,
   insurance: 1800,
+  // LTR-specific
+  monthlyRent: 2800,
+  vacancyRate: 1,
   managementRate: 0,
+  // STR fields (not used for LTR, but need defaults)
+  averageDailyRate: 200,
+  occupancyRate: 65,
+  cleaningFeeRevenue: 150,
+  avgLengthOfStayDays: 3,
+  platformFeeRate: 15,
+  strManagementRate: 20,
+  cleaningCostPerTurnover: 100,
+  suppliesMonthly: 150,
+  additionalUtilitiesMonthly: 200,
+  furnitureSetupCost: 6000,
+}
+
+// Default values for STR strategy
+const DEFAULT_STR_VALUES: DealMakerValues = {
+  // Common fields
+  buyPrice: 350000,
+  downPayment: 20,
+  closingCosts: 3,
+  interestRate: 6,
+  loanTerm: 30,
+  rehabBudget: 0,
+  arv: 350000,
+  propertyTaxes: 4200,
+  insurance: 2400, // Higher for STR
+  // LTR fields (not used for STR, but need defaults)
+  monthlyRent: 2800,
+  vacancyRate: 1,
+  managementRate: 0,
+  // STR-specific
+  averageDailyRate: 200,
+  occupancyRate: 65,
+  cleaningFeeRevenue: 150,
+  avgLengthOfStayDays: 3,
+  platformFeeRate: 15,
+  strManagementRate: 20,
+  cleaningCostPerTurnover: 100,
+  suppliesMonthly: 150,
+  additionalUtilitiesMonthly: 200,
+  furnitureSetupCost: 6000,
+}
+
+// Get defaults based on strategy
+function getDefaultValues(strategy: PopupStrategyType): DealMakerValues {
+  return strategy === 'str' ? DEFAULT_STR_VALUES : DEFAULT_LTR_VALUES
+}
+
+// Calculate monthly mortgage payment
+function calculateMonthlyMortgage(principal: number, annualRate: number, years: number): number {
+  if (principal <= 0 || annualRate <= 0 || years <= 0) return 0
+  const monthlyRate = annualRate / 12
+  const numPayments = years * 12
+  return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
 }
 
 // Section divider component
@@ -77,25 +151,80 @@ export function DealMakerPopup({
   onClose,
   onApply,
   initialValues = {},
+  strategyType = 'ltr',
 }: DealMakerPopupProps) {
+  // Get defaults based on strategy
+  const defaults = useMemo(() => getDefaultValues(strategyType), [strategyType])
+  
   // Merge initial values with defaults
   const [values, setValues] = useState<DealMakerValues>({
-    ...DEFAULT_VALUES,
+    ...defaults,
     ...initialValues,
   })
 
-  // Reset to initial values when popup opens
+  // Reset to initial values when popup opens or strategy changes
   useEffect(() => {
     if (isOpen) {
       setValues({
-        ...DEFAULT_VALUES,
+        ...defaults,
         ...initialValues,
       })
     }
-  }, [isOpen, initialValues])
+  }, [isOpen, initialValues, defaults])
 
   // Calculate derived values
   const loanAmount = values.buyPrice * (1 - values.downPayment / 100)
+  
+  // STR-specific calculations
+  const strCalculations = useMemo(() => {
+    if (strategyType !== 'str') return null
+    
+    const nightsOccupied = Math.round(365 * (values.occupancyRate / 100))
+    const turnovers = values.avgLengthOfStayDays > 0 
+      ? Math.round(nightsOccupied / values.avgLengthOfStayDays) 
+      : 0
+    const rentalRevenue = values.averageDailyRate * nightsOccupied
+    const cleaningRevenue = values.cleaningFeeRevenue * turnovers
+    const annualGrossRevenue = rentalRevenue + cleaningRevenue
+    const monthlyGrossRevenue = annualGrossRevenue / 12
+    
+    // Calculate break-even occupancy
+    // Fixed monthly costs
+    const monthlyMortgage = calculateMonthlyMortgage(
+      values.buyPrice * (1 - values.downPayment / 100),
+      values.interestRate / 100,
+      values.loanTerm
+    )
+    const monthlyTaxes = values.propertyTaxes / 12
+    const monthlyInsurance = values.insurance / 12
+    const fixedMonthlyCosts = monthlyMortgage + monthlyTaxes + monthlyInsurance + values.suppliesMonthly + values.additionalUtilitiesMonthly
+    
+    // Variable costs per night
+    const platformFeePerNight = values.averageDailyRate * (values.platformFeeRate / 100)
+    const managementPerNight = values.averageDailyRate * (values.strManagementRate / 100)
+    const cleaningCostPerNight = values.avgLengthOfStayDays > 0 
+      ? values.cleaningCostPerTurnover / values.avgLengthOfStayDays 
+      : 0
+    const variableCostPerNight = platformFeePerNight + managementPerNight + cleaningCostPerNight
+    
+    // Net revenue per night
+    const revenuePerNight = values.averageDailyRate + (values.avgLengthOfStayDays > 0 ? values.cleaningFeeRevenue / values.avgLengthOfStayDays : 0)
+    const netRevenuePerNight = revenuePerNight - variableCostPerNight
+    
+    // Break-even nights per month
+    const breakEvenNightsPerMonth = netRevenuePerNight > 0 
+      ? fixedMonthlyCosts / netRevenuePerNight 
+      : 999
+    const breakEvenOccupancy = Math.min(100, Math.round((breakEvenNightsPerMonth / 30.4) * 100))
+    
+    return {
+      nightsOccupied,
+      turnovers,
+      annualGrossRevenue,
+      monthlyGrossRevenue,
+      breakEvenOccupancy,
+    }
+  }, [strategyType, values])
 
   // Handle value change
   const handleChange = useCallback((field: keyof DealMakerValues, value: number) => {
@@ -111,10 +240,10 @@ export function DealMakerPopup({
   // Handle reset
   const handleReset = useCallback(() => {
     setValues({
-      ...DEFAULT_VALUES,
+      ...defaults,
       ...initialValues,
     })
-  }, [initialValues])
+  }, [initialValues, defaults])
 
   // Don't render if not open
   if (!isOpen) return null
@@ -262,62 +391,225 @@ export function DealMakerPopup({
             format="currency"
             onChange={(val) => handleChange('arv', val)}
           />
+          
+          {/* Furniture & Setup - STR only */}
+          {strategyType === 'str' && (
+            <SliderInput
+              label="Furniture & Setup"
+              sublabel="STR furnishing costs"
+              value={values.furnitureSetupCost}
+              min={0}
+              max={30000}
+              step={1000}
+              format="currency"
+              onChange={(val) => handleChange('furnitureSetupCost', val)}
+            />
+          )}
 
-          {/* Rental Income Section */}
-          <SectionDivider text="Rental Income" />
-          
-          <SliderInput
-            label="Monthly Rent"
-            value={values.monthlyRent}
-            min={500}
-            max={10000}
-            step={50}
-            format="currency"
-            onChange={(val) => handleChange('monthlyRent', val)}
-          />
-          
-          <SliderInput
-            label="Vacancy Rate"
-            value={values.vacancyRate}
-            min={0}
-            max={20}
-            step={1}
-            format="percent-int"
-            onChange={(val) => handleChange('vacancyRate', val)}
-          />
+          {/* Rental Income Section - Conditional based on strategy */}
+          {strategyType === 'str' ? (
+            <>
+              {/* STR Income Section */}
+              <SectionDivider text="STR Income" />
+              
+              <SliderInput
+                label="Average Daily Rate"
+                sublabel="ADR"
+                value={values.averageDailyRate}
+                min={50}
+                max={1000}
+                step={10}
+                format="currency"
+                onChange={(val) => handleChange('averageDailyRate', val)}
+              />
+              
+              <SliderInput
+                label="Occupancy Rate"
+                value={values.occupancyRate}
+                min={30}
+                max={95}
+                step={1}
+                format="percent-int"
+                onChange={(val) => handleChange('occupancyRate', val)}
+              />
+              
+              <SliderInput
+                label="Cleaning Fee"
+                sublabel="Revenue per stay"
+                value={values.cleaningFeeRevenue}
+                min={0}
+                max={300}
+                step={25}
+                format="currency"
+                onChange={(val) => handleChange('cleaningFeeRevenue', val)}
+              />
+              
+              <SliderInput
+                label="Avg Length of Stay"
+                value={values.avgLengthOfStayDays}
+                min={1}
+                max={30}
+                step={1}
+                format="days"
+                onChange={(val) => handleChange('avgLengthOfStayDays', val)}
+              />
+              
+              {strCalculations && (
+                <CalculatedField 
+                  label="Annual Gross Revenue" 
+                  value={`$${strCalculations.annualGrossRevenue.toLocaleString()}`} 
+                />
+              )}
+            </>
+          ) : (
+            <>
+              {/* LTR Income Section */}
+              <SectionDivider text="Rental Income" />
+              
+              <SliderInput
+                label="Monthly Rent"
+                value={values.monthlyRent}
+                min={500}
+                max={10000}
+                step={50}
+                format="currency"
+                onChange={(val) => handleChange('monthlyRent', val)}
+              />
+              
+              <SliderInput
+                label="Vacancy Rate"
+                value={values.vacancyRate}
+                min={0}
+                max={20}
+                step={1}
+                format="percent-int"
+                onChange={(val) => handleChange('vacancyRate', val)}
+              />
+            </>
+          )}
 
-          {/* Operating Expenses Section */}
-          <SectionDivider text="Operating Expenses" />
-          
-          <SliderInput
-            label="Property Taxes"
-            value={values.propertyTaxes}
-            min={0}
-            max={20000}
-            step={100}
-            format="currency-year"
-            onChange={(val) => handleChange('propertyTaxes', val)}
-          />
-          
-          <SliderInput
-            label="Insurance"
-            value={values.insurance}
-            min={0}
-            max={10000}
-            step={100}
-            format="currency-year"
-            onChange={(val) => handleChange('insurance', val)}
-          />
-          
-          <SliderInput
-            label="Management Rate"
-            value={values.managementRate}
-            min={0}
-            max={15}
-            step={0.5}
-            format="percent-int"
-            onChange={(val) => handleChange('managementRate', val)}
-          />
+          {/* Operating Expenses Section - Conditional based on strategy */}
+          {strategyType === 'str' ? (
+            <>
+              {/* STR Expenses Section */}
+              <SectionDivider text="STR Expenses" />
+              
+              <SliderInput
+                label="Platform Fees"
+                sublabel="Airbnb/VRBO"
+                value={values.platformFeeRate}
+                min={10}
+                max={20}
+                step={1}
+                format="percent-int"
+                onChange={(val) => handleChange('platformFeeRate', val)}
+              />
+              
+              <SliderInput
+                label="STR Management"
+                value={values.strManagementRate}
+                min={0}
+                max={25}
+                step={1}
+                format="percent-int"
+                onChange={(val) => handleChange('strManagementRate', val)}
+              />
+              
+              <SliderInput
+                label="Cleaning Cost"
+                sublabel="Per turnover"
+                value={values.cleaningCostPerTurnover}
+                min={50}
+                max={400}
+                step={25}
+                format="currency"
+                onChange={(val) => handleChange('cleaningCostPerTurnover', val)}
+              />
+              
+              <SliderInput
+                label="Supplies & Consumables"
+                value={values.suppliesMonthly}
+                min={0}
+                max={500}
+                step={25}
+                format="currency-month"
+                onChange={(val) => handleChange('suppliesMonthly', val)}
+              />
+              
+              <SliderInput
+                label="Additional Utilities"
+                value={values.additionalUtilitiesMonthly}
+                min={0}
+                max={500}
+                step={25}
+                format="currency-month"
+                onChange={(val) => handleChange('additionalUtilitiesMonthly', val)}
+              />
+              
+              <SliderInput
+                label="Property Taxes"
+                value={values.propertyTaxes}
+                min={0}
+                max={20000}
+                step={100}
+                format="currency-year"
+                onChange={(val) => handleChange('propertyTaxes', val)}
+              />
+              
+              <SliderInput
+                label="Insurance"
+                sublabel="STR coverage"
+                value={values.insurance}
+                min={0}
+                max={12000}
+                step={100}
+                format="currency-year"
+                onChange={(val) => handleChange('insurance', val)}
+              />
+              
+              {strCalculations && (
+                <CalculatedField 
+                  label="Break-Even Occupancy" 
+                  value={`${strCalculations.breakEvenOccupancy}%`} 
+                />
+              )}
+            </>
+          ) : (
+            <>
+              {/* LTR Expenses Section */}
+              <SectionDivider text="Operating Expenses" />
+              
+              <SliderInput
+                label="Property Taxes"
+                value={values.propertyTaxes}
+                min={0}
+                max={20000}
+                step={100}
+                format="currency-year"
+                onChange={(val) => handleChange('propertyTaxes', val)}
+              />
+              
+              <SliderInput
+                label="Insurance"
+                value={values.insurance}
+                min={0}
+                max={10000}
+                step={100}
+                format="currency-year"
+                onChange={(val) => handleChange('insurance', val)}
+              />
+              
+              <SliderInput
+                label="Management Rate"
+                value={values.managementRate}
+                min={0}
+                max={15}
+                step={0.5}
+                format="percent-int"
+                onChange={(val) => handleChange('managementRate', val)}
+              />
+            </>
+          )}
         </div>
 
         {/* Footer Actions */}

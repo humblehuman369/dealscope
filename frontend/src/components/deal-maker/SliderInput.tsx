@@ -9,7 +9,7 @@
 
 import React from 'react'
 
-export type PopupSliderFormat = 'currency' | 'currency-year' | 'percent' | 'percent-int' | 'years'
+export type PopupSliderFormat = 'currency' | 'currency-year' | 'currency-month' | 'percent' | 'percent-int' | 'years' | 'days'
 
 interface SliderInputProps {
   label: string
@@ -29,12 +29,16 @@ function formatValue(value: number, format: PopupSliderFormat): string {
       return `$${value.toLocaleString()}`
     case 'currency-year':
       return `$${value.toLocaleString()}/yr`
+    case 'currency-month':
+      return `$${value.toLocaleString()}/mo`
     case 'percent':
       return `${value.toFixed(value % 1 === 0 ? 0 : 2)}%`
     case 'percent-int':
       return `${Math.round(value)}%`
     case 'years':
       return `${value} years`
+    case 'days':
+      return `${value} day${value !== 1 ? 's' : ''}`
     default:
       return value.toString()
   }
@@ -45,11 +49,13 @@ function formatMinMax(value: number, format: PopupSliderFormat): string {
   switch (format) {
     case 'currency':
     case 'currency-year':
+    case 'currency-month':
       return `$${value.toLocaleString()}`
     case 'percent':
     case 'percent-int':
       return `${value}%`
     case 'years':
+    case 'days':
       return `${value}`
     default:
       return value.toString()

@@ -29,7 +29,7 @@ import { InvestmentAnalysis } from './InvestmentAnalysis'
 import { SummarySnapshot } from './SummarySnapshot'
 import { AtAGlanceSection } from './AtAGlanceSection'
 import { PerformanceBenchmarksSection, NATIONAL_RANGES } from './PerformanceBenchmarksSection'
-import { DealMakerPopup, DealMakerValues } from '../deal-maker/DealMakerPopup'
+import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '../deal-maker/DealMakerPopup'
 import {
   IQProperty,
   IQAnalysisResult,
@@ -57,6 +57,12 @@ const HEADER_STRATEGIES = [
   { short: 'House Hack', full: 'House Hack' },
   { short: 'Wholesale', full: 'Wholesale' },
 ]
+
+// Map header strategy to popup strategy type
+function getPopupStrategyType(headerStrategy: string): PopupStrategyType {
+  if (headerStrategy === 'Short-term') return 'str'
+  return 'ltr' // Default to LTR for all other strategies
+}
 
 // =============================================================================
 // HELPER FUNCTIONS
@@ -764,7 +770,9 @@ export function VerdictIQCombined({
         isOpen={showDealMakerPopup}
         onClose={() => setShowDealMakerPopup(false)}
         onApply={handleApplyDealMakerValues}
+        strategyType={getPopupStrategyType(currentStrategy)}
         initialValues={{
+          // Common fields
           buyPrice: overrideValues?.buyPrice ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : buyPrice),
           downPayment: (defaults.financing.down_payment_pct * 100),
           closingCosts: ((defaults.financing.closing_costs_pct || 0.03) * 100),
@@ -772,11 +780,23 @@ export function VerdictIQCombined({
           loanTerm: defaults.financing.loan_term_years,
           rehabBudget: overrideValues?.rehabBudget ?? 0,
           arv: overrideValues?.arv ?? property.arv ?? buyPrice * 1.15,
-          monthlyRent: overrideValues?.monthlyRent ?? property.monthlyRent ?? Math.round(buyPrice * 0.007),
-          vacancyRate: (defaults.operating.vacancy_rate * 100),
           propertyTaxes: overrideValues?.propertyTaxes ?? property.propertyTaxes ?? Math.round(buyPrice * 0.012),
           insurance: overrideValues?.insurance ?? property.insurance ?? Math.round(buyPrice * 0.01),
+          // LTR fields
+          monthlyRent: overrideValues?.monthlyRent ?? property.monthlyRent ?? Math.round(buyPrice * 0.007),
+          vacancyRate: (defaults.operating.vacancy_rate * 100),
           managementRate: (defaults.operating.property_management_pct * 100),
+          // STR fields - use defaults from DealMakerPopup, can be overridden
+          averageDailyRate: overrideValues?.averageDailyRate ?? 200,
+          occupancyRate: overrideValues?.occupancyRate ?? 65,
+          cleaningFeeRevenue: overrideValues?.cleaningFeeRevenue ?? 150,
+          avgLengthOfStayDays: overrideValues?.avgLengthOfStayDays ?? 3,
+          platformFeeRate: overrideValues?.platformFeeRate ?? 15,
+          strManagementRate: overrideValues?.strManagementRate ?? 20,
+          cleaningCostPerTurnover: overrideValues?.cleaningCostPerTurnover ?? 100,
+          suppliesMonthly: overrideValues?.suppliesMonthly ?? 150,
+          additionalUtilitiesMonthly: overrideValues?.additionalUtilitiesMonthly ?? 200,
+          furnitureSetupCost: overrideValues?.furnitureSetupCost ?? 6000,
         }}
       />
     </div>
