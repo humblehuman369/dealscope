@@ -110,6 +110,7 @@ export function VerdictIQCombined({
   const router = useRouter()
   const [showMethodology, setShowMethodology] = useState(false)
   const [showFactors, setShowFactors] = useState(false)
+  const [showPriceLikelihood, setShowPriceLikelihood] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState(HEADER_STRATEGIES[0].short)
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
@@ -636,107 +637,106 @@ export function VerdictIQCombined({
           otherExpenses={0}
         />
 
-        {/* Deal Gap & Motivation Section */}
-        <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
-          <div className="text-xs font-semibold text-[#0891B2] mb-3">
-            HOW LIKELY CAN YOU GET THIS PRICE?
-          </div>
-
-          {/* Deal Gap */}
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
-              <TrendingDown className="w-[18px] h-[18px] text-[#64748B]" />
-              Deal Gap
-            </div>
-            <div className="text-lg font-bold text-[#0891B2]">
-              {opportunityFactors.dealGap > 0 ? '-' : '+'}{Math.abs(opportunityFactors.dealGap).toFixed(1)}%
-            </div>
-          </div>
-
-          <div className="bg-[#F8FAFC] rounded-lg p-3 mb-4">
-            <div className="flex justify-between items-center py-1.5">
-              <span className="text-[13px] text-[#64748B]">{isOffMarket ? 'Market Estimate' : 'Asking Price'}</span>
-              <span className="text-[13px] font-semibold text-[#0A1628]">{formatPrice(estValue)}</span>
-            </div>
-            <div className="flex justify-between items-center py-1.5">
-              <span className="text-[13px] text-[#64748B]">Your Target</span>
-              <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(userTargetPrice)}</span>
-            </div>
-            <div className="flex justify-between items-center py-1.5">
-              <span className="text-[13px] text-[#64748B]">Discount needed</span>
-              <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(Math.abs(discountNeeded))}</span>
-            </div>
-          </div>
-
-          {/* Seller Motivation */}
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
-              <Target className="w-[18px] h-[18px] text-[#64748B]" />
-              Seller Motivation
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-sm font-semibold" style={{ color: getMotivationColor(opportunityFactors.motivation) }}>
-                {sellerMotivation.level}
-              </span>
-              <span className="text-xs text-[#94A3B8]">{sellerMotivation.score}</span>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center py-2">
-            <span className="text-[13px] text-[#64748B]">Max achievable discount</span>
-            <span className="text-[13px] font-semibold text-[#0A1628]">{sellerMotivation.maxDiscount}</span>
-          </div>
-
-          {/* Suggested Offer */}
-          <div 
-            className="relative rounded-[10px] p-4 mt-3 border border-[#0891B2]"
-            style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #E0F7FA 100%)' }}
+        {/* Deal Gap & Motivation Section - Collapsible Dropdown */}
+        <div className="bg-white border-b border-[#E2E8F0]">
+          {/* Dropdown Header */}
+          <button
+            onClick={() => setShowPriceLikelihood(!showPriceLikelihood)}
+            className="w-full flex items-center justify-between px-6 py-3 hover:bg-[#F8FAFC] transition-colors"
           >
-            <span className="absolute -top-2 left-4 bg-[#0891B2] text-white text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
-              Recommended
+            <span className="text-xs font-semibold text-[#0891B2] uppercase tracking-wide">
+              HOW LIKELY CAN YOU GET THIS PRICE?
             </span>
-            <div className="flex justify-between items-center">
-              <span className="text-[13px] text-[#0A1628] font-medium">Suggested opening offer</span>
-              <span className="text-base font-bold text-[#0891B2]">{sellerMotivation.suggestedOffer}</span>
-            </div>
-          </div>
-        </div>
+            {showPriceLikelihood ? (
+              <ChevronUp className="w-4 h-4 text-[#64748B]" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-[#64748B]" />
+            )}
+          </button>
 
-        {/* Additional Opportunity Factors */}
-        <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
-          <div className="flex justify-between items-center">
-            <span className="flex items-center gap-1.5 text-[13px] font-semibold text-[#64748B]">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
-              </svg>
-              Additional Opportunity Factors
-            </span>
-            <button 
-              className="flex items-center gap-1 text-[#0891B2] text-xs font-medium bg-transparent border-none cursor-pointer"
-              onClick={() => setShowFactors(!showFactors)}
-            >
-              {showFactors ? 'Hide' : 'Show'}
-              {showFactors ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            </button>
-          </div>
-
-          {showFactors && (
-            <div className="mt-3 pt-3 border-t border-[#E2E8F0]">
-              {factors.map((factor, index) => (
-                <div key={index} className="flex justify-between items-center py-2">
-                  <div className="flex items-center gap-2.5 text-[13px] text-[#475569]">
-                    {factor.icon === 'clock' ? (
-                      <Clock className="w-4 h-4 text-[#94A3B8]" />
-                    ) : (
-                      <AlertTriangle className="w-4 h-4 text-[#94A3B8]" />
-                    )}
-                    {factor.label}
-                  </div>
-                  <span className={`text-[13px] font-semibold ${factor.positive ? 'text-[#0891B2]' : 'text-[#94A3B8]'}`}>
-                    {factor.value}
-                  </span>
+          {/* Expandable Content */}
+          {showPriceLikelihood && (
+            <div className="px-6 pb-4">
+              {/* Deal Gap */}
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
+                  <TrendingDown className="w-[18px] h-[18px] text-[#64748B]" />
+                  Deal Gap
                 </div>
-              ))}
+                <div className="text-lg font-bold text-[#0891B2]">
+                  {opportunityFactors.dealGap > 0 ? '-' : '+'}{Math.abs(opportunityFactors.dealGap).toFixed(1)}%
+                </div>
+              </div>
+
+              <div className="bg-[#F8FAFC] rounded-lg p-3 mb-4">
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-[13px] text-[#64748B]">{isOffMarket ? 'Market Estimate' : 'Asking Price'}</span>
+                  <span className="text-[13px] font-semibold text-[#0A1628]">{formatPrice(estValue)}</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-[13px] text-[#64748B]">Your Target</span>
+                  <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(userTargetPrice)}</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-[13px] text-[#64748B]">Discount needed</span>
+                  <span className="text-[13px] font-semibold text-[#0891B2]">{formatPrice(Math.abs(discountNeeded))}</span>
+                </div>
+              </div>
+
+              {/* Seller Motivation */}
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
+                  <Target className="w-[18px] h-[18px] text-[#64748B]" />
+                  Seller Motivation
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-sm font-semibold" style={{ color: getMotivationColor(opportunityFactors.motivation) }}>
+                    {sellerMotivation.level}
+                  </span>
+                  <span className="text-xs text-[#94A3B8]">{sellerMotivation.score}</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center py-2">
+                <span className="text-[13px] text-[#64748B]">Max achievable discount</span>
+                <span className="text-[13px] font-semibold text-[#0A1628]">{sellerMotivation.maxDiscount}</span>
+              </div>
+
+              {/* Suggested Offer */}
+              <div 
+                className="relative rounded-[10px] p-4 mt-3 border border-[#0891B2]"
+                style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #E0F7FA 100%)' }}
+              >
+                <span className="absolute -top-2 left-4 bg-[#0891B2] text-white text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
+                  Recommended
+                </span>
+                <div className="flex justify-between items-center">
+                  <span className="text-[13px] text-[#0A1628] font-medium">Suggested opening offer</span>
+                  <span className="text-base font-bold text-[#0891B2]">{sellerMotivation.suggestedOffer}</span>
+                </div>
+              </div>
+
+              {/* Additional Opportunity Factors - Integrated */}
+              <div className="mt-4 pt-4 border-t border-[#E2E8F0]">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-[#475569] mb-3">
+                  Additional Opportunity Factors
+                </div>
+                {factors.map((factor, index) => (
+                  <div key={index} className="flex justify-between items-center py-2">
+                    <div className="flex items-center gap-2.5 text-[13px] text-[#475569]">
+                      {factor.icon === 'clock' ? (
+                        <Clock className="w-4 h-4 text-[#94A3B8]" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-[#94A3B8]" />
+                      )}
+                      {factor.label}
+                    </div>
+                    <span className={`text-[13px] font-semibold ${factor.positive ? 'text-[#0891B2]' : 'text-[#94A3B8]'}`}>
+                      {factor.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
