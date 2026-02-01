@@ -29,7 +29,9 @@ function AuthParamHandler() {
 
   React.useEffect(() => {
     const authParam = searchParams.get('auth');
-    if (authParam === 'login') {
+    // Handle all auth-related query params
+    // 'required' is set by the proxy when accessing protected routes
+    if (authParam === 'login' || authParam === 'required') {
       setShowAuthModal('login');
     } else if (authParam === 'register') {
       setShowAuthModal('register');

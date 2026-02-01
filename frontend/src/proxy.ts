@@ -12,12 +12,16 @@ import type { NextRequest } from 'next/server'
  */
 
 // Routes that require authentication
+// NOTE: These routes will be protected at the edge (proxy level)
+// This only works if the token is stored in a cookie (not just localStorage)
+// For routes where the page handles auth client-side (like /dashboard), 
+// don't include them here to avoid double-redirect issues.
 const protectedRoutes = [
-  '/dashboard',
+  // '/dashboard',    // Removed: Dashboard handles its own auth with proper loading states
   '/profile',
   '/worksheet',
   // '/deal-maker', // Removed: Deal Maker is part of the public analysis flow (Analysis IQ → Deal Maker)
-  '/compare',
+  // '/compare',    // Removed: Part of analysis flow, should be accessible
   '/search-history',
   '/billing',
 ]
