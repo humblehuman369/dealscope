@@ -454,6 +454,12 @@ export function VerdictIQCombined({
     setCurrentStrategy(strategy)
   }, [])
 
+  // Handle strategy change from popup (maps popup type back to header format)
+  const handlePopupStrategyChange = useCallback((popupStrategy: PopupStrategyType) => {
+    const headerStrategy = popupStrategy === 'str' ? 'Short-term' : 'Long-term'
+    setCurrentStrategy(headerStrategy)
+  }, [])
+
   // Open DealMaker popup instead of navigating to page
   const handleOpenDealMakerPopup = useCallback(() => {
     setShowDealMakerPopup(true)
@@ -771,6 +777,7 @@ export function VerdictIQCombined({
         onClose={() => setShowDealMakerPopup(false)}
         onApply={handleApplyDealMakerValues}
         strategyType={getPopupStrategyType(currentStrategy)}
+        onStrategyChange={handlePopupStrategyChange}
         initialValues={{
           // Common fields
           buyPrice: overrideValues?.buyPrice ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : buyPrice),

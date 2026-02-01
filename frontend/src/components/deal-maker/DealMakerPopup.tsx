@@ -50,6 +50,7 @@ interface DealMakerPopupProps {
   onApply: (values: DealMakerValues) => void
   initialValues?: Partial<DealMakerValues>
   strategyType?: PopupStrategyType
+  onStrategyChange?: (strategy: PopupStrategyType) => void
 }
 
 // Default values for LTR strategy
@@ -152,6 +153,7 @@ export function DealMakerPopup({
   onApply,
   initialValues = {},
   strategyType = 'ltr',
+  onStrategyChange,
 }: DealMakerPopupProps) {
   // Get defaults based on strategy
   const defaults = useMemo(() => getDefaultValues(strategyType), [strategyType])
@@ -283,7 +285,29 @@ export function DealMakerPopup({
                 <span className="text-[#0A1628]">Deal Maker</span>
                 <span className="text-[#0891B2]">IQ</span>
               </h2>
-              <p className="text-xs text-[#64748B] mt-0.5">Customize your investment terms</p>
+              {/* Strategy Toggle */}
+              <div className="flex items-center gap-1 mt-1">
+                <button
+                  onClick={() => onStrategyChange?.('ltr')}
+                  className={`px-2 py-0.5 text-[10px] font-semibold rounded-l-md transition-colors ${
+                    strategyType === 'ltr'
+                      ? 'bg-[#0891B2] text-white'
+                      : 'bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0]'
+                  }`}
+                >
+                  LTR
+                </button>
+                <button
+                  onClick={() => onStrategyChange?.('str')}
+                  className={`px-2 py-0.5 text-[10px] font-semibold rounded-r-md transition-colors ${
+                    strategyType === 'str'
+                      ? 'bg-[#0891B2] text-white'
+                      : 'bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0]'
+                  }`}
+                >
+                  STR
+                </button>
+              </div>
             </div>
           </div>
           <button 
