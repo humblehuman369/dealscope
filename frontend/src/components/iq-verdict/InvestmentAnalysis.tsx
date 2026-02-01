@@ -157,15 +157,6 @@ export function InvestmentAnalysis({
           WHAT PRICE MAKES THIS DEAL WORK?
         </div>
 
-        {/* Off-Market Info Banner */}
-        {isOffMarket && (
-          <div className="flex items-start gap-2.5 p-3 bg-[#F1F5F9] rounded-lg mb-4 border-l-[3px] border-l-[#0891B2]">
-            <AlertCircle className="w-[18px] h-[18px] text-[#0891B2] flex-shrink-0 mt-0.5" />
-            <div className="text-xs text-[#475569] leading-relaxed">
-              <strong className="text-[#0891B2]">Off-Market Property:</strong> No asking price available. Using {priceSource} of {formatPrice(marketValue)} for Deal Gap calculation.
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Price Cards Section */}

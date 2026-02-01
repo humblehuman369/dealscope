@@ -18,7 +18,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, TrendingDown, Target, Clock, AlertTriangle, ChevronDown, ChevronUp, FileSpreadsheet, Loader2 } from 'lucide-react'
+import { ArrowRight, TrendingDown, Target, Clock, AlertTriangle, AlertCircle, ChevronDown, ChevronUp, FileSpreadsheet, Loader2 } from 'lucide-react'
 import api from '@/lib/api'
 import { CompactHeader, PropertyData } from '../layout/CompactHeader'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
@@ -657,6 +657,16 @@ export function VerdictIQCombined({
           {/* Expandable Content */}
           {showPriceLikelihood && (
             <div className="px-6 pb-4">
+              {/* Off-Market Info Banner */}
+              {isOffMarket && (
+                <div className="flex items-start gap-2.5 p-3 bg-[#F1F5F9] rounded-lg mb-4 border-l-[3px] border-l-[#0891B2]">
+                  <AlertCircle className="w-[18px] h-[18px] text-[#0891B2] flex-shrink-0 mt-0.5" />
+                  <div className="text-xs text-[#475569] leading-relaxed">
+                    <strong className="text-[#0891B2]">Off-Market Property:</strong> No asking price available. Using {priceSource} of {formatPrice(estValue)} for Deal Gap calculation.
+                  </div>
+                </div>
+              )}
+
               {/* Deal Gap */}
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
