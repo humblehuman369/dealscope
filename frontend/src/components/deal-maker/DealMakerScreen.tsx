@@ -28,7 +28,6 @@ import {
   STRDealMakerState,
   STRMetrics,
   DEFAULT_STR_DEAL_MAKER_STATE,
-  isSTRState,
 } from './types'
 import { calculateSTRMetrics } from './calculations/strCalculations'
 
@@ -63,6 +62,7 @@ interface LTRDealMakerState {
   buyPrice: number
   downPaymentPercent: number
   closingCostsPercent: number
+  loanType?: '15-year' | '30-year' | 'arm'
   interestRate: number
   loanTermYears: number
   rehabBudget: number
@@ -79,6 +79,11 @@ interface LTRDealMakerState {
 
 // Union type for any strategy state
 type DealMakerState = LTRDealMakerState | STRDealMakerState
+
+// Local type guard for STR state
+function isSTRState(state: DealMakerState): state is STRDealMakerState {
+  return 'averageDailyRate' in state && 'occupancyRate' in state
+}
 
 interface LTRDealMakerMetrics {
   cashNeeded: number
