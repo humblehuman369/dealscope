@@ -153,10 +153,6 @@ export function InvestmentAnalysis({
           </div>
         </div>
 
-        <div className="text-xs font-semibold text-[#0891B2] mt-2 mb-3">
-          WHAT PRICE MAKES THIS DEAL WORK?
-        </div>
-
       </div>
 
       {/* Price Cards Section */}
