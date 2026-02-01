@@ -26,10 +26,11 @@ import { useDealMakerStore, useDealMakerDerived, useDealMakerReady } from '@/sto
 import { 
   StrategyType,
   STRDealMakerState,
+  STRMetrics,
   DEFAULT_STR_DEAL_MAKER_STATE,
   isSTRState,
 } from './types'
-import { calculateSTRMetrics, STRMetrics } from './calculations/strCalculations'
+import { calculateSTRMetrics } from './calculations/strCalculations'
 
 // Types
 export interface DealMakerPropertyData {
