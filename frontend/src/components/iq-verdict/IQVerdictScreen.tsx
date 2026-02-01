@@ -29,6 +29,7 @@ import {
 } from './types'
 import { CompactHeader, PropertyData, Strategy } from '../layout/CompactHeader'
 import { ScoreMethodologySheet } from './ScoreMethodologySheet'
+import { SummarySnapshot } from './SummarySnapshot'
 
 // =============================================================================
 // BRAND COLORS - From design files
@@ -288,6 +289,52 @@ export function IQVerdictScreen({
     },
   ]
 
+  // Calculate metrics for Summary Snapshot
+  const metrics = useMemo(() => {
+    const effectivePrice = userTargetPrice
+    const monthlyRent = property.monthlyRent ?? effectivePrice * 0.007
+    const propertyTaxes = property.propertyTaxes ?? effectivePrice * 0.012
+    const insurance = property.insurance ?? effectivePrice * 0.01
+
+    const annualRent = monthlyRent * 12
+    const vacancyRate = defaults?.operating?.vacancy_rate ?? 0.01
+    const maintenancePct = defaults?.operating?.maintenance_pct ?? 0.05
+    const noi = annualRent - propertyTaxes - insurance - (annualRent * vacancyRate) - (annualRent * maintenancePct)
+    
+    const downPaymentPct = defaults?.financing?.down_payment_pct ?? 0.20
+    const downPayment = effectivePrice * downPaymentPct
+    const loanAmount = effectivePrice * (1 - downPaymentPct)
+    const closingCostsPct = defaults?.financing?.closing_costs_pct ?? 0.03
+    const closingCosts = effectivePrice * closingCostsPct
+    const totalInvestment = downPayment + closingCosts
+
+    // Calculate monthly mortgage payment
+    const interestRate = defaults?.financing?.interest_rate ?? 0.06
+    const loanTermYears = defaults?.financing?.loan_term_years ?? 30
+    const monthlyRate = interestRate / 12
+    const numPayments = loanTermYears * 12
+    const monthlyPI = loanAmount > 0 
+      ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
+      : 0
+    const annualDebtService = monthlyPI * 12
+    
+    const annualCashFlow = noi - annualDebtService
+    const monthlyCashFlow = annualCashFlow / 12
+
+    const capRate = effectivePrice > 0 ? (noi / effectivePrice) * 100 : 0
+    const cashOnCash = totalInvestment > 0 ? (annualCashFlow / totalInvestment) * 100 : 0
+    const dscr = annualDebtService > 0 ? noi / annualDebtService : 0
+
+    return {
+      capRate,
+      cashOnCash,
+      dscr,
+      monthlyCashFlow,
+      noi,
+      totalInvestment,
+    }
+  }, [property, userTargetPrice, defaults])
+
   // Price Card Component
   const PriceCard = ({ label, value, desc, recommended = false }: { label: string; value: number; desc: string; recommended?: boolean }) => (
     <div className={`rounded-lg p-3 text-center border ${
@@ -504,6 +551,16 @@ export function IQVerdictScreen({
             </div>
           )}
         </div>
+
+        {/* Summary Snapshot */}
+        <SummarySnapshot
+          capRate={metrics.capRate}
+          cashOnCash={metrics.cashOnCash}
+          dscr={metrics.dscr}
+          monthlyCashFlow={metrics.monthlyCashFlow}
+          noi={metrics.noi}
+          totalInvestment={metrics.totalInvestment}
+        />
 
         {/* How Likely Section */}
         <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
