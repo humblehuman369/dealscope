@@ -767,13 +767,18 @@ async def generate_proforma_data(
 ) -> FinancialProforma:
     """Generate complete financial proforma from property data."""
     
-    # Extract property values
-    purchase_price = purchase_price_override or property_data.valuations.current_value_avm or 0
-    list_price = property_data.listing.list_price if property_data.listing else purchase_price
-    monthly_rent = monthly_rent_override or property_data.rentals.monthly_rent_ltr or 0
+    # Extract property values with defensive None checks
+    valuations = property_data.valuations
+    rentals = property_data.rentals
+    market = property_data.market
+    listing = property_data.listing
+    
+    purchase_price = purchase_price_override or (valuations.current_value_avm if valuations else None) or 0
+    list_price = (listing.list_price if listing and listing.list_price else None) or purchase_price
+    monthly_rent = monthly_rent_override or (rentals.monthly_rent_ltr if rentals else None) or 0
     annual_gross_rent = monthly_rent * 12
-    property_taxes = property_data.market.property_taxes_annual or (purchase_price * 0.01)
-    hoa_fees = (property_data.market.hoa_fees_monthly or 0) * 12
+    property_taxes = (market.property_taxes_annual if market else None) or (purchase_price * 0.01)
+    hoa_fees = ((market.hoa_fees_monthly if market else None) or 0) * 12
     
     # Financing parameters
     down_payment_pct = FINANCING.down_payment_pct
@@ -822,7 +827,8 @@ async def generate_proforma_data(
     one_percent_rule = (monthly_rent / purchase_price * 100) if purchase_price > 0 else 0
     break_even_occupancy = ((total_operating_expenses + annual_debt_service) / annual_gross_rent * 100) if annual_gross_rent > 0 else 0
     
-    sqft = property_data.details.square_footage or 1
+    details = property_data.details
+    sqft = (details.square_footage if details else None) or 1
     price_per_sqft = purchase_price / sqft
     rent_per_sqft = annual_gross_rent / sqft
     
@@ -911,24 +917,26 @@ async def generate_proforma_data(
         capital_gains_tax_rate=capital_gains_tax_rate,
     )
     
-    # Build proforma
+    # Build proforma - extract with None checks
+    address = property_data.address
+    
     return FinancialProforma(
         generated_at=datetime.now().isoformat(),
-        property_id=property_data.property_id,
-        property_address=property_data.address.full_address,
+        property_id=property_data.property_id or "",
+        property_address=(address.full_address if address else None) or "Unknown Address",
         strategy_type=strategy,
         
         property=PropertySummary(
-            address=property_data.address.street,
-            city=property_data.address.city,
-            state=property_data.address.state,
-            zip=property_data.address.zip_code,
-            property_type=property_data.details.property_type or "Single Family",
-            bedrooms=property_data.details.bedrooms or 0,
-            bathrooms=property_data.details.bathrooms or 0,
-            square_feet=property_data.details.square_footage or 0,
-            year_built=property_data.details.year_built or 0,
-            lot_size=property_data.details.lot_size or 0,
+            address=(address.street if address else None) or "Unknown",
+            city=(address.city if address else None) or "Unknown",
+            state=(address.state if address else None) or "Unknown",
+            zip=(address.zip_code if address else None) or "Unknown",
+            property_type=(details.property_type if details else None) or "Single Family",
+            bedrooms=(details.bedrooms if details else None) or 0,
+            bathrooms=(details.bathrooms if details else None) or 0,
+            square_feet=(details.square_footage if details else None) or 0,
+            year_built=(details.year_built if details else None) or 0,
+            lot_size=(details.lot_size if details else None) or 0,
         ),
         
         acquisition=AcquisitionDetails(
