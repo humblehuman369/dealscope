@@ -85,7 +85,7 @@ export function SliderInput({
             <span className="text-[11px] text-[#94A3B8] mt-0.5">{sublabel}</span>
           )}
         </div>
-        <span className="text-lg font-bold text-[#0891B2]">
+        <span className="text-lg font-bold text-[#0891B2] tabular-nums">
           {formatValue(value, format)}
         </span>
       </div>
@@ -129,8 +129,8 @@ export function SliderInput({
 
       {/* Range labels */}
       <div className="flex justify-between mt-1.5">
-        <span className="text-[11px] text-[#94A3B8]">{formatMinMax(min, format)}</span>
-        <span className="text-[11px] text-[#94A3B8]">{formatMinMax(max, format)}</span>
+        <span className="text-[11px] text-[#94A3B8] tabular-nums">{formatMinMax(min, format)}</span>
+        <span className="text-[11px] text-[#94A3B8] tabular-nums">{formatMinMax(max, format)}</span>
       </div>
     </div>
   )

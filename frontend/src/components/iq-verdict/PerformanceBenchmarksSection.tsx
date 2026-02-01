@@ -82,7 +82,7 @@ function BenchmarkRow({ metric }: { metric: BenchmarkMetric }) {
   const position = getPosition(metric.value, metric.range)
   
   return (
-    <div className="flex items-center gap-3 py-3 border-b border-[#F1F5F9] last:border-b-0 last:pb-0">
+    <div className="flex items-center gap-3 py-2.5 border-b border-[#F1F5F9] last:border-b-0 last:pb-0">
       <div className="w-[95px] flex-shrink-0">
         <div className="text-xs font-medium text-[#334155] leading-tight">{metric.label}</div>
       </div>
@@ -152,7 +152,7 @@ function HelpMetricRow({ name, value }: { name: string; value: string }) {
 // How to Read Dropdown Component
 function HowToReadDropdown() {
   return (
-    <div className="bg-white py-5 px-6 border-b border-[#E2E8F0]">
+    <div className="bg-white py-5 px-5 border-b border-[#E2E8F0]">
       {/* How It Works */}
       <div className="mb-5">
         <div className="text-[11px] font-bold text-[#0891B2] uppercase tracking-wide mb-2.5">How It Works</div>
@@ -169,7 +169,7 @@ function HowToReadDropdown() {
         <div className="bg-[#F8FAFC] rounded-lg p-3.5 mt-3">
           <div className="text-[13px] font-semibold text-[#0A1628] mb-3">The Performance Scale</div>
           <div className="relative pt-5 mb-2">
-            <span className="absolute top-0 left-1/2 -translate-x-1/2 text-[9px] font-bold text-[#0891B2] uppercase tracking-wide">
+            <span className="absolute top-0 left-1/2 -translate-x-1/2 text-[10px] font-bold text-[#0891B2] uppercase tracking-wide">
               National Avg
             </span>
             <div 
@@ -235,7 +235,7 @@ function HowToReadDropdown() {
 // Legend Bar Intro Section
 function BenchmarkIntro() {
   return (
-    <div className="py-4 px-6 bg-[#F8FAFC] border-b border-[#E2E8F0]">
+    <div className="py-4 px-5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
       <div className="text-[13px] font-semibold text-[#0A1628] mb-1">
         How This Deal Compares to National Average
       </div>
@@ -246,7 +246,7 @@ function BenchmarkIntro() {
       
       {/* Full-width legend bar */}
       <div className="relative pt-5">
-        <span className="absolute top-0 left-1/2 -translate-x-1/2 text-[9px] font-bold text-[#0891B2] uppercase tracking-wide whitespace-nowrap">
+        <span className="absolute top-0 left-1/2 -translate-x-1/2 text-[10px] font-bold text-[#0891B2] uppercase tracking-wide whitespace-nowrap">
           National Avg
         </span>
         <div 
@@ -274,10 +274,10 @@ function BenchmarkIntro() {
 function CTASection({ onNavigateToDealMaker }: { onNavigateToDealMaker?: () => void }) {
   return (
     <div 
-      className="relative rounded-xl p-5 mx-6 mt-5 border border-[#0891B2]"
+      className="relative rounded-xl p-5 mt-5 border border-[#0891B2]"
       style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #E0F7FA 100%)' }}
     >
-      <span className="absolute -top-2.5 left-4 bg-[#0891B2] text-white text-[9px] font-bold uppercase tracking-wide px-2.5 py-1 rounded">
+      <span className="absolute -top-2.5 left-4 bg-[#0891B2] text-white text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded">
         Take Action
       </span>
       <div className="text-sm text-[#0A1628] mb-3.5 leading-relaxed">
@@ -286,7 +286,7 @@ function CTASection({ onNavigateToDealMaker }: { onNavigateToDealMaker?: () => v
       </div>
       <button 
         onClick={onNavigateToDealMaker}
-        className="w-full flex items-center justify-center gap-2 bg-[#0891B2] text-white py-3.5 rounded-[10px] text-sm font-semibold cursor-pointer border-none hover:bg-[#0E7490] transition-colors"
+        className="w-full flex items-center justify-center gap-2 bg-[#0891B2] text-white py-3.5 rounded-xl text-sm font-semibold cursor-pointer border-none hover:bg-[#0E7490] transition-colors"
       >
         Go to Deal Maker IQ
         <ArrowRight className="w-[18px] h-[18px]" />
@@ -309,10 +309,10 @@ export function PerformanceBenchmarksSection({
   return (
     <div className="bg-white border-b border-[#E2E8F0]">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 px-6 border-b border-[#F1F5F9]">
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#F1F5F9]">
         <div className="flex items-center gap-3">
           <div 
-            className="w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0"
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #0A1628 0%, #1E293B 100%)' }}
           >
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#00D4FF" strokeWidth={1.5}>
@@ -325,7 +325,7 @@ export function PerformanceBenchmarksSection({
           </div>
         </div>
         <button 
-          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium cursor-pointer border-none transition-colors ${
+          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer border-none transition-all ${
             showHelp 
               ? 'bg-[#F0FDFA] text-[#0891B2]' 
               : 'bg-transparent text-[#0891B2] hover:bg-[#F8FAFC]'
@@ -346,11 +346,11 @@ export function PerformanceBenchmarksSection({
       <BenchmarkIntro />
 
       {/* Benchmarks Container */}
-      <div className="py-4 px-6 pb-5">
+      <div className="py-4 px-5 pb-5">
         {/* Returns Category */}
         {returnsMetrics.length > 0 && (
           <>
-            <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide text-center py-2 bg-[#F8FAFC] rounded-md mb-2">
+            <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide text-center py-2.5 bg-[#F8FAFC] rounded-lg mb-3">
               Returns
             </div>
             {returnsMetrics.map((metric) => (
@@ -362,7 +362,7 @@ export function PerformanceBenchmarksSection({
         {/* Cash Flow & Risk Category */}
         {cashflowMetrics.length > 0 && (
           <>
-            <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide text-center py-2 bg-[#F8FAFC] rounded-md mt-4 mb-2">
+            <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide text-center py-2.5 bg-[#F8FAFC] rounded-lg mt-5 mb-3">
               Cash Flow & Risk
             </div>
             {cashflowMetrics.map((metric) => (

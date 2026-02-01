@@ -41,7 +41,7 @@ export function VerdictHero({
   const scoreColor = getScoreColor(dealScore)
   
   return (
-    <div className="bg-white p-5 px-6 border-b border-[#E2E8F0] flex items-center gap-4">
+    <div className="bg-white py-5 px-5 border-b border-[#E2E8F0] flex items-center gap-4">
       {/* Score Circle */}
       <div 
         className="w-[72px] h-[72px] rounded-full border-4 flex items-center justify-center flex-shrink-0"
@@ -77,7 +77,7 @@ export function VerdictHero({
         {/* Info Links */}
         <div className="flex items-center gap-3 mt-1">
           <button 
-            className="flex items-center gap-1 text-[#0891B2] text-xs font-medium bg-transparent border-none cursor-pointer p-0 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-1 text-[#0891B2] text-xs font-medium bg-transparent border-none cursor-pointer p-0 hover:opacity-75 transition-opacity"
             onClick={onShowMethodology}
           >
             <Info className="w-3.5 h-3.5" />
@@ -85,7 +85,7 @@ export function VerdictHero({
           </button>
           <span className="text-[#E2E8F0]">|</span>
           <button 
-            className="flex items-center gap-1 text-[#0891B2] text-xs font-medium bg-transparent border-none cursor-pointer p-0 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-1 text-[#0891B2] text-xs font-medium bg-transparent border-none cursor-pointer p-0 hover:opacity-75 transition-opacity"
             onClick={onShowMethodology}
           >
             How We Score

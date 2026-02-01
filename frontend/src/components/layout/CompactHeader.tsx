@@ -218,9 +218,9 @@ export function CompactHeader({
             <div className="text-lg font-extrabold leading-tight">
               <span className="text-white">Deal</span>
               <span className="text-white">Maker</span>
-              <span className="text-cyan-600">IQ</span>
+              <span className="text-[#0891B2]">IQ</span>
             </div>
-            <span className="text-[9px] text-white/50 tracking-wide">by InvestIQ</span>
+            <span className="text-[10px] text-white/50 tracking-wide">by InvestIQ</span>
           </Link>
           <div className="flex items-center gap-3">
             <button 
@@ -234,18 +234,18 @@ export function CompactHeader({
             </button>
             <button
               onClick={handleDashboard}
-              className="bg-transparent border-none cursor-pointer text-[13px] font-semibold text-white py-2 hover:text-cyan-600 transition-colors"
+              className="bg-transparent border-none cursor-pointer text-[13px] font-semibold text-white py-2 hover:text-[#0891B2] transition-colors"
             >
               Dashboard
             </button>
             {isAuthenticated ? (
-              <div className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center text-white font-semibold text-sm">
+              <div className="w-8 h-8 bg-[#1E293B] rounded-lg flex items-center justify-center text-white font-semibold text-sm">
                 {userInitial}
               </div>
             ) : (
               <button
                 onClick={() => setShowAuthModal('login')}
-                className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center text-white/60 hover:text-white cursor-pointer transition-colors"
+                className="w-8 h-8 bg-[#1E293B] rounded-lg flex items-center justify-center text-white/60 hover:text-white cursor-pointer transition-colors"
                 aria-label="Sign in"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,10 +270,10 @@ export function CompactHeader({
           <div className="flex items-center gap-2.5">
             <div className="text-lg font-extrabold tracking-wider">
               <span className="text-white">{pageTitle} </span>
-              <span className="text-cyan-400">{pageTitleAccent}</span>
+              <span className="text-[#00D4FF]">{pageTitleAccent}</span>
             </div>
             <button
-              className="inline-flex items-center gap-1.5 bg-cyan-600 hover:bg-cyan-700 px-3 py-1.5 rounded-md cursor-pointer text-xs font-semibold text-white transition-colors"
+              className="inline-flex items-center gap-1.5 bg-[#0891B2] hover:bg-[#0E7490] px-3 py-1.5 rounded-md cursor-pointer text-xs font-semibold text-white transition-colors"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               <span>{currentStrategy}</span>
@@ -291,12 +291,12 @@ export function CompactHeader({
 
         {/* Address Selector - Pill Style */}
         <button
-          className="flex items-center justify-center gap-2 cursor-pointer px-4 py-2.5 rounded-full border-2 border-cyan-600 bg-cyan-600/10 hover:bg-cyan-600/20 mx-4 mb-3 transition-all w-[calc(100%-32px)]"
+          className="flex items-center justify-center gap-2 cursor-pointer px-4 py-2.5 rounded-full border-2 border-[#0891B2] bg-[#0891B2]/10 hover:bg-[#0891B2]/20 mx-4 mb-3 transition-all w-[calc(100%-32px)]"
           onClick={handlePropertyToggle}
         >
           <span className="text-[13px] text-white font-medium truncate">{fullAddress}</span>
           <svg 
-            className={`w-4 h-4 text-cyan-600 transition-transform duration-300 flex-shrink-0 ${isPropertyOpen ? 'rotate-180' : ''}`} 
+            className={`w-4 h-4 text-[#0891B2] transition-transform duration-300 flex-shrink-0 ${isPropertyOpen ? 'rotate-180' : ''}`} 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -307,8 +307,8 @@ export function CompactHeader({
 
         {/* Property Accordion Panel */}
         <div 
-          className={`overflow-hidden transition-all duration-300 bg-[#0F1D32] rounded-xl mx-4 ${
-            isPropertyOpen ? 'max-h-[120px] p-3 mb-3' : 'max-h-0 p-0 m-0'
+          className={`overflow-hidden bg-[#0F1D32] rounded-xl mx-4 transition-all duration-300 ease-in-out ${
+            isPropertyOpen ? 'max-h-[120px] p-3 mb-3' : 'max-h-0 py-0 px-3 mb-0'
           }`}
         >
           <div className="flex gap-3 items-stretch">
@@ -319,8 +319,8 @@ export function CompactHeader({
                 alt="Property"
               />
             ) : (
-              <div className="w-[90px] h-[68px] rounded-lg flex-shrink-0 bg-slate-800 flex items-center justify-center">
-                <svg className="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-[90px] h-[68px] rounded-lg flex-shrink-0 bg-[#1E293B] flex items-center justify-center">
+                  <svg className="w-6 h-6 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
                 </svg>
               </div>
@@ -328,29 +328,29 @@ export function CompactHeader({
             <div className="flex-1 grid grid-cols-3 gap-1.5 min-w-0">
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-white">{property.beds}</span>
-                <span className="text-[9px] text-white/60 uppercase tracking-wide mt-0.5">Beds</span>
+                <span className="text-[10px] text-white/60 uppercase tracking-wide mt-0.5">Beds</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-white">{property.baths}</span>
-                <span className="text-[9px] text-white/60 uppercase tracking-wide mt-0.5">Baths</span>
+                <span className="text-[10px] text-white/60 uppercase tracking-wide mt-0.5">Baths</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-white">{formatNumber(property.sqft)}</span>
-                <span className="text-[9px] text-white/60 uppercase tracking-wide mt-0.5">Sqft</span>
+                <span className="text-[10px] text-white/60 uppercase tracking-wide mt-0.5">Sqft</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-cyan-400">{formatPrice(property.price)}</span>
-                <span className="text-[9px] text-white/60 uppercase tracking-wide mt-0.5">Est. Value</span>
+                <span className="text-sm font-bold text-[#00D4FF]">{formatPrice(property.price)}</span>
+                <span className="text-[10px] text-white/60 uppercase tracking-wide mt-0.5">Est. Value</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-cyan-400">{formatPrice(property.rent || 5555)}</span>
-                <span className="text-[9px] text-white/60 uppercase tracking-wide mt-0.5">Est. Rent</span>
+                <span className="text-sm font-bold text-[#00D4FF]">{formatPrice(property.rent || 5555)}</span>
+                <span className="text-[10px] text-white/60 uppercase tracking-wide mt-0.5">Est. Rent</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-white">
                   {property.status === 'OFF-MARKET' ? 'Off-Market' : property.status || 'Active'}
                 </span>
-                <span className="text-[9px] text-white/60 uppercase tracking-wide mt-0.5">Status</span>
+                <span className="text-[10px] text-white/60 uppercase tracking-wide mt-0.5">Status</span>
               </div>
             </div>
           </div>
@@ -363,8 +363,8 @@ export function CompactHeader({
               className="fixed inset-0 z-[150]" 
               onClick={() => setIsDropdownOpen(false)}
             />
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-[200px] bg-white rounded-xl shadow-2xl z-[200] overflow-hidden">
-              <div className="px-3.5 pt-2.5 pb-1 text-[9px] font-semibold text-slate-400 tracking-wider uppercase">
+            <div className="absolute top-full left-1/2 -translate-x-1/2 w-[200px] bg-white rounded-xl shadow-xl z-[200] overflow-hidden border border-[#E2E8F0]">
+              <div className="px-3.5 pt-2.5 pb-1 text-[10px] font-semibold text-slate-400 tracking-wider uppercase">
                 Strategy
               </div>
               {STRATEGIES.map((strategy) => {
@@ -372,14 +372,14 @@ export function CompactHeader({
                 return (
                   <button
                     key={strategy.short}
-                    className={`flex items-center justify-between w-full px-3.5 py-2.5 text-[13px] cursor-pointer hover:bg-slate-50 transition-colors ${
-                      isSelected ? 'text-cyan-600 font-semibold' : 'text-[#0A1628] font-medium'
+                    className={`flex items-center justify-between w-full px-3.5 py-2.5 text-[13px] cursor-pointer hover:bg-[#F8FAFC] transition-colors ${
+                      isSelected ? 'text-[#0891B2] font-semibold' : 'text-[#0A1628] font-medium'
                     }`}
                     onClick={() => handleStrategySelect(strategy.short)}
                   >
                     {strategy.full}
                     {isSelected && (
-                      <svg className="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-[#0891B2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
                       </svg>
                     )}
@@ -409,7 +409,7 @@ export function CompactHeader({
                   isDisabled
                     ? 'opacity-40 cursor-not-allowed text-white/50'
                     : isActive 
-                      ? 'bg-cyan-600/20 text-cyan-600' 
+                      ? 'bg-[#0891B2]/20 text-[#0891B2]' 
                       : 'text-white/50 hover:bg-white/10 hover:text-white/80'
                 }`}
                 onClick={() => {

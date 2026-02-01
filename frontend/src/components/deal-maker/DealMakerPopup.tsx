@@ -275,7 +275,7 @@ function calculateMonthlyMortgage(principal: number, annualRate: number, years: 
 // Section divider component
 function SectionDivider({ text }: { text: string }) {
   return (
-    <div className="flex items-center my-5">
+    <div className="flex items-center my-6">
       <div className="flex-1 h-px bg-[#E2E8F0]" />
       <span className="px-3 text-[11px] font-bold text-[#0891B2] uppercase tracking-wide">
         {text}
@@ -288,7 +288,7 @@ function SectionDivider({ text }: { text: string }) {
 // Calculated field display
 function CalculatedField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between items-center p-3.5 px-4 bg-[#F8FAFC] rounded-[10px] mb-5 border border-[#E2E8F0]">
+    <div className="flex justify-between items-center p-3.5 px-4 bg-[#F8FAFC] rounded-xl mb-5 border border-[#E2E8F0]">
       <span className="text-sm text-[#64748B]">{label}</span>
       <span className="text-base font-bold text-[#0891B2]">{value}</span>
     </div>
@@ -555,14 +555,14 @@ export function DealMakerPopup({
       >
         {/* Drag Handle */}
         <div className="flex justify-center py-3 pb-2">
-          <div className="w-10 h-1 bg-[#E2E8F0] rounded-full" />
+          <div className="w-12 h-1 bg-[#E2E8F0] rounded-full" />
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 pb-4 border-b border-[#E2E8F0] flex-shrink-0">
           <div className="flex items-center gap-3">
             <div 
-              className="w-11 h-11 rounded-xl flex items-center justify-center"
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ background: 'linear-gradient(135deg, #0A1628 0%, #1E293B 100%)' }}
             >
               <svg width="20" height="20" fill="none" stroke="#00D4FF" viewBox="0 0 24 24">
@@ -580,7 +580,7 @@ export function DealMakerPopup({
                   <button
                     key={s}
                     onClick={() => onStrategyChange?.(s)}
-                    className={`px-1.5 py-0.5 text-[9px] font-semibold transition-colors ${
+                    className={`px-2 py-1 text-[10px] font-semibold transition-colors ${
                       idx === 0 ? 'rounded-l-md' : ''
                     } ${idx === arr.length - 1 ? 'rounded-r-md' : ''} ${
                       strategyType === s
@@ -596,7 +596,7 @@ export function DealMakerPopup({
           </div>
           <button 
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center bg-[#F1F5F9] rounded-[10px] text-[#64748B] hover:bg-[#E2E8F0] hover:text-[#0A1628] transition-colors"
+            className="w-9 h-9 flex items-center justify-center bg-[#F1F5F9] rounded-xl text-[#64748B] hover:bg-[#E2E8F0] hover:text-[#0A1628] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -613,7 +613,7 @@ export function DealMakerPopup({
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-5 pb-5 overscroll-contain">
+        <div className="flex-1 overflow-y-auto px-5 pb-5 overscroll-contain scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           
           {/* ============================================================== */}
           {/* LTR / STR SECTIONS */}
@@ -1610,7 +1610,7 @@ export function DealMakerPopup({
         <div className="flex gap-3 px-5 py-4 border-t border-[#E2E8F0] bg-white flex-shrink-0">
           <button 
             onClick={handleReset}
-            className="flex items-center justify-center gap-1.5 px-4 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[#64748B] text-[13px] font-medium hover:bg-[#F1F5F9] hover:text-[#0A1628] transition-colors"
+            className="flex items-center justify-center gap-1.5 px-4 py-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[#64748B] text-[13px] font-medium hover:bg-[#F1F5F9] hover:text-[#0A1628] transition-all"
           >
             <RotateCcw className="w-4 h-4" />
             Reset
@@ -1640,6 +1640,9 @@ export function DealMakerPopup({
         }
         .animate-slideUp {
           animation: slideUp 0.3s ease-out;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
     </div>

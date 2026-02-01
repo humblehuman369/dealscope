@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 
 interface FinancialBreakdownProps {
   // Purchase Terms
@@ -68,7 +68,7 @@ function Row({
 }) {
   return (
     <div 
-      className={`flex justify-between items-center px-3 py-1.5 ${
+      className={`flex justify-between items-center px-3 py-2 ${
         isSubtotal ? 'bg-[#F8FAFC] font-semibold border-t border-[#E2E8F0]' : ''
       } ${highlight ? 'bg-[#F0FDFA]' : ''}`}
     >
@@ -197,21 +197,19 @@ export function FinancialBreakdown({
       {/* Collapsible Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-6 py-3 hover:bg-[#F8FAFC] transition-colors"
+        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-[#F8FAFC] transition-colors"
       >
         <span className="text-xs font-semibold text-[#0891B2] uppercase tracking-wide">
           Financial Breakdown
         </span>
-        {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-[#64748B]" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-[#64748B]" />
-        )}
+        <ChevronDown 
+          className={`w-4 h-4 text-[#64748B] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+        />
       </button>
 
       {/* Expandable Content */}
       {isExpanded && (
-        <div className="px-4 pb-4">
+        <div className="px-5 pb-4">
           <div className="border border-[#E2E8F0] rounded-lg overflow-hidden">
             
             {/* PURCHASE TERMS */}

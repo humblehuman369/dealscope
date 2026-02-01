@@ -57,16 +57,16 @@ function PriceCard({ label, value, desc, recommended = false }: PriceCardProps) 
         ? 'bg-white border-2 border-[#0891B2]' 
         : 'bg-[#F8FAFC] border-[#E2E8F0]'
     }`}>
-      <div className={`text-[9px] font-bold uppercase tracking-wide mb-1 flex items-center justify-center gap-1 ${
+      <div className={`text-[10px] font-bold uppercase tracking-wide mb-1 flex items-center justify-center gap-1 ${
         recommended ? 'text-[#0891B2]' : 'text-[#64748B]'
       }`}>
         {label}
-        <HelpCircle className="w-3 h-3 text-[#CBD5E1]" />
+        <HelpCircle className="w-3 h-3 text-[#E2E8F0]" />
       </div>
       <div className={`text-base font-bold mb-1 ${recommended ? 'text-[#0891B2]' : 'text-[#0A1628]'}`}>
         {formatPrice(value)}
       </div>
-      <div className="text-[9px] text-[#94A3B8] leading-tight">{desc}</div>
+      <div className="text-[10px] text-[#94A3B8] leading-tight">{desc}</div>
     </div>
   )
 }
@@ -101,7 +101,7 @@ export function InvestmentAnalysis({
   return (
     <div className="bg-white">
       {/* Header Section - No teal border */}
-      <div className="p-4 px-6 pb-0">
+      <div className="p-4 px-5 pb-0">
         {/* Header */}
         <div className="flex justify-between items-start mb-1">
           <div>
@@ -112,7 +112,7 @@ export function InvestmentAnalysis({
           </div>
           <div className="flex flex-col items-end gap-1">
             <button 
-              className="text-[#0891B2] text-[13px] font-medium bg-transparent border-none cursor-pointer hover:opacity-80"
+              className="text-[#0891B2] text-[13px] font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
               onClick={onEditAssumptions}
             >
               Change terms
@@ -156,11 +156,11 @@ export function InvestmentAnalysis({
       </div>
 
       {/* Price Cards Section */}
-      <div className="px-6 pb-0">
+      <div className="px-5 pb-0">
         <div className="flex items-center justify-between mb-3">
           <span className="text-[13px] text-[#64748B]">Three ways to approach this deal:</span>
           <button 
-            className="flex items-center gap-1.5 text-[#0891B2] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-80 transition-opacity"
+            className="flex items-center gap-1.5 text-[#0891B2] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
             onClick={() => setShowCalculation(!showCalculation)}
           >
             <ChevronDown 
@@ -227,7 +227,7 @@ export function InvestmentAnalysis({
               {onEditAssumptions && (
                 <button 
                   onClick={onEditAssumptions}
-                  className="flex items-center gap-1 text-[10px] font-medium text-[#0891B2] hover:opacity-80 bg-transparent border-none cursor-pointer"
+                  className="flex items-center gap-1 text-[10px] font-medium text-[#0891B2] hover:opacity-75 transition-opacity bg-transparent border-none cursor-pointer"
                 >
                   <Settings2 className="w-3 h-3" />
                   Edit in Deal Maker

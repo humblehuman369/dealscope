@@ -167,7 +167,7 @@ export function VerdictIQPage({
   const StatItem = ({ value, label, cyan = false }: { value: string | number; label: string; cyan?: boolean }) => (
     <div className="flex flex-col">
       <div className={`text-sm font-bold ${cyan ? 'text-[#00D4FF]' : 'text-white'}`}>{value}</div>
-      <div className="text-[9px] text-[#64748B] uppercase tracking-wide">{label}</div>
+      <div className="text-[10px] text-[#64748B] uppercase tracking-wide">{label}</div>
     </div>
   );
 
@@ -177,7 +177,7 @@ export function VerdictIQPage({
         ? 'bg-white border-2 border-[#0891B2]' 
         : 'bg-[#F8FAFC] border-[#E2E8F0]'
     }`}>
-      <div className={`text-[9px] font-bold uppercase tracking-wide mb-1 flex items-center justify-center gap-1 ${
+      <div className={`text-[10px] font-bold uppercase tracking-wide mb-1 flex items-center justify-center gap-1 ${
         recommended ? 'text-[#0891B2]' : 'text-[#64748B]'
       }`}>
         {label}
@@ -188,7 +188,7 @@ export function VerdictIQPage({
       <div className={`text-base font-bold mb-1 ${recommended ? 'text-[#0891B2]' : 'text-[#0A1628]'}`}>
         {formatPrice(value)}
       </div>
-      <div className="text-[9px] text-[#94A3B8] leading-tight">{desc}</div>
+      <div className="text-[10px] text-[#94A3B8] leading-tight">{desc}</div>
     </div>
   );
 
@@ -393,7 +393,7 @@ export function VerdictIQPage({
             className="relative rounded-[10px] p-4 mt-3 border border-[#0891B2]"
             style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #E0F7FA 100%)' }}
           >
-            <span className="absolute -top-2 left-4 bg-[#0891B2] text-white text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
+            <span className="absolute -top-2 left-4 bg-[#0891B2] text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
               Recommended
             </span>
             <div className="flex justify-between items-center">

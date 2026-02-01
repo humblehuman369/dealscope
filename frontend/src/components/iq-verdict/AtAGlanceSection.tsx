@@ -7,7 +7,7 @@
  */
 
 import React, { useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 
 interface PerformanceBar {
   label: string
@@ -38,12 +38,12 @@ export function AtAGlanceSection({
     <div className="bg-white border-b border-[#E2E8F0] overflow-hidden">
       {/* Header */}
       <button 
-        className="w-full flex items-center justify-between p-4 bg-transparent border-none cursor-pointer text-left hover:bg-[#F8FAFC] transition-colors"
+        className="w-full flex items-center justify-between px-5 py-3.5 bg-transparent border-none cursor-pointer text-left hover:bg-[#F8FAFC] transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
           <div 
-            className="w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0"
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #0A1628 0%, #1E293B 100%)' }}
           >
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#00D4FF" strokeWidth={1.5}>
@@ -55,16 +55,14 @@ export function AtAGlanceSection({
             <span className="text-xs text-[#94A3B8]">Performance breakdown</span>
           </div>
         </div>
-        {isExpanded ? (
-          <ChevronUp className="w-5 h-5 text-[#94A3B8]" />
-        ) : (
-          <ChevronDown className="w-5 h-5 text-[#94A3B8]" />
-        )}
+        <ChevronDown 
+          className={`w-4 h-4 text-[#64748B] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+        />
       </button>
 
       {/* Content */}
       {isExpanded && (
-        <div className="px-5 pb-5">
+        <div className="px-5 pb-5 pt-1">
           {bars.map((bar, idx) => (
             <div key={idx} className="flex items-center mb-3 last:mb-0">
               <span className="text-sm text-[#475569] min-w-[100px]">{bar.label}</span>

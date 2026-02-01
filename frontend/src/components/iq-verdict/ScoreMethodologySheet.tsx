@@ -188,7 +188,7 @@ export function ScoreMethodologySheet({
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(85vh-100px)] px-5 py-4 space-y-6">
+        <div className="overflow-y-auto max-h-[calc(85vh-100px)] px-5 py-4 space-y-5">
           {/* Core Concept */}
           <section>
             <div 

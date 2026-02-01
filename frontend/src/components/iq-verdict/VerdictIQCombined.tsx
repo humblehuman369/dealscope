@@ -18,7 +18,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, TrendingDown, Target, Clock, AlertTriangle, AlertCircle, ChevronDown, ChevronUp, FileSpreadsheet, Loader2 } from 'lucide-react'
+import { ArrowRight, TrendingDown, Target, Clock, AlertTriangle, AlertCircle, ChevronDown, FileSpreadsheet, Loader2 } from 'lucide-react'
 import api from '@/lib/api'
 import { CompactHeader, PropertyData } from '../layout/CompactHeader'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
@@ -638,21 +638,19 @@ export function VerdictIQCombined({
           {/* Dropdown Header */}
           <button
             onClick={() => setShowPriceLikelihood(!showPriceLikelihood)}
-            className="w-full flex items-center justify-between px-6 py-3 hover:bg-[#F8FAFC] transition-colors"
+            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-[#F8FAFC] transition-colors"
           >
             <span className="text-xs font-semibold text-[#0891B2] uppercase tracking-wide">
               HOW LIKELY CAN YOU GET THIS PRICE?
             </span>
-            {showPriceLikelihood ? (
-              <ChevronUp className="w-4 h-4 text-[#64748B]" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-[#64748B]" />
-            )}
+            <ChevronDown 
+              className={`w-4 h-4 text-[#64748B] transition-transform duration-200 ${showPriceLikelihood ? 'rotate-180' : ''}`} 
+            />
           </button>
 
           {/* Expandable Content */}
           {showPriceLikelihood && (
-            <div className="px-6 pb-4">
+            <div className="px-5 pb-4">
               {/* Off-Market Info Banner */}
               {isOffMarket && (
                 <div className="flex items-start gap-2.5 p-3 bg-[#F1F5F9] rounded-lg mb-4 border-l-[3px] border-l-[#0891B2]">
@@ -709,11 +707,11 @@ export function VerdictIQCombined({
               </div>
 
               {/* Suggested Offer */}
-              <div 
-                className="relative rounded-[10px] p-4 mt-3 border border-[#0891B2]"
-                style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #E0F7FA 100%)' }}
-              >
-                <span className="absolute -top-2 left-4 bg-[#0891B2] text-white text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
+            <div 
+              className="relative rounded-xl p-4 mt-3 border border-[#0891B2]"
+              style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #E0F7FA 100%)' }}
+            >
+                <span className="absolute -top-2 left-4 bg-[#0891B2] text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
                   Recommended
                 </span>
                 <div className="flex justify-between items-center">
@@ -761,9 +759,9 @@ export function VerdictIQCombined({
       </main>
 
       {/* Fixed Bottom Actions */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-[#E2E8F0] p-4 px-6">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-[#E2E8F0] p-4 px-5">
         <button 
-          className="w-full flex items-center justify-center gap-2 bg-[#0891B2] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0E7490] transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-[#0891B2] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0E7490] active:scale-[0.98] transition-all"
           onClick={handleNavigateToDealMaker}
         >
           Go to Deal Maker IQ
@@ -773,7 +771,7 @@ export function VerdictIQCombined({
         {/* Export Proforma Button - Direct Excel Download */}
         <div className="relative">
           <button 
-            className="w-full flex items-center justify-center gap-2 bg-transparent text-[#64748B] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[#475569] transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 bg-transparent text-[#64748B] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[#0A1628] transition-colors disabled:opacity-50"
             onClick={() => handleExportProforma('excel')}
             disabled={isExporting}
           >
