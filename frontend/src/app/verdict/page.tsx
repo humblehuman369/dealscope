@@ -376,6 +376,10 @@ function VerdictContent() {
             
             // Convert backend response to frontend IQAnalysisResult format
             // Backend now returns camelCase for new fields via Pydantic alias_generator
+            // #region agent log - Hypothesis A,D: Check if propertyId is in response or needs to be set from property
+            fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'verdict/page.tsx:analysisResult',message:'Building analysisResult - available IDs',data:{dataPropertyId:data?.property_id,analysisDataPropertyId:analysisData?.property_id,propertyDataId:propertyData?.id},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
+            // #endregion
+            
             const analysisResult: IQAnalysisResult = {
               analyzedAt: new Date().toISOString(),
               dealScore: analysisData.deal_score ?? analysisData.dealScore,
