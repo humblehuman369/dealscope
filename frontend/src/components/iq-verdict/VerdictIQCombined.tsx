@@ -478,10 +478,12 @@ export function VerdictIQCombined({
   // Export proforma handlers
   const handleExportProforma = useCallback(async (format: 'excel' | 'pdf') => {
     // #region agent log - Hypothesis A,B,C,D: Check available IDs
-    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'VerdictIQCombined.tsx:handleExportProforma',message:'Available IDs for export',data:{analysisPropertyId:analysis.propertyId,propertyId:property.id,savedPropertyIdProp:savedPropertyId,analysisKeys:Object.keys(analysis)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C,D'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/250db88b-cb2f-47ab-a05c-b18e39a0f184',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'VerdictIQCombined.tsx:handleExportProforma',message:'Available IDs for export',data:{analysisPropertyId:analysis.propertyId,propertyId:property.id,savedPropertyIdProp:savedPropertyId,analysisKeys:Object.keys(analysis)},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A,B,C,D'})}).catch(()=>{});
     // #endregion
     
-    if (!analysis.propertyId) {
+    // Use property.id (always available) or fallback to analysis.propertyId or savedPropertyId
+    const propertyIdToUse = property.id || analysis.propertyId || savedPropertyId
+    if (!propertyIdToUse) {
       setExportError('Property ID not found')
       return
     }
@@ -507,14 +509,14 @@ export function VerdictIQCombined({
       
       if (format === 'excel') {
         blob = await api.proforma.downloadExcel({
-          propertyId: analysis.propertyId,
+          propertyId: propertyIdToUse,
           strategy,
           holdPeriodYears: 10,
         })
         filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_${strategy.toUpperCase()}.xlsx`
       } else {
         blob = await api.proforma.downloadPdf({
-          propertyId: analysis.propertyId,
+          propertyId: propertyIdToUse,
           strategy,
           holdPeriodYears: 10,
         })
@@ -536,7 +538,7 @@ export function VerdictIQCombined({
     } finally {
       setIsExporting(false)
     }
-  }, [analysis.propertyId, currentStrategy, property.address])
+  }, [property.id, analysis.propertyId, savedPropertyId, currentStrategy, property.address])
 
   return (
     <div 
