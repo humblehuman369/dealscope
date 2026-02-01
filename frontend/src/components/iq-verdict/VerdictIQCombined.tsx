@@ -575,6 +575,16 @@ export function VerdictIQCombined({
           onEditAssumptions={handleEditAssumptions}
         />
 
+        {/* Summary Snapshot - Key metrics at a glance */}
+        <SummarySnapshot
+          capRate={metrics.capRate}
+          cashOnCash={metrics.cashOnCash}
+          dscr={metrics.dscr}
+          monthlyCashFlow={metrics.monthlyCashFlow}
+          noi={metrics.noi}
+          totalInvestment={metrics.totalInvestment}
+        />
+
         {/* Deal Gap & Motivation Section */}
         <div className="bg-white p-4 px-6 border-b border-[#E2E8F0]">
           <div className="text-xs font-semibold text-[#0891B2] mb-3">
@@ -679,16 +689,6 @@ export function VerdictIQCombined({
             </div>
           )}
         </div>
-
-        {/* Summary Snapshot */}
-        <SummarySnapshot
-          capRate={metrics.capRate}
-          cashOnCash={metrics.cashOnCash}
-          dscr={metrics.dscr}
-          monthlyCashFlow={metrics.monthlyCashFlow}
-          noi={metrics.noi}
-          totalInvestment={metrics.totalInvestment}
-        />
 
         {/* At-a-Glance */}
         <AtAGlanceSection
