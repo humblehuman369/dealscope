@@ -180,31 +180,13 @@ export function InvestmentAnalysis({
               className="w-3.5 h-3.5 transition-transform" 
               style={{ transform: showCalculation ? 'rotate(180deg)' : 'rotate(0deg)' }}
             />
-            See how we calculated this
+            How BREAKEVEN is calculated
           </button>
         </div>
-        <div className="grid grid-cols-3 gap-2">
-        <PriceCard 
-          label="Breakeven" 
-          value={breakevenPrice} 
-          desc="Max price for $0 cashflow (LTR model)" 
-        />
-        <PriceCard 
-          label="Target Buy" 
-          value={targetBuyPrice} 
-          desc="5% discount for profit" 
-          recommended 
-        />
-        <PriceCard 
-          label="Wholesale" 
-          value={wholesalePrice} 
-          desc="30% discount for assignment" 
-        />
-        </div>
 
-        {/* Calculation Breakdown */}
+        {/* Calculation Breakdown - Opens above price cards */}
         {showCalculation && (
-          <div className="mt-3 pt-3 border-t border-[#E2E8F0] space-y-2">
+          <div className="mb-3 pb-3 border-b border-[#E2E8F0] space-y-2">
             <div className="text-[11px] font-semibold uppercase tracking-wide text-[#475569] mb-2">
               BREAKEVEN CALCULATION
             </div>
@@ -228,6 +210,25 @@ export function InvestmentAnalysis({
             </div>
           </div>
         )}
+
+        <div className="grid grid-cols-3 gap-2">
+        <PriceCard 
+          label="Breakeven" 
+          value={breakevenPrice} 
+          desc="Max price for $0 cashflow (LTR model)" 
+        />
+        <PriceCard 
+          label="Target Buy" 
+          value={targetBuyPrice} 
+          desc="5% discount for profit" 
+          recommended 
+        />
+        <PriceCard 
+          label="Wholesale" 
+          value={wholesalePrice} 
+          desc="30% discount for assignment" 
+        />
+        </div>
 
         {/* Expandable Assumptions Panel */}
         {showAssumptions && (
