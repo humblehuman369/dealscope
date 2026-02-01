@@ -1723,6 +1723,65 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           </div>
                         </div>
                       </>
+                    ) : strategyType === 'wholesale' && isWholesaleState(state) ? (
+                      // Wholesale Phase 2: Contract Terms
+                      <>
+                        <SliderInput
+                          label="Contract Price"
+                          value={state.contractPrice}
+                          displayValue={formatPrice(state.contractPrice)}
+                          min={25000}
+                          max={1500000}
+                          minLabel="$25,000"
+                          maxLabel="$1,500,000"
+                          onChange={(v) => updateState('contractPrice', v)}
+                        />
+                        <SliderInput
+                          label="Earnest Money"
+                          value={state.earnestMoney}
+                          displayValue={formatPrice(state.earnestMoney)}
+                          min={100}
+                          max={10000}
+                          minLabel="$100"
+                          maxLabel="$10,000"
+                          onChange={(v) => updateState('earnestMoney', v)}
+                        />
+                        <SliderInput
+                          label="Inspection Period"
+                          value={state.inspectionPeriodDays}
+                          displayValue={`${state.inspectionPeriodDays} days`}
+                          min={7}
+                          max={30}
+                          minLabel="7 days"
+                          maxLabel="30 days"
+                          onChange={(v) => updateState('inspectionPeriodDays', Math.round(v))}
+                        />
+                        <SliderInput
+                          label="Days to Close"
+                          value={state.daysToClose}
+                          displayValue={`${state.daysToClose} days`}
+                          min={21}
+                          max={90}
+                          minLabel="21 days"
+                          maxLabel="90 days"
+                          onChange={(v) => updateState('daysToClose', Math.round(v))}
+                        />
+                        <div className={`border rounded-lg p-3 mt-4 ${'meets70PercentRule' in metrics && (metrics as WholesaleMetrics).meets70PercentRule ? 'bg-[#ECFDF5] border-[#10B981]' : 'bg-[#FEF2F2] border-[#F43F5E]'}`}>
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'meets70PercentRule' in metrics && (metrics as WholesaleMetrics).meets70PercentRule ? '#10B981' : '#F43F5E' }}>
+                              70% RULE: {'meets70PercentRule' in metrics && (metrics as WholesaleMetrics).meets70PercentRule ? 'PASS ✓' : 'FAIL ✗'}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <div className="text-sm text-[#64748B]">
+                              {'contractVsMAO' in metrics && (metrics as WholesaleMetrics).contractVsMAO <= 0 ? 'Under MAO by' : 'Over MAO by'}
+                            </div>
+                            <div className={`font-bold tabular-nums ${'contractVsMAO' in metrics && (metrics as WholesaleMetrics).contractVsMAO <= 0 ? 'text-[#10B981]' : 'text-[#F43F5E]'}`}>
+                              {formatPrice(Math.abs('contractVsMAO' in metrics ? (metrics as WholesaleMetrics).contractVsMAO : 0))}
+                            </div>
+                          </div>
+                        </div>
+                      </>
                     ) : (
                       // LTR/STR Financing
                       (() => {
