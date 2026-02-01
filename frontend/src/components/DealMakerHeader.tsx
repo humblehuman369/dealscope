@@ -8,13 +8,25 @@
  * - DealMakerIQ branding with "by InvestIQ" subtext
  * - Search icon that opens SearchPropertyModal
  * - Auth-aware buttons (Dashboard when signed in, Sign In/Get Started when not)
+ * 
+ * Auto-hides on pages that use CompactHeader to avoid duplicate headers.
  */
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Search } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
+
+// Pages that use CompactHeader and should not show DealMakerHeader
+const PAGES_WITH_COMPACT_HEADER = [
+  '/compare',        // Sales Comps
+  '/rental-comps',   // Rental Comps
+  '/verdict',        // Verdict IQ
+  '/deal-maker',     // Deal Maker
+  '/property',       // Property Details
+]
 
 interface DealMakerHeaderProps {
   /** Hide the search icon (useful on search page) */
@@ -26,6 +38,14 @@ interface DealMakerHeaderProps {
 export function DealMakerHeader({ hideSearch = false, className = '' }: DealMakerHeaderProps) {
   const { user, isAuthenticated, setShowAuthModal } = useAuth()
   const [showSearchModal, setShowSearchModal] = useState(false)
+  const pathname = usePathname()
+
+  // Hide header on pages that have their own CompactHeader
+  const shouldHide = PAGES_WITH_COMPACT_HEADER.some(path => pathname?.startsWith(path))
+  
+  if (shouldHide) {
+    return null
+  }
 
   return (
     <>
