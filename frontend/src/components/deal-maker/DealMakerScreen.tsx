@@ -1984,6 +1984,34 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
                           </div>
                         </div>
                       </>
+                    ) : strategyType === 'wholesale' && isWholesaleState(state) ? (
+                      // Wholesale: Assignment Fee
+                      <>
+                        <SliderInput
+                          label="Assignment Fee"
+                          value={state.assignmentFee}
+                          displayValue={formatPrice(state.assignmentFee)}
+                          min={5000}
+                          max={50000}
+                          minLabel="$5,000"
+                          maxLabel="$50,000"
+                          onChange={(v) => updateState('assignmentFee', v)}
+                        />
+                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 mt-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">END BUYER PRICE</div>
+                            <div className="text-xl font-bold text-[#0A1628] tabular-nums">
+                              {formatPrice('endBuyerPrice' in metrics ? (metrics as WholesaleMetrics).endBuyerPrice : 0)}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                            <div className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">FEE AS % OF ARV</div>
+                            <div className="text-base font-bold text-[#64748B] tabular-nums">
+                              {state.arv > 0 ? ((state.assignmentFee / state.arv) * 100).toFixed(1) : 0}%
+                            </div>
+                          </div>
+                        </div>
+                      </>
                     ) : (
                       // LTR/STR Rehab
                       (() => {
