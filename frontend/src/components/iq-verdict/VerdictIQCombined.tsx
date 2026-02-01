@@ -497,9 +497,15 @@ export function VerdictIQCombined({
       let blob: Blob
       let filename: string
       
+      // Build full address for property lookup
+      const fullAddress = [property.address, property.city, property.state, property.zip]
+        .filter(Boolean)
+        .join(', ')
+      
       if (format === 'excel') {
         blob = await api.proforma.downloadExcel({
           propertyId: propertyIdToUse,
+          address: fullAddress,
           strategy,
           holdPeriodYears: 10,
         })
@@ -507,6 +513,7 @@ export function VerdictIQCombined({
       } else {
         blob = await api.proforma.downloadPdf({
           propertyId: propertyIdToUse,
+          address: fullAddress,
           strategy,
           holdPeriodYears: 10,
         })

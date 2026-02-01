@@ -460,6 +460,7 @@ export const api = {
      */
     downloadExcel: async (params: {
       propertyId: string
+      address: string  // Required for property lookup
       strategy?: string
       holdPeriodYears?: number
       landValuePercent?: number
@@ -467,6 +468,7 @@ export const api = {
       capitalGainsTaxRate?: number
     }) => {
       const searchParams = new URLSearchParams()
+      searchParams.set('address', params.address)  // Required
       if (params.strategy) searchParams.set('strategy', params.strategy)
       if (params.holdPeriodYears) searchParams.set('hold_period_years', String(params.holdPeriodYears))
       if (params.landValuePercent) searchParams.set('land_value_percent', String(params.landValuePercent))
@@ -495,6 +497,7 @@ export const api = {
      */
     downloadPdf: async (params: {
       propertyId: string
+      address: string  // Required for property lookup
       strategy?: string
       holdPeriodYears?: number
       landValuePercent?: number
@@ -502,6 +505,7 @@ export const api = {
       capitalGainsTaxRate?: number
     }) => {
       const searchParams = new URLSearchParams()
+      searchParams.set('address', params.address)  // Required
       if (params.strategy) searchParams.set('strategy', params.strategy)
       if (params.holdPeriodYears) searchParams.set('hold_period_years', String(params.holdPeriodYears))
       if (params.landValuePercent) searchParams.set('land_value_percent', String(params.landValuePercent))
@@ -520,7 +524,8 @@ export const api = {
       )
       
       if (!response.ok) {
-        throw new Error(`Failed to download proforma: ${response.statusText}`)
+        const errorText = await response.text()
+        throw new Error(`Failed to download proforma: ${response.status} - ${errorText}`)
       }
       
       return response.blob()

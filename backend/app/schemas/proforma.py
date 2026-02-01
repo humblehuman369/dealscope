@@ -332,6 +332,7 @@ class FinancialProforma(BaseModel):
 class ProformaRequest(BaseModel):
     """Request to generate financial proforma."""
     property_id: str
+    address: str  # Required for property lookup
     strategy: Literal["ltr", "str", "brrrr", "flip", "house_hack", "wholesale"] = "ltr"
     
     # Optional overrides

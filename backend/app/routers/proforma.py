@@ -55,13 +55,13 @@ async def generate_proforma(
     - **pdf**: PDF report (coming soon)
     """
     try:
-        # Fetch property data
-        property_data = await property_service.get_property_by_id(request.property_id)
+        # Fetch property data using address
+        property_data = await property_service.search_property(request.address)
         
         if not property_data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Property not found: {request.property_id}"
+                detail=f"Property not found: {request.address}"
             )
         
         # Generate proforma data
@@ -143,6 +143,7 @@ async def generate_proforma(
 async def get_proforma(
     property_id: str,
     current_user: OptionalUser,
+    address: str = Query(..., description="Property address for lookup"),
     strategy: str = Query("ltr", description="Investment strategy: ltr, str, brrrr, flip, house_hack, wholesale"),
     land_value_percent: float = Query(0.20, ge=0, le=0.50, description="Land value as percent of purchase price"),
     marginal_tax_rate: float = Query(0.24, ge=0, le=0.50, description="Marginal income tax rate"),
@@ -158,13 +159,13 @@ async def get_proforma(
     For downloadable Excel exports, use POST /generate with format=xlsx.
     """
     try:
-        # Fetch property data
-        property_data = await property_service.get_property_by_id(property_id)
+        # Fetch property data using address
+        property_data = await property_service.search_property(address)
         
         if not property_data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Property not found: {property_id}"
+                detail=f"Property not found: {address}"
             )
         
         # Generate proforma data
@@ -198,6 +199,7 @@ async def get_proforma(
 async def download_proforma_excel(
     property_id: str,
     current_user: OptionalUser,
+    address: str = Query(..., description="Property address for lookup"),
     strategy: str = Query("ltr", description="Investment strategy"),
     land_value_percent: float = Query(0.20, ge=0, le=0.50),
     marginal_tax_rate: float = Query(0.24, ge=0, le=0.50),
@@ -218,13 +220,13 @@ async def download_proforma_excel(
     8. Assumptions - All inputs and data sources
     """
     try:
-        # Fetch property data
-        property_data = await property_service.get_property_by_id(property_id)
+        # Fetch property data using address
+        property_data = await property_service.search_property(address)
         
         if not property_data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Property not found: {property_id}"
+                detail=f"Property not found: {address}"
             )
         
         # Generate proforma data
@@ -270,6 +272,7 @@ async def download_proforma_excel(
 async def download_proforma_pdf(
     property_id: str,
     current_user: OptionalUser,
+    address: str = Query(..., description="Property address for lookup"),
     strategy: str = Query("ltr", description="Investment strategy"),
     land_value_percent: float = Query(0.20, ge=0, le=0.50),
     marginal_tax_rate: float = Query(0.24, ge=0, le=0.50),
@@ -298,13 +301,13 @@ async def download_proforma_pdf(
         )
     
     try:
-        # Fetch property data
-        property_data = await property_service.get_property_by_id(property_id)
+        # Fetch property data using address
+        property_data = await property_service.search_property(address)
         
         if not property_data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Property not found: {property_id}"
+                detail=f"Property not found: {address}"
             )
         
         # Generate proforma data
