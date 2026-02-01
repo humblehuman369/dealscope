@@ -806,7 +806,7 @@ export function VerdictIQCombined({
           monthlyRent: overrideValues?.monthlyRent ?? property.monthlyRent ?? Math.round(buyPrice * 0.007),
           vacancyRate: (defaults.operating.vacancy_rate * 100),
           managementRate: (defaults.operating.property_management_pct * 100),
-          // STR fields - use defaults from DealMakerPopup, can be overridden
+          // STR fields
           averageDailyRate: overrideValues?.averageDailyRate ?? 200,
           occupancyRate: overrideValues?.occupancyRate ?? 65,
           cleaningFeeRevenue: overrideValues?.cleaningFeeRevenue ?? 150,
@@ -817,6 +817,47 @@ export function VerdictIQCombined({
           suppliesMonthly: overrideValues?.suppliesMonthly ?? 150,
           additionalUtilitiesMonthly: overrideValues?.additionalUtilitiesMonthly ?? 200,
           furnitureSetupCost: overrideValues?.furnitureSetupCost ?? 6000,
+          // BRRRR fields
+          buyDiscountPct: overrideValues?.buyDiscountPct ?? 15,
+          hardMoneyRate: overrideValues?.hardMoneyRate ?? 12,
+          holdingPeriodMonths: overrideValues?.holdingPeriodMonths ?? 6,
+          holdingCostsMonthly: overrideValues?.holdingCostsMonthly ?? 1500,
+          postRehabMonthlyRent: overrideValues?.postRehabMonthlyRent ?? property.monthlyRent ?? Math.round(buyPrice * 0.007),
+          refinanceLtv: overrideValues?.refinanceLtv ?? 75,
+          refinanceInterestRate: overrideValues?.refinanceInterestRate ?? 6.5,
+          refinanceTermYears: overrideValues?.refinanceTermYears ?? 30,
+          refinanceClosingCostsPct: overrideValues?.refinanceClosingCostsPct ?? 2,
+          contingencyPct: overrideValues?.contingencyPct ?? 10,
+          maintenanceRate: overrideValues?.maintenanceRate ?? 5,
+          monthlyHoa: overrideValues?.monthlyHoa ?? 0,
+          // Fix & Flip fields
+          financingType: overrideValues?.financingType ?? 'hardMoney',
+          hardMoneyLtv: overrideValues?.hardMoneyLtv ?? 90,
+          loanPoints: overrideValues?.loanPoints ?? 2,
+          rehabTimeMonths: overrideValues?.rehabTimeMonths ?? 4,
+          daysOnMarket: overrideValues?.daysOnMarket ?? 45,
+          sellingCostsPct: overrideValues?.sellingCostsPct ?? 8,
+          capitalGainsRate: overrideValues?.capitalGainsRate ?? 25,
+          // House Hack fields
+          totalUnits: overrideValues?.totalUnits ?? 4,
+          ownerOccupiedUnits: overrideValues?.ownerOccupiedUnits ?? 1,
+          ownerUnitMarketRent: overrideValues?.ownerUnitMarketRent ?? 1500,
+          loanType: overrideValues?.loanType ?? 'fha',
+          pmiRate: overrideValues?.pmiRate ?? 0.85,
+          avgRentPerUnit: overrideValues?.avgRentPerUnit ?? 1500,
+          currentHousingPayment: overrideValues?.currentHousingPayment ?? 2000,
+          utilitiesMonthly: overrideValues?.utilitiesMonthly ?? 200,
+          capexRate: overrideValues?.capexRate ?? 5,
+          // Wholesale fields
+          estimatedRepairs: overrideValues?.estimatedRepairs ?? 40000,
+          squareFootage: overrideValues?.squareFootage ?? property.sqft ?? 1500,
+          contractPrice: overrideValues?.contractPrice ?? buyPrice * 0.85,
+          earnestMoney: overrideValues?.earnestMoney ?? 1000,
+          inspectionPeriodDays: overrideValues?.inspectionPeriodDays ?? 14,
+          daysToClose: overrideValues?.daysToClose ?? 45,
+          assignmentFee: overrideValues?.assignmentFee ?? 15000,
+          marketingCosts: overrideValues?.marketingCosts ?? 500,
+          wholesaleClosingCosts: overrideValues?.wholesaleClosingCosts ?? 500,
         }}
       />
     </div>
