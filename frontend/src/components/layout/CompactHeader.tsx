@@ -12,7 +12,7 @@
  * Navigation is handled directly via centralized navigation config.
  */
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -54,15 +54,6 @@ interface CompactHeaderProps {
   // For saved properties, include propertyId in navigation context
   savedPropertyId?: string;
 }
-
-const STRATEGIES: Strategy[] = [
-  { short: 'Long-term', full: 'Long-term Rental' },
-  { short: 'Short-term', full: 'Short-term Rental' },
-  { short: 'BRRRR', full: 'BRRRR' },
-  { short: 'Fix & Flip', full: 'Fix & Flip' },
-  { short: 'House Hack', full: 'House Hack' },
-  { short: 'Wholesale', full: 'Wholesale' },
-];
 
 const DEFAULT_PROPERTY: PropertyData = {
   address: '1451 Sw 10th St',
@@ -142,10 +133,8 @@ export function CompactHeader({
 }: CompactHeaderProps) {
   const router = useRouter();
   const { user, isAuthenticated, setShowAuthModal } = useAuth();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPropertyOpen, setIsPropertyOpen] = useState(defaultPropertyOpen);
   const [hasAutoClosedOnce, setHasAutoClosedOnce] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Auto-close property panel after 3 seconds on initial load
   useEffect(() => {
@@ -187,22 +176,6 @@ export function CompactHeader({
     return new Intl.NumberFormat('en-US').format(num);
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleStrategySelect = (strategy: string) => {
-    setIsDropdownOpen(false);
-    onStrategyChange?.(strategy);
-  };
-
   const handlePropertyToggle = () => {
     const newState = !isPropertyOpen;
     setIsPropertyOpen(newState);
@@ -224,7 +197,7 @@ export function CompactHeader({
   return (
     <header className="font-sans">
       {/* Dark Header Container */}
-      <div className="max-w-[480px] mx-auto bg-[#0A1628] relative" ref={dropdownRef}>
+      <div className="max-w-[480px] mx-auto bg-[#0A1628] relative">
         {/* Top Bar - Branding & Actions */}
         <div className="flex items-center justify-between px-4 py-3">
           <Link href="/" className="flex flex-col">
@@ -352,40 +325,6 @@ export function CompactHeader({
             </div>
           </div>
         </div>
-
-        {/* Strategy Dropdown */}
-        {isDropdownOpen && (
-          <>
-            <div 
-              className="fixed inset-0 z-[150]" 
-              onClick={() => setIsDropdownOpen(false)}
-            />
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-[200px] bg-white rounded-xl shadow-xl z-[200] overflow-hidden border border-[#E2E8F0]">
-              <div className="px-3.5 pt-2.5 pb-1 text-[10px] font-semibold text-slate-400 tracking-wider uppercase">
-                Strategy
-              </div>
-              {STRATEGIES.map((strategy) => {
-                const isSelected = strategy.short === currentStrategy;
-                return (
-                  <button
-                    key={strategy.short}
-                    className={`flex items-center justify-between w-full px-3.5 py-2.5 text-[13px] cursor-pointer hover:bg-[#F8FAFC] transition-colors ${
-                      isSelected ? 'text-[#0891B2] font-semibold' : 'text-[#0A1628] font-medium'
-                    }`}
-                    onClick={() => handleStrategySelect(strategy.short)}
-                  >
-                    {strategy.full}
-                    {isSelected && (
-                      <svg className="w-4 h-4 text-[#0891B2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
-                      </svg>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </>
-        )}
 
         {/* Icon Nav - Dark Theme */}
         <nav className="bg-[#0A1628] px-3 py-2 flex items-center justify-around border-t border-white/10">
