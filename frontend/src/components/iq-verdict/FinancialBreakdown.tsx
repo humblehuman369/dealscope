@@ -114,7 +114,7 @@ function SectionHeader({
   onLinkClick?: () => void 
 }) {
   return (
-    <div className="bg-[#0E7490] text-white flex justify-between items-center px-8 py-2.5">
+    <div className="bg-[#0E7490] text-white flex justify-between items-center px-10 py-2.5">
       <span className="text-xs font-semibold uppercase tracking-wide">{title}</span>
       {linkText && (
         <button 
