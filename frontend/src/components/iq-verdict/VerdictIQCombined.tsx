@@ -25,7 +25,6 @@ import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { ScoreMethodologySheet } from './ScoreMethodologySheet'
 import { VerdictHero } from './VerdictHero'
 import { InvestmentAnalysis } from './InvestmentAnalysis'
-import { SummarySnapshot } from './SummarySnapshot'
 import { FinancialBreakdown } from './FinancialBreakdown'
 import { AtAGlanceSection } from './AtAGlanceSection'
 import { PerformanceBenchmarksSection, NATIONAL_RANGES } from './PerformanceBenchmarksSection'
@@ -609,18 +608,6 @@ export function VerdictIQCombined({
           monthlyCashFlow={metrics.monthlyCashFlow}
           cashNeeded={metrics.totalInvestment}
           capRate={metrics.capRate / 100}
-        />
-
-        {/* Summary Snapshot - Key metrics at a glance */}
-        <SummarySnapshot
-          capRate={metrics.capRate}
-          cashOnCash={metrics.cashOnCash}
-          dscr={metrics.dscr}
-          monthlyCashFlow={metrics.monthlyCashFlow}
-          noi={metrics.noi}
-          totalInvestment={metrics.totalInvestment}
-          targetBuyPrice={buyPrice}
-          strategy={currentStrategy === 'Long-term' ? 'Long-term Rental' : currentStrategy === 'Short-term' ? 'Short-term Rental' : currentStrategy}
         />
 
         {/* Financial Breakdown - Detailed breakdown synced with DealMakerIQ */}
