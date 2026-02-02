@@ -103,7 +103,8 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
               </div>
               
               <h1 className="font-display">
-                Know Exactly What to Offer in <span className="iq">60 Seconds</span>
+                Know Exactly What to Offer in<br />
+                <span className="iq">60 Seconds</span>
               </h1>
               <p className="hero-subtitle">
                 Point your phone at any property. Get your <span className="highlight">BreakevenIQ</span>, <span className="highlight">TargetIQ</span>, and <span className="highlight">WholesaleIQ</span> prices instantly — plus analysis across 6 investment strategies.
