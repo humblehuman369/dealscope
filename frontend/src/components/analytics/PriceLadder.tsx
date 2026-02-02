@@ -16,6 +16,8 @@ import { getPriceLabel } from '@/lib/priceUtils'
 interface PriceLadderProps {
   title?: string
   rungs: PriceRung[]
+  isOffMarket?: boolean
+  listingStatus?: string
 }
 
 const formatCurrency = (value: number) => 
