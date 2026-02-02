@@ -137,14 +137,27 @@ export function CompactHeader({
   onBack,
   activeNav = 'analysis',
   onPropertyClick,
-  defaultPropertyOpen = false,
+  defaultPropertyOpen = true,
   savedPropertyId,
 }: CompactHeaderProps) {
   const router = useRouter();
   const { user, isAuthenticated, setShowAuthModal } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPropertyOpen, setIsPropertyOpen] = useState(defaultPropertyOpen);
+  const [hasAutoClosedOnce, setHasAutoClosedOnce] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Auto-close property panel after 3 seconds on initial load
+  useEffect(() => {
+    if (defaultPropertyOpen && !hasAutoClosedOnce) {
+      const timer = setTimeout(() => {
+        setIsPropertyOpen(false);
+        setHasAutoClosedOnce(true);
+        onPropertyClick?.(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [defaultPropertyOpen, hasAutoClosedOnce, onPropertyClick]);
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zip}`;
   
@@ -280,7 +293,7 @@ export function CompactHeader({
         >
           <span className="text-[13px] text-white font-medium truncate">{fullAddress}</span>
           <svg 
-            className={`w-4 h-4 text-[#0891B2] transition-transform duration-300 flex-shrink-0 ${isPropertyOpen ? 'rotate-180' : ''}`} 
+            className={`w-4 h-4 text-[#0891B2] transition-transform duration-700 flex-shrink-0 ${isPropertyOpen ? 'rotate-180' : ''}`} 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -291,7 +304,7 @@ export function CompactHeader({
 
         {/* Property Accordion Panel */}
         <div 
-          className={`overflow-hidden bg-[#0F1D32] rounded-xl mx-4 transition-all duration-300 ease-in-out ${
+          className={`overflow-hidden bg-[#0F1D32] rounded-xl mx-4 transition-all duration-700 ease-in-out ${
             isPropertyOpen ? 'max-h-[120px] p-3 mb-3' : 'max-h-0 py-0 px-3 mb-0'
           }`}
         >
