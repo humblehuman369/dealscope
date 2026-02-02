@@ -38,15 +38,14 @@ export function AtAGlanceSection({
     <div className="bg-white border-b border-[#E2E8F0] overflow-hidden">
       {/* Header */}
       <button 
-        className="w-full flex items-center justify-between px-5 py-3.5 bg-transparent border-none cursor-pointer text-left hover:bg-[#F8FAFC] transition-colors"
+        className="w-full flex items-center justify-between px-5 py-4 bg-white border-none cursor-pointer text-left hover:bg-[#F8FAFC] transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex flex-col">
-          <span className="text-[15px] font-semibold text-[#0A1628]">At-a-Glance</span>
-          <span className="text-xs text-[#94A3B8]">Performance breakdown</span>
-        </div>
+        <span className="text-sm font-bold text-[#0A1628] uppercase tracking-wide">
+          Performance Breakdown
+        </span>
         <ChevronDown 
-          className={`w-4 h-4 text-[#64748B] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+          className={`w-5 h-5 text-[#64748B] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
         />
       </button>
 

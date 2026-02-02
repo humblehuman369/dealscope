@@ -59,7 +59,7 @@ function PriceCard({
   desc: string 
 }) {
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 text-center">
+    <div className="bg-white border border-[#E2E8F0] p-4 text-center">
       <div className="text-[10px] font-semibold uppercase tracking-wide text-[#64748B] mb-2 flex items-center justify-center gap-1">
         {label}
         <Info className="w-3 h-3 text-[#94A3B8]" />
@@ -83,7 +83,7 @@ function PrimaryPriceCard({
   desc: string 
 }) {
   return (
-    <div className="bg-white border-2 border-[#0891B2] rounded-xl p-4 text-center relative overflow-hidden shadow-md">
+    <div className="bg-white border-2 border-[#0891B2] p-4 text-center relative overflow-hidden">
       {/* Teal top accent bar */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-[#0891B2]" />
       <div className="text-[10px] font-semibold uppercase tracking-wide text-[#0891B2] mb-2 flex items-center justify-center gap-1 pt-1">
@@ -101,7 +101,7 @@ function PrimaryPriceCard({
 // Metric Pill component
 function MetricPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-[rgba(8,145,178,0.15)] rounded-lg p-4 text-center">
+    <div className="border border-[#E2E8F0] p-4 text-center">
       <div className="text-[10px] font-semibold uppercase tracking-wide text-[#64748B] mb-1">
         {label}
       </div>
@@ -158,7 +158,7 @@ export function InvestmentAnalysis({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm mb-4">
+    <div className="bg-white border-b border-[#E2E8F0]">
       {/* Header Section */}
       <div className="p-5 pb-3">
         {/* Header Row */}

@@ -641,13 +641,13 @@ export function VerdictIQCombined({
           {/* Dropdown Header */}
           <button
             onClick={() => setShowPriceLikelihood(!showPriceLikelihood)}
-            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-[#F8FAFC] transition-colors"
+            className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#F8FAFC] transition-colors bg-white border-none cursor-pointer"
           >
-            <span className="text-xs font-semibold text-[#0891B2] uppercase tracking-wide">
-              HOW LIKELY CAN YOU GET THIS PRICE?
+            <span className="text-sm font-bold text-[#0A1628] uppercase tracking-wide">
+              How Likely Can You Get This Price?
             </span>
             <ChevronDown 
-              className={`w-4 h-4 text-[#64748B] transition-transform duration-200 ${showPriceLikelihood ? 'rotate-180' : ''}`} 
+              className={`w-5 h-5 text-[#64748B] transition-transform duration-200 ${showPriceLikelihood ? 'rotate-180' : ''}`} 
             />
           </button>
 

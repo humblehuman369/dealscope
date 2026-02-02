@@ -268,7 +268,7 @@ export function FinancialBreakdown({
   ])
 
   return (
-    <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+    <div className="bg-white border-b border-[#E2E8F0] overflow-hidden">
       {/* Collapsible Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
