@@ -257,7 +257,7 @@ export function CompactHeader({
         </div>
 
         {/* Title Row */}
-        <div className="flex items-center justify-center px-4 py-2 pb-3 gap-2 relative">
+        <div className="flex items-center justify-center px-4 py-2 pb-3 relative">
           <button 
             className="w-5 h-5 text-white opacity-70 hover:opacity-100 cursor-pointer absolute left-4 transition-opacity"
             onClick={onBack}
@@ -267,25 +267,9 @@ export function CompactHeader({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
             </svg>
           </button>
-          <div className="flex items-center gap-2.5">
-            <div className="text-lg font-extrabold tracking-wider">
-              <span className="text-white">{pageTitle} </span>
-              <span className="text-[#00D4FF]">{pageTitleAccent}</span>
-            </div>
-            <button
-              className="inline-flex items-center gap-1.5 bg-[#0891B2] hover:bg-[#0E7490] px-3 py-1.5 rounded-md cursor-pointer text-xs font-semibold text-white transition-colors"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            >
-              <span>{currentStrategy}</span>
-              <svg 
-                className={`w-3 h-3 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
-              </svg>
-            </button>
+          <div className="text-lg font-extrabold tracking-wider">
+            <span className="text-white">{pageTitle} </span>
+            <span className="text-[#00D4FF]">{pageTitleAccent}</span>
           </div>
         </div>
 
