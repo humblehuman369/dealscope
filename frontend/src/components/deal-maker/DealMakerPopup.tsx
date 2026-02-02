@@ -99,6 +99,9 @@ export interface DealMakerValues {
   wholesaleClosingCosts: number
 }
 
+// Tab identifiers for scrolling to sections
+export type DealMakerTab = 'buy-price' | 'financing' | 'income' | 'expenses' | 'rehab'
+
 interface DealMakerPopupProps {
   isOpen: boolean
   onClose: () => void
@@ -106,6 +109,7 @@ interface DealMakerPopupProps {
   initialValues?: Partial<DealMakerValues>
   strategyType?: PopupStrategyType
   onStrategyChange?: (strategy: PopupStrategyType) => void
+  initialTab?: DealMakerTab
 }
 
 // Base default values shared across all strategies
@@ -302,6 +306,7 @@ export function DealMakerPopup({
   initialValues = {},
   strategyType = 'ltr',
   onStrategyChange,
+  initialTab,
 }: DealMakerPopupProps) {
   // Get defaults based on strategy
   const defaults = useMemo(() => getDefaultValues(strategyType), [strategyType])
@@ -312,6 +317,14 @@ export function DealMakerPopup({
     ...initialValues,
   })
 
+  // Refs for scrolling to sections
+  const contentRef = React.useRef<HTMLDivElement>(null)
+  const purchaseTermsRef = React.useRef<HTMLDivElement>(null)
+  const financingRef = React.useRef<HTMLDivElement>(null)
+  const incomeRef = React.useRef<HTMLDivElement>(null)
+  const expensesRef = React.useRef<HTMLDivElement>(null)
+  const rehabRef = React.useRef<HTMLDivElement>(null)
+
   // Reset to initial values when popup opens or strategy changes
   useEffect(() => {
     if (isOpen) {
@@ -321,6 +334,39 @@ export function DealMakerPopup({
       })
     }
   }, [isOpen, initialValues, defaults])
+
+  // Scroll to initial tab when popup opens
+  useEffect(() => {
+    if (isOpen && initialTab && contentRef.current) {
+      const scrollToRef = () => {
+        let targetRef: React.RefObject<HTMLDivElement> | null = null
+        switch (initialTab) {
+          case 'buy-price':
+            targetRef = purchaseTermsRef
+            break
+          case 'financing':
+            targetRef = financingRef
+            break
+          case 'income':
+            targetRef = incomeRef
+            break
+          case 'expenses':
+            targetRef = expensesRef
+            break
+          case 'rehab':
+            targetRef = rehabRef
+            break
+        }
+        if (targetRef?.current && contentRef.current) {
+          // Small delay to ensure content is rendered
+          setTimeout(() => {
+            targetRef?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }, 100)
+        }
+      }
+      scrollToRef()
+    }
+  }, [isOpen, initialTab])
 
   // Calculate derived values
   const loanAmount = values.buyPrice * (1 - values.downPayment / 100)
@@ -613,7 +659,7 @@ export function DealMakerPopup({
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-5 pb-5 overscroll-contain scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div ref={contentRef} className="flex-1 overflow-y-auto px-5 pb-5 overscroll-contain scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           
           {/* ============================================================== */}
           {/* LTR / STR SECTIONS */}
@@ -621,7 +667,9 @@ export function DealMakerPopup({
           {(strategyType === 'ltr' || strategyType === 'str') && (
             <>
               {/* Purchase Terms Section */}
-              <SectionDivider text="Purchase Terms" />
+              <div ref={purchaseTermsRef}>
+                <SectionDivider text="Purchase Terms" />
+              </div>
               
               <SliderInput
                 label="Buy Price"
@@ -654,7 +702,9 @@ export function DealMakerPopup({
               />
 
               {/* Financing Section */}
-              <SectionDivider text="Financing" />
+              <div ref={financingRef}>
+                <SectionDivider text="Financing" />
+              </div>
               
               <CalculatedField 
                 label="Loan Amount" 
@@ -682,7 +732,9 @@ export function DealMakerPopup({
               />
 
               {/* Rehab & Value Section */}
-              <SectionDivider text="Rehab & Value" />
+              <div ref={rehabRef}>
+                <SectionDivider text="Rehab & Value" />
+              </div>
               
               <SliderInput
                 label="Rehab Budget"
@@ -1458,7 +1510,9 @@ export function DealMakerPopup({
           ) : (
             <>
               {/* LTR Income Section */}
-              <SectionDivider text="Rental Income" />
+              <div ref={incomeRef}>
+                <SectionDivider text="Rental Income" />
+              </div>
               
               <SliderInput
                 label="Monthly Rent"
@@ -1571,7 +1625,9 @@ export function DealMakerPopup({
           ) : (
             <>
               {/* LTR Expenses Section */}
-              <SectionDivider text="Operating Expenses" />
+              <div ref={expensesRef}>
+                <SectionDivider text="Operating Expenses" />
+              </div>
               
               <SliderInput
                 label="Property Taxes"

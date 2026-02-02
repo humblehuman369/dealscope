@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verdict IQ - Investment Analysis Redesign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       CSS RESET & BASE
+       ======================================== */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F8FAFC;
+      min-height: 100vh;
+      color: #475569;
+      line-height: 1.5;
+    }
+
+    /* ========================================
+       CSS VARIABLES (InvestIQ Style Guide)
+       ======================================== */
+    :root {
+      /* Primary Brand */
+      --deep-navy: #0A1628;
+      --pacific-teal: #0891B2;
+      --teal-dark: #0E7490;
+      --teal-light: #06B6D4;
+      --electric-cyan: #00D4FF;
+      
+      /* Semantic Colors */
+      --success: #0891B2;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+      
+      /* Surface Palette (Slate-based) */
+      --surface-50: #F8FAFC;
+      --surface-100: #F1F5F9;
+      --surface-200: #E2E8F0;
+      --surface-300: #CBD5E1;
+      --surface-400: #94A3B8;
+      --surface-500: #64748B;
+      --surface-600: #475569;
+      --surface-700: #334155;
+      --surface-800: #1E293B;
+      
+      /* Tints */
+      --teal-10: rgba(8, 145, 178, 0.10);
+      --teal-15: rgba(8, 145, 178, 0.15);
+      --teal-20: rgba(8, 145, 178, 0.20);
+      --navy-8: rgba(10, 22, 40, 0.08);
+      
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      
+      /* Border Radius */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+      
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Utility: Tabular Numerals */
+    .num {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ========================================
+       LAYOUT
+       ======================================== */
+    .page-wrapper {
+      display: flex;
+      justify-content: center;
+      padding: var(--space-6);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    /* ========================================
+       VERDICT HERO SECTION (Full-Width Row)
+       ======================================== */
+    .verdict-hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-5);
+      padding: var(--space-4) var(--space-5);
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--surface-200);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: var(--space-4);
+    }
+
+    .verdict-score-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .score-ring {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+    }
+
+    .score-ring svg {
+      transform: rotate(-90deg);
+      width: 56px;
+      height: 56px;
+    }
+
+    .score-ring-bg {
+      fill: none;
+      stroke: var(--surface-200);
+      stroke-width: 3;
+    }
+
+    .score-ring-progress {
+      fill: none;
+      stroke: var(--pacific-teal);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 151;
+      stroke-dashoffset: 16.6; /* 89% */
+    }
+
+    .score-value {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--pacific-teal);
+    }
+
+    .verdict-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .verdict-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--pacific-teal);
+      margin-bottom: 2px;
+    }
+
+    .verdict-subtitle {
+      font-size: 13px;
+      color: var(--surface-500);
+    }
+
+    .verdict-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 13px;
+      color: var(--surface-500);
+    }
+
+    .verdict-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .verdict-meta-value {
+      color: var(--pacific-teal);
+      font-weight: 600;
+    }
+
+    .verdict-meta-value.warning {
+      color: var(--warning);
+    }
+
+    .verdict-links {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .verdict-link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--pacific-teal);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .verdict-link:hover {
+      color: var(--teal-light);
+    }
+
+    .verdict-link svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ========================================
+       INVESTMENT ANALYSIS SECTION
+       ======================================== */
+    .analysis-section {
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--surface-200);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-5);
+      margin-bottom: var(--space-4);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-2);
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--deep-navy);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .section-action {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--pacific-teal);
+      cursor: pointer;
+    }
+
+    .section-action:hover {
+      color: var(--teal-light);
+    }
+
+    .section-subtitle {
+      font-size: 13px;
+      color: var(--surface-500);
+      margin-bottom: var(--space-3);
+    }
+
+    .term-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-4);
+    }
+
+    .term-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--pacific-teal);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .term-toggle:hover {
+      background: var(--teal-light);
+    }
+
+    .term-toggle svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .approach-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--pacific-teal);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .approach-link:hover {
+      text-decoration: underline;
+      color: var(--teal-light);
+    }
+
+    /* ========================================
+       PRICE CARDS ROW
+       ======================================== */
+    .price-cards {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr 1fr;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+
+    .price-card {
+      background: white;
+      border: 1px solid var(--surface-200);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .price-card:hover {
+      border-color: var(--surface-300);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .price-card-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--surface-500);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .price-card-label svg {
+      width: 12px;
+      height: 12px;
+      color: var(--surface-400);
+    }
+
+    .price-card-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--deep-navy);
+      margin-bottom: var(--space-1);
+    }
+
+    .price-card-desc {
+      font-size: 11px;
+      color: var(--surface-400);
+      line-height: 1.4;
+    }
+
+    /* TARGET BUY - Elevated Card */
+    .price-card.primary {
+      background: white;
+      border: 2px solid var(--pacific-teal);
+      box-shadow: var(--shadow-md);
+      position: relative;
+      padding-top: calc(var(--space-4) + 4px);
+    }
+
+    .price-card.primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--pacific-teal);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .price-card.primary .price-card-label {
+      color: var(--pacific-teal);
+    }
+
+    .price-card.primary .price-card-label svg {
+      color: var(--pacific-teal);
+    }
+
+    .price-card.primary .price-card-value {
+      font-size: 24px;
+      color: var(--pacific-teal);
+    }
+
+    /* ========================================
+       METRICS ROW
+       ======================================== */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+    }
+
+    .metric-pill {
+      background: var(--teal-15);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--surface-500);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-1);
+    }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--pacific-teal);
+    }
+
+    .metric-value.warning {
+      color: var(--warning);
+    }
+
+    /* ========================================
+       FINANCIAL BREAKDOWN ACCORDION
+       ======================================== */
+    .accordion {
+      background: white;
+      border: 1px solid var(--surface-200);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .accordion-header:hover {
+      background: var(--surface-50);
+    }
+
+    .accordion-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--deep-navy);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .accordion-chevron {
+      width: 20px;
+      height: 20px;
+      color: var(--surface-400);
+      transition: transform 0.3s ease;
+    }
+
+    .accordion.open .accordion-chevron {
+      transform: rotate(180deg);
+    }
+
+    .accordion-content {
+      padding: 0 var(--space-5) var(--space-5);
+      border-top: 1px solid var(--surface-200);
+      overflow: hidden;
+    }
+
+    .accordion-subsection {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--teal-dark);
+      color: white;
+      padding: var(--space-3) var(--space-8);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: var(--space-3) calc(-1 * var(--space-5));
+      margin-top: 0;
+    }
+
+    .accordion-subsection:first-child {
+      margin-top: var(--space-3);
+    }
+
+    .accordion-subsection-link {
+      color: var(--electric-cyan);
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: normal;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .accordion-subsection-link:hover {
+      text-decoration: underline;
+      color: white;
+    }
+
+    .data-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-2) var(--space-8);
+      margin: 0 calc(-1 * var(--space-5));
+      border-bottom: 1px solid var(--surface-100);
+    }
+
+    .data-row:last-child {
+      border-bottom: none;
+    }
+
+    .data-label {
+      font-size: 14px;
+      color: var(--surface-500);
+    }
+
+    .data-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--deep-navy);
+    }
+
+    .data-value.teal {
+      color: var(--pacific-teal);
+    }
+
+    .data-value.danger {
+      color: var(--danger);
+    }
+
+    /* Highlight Row - Target Buy Price style */
+    .data-row.highlight-row {
+      background: var(--teal-10);
+      border-bottom: 1px solid var(--teal-20);
+    }
+
+    .data-row.highlight-row .data-label {
+      font-weight: 600;
+      color: var(--deep-navy);
+    }
+
+    .data-row.highlight-row .data-value {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    /* Teal Highlight Row - NOI / Cash Flow style */
+    .data-row.highlight-row.dark {
+      background: var(--teal-15);
+      border-bottom: 1px solid var(--teal-20);
+    }
+
+    .data-row.highlight-row.dark .data-label {
+      color: var(--deep-navy);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.03em;
+    }
+
+    .data-row.highlight-row.dark .data-value {
+      color: var(--pacific-teal);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .data-row.highlight-row.dark .data-value.danger {
+      color: var(--danger);
+    }
+
+    /* Summary Row - Totals */
+    .data-row.summary-row {
+      background: var(--surface-100);
+      border-top: 1px solid var(--surface-200);
+      border-bottom: none;
+      padding-top: var(--space-2);
+      padding-bottom: var(--space-2);
+      margin-top: var(--space-1);
+    }
+
+    .data-row.summary-row .data-label {
+      font-weight: 600;
+      color: var(--deep-navy);
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ========================================
+       RESPONSIVE
+       ======================================== */
+    @media (max-width: 480px) {
+      .price-cards {
+        grid-template-columns: 1fr;
+        gap: var(--space-2);
+      }
+
+      .price-card.primary {
+        order: -1;
+      }
+
+      .metrics-row {
+        grid-template-columns: 1fr;
+        gap: var(--space-2);
+      }
+
+      .verdict-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="container">
+
+      <!-- Verdict Hero (Full-Width Row) -->
+      <section class="verdict-hero">
+        <!-- Group 1: Score + Title -->
+        <div class="verdict-score-group">
+          <div class="score-ring">
+            <svg viewBox="0 0 56 56">
+              <circle class="score-ring-bg" cx="28" cy="28" r="24"/>
+              <circle class="score-ring-progress" cx="28" cy="28" r="24"/>
+            </svg>
+            <div class="score-value num">89</div>
+          </div>
+          <div class="verdict-content">
+            <div class="verdict-title">Good Buy</div>
+            <div class="verdict-subtitle">Deal Gap likely achievable</div>
+          </div>
+        </div>
+
+        <!-- Group 2: Metrics -->
+        <div class="verdict-meta">
+          <div class="verdict-meta-item">
+            <span>Gap:</span>
+            <span class="verdict-meta-value">-10.3%</span>
+          </div>
+          <div class="verdict-meta-item">
+            <span>Motivation:</span>
+            <span class="verdict-meta-value warning">Medium</span>
+          </div>
+        </div>
+
+        <!-- Group 3: Links -->
+        <div class="verdict-links">
+          <a class="verdict-link">
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 12H7v-2h2v2zm0-3H7V4h2v5z"/>
+            </svg>
+            How Verdict IQ Works
+          </a>
+          <a class="verdict-link">
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 12H7v-2h2v2zm0-3H7V4h2v5z"/>
+            </svg>
+            How We Score
+          </a>
+        </div>
+      </section>
+
+      <!-- Investment Analysis Section -->
+      <section class="analysis-section">
+        <div class="section-header">
+          <h2 class="section-title">Your Investment Analysis</h2>
+          <span class="section-action">Change terms</span>
+        </div>
+        <p class="section-subtitle">Based on YOUR financing terms (20% down, 6.0%)</p>
+
+        <div class="term-toggle-row">
+          <a class="approach-link">
+            <svg viewBox="0 0 16 16" fill="currentColor" style="width: 14px; height: 14px;">
+              <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 12H7v-2h2v2zm0-3H7V4h2v5z"/>
+            </svg>
+            How BREAKEVEN is calculated
+          </a>
+          <div class="term-toggle">
+            Long-term
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6l4 4 4-4"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Price Cards Row -->
+        <div class="price-cards">
+          <!-- Breakeven -->
+          <div class="price-card">
+            <div class="price-card-label">
+              Breakeven
+              <svg viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 12H7v-2h2v2zm0-3H7V4h2v5z"/>
+              </svg>
+            </div>
+            <div class="price-card-value num">$864,901</div>
+            <div class="price-card-desc">Max price for $0 cashflow</div>
+          </div>
+
+          <!-- Target Buy (Primary/Elevated) -->
+          <div class="price-card primary">
+            <div class="price-card-label">
+              Target Buy
+              <svg viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 12H7v-2h2v2zm0-3H7V4h2v5z"/>
+              </svg>
+            </div>
+            <div class="price-card-value num">$736,665</div>
+            <div class="price-card-desc">Positive Cashflow</div>
+          </div>
+
+          <!-- Wholesale -->
+          <div class="price-card">
+            <div class="price-card-label">
+              Wholesale
+              <svg viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 12H7v-2h2v2zm0-3H7V4h2v5z"/>
+              </svg>
+            </div>
+            <div class="price-card-value num">$605,431</div>
+            <div class="price-card-desc">30% net discount for assignment</div>
+          </div>
+        </div>
+
+        <!-- Metrics Row (Reordered: Cash Flow, Cash Needed, Cap Rate) -->
+        <div class="metrics-row">
+          <div class="metric-pill">
+            <div class="metric-label">Cash Flow</div>
+            <div class="metric-value num">$615/mo</div>
+          </div>
+          <div class="metric-pill">
+            <div class="metric-label">Cash Needed</div>
+            <div class="metric-value num">$169,433</div>
+          </div>
+          <div class="metric-pill">
+            <div class="metric-label">Cap Rate</div>
+            <div class="metric-value num">6.8%</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Financial Breakdown Accordion -->
+      <div class="accordion open">
+        <div class="accordion-header">
+          <span class="accordion-title">Financial Breakdown</span>
+          <svg class="accordion-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 7l5 5 5-5"/>
+          </svg>
+        </div>
+        <div class="accordion-content">
+          <div class="accordion-subsection">
+            <span>Purchase Terms</span>
+            <a class="accordion-subsection-link">Adjust Terms</a>
+          </div>
+          <!-- Target Buy Price -->
+          <div class="data-row highlight-row">
+            <span class="data-label">Target Buy Price</span>
+            <span class="data-value teal num">$736,665</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Down Payment</span>
+            <span class="data-value num">$147,333</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Down Payment %</span>
+            <span class="data-value num">20.00%</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Loan Amount</span>
+            <span class="data-value num">$589,332</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Interest Rate</span>
+            <span class="data-value num">6.00%</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Loan Term (Years)</span>
+            <span class="data-value num">30</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Monthly Payment (P&I)</span>
+            <span class="data-value num">$3,533</span>
+          </div>
+
+          <div class="accordion-subsection">
+            <span>Income</span>
+            <a class="accordion-subsection-link">Adjust Income</a>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Gross Scheduled Rent</span>
+            <span class="data-value num">$66,660</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Less: Vacancy Allowance</span>
+            <span class="data-value danger num">$(667)</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Other Income</span>
+            <span class="data-value num">$0</span>
+          </div>
+          <div class="data-row summary-row">
+            <span class="data-label">Effective Gross Income</span>
+            <span class="data-value num">$65,993</span>
+          </div>
+
+          <div class="accordion-subsection">
+            <span>Operating Expenses</span>
+            <a class="accordion-subsection-link">Adjust Expenses</a>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Property Taxes</span>
+            <span class="data-value num">$8,840</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Insurance</span>
+            <span class="data-value num">$7,367</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">HOA Fees</span>
+            <span class="data-value num">$-</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Property Management</span>
+            <span class="data-value num">$-</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Maintenance & Repairs</span>
+            <span class="data-value num">$3,333</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Utilities</span>
+            <span class="data-value num">$1,200</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Landscaping</span>
+            <span class="data-value num">$-</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Pest Control</span>
+            <span class="data-value num">$-</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">CapEx Reserve</span>
+            <span class="data-value num">$3,333</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Other Expenses</span>
+            <span class="data-value num">$-</span>
+          </div>
+          <div class="data-row summary-row">
+            <span class="data-label">Total Operating Expenses</span>
+            <span class="data-value num">$24,073</span>
+          </div>
+
+          <div class="data-row highlight-row dark">
+            <span class="data-label">Net Operating Income (NOI)</span>
+            <span class="data-value num">$41,920</span>
+          </div>
+
+          <div class="accordion-subsection">
+            <span>Debt Service</span>
+            <a class="accordion-subsection-link">Adjust Debt</a>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Annual Mortgage (P&I)</span>
+            <span class="data-value num">$42,400</span>
+          </div>
+
+          <div class="data-row highlight-row dark">
+            <span class="data-label">Pre-Tax Cash Flow</span>
+            <span class="data-value danger num">$(480)</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

@@ -3,11 +3,12 @@
 /**
  * InvestmentAnalysis Component
  * 
- * Displays price cards (Breakeven, Target Buy, Wholesale) with assumptions dropdown.
+ * Displays price cards (Breakeven, Target Buy, Wholesale) with metrics row.
+ * Redesigned with elevated Target Buy card and reordered metrics.
  */
 
 import React, { useState } from 'react'
-import { ChevronDown, HelpCircle, AlertCircle, Settings2 } from 'lucide-react'
+import { ChevronDown, HelpCircle, Info } from 'lucide-react'
 import { formatPrice } from './types'
 
 interface FinancingDefaults {
@@ -41,32 +42,72 @@ interface InvestmentAnalysisProps {
   currentStrategy?: string
   strategies?: Strategy[]
   onStrategyChange?: (strategy: string) => void
+  // New props for metrics row
+  monthlyCashFlow?: number
+  cashNeeded?: number
+  capRate?: number
 }
 
-interface PriceCardProps {
+// Standard price card (Breakeven, Wholesale)
+function PriceCard({ 
+  label, 
+  value, 
+  desc 
+}: { 
   label: string
   value: number
-  desc: string
-  recommended?: boolean
-}
-
-function PriceCard({ label, value, desc, recommended = false }: PriceCardProps) {
+  desc: string 
+}) {
   return (
-    <div className={`rounded-lg p-3 text-center border ${
-      recommended 
-        ? 'bg-white border-2 border-[#0891B2]' 
-        : 'bg-[#F8FAFC] border-[#E2E8F0]'
-    }`}>
-      <div className={`text-[10px] font-bold uppercase tracking-wide mb-1 flex items-center justify-center gap-1 ${
-        recommended ? 'text-[#0891B2]' : 'text-[#64748B]'
-      }`}>
+    <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 text-center">
+      <div className="text-[10px] font-semibold uppercase tracking-wide text-[#64748B] mb-2 flex items-center justify-center gap-1">
         {label}
-        <HelpCircle className="w-3 h-3 text-[#E2E8F0]" />
+        <Info className="w-3 h-3 text-[#94A3B8]" />
       </div>
-      <div className={`text-base font-bold mb-1 ${recommended ? 'text-[#0891B2]' : 'text-[#0A1628]'}`}>
+      <div className="text-xl font-bold text-[#0A1628] mb-1">
         {formatPrice(value)}
       </div>
-      <div className="text-[10px] text-[#94A3B8] leading-tight">{desc}</div>
+      <div className="text-[11px] text-[#94A3B8] leading-tight">{desc}</div>
+    </div>
+  )
+}
+
+// Elevated price card (Target Buy)
+function PrimaryPriceCard({ 
+  label, 
+  value, 
+  desc 
+}: { 
+  label: string
+  value: number
+  desc: string 
+}) {
+  return (
+    <div className="bg-white border-2 border-[#0891B2] rounded-xl p-4 text-center relative overflow-hidden shadow-md">
+      {/* Teal top accent bar */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-[#0891B2]" />
+      <div className="text-[10px] font-semibold uppercase tracking-wide text-[#0891B2] mb-2 flex items-center justify-center gap-1 pt-1">
+        {label}
+        <Info className="w-3 h-3 text-[#0891B2]" />
+      </div>
+      <div className="text-2xl font-bold text-[#0891B2] mb-1">
+        {formatPrice(value)}
+      </div>
+      <div className="text-[11px] text-[#94A3B8] leading-tight">{desc}</div>
+    </div>
+  )
+}
+
+// Metric Pill component
+function MetricPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-[rgba(8,145,178,0.15)] rounded-lg p-4 text-center">
+      <div className="text-[10px] font-semibold uppercase tracking-wide text-[#64748B] mb-1">
+        {label}
+      </div>
+      <div className="text-lg font-bold text-[#0891B2]">
+        {value}
+      </div>
     </div>
   )
 }
@@ -93,26 +134,46 @@ export function InvestmentAnalysis({
   currentStrategy = 'Long-term',
   strategies = DEFAULT_STRATEGIES,
   onStrategyChange,
+  monthlyCashFlow = 0,
+  cashNeeded = 0,
+  capRate = 0,
 }: InvestmentAnalysisProps) {
-  const [showAssumptions, setShowAssumptions] = useState(false)
   const [showCalculation, setShowCalculation] = useState(false)
   const [showStrategyDropdown, setShowStrategyDropdown] = useState(false)
 
+  // Format cash flow with /mo suffix
+  const formatCashFlow = (value: number) => {
+    const formatted = Math.abs(value).toLocaleString('en-US', { maximumFractionDigits: 0 })
+    return value < 0 ? `-$${formatted}/mo` : `$${formatted}/mo`
+  }
+
+  // Format cash needed
+  const formatCashNeeded = (value: number) => {
+    return `$${value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+  }
+
+  // Format cap rate
+  const formatCapRate = (value: number) => {
+    return `${(value * 100).toFixed(1)}%`
+  }
+
   return (
-    <div className="bg-white">
-      {/* Header Section - No teal border */}
-      <div className="p-4 px-5 pb-0">
-        {/* Header */}
+    <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm mb-4">
+      {/* Header Section */}
+      <div className="p-5 pb-3">
+        {/* Header Row */}
         <div className="flex justify-between items-start mb-1">
           <div>
-            <div className="text-[15px] font-bold text-[#0A1628]">YOUR INVESTMENT ANALYSIS</div>
-            <div className="text-xs text-[#64748B]">
+            <div className="text-sm font-bold text-[#0A1628] uppercase tracking-wide">
+              Your Investment Analysis
+            </div>
+            <div className="text-[13px] text-[#64748B]">
               Based on YOUR financing terms ({(financing.down_payment_pct * 100).toFixed(0)}% down, {(financing.interest_rate * 100).toFixed(1)}%)
             </div>
           </div>
           <div className="flex flex-col items-end gap-1">
             <button 
-              className="text-[#0891B2] text-[13px] font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
+              className="text-[#0891B2] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
               onClick={onEditAssumptions}
             >
               Change terms
@@ -120,7 +181,7 @@ export function InvestmentAnalysis({
             {/* Strategy Dropdown */}
             <div className="relative">
               <button
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0891B2] text-white text-[12px] font-medium rounded-full cursor-pointer border-none hover:bg-[#0E7490] transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0891B2] text-white text-[12px] font-semibold rounded-full cursor-pointer border-none hover:bg-[#0E7490] transition-colors"
                 onClick={() => setShowStrategyDropdown(!showStrategyDropdown)}
               >
                 {currentStrategy}
@@ -153,27 +214,20 @@ export function InvestmentAnalysis({
           </div>
         </div>
 
-      </div>
-
-      {/* Price Cards Section */}
-      <div className="px-5 pb-0">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[13px] text-[#64748B]">Three ways to approach this deal:</span>
+        {/* How Breakeven is calculated link */}
+        <div className="flex items-center justify-between mt-4 mb-4">
           <button 
-            className="flex items-center gap-1.5 text-[#0891B2] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
+            className="flex items-center gap-1.5 text-[#0891B2] text-[13px] font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
             onClick={() => setShowCalculation(!showCalculation)}
           >
-            <ChevronDown 
-              className="w-3.5 h-3.5 transition-transform" 
-              style={{ transform: showCalculation ? 'rotate(180deg)' : 'rotate(0deg)' }}
-            />
+            <Info className="w-3.5 h-3.5" />
             How BREAKEVEN is calculated
           </button>
         </div>
 
-        {/* Calculation Breakdown - Opens above price cards */}
+        {/* Calculation Breakdown */}
         {showCalculation && (
-          <div className="mb-3 pb-3 border-b border-[#E2E8F0] space-y-2">
+          <div className="mb-4 pb-4 border-b border-[#E2E8F0] space-y-2">
             <div className="text-[11px] font-semibold uppercase tracking-wide text-[#475569] mb-2">
               BREAKEVEN CALCULATION
             </div>
@@ -198,81 +252,40 @@ export function InvestmentAnalysis({
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-2">
-        <PriceCard 
-          label="Breakeven" 
-          value={breakevenPrice} 
-          desc="Max price for $0 cashflow (LTR model)" 
-        />
-        <PriceCard 
-          label="Target Buy" 
-          value={targetBuyPrice} 
-          desc="5% discount for profit" 
-          recommended 
-        />
-        <PriceCard 
-          label="Wholesale" 
-          value={wholesalePrice} 
-          desc="30% discount for assignment" 
-        />
+        {/* Price Cards - Grid with Target Buy larger */}
+        <div className="grid grid-cols-[1fr_1.3fr_1fr] gap-3 mb-4">
+          <PriceCard 
+            label="Breakeven" 
+            value={breakevenPrice} 
+            desc="Max price for $0 cashflow" 
+          />
+          <PrimaryPriceCard 
+            label="Target Buy" 
+            value={targetBuyPrice} 
+            desc="Positive Cashflow" 
+          />
+          <PriceCard 
+            label="Wholesale" 
+            value={wholesalePrice} 
+            desc="30% net discount for assignment" 
+          />
         </div>
 
-        {/* Expandable Assumptions Panel */}
-        {showAssumptions && (
-          <div className="mt-3 pt-3 border-t border-[#E2E8F0]">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-[#475569]">
-                YOUR ASSUMPTIONS
-              </span>
-              {onEditAssumptions && (
-                <button 
-                  onClick={onEditAssumptions}
-                  className="flex items-center gap-1 text-[10px] font-medium text-[#0891B2] hover:opacity-75 transition-opacity bg-transparent border-none cursor-pointer"
-                >
-                  <Settings2 className="w-3 h-3" />
-                  Edit in Deal Maker
-                </button>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 text-[11px]">
-              <div>
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-[#94A3B8] mb-2">FINANCING</div>
-                <div className="space-y-1.5">
-                  <div className="flex justify-between">
-                    <span className="text-[#64748B]">Down Payment</span>
-                    <span className="font-medium text-[#0A1628]">{(financing.down_payment_pct * 100).toFixed(0)}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#64748B]">Interest Rate</span>
-                    <span className="font-medium text-[#0A1628]">{(financing.interest_rate * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#64748B]">Loan Term</span>
-                    <span className="font-medium text-[#0A1628]">{financing.loan_term_years} years</span>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-[#94A3B8] mb-2">EXPENSES</div>
-                <div className="space-y-1.5">
-                  <div className="flex justify-between">
-                    <span className="text-[#64748B]">Vacancy</span>
-                    <span className="font-medium text-[#0A1628]">{(operating.vacancy_rate * 100).toFixed(0)}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#64748B]">Management</span>
-                    <span className="font-medium text-[#0A1628]">{(operating.property_management_pct * 100).toFixed(0)}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#64748B]">Maintenance</span>
-                    <span className="font-medium text-[#0A1628]">{(operating.maintenance_pct * 100).toFixed(0)}%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Metrics Row - Cash Flow, Cash Needed, Cap Rate */}
+        <div className="grid grid-cols-3 gap-3">
+          <MetricPill 
+            label="Cash Flow" 
+            value={formatCashFlow(monthlyCashFlow)} 
+          />
+          <MetricPill 
+            label="Cash Needed" 
+            value={formatCashNeeded(cashNeeded)} 
+          />
+          <MetricPill 
+            label="Cap Rate" 
+            value={formatCapRate(capRate)} 
+          />
+        </div>
       </div>
     </div>
   )

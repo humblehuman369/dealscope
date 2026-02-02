@@ -29,7 +29,7 @@ import { SummarySnapshot } from './SummarySnapshot'
 import { FinancialBreakdown } from './FinancialBreakdown'
 import { AtAGlanceSection } from './AtAGlanceSection'
 import { PerformanceBenchmarksSection, NATIONAL_RANGES } from './PerformanceBenchmarksSection'
-import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '../deal-maker/DealMakerPopup'
+import { DealMakerPopup, DealMakerValues, PopupStrategyType, DealMakerTab } from '../deal-maker/DealMakerPopup'
 import {
   IQProperty,
   IQAnalysisResult,
@@ -112,6 +112,7 @@ export function VerdictIQCombined({
   const [showPriceLikelihood, setShowPriceLikelihood] = useState(false)
   const [currentStrategy, setCurrentStrategy] = useState(HEADER_STRATEGIES[0].short)
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
+  const [dealMakerInitialTab, setDealMakerInitialTab] = useState<DealMakerTab | undefined>(undefined)
   const [isExporting, setIsExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
   
@@ -476,6 +477,13 @@ export function VerdictIQCombined({
 
   // Open DealMaker popup instead of navigating to page
   const handleOpenDealMakerPopup = useCallback(() => {
+    setDealMakerInitialTab(undefined)
+    setShowDealMakerPopup(true)
+  }, [])
+
+  // Open DealMaker popup with a specific tab
+  const openDealMakerWithTab = useCallback((tab: DealMakerTab) => {
+    setDealMakerInitialTab(tab)
     setShowDealMakerPopup(true)
   }, [])
 
@@ -598,6 +606,9 @@ export function VerdictIQCombined({
           onEditAssumptions={handleEditAssumptions}
           currentStrategy={currentStrategy}
           onStrategyChange={handleStrategyChange}
+          monthlyCashFlow={metrics.monthlyCashFlow}
+          cashNeeded={metrics.totalInvestment}
+          capRate={metrics.capRate / 100}
         />
 
         {/* Summary Snapshot - Key metrics at a glance */}
@@ -615,6 +626,7 @@ export function VerdictIQCombined({
         {/* Financial Breakdown - Detailed breakdown synced with DealMakerIQ */}
         <FinancialBreakdown
           buyPrice={overrideValues?.buyPrice ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : buyPrice)}
+          targetBuyPrice={buyPrice}
           downPaymentPct={defaults.financing.down_payment_pct * 100}
           interestRate={defaults.financing.interest_rate * 100}
           loanTermYears={defaults.financing.loan_term_years}
@@ -631,6 +643,10 @@ export function VerdictIQCombined({
           pestControl={0}
           capexRate={overrideValues?.capexRate ?? 5}
           otherExpenses={0}
+          onAdjustTerms={() => openDealMakerWithTab('buy-price')}
+          onAdjustIncome={() => openDealMakerWithTab('income')}
+          onAdjustExpenses={() => openDealMakerWithTab('expenses')}
+          onAdjustDebt={() => openDealMakerWithTab('financing')}
         />
 
         {/* Deal Gap & Motivation Section - Collapsible Dropdown */}
@@ -817,6 +833,7 @@ export function VerdictIQCombined({
         onApply={handleApplyDealMakerValues}
         strategyType={getPopupStrategyType(currentStrategy)}
         onStrategyChange={handlePopupStrategyChange}
+        initialTab={dealMakerInitialTab}
         initialValues={{
           // Common fields
           buyPrice: overrideValues?.buyPrice ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : buyPrice),

@@ -1,11 +1,19 @@
 'use client'
 
+/**
+ * FinancialBreakdown Component
+ * 
+ * Accordion-style financial breakdown with section links to Deal Maker.
+ * Redesigned with dark teal headers and adjust links.
+ */
+
 import React, { useState, useMemo } from 'react'
 import { ChevronDown } from 'lucide-react'
 
 interface FinancialBreakdownProps {
   // Purchase Terms
   buyPrice: number
+  targetBuyPrice?: number
   downPaymentPct: number
   interestRate: number
   loanTermYears: number
@@ -26,6 +34,12 @@ interface FinancialBreakdownProps {
   pestControl?: number
   capexRate: number
   otherExpenses?: number
+
+  // Adjust callbacks
+  onAdjustTerms?: () => void
+  onAdjustIncome?: () => void
+  onAdjustExpenses?: () => void
+  onAdjustDebt?: () => void
 }
 
 // Format currency
@@ -41,43 +55,97 @@ function formatPercent(value: number): string {
   return `${value.toFixed(2)}%`
 }
 
-// Section Header Component
-function SectionHeader({ title }: { title: string }) {
+// Section Header with Link
+function SectionHeader({ 
+  title, 
+  linkText, 
+  onLinkClick 
+}: { 
+  title: string
+  linkText?: string
+  onLinkClick?: () => void 
+}) {
   return (
-    <div className="bg-[#0A1628] text-white text-[11px] font-bold uppercase tracking-wide px-3 py-1.5">
-      {title}
+    <div className="bg-[#0E7490] text-white flex justify-between items-center px-8 py-2.5">
+      <span className="text-xs font-semibold uppercase tracking-wide">{title}</span>
+      {linkText && (
+        <button 
+          className="text-[#00D4FF] text-xs font-medium cursor-pointer hover:underline bg-transparent border-none"
+          onClick={onLinkClick}
+        >
+          {linkText}
+        </button>
+      )}
     </div>
   )
 }
 
-// Row Component
+// Standard Row Component
 function Row({ 
   label, 
   value, 
-  isSubtotal = false, 
   isNegative = false,
-  indent = false,
-  highlight = false,
 }: { 
   label: string
   value: string
-  isSubtotal?: boolean
   isNegative?: boolean
-  indent?: boolean
-  highlight?: boolean
 }) {
   return (
-    <div 
-      className={`flex justify-between items-center px-3 py-2 ${
-        isSubtotal ? 'bg-[#F8FAFC] font-semibold border-t border-[#E2E8F0]' : ''
-      } ${highlight ? 'bg-[#F0FDFA]' : ''}`}
-    >
-      <span className={`text-[12px] ${indent ? 'pl-2' : ''} ${isSubtotal ? 'text-[#0A1628]' : 'text-[#64748B]'}`}>
-        {label}
+    <div className="flex justify-between items-center px-8 py-2 border-b border-[#F1F5F9]">
+      <span className="text-sm text-[#64748B]">{label}</span>
+      <span className={`text-sm font-semibold ${isNegative ? 'text-[#EF4444]' : 'text-[#0A1628]'}`}>
+        {value}
       </span>
-      <span className={`text-[12px] font-medium ${
-        isNegative ? 'text-red-600' : isSubtotal ? 'text-[#0A1628]' : 'text-[#0A1628]'
-      }`}>
+    </div>
+  )
+}
+
+// Highlight Row (Target Buy Price)
+function HighlightRow({ 
+  label, 
+  value 
+}: { 
+  label: string
+  value: string 
+}) {
+  return (
+    <div className="flex justify-between items-center px-8 py-2.5 bg-[rgba(8,145,178,0.1)] border-b border-[rgba(8,145,178,0.2)]">
+      <span className="text-sm font-semibold text-[#0A1628]">{label}</span>
+      <span className="text-base font-bold text-[#0891B2]">{value}</span>
+    </div>
+  )
+}
+
+// Summary Row (Effective Gross Income, Total Operating Expenses)
+function SummaryRow({ 
+  label, 
+  value 
+}: { 
+  label: string
+  value: string 
+}) {
+  return (
+    <div className="flex justify-between items-center px-8 py-2.5 bg-[#F1F5F9] border-t border-[#E2E8F0]">
+      <span className="text-xs font-semibold text-[#0A1628] uppercase tracking-wide">{label}</span>
+      <span className="text-sm font-bold text-[#0A1628]">{value}</span>
+    </div>
+  )
+}
+
+// Teal Highlight Row (NOI, Pre-Tax Cash Flow)
+function TealHighlightRow({ 
+  label, 
+  value, 
+  isNegative = false 
+}: { 
+  label: string
+  value: string
+  isNegative?: boolean 
+}) {
+  return (
+    <div className="flex justify-between items-center px-8 py-2.5 bg-[rgba(8,145,178,0.15)]">
+      <span className="text-xs font-semibold text-[#0A1628] uppercase tracking-wide">{label}</span>
+      <span className={`text-base font-bold ${isNegative ? 'text-[#EF4444]' : 'text-[#0891B2]'}`}>
         {value}
       </span>
     </div>
@@ -86,6 +154,7 @@ function Row({
 
 export function FinancialBreakdown({
   buyPrice,
+  targetBuyPrice,
   downPaymentPct,
   interestRate,
   loanTermYears,
@@ -102,14 +171,21 @@ export function FinancialBreakdown({
   pestControl = 0,
   capexRate,
   otherExpenses = 0,
+  onAdjustTerms,
+  onAdjustIncome,
+  onAdjustExpenses,
+  onAdjustDebt,
 }: FinancialBreakdownProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+
+  // Use targetBuyPrice if provided, otherwise use buyPrice
+  const effectiveBuyPrice = targetBuyPrice ?? buyPrice
 
   // Calculate all financial metrics
   const calculations = useMemo(() => {
     // Purchase Terms
-    const downPayment = buyPrice * (downPaymentPct / 100)
-    const loanAmount = buyPrice - downPayment
+    const downPayment = effectiveBuyPrice * (downPaymentPct / 100)
+    const loanAmount = effectiveBuyPrice - downPayment
     
     // Monthly mortgage payment (P&I)
     const monthlyRate = interestRate / 100 / 12
@@ -149,10 +225,10 @@ export function FinancialBreakdown({
     const noi = effectiveGrossIncome - totalOperatingExpenses
     const annualDebtService = monthlyPI * 12
     const annualCashFlow = noi - annualDebtService
-    const monthlyCashFlow = annualCashFlow / 12
     
     return {
       // Purchase Terms
+      targetBuyPrice: effectiveBuyPrice,
       downPayment,
       downPaymentPct,
       loanAmount,
@@ -183,121 +259,88 @@ export function FinancialBreakdown({
       noi,
       annualDebtService,
       annualCashFlow,
-      monthlyCashFlow,
     }
   }, [
-    buyPrice, downPaymentPct, interestRate, loanTermYears,
+    effectiveBuyPrice, downPaymentPct, interestRate, loanTermYears,
     monthlyRent, vacancyRate, otherIncome,
     propertyTaxes, insurance, hoaFees, managementRate, maintenanceRate,
     utilities, landscaping, pestControl, capexRate, otherExpenses
   ])
 
   return (
-    <div className="bg-white border-b border-[#E2E8F0]">
+    <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
       {/* Collapsible Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-[#F8FAFC] transition-colors"
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#F8FAFC] transition-colors bg-white border-none cursor-pointer"
       >
-        <span className="text-xs font-semibold text-[#0891B2] uppercase tracking-wide">
+        <span className="text-sm font-bold text-[#0A1628] uppercase tracking-wide">
           Financial Breakdown
         </span>
         <ChevronDown 
-          className={`w-4 h-4 text-[#64748B] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+          className={`w-5 h-5 text-[#64748B] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
         />
       </button>
 
       {/* Expandable Content */}
       {isExpanded && (
-        <div className="px-5 pb-4">
-          <div className="border border-[#E2E8F0] rounded-lg overflow-hidden">
-            
-            {/* PURCHASE TERMS */}
-            <SectionHeader title="Purchase Terms" />
-            <Row label="Down Payment" value={`$  ${formatCurrency(calculations.downPayment)}`} />
-            <Row label="Down Payment %" value={formatPercent(calculations.downPaymentPct)} />
-            <Row label="Loan Amount" value={`$  ${formatCurrency(calculations.loanAmount)}`} />
-            <Row label="Interest Rate" value={formatPercent(calculations.interestRate)} />
-            <Row label="Loan Term (Years)" value={calculations.loanTermYears.toFixed(2)} />
-            <Row label="Monthly Payment (P&I)" value={`$  ${formatCurrency(calculations.monthlyPI)}`} />
-            
-            {/* Spacer */}
-            <div className="h-3 bg-white" />
-            
-            {/* INCOME */}
-            <SectionHeader title="Income" />
-            <Row label="Gross Scheduled Rent" value={`$  ${formatCurrency(calculations.annualGrossRent)}`} />
-            <Row 
-              label="Less: Vacancy Allowance" 
-              value={`$  (${formatCurrency(calculations.vacancyAllowance)})`} 
-              isNegative 
-            />
-            <Row label="Other Income" value={`$  ${formatCurrency(calculations.otherIncome)}`} />
-            <Row 
-              label="EFFECTIVE GROSS INCOME" 
-              value={`$  ${formatCurrency(calculations.effectiveGrossIncome)}`} 
-              isSubtotal 
-            />
-            
-            {/* Spacer */}
-            <div className="h-3 bg-white" />
-            
-            {/* OPERATING EXPENSES */}
-            <SectionHeader title="Operating Expenses" />
-            <Row label="Property Taxes" value={`$  ${formatCurrency(calculations.propertyTaxes)}`} />
-            <Row label="Insurance" value={`$  ${formatCurrency(calculations.insurance)}`} />
-            <Row label="HOA Fees" value={calculations.hoaFees > 0 ? `$  ${formatCurrency(calculations.hoaFees)}` : '$  -'} />
-            <Row 
-              label="Property Management" 
-              value={calculations.annualManagement > 0 ? `$  ${formatCurrency(calculations.annualManagement)}` : '$  -'} 
-            />
-            <Row label="Maintenance & Repairs" value={`$  ${formatCurrency(calculations.annualMaintenance)}`} />
-            <Row label="Utilities" value={calculations.annualUtilities > 0 ? `$  ${formatCurrency(calculations.annualUtilities)}` : '$  -'} />
-            <Row label="Landscaping" value={calculations.annualLandscaping > 0 ? `$  ${formatCurrency(calculations.annualLandscaping)}` : '$  -'} />
-            <Row label="Pest Control" value={calculations.annualPestControl > 0 ? `$  ${formatCurrency(calculations.annualPestControl)}` : '$  -'} />
-            <Row label="CapEx Reserve" value={`$  ${formatCurrency(calculations.annualCapex)}`} />
-            <Row label="Other Expenses" value={calculations.annualOther > 0 ? `$  ${formatCurrency(calculations.annualOther)}` : '$  -'} />
-            <Row 
-              label="TOTAL OPERATING EXPENSES" 
-              value={`$  ${formatCurrency(calculations.totalOperatingExpenses)}`} 
-              isSubtotal 
-            />
-            
-            {/* Spacer */}
-            <div className="h-3 bg-white" />
-            
-            {/* NET OPERATING INCOME */}
-            <div className="bg-[#1E3A5F] text-white flex justify-between items-center px-3 py-2">
-              <span className="text-[12px] font-bold uppercase">Net Operating Income (NOI)</span>
-              <span className="text-[14px] font-bold">${formatCurrency(calculations.noi)}</span>
-            </div>
-            
-            {/* Spacer */}
-            <div className="h-3 bg-white" />
-            
-            {/* DEBT SERVICE */}
-            <SectionHeader title="Debt Service" />
-            <Row label="Annual Mortgage (P&I)" value={`$  ${formatCurrency(calculations.annualDebtService)}`} />
-            
-            {/* Spacer */}
-            <div className="h-3 bg-white" />
-            
-            {/* PRE-TAX CASH FLOW */}
-            <div className={`flex justify-between items-center px-3 py-2 ${
-              calculations.annualCashFlow >= 0 ? 'bg-[#1E3A5F]' : 'bg-[#7F1D1D]'
-            } text-white`}>
-              <span className="text-[12px] font-bold uppercase">Pre-Tax Cash Flow</span>
-              <span className={`text-[14px] font-bold ${calculations.annualCashFlow < 0 ? 'text-red-300' : ''}`}>
-                ${calculations.annualCashFlow < 0 ? '(' : ''}{formatCurrency(Math.abs(calculations.annualCashFlow))}{calculations.annualCashFlow < 0 ? ')' : ''}
-              </span>
-            </div>
-            <Row 
-              label="Monthly Cash Flow" 
-              value={`$  ${calculations.monthlyCashFlow < 0 ? '(' : ''}${formatCurrency(Math.abs(calculations.monthlyCashFlow))}${calculations.monthlyCashFlow < 0 ? ')' : ''}`}
-              isNegative={calculations.monthlyCashFlow < 0}
-            />
-            
-          </div>
+        <div className="border-t border-[#E2E8F0]">
+          
+          {/* PURCHASE TERMS */}
+          <SectionHeader title="Purchase Terms" linkText="Adjust Terms" onLinkClick={onAdjustTerms} />
+          <HighlightRow label="Target Buy Price" value={`$${formatCurrency(calculations.targetBuyPrice)}`} />
+          <Row label="Down Payment" value={`$${formatCurrency(calculations.downPayment)}`} />
+          <Row label="Down Payment %" value={formatPercent(calculations.downPaymentPct)} />
+          <Row label="Loan Amount" value={`$${formatCurrency(calculations.loanAmount)}`} />
+          <Row label="Interest Rate" value={formatPercent(calculations.interestRate)} />
+          <Row label="Loan Term (Years)" value={calculations.loanTermYears.toString()} />
+          <Row label="Monthly Payment (P&I)" value={`$${formatCurrency(calculations.monthlyPI)}`} />
+          
+          {/* INCOME */}
+          <SectionHeader title="Income" linkText="Adjust Income" onLinkClick={onAdjustIncome} />
+          <Row label="Gross Scheduled Rent" value={`$${formatCurrency(calculations.annualGrossRent)}`} />
+          <Row 
+            label="Less: Vacancy Allowance" 
+            value={`$(${formatCurrency(calculations.vacancyAllowance)})`} 
+            isNegative 
+          />
+          <Row label="Other Income" value={`$${formatCurrency(calculations.otherIncome)}`} />
+          <SummaryRow label="Effective Gross Income" value={`$${formatCurrency(calculations.effectiveGrossIncome)}`} />
+          
+          {/* OPERATING EXPENSES */}
+          <SectionHeader title="Operating Expenses" linkText="Adjust Expenses" onLinkClick={onAdjustExpenses} />
+          <Row label="Property Taxes" value={`$${formatCurrency(calculations.propertyTaxes)}`} />
+          <Row label="Insurance" value={`$${formatCurrency(calculations.insurance)}`} />
+          <Row label="HOA Fees" value={calculations.hoaFees > 0 ? `$${formatCurrency(calculations.hoaFees)}` : '$-'} />
+          <Row 
+            label="Property Management" 
+            value={calculations.annualManagement > 0 ? `$${formatCurrency(calculations.annualManagement)}` : '$-'} 
+          />
+          <Row label="Maintenance & Repairs" value={`$${formatCurrency(calculations.annualMaintenance)}`} />
+          <Row label="Utilities" value={calculations.annualUtilities > 0 ? `$${formatCurrency(calculations.annualUtilities)}` : '$-'} />
+          <Row label="Landscaping" value={calculations.annualLandscaping > 0 ? `$${formatCurrency(calculations.annualLandscaping)}` : '$-'} />
+          <Row label="Pest Control" value={calculations.annualPestControl > 0 ? `$${formatCurrency(calculations.annualPestControl)}` : '$-'} />
+          <Row label="CapEx Reserve" value={`$${formatCurrency(calculations.annualCapex)}`} />
+          <Row label="Other Expenses" value={calculations.annualOther > 0 ? `$${formatCurrency(calculations.annualOther)}` : '$-'} />
+          <SummaryRow label="Total Operating Expenses" value={`$${formatCurrency(calculations.totalOperatingExpenses)}`} />
+          
+          {/* NET OPERATING INCOME */}
+          <TealHighlightRow label="Net Operating Income (NOI)" value={`$${formatCurrency(calculations.noi)}`} />
+          
+          {/* DEBT SERVICE */}
+          <SectionHeader title="Debt Service" linkText="Adjust Debt" onLinkClick={onAdjustDebt} />
+          <Row label="Annual Mortgage (P&I)" value={`$${formatCurrency(calculations.annualDebtService)}`} />
+          
+          {/* PRE-TAX CASH FLOW */}
+          <TealHighlightRow 
+            label="Pre-Tax Cash Flow" 
+            value={calculations.annualCashFlow < 0 
+              ? `$(${formatCurrency(Math.abs(calculations.annualCashFlow))})` 
+              : `$${formatCurrency(calculations.annualCashFlow)}`
+            }
+            isNegative={calculations.annualCashFlow < 0}
+          />
+          
         </div>
       )}
     </div>
