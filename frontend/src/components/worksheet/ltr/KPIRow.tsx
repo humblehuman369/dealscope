@@ -1,9 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { KPIBox } from './KPIBox'
 import { DealScoreBox } from './DealScoreBox'
 import { ScaleBar } from './ScaleBar'
+import { getPriceLabel } from '@/lib/priceUtils'
 
 export interface KPIRowProps {
   purchasePrice: number
@@ -13,6 +14,8 @@ export interface KPIRowProps {
   cocReturn: number
   dealScore: number
   isDark?: boolean
+  isOffMarket?: boolean
+  listingStatus?: string
 }
 
 export function KPIRow({ 
@@ -22,8 +25,12 @@ export function KPIRow({
   capRate, 
   cocReturn, 
   dealScore, 
-  isDark = false 
+  isDark = false,
+  isOffMarket = false,
+  listingStatus,
 }: KPIRowProps) {
+  const priceLabel = useMemo(() => getPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus])
+
   const formatCurrency = (value: number) => {
     return `$${Math.round(value).toLocaleString()}`
   }
@@ -39,7 +46,7 @@ export function KPIRow({
       {/* KPI Strip - 6 metrics in colored pills matching InvestIQ style */}
       <div className="grid grid-cols-6 gap-3">
         <KPIBox 
-          label="List Price" 
+          label={priceLabel} 
           value={formatCurrency(purchasePrice)} 
           variant="teal" 
         />

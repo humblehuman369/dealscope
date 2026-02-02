@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { PriceTarget } from '@/lib/priceUtils'
 
 /**
  * Deal Maker Store
@@ -279,6 +280,9 @@ export interface DealMakerState {
   propertyId: string | null
   record: DealMakerRecord | null
   
+  // Active price target for dynamic recalculation
+  activePriceTarget: PriceTarget
+  
   // Loading states
   isLoading: boolean
   isSaving: boolean
@@ -295,6 +299,7 @@ export interface DealMakerState {
   saveToBackend: () => Promise<void>
   debouncedSave: () => void
   reset: () => void
+  setActivePriceTarget: (target: PriceTarget) => void
   
   // Computed helpers
   getMetrics: () => CachedMetrics | null
@@ -304,6 +309,7 @@ export interface DealMakerState {
   getCapRate: () => number
   getCocReturn: () => number
   getMonthlyPayment: () => number
+  getActivePriceValue: () => number
 }
 
 // ============================================
@@ -313,6 +319,7 @@ export interface DealMakerState {
 export const useDealMakerStore = create<DealMakerState>((set, get) => ({
   propertyId: null,
   record: null,
+  activePriceTarget: 'targetBuy' as PriceTarget,
   isLoading: false,
   isSaving: false,
   error: null,
@@ -486,12 +493,17 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
     set({
       propertyId: null,
       record: null,
+      activePriceTarget: 'targetBuy' as PriceTarget,
       isLoading: false,
       isSaving: false,
       error: null,
       isDirty: false,
       pendingUpdates: {},
     })
+  },
+
+  setActivePriceTarget: (target: PriceTarget) => {
+    set({ activePriceTarget: target })
   },
 
   // Computed helpers with safe defaults
@@ -527,6 +539,25 @@ export const useDealMakerStore = create<DealMakerState>((set, get) => ({
   getMonthlyPayment: () => {
     const metrics = get().record?.cached_metrics
     return metrics?.monthly_payment || 0
+  },
+
+  getActivePriceValue: () => {
+    const { activePriceTarget, record } = get()
+    const metrics = record?.cached_metrics
+    
+    if (!record || !metrics) return 0
+    
+    switch (activePriceTarget) {
+      case 'breakeven':
+        return metrics.breakeven_price || 0
+      case 'targetBuy':
+        return record.buy_price || 0
+      case 'wholesale':
+        // Wholesale is typically 70% of breakeven
+        return Math.round((metrics.breakeven_price || 0) * 0.70)
+      default:
+        return record.buy_price || 0
+    }
   },
 }))
 

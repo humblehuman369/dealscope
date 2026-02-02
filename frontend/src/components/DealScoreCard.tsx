@@ -6,6 +6,7 @@ import {
   DollarSign, Percent, Target, Shield, Zap
 } from 'lucide-react'
 import { calculateDealScore, DealScoreBreakdown, DealMetrics, OpportunityGrade } from '@/lib/analytics'
+import { getPriceLabel } from '@/lib/priceUtils'
 
 // ============================================
 // FORMATTING
@@ -125,10 +126,13 @@ interface DealScoreCardProps {
   listPrice: number
   metrics?: DealMetrics
   compact?: boolean
+  isOffMarket?: boolean
+  listingStatus?: string
 }
 
-export default function DealScoreCard({ breakevenPrice, listPrice, metrics, compact = false }: DealScoreCardProps) {
+export default function DealScoreCard({ breakevenPrice, listPrice, metrics, compact = false, isOffMarket = false, listingStatus }: DealScoreCardProps) {
   const score = useMemo(() => calculateDealScore(breakevenPrice, listPrice, metrics), [breakevenPrice, listPrice, metrics])
+  const priceLabel = useMemo(() => getPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus])
   
   if (compact) {
     return (
@@ -204,7 +208,7 @@ export default function DealScoreCard({ breakevenPrice, listPrice, metrics, comp
           {/* Price Summary */}
           <div className="bg-gray-50 dark:bg-navy-700/30 rounded-lg p-3">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-[12px] text-gray-500 dark:text-gray-400">List Price</span>
+              <span className="text-[12px] text-gray-500 dark:text-gray-400">{priceLabel}</span>
               <span className="text-[13px] font-medium text-gray-900 dark:text-white">{formatCurrency(score.listPrice)}</span>
             </div>
             <div className="flex justify-between items-center mb-2">

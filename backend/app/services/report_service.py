@@ -70,6 +70,8 @@ class ReportService:
         analytics_data: Dict[str, Any],
         assumptions: Optional[Dict[str, Any]] = None,
         include_sensitivity: bool = False,
+        strategy: Optional[str] = None,
+        price_target: Optional[str] = None,
     ) -> bytes:
         """
         Generate a comprehensive Excel report for a property.
@@ -79,6 +81,8 @@ class ReportService:
             analytics_data: Calculated analytics for all strategies
             assumptions: Assumptions used in calculations
             include_sensitivity: Whether to include sensitivity analysis
+            strategy: Active strategy (ltr, str, brrrr, flip, house_hack, wholesale)
+            price_target: Active price target (breakeven, targetBuy, wholesale)
         
         Returns:
             Excel file as bytes
@@ -88,23 +92,51 @@ class ReportService:
         # Remove default sheet
         wb.remove(wb.active)
         
+        # Determine which strategy data to use for primary analysis
+        active_strategy = strategy or "ltr"
+        active_price_target = price_target or "targetBuy"
+        
         # Create sheets - Financial Statements First
-        self._create_summary_sheet(wb, property_data, analytics_data)
-        self._create_cash_flow_statement_sheet(wb, property_data, analytics_data, assumptions)
-        self._create_dscr_analysis_sheet(wb, property_data, analytics_data, assumptions)
+        self._create_summary_sheet(wb, property_data, analytics_data, active_strategy)
+        
+        # Create appropriate financial statement based on strategy
+        if active_strategy in ["ltr", "str"]:
+            # Rental strategies get Cash Flow Statement
+            self._create_cash_flow_statement_sheet(wb, property_data, analytics_data, assumptions)
+            self._create_dscr_analysis_sheet(wb, property_data, analytics_data, assumptions)
+        elif active_strategy in ["flip", "wholesale"]:
+            # Exit strategies get Deal Analysis instead of Cash Flow
+            self._create_deal_analysis_sheet(wb, property_data, analytics_data, assumptions, active_strategy)
+        elif active_strategy == "brrrr":
+            # BRRRR gets both Cash Flow and Refinance analysis
+            self._create_cash_flow_statement_sheet(wb, property_data, analytics_data, assumptions)
+            self._create_dscr_analysis_sheet(wb, property_data, analytics_data, assumptions)
+        elif active_strategy == "house_hack":
+            # House Hack gets Housing Cost Analysis
+            self._create_cash_flow_statement_sheet(wb, property_data, analytics_data, assumptions)
+        
         self._create_pro_forma_sheet(wb, property_data, analytics_data, assumptions)
         self._create_amortization_sheet(wb, property_data, analytics_data, assumptions)
         
         if include_sensitivity:
             self._create_sensitivity_sheet(wb, property_data, analytics_data, assumptions)
         
-        # Strategy-specific sheets
-        self._create_ltr_sheet(wb, property_data, analytics_data.get("ltr"))
-        self._create_str_sheet(wb, property_data, analytics_data.get("str"))
-        self._create_brrrr_sheet(wb, property_data, analytics_data.get("brrrr"))
-        self._create_flip_sheet(wb, property_data, analytics_data.get("flip"))
-        self._create_house_hack_sheet(wb, property_data, analytics_data.get("house_hack"))
-        self._create_wholesale_sheet(wb, property_data, analytics_data.get("wholesale"))
+        # Strategy-specific sheets - put active strategy first
+        strategy_order = [active_strategy] + [s for s in ["ltr", "str", "brrrr", "flip", "house_hack", "wholesale"] if s != active_strategy]
+        
+        for strat in strategy_order:
+            if strat == "ltr":
+                self._create_ltr_sheet(wb, property_data, analytics_data.get("ltr"))
+            elif strat == "str":
+                self._create_str_sheet(wb, property_data, analytics_data.get("str"))
+            elif strat == "brrrr":
+                self._create_brrrr_sheet(wb, property_data, analytics_data.get("brrrr"))
+            elif strat == "flip":
+                self._create_flip_sheet(wb, property_data, analytics_data.get("flip"))
+            elif strat == "house_hack":
+                self._create_house_hack_sheet(wb, property_data, analytics_data.get("house_hack"))
+            elif strat == "wholesale":
+                self._create_wholesale_sheet(wb, property_data, analytics_data.get("wholesale"))
         
         if assumptions:
             self._create_assumptions_sheet(wb, assumptions)
@@ -115,6 +147,117 @@ class ReportService:
         output.seek(0)
         
         return output.getvalue()
+    
+    def _create_deal_analysis_sheet(
+        self, 
+        wb: Workbook, 
+        property_data: Dict, 
+        analytics: Dict,
+        assumptions: Optional[Dict] = None,
+        strategy: str = "flip"
+    ):
+        """Create Deal Analysis sheet for flip/wholesale strategies."""
+        ws = wb.create_sheet("Deal Analysis")
+        
+        # Styles
+        title_font = Font(bold=True, size=16, color=self.BRAND_BLUE)
+        header_font = Font(bold=True, size=11, color="FFFFFF")
+        header_fill = PatternFill(start_color=self.NAVY, end_color=self.NAVY, fill_type="solid")
+        
+        # Get strategy data
+        data = analytics.get(strategy, {})
+        
+        # Title
+        ws.merge_cells('A1:D1')
+        strategy_name = "Fix & Flip Analysis" if strategy == "flip" else "Wholesale Analysis"
+        ws['A1'] = strategy_name.upper()
+        ws['A1'].font = title_font
+        ws['A1'].alignment = Alignment(horizontal='center')
+        
+        # Property Address
+        address = property_data.get("address", {})
+        ws.merge_cells('A2:D2')
+        ws['A2'] = address.get("full_address", "Property Address")
+        ws['A2'].font = Font(italic=True, size=11)
+        ws['A2'].alignment = Alignment(horizontal='center')
+        
+        row = 4
+        if strategy == "flip":
+            # Flip analysis
+            ws[f'A{row}'] = "ACQUISITION"
+            ws[f'A{row}'].font = header_font
+            ws[f'A{row}'].fill = header_fill
+            row += 1
+            
+            metrics = [
+                ("Purchase Price", data.get("purchase_price", 0), "currency"),
+                ("Closing Costs", data.get("closing_costs", 0), "currency"),
+                ("Rehab Budget", data.get("rehab_budget", 0), "currency"),
+            ]
+            for label, value, fmt in metrics:
+                ws[f'A{row}'] = label
+                ws[f'B{row}'] = f"${value:,.0f}" if fmt == "currency" else value
+                row += 1
+            
+            row += 1
+            ws[f'A{row}'] = "SALE"
+            ws[f'A{row}'].font = header_font
+            ws[f'A{row}'].fill = header_fill
+            row += 1
+            
+            metrics = [
+                ("ARV", data.get("arv", 0), "currency"),
+                ("Selling Costs", data.get("selling_costs", 0), "currency"),
+                ("Net Profit", data.get("net_profit_before_tax", 0), "currency"),
+                ("ROI", data.get("roi", 0), "percent"),
+            ]
+            for label, value, fmt in metrics:
+                ws[f'A{row}'] = label
+                if fmt == "currency":
+                    ws[f'B{row}'] = f"${value:,.0f}"
+                else:
+                    ws[f'B{row}'] = f"{value*100:.1f}%"
+                row += 1
+        else:
+            # Wholesale analysis
+            ws[f'A{row}'] = "PROPERTY ANALYSIS"
+            ws[f'A{row}'].font = header_font
+            ws[f'A{row}'].fill = header_fill
+            row += 1
+            
+            metrics = [
+                ("ARV", data.get("arv", 0), "currency"),
+                ("Estimated Repairs", data.get("estimated_repairs", 0), "currency"),
+                ("Max Allowable Offer", data.get("max_allowable_offer", 0), "currency"),
+            ]
+            for label, value, fmt in metrics:
+                ws[f'A{row}'] = label
+                ws[f'B{row}'] = f"${value:,.0f}"
+                row += 1
+            
+            row += 1
+            ws[f'A{row}'] = "ASSIGNMENT"
+            ws[f'A{row}'].font = header_font
+            ws[f'A{row}'].fill = header_fill
+            row += 1
+            
+            metrics = [
+                ("Contract Price", data.get("your_offer_price", 0), "currency"),
+                ("Assignment Fee", data.get("assignment_fee", 0), "currency"),
+                ("Net Profit", data.get("net_profit", 0), "currency"),
+                ("ROI", data.get("roi", 0), "percent"),
+            ]
+            for label, value, fmt in metrics:
+                ws[f'A{row}'] = label
+                if fmt == "currency":
+                    ws[f'B{row}'] = f"${value:,.0f}"
+                else:
+                    ws[f'B{row}'] = f"{value*100:.1f}%"
+                row += 1
+        
+        # Column widths
+        ws.column_dimensions['A'].width = 25
+        ws.column_dimensions['B'].width = 20
     
     def generate_financial_statements_report(
         self,
@@ -1341,7 +1484,8 @@ class ReportService:
         self, 
         wb: Workbook, 
         property_data: Dict, 
-        analytics: Dict
+        analytics: Dict,
+        active_strategy: str = "ltr"
     ):
         """Create the summary comparison sheet."""
         ws = wb.create_sheet("Summary", 0)

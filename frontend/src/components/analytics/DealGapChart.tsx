@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react'
 import { DealGapChartProps, DealZoneLabel } from './types'
 import { useDealGap } from '@/hooks/useDealGap'
+import { getPriceLabel } from '@/lib/priceUtils'
 
 /**
  * DealGapChart Component
@@ -107,7 +108,12 @@ export function DealGapChart({
   thresholdPct = 10,
   showHeader = true,
   className = '',
+  isOffMarket = false,
+  listingStatus,
 }: DealGapChartProps) {
+  // Get dynamic price label
+  const priceLabel = useMemo(() => getPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus])
+
   // Use the actual buy price from props (default to 90% of breakeven if not provided)
   const buyPrice = useMemo(() => {
     return initialBuyPrice ?? Math.round(breakeven * 0.9)
@@ -216,7 +222,7 @@ export function DealGapChart({
               {/* Chips */}
               <div className="flex flex-col justify-between flex-1 py-0.5 gap-3">
               <Chip
-                label="List Price"
+                label={priceLabel}
                 value={formatUSD(listPrice)}
                 sub="Asking"
                 accent={listAccent}
@@ -283,7 +289,7 @@ export function DealGapChart({
               <div 
                 className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-slate-600 opacity-95"
                 style={{ top: `${listPosOnLadder * 100}%` }}
-                title="List Price"
+                title={priceLabel}
               />
               <div 
                 className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-slate-700 shadow-md"

@@ -10,6 +10,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { X, RotateCcw, Check, Info } from 'lucide-react'
 import { SliderInput } from './SliderInput'
+import { PriceTarget } from '@/lib/priceUtils'
 
 // Strategy type - matches VerdictIQ header options
 export type PopupStrategyType = 'ltr' | 'str' | 'brrrr' | 'flip' | 'house_hack' | 'wholesale'
@@ -110,6 +111,9 @@ interface DealMakerPopupProps {
   strategyType?: PopupStrategyType
   onStrategyChange?: (strategy: PopupStrategyType) => void
   initialTab?: DealMakerTab
+  // Price target integration
+  activePriceTarget?: PriceTarget
+  onPriceTargetChange?: (target: PriceTarget) => void
 }
 
 // Base default values shared across all strategies
@@ -307,6 +311,8 @@ export function DealMakerPopup({
   strategyType = 'ltr',
   onStrategyChange,
   initialTab,
+  activePriceTarget = 'targetBuy',
+  onPriceTargetChange,
 }: DealMakerPopupProps) {
   // Get defaults based on strategy
   const defaults = useMemo(() => getDefaultValues(strategyType), [strategyType])
@@ -646,6 +652,31 @@ export function DealMakerPopup({
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* Price Target Pills */}
+        <div className="flex items-center justify-center gap-2 px-5 py-3 border-b border-[#E2E8F0] flex-shrink-0">
+          <span className="text-[11px] font-medium text-[#64748B] mr-1">Calculate for:</span>
+          {(['breakeven', 'targetBuy', 'wholesale'] as PriceTarget[]).map((target) => {
+            const labels: Record<PriceTarget, string> = {
+              breakeven: 'Breakeven',
+              targetBuy: 'Target Buy',
+              wholesale: 'Wholesale',
+            }
+            return (
+              <button
+                key={target}
+                onClick={() => onPriceTargetChange?.(target)}
+                className={`px-3 py-1.5 text-[11px] font-semibold rounded-full transition-all ${
+                  activePriceTarget === target
+                    ? 'bg-[#0891B2] text-white shadow-sm'
+                    : 'bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0]'
+                }`}
+              >
+                {labels[target]}
+              </button>
+            )
+          })}
         </div>
 
         {/* Instructions */}

@@ -328,4 +328,8 @@ export interface DealGapChartProps {
   showHeader?: boolean
   /** Optional class name */
   className?: string
+  /** Whether property is off-market (for price label) */
+  isOffMarket?: boolean
+  /** Listing status (for price label) */
+  listingStatus?: string
 }

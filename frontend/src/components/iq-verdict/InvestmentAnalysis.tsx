@@ -5,11 +5,17 @@
  * 
  * Displays price cards (Breakeven, Target Buy, Wholesale) with metrics row.
  * Redesigned with elevated Target Buy card and reordered metrics.
+ * 
+ * DYNAMIC ANALYTICS:
+ * - Price cards are clickable and trigger recalculation
+ * - Metrics row updates based on active price target and strategy
  */
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { ChevronDown, HelpCircle, Info } from 'lucide-react'
 import { formatPrice } from './types'
+import { PriceTarget } from '@/lib/priceUtils'
+import { MetricId, MetricDefinition, formatMetricValue, METRIC_DEFINITIONS } from '@/config/strategyMetrics'
 
 // Dynamic font size based on price length
 function getPriceFontSize(value: number, isPrimary: boolean = false): string {
@@ -66,48 +72,78 @@ interface InvestmentAnalysisProps {
   monthlyCashFlow?: number
   cashNeeded?: number
   capRate?: number
+  // Dynamic analytics props
+  activePriceTarget?: PriceTarget
+  onPriceTargetChange?: (target: PriceTarget) => void
+  strategyMetrics?: Array<{ id: MetricId; label: string; value: string }>
 }
 
-// Standard price card (Breakeven, Wholesale)
+// Standard price card (Breakeven, Wholesale) - Now clickable
 function PriceCard({ 
   label, 
   value, 
-  desc 
+  desc,
+  isSelected,
+  onClick,
 }: { 
   label: string
   value: number
-  desc: string 
+  desc: string
+  isSelected?: boolean
+  onClick?: () => void
 }) {
   const fontSize = getPriceFontSize(value, false)
   
   return (
-    <div className="bg-white border border-[#E2E8F0] p-4 text-center">
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-[#64748B] mb-2 flex items-center justify-center gap-1">
+    <button
+      onClick={onClick}
+      className={`bg-white p-4 text-center cursor-pointer transition-all duration-200 border-none w-full ${
+        isSelected 
+          ? 'border-2 border-[#0891B2] ring-2 ring-[#0891B2]/20' 
+          : 'border border-[#E2E8F0] hover:border-[#CBD5E1]'
+      }`}
+      style={{ border: isSelected ? '2px solid #0891B2' : '1px solid #E2E8F0' }}
+    >
+      <div className={`text-[10px] font-semibold uppercase tracking-wide mb-2 flex items-center justify-center gap-1 ${
+        isSelected ? 'text-[#0891B2]' : 'text-[#64748B]'
+      }`}>
         {label}
-        <Info className="w-3 h-3 text-[#94A3B8]" />
+        <Info className={`w-3 h-3 ${isSelected ? 'text-[#0891B2]' : 'text-[#94A3B8]'}`} />
       </div>
-      <div className={`${fontSize} font-bold text-[#0A1628] mb-1 truncate`}>
+      <div className={`${fontSize} font-bold mb-1 truncate ${
+        isSelected ? 'text-[#0891B2]' : 'text-[#0A1628]'
+      }`}>
         {formatPrice(value)}
       </div>
       <div className="text-[11px] text-[#94A3B8] leading-tight">{desc}</div>
-    </div>
+    </button>
   )
 }
 
-// Elevated price card (Target Buy)
+// Elevated price card (Target Buy) - Now clickable
 function PrimaryPriceCard({ 
   label, 
   value, 
-  desc 
+  desc,
+  isSelected,
+  onClick,
 }: { 
   label: string
   value: number
-  desc: string 
+  desc: string
+  isSelected?: boolean
+  onClick?: () => void
 }) {
   const fontSize = getPriceFontSize(value, true)
   
   return (
-    <div className="bg-white border-2 border-[#0891B2] p-4 text-center relative overflow-hidden">
+    <button
+      onClick={onClick}
+      className={`bg-white p-4 text-center relative overflow-hidden cursor-pointer transition-all duration-200 border-none w-full ${
+        isSelected ? 'ring-2 ring-[#0891B2]/30' : 'hover:ring-2 hover:ring-[#0891B2]/10'
+      }`}
+      style={{ border: '2px solid #0891B2' }}
+    >
       {/* Teal top accent bar */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-[#0891B2]" />
       <div className="text-[10px] font-semibold uppercase tracking-wide text-[#0891B2] mb-2 flex items-center justify-center gap-1 pt-1">
@@ -118,7 +154,7 @@ function PrimaryPriceCard({
         {formatPrice(value)}
       </div>
       <div className="text-[11px] text-[#94A3B8] leading-tight">{desc}</div>
-    </div>
+    </button>
   )
 }
 
@@ -172,9 +208,17 @@ export function InvestmentAnalysis({
   monthlyCashFlow = 0,
   cashNeeded = 0,
   capRate = 0,
+  activePriceTarget = 'targetBuy',
+  onPriceTargetChange,
+  strategyMetrics,
 }: InvestmentAnalysisProps) {
   const [showCalculation, setShowCalculation] = useState(false)
   const [showStrategyDropdown, setShowStrategyDropdown] = useState(false)
+
+  // Handle price card clicks
+  const handlePriceCardClick = useCallback((target: PriceTarget) => {
+    onPriceTargetChange?.(target)
+  }, [onPriceTargetChange])
 
   // Format cash flow with /mo suffix
   const formatCashFlow = (value: number) => {
@@ -287,39 +331,59 @@ export function InvestmentAnalysis({
           </div>
         )}
 
-        {/* Price Cards - Grid with Target Buy larger */}
+        {/* Price Cards - Grid with Target Buy larger - Clickable */}
         <div className="grid grid-cols-[1fr_1.3fr_1fr] gap-3 mb-4">
           <PriceCard 
             label="Breakeven" 
             value={breakevenPrice} 
-            desc="Max price for $0 cashflow" 
+            desc="Max price for $0 cashflow"
+            isSelected={activePriceTarget === 'breakeven'}
+            onClick={() => handlePriceCardClick('breakeven')}
           />
           <PrimaryPriceCard 
             label="Target Buy" 
             value={targetBuyPrice} 
-            desc="Positive Cashflow" 
+            desc="Positive Cashflow"
+            isSelected={activePriceTarget === 'targetBuy'}
+            onClick={() => handlePriceCardClick('targetBuy')}
           />
           <PriceCard 
             label="Wholesale" 
             value={wholesalePrice} 
-            desc="30% net discount for assignment" 
+            desc="30% net discount for assignment"
+            isSelected={activePriceTarget === 'wholesale'}
+            onClick={() => handlePriceCardClick('wholesale')}
           />
         </div>
 
-        {/* Metrics Row - Cash Flow, Cash Needed, Cap Rate */}
+        {/* Metrics Row - Dynamic based on strategy or defaults */}
         <div className="grid grid-cols-3 gap-3">
-          <MetricPill 
-            label="Cash Flow" 
-            value={formatCashFlow(monthlyCashFlow)} 
-          />
-          <MetricPill 
-            label="Cash Needed" 
-            value={formatCashNeeded(cashNeeded)} 
-          />
-          <MetricPill 
-            label="Cap Rate" 
-            value={formatCapRate(capRate)} 
-          />
+          {strategyMetrics && strategyMetrics.length === 3 ? (
+            // Use strategy-specific metrics when provided
+            strategyMetrics.map((metric) => (
+              <MetricPill 
+                key={metric.id}
+                label={metric.label} 
+                value={metric.value} 
+              />
+            ))
+          ) : (
+            // Default LTR metrics
+            <>
+              <MetricPill 
+                label="Cash Flow" 
+                value={formatCashFlow(monthlyCashFlow)} 
+              />
+              <MetricPill 
+                label="Cash Needed" 
+                value={formatCashNeeded(cashNeeded)} 
+              />
+              <MetricPill 
+                label="Cap Rate" 
+                value={formatCapRate(capRate)} 
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -35,6 +35,20 @@ import {
   IQStrategy,
   formatPrice,
 } from './types'
+import { PriceTarget } from '@/lib/priceUtils'
+import { 
+  StrategyType, 
+  headerStrategyToType, 
+  STRATEGY_METRICS, 
+  METRIC_DEFINITIONS,
+  formatMetricValue,
+  MetricId 
+} from '@/config/strategyMetrics'
+import { 
+  calculateStrategyMetrics, 
+  getBasePriceForTarget,
+  CalculationInputs 
+} from '@/lib/dynamicMetrics'
 
 // =============================================================================
 // PROPS
@@ -114,6 +128,9 @@ export function VerdictIQCombined({
   const [dealMakerInitialTab, setDealMakerInitialTab] = useState<DealMakerTab | undefined>(undefined)
   const [isExporting, setIsExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
+  
+  // Active price target for dynamic recalculation
+  const [activePriceTarget, setActivePriceTarget] = useState<PriceTarget>('targetBuy')
   
   // Override values from DealMaker popup (for recalculation)
   const [overrideValues, setOverrideValues] = useState<Partial<DealMakerValues> | null>(null)
@@ -361,6 +378,100 @@ export function VerdictIQCombined({
     return (annualCashFlowReturn + annualAppreciation + annualPrincipalPaydown) * 5
   }, [metrics])
 
+  // Calculate dynamic strategy metrics based on active price target and current strategy
+  const strategyMetricsForDisplay = useMemo(() => {
+    const strategyType = headerStrategyToType(currentStrategy)
+    const metricIds = STRATEGY_METRICS[strategyType]?.[activePriceTarget] || STRATEGY_METRICS.ltr.targetBuy
+    
+    // Build calculation inputs
+    const effectivePrice = overrideValues?.buyPrice 
+      ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : buyPrice)
+    const monthlyRent = overrideValues?.monthlyRent ?? property.monthlyRent ?? effectivePrice * 0.007
+    const propertyTaxes = overrideValues?.propertyTaxes ?? property.propertyTaxes ?? effectivePrice * 0.012
+    const insurance = overrideValues?.insurance ?? property.insurance ?? effectivePrice * 0.01
+    
+    const inputs: CalculationInputs = {
+      listPrice: estValue,
+      breakevenPrice,
+      targetBuyPrice: buyPrice,
+      wholesalePrice,
+      arv: overrideValues?.arv ?? property.arv ?? buyPrice * 1.15,
+      downPaymentPct: defaults.financing.down_payment_pct,
+      interestRate: defaults.financing.interest_rate,
+      loanTermYears: defaults.financing.loan_term_years,
+      closingCostsPct: defaults.financing.closing_costs_pct || 0.03,
+      monthlyRent,
+      vacancyRate: defaults.operating.vacancy_rate,
+      propertyTaxes,
+      insurance,
+      hoaFees: property.hoa ?? 0,
+      managementRate: defaults.operating.property_management_pct,
+      maintenanceRate: defaults.operating.maintenance_pct,
+      capexRate: overrideValues?.capexRate ? overrideValues.capexRate / 100 : 0.05,
+      // STR fields
+      averageDailyRate: overrideValues?.averageDailyRate ?? 200,
+      occupancyRate: (overrideValues?.occupancyRate ?? 65) / 100,
+      platformFeeRate: (overrideValues?.platformFeeRate ?? 15) / 100,
+      strManagementRate: (overrideValues?.strManagementRate ?? 20) / 100,
+      // BRRRR fields
+      rehabBudget: overrideValues?.rehabBudget ?? 0,
+      contingencyPct: (overrideValues?.contingencyPct ?? 10) / 100,
+      holdingPeriodMonths: overrideValues?.holdingPeriodMonths ?? 6,
+      holdingCostsMonthly: overrideValues?.holdingCostsMonthly ?? 1500,
+      postRehabMonthlyRent: overrideValues?.postRehabMonthlyRent ?? monthlyRent,
+      refinanceLtv: (overrideValues?.refinanceLtv ?? 75) / 100,
+      refinanceInterestRate: (overrideValues?.refinanceInterestRate ?? 6.5) / 100,
+      refinanceTermYears: overrideValues?.refinanceTermYears ?? 30,
+      // Flip fields
+      rehabTimeMonths: overrideValues?.rehabTimeMonths ?? 4,
+      daysOnMarket: overrideValues?.daysOnMarket ?? 45,
+      sellingCostsPct: (overrideValues?.sellingCostsPct ?? 8) / 100,
+      capitalGainsRate: (overrideValues?.capitalGainsRate ?? 25) / 100,
+      hardMoneyRate: (overrideValues?.hardMoneyRate ?? 12) / 100,
+      hardMoneyLtv: (overrideValues?.hardMoneyLtv ?? 90) / 100,
+      loanPoints: (overrideValues?.loanPoints ?? 2) / 100,
+      // House Hack fields
+      totalUnits: overrideValues?.totalUnits ?? 4,
+      ownerOccupiedUnits: overrideValues?.ownerOccupiedUnits ?? 1,
+      avgRentPerUnit: overrideValues?.avgRentPerUnit ?? monthlyRent / 4,
+      currentHousingPayment: overrideValues?.currentHousingPayment ?? 2000,
+      pmiRate: (overrideValues?.pmiRate ?? 0.85) / 100,
+      // Wholesale fields
+      contractPrice: overrideValues?.contractPrice ?? buyPrice * 0.85,
+      assignmentFee: overrideValues?.assignmentFee ?? 15000,
+      earnestMoney: overrideValues?.earnestMoney ?? 1000,
+      marketingCosts: overrideValues?.marketingCosts ?? 500,
+      wholesaleClosingCosts: overrideValues?.wholesaleClosingCosts ?? 500,
+      estimatedRepairs: overrideValues?.estimatedRepairs ?? 40000,
+    }
+    
+    // Calculate metrics
+    const calculatedMetrics = calculateStrategyMetrics(strategyType, activePriceTarget, inputs, metricIds)
+    
+    return calculatedMetrics.map(m => ({
+      id: m.id,
+      label: m.label,
+      value: m.formatted,
+    }))
+  }, [
+    currentStrategy, 
+    activePriceTarget, 
+    overrideValues, 
+    isSavedPropertyMode, 
+    record, 
+    buyPrice, 
+    property, 
+    estValue, 
+    breakevenPrice, 
+    wholesalePrice, 
+    defaults
+  ])
+
+  // Handle price target change
+  const handlePriceTargetChange = useCallback((target: PriceTarget) => {
+    setActivePriceTarget(target)
+  }, [])
+
   // Benchmark metrics - 7 metrics with categories
   const benchmarkMetrics = useMemo(() => [
     // Returns Category
@@ -533,14 +644,15 @@ export function VerdictIQCombined({
         .filter(Boolean)
         .join(', ')
       
-      // Excel export only
+      // Excel export only - include strategy and price target
       blob = await api.proforma.downloadExcel({
         propertyId: propertyIdToUse,
         address: fullAddress,
         strategy,
         holdPeriodYears: 10,
+        priceTarget: activePriceTarget,
       })
-      filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_${strategy.toUpperCase()}.xlsx`
+      filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_${strategy.toUpperCase()}_${activePriceTarget}.xlsx`
 
       // Create download link and trigger download
       const url = window.URL.createObjectURL(blob)
@@ -557,7 +669,7 @@ export function VerdictIQCombined({
     } finally {
       setIsExporting(false)
     }
-  }, [property.id, analysis.propertyId, savedPropertyId, currentStrategy, property.address])
+  }, [property.id, analysis.propertyId, savedPropertyId, currentStrategy, property.address, activePriceTarget])
 
   return (
     <div 
@@ -608,6 +720,9 @@ export function VerdictIQCombined({
           monthlyCashFlow={metrics.monthlyCashFlow}
           cashNeeded={metrics.totalInvestment}
           capRate={metrics.capRate / 100}
+          activePriceTarget={activePriceTarget}
+          onPriceTargetChange={handlePriceTargetChange}
+          strategyMetrics={strategyMetricsForDisplay}
         />
 
         {/* Financial Breakdown - Detailed breakdown synced with DealMakerIQ */}
@@ -634,6 +749,39 @@ export function VerdictIQCombined({
           onAdjustIncome={() => openDealMakerWithTab('income')}
           onAdjustExpenses={() => openDealMakerWithTab('expenses')}
           onAdjustDebt={() => openDealMakerWithTab('financing')}
+          strategy={headerStrategyToType(currentStrategy)}
+          priceTarget={activePriceTarget}
+          // BRRRR props
+          rehabBudget={overrideValues?.rehabBudget ?? 0}
+          contingencyPct={overrideValues?.contingencyPct ?? 10}
+          holdingPeriodMonths={overrideValues?.holdingPeriodMonths ?? 6}
+          holdingCostsMonthly={overrideValues?.holdingCostsMonthly ?? 1500}
+          arv={overrideValues?.arv ?? property.arv ?? buyPrice * 1.15}
+          refinanceLtv={overrideValues?.refinanceLtv ?? 75}
+          refinanceInterestRate={overrideValues?.refinanceInterestRate ?? defaults.financing.interest_rate * 100}
+          refinanceTermYears={overrideValues?.refinanceTermYears ?? 30}
+          postRehabMonthlyRent={overrideValues?.postRehabMonthlyRent ?? property.monthlyRent ?? Math.round(buyPrice * 0.007)}
+          // Flip props
+          rehabTimeMonths={overrideValues?.rehabTimeMonths ?? 4}
+          daysOnMarket={overrideValues?.daysOnMarket ?? 45}
+          sellingCostsPct={overrideValues?.sellingCostsPct ?? 8}
+          capitalGainsRate={overrideValues?.capitalGainsRate ?? 25}
+          hardMoneyRate={overrideValues?.hardMoneyRate ?? 12}
+          hardMoneyLtv={overrideValues?.hardMoneyLtv ?? 90}
+          loanPoints={overrideValues?.loanPoints ?? 2}
+          // House Hack props
+          totalUnits={overrideValues?.totalUnits ?? 4}
+          ownerOccupiedUnits={overrideValues?.ownerOccupiedUnits ?? 1}
+          avgRentPerUnit={overrideValues?.avgRentPerUnit ?? Math.round((property.monthlyRent ?? buyPrice * 0.007) / 4)}
+          currentHousingPayment={overrideValues?.currentHousingPayment ?? 2000}
+          pmiRate={overrideValues?.pmiRate ?? 0.85}
+          // Wholesale props
+          contractPrice={overrideValues?.contractPrice ?? buyPrice * 0.85}
+          assignmentFee={overrideValues?.assignmentFee ?? 15000}
+          earnestMoney={overrideValues?.earnestMoney ?? 1000}
+          marketingCosts={overrideValues?.marketingCosts ?? 500}
+          wholesaleClosingCosts={overrideValues?.wholesaleClosingCosts ?? 500}
+          estimatedRepairs={overrideValues?.estimatedRepairs ?? 40000}
         />
 
         {/* Deal Gap & Motivation Section - Collapsible Dropdown */}
@@ -807,6 +955,8 @@ export function VerdictIQCombined({
         strategyType={getPopupStrategyType(currentStrategy)}
         onStrategyChange={handlePopupStrategyChange}
         initialTab={dealMakerInitialTab}
+        activePriceTarget={activePriceTarget}
+        onPriceTargetChange={handlePriceTargetChange}
         initialValues={{
           // Common fields
           buyPrice: overrideValues?.buyPrice ?? (isSavedPropertyMode && record?.buy_price ? record.buy_price : buyPrice),
