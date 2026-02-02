@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VerdictIQ - Style 3: Institutional Grade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       INSTITUTIONAL GRADE STYLE
+       
+       Design Philosophy:
+       - Clean, conservative institutional look
+       - Blue/gray palette (like major banks)
+       - Structured table-like layouts
+       - Clear data hierarchy
+       - Professional, serious, trustworthy
+       - Minimal decoration, focus on data
+       ======================================== */
+    
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --blue-900: #1A365D;
+      --blue-800: #2A4365;
+      --blue-700: #2C5282;
+      --blue-600: #3182CE;
+      --blue-500: #4299E1;
+      --blue-100: #EBF4FF;
+      --blue-50: #F7FAFC;
+      --gray-900: #1A202C;
+      --gray-700: #2D3748;
+      --gray-600: #4A5568;
+      --gray-500: #718096;
+      --gray-400: #A0AEC0;
+      --gray-300: #CBD5E0;
+      --gray-200: #E2E8F0;
+      --gray-100: #EDF2F7;
+      --white: #FFFFFF;
+      --green-600: #38A169;
+      --green-100: #F0FFF4;
+      --orange-500: #DD6B20;
+      --red-500: #E53E3E;
+    }
+
+    html {
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+      background: var(--gray-100);
+      color: var(--gray-900);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .mono {
+      font-family: 'IBM Plex Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Layout */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Document Header */
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 20px 24px;
+      background: var(--blue-900);
+      border-radius: 8px 8px 0 0;
+    }
+
+    .doc-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .doc-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--blue-600);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .doc-logo-text {
+      color: white;
+    }
+
+    .doc-logo-name {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .doc-logo-type {
+      font-size: 11px;
+      color: var(--blue-500);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .doc-meta {
+      text-align: right;
+      color: var(--gray-400);
+      font-size: 11px;
+    }
+
+    .doc-meta-value {
+      color: white;
+      font-weight: 500;
+    }
+
+    /* Main Container */
+    .main-container {
+      background: var(--white);
+      border: 1px solid var(--gray-300);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+    }
+
+    /* Section */
+    .section {
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .section:last-child {
+      border-bottom: none;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: var(--gray-100);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gray-600);
+    }
+
+    .section-action {
+      font-size: 11px;
+      color: var(--blue-600);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    /* Verdict Panel */
+    .verdict-panel {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .verdict-score-box {
+      padding: 32px 24px;
+      background: var(--blue-50);
+      border-right: 1px solid var(--gray-200);
+      text-align: center;
+    }
+
+    .verdict-score-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gray-500);
+      margin-bottom: 8px;
+    }
+
+    .verdict-score {
+      font-size: 56px;
+      font-weight: 700;
+      color: var(--blue-700);
+      line-height: 1;
+    }
+
+    .verdict-grade {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 16px;
+      background: var(--green-100);
+      color: var(--green-600);
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .verdict-factors {
+      padding: 24px;
+    }
+
+    .factors-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .factors-table th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--gray-500);
+      padding: 8px 12px;
+      border-bottom: 2px solid var(--gray-200);
+    }
+
+    .factors-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 13px;
+    }
+
+    .factors-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .factor-name {
+      color: var(--gray-700);
+    }
+
+    .factor-value {
+      font-weight: 600;
+    }
+
+    .factor-value.positive { color: var(--green-600); }
+    .factor-value.warning { color: var(--orange-500); }
+    .factor-value.negative { color: var(--red-500); }
+
+    .factor-status {
+      display: inline-flex;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .factor-status.positive {
+      background: var(--green-100);
+      color: var(--green-600);
+    }
+
+    .factor-status.warning {
+      background: #FFFBEB;
+      color: var(--orange-500);
+    }
+
+    /* Price Targets */
+    .price-targets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .price-target {
+      padding: 24px;
+      text-align: center;
+      border-right: 1px solid var(--gray-200);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+
+    .price-target:last-child {
+      border-right: none;
+    }
+
+    .price-target:hover {
+      background: var(--gray-50);
+    }
+
+    .price-target.selected {
+      background: var(--blue-100);
+      position: relative;
+    }
+
+    .price-target.selected::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--blue-600);
+    }
+
+    .price-target-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gray-500);
+      margin-bottom: 8px;
+    }
+
+    .price-target.selected .price-target-label {
+      color: var(--blue-700);
+    }
+
+    .price-target-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 4px;
+    }
+
+    .price-target.selected .price-target-value {
+      color: var(--blue-700);
+    }
+
+    .price-target-desc {
+      font-size: 11px;
+      color: var(--gray-500);
+    }
+
+    /* Key Metrics Table */
+    .metrics-table-container {
+      padding: 0 24px 24px;
+    }
+
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--gray-200);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .metrics-table thead {
+      background: var(--gray-100);
+    }
+
+    .metrics-table th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--gray-600);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .metrics-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 13px;
+    }
+
+    .metrics-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .metrics-table .metric-name {
+      color: var(--gray-700);
+    }
+
+    .metrics-table .metric-value {
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .metrics-table .metric-benchmark {
+      text-align: right;
+      color: var(--gray-500);
+      font-size: 12px;
+    }
+
+    .metrics-table .metric-status {
+      text-align: center;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status-indicator.good { background: var(--green-600); }
+    .status-indicator.warning { background: var(--orange-500); }
+    .status-indicator.bad { background: var(--red-500); }
+
+    /* Breakdown */
+    .breakdown-group {
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .breakdown-group:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: var(--blue-50);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .breakdown-group-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--blue-800);
+    }
+
+    .breakdown-group-action {
+      font-size: 11px;
+      color: var(--blue-600);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .breakdown-rows {
+      padding: 0;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 24px;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 13px;
+    }
+
+    .breakdown-row:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-row-label {
+      color: var(--gray-600);
+    }
+
+    .breakdown-row-value {
+      font-weight: 500;
+      color: var(--gray-900);
+    }
+
+    .breakdown-row.highlight {
+      background: var(--green-100);
+    }
+
+    .breakdown-row.highlight .breakdown-row-value {
+      color: var(--green-600);
+      font-weight: 700;
+    }
+
+    .breakdown-row.subtotal {
+      background: var(--gray-100);
+      font-weight: 600;
+    }
+
+    /* Footer */
+    .doc-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: var(--gray-100);
+      border-top: 1px solid var(--gray-200);
+      font-size: 11px;
+      color: var(--gray-500);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-link {
+      color: var(--blue-600);
+      text-decoration: none;
+    }
+
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+
+    .disclaimer {
+      margin-top: 16px;
+      padding: 16px 24px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 4px;
+      font-size: 10px;
+      color: var(--gray-500);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Document Header -->
+    <div class="doc-header">
+      <div class="doc-logo">
+        <div class="doc-logo-icon">IQ</div>
+        <div class="doc-logo-text">
+          <div class="doc-logo-name">DealMaker IQ</div>
+          <div class="doc-logo-type">Investment Analysis</div>
+        </div>
+      </div>
+      <div class="doc-meta">
+        <div>Report Generated: <span class="doc-meta-value">Feb 01, 2026</span></div>
+        <div>Strategy: <span class="doc-meta-value">Long-Term Rental</span></div>
+        <div>Report ID: <span class="doc-meta-value mono">VIQ-2026-0201</span></div>
+      </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+      <!-- Verdict Panel -->
+      <div class="verdict-panel">
+        <div class="verdict-score-box">
+          <div class="verdict-score-label">Investment Score</div>
+          <div class="verdict-score mono">78</div>
+          <div class="verdict-grade">Good Buy</div>
+        </div>
+        <div class="verdict-factors">
+          <table class="factors-table">
+            <thead>
+              <tr>
+                <th>Factor</th>
+                <th>Value</th>
+                <th>Assessment</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="factor-name">Deal Gap</td>
+                <td class="factor-value positive mono">-5.5%</td>
+                <td><span class="factor-status positive">Likely Achievable</span></td>
+              </tr>
+              <tr>
+                <td class="factor-name">Seller Urgency</td>
+                <td class="factor-value warning">Medium</td>
+                <td><span class="factor-status warning">Moderate</span></td>
+              </tr>
+              <tr>
+                <td class="factor-name">Market Temperature</td>
+                <td class="factor-value warning">Warm</td>
+                <td><span class="factor-status warning">Competitive</span></td>
+              </tr>
+              <tr>
+                <td class="factor-name">Vacancy Rate</td>
+                <td class="factor-value positive">&lt;5%</td>
+                <td><span class="factor-status positive">Healthy</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Price Targets -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Price Target Analysis</span>
+          <span style="font-size: 11px; color: var(--gray-500);">Based on 8% Target Cap Rate</span>
+        </div>
+        <div class="price-targets">
+          <div class="price-target">
+            <div class="price-target-label">Breakeven</div>
+            <div class="price-target-value mono">$782,400</div>
+            <div class="price-target-desc">Max for $0 annual cashflow</div>
+          </div>
+          <div class="price-target selected">
+            <div class="price-target-label">Target Buy</div>
+            <div class="price-target-value mono">$736,665</div>
+            <div class="price-target-desc">Positive Cashflow</div>
+          </div>
+          <div class="price-target">
+            <div class="price-target-label">Wholesale</div>
+            <div class="price-target-value mono">$547,400</div>
+            <div class="price-target-desc">30% net discount</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Key Performance Metrics</span>
+          <button class="section-action">View All Metrics →</button>
+        </div>
+        <div class="metrics-table-container">
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th style="text-align: right;">Value</th>
+                <th style="text-align: right;">Benchmark</th>
+                <th style="text-align: center;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="metric-name">Monthly Cash Flow</td>
+                <td class="metric-value mono">$482</td>
+                <td class="metric-benchmark">&gt;$200</td>
+                <td class="metric-status"><span class="status-indicator good"></span></td>
+              </tr>
+              <tr>
+                <td class="metric-name">Cash Required</td>
+                <td class="metric-value mono">$184,166</td>
+                <td class="metric-benchmark">—</td>
+                <td class="metric-status"><span class="status-indicator warning"></span></td>
+              </tr>
+              <tr>
+                <td class="metric-name">Cap Rate</td>
+                <td class="metric-value mono">5.69%</td>
+                <td class="metric-benchmark">&gt;5.0%</td>
+                <td class="metric-status"><span class="status-indicator good"></span></td>
+              </tr>
+              <tr>
+                <td class="metric-name">Cash-on-Cash Return</td>
+                <td class="metric-value mono">3.14%</td>
+                <td class="metric-benchmark">&gt;8.0%</td>
+                <td class="metric-status"><span class="status-indicator warning"></span></td>
+              </tr>
+              <tr>
+                <td class="metric-name">DSCR</td>
+                <td class="metric-value mono">1.08</td>
+                <td class="metric-benchmark">&gt;1.20</td>
+                <td class="metric-status"><span class="status-indicator warning"></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Financial Breakdown -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Financial Breakdown</span>
+        </div>
+        
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Purchase Terms</span>
+            <button class="breakdown-group-action">Adjust →</button>
+          </div>
+          <div class="breakdown-rows">
+            <div class="breakdown-row highlight">
+              <span class="breakdown-row-label">Target Buy Price</span>
+              <span class="breakdown-row-value mono">$736,665</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Down Payment (25%)</span>
+              <span class="breakdown-row-value mono">$184,166</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Loan Amount</span>
+              <span class="breakdown-row-value mono">$552,499</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Interest Rate</span>
+              <span class="breakdown-row-value mono">7.00%</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Monthly P&I</span>
+              <span class="breakdown-row-value mono">$3,676</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Rental Income</span>
+            <button class="breakdown-group-action">Adjust →</button>
+          </div>
+          <div class="breakdown-rows">
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Monthly Rent</span>
+              <span class="breakdown-row-value mono">$5,800</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Vacancy Loss (5%)</span>
+              <span class="breakdown-row-value mono">-$290</span>
+            </div>
+            <div class="breakdown-row subtotal">
+              <span class="breakdown-row-label">Effective Gross Income</span>
+              <span class="breakdown-row-value mono">$5,510</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Operating Expenses</span>
+            <button class="breakdown-group-action">Adjust →</button>
+          </div>
+          <div class="breakdown-rows">
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Property Taxes</span>
+              <span class="breakdown-row-value mono">$613</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Insurance</span>
+              <span class="breakdown-row-value mono">$245</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Repairs (5%)</span>
+              <span class="breakdown-row-value mono">$290</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">CapEx (5%)</span>
+              <span class="breakdown-row-value mono">$290</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Management (8%)</span>
+              <span class="breakdown-row-value mono">$464</span>
+            </div>
+            <div class="breakdown-row subtotal">
+              <span class="breakdown-row-label">Total Operating Expenses</span>
+              <span class="breakdown-row-value mono">$1,902</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="doc-footer">
+        <div>© 2026 DealMaker IQ • Professional Investment Analytics</div>
+        <div class="footer-links">
+          <a href="#" class="footer-link">How VerdictIQ Works</a>
+          <a href="#" class="footer-link">Methodology</a>
+          <a href="#" class="footer-link">Export Report</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <strong>Disclaimer:</strong> This analysis is provided for informational purposes only and does not constitute financial, investment, or legal advice. 
+      All projections are estimates based on the assumptions provided and actual results may vary. Past performance is not indicative of future results. 
+      Investors should conduct their own due diligence before making any investment decisions.
+    </div>
+  </div>
+</body>
+</html>

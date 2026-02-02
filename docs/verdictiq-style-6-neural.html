@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VerdictIQ - Style 6: Neural AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       NEURAL AI STYLE
+       
+       Design Philosophy:
+       - Deep learning / neural network inspired
+       - Dark mode with glowing cyan/purple accents
+       - Node connection patterns
+       - Pulsing animations suggesting AI processing
+       - Futuristic but professional
+       ======================================== */
+    
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-dark: #0A0E17;
+      --bg-card: #0F1420;
+      --bg-elevated: #151B2B;
+      --border: rgba(99, 234, 255, 0.15);
+      --border-glow: rgba(99, 234, 255, 0.3);
+      --cyan: #63EAFF;
+      --cyan-dim: rgba(99, 234, 255, 0.15);
+      --purple: #A855F7;
+      --purple-dim: rgba(168, 85, 247, 0.15);
+      --magenta: #EC4899;
+      --green: #10B981;
+      --green-dim: rgba(16, 185, 129, 0.15);
+      --amber: #FBBF24;
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(99, 234, 255, 0.3); }
+      50% { box-shadow: 0 0 40px rgba(99, 234, 255, 0.5); }
+    }
+
+    @keyframes nodeFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    html {
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'Space Grotesk', -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Neural background pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(99, 234, 255, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+      pointer-events: none;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Layout */
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 32px 16px;
+      position: relative;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      animation: glow 3s ease-in-out infinite;
+    }
+
+    .brand-text {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .ai-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--cyan-dim);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 11px;
+      color: var(--cyan);
+      font-weight: 500;
+    }
+
+    .ai-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--cyan);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Main Card */
+    .main-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .main-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple), var(--magenta));
+    }
+
+    /* Neural Score Section */
+    .score-section {
+      padding: 40px;
+      text-align: center;
+      position: relative;
+    }
+
+    .neural-nodes {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .node {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: var(--cyan);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: nodeFloat 4s ease-in-out infinite;
+    }
+
+    .node:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+    .node:nth-child(2) { top: 30%; left: 25%; animation-delay: 0.5s; }
+    .node:nth-child(3) { top: 60%; left: 15%; animation-delay: 1s; }
+    .node:nth-child(4) { top: 20%; right: 10%; animation-delay: 1.5s; }
+    .node:nth-child(5) { top: 40%; right: 20%; animation-delay: 2s; }
+    .node:nth-child(6) { top: 70%; right: 15%; animation-delay: 2.5s; }
+
+    .score-ring {
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+
+    .score-ring-outer {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 180deg,
+        var(--cyan) 0deg,
+        var(--purple) 140deg,
+        var(--magenta) 200deg,
+        transparent 280deg
+      );
+      padding: 4px;
+      animation: glow 3s ease-in-out infinite;
+    }
+
+    .score-ring-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: var(--bg-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-value {
+      font-size: 52px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+
+    .score-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .verdict-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .verdict-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* AI Analysis Factors */
+    .factors-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      margin-top: 32px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .factor-cell {
+      padding: 20px 16px;
+      background: var(--bg-elevated);
+      text-align: center;
+    }
+
+    .factor-icon {
+      width: 32px;
+      height: 32px;
+      margin: 0 auto 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .factor-icon.gap { background: var(--green-dim); color: var(--green); }
+    .factor-icon.urgency { background: rgba(251, 191, 36, 0.15); color: var(--amber); }
+    .factor-icon.market { background: var(--purple-dim); color: var(--purple); }
+    .factor-icon.vacancy { background: var(--cyan-dim); color: var(--cyan); }
+
+    .factor-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .factor-value {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .factor-value.positive { color: var(--green); }
+    .factor-value.warning { color: var(--amber); }
+    .factor-value.accent { color: var(--cyan); }
+
+    /* Price Targets */
+    .price-section {
+      padding: 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+
+    .section-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .price-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .price-card {
+      padding: 24px 16px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .price-card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-2px);
+    }
+
+    .price-card.active {
+      background: linear-gradient(135deg, rgba(99, 234, 255, 0.1), rgba(168, 85, 247, 0.1));
+      border-color: var(--cyan);
+      box-shadow: 0 0 30px rgba(99, 234, 255, 0.2);
+    }
+
+    .price-card-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .price-card.active .price-card-label {
+      color: var(--cyan);
+    }
+
+    .price-card-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .price-card.active .price-card-value {
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .price-card-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Metrics */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      padding: 0 32px 32px;
+    }
+
+    .metric-box {
+      padding: 20px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    /* Breakdown */
+    .breakdown-section {
+      border-top: 1px solid var(--border);
+    }
+
+    .breakdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      cursor: pointer;
+    }
+
+    .breakdown-header:hover {
+      background: var(--bg-elevated);
+    }
+
+    .breakdown-toggle {
+      color: var(--cyan);
+      font-size: 12px;
+    }
+
+    .breakdown-content {
+      padding: 0 32px 32px;
+    }
+
+    .breakdown-group {
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .breakdown-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: linear-gradient(90deg, var(--cyan-dim), var(--purple-dim));
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breakdown-group-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+
+    .breakdown-group-action {
+      font-size: 11px;
+      color: var(--purple);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 13px;
+    }
+
+    .breakdown-row:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-row-label {
+      color: var(--text-secondary);
+    }
+
+    .breakdown-row-value {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .breakdown-row.highlight {
+      background: var(--green-dim);
+    }
+
+    .breakdown-row.highlight .breakdown-row-value {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .breakdown-row.summary {
+      background: var(--bg-elevated);
+    }
+
+    /* Info Links */
+    .info-links {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      padding: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .info-link {
+      font-size: 12px;
+      color: var(--cyan);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-link:hover {
+      color: var(--purple);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .footer-brand {
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <div class="header">
+      <div class="brand">
+        <div class="brand-icon">IQ</div>
+        <span class="brand-text">VerdictIQ</span>
+      </div>
+      <div class="ai-badge">AI Analysis Active</div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="main-card">
+      <!-- Score Section -->
+      <div class="score-section">
+        <div class="neural-nodes">
+          <div class="node"></div>
+          <div class="node"></div>
+          <div class="node"></div>
+          <div class="node"></div>
+          <div class="node"></div>
+          <div class="node"></div>
+        </div>
+
+        <div class="score-ring">
+          <div class="score-ring-outer">
+            <div class="score-ring-inner">
+              <span class="score-value mono">78</span>
+              <span class="score-label">AI Score</span>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="verdict-title">Good Opportunity</h2>
+        <p class="verdict-subtitle">Neural analysis indicates high probability of successful negotiation</p>
+
+        <div class="factors-grid">
+          <div class="factor-cell">
+            <div class="factor-icon gap">↓</div>
+            <div class="factor-label">Deal Gap</div>
+            <div class="factor-value positive mono">-5.5%</div>
+          </div>
+          <div class="factor-cell">
+            <div class="factor-icon urgency">⚡</div>
+            <div class="factor-label">Urgency</div>
+            <div class="factor-value warning">Medium</div>
+          </div>
+          <div class="factor-cell">
+            <div class="factor-icon market">◎</div>
+            <div class="factor-label">Market</div>
+            <div class="factor-value warning">Warm</div>
+          </div>
+          <div class="factor-cell">
+            <div class="factor-icon vacancy">◉</div>
+            <div class="factor-label">Vacancy</div>
+            <div class="factor-value accent">&lt;5%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Section -->
+      <div class="price-section">
+        <div class="section-header">
+          <span class="section-title">Price Predictions</span>
+          <span class="section-meta">Model: LTR-v3.2</span>
+        </div>
+        <div class="price-grid">
+          <div class="price-card">
+            <div class="price-card-label">Breakeven</div>
+            <div class="price-card-value mono">$782,400</div>
+            <div class="price-card-desc">Max for $0 cashflow</div>
+          </div>
+          <div class="price-card active">
+            <div class="price-card-label">Target Buy</div>
+            <div class="price-card-value mono">$736,665</div>
+            <div class="price-card-desc">Optimal entry point</div>
+          </div>
+          <div class="price-card">
+            <div class="price-card-label">Wholesale</div>
+            <div class="price-card-value mono">$547,400</div>
+            <div class="price-card-desc">30% discount</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metrics-row">
+        <div class="metric-box">
+          <div class="metric-label">Cash Flow</div>
+          <div class="metric-value mono">$482</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Cash Required</div>
+          <div class="metric-value mono">$184K</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Cap Rate</div>
+          <div class="metric-value mono">5.69%</div>
+        </div>
+      </div>
+
+      <!-- Breakdown -->
+      <div class="breakdown-section">
+        <div class="breakdown-header">
+          <span class="section-title">Financial Breakdown</span>
+          <span class="breakdown-toggle">▼</span>
+        </div>
+        <div class="breakdown-content">
+          <div class="breakdown-group">
+            <div class="breakdown-group-header">
+              <span class="breakdown-group-title">Purchase Terms</span>
+              <button class="breakdown-group-action">Adjust →</button>
+            </div>
+            <div class="breakdown-row highlight">
+              <span class="breakdown-row-label">Target Buy Price</span>
+              <span class="breakdown-row-value mono">$736,665</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Down Payment (25%)</span>
+              <span class="breakdown-row-value mono">$184,166</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Loan Amount</span>
+              <span class="breakdown-row-value mono">$552,499</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Interest Rate</span>
+              <span class="breakdown-row-value mono">7.00%</span>
+            </div>
+          </div>
+
+          <div class="breakdown-group">
+            <div class="breakdown-group-header">
+              <span class="breakdown-group-title">Rental Income</span>
+              <button class="breakdown-group-action">Adjust →</button>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Monthly Rent</span>
+              <span class="breakdown-row-value mono">$5,800</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Vacancy (5%)</span>
+              <span class="breakdown-row-value mono">-$290</span>
+            </div>
+            <div class="breakdown-row summary">
+              <span class="breakdown-row-label">Effective Gross Income</span>
+              <span class="breakdown-row-value mono">$5,510</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Links -->
+      <div class="info-links">
+        <a href="#" class="info-link">⚡ AI Methodology</a>
+        <a href="#" class="info-link">◎ How We Score</a>
+        <a href="#" class="info-link">↓ Export</a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      Powered by <span class="footer-brand">DealMaker IQ Neural Engine</span>
+    </div>
+  </div>
+</body>
+</html>

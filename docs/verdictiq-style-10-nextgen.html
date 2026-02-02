@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VerdictIQ - Style 10: Next-Gen Minimal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       NEXT-GEN MINIMAL STYLE
+       
+       Design Philosophy:
+       - Ultra-clean Apple-inspired aesthetic
+       - Subtle glassmorphism 2.0
+       - Minimal but impactful
+       - Focus on the data, not decoration
+       - Premium through restraint
+       - Sophisticated color accents
+       ======================================== */
+    
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #FAFAFA;
+      --surface: #FFFFFF;
+      --glass: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.5);
+      --accent: #0066FF;
+      --accent-soft: rgba(0, 102, 255, 0.08);
+      --accent-glow: rgba(0, 102, 255, 0.15);
+      --success: #00C853;
+      --success-soft: rgba(0, 200, 83, 0.08);
+      --warning: #FF9500;
+      --warning-soft: rgba(255, 149, 0, 0.08);
+      --text-primary: #1D1D1F;
+      --text-secondary: #6E6E73;
+      --text-tertiary: #AEAEB2;
+      --border: rgba(0, 0, 0, 0.06);
+      --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.04);
+      --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.06);
+      --shadow-large: 0 20px 60px rgba(0, 0, 0, 0.08);
+    }
+
+    @keyframes subtleFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+      padding: 48px 24px;
+    }
+
+    .num {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    /* Layout */
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 48px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #0066FF, #5AC8FA);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .brand-name {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    /* Hero Score */
+    .hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .score-container {
+      display: inline-block;
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .score-circle {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: var(--surface);
+      box-shadow: var(--shadow-large);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      animation: subtleFloat 6s ease-in-out infinite;
+    }
+
+    .score-circle::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 180deg,
+        var(--accent) 0deg,
+        #5AC8FA 120deg,
+        var(--success) 220deg,
+        transparent 280deg
+      );
+      z-index: -1;
+      filter: blur(1px);
+    }
+
+    .score-number {
+      font-size: 64px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+
+    .score-unit {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    .verdict-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .verdict-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    /* Factors Strip */
+    .factors-strip {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 32px;
+    }
+
+    .factor {
+      text-align: center;
+    }
+
+    .factor-value {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .factor-value.positive { color: var(--success); }
+    .factor-value.warning { color: var(--warning); }
+    .factor-value.accent { color: var(--accent); }
+
+    .factor-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Price Cards */
+    .price-section {
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .price-row {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      gap: 12px;
+    }
+
+    .price-card {
+      padding: 24px 16px;
+      background: var(--surface);
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .price-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-medium);
+    }
+
+    .price-card.primary {
+      background: var(--accent);
+      border-color: transparent;
+      box-shadow: var(--shadow-medium), 0 8px 24px rgba(0, 102, 255, 0.2);
+    }
+
+    .price-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .price-card.primary .price-label {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .price-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .price-card.primary .price-value {
+      color: white;
+      font-size: 28px;
+    }
+
+    .price-desc {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .price-card.primary .price-desc {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Metrics */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .metric-card {
+      padding: 24px 16px;
+      background: var(--surface);
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border);
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Breakdown */
+    .breakdown {
+      background: var(--surface);
+      border-radius: 20px;
+      box-shadow: var(--shadow-medium);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .breakdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      cursor: pointer;
+    }
+
+    .breakdown-header:hover {
+      background: var(--bg);
+    }
+
+    .breakdown-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .breakdown-toggle {
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .breakdown-body {
+      padding: 0 24px 24px;
+    }
+
+    .breakdown-group {
+      margin-bottom: 24px;
+    }
+
+    .breakdown-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .breakdown-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .breakdown-group-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .breakdown-group-action {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .breakdown-group-action:hover {
+      color: var(--accent);
+    }
+
+    .breakdown-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      font-size: 14px;
+    }
+
+    .breakdown-item-label {
+      color: var(--text-secondary);
+    }
+
+    .breakdown-item-value {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .breakdown-item.highlight {
+      background: var(--success-soft);
+      margin: 0 -24px;
+      padding: 10px 24px;
+      border-radius: 8px;
+    }
+
+    .breakdown-item.highlight .breakdown-item-value {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .breakdown-item.total {
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+      padding-top: 12px;
+    }
+
+    .breakdown-item.total .breakdown-item-value {
+      font-weight: 700;
+    }
+
+    /* Footer */
+    .footer {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 48px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+
+    .credits {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .credits-brand {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <div class="header">
+      <div class="brand">
+        <div class="brand-mark">IQ</div>
+        <div class="brand-name">VerdictIQ</div>
+      </div>
+    </div>
+
+    <!-- Hero Score -->
+    <div class="hero">
+      <div class="score-container">
+        <div class="score-circle">
+          <span class="score-number num">78</span>
+          <span class="score-unit">/ 100</span>
+        </div>
+      </div>
+
+      <h1 class="verdict-title">Good Opportunity</h1>
+      <p class="verdict-subtitle">Deal gap is likely achievable with negotiation</p>
+
+      <div class="factors-strip">
+        <div class="factor">
+          <div class="factor-value positive num">-5.5%</div>
+          <div class="factor-label">Gap</div>
+        </div>
+        <div class="factor">
+          <div class="factor-value warning">Medium</div>
+          <div class="factor-label">Urgency</div>
+        </div>
+        <div class="factor">
+          <div class="factor-value warning">Warm</div>
+          <div class="factor-label">Market</div>
+        </div>
+        <div class="factor">
+          <div class="factor-value positive">&lt;5%</div>
+          <div class="factor-label">Vacancy</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Price Section -->
+    <div class="price-section">
+      <div class="section-title">Price Targets</div>
+      <div class="price-row">
+        <div class="price-card">
+          <div class="price-label">Breakeven</div>
+          <div class="price-value num">$782K</div>
+          <div class="price-desc">Max for $0 cashflow</div>
+        </div>
+        <div class="price-card primary">
+          <div class="price-label">Target Buy</div>
+          <div class="price-value num">$736K</div>
+          <div class="price-desc">Positive cashflow</div>
+        </div>
+        <div class="price-card">
+          <div class="price-label">Wholesale</div>
+          <div class="price-value num">$547K</div>
+          <div class="price-desc">30% discount</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-value num">$482</div>
+        <div class="metric-label">Cash Flow</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value num">$184K</div>
+        <div class="metric-label">Cash Needed</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value num">5.69%</div>
+        <div class="metric-label">Cap Rate</div>
+      </div>
+    </div>
+
+    <!-- Breakdown -->
+    <div class="breakdown">
+      <div class="breakdown-header">
+        <span class="breakdown-title">Financial Breakdown</span>
+        <span class="breakdown-toggle">Show Details</span>
+      </div>
+      <div class="breakdown-body">
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Purchase</span>
+            <button class="breakdown-group-action">Adjust →</button>
+          </div>
+          <div class="breakdown-item highlight">
+            <span class="breakdown-item-label">Target Buy Price</span>
+            <span class="breakdown-item-value num">$736,665</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-item-label">Down Payment (25%)</span>
+            <span class="breakdown-item-value num">$184,166</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-item-label">Loan Amount</span>
+            <span class="breakdown-item-value num">$552,499</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-item-label">Interest Rate</span>
+            <span class="breakdown-item-value num">7.00%</span>
+          </div>
+        </div>
+
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Income</span>
+            <button class="breakdown-group-action">Adjust →</button>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-item-label">Monthly Rent</span>
+            <span class="breakdown-item-value num">$5,800</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-item-label">Vacancy Loss (5%)</span>
+            <span class="breakdown-item-value num">-$290</span>
+          </div>
+          <div class="breakdown-item total">
+            <span class="breakdown-item-label">Effective Income</span>
+            <span class="breakdown-item-value num">$5,510</span>
+          </div>
+        </div>
+
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Expenses</span>
+            <button class="breakdown-group-action">Adjust →</button>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-item-label">Property Taxes</span>
+            <span class="breakdown-item-value num">$613</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-item-label">Insurance</span>
+            <span class="breakdown-item-value num">$245</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-item-label">Repairs & CapEx</span>
+            <span class="breakdown-item-value num">$580</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-item-label">Management</span>
+            <span class="breakdown-item-value num">$464</span>
+          </div>
+          <div class="breakdown-item total">
+            <span class="breakdown-item-label">Total Expenses</span>
+            <span class="breakdown-item-value num">$1,902</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <a href="#" class="footer-link">How It Works</a>
+      <a href="#" class="footer-link">Methodology</a>
+      <a href="#" class="footer-link">Export</a>
+    </div>
+
+    <div class="credits">
+      Powered by <span class="credits-brand">DealMaker IQ</span>
+    </div>
+  </div>
+</body>
+</html>

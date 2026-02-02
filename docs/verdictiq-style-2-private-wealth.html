@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VerdictIQ - Style 2: Private Wealth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       PRIVATE WEALTH STYLE
+       
+       Design Philosophy:
+       - Sophisticated luxury aesthetic (like private banks)
+       - Navy and gold color palette
+       - Serif headers for elegance and tradition
+       - Generous whitespace for premium feel
+       - Subtle shadows and borders
+       - Conveys stability, trust, and exclusivity
+       ======================================== */
+    
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --navy-900: #0A1628;
+      --navy-800: #1A2744;
+      --navy-700: #2A3A5C;
+      --navy-600: #3D4F6F;
+      --navy-100: #E8EBF0;
+      --gold-500: #C5A572;
+      --gold-400: #D4B88C;
+      --gold-300: #E3CBA6;
+      --gold-dim: rgba(197, 165, 114, 0.12);
+      --cream: #FDFBF7;
+      --white: #FFFFFF;
+      --text-primary: #1A2744;
+      --text-secondary: #5A6577;
+      --text-muted: #8A94A6;
+      --border: #E2E6EC;
+      --success: #2D8B6F;
+      --success-dim: rgba(45, 139, 111, 0.1);
+    }
+
+    html {
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: linear-gradient(180deg, #F8F9FB 0%, #F0F2F5 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .serif {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+
+    .num {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Layout */
+    .page {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* Card Base */
+    .card {
+      background: var(--white);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 24px rgba(26, 39, 68, 0.06);
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 32px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--gold-500);
+      margin-bottom: 8px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--navy-800);
+      letter-spacing: -0.5px;
+    }
+
+    .strategy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding: 6px 16px;
+      background: var(--navy-100);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--navy-700);
+    }
+
+    /* Verdict Section */
+    .verdict-section {
+      padding: 40px 32px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--white) 0%, var(--cream) 100%);
+    }
+
+    .verdict-score-container {
+      margin-bottom: 24px;
+    }
+
+    .verdict-score-ring {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 4px solid var(--gold-500);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      background: var(--white);
+      box-shadow: 0 8px 32px rgba(197, 165, 114, 0.2);
+    }
+
+    .verdict-score {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--navy-800);
+      line-height: 1;
+    }
+
+    .verdict-score-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .verdict-title {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--navy-800);
+      margin-bottom: 4px;
+    }
+
+    .verdict-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* Factors */
+    .factors-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-top: 1px solid var(--border);
+    }
+
+    .factor-item {
+      padding: 20px 16px;
+      text-align: center;
+      background: var(--white);
+    }
+
+    .factor-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .factor-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy-800);
+    }
+
+    .factor-value.positive { color: var(--success); }
+    .factor-value.warning { color: #C98A2E; }
+
+    .factor-hint {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Price Section */
+    .price-section {
+      padding: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold-500);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .price-cards {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr 1fr;
+      gap: 16px;
+    }
+
+    .price-card {
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .price-card:hover {
+      border-color: var(--gold-400);
+      box-shadow: 0 4px 16px rgba(197, 165, 114, 0.15);
+    }
+
+    .price-card.primary {
+      background: var(--navy-800);
+      border-color: var(--navy-800);
+      transform: scale(1.02);
+      box-shadow: 0 8px 24px rgba(26, 39, 68, 0.2);
+    }
+
+    .price-card-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .price-card.primary .price-card-label {
+      color: var(--gold-400);
+    }
+
+    .price-card-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy-800);
+      margin-bottom: 6px;
+    }
+
+    .price-card.primary .price-card-value {
+      font-size: 26px;
+      color: var(--white);
+    }
+
+    .price-card-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .price-card.primary .price-card-desc {
+      color: var(--gold-300);
+    }
+
+    /* Metrics */
+    .metrics-section {
+      padding: 24px 32px;
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .metric-item {
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--navy-800);
+    }
+
+    .metric-value.positive { color: var(--success); }
+
+    /* Breakdown */
+    .breakdown-section {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breakdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .breakdown-header:hover {
+      background: var(--cream);
+    }
+
+    .breakdown-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold-500);
+    }
+
+    .breakdown-toggle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .breakdown-content {
+      padding: 0 32px 24px;
+    }
+
+    .breakdown-group {
+      margin-bottom: 24px;
+    }
+
+    .breakdown-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .breakdown-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--navy-100);
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
+    .breakdown-group-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--navy-700);
+    }
+
+    .breakdown-group-action {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--gold-500);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breakdown-row:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-row-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .breakdown-row-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy-800);
+    }
+
+    .breakdown-row.highlight {
+      background: var(--gold-dim);
+      border-radius: 4px;
+      margin: 4px 0;
+    }
+
+    .breakdown-row.highlight .breakdown-row-value {
+      color: var(--gold-500);
+      font-weight: 700;
+    }
+
+    .breakdown-row.summary {
+      background: var(--navy-100);
+      border-radius: 4px;
+      margin-top: 8px;
+    }
+
+    .breakdown-row.summary .breakdown-row-value {
+      font-weight: 700;
+    }
+
+    /* Info Links */
+    .info-section {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      padding: 24px;
+      background: var(--cream);
+    }
+
+    .info-link {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gold-500);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-link:hover {
+      color: var(--navy-800);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 32px;
+      background: var(--navy-800);
+      border-radius: 0 0 12px 12px;
+    }
+
+    .footer-brand {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold-400);
+    }
+
+    .footer-tagline {
+      font-size: 11px;
+      color: var(--navy-600);
+      margin-top: 4px;
+      color: rgba(255,255,255,0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="card">
+      <!-- Header -->
+      <div class="header">
+        <div class="brand">DealMaker IQ</div>
+        <h1 class="page-title serif">Investment Verdict</h1>
+        <div class="strategy-badge">
+          <span>◆</span>
+          Long-Term Rental Strategy
+        </div>
+      </div>
+
+      <!-- Verdict Section -->
+      <div class="verdict-section">
+        <div class="verdict-score-container">
+          <div class="verdict-score-ring">
+            <span class="verdict-score num">78</span>
+            <span class="verdict-score-label">Score</span>
+          </div>
+        </div>
+        <h2 class="verdict-title serif">Good Opportunity</h2>
+        <p class="verdict-subtitle">Deal gap is likely achievable with negotiation</p>
+      </div>
+
+      <!-- Factors Row -->
+      <div class="factors-row">
+        <div class="factor-item">
+          <div class="factor-label">Deal Gap</div>
+          <div class="factor-value positive num">-5.5%</div>
+          <div class="factor-hint">Achievable</div>
+        </div>
+        <div class="factor-item">
+          <div class="factor-label">Seller Urgency</div>
+          <div class="factor-value warning">Medium</div>
+        </div>
+        <div class="factor-item">
+          <div class="factor-label">Market Temp</div>
+          <div class="factor-value warning">Warm</div>
+        </div>
+        <div class="factor-item">
+          <div class="factor-label">Vacancy</div>
+          <div class="factor-value positive">&lt;5%</div>
+          <div class="factor-hint">Healthy</div>
+        </div>
+      </div>
+
+      <!-- Price Section -->
+      <div class="price-section">
+        <div class="section-label">Investment Price Targets</div>
+        <div class="price-cards">
+          <div class="price-card">
+            <div class="price-card-label">Breakeven</div>
+            <div class="price-card-value num">$782,400</div>
+            <div class="price-card-desc">Max for $0 cashflow</div>
+          </div>
+          <div class="price-card primary">
+            <div class="price-card-label">Target Buy</div>
+            <div class="price-card-value num">$736,665</div>
+            <div class="price-card-desc">Positive Cashflow</div>
+          </div>
+          <div class="price-card">
+            <div class="price-card-label">Wholesale</div>
+            <div class="price-card-value num">$547,400</div>
+            <div class="price-card-desc">30% net discount</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="metrics-section">
+        <div class="metrics-grid">
+          <div class="metric-item">
+            <div class="metric-label">Monthly Cash Flow</div>
+            <div class="metric-value positive num">$482</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Cash Required</div>
+            <div class="metric-value num">$184K</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Cap Rate</div>
+            <div class="metric-value num">5.69%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial Breakdown -->
+      <div class="breakdown-section">
+        <div class="breakdown-header">
+          <span class="breakdown-title">Financial Breakdown</span>
+          <span class="breakdown-toggle">▼ Expand</span>
+        </div>
+        <div class="breakdown-content">
+          <div class="breakdown-group">
+            <div class="breakdown-group-header">
+              <span class="breakdown-group-title">Purchase Terms</span>
+              <button class="breakdown-group-action">Adjust →</button>
+            </div>
+            <div class="breakdown-row highlight">
+              <span class="breakdown-row-label">Target Buy Price</span>
+              <span class="breakdown-row-value num">$736,665</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Down Payment (25%)</span>
+              <span class="breakdown-row-value num">$184,166</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Loan Amount</span>
+              <span class="breakdown-row-value num">$552,499</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Interest Rate</span>
+              <span class="breakdown-row-value num">7.00%</span>
+            </div>
+          </div>
+
+          <div class="breakdown-group">
+            <div class="breakdown-group-header">
+              <span class="breakdown-group-title">Rental Income</span>
+              <button class="breakdown-group-action">Adjust →</button>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Monthly Rent</span>
+              <span class="breakdown-row-value num">$5,800</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Vacancy (5%)</span>
+              <span class="breakdown-row-value num">-$290</span>
+            </div>
+            <div class="breakdown-row summary">
+              <span class="breakdown-row-label">Effective Gross Income</span>
+              <span class="breakdown-row-value num">$5,510</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Links -->
+      <div class="info-section">
+        <a href="#" class="info-link">◆ How VerdictIQ Works</a>
+        <a href="#" class="info-link">◆ Scoring Methodology</a>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <div class="footer-brand">DealMaker IQ</div>
+        <div class="footer-tagline">Professional Real Estate Investment Analytics</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

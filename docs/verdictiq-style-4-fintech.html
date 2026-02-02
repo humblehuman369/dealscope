@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VerdictIQ - Style 4: Modern FinTech</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       MODERN FINTECH STYLE
+       
+       Design Philosophy:
+       - Modern fintech aesthetic (like Stripe, Robinhood)
+       - Gradient accents and glass morphism
+       - Clean, vibrant but professional
+       - Smooth animations and micro-interactions
+       - Card-based modular layout
+       - Confidence through modern technology
+       ======================================== */
+    
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --glass-bg: rgba(255, 255, 255, 0.8);
+      --glass-border: rgba(255, 255, 255, 0.3);
+      --primary: #6366F1;
+      --primary-dark: #4F46E5;
+      --secondary: #8B5CF6;
+      --accent: #06B6D4;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --text-primary: #1F2937;
+      --text-secondary: #6B7280;
+      --text-muted: #9CA3AF;
+      --border: #E5E7EB;
+      --surface: #F9FAFB;
+    }
+
+    html {
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      line-height: 1.5;
+      padding: 32px 16px;
+    }
+
+    .num {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Layout */
+    .page {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      color: white;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+
+    .brand-icon {
+      width: 24px;
+      height: 24px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    /* Main Card */
+    .main-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    }
+
+    /* Verdict Hero */
+    .verdict-hero {
+      padding: 40px 32px;
+      text-align: center;
+      background: linear-gradient(180deg, #F9FAFB 0%, white 100%);
+      position: relative;
+    }
+
+    .verdict-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+    }
+
+    .verdict-ring {
+      width: 140px;
+      height: 140px;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+
+    .verdict-ring-bg {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--primary) 0deg 280deg,
+        var(--border) 280deg 360deg
+      );
+      padding: 6px;
+    }
+
+    .verdict-ring-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+    }
+
+    .verdict-score {
+      font-size: 48px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .verdict-score-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .verdict-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .verdict-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* Factor Pills */
+    .factor-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .factor-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      font-size: 13px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .factor-pill-label {
+      color: var(--text-secondary);
+    }
+
+    .factor-pill-value {
+      font-weight: 700;
+    }
+
+    .factor-pill-value.positive { color: var(--success); }
+    .factor-pill-value.warning { color: var(--warning); }
+    .factor-pill-value.primary { color: var(--primary); }
+
+    /* Price Section */
+    .price-section {
+      padding: 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .price-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .price-card {
+      padding: 20px 16px;
+      text-align: center;
+      border-radius: 16px;
+      border: 2px solid var(--border);
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .price-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+    }
+
+    .price-card.active {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-color: transparent;
+      transform: scale(1.02);
+      box-shadow: 0 12px 32px rgba(99, 102, 241, 0.3);
+    }
+
+    .price-card-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .price-card.active .price-card-label {
+      color: rgba(255,255,255,0.8);
+    }
+
+    .price-card-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .price-card.active .price-card-value {
+      color: white;
+      font-size: 24px;
+    }
+
+    .price-card-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .price-card.active .price-card-desc {
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-top: 1px solid var(--border);
+    }
+
+    .metric-item {
+      padding: 24px 16px;
+      text-align: center;
+      background: white;
+    }
+
+    .metric-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 12px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .metric-icon.cash { background: linear-gradient(135deg, #10B981, #059669); color: white; }
+    .metric-icon.investment { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; }
+    .metric-icon.rate { background: linear-gradient(135deg, #6366F1, #4F46E5); color: white; }
+
+    .metric-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    /* Breakdown */
+    .breakdown-section {
+      border-top: 1px solid var(--border);
+    }
+
+    .breakdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .breakdown-header:hover {
+      background: var(--surface);
+    }
+
+    .breakdown-title {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .breakdown-toggle {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .breakdown-content {
+      padding: 0 32px 32px;
+    }
+
+    .breakdown-group {
+      margin-bottom: 24px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .breakdown-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .breakdown-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: linear-gradient(90deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08));
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breakdown-group-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .breakdown-group-action {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--secondary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--surface);
+      font-size: 13px;
+    }
+
+    .breakdown-row:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-row-label {
+      color: var(--text-secondary);
+    }
+
+    .breakdown-row-value {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .breakdown-row.highlight {
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.08), rgba(6, 182, 212, 0.08));
+    }
+
+    .breakdown-row.highlight .breakdown-row-value {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .breakdown-row.summary {
+      background: var(--surface);
+    }
+
+    .breakdown-row.summary .breakdown-row-value {
+      font-weight: 700;
+    }
+
+    /* Info Links */
+    .info-section {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      padding: 24px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .info-link {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.15s;
+    }
+
+    .info-link:hover {
+      color: var(--secondary);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 24px;
+      color: white;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    .footer-brand {
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <div class="header">
+      <div class="brand">
+        <span class="brand-icon">IQ</span>
+        DealMaker IQ
+      </div>
+      <h1 class="page-title">Investment Verdict</h1>
+      <p class="page-subtitle">Long-Term Rental Strategy</p>
+    </div>
+
+    <!-- Main Card -->
+    <div class="main-card">
+      <!-- Verdict Hero -->
+      <div class="verdict-hero">
+        <div class="verdict-ring">
+          <div class="verdict-ring-bg">
+            <div class="verdict-ring-inner">
+              <span class="verdict-score num">78</span>
+              <span class="verdict-score-label">Score</span>
+            </div>
+          </div>
+        </div>
+        <h2 class="verdict-title">Good Opportunity</h2>
+        <p class="verdict-subtitle">Deal gap is likely achievable with negotiation</p>
+
+        <div class="factor-pills">
+          <div class="factor-pill">
+            <span class="factor-pill-label">Deal Gap</span>
+            <span class="factor-pill-value positive num">-5.5%</span>
+          </div>
+          <div class="factor-pill">
+            <span class="factor-pill-label">Urgency</span>
+            <span class="factor-pill-value warning">Medium</span>
+          </div>
+          <div class="factor-pill">
+            <span class="factor-pill-label">Market</span>
+            <span class="factor-pill-value warning">Warm</span>
+          </div>
+          <div class="factor-pill">
+            <span class="factor-pill-label">Vacancy</span>
+            <span class="factor-pill-value positive">&lt;5%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Section -->
+      <div class="price-section">
+        <div class="section-label">Price Targets</div>
+        <div class="price-cards">
+          <div class="price-card">
+            <div class="price-card-label">Breakeven</div>
+            <div class="price-card-value num">$782,400</div>
+            <div class="price-card-desc">Max for $0 cashflow</div>
+          </div>
+          <div class="price-card active">
+            <div class="price-card-label">Target Buy</div>
+            <div class="price-card-value num">$736,665</div>
+            <div class="price-card-desc">Positive Cashflow</div>
+          </div>
+          <div class="price-card">
+            <div class="price-card-label">Wholesale</div>
+            <div class="price-card-value num">$547,400</div>
+            <div class="price-card-desc">30% net discount</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <div class="metric-icon cash">$</div>
+          <div class="metric-label">Monthly Cash Flow</div>
+          <div class="metric-value num">$482</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-icon investment">↓</div>
+          <div class="metric-label">Cash Required</div>
+          <div class="metric-value num">$184K</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-icon rate">%</div>
+          <div class="metric-label">Cap Rate</div>
+          <div class="metric-value num">5.69%</div>
+        </div>
+      </div>
+
+      <!-- Financial Breakdown -->
+      <div class="breakdown-section">
+        <div class="breakdown-header">
+          <span class="breakdown-title">Financial Breakdown</span>
+          <span class="breakdown-toggle">▼</span>
+        </div>
+        <div class="breakdown-content">
+          <div class="breakdown-group">
+            <div class="breakdown-group-header">
+              <span class="breakdown-group-title">Purchase Terms</span>
+              <button class="breakdown-group-action">Adjust →</button>
+            </div>
+            <div class="breakdown-row highlight">
+              <span class="breakdown-row-label">Target Buy Price</span>
+              <span class="breakdown-row-value num">$736,665</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Down Payment (25%)</span>
+              <span class="breakdown-row-value num">$184,166</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Loan Amount</span>
+              <span class="breakdown-row-value num">$552,499</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Interest Rate</span>
+              <span class="breakdown-row-value num">7.00%</span>
+            </div>
+          </div>
+
+          <div class="breakdown-group">
+            <div class="breakdown-group-header">
+              <span class="breakdown-group-title">Rental Income</span>
+              <button class="breakdown-group-action">Adjust →</button>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Monthly Rent</span>
+              <span class="breakdown-row-value num">$5,800</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Vacancy (5%)</span>
+              <span class="breakdown-row-value num">-$290</span>
+            </div>
+            <div class="breakdown-row summary">
+              <span class="breakdown-row-label">Effective Gross Income</span>
+              <span class="breakdown-row-value num">$5,510</span>
+            </div>
+          </div>
+
+          <div class="breakdown-group">
+            <div class="breakdown-group-header">
+              <span class="breakdown-group-title">Operating Expenses</span>
+              <button class="breakdown-group-action">Adjust →</button>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Property Taxes</span>
+              <span class="breakdown-row-value num">$613</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Insurance</span>
+              <span class="breakdown-row-value num">$245</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Repairs & CapEx</span>
+              <span class="breakdown-row-value num">$580</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-row-label">Management (8%)</span>
+              <span class="breakdown-row-value num">$464</span>
+            </div>
+            <div class="breakdown-row summary">
+              <span class="breakdown-row-label">Total Operating Expenses</span>
+              <span class="breakdown-row-value num">$1,902</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Links -->
+      <div class="info-section">
+        <a href="#" class="info-link">📊 How VerdictIQ Works</a>
+        <a href="#" class="info-link">🎯 Scoring Methodology</a>
+        <a href="#" class="info-link">📥 Export Report</a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      Powered by <span class="footer-brand">DealMaker IQ</span> • Real Estate Investment Analytics
+    </div>
+  </div>
+</body>
+</html>

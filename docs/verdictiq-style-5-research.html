@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VerdictIQ - Style 5: Investment Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       INVESTMENT RESEARCH STYLE
+       
+       Design Philosophy:
+       - Professional research report aesthetic
+       - Serif typography for authority (like WSJ, research firms)
+       - Clear visual hierarchy with sections
+       - Chart/gauge emphasis for quick scanning
+       - Confidence through structure and completeness
+       - Print-ready professional appearance
+       ======================================== */
+    
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #F7F5F2;
+      --paper: #FFFFFF;
+      --ink: #1C1917;
+      --ink-secondary: #57534E;
+      --ink-muted: #A8A29E;
+      --accent: #0F766E;
+      --accent-light: #14B8A6;
+      --accent-bg: rgba(15, 118, 110, 0.08);
+      --warning: #B45309;
+      --warning-bg: rgba(180, 83, 9, 0.08);
+      --success: #15803D;
+      --success-bg: rgba(21, 128, 61, 0.08);
+      --border: #E7E5E4;
+      --border-strong: #D6D3D1;
+    }
+
+    html {
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.6;
+      padding: 32px 16px;
+    }
+
+    .serif {
+      font-family: 'Source Serif 4', Georgia, serif;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Layout */
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Paper */
+    .paper {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Document Header */
+    .doc-header {
+      padding: 32px 40px;
+      border-bottom: 3px double var(--border-strong);
+    }
+
+    .doc-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    .doc-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .doc-brand-logo {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .doc-brand-text {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--ink-secondary);
+    }
+
+    .doc-meta {
+      text-align: right;
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    .doc-meta-row {
+      margin-bottom: 2px;
+    }
+
+    .doc-title {
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .doc-subtitle {
+      font-size: 14px;
+      color: var(--ink-secondary);
+    }
+
+    .strategy-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-radius: 3px;
+      margin-left: 12px;
+    }
+
+    /* Executive Summary */
+    .exec-summary {
+      padding: 32px 40px;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 40px;
+    }
+
+    .verdict-gauge {
+      text-align: center;
+    }
+
+    .gauge-container {
+      width: 160px;
+      height: 100px;
+      margin: 0 auto 16px;
+      position: relative;
+    }
+
+    .gauge-arc {
+      width: 160px;
+      height: 80px;
+      border: 12px solid var(--border);
+      border-bottom: none;
+      border-radius: 80px 80px 0 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gauge-fill {
+      position: absolute;
+      bottom: 0;
+      left: -12px;
+      right: -12px;
+      height: 80px;
+      border: 12px solid var(--accent);
+      border-bottom: none;
+      border-radius: 80px 80px 0 0;
+      clip-path: polygon(0 100%, 0 20%, 100% 20%, 100% 100%);
+    }
+
+    .gauge-score {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .gauge-label {
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+    }
+
+    .verdict-rating {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 20px;
+      background: var(--accent);
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      border-radius: 4px;
+    }
+
+    .summary-content h3 {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 12px;
+    }
+
+    .summary-text {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--ink-secondary);
+      margin-bottom: 20px;
+    }
+
+    .factors-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .factor-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--bg);
+      border-radius: 4px;
+    }
+
+    .factor-name {
+      font-size: 12px;
+      color: var(--ink-secondary);
+    }
+
+    .factor-value {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .factor-value.positive { color: var(--success); }
+    .factor-value.warning { color: var(--warning); }
+    .factor-value.accent { color: var(--accent); }
+
+    /* Section */
+    .section {
+      padding: 32px 40px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section:last-child {
+      border-bottom: none;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+
+    /* Price Recommendation */
+    .price-rec {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .price-box {
+      padding: 24px 20px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      text-align: center;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+
+    .price-box:hover {
+      border-color: var(--accent);
+    }
+
+    .price-box.recommended {
+      background: var(--accent-bg);
+      border: 2px solid var(--accent);
+      position: relative;
+    }
+
+    .price-box.recommended::before {
+      content: 'RECOMMENDED';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 2px 10px;
+      background: var(--accent);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      border-radius: 3px;
+    }
+
+    .price-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 10px;
+    }
+
+    .price-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .price-box.recommended .price-value {
+      color: var(--accent);
+    }
+
+    .price-desc {
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    /* Metrics Table */
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .metrics-table thead {
+      background: var(--bg);
+    }
+
+    .metrics-table th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .metrics-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .metrics-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .metrics-table .metric-name {
+      color: var(--ink);
+    }
+
+    .metrics-table .metric-value {
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .metrics-table .metric-benchmark {
+      text-align: right;
+      color: var(--ink-muted);
+      font-size: 12px;
+    }
+
+    .metrics-table .metric-assessment {
+      text-align: center;
+    }
+
+    .assessment-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .assessment-badge.good {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .assessment-badge.fair {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    .assessment-badge.strong {
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+
+    /* Financial Breakdown */
+    .breakdown-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border);
+    }
+
+    .breakdown-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      padding: 10px 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breakdown-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .breakdown-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .breakdown-table .row-label {
+      color: var(--ink-secondary);
+    }
+
+    .breakdown-table .row-value {
+      text-align: right;
+      font-weight: 500;
+    }
+
+    .breakdown-table .section-row {
+      background: var(--accent-bg);
+    }
+
+    .breakdown-table .section-row td {
+      font-weight: 600;
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .breakdown-table .subtotal-row {
+      background: var(--bg);
+    }
+
+    .breakdown-table .subtotal-row td {
+      font-weight: 600;
+    }
+
+    .breakdown-table .highlight-row {
+      background: var(--success-bg);
+    }
+
+    .breakdown-table .highlight-row td {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    /* Footer */
+    .doc-footer {
+      padding: 24px 40px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-link {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Disclaimer */
+    .disclaimer {
+      margin-top: 24px;
+      padding: 20px 24px;
+      background: var(--paper);
+      border: 1px solid var(--border);
+      font-size: 10px;
+      color: var(--ink-muted);
+      line-height: 1.6;
+    }
+
+    .disclaimer-title {
+      font-weight: 600;
+      color: var(--ink-secondary);
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="paper">
+      <!-- Document Header -->
+      <div class="doc-header">
+        <div class="doc-top-row">
+          <div class="doc-brand">
+            <div class="doc-brand-logo">IQ</div>
+            <div class="doc-brand-text">DealMaker IQ Research</div>
+          </div>
+          <div class="doc-meta">
+            <div class="doc-meta-row">Report Date: February 1, 2026</div>
+            <div class="doc-meta-row">Reference: VIQ-2026-0201-LTR</div>
+          </div>
+        </div>
+        <h1 class="doc-title serif">
+          Investment Verdict Analysis
+          <span class="strategy-tag">Long-Term Rental</span>
+        </h1>
+        <p class="doc-subtitle">Comprehensive investment analysis and price recommendation</p>
+      </div>
+
+      <!-- Executive Summary -->
+      <div class="exec-summary">
+        <div class="verdict-gauge">
+          <div class="gauge-container">
+            <div class="gauge-arc">
+              <div class="gauge-fill"></div>
+            </div>
+            <div class="gauge-score mono">78</div>
+          </div>
+          <div class="gauge-label">Investment Score</div>
+          <div class="verdict-rating">GOOD BUY</div>
+        </div>
+        <div class="summary-content">
+          <h3>Executive Summary</h3>
+          <p class="summary-text">
+            This property presents a <strong>favorable investment opportunity</strong> with a calculated deal gap of -5.5%, 
+            indicating the target price is achievable through standard negotiation. Market conditions support rental demand 
+            with vacancy rates below 5%. Seller motivation is moderate, suggesting room for price discussion.
+          </p>
+          <div class="factors-list">
+            <div class="factor-item">
+              <span class="factor-name">Deal Gap</span>
+              <span class="factor-value positive mono">-5.5%</span>
+            </div>
+            <div class="factor-item">
+              <span class="factor-name">Seller Urgency</span>
+              <span class="factor-value warning">Medium</span>
+            </div>
+            <div class="factor-item">
+              <span class="factor-name">Market Temperature</span>
+              <span class="factor-value warning">Warm</span>
+            </div>
+            <div class="factor-item">
+              <span class="factor-name">Vacancy Rate</span>
+              <span class="factor-value positive">&lt;5%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Recommendation -->
+      <div class="section">
+        <h2 class="section-title serif">Price Recommendation</h2>
+        <div class="price-rec">
+          <div class="price-box">
+            <div class="price-label">Breakeven</div>
+            <div class="price-value mono">$782,400</div>
+            <div class="price-desc">Maximum price for $0 annual cashflow</div>
+          </div>
+          <div class="price-box recommended">
+            <div class="price-label">Target Buy</div>
+            <div class="price-value mono">$736,665</div>
+            <div class="price-desc">Positive cashflow at target cap rate</div>
+          </div>
+          <div class="price-box">
+            <div class="price-label">Wholesale</div>
+            <div class="price-value mono">$547,400</div>
+            <div class="price-desc">30% net discount for assignment</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="section">
+        <h2 class="section-title serif">Performance Metrics</h2>
+        <table class="metrics-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th style="text-align: right;">Value</th>
+              <th style="text-align: right;">Benchmark</th>
+              <th style="text-align: center;">Assessment</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="metric-name">Monthly Cash Flow</td>
+              <td class="metric-value mono">$482</td>
+              <td class="metric-benchmark">&gt; $200/month</td>
+              <td class="metric-assessment"><span class="assessment-badge good">Good</span></td>
+            </tr>
+            <tr>
+              <td class="metric-name">Cash Required</td>
+              <td class="metric-value mono">$184,166</td>
+              <td class="metric-benchmark">25% down + closing</td>
+              <td class="metric-assessment"><span class="assessment-badge fair">Standard</span></td>
+            </tr>
+            <tr>
+              <td class="metric-name">Cap Rate</td>
+              <td class="metric-value mono">5.69%</td>
+              <td class="metric-benchmark">&gt; 5.0%</td>
+              <td class="metric-assessment"><span class="assessment-badge good">Good</span></td>
+            </tr>
+            <tr>
+              <td class="metric-name">Cash-on-Cash Return</td>
+              <td class="metric-value mono">3.14%</td>
+              <td class="metric-benchmark">&gt; 8.0%</td>
+              <td class="metric-assessment"><span class="assessment-badge fair">Fair</span></td>
+            </tr>
+            <tr>
+              <td class="metric-name">DSCR</td>
+              <td class="metric-value mono">1.08</td>
+              <td class="metric-benchmark">&gt; 1.20</td>
+              <td class="metric-assessment"><span class="assessment-badge fair">Fair</span></td>
+            </tr>
+            <tr>
+              <td class="metric-name">Gross Rent Multiplier</td>
+              <td class="metric-value mono">10.6</td>
+              <td class="metric-benchmark">&lt; 12</td>
+              <td class="metric-assessment"><span class="assessment-badge good">Good</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Financial Breakdown -->
+      <div class="section">
+        <h2 class="section-title serif">Financial Breakdown</h2>
+        <table class="breakdown-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th style="text-align: right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="section-row">
+              <td colspan="2">Purchase Terms</td>
+            </tr>
+            <tr class="highlight-row">
+              <td class="row-label">Target Buy Price</td>
+              <td class="row-value mono">$736,665</td>
+            </tr>
+            <tr>
+              <td class="row-label">Down Payment (25%)</td>
+              <td class="row-value mono">$184,166</td>
+            </tr>
+            <tr>
+              <td class="row-label">Loan Amount</td>
+              <td class="row-value mono">$552,499</td>
+            </tr>
+            <tr>
+              <td class="row-label">Interest Rate</td>
+              <td class="row-value mono">7.00%</td>
+            </tr>
+            <tr>
+              <td class="row-label">Monthly P&I</td>
+              <td class="row-value mono">$3,676</td>
+            </tr>
+            
+            <tr class="section-row">
+              <td colspan="2">Rental Income</td>
+            </tr>
+            <tr>
+              <td class="row-label">Monthly Rent</td>
+              <td class="row-value mono">$5,800</td>
+            </tr>
+            <tr>
+              <td class="row-label">Vacancy Loss (5%)</td>
+              <td class="row-value mono">-$290</td>
+            </tr>
+            <tr class="subtotal-row">
+              <td class="row-label">Effective Gross Income</td>
+              <td class="row-value mono">$5,510</td>
+            </tr>
+
+            <tr class="section-row">
+              <td colspan="2">Operating Expenses</td>
+            </tr>
+            <tr>
+              <td class="row-label">Property Taxes</td>
+              <td class="row-value mono">$613</td>
+            </tr>
+            <tr>
+              <td class="row-label">Insurance</td>
+              <td class="row-value mono">$245</td>
+            </tr>
+            <tr>
+              <td class="row-label">Repairs (5%)</td>
+              <td class="row-value mono">$290</td>
+            </tr>
+            <tr>
+              <td class="row-label">Capital Expenditures (5%)</td>
+              <td class="row-value mono">$290</td>
+            </tr>
+            <tr>
+              <td class="row-label">Property Management (8%)</td>
+              <td class="row-value mono">$464</td>
+            </tr>
+            <tr class="subtotal-row">
+              <td class="row-label">Total Operating Expenses</td>
+              <td class="row-value mono">$1,902</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer -->
+      <div class="doc-footer">
+        <div>© 2026 DealMaker IQ • Professional Investment Research</div>
+        <div class="footer-links">
+          <a href="#" class="footer-link">Methodology</a>
+          <a href="#" class="footer-link">Assumptions</a>
+          <a href="#" class="footer-link">Export PDF</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <div class="disclaimer-title">Important Disclosures</div>
+      This investment analysis report is provided for informational purposes only and does not constitute financial, investment, legal, or tax advice. 
+      All projections, estimates, and calculations are based on the assumptions provided and are subject to change. Actual results may vary significantly 
+      from projected values. Past performance is not indicative of future results. Real estate investments involve significant risks including, but not 
+      limited to, market risk, interest rate risk, and liquidity risk. Investors should conduct their own independent due diligence and consult with 
+      qualified professionals before making any investment decisions.
+    </div>
+  </div>
+</body>
+</html>

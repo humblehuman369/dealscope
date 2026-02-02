@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VerdictIQ - Style 7: Quantum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       QUANTUM STYLE
+       
+       Design Philosophy:
+       - Quantum computing / particle physics inspired
+       - Deep space blacks with iridescent accents
+       - Abstract geometric patterns
+       - Holographic/prismatic color shifts
+       - Precision and complexity feel
+       ======================================== */
+    
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --void: #030712;
+      --space: #0C1222;
+      --nebula: #1A1F35;
+      --qubit-1: #00FFFF;
+      --qubit-2: #FF00FF;
+      --qubit-3: #7C3AED;
+      --prism: linear-gradient(135deg, #00FFFF, #7C3AED, #FF00FF, #F472B6);
+      --success: #34D399;
+      --warning: #FBBF24;
+      --text-bright: #F9FAFB;
+      --text-dim: #9CA3AF;
+      --text-muted: #6B7280;
+      --border-prism: linear-gradient(135deg, rgba(0, 255, 255, 0.3), rgba(124, 58, 237, 0.3), rgba(255, 0, 255, 0.3));
+    }
+
+    @keyframes prismShift {
+      0% { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(360deg); }
+    }
+
+    @keyframes orbitSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes particlePulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.5); opacity: 0.5; }
+    }
+
+    html {
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'Outfit', -apple-system, sans-serif;
+      background: var(--void);
+      color: var(--text-bright);
+      min-height: 100vh;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    /* Quantum field background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse at 30% 20%, rgba(0, 255, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(255, 0, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(124, 58, 237, 0.03) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .mono {
+      font-family: 'IBM Plex Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Layout */
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 32px 16px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 28px;
+      background: var(--space);
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      border-radius: 16px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--prism);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--prism);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--void);
+      position: relative;
+    }
+
+    .brand-icon::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 14px;
+      background: var(--prism);
+      z-index: -1;
+      filter: blur(8px);
+      opacity: 0.5;
+    }
+
+    .brand-name {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-name span {
+      background: var(--prism);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .quantum-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(124, 58, 237, 0.15);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 24px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--qubit-3);
+      letter-spacing: 0.5px;
+    }
+
+    .quantum-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--prism);
+      border-radius: 50%;
+      animation: particlePulse 2s ease-in-out infinite;
+    }
+
+    /* Main Card */
+    .main-card {
+      background: var(--space);
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Quantum Score */
+    .score-section {
+      padding: 48px 40px;
+      text-align: center;
+      position: relative;
+      background: linear-gradient(180deg, var(--space) 0%, var(--nebula) 100%);
+    }
+
+    .quantum-orbit {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 28px;
+      position: relative;
+    }
+
+    .orbit-ring {
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 50%;
+      animation: orbitSpin 20s linear infinite;
+    }
+
+    .orbit-ring::before {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 6px;
+      height: 6px;
+      background: var(--qubit-1);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--qubit-1);
+    }
+
+    .orbit-ring:nth-child(2) {
+      inset: 20px;
+      animation-duration: 15s;
+      animation-direction: reverse;
+    }
+
+    .orbit-ring:nth-child(2)::before {
+      background: var(--qubit-2);
+      box-shadow: 0 0 10px var(--qubit-2);
+    }
+
+    .orbit-ring:nth-child(3) {
+      inset: 40px;
+      animation-duration: 10s;
+    }
+
+    .orbit-ring:nth-child(3)::before {
+      background: var(--qubit-3);
+      box-shadow: 0 0 10px var(--qubit-3);
+    }
+
+    .score-core {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100px;
+      height: 100px;
+      background: var(--void);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(124, 58, 237, 0.5);
+      box-shadow: 0 0 40px rgba(124, 58, 237, 0.3);
+    }
+
+    .score-value {
+      font-size: 38px;
+      font-weight: 800;
+      background: var(--prism);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+
+    .score-unit {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .verdict-title {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      background: var(--prism);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .verdict-subtitle {
+      font-size: 14px;
+      color: var(--text-dim);
+      font-weight: 300;
+    }
+
+    /* Factors */
+    .factors-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      margin-top: 32px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(124, 58, 237, 0.2);
+    }
+
+    .factor-item {
+      padding: 20px 16px;
+      text-align: center;
+      background: var(--void);
+      border-right: 1px solid rgba(124, 58, 237, 0.2);
+    }
+
+    .factor-item:last-child {
+      border-right: none;
+    }
+
+    .factor-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .factor-value {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .factor-value.positive { color: var(--success); }
+    .factor-value.warning { color: var(--warning); }
+    .factor-value.qubit { color: var(--qubit-1); }
+
+    /* Price Section */
+    .price-section {
+      padding: 36px;
+      border-top: 1px solid rgba(124, 58, 237, 0.2);
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--qubit-3);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .price-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .price-card {
+      padding: 28px 20px;
+      background: var(--void);
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      border-radius: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .price-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--prism);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .price-card:hover::before {
+      opacity: 0.05;
+    }
+
+    .price-card.active {
+      border-color: var(--qubit-3);
+      box-shadow: 0 0 40px rgba(124, 58, 237, 0.3);
+    }
+
+    .price-card.active::before {
+      opacity: 0.1;
+    }
+
+    .price-card-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .price-card.active .price-card-label {
+      color: var(--qubit-3);
+    }
+
+    .price-card-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-bright);
+      margin-bottom: 8px;
+      position: relative;
+    }
+
+    .price-card.active .price-card-value {
+      background: var(--prism);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .price-card-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 300;
+      position: relative;
+    }
+
+    /* Metrics */
+    .metrics-strip {
+      display: flex;
+      border-top: 1px solid rgba(124, 58, 237, 0.2);
+      border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+    }
+
+    .metric-cell {
+      flex: 1;
+      padding: 24px;
+      text-align: center;
+      background: var(--void);
+      border-right: 1px solid rgba(124, 58, 237, 0.2);
+    }
+
+    .metric-cell:last-child {
+      border-right: none;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      background: var(--prism);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Breakdown */
+    .breakdown-section {
+      padding: 32px 36px;
+    }
+
+    .breakdown-group {
+      margin-bottom: 20px;
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .breakdown-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: linear-gradient(90deg, rgba(0, 255, 255, 0.05), rgba(124, 58, 237, 0.05), rgba(255, 0, 255, 0.05));
+    }
+
+    .breakdown-group-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: var(--prism);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .breakdown-group-action {
+      font-size: 11px;
+      color: var(--qubit-2);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 18px;
+      font-size: 13px;
+      border-top: 1px solid rgba(124, 58, 237, 0.1);
+    }
+
+    .breakdown-row-label {
+      color: var(--text-dim);
+    }
+
+    .breakdown-row-value {
+      font-weight: 500;
+      color: var(--text-bright);
+    }
+
+    .breakdown-row.highlight {
+      background: rgba(52, 211, 153, 0.1);
+    }
+
+    .breakdown-row.highlight .breakdown-row-value {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    /* Footer */
+    .footer {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      padding: 24px;
+      border-top: 1px solid rgba(124, 58, 237, 0.2);
+    }
+
+    .footer-link {
+      font-size: 12px;
+      color: var(--qubit-3);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-link:hover {
+      color: var(--qubit-2);
+    }
+
+    .credits {
+      text-align: center;
+      padding: 20px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .credits-brand {
+      background: var(--prism);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <div class="header">
+      <div class="brand">
+        <div class="brand-icon">IQ</div>
+        <div class="brand-name">Verdict<span>IQ</span></div>
+      </div>
+      <div class="quantum-badge">
+        <div class="quantum-dot"></div>
+        Quantum Analysis
+      </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="main-card">
+      <!-- Score Section -->
+      <div class="score-section">
+        <div class="quantum-orbit">
+          <div class="orbit-ring"></div>
+          <div class="orbit-ring"></div>
+          <div class="orbit-ring"></div>
+          <div class="score-core">
+            <span class="score-value mono">78</span>
+            <span class="score-unit">Qscore</span>
+          </div>
+        </div>
+
+        <h2 class="verdict-title">Good Opportunity</h2>
+        <p class="verdict-subtitle">Quantum probability matrix indicates favorable outcome</p>
+
+        <div class="factors-row">
+          <div class="factor-item">
+            <div class="factor-label">Deal Gap</div>
+            <div class="factor-value positive mono">-5.5%</div>
+          </div>
+          <div class="factor-item">
+            <div class="factor-label">Urgency</div>
+            <div class="factor-value warning">Medium</div>
+          </div>
+          <div class="factor-item">
+            <div class="factor-label">Market</div>
+            <div class="factor-value warning">Warm</div>
+          </div>
+          <div class="factor-item">
+            <div class="factor-label">Vacancy</div>
+            <div class="factor-value qubit">&lt;5%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Section -->
+      <div class="price-section">
+        <div class="section-label">Price Probability States</div>
+        <div class="price-grid">
+          <div class="price-card">
+            <div class="price-card-label">Breakeven</div>
+            <div class="price-card-value mono">$782,400</div>
+            <div class="price-card-desc">Max for $0 cashflow</div>
+          </div>
+          <div class="price-card active">
+            <div class="price-card-label">Target Buy</div>
+            <div class="price-card-value mono">$736,665</div>
+            <div class="price-card-desc">Optimal state</div>
+          </div>
+          <div class="price-card">
+            <div class="price-card-label">Wholesale</div>
+            <div class="price-card-value mono">$547,400</div>
+            <div class="price-card-desc">30% discount</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metrics-strip">
+        <div class="metric-cell">
+          <div class="metric-label">Cash Flow</div>
+          <div class="metric-value mono">$482</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-label">Cash Required</div>
+          <div class="metric-value mono">$184K</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-label">Cap Rate</div>
+          <div class="metric-value mono">5.69%</div>
+        </div>
+      </div>
+
+      <!-- Breakdown -->
+      <div class="breakdown-section">
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Purchase Terms</span>
+            <button class="breakdown-group-action">Adjust →</button>
+          </div>
+          <div class="breakdown-row highlight">
+            <span class="breakdown-row-label">Target Buy Price</span>
+            <span class="breakdown-row-value mono">$736,665</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Down Payment (25%)</span>
+            <span class="breakdown-row-value mono">$184,166</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Loan Amount</span>
+            <span class="breakdown-row-value mono">$552,499</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Interest Rate</span>
+            <span class="breakdown-row-value mono">7.00%</span>
+          </div>
+        </div>
+
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Income & Expenses</span>
+            <button class="breakdown-group-action">Adjust →</button>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Monthly Rent</span>
+            <span class="breakdown-row-value mono">$5,800</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Effective Gross Income</span>
+            <span class="breakdown-row-value mono">$5,510</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Operating Expenses</span>
+            <span class="breakdown-row-value mono">$1,902</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <a href="#" class="footer-link">◈ Quantum Methodology</a>
+        <a href="#" class="footer-link">◈ Probability Matrix</a>
+        <a href="#" class="footer-link">◈ Export</a>
+      </div>
+    </div>
+
+    <!-- Credits -->
+    <div class="credits">
+      Powered by <span class="credits-brand">DealMaker IQ Quantum Engine</span>
+    </div>
+  </div>
+</body>
+</html>

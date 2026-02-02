@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VerdictIQ - Style 1: Bloomberg Professional</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       BLOOMBERG PROFESSIONAL STYLE
+       
+       Design Philosophy:
+       - Dark terminal-like interface (traders trust dark UIs)
+       - Data-dense layout with clear hierarchy
+       - Green for positive, amber for neutral, red for negative
+       - Monospace numbers for precision feel
+       - Minimal decoration, maximum information
+       ======================================== */
+    
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0D1117;
+      --bg-secondary: #161B22;
+      --bg-tertiary: #21262D;
+      --bg-hover: #30363D;
+      --border: #30363D;
+      --text-primary: #F0F6FC;
+      --text-secondary: #8B949E;
+      --text-muted: #6E7681;
+      --green: #3FB950;
+      --green-dim: rgba(63, 185, 80, 0.15);
+      --amber: #D29922;
+      --amber-dim: rgba(210, 153, 34, 0.15);
+      --red: #F85149;
+      --red-dim: rgba(248, 81, 73, 0.15);
+      --blue: #58A6FF;
+      --cyan: #39D0D6;
+    }
+
+    html {
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', 'SF Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Layout */
+    .page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* Header Bar */
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .ticker {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--cyan);
+      letter-spacing: 0.5px;
+    }
+
+    .property-type {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .timestamp {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Score Panel */
+    .score-panel {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .verdict-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .verdict-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+    }
+
+    .verdict-score {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .verdict-rating {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .verdict-bar {
+      height: 4px;
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+      margin-top: 12px;
+      overflow: hidden;
+    }
+
+    .verdict-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      width: 78%;
+      border-radius: 2px;
+    }
+
+    /* Factors Grid */
+    .factors-grid {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+    }
+
+    .factors-header {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .factor-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--bg-tertiary);
+    }
+
+    .factor-row:last-child {
+      border-bottom: none;
+    }
+
+    .factor-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .factor-value {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .factor-value.positive { color: var(--green); }
+    .factor-value.neutral { color: var(--amber); }
+    .factor-value.negative { color: var(--red); }
+
+    .factor-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .factor-badge.positive {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .factor-badge.neutral {
+      background: var(--amber-dim);
+      color: var(--amber);
+    }
+
+    /* Price Cards */
+    .price-section {
+      margin-bottom: 12px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px 4px 0 0;
+      border-bottom: none;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .section-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .price-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 0 0 4px 4px;
+    }
+
+    .price-card {
+      padding: 16px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+
+    .price-card:last-child {
+      border-right: none;
+    }
+
+    .price-card:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .price-card.active {
+      background: var(--green-dim);
+      border-bottom: 2px solid var(--green);
+    }
+
+    .price-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .price-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .price-card.active .price-value {
+      color: var(--green);
+    }
+
+    .price-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Metrics Row */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .metric-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .metric-value.warning {
+      color: var(--amber);
+    }
+
+    /* Financial Breakdown */
+    .breakdown-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .breakdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .breakdown-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .breakdown-toggle {
+      color: var(--cyan);
+      font-size: 12px;
+    }
+
+    .breakdown-content {
+      padding: 0;
+    }
+
+    .breakdown-group {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breakdown-group:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(57, 208, 214, 0.08);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breakdown-group-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .breakdown-group-action {
+      font-size: 11px;
+      color: var(--cyan);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--bg-tertiary);
+    }
+
+    .breakdown-row:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-row-label {
+      color: var(--text-secondary);
+    }
+
+    .breakdown-row-value {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .breakdown-row.highlight {
+      background: var(--green-dim);
+    }
+
+    .breakdown-row.highlight .breakdown-row-value {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .breakdown-row.summary {
+      background: var(--bg-tertiary);
+    }
+
+    .breakdown-row.summary .breakdown-row-value {
+      font-weight: 700;
+    }
+
+    /* Info Links */
+    .info-links {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .info-link {
+      font-size: 12px;
+      color: var(--cyan);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .info-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .footer-brand {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header Bar -->
+    <div class="header-bar">
+      <div class="header-left">
+        <div class="ticker mono">VERDICT IQ</div>
+        <div class="property-type">Long-Term Rental Analysis</div>
+      </div>
+      <div class="timestamp mono">Updated: Feb 01, 2026 04:52 EST</div>
+    </div>
+
+    <!-- Score Panel -->
+    <div class="score-panel">
+      <div class="verdict-box">
+        <div class="verdict-label">Investment Score</div>
+        <div class="verdict-score mono">78</div>
+        <div class="verdict-rating">GOOD BUY</div>
+        <div class="verdict-bar">
+          <div class="verdict-bar-fill"></div>
+        </div>
+      </div>
+
+      <div class="factors-grid">
+        <div class="factors-header">Opportunity Factors</div>
+        <div class="factor-row">
+          <span class="factor-label">Deal Gap</span>
+          <span class="factor-value positive mono">-5.5%</span>
+        </div>
+        <div class="factor-row">
+          <span class="factor-label">Gap Analysis</span>
+          <span class="factor-badge positive">Likely Achievable</span>
+        </div>
+        <div class="factor-row">
+          <span class="factor-label">Seller Urgency</span>
+          <span class="factor-badge neutral">Medium</span>
+        </div>
+        <div class="factor-row">
+          <span class="factor-label">Market Temp</span>
+          <span class="factor-badge neutral">Warm</span>
+        </div>
+        <div class="factor-row">
+          <span class="factor-label">Vacancy Rate</span>
+          <span class="factor-badge positive">&lt;5% Health</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Price Section -->
+    <div class="price-section">
+      <div class="section-header">
+        <span class="section-title">Price Targets</span>
+        <span class="section-subtitle">Based on Target Buy @ 8% Cap</span>
+      </div>
+      <div class="price-grid">
+        <div class="price-card">
+          <div class="price-label">Breakeven</div>
+          <div class="price-value mono">$782,400</div>
+          <div class="price-desc">Max for $0 cashflow</div>
+        </div>
+        <div class="price-card active">
+          <div class="price-label">Target Buy</div>
+          <div class="price-value mono">$736,665</div>
+          <div class="price-desc">Positive Cashflow</div>
+        </div>
+        <div class="price-card">
+          <div class="price-label">Wholesale</div>
+          <div class="price-value mono">$547,400</div>
+          <div class="price-desc">30% net discount</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="metrics-row">
+      <div class="metric-box">
+        <div class="metric-label">Cash Flow</div>
+        <div class="metric-value mono">$482</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Cash Needed</div>
+        <div class="metric-value warning mono">$184K</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Cap Rate</div>
+        <div class="metric-value mono">5.69%</div>
+      </div>
+    </div>
+
+    <!-- Financial Breakdown -->
+    <div class="breakdown-section">
+      <div class="breakdown-header">
+        <span class="breakdown-title">Financial Breakdown</span>
+        <span class="breakdown-toggle">▼</span>
+      </div>
+      <div class="breakdown-content">
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Purchase Terms</span>
+            <button class="breakdown-group-action">Adjust →</button>
+          </div>
+          <div class="breakdown-row highlight">
+            <span class="breakdown-row-label">Target Buy Price</span>
+            <span class="breakdown-row-value mono">$736,665</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Down Payment (25%)</span>
+            <span class="breakdown-row-value mono">$184,166</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Loan Amount</span>
+            <span class="breakdown-row-value mono">$552,499</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Interest Rate</span>
+            <span class="breakdown-row-value mono">7.00%</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Monthly P&I</span>
+            <span class="breakdown-row-value mono">$3,676</span>
+          </div>
+        </div>
+
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Rental Income</span>
+            <button class="breakdown-group-action">Adjust →</button>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Monthly Rent</span>
+            <span class="breakdown-row-value mono">$5,800</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Vacancy (5%)</span>
+            <span class="breakdown-row-value mono">-$290</span>
+          </div>
+          <div class="breakdown-row summary">
+            <span class="breakdown-row-label">Effective Gross Income</span>
+            <span class="breakdown-row-value mono">$5,510</span>
+          </div>
+        </div>
+
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Operating Expenses</span>
+            <button class="breakdown-group-action">Adjust →</button>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Property Taxes</span>
+            <span class="breakdown-row-value mono">$613</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Insurance</span>
+            <span class="breakdown-row-value mono">$245</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Repairs (5%)</span>
+            <span class="breakdown-row-value mono">$290</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">CapEx (5%)</span>
+            <span class="breakdown-row-value mono">$290</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Management (8%)</span>
+            <span class="breakdown-row-value mono">$464</span>
+          </div>
+          <div class="breakdown-row summary">
+            <span class="breakdown-row-label">Total Operating Expenses</span>
+            <span class="breakdown-row-value mono">$1,902</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Links -->
+    <div class="info-links">
+      <a href="#" class="info-link">• How VerdictIQ Works</a>
+      <a href="#" class="info-link">• How We Score</a>
+      <a href="#" class="info-link">• Methodology</a>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      Powered by <span class="footer-brand">DealMaker IQ</span> • Real Estate Investment Analytics
+    </div>
+  </div>
+</body>
+</html>

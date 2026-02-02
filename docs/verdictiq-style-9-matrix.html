@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VerdictIQ - Style 9: Data Matrix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       DATA MATRIX STYLE
+       
+       Design Philosophy:
+       - Clean data visualization focus
+       - Animated progress bars and gauges
+       - Modern gradients with depth
+       - Dashboard-style metrics grid
+       - Confidence through data clarity
+       ======================================== */
+    
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #F0F4F8;
+      --surface: #FFFFFF;
+      --elevated: #FFFFFF;
+      --primary-start: #3B82F6;
+      --primary-end: #8B5CF6;
+      --primary: #6366F1;
+      --success-start: #10B981;
+      --success-end: #059669;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --text-dark: #0F172A;
+      --text-body: #334155;
+      --text-muted: #64748B;
+      --text-light: #94A3B8;
+      --border: #E2E8F0;
+      --shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 12px 48px rgba(15, 23, 42, 0.12);
+    }
+
+    @keyframes progressFill {
+      from { width: 0; }
+      to { width: var(--progress); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    html {
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text-body);
+      min-height: 100vh;
+      line-height: 1.5;
+      padding: 32px 16px;
+    }
+
+    .mono {
+      font-family: 'DM Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Layout */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .brand-text {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .brand-text span {
+      background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .strategy-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-body);
+      box-shadow: var(--shadow);
+    }
+
+    .strategy-dot {
+      width: 8px;
+      height: 8px;
+      background: linear-gradient(135deg, var(--success-start), var(--success-end));
+      border-radius: 50%;
+    }
+
+    /* Main Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    /* Score Card */
+    .score-card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+    }
+
+    .score-ring-container {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+
+    .score-ring-bg {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--border) 0deg 360deg
+      );
+      padding: 8px;
+    }
+
+    .score-ring-progress {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 180deg,
+        var(--primary-start) 0deg,
+        var(--primary-end) 140deg,
+        var(--success) 220deg,
+        transparent 280deg
+      );
+      padding: 8px;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .score-ring-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .score-value {
+      font-size: 56px;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1;
+    }
+
+    .score-max {
+      font-size: 14px;
+      color: var(--text-light);
+      margin-top: 2px;
+    }
+
+    .verdict-label {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .verdict-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Confidence Bars */
+    .confidence-section {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .confidence-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .confidence-bar {
+      margin-bottom: 14px;
+    }
+
+    .confidence-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .confidence-label {
+      font-size: 12px;
+      color: var(--text-body);
+    }
+
+    .confidence-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .confidence-track {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      border-radius: 3px;
+      animation: progressFill 1s ease-out forwards;
+    }
+
+    .confidence-fill.primary {
+      background: linear-gradient(90deg, var(--primary-start), var(--primary-end));
+      --progress: 78%;
+    }
+
+    .confidence-fill.success {
+      background: linear-gradient(90deg, var(--success-start), var(--success-end));
+    }
+
+    .confidence-fill.warning {
+      background: var(--warning);
+    }
+
+    /* Right Column */
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Factors Grid */
+    .factors-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .factors-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .factor-box {
+      padding: 16px 12px;
+      background: var(--bg);
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .factor-value {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .factor-value.positive { color: var(--success); }
+    .factor-value.warning { color: var(--warning); }
+    .factor-value.primary { color: var(--primary); }
+
+    .factor-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .factor-status {
+      font-size: 9px;
+      margin-top: 4px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .factor-status.good {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+
+    .factor-status.fair {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+    }
+
+    /* Price Cards */
+    .price-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .price-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .price-box {
+      padding: 20px 16px;
+      background: var(--bg);
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+
+    .price-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    .price-box.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08));
+      border-color: var(--primary);
+    }
+
+    .price-type {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .price-box.active .price-type {
+      color: var(--primary);
+    }
+
+    .price-amount {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .price-box.active .price-amount {
+      background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .price-desc {
+      font-size: 10px;
+      color: var(--text-light);
+    }
+
+    /* Metrics Strip */
+    .metrics-card {
+      background: var(--surface);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .metric-item {
+      padding: 24px 16px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+    }
+
+    .metric-item:last-child {
+      border-right: none;
+    }
+
+    .metric-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .metric-icon.cash {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15));
+      color: var(--success);
+    }
+
+    .metric-icon.invest {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.15));
+      color: var(--warning);
+    }
+
+    .metric-icon.rate {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+      color: var(--primary);
+    }
+
+    .metric-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Full Width Section */
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    /* Breakdown Card */
+    .breakdown-card {
+      background: var(--surface);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      margin-top: 24px;
+    }
+
+    .breakdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .breakdown-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .breakdown-toggle {
+      font-size: 12px;
+      color: var(--primary);
+    }
+
+    .breakdown-content {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .breakdown-group {
+      background: var(--surface);
+      padding: 20px;
+    }
+
+    .breakdown-group-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .breakdown-action {
+      font-size: 10px;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breakdown-row:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-row-label {
+      color: var(--text-muted);
+    }
+
+    .breakdown-row-value {
+      font-weight: 500;
+      color: var(--text-dark);
+    }
+
+    .breakdown-row.highlight {
+      background: rgba(16, 185, 129, 0.08);
+      margin: 0 -20px;
+      padding: 8px 20px;
+      border-radius: 6px;
+    }
+
+    .breakdown-row.highlight .breakdown-row-value {
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .breakdown-row.total {
+      margin-top: 8px;
+      padding-top: 12px;
+      border-top: 2px solid var(--border);
+      border-bottom: none;
+    }
+
+    .breakdown-row.total .breakdown-row-value {
+      font-weight: 700;
+    }
+
+    /* Footer */
+    .footer {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      padding: 32px;
+      margin-top: 24px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <div class="header">
+      <div class="brand">
+        <div class="brand-icon">IQ</div>
+        <div class="brand-text">Verdict<span>IQ</span></div>
+      </div>
+      <div class="strategy-pill">
+        <div class="strategy-dot"></div>
+        Long-Term Rental
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+      <!-- Score Card -->
+      <div class="score-card">
+        <div class="score-ring-container">
+          <div class="score-ring-bg">
+            <div class="score-ring-inner"></div>
+          </div>
+          <div class="score-ring-progress">
+            <div class="score-ring-inner">
+              <div class="score-value mono">78</div>
+              <div class="score-max">/ 100</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="verdict-label">Good Opportunity</div>
+        <div class="verdict-desc">Deal gap likely achievable with negotiation</div>
+
+        <div class="confidence-section">
+          <div class="confidence-title">Confidence Metrics</div>
+          
+          <div class="confidence-bar">
+            <div class="confidence-header">
+              <span class="confidence-label">Deal Probability</span>
+              <span class="confidence-value mono">78%</span>
+            </div>
+            <div class="confidence-track">
+              <div class="confidence-fill primary" style="--progress: 78%"></div>
+            </div>
+          </div>
+
+          <div class="confidence-bar">
+            <div class="confidence-header">
+              <span class="confidence-label">Market Alignment</span>
+              <span class="confidence-value mono">65%</span>
+            </div>
+            <div class="confidence-track">
+              <div class="confidence-fill success" style="--progress: 65%"></div>
+            </div>
+          </div>
+
+          <div class="confidence-bar">
+            <div class="confidence-header">
+              <span class="confidence-label">Price Confidence</span>
+              <span class="confidence-value mono">82%</span>
+            </div>
+            <div class="confidence-track">
+              <div class="confidence-fill success" style="--progress: 82%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="right-column">
+        <!-- Factors -->
+        <div class="factors-card">
+          <div class="card-title">Opportunity Factors</div>
+          <div class="factors-grid">
+            <div class="factor-box">
+              <div class="factor-value positive mono">-5.5%</div>
+              <div class="factor-label">Deal Gap</div>
+              <div class="factor-status good">Achievable</div>
+            </div>
+            <div class="factor-box">
+              <div class="factor-value warning">Medium</div>
+              <div class="factor-label">Urgency</div>
+              <div class="factor-status fair">Moderate</div>
+            </div>
+            <div class="factor-box">
+              <div class="factor-value warning">Warm</div>
+              <div class="factor-label">Market</div>
+              <div class="factor-status fair">Competitive</div>
+            </div>
+            <div class="factor-box">
+              <div class="factor-value positive">&lt;5%</div>
+              <div class="factor-label">Vacancy</div>
+              <div class="factor-status good">Healthy</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price Cards -->
+        <div class="price-card">
+          <div class="card-title">Price Targets</div>
+          <div class="price-grid">
+            <div class="price-box">
+              <div class="price-type">Breakeven</div>
+              <div class="price-amount mono">$782,400</div>
+              <div class="price-desc">Max for $0 cashflow</div>
+            </div>
+            <div class="price-box active">
+              <div class="price-type">Target Buy</div>
+              <div class="price-amount mono">$736,665</div>
+              <div class="price-desc">Positive cashflow</div>
+            </div>
+            <div class="price-box">
+              <div class="price-type">Wholesale</div>
+              <div class="price-amount mono">$547,400</div>
+              <div class="price-desc">30% discount</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="metrics-card">
+          <div class="metrics-grid">
+            <div class="metric-item">
+              <div class="metric-icon cash">$</div>
+              <div class="metric-value mono">$482</div>
+              <div class="metric-label">Monthly Cash Flow</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-icon invest">↓</div>
+              <div class="metric-value mono">$184K</div>
+              <div class="metric-label">Cash Required</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-icon rate">%</div>
+              <div class="metric-value mono">5.69%</div>
+              <div class="metric-label">Cap Rate</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Breakdown (Full Width) -->
+    <div class="breakdown-card">
+      <div class="breakdown-header">
+        <span class="breakdown-title">Financial Breakdown</span>
+        <span class="breakdown-toggle">▼ Expand All</span>
+      </div>
+      <div class="breakdown-content">
+        <div class="breakdown-group">
+          <div class="breakdown-group-title">
+            Purchase Terms
+            <button class="breakdown-action">Adjust →</button>
+          </div>
+          <div class="breakdown-row highlight">
+            <span class="breakdown-row-label">Target Buy Price</span>
+            <span class="breakdown-row-value mono">$736,665</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Down Payment</span>
+            <span class="breakdown-row-value mono">$184,166</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Loan Amount</span>
+            <span class="breakdown-row-value mono">$552,499</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Interest Rate</span>
+            <span class="breakdown-row-value mono">7.00%</span>
+          </div>
+        </div>
+
+        <div class="breakdown-group">
+          <div class="breakdown-group-title">
+            Rental Income
+            <button class="breakdown-action">Adjust →</button>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Monthly Rent</span>
+            <span class="breakdown-row-value mono">$5,800</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Vacancy (5%)</span>
+            <span class="breakdown-row-value mono">-$290</span>
+          </div>
+          <div class="breakdown-row total">
+            <span class="breakdown-row-label">Effective Income</span>
+            <span class="breakdown-row-value mono">$5,510</span>
+          </div>
+        </div>
+
+        <div class="breakdown-group">
+          <div class="breakdown-group-title">
+            Expenses
+            <button class="breakdown-action">Adjust →</button>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Property Taxes</span>
+            <span class="breakdown-row-value mono">$613</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Insurance</span>
+            <span class="breakdown-row-value mono">$245</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Repairs & CapEx</span>
+            <span class="breakdown-row-value mono">$580</span>
+          </div>
+          <div class="breakdown-row total">
+            <span class="breakdown-row-label">Total Expenses</span>
+            <span class="breakdown-row-value mono">$1,902</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <a href="#" class="footer-link">📊 How VerdictIQ Works</a>
+      <a href="#" class="footer-link">🎯 Scoring Methodology</a>
+      <a href="#" class="footer-link">📥 Export Report</a>
+    </div>
+  </div>
+</body>
+</html>
