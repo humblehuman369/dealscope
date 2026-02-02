@@ -644,15 +644,15 @@ export function VerdictIQCombined({
         .filter(Boolean)
         .join(', ')
       
-      // Excel export only - include strategy and price target
+      // Excel export only - include strategy
+      // Note: priceTarget support to be added when backend API is updated
       blob = await api.proforma.downloadExcel({
         propertyId: propertyIdToUse,
         address: fullAddress,
         strategy,
         holdPeriodYears: 10,
-        priceTarget: activePriceTarget,
       })
-      filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_${strategy.toUpperCase()}_${activePriceTarget}.xlsx`
+      filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_${strategy.toUpperCase()}.xlsx`
 
       // Create download link and trigger download
       const url = window.URL.createObjectURL(blob)
