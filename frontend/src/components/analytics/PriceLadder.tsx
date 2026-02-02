@@ -28,7 +28,8 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0 
   }).format(value)
 
-export function PriceLadder({ title = 'PRICING SCALE', rungs }: PriceLadderProps) {
+export function PriceLadder({ title = 'PRICING SCALE', rungs, isOffMarket = false, listingStatus }: PriceLadderProps) {
+  const priceLabel = useMemo(() => getPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus])
   const listRung = rungs.find(r => r.type === 'list')
   const breakevenRung = rungs.find(r => r.type === 'breakeven')
   const targetRung = rungs.find(r => r.type === 'target')
@@ -103,7 +104,7 @@ export function PriceLadder({ title = 'PRICING SCALE', rungs }: PriceLadderProps
           {/* List Price - Bottom */}
           {listRung && (
             <div>
-              <div className="text-xs font-bold text-red-500">List Price</div>
+              <div className="text-xs font-bold text-red-500">{priceLabel}</div>
               <div className="text-xs font-bold text-slate-900 dark:text-white">{formatCurrency(listRung.price)}</div>
               <div className="text-[9px] text-slate-500 dark:text-white/50">{Math.round(listRung.percentOfList)}%</div>
             </div>
@@ -125,13 +126,14 @@ export function generatePriceLadder(
   breakevenPrice: number,
   breakevenName: string = 'Breakeven',
   breakevenDescription: string = '$0 monthly cash flow',
-  openingOfferPercent: number = 0.70
+  openingOfferPercent: number = 0.70,
+  priceLabel: string = 'List Price'
 ): PriceRung[] {
   const ninetyPercent = listPrice * 0.90
   const openingOffer = listPrice * openingOfferPercent
 
   const rungs: PriceRung[] = [
-    { type: 'list', name: 'List Price', description: 'Current asking price', price: listPrice, percentOfList: 100 },
+    { type: 'list', name: priceLabel, description: 'Current asking price', price: listPrice, percentOfList: 100 },
     { type: 'ninety', name: '90% of List', description: 'Common investor threshold', price: ninetyPercent, percentOfList: 90 },
     { type: 'breakeven', name: breakevenName, description: breakevenDescription, price: breakevenPrice, percentOfList: (breakevenPrice / listPrice) * 100 },
     { type: 'target', name: `🎯 ${targetName}`, description: targetDescription, price: targetPrice, percentOfList: (targetPrice / listPrice) * 100, isHighlighted: true },

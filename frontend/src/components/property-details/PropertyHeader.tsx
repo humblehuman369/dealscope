@@ -1,8 +1,10 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Bed, Bath, Square, Calendar, Clock } from 'lucide-react'
 import { PropertyData } from './types'
 import { formatCurrency, formatNumber } from './utils'
+import { getPriceLabel } from '@/lib/priceUtils'
 
 interface PropertyHeaderProps {
   property: PropertyData
@@ -15,6 +17,7 @@ interface PropertyHeaderProps {
  * price, and key stats (beds, baths, sqft, year built).
  */
 export function PropertyHeader({ property }: PropertyHeaderProps) {
+  const priceLabel = useMemo(() => getPriceLabel(property.isOffMarket, property.listingStatus), [property.isOffMarket, property.listingStatus])
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-5">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
@@ -33,7 +36,7 @@ export function PropertyHeader({ property }: PropertyHeaderProps) {
             {formatCurrency(property.price)}
           </div>
           <div className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
-            List Price
+            {priceLabel}
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
+import { getPriceLabel, getAtPriceLabel } from '@/lib/priceUtils'
 
 /**
  * CompareToggle Component
@@ -26,24 +27,32 @@ interface CompareToggleProps {
     target: string
     list: string
   }
+  /** Whether property is off-market */
+  isOffMarket?: boolean
+  /** Listing status */
+  listingStatus?: string
 }
 
 export function CompareToggle({
   activeView,
   onChange,
-  labels = { target: 'At IQ Target', list: 'At List Price' }
+  labels,
+  isOffMarket = false,
+  listingStatus,
 }: CompareToggleProps) {
+  const dynamicListLabel = useMemo(() => getAtPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus])
+  const effectiveLabels = labels || { target: 'At IQ Target', list: dynamicListLabel }
   return (
     <div className="flex justify-center mb-4">
       <div className="inline-flex bg-white/[0.03] border border-white/[0.06] rounded-xl p-1">
         <ToggleButton
-          label={labels.target}
+          label={effectiveLabels.target}
           isActive={activeView === 'target'}
           variant="target"
           onClick={() => onChange('target')}
         />
         <ToggleButton
-          label={labels.list}
+          label={effectiveLabels.list}
           isActive={activeView === 'list'}
           variant="list"
           onClick={() => onChange('list')}

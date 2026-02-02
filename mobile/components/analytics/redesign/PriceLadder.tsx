@@ -8,10 +8,13 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { PriceRung } from './types';
+import { getPriceLabel } from '../../../utils/priceUtils';
 
 interface PriceLadderProps {
   rungs: PriceRung[];
   isDark?: boolean;
+  isOffMarket?: boolean;
+  listingStatus?: string;
 }
 
 const formatCurrency = (value: number): string =>
@@ -22,7 +25,8 @@ const formatCurrency = (value: number): string =>
     maximumFractionDigits: 0,
   }).format(value);
 
-export function PriceLadder({ rungs, isDark = true }: PriceLadderProps) {
+export function PriceLadder({ rungs, isDark = true, isOffMarket = false, listingStatus }: PriceLadderProps) {
+  const priceLabel = useMemo(() => getPriceLabel(isOffMarket, listingStatus), [isOffMarket, listingStatus]);
   // Sort rungs by price descending to get positions
   const sortedRungs = useMemo(() => 
     [...rungs].sort((a, b) => b.price - a.price), 
@@ -157,7 +161,7 @@ export function PriceLadder({ rungs, isDark = true }: PriceLadderProps) {
           {/* List Price */}
           {listRung && (
             <View style={[styles.priceLabel, { top: `${getPosition(listRung.price) * 0.7 + 3}%` as any }]}>
-              <Text style={styles.priceLabelTitle}>List Price</Text>
+              <Text style={styles.priceLabelTitle}>{priceLabel}</Text>
               <Text style={[styles.priceLabelSub, { color: mutedColor }]}>
                 Current Asking
               </Text>
@@ -207,12 +211,13 @@ export function generatePriceLadder(
   breakevenPrice?: number,
   breakevenLabel: string = 'Breakeven',
   breakevenDescription?: string,
-  openingOfferPct: number = 0.70
+  openingOfferPct: number = 0.70,
+  priceLabel: string = 'List Price'
 ): PriceRung[] {
   const rungs: PriceRung[] = [
     {
       id: 'list',
-      label: 'List Price',
+      label: priceLabel,
       price: listPrice,
       percentOfList: 1.0,
     },

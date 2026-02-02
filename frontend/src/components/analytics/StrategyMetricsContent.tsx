@@ -32,6 +32,7 @@ import {
   createSTRIncomeBreakdown
 } from './index'
 import { StrategyId, BenchmarkConfig, TuneGroup, LeveragePoint } from './types'
+import { getReturnsAtPriceLabel } from '@/lib/priceUtils'
 import { IQTargetResult, TargetAssumptions, getMetricsAtPrice } from '@/lib/iqTarget'
 
 // ============================================

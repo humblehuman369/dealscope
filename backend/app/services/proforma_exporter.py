@@ -13,6 +13,15 @@ from io import BytesIO
 from app.schemas.proforma import FinancialProforma
 
 
+def get_price_label(is_off_market: bool = False, listing_status: str = None) -> str:
+    """Get appropriate price label based on property status."""
+    if is_off_market:
+        return "Est. Market Value"
+    if listing_status == "PENDING":
+        return "List Price (Pending)"
+    return "List Price"
+
+
 class ProformaExcelExporter:
     """Generate professional Excel proforma workbooks."""
     
@@ -36,9 +45,10 @@ class ProformaExcelExporter:
         bottom=Side(style='thin')
     )
     
-    def __init__(self, proforma: FinancialProforma):
+    def __init__(self, proforma: FinancialProforma, is_off_market: bool = False, listing_status: str = None):
         self.data = proforma
         self.wb = Workbook()
+        self.price_label = get_price_label(is_off_market, listing_status)
         
     def generate(self) -> BytesIO:
         """Generate complete proforma workbook."""
@@ -91,7 +101,7 @@ class ProformaExcelExporter:
         
         acq_rows = [
             ("Purchase Price", self.data.acquisition.purchase_price, "currency"),
-            ("List Price", self.data.acquisition.list_price, "currency"),
+            (self.price_label, self.data.acquisition.list_price, "currency"),
             ("Discount from List", self.data.acquisition.discount_from_list / 100, "percent"),
             ("Closing Costs", self.data.acquisition.closing_costs, "currency"),
             ("Rehab/Renovation", self.data.acquisition.rehab_costs, "currency"),
