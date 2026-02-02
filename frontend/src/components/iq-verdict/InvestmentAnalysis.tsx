@@ -7,9 +7,29 @@
  * Redesigned with elevated Target Buy card and reordered metrics.
  */
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { ChevronDown, HelpCircle, Info } from 'lucide-react'
 import { formatPrice } from './types'
+
+// Dynamic font size based on price length
+function getPriceFontSize(value: number, isPrimary: boolean = false): string {
+  const formatted = formatPrice(value)
+  const length = formatted.length
+  
+  if (isPrimary) {
+    // Primary card (Target Buy) - starts larger
+    if (length <= 8) return 'text-2xl'      // $999,999
+    if (length <= 10) return 'text-xl'      // $9,999,999
+    if (length <= 12) return 'text-lg'      // $99,999,999
+    return 'text-base'                       // $999,999,999+
+  } else {
+    // Standard cards (Breakeven, Wholesale)
+    if (length <= 8) return 'text-xl'       // $999,999
+    if (length <= 10) return 'text-lg'      // $9,999,999
+    if (length <= 12) return 'text-base'    // $99,999,999
+    return 'text-sm'                         // $999,999,999+
+  }
+}
 
 interface FinancingDefaults {
   down_payment_pct: number
@@ -58,13 +78,15 @@ function PriceCard({
   value: number
   desc: string 
 }) {
+  const fontSize = getPriceFontSize(value, false)
+  
   return (
     <div className="bg-white border border-[#E2E8F0] p-4 text-center">
       <div className="text-[10px] font-semibold uppercase tracking-wide text-[#64748B] mb-2 flex items-center justify-center gap-1">
         {label}
         <Info className="w-3 h-3 text-[#94A3B8]" />
       </div>
-      <div className="text-xl font-bold text-[#0A1628] mb-1">
+      <div className={`${fontSize} font-bold text-[#0A1628] mb-1 truncate`}>
         {formatPrice(value)}
       </div>
       <div className="text-[11px] text-[#94A3B8] leading-tight">{desc}</div>
@@ -82,6 +104,8 @@ function PrimaryPriceCard({
   value: number
   desc: string 
 }) {
+  const fontSize = getPriceFontSize(value, true)
+  
   return (
     <div className="bg-white border-2 border-[#0891B2] p-4 text-center relative overflow-hidden">
       {/* Teal top accent bar */}
@@ -90,7 +114,7 @@ function PrimaryPriceCard({
         {label}
         <Info className="w-3 h-3 text-[#0891B2]" />
       </div>
-      <div className="text-2xl font-bold text-[#0891B2] mb-1">
+      <div className={`${fontSize} font-bold text-[#0891B2] mb-1 truncate`}>
         {formatPrice(value)}
       </div>
       <div className="text-[11px] text-[#94A3B8] leading-tight">{desc}</div>
@@ -98,14 +122,25 @@ function PrimaryPriceCard({
   )
 }
 
+// Dynamic font size for metric values
+function getMetricFontSize(value: string): string {
+  const length = value.length
+  if (length <= 8) return 'text-lg'       // $99,999 or 6.9%
+  if (length <= 10) return 'text-base'    // $999,999
+  if (length <= 12) return 'text-sm'      // $9,999,999
+  return 'text-xs'                         // Larger values
+}
+
 // Metric Pill component
 function MetricPill({ label, value }: { label: string; value: string }) {
+  const fontSize = getMetricFontSize(value)
+  
   return (
     <div className="border border-[#E2E8F0] p-4 text-center">
       <div className="text-[10px] font-semibold uppercase tracking-wide text-[#64748B] mb-1">
         {label}
       </div>
-      <div className="text-lg font-bold text-[#0891B2]">
+      <div className={`${fontSize} font-bold text-[#0891B2] truncate`}>
         {value}
       </div>
     </div>
