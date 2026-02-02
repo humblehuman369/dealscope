@@ -433,7 +433,8 @@ export function VerdictIQCombined({
       // House Hack fields
       totalUnits: overrideValues?.totalUnits ?? 4,
       ownerOccupiedUnits: overrideValues?.ownerOccupiedUnits ?? 1,
-      avgRentPerUnit: overrideValues?.avgRentPerUnit ?? monthlyRent / 4,
+      // Calculate avgRentPerUnit based on actual totalUnits, not hardcoded 4
+      avgRentPerUnit: overrideValues?.avgRentPerUnit ?? monthlyRent / (overrideValues?.totalUnits ?? 4),
       currentHousingPayment: overrideValues?.currentHousingPayment ?? 2000,
       pmiRate: (overrideValues?.pmiRate ?? 0.85) / 100,
       // Wholesale fields
@@ -772,7 +773,7 @@ export function VerdictIQCombined({
           // House Hack props
           totalUnits={overrideValues?.totalUnits ?? 4}
           ownerOccupiedUnits={overrideValues?.ownerOccupiedUnits ?? 1}
-          avgRentPerUnit={overrideValues?.avgRentPerUnit ?? Math.round((property.monthlyRent ?? buyPrice * 0.007) / 4)}
+          avgRentPerUnit={overrideValues?.avgRentPerUnit ?? Math.round((property.monthlyRent ?? buyPrice * 0.007) / (overrideValues?.totalUnits ?? 4))}
           currentHousingPayment={overrideValues?.currentHousingPayment ?? 2000}
           pmiRate={overrideValues?.pmiRate ?? 0.85}
           // Wholesale props
