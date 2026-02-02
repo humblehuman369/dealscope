@@ -654,16 +654,6 @@ export function VerdictIQCombined({
           {/* Expandable Content */}
           {showPriceLikelihood && (
             <div className="px-5 pb-4">
-              {/* Off-Market Info Banner */}
-              {isOffMarket && (
-                <div className="flex items-start gap-2.5 p-3 bg-[#F1F5F9] rounded-lg mb-4 border-l-[3px] border-l-[#0891B2]">
-                  <AlertCircle className="w-[18px] h-[18px] text-[#0891B2] flex-shrink-0 mt-0.5" />
-                  <div className="text-xs text-[#475569] leading-relaxed">
-                    <strong className="text-[#0891B2]">Off-Market Property:</strong> No asking price available. Using {priceSource} of {formatPrice(estValue)} for Deal Gap calculation.
-                  </div>
-                </div>
-              )}
-
               {/* Deal Gap */}
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
@@ -690,6 +680,16 @@ export function VerdictIQCombined({
                 </div>
               </div>
 
+              {/* Off-Market Info Banner - Moved to bottom of Deal Gap */}
+              {isOffMarket && (
+                <div className="flex items-start gap-2.5 p-3 bg-[#F1F5F9] rounded-lg mb-4 border-l-[3px] border-l-[#0891B2]">
+                  <AlertCircle className="w-[18px] h-[18px] text-[#0891B2] flex-shrink-0 mt-0.5" />
+                  <div className="text-xs text-[#475569] leading-relaxed">
+                    <strong className="text-[#0891B2]">Off-Market Property:</strong> No asking price available. Using {priceSource} of {formatPrice(estValue)} for Deal Gap calculation.
+                  </div>
+                </div>
+              )}
+
               {/* Seller Motivation */}
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
@@ -707,20 +707,6 @@ export function VerdictIQCombined({
               <div className="flex justify-between items-center py-2">
                 <span className="text-[13px] text-[#64748B]">Max achievable discount</span>
                 <span className="text-[13px] font-semibold text-[#0A1628]">{sellerMotivation.maxDiscount}</span>
-              </div>
-
-              {/* Suggested Offer */}
-            <div 
-              className="relative rounded-xl p-4 mt-3 border border-[#0891B2]"
-              style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #E0F7FA 100%)' }}
-            >
-                <span className="absolute -top-2 left-4 bg-[#0891B2] text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
-                  Recommended
-                </span>
-                <div className="flex justify-between items-center">
-                  <span className="text-[13px] text-[#0A1628] font-medium">Suggested opening offer</span>
-                  <span className="text-base font-bold text-[#0891B2]">{sellerMotivation.suggestedOffer}</span>
-                </div>
               </div>
 
               {/* Additional Opportunity Factors - Integrated */}
