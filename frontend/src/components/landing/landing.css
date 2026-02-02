@@ -218,7 +218,7 @@
    HERO SECTION
    ===================================================== */
 .landing-page .hero {
-  padding: 100px 0 64px;
+  padding: 50px 0 64px;
   background: linear-gradient(to bottom, var(--bg-secondary), var(--bg-primary));
   position: relative;
   overflow: hidden;
@@ -226,7 +226,7 @@
 
 @media (min-width: 768px) {
   .landing-page .hero {
-    padding: 160px 0 96px;
+    padding: 80px 0 96px;
   }
 }
 
@@ -258,6 +258,24 @@
 
 .landing-page .hero-text {
   animation: fadeInUp 0.8s ease-out;
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .landing-page .hero-text {
+    text-align: left;
+  }
+}
+
+.landing-page .hero-badge-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .landing-page .hero-badge-wrapper {
+    justify-content: flex-start;
+  }
 }
 
 @keyframes fadeInUp {

@@ -95,9 +95,11 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
           <div className="hero-grid">
             {/* Text Content */}
             <div className="hero-text">
-              <div className="hero-badge">
-                <span className="hero-badge-dot" />
-                Early Access — Limited Release
+              <div className="hero-badge-wrapper">
+                <div className="hero-badge">
+                  <span className="hero-badge-dot" />
+                  Early Access — Limited Release
+                </div>
               </div>
               
               <h1 className="font-display">
