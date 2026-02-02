@@ -298,8 +298,9 @@ function CTASection({ onNavigateToDealMaker }: { onNavigateToDealMaker?: () => v
 export function PerformanceBenchmarksSection({ 
   metrics,
   onNavigateToDealMaker,
-  defaultExpanded = true 
+  defaultExpanded = false 
 }: PerformanceBenchmarksSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
   const [showHelp, setShowHelp] = useState(false)
 
   // Group metrics by category
@@ -308,72 +309,77 @@ export function PerformanceBenchmarksSection({
 
   return (
     <div className="bg-white border-b border-[#E2E8F0]">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#F1F5F9]">
-        <div className="flex items-center gap-3">
-          <div 
-            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #0A1628 0%, #1E293B 100%)' }}
-          >
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#00D4FF" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-            </svg>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[15px] font-semibold text-[#0A1628]">Performance Benchmarks</span>
-            <span className="text-xs text-[#94A3B8]">How this deal compares</span>
-          </div>
+      {/* Header - Clickable to expand/collapse */}
+      <button 
+        className="w-full flex items-center justify-between px-5 py-3.5 bg-transparent border-none cursor-pointer text-left hover:bg-[#F8FAFC] transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex flex-col">
+          <span className="text-[15px] font-semibold text-[#0A1628]">Performance Benchmarks</span>
+          <span className="text-xs text-[#94A3B8]">How this deal compares</span>
         </div>
-        <button 
-          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer border-none transition-all ${
-            showHelp 
-              ? 'bg-[#F0FDFA] text-[#0891B2]' 
-              : 'bg-transparent text-[#0891B2] hover:bg-[#F8FAFC]'
-          }`}
-          onClick={() => setShowHelp(!showHelp)}
-        >
+        <div className="flex items-center gap-2">
+          {isExpanded && (
+            <span 
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                showHelp 
+                  ? 'bg-[#F0FDFA] text-[#0891B2]' 
+                  : 'bg-transparent text-[#0891B2] hover:bg-[#F8FAFC]'
+              }`}
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowHelp(!showHelp)
+              }}
+            >
+              How to read
+            </span>
+          )}
           <ChevronDown 
-            className={`w-4 h-4 transition-transform ${showHelp ? 'rotate-180' : ''}`} 
+            className={`w-4 h-4 text-[#64748B] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
           />
-          How to read
-        </button>
-      </div>
+        </div>
+      </button>
 
-      {/* How to Read Dropdown */}
-      {showHelp && <HowToReadDropdown />}
+      {/* Expandable Content */}
+      {isExpanded && (
+        <>
+          {/* How to Read Dropdown */}
+          {showHelp && <HowToReadDropdown />}
 
-      {/* Benchmark Intro with Legend */}
-      <BenchmarkIntro />
+          {/* Benchmark Intro with Legend */}
+          <BenchmarkIntro />
 
-      {/* Benchmarks Container */}
-      <div className="py-4 px-5 pb-5">
-        {/* Returns Category */}
-        {returnsMetrics.length > 0 && (
-          <>
-            <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide text-center py-2.5 bg-[#F8FAFC] rounded-lg mb-3">
-              Returns
-            </div>
-            {returnsMetrics.map((metric) => (
-              <BenchmarkRow key={metric.key} metric={metric} />
-            ))}
-          </>
-        )}
+          {/* Benchmarks Container */}
+          <div className="py-4 px-5 pb-5">
+            {/* Returns Category */}
+            {returnsMetrics.length > 0 && (
+              <>
+                <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide text-center py-2.5 bg-[#F8FAFC] rounded-lg mb-3">
+                  Returns
+                </div>
+                {returnsMetrics.map((metric) => (
+                  <BenchmarkRow key={metric.key} metric={metric} />
+                ))}
+              </>
+            )}
 
-        {/* Cash Flow & Risk Category */}
-        {cashflowMetrics.length > 0 && (
-          <>
-            <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide text-center py-2.5 bg-[#F8FAFC] rounded-lg mt-5 mb-3">
-              Cash Flow & Risk
-            </div>
-            {cashflowMetrics.map((metric) => (
-              <BenchmarkRow key={metric.key} metric={metric} />
-            ))}
-          </>
-        )}
+            {/* Cash Flow & Risk Category */}
+            {cashflowMetrics.length > 0 && (
+              <>
+                <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide text-center py-2.5 bg-[#F8FAFC] rounded-lg mt-5 mb-3">
+                  Cash Flow & Risk
+                </div>
+                {cashflowMetrics.map((metric) => (
+                  <BenchmarkRow key={metric.key} metric={metric} />
+                ))}
+              </>
+            )}
 
-        {/* CTA Section */}
-        <CTASection onNavigateToDealMaker={onNavigateToDealMaker} />
-      </div>
+            {/* CTA Section */}
+            <CTASection onNavigateToDealMaker={onNavigateToDealMaker} />
+          </div>
+        </>
+      )}
     </div>
   )
 }

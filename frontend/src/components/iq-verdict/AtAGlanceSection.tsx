@@ -30,7 +30,7 @@ function getBarColor(value: number): string {
 export function AtAGlanceSection({ 
   bars, 
   compositeScore,
-  defaultExpanded = true 
+  defaultExpanded = false 
 }: AtAGlanceSectionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
@@ -41,19 +41,9 @@ export function AtAGlanceSection({
         className="w-full flex items-center justify-between px-5 py-3.5 bg-transparent border-none cursor-pointer text-left hover:bg-[#F8FAFC] transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex items-center gap-3">
-          <div 
-            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #0A1628 0%, #1E293B 100%)' }}
-          >
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#00D4FF" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-            </svg>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[15px] font-semibold text-[#0A1628]">At-a-Glance</span>
-            <span className="text-xs text-[#94A3B8]">Performance breakdown</span>
-          </div>
+        <div className="flex flex-col">
+          <span className="text-[15px] font-semibold text-[#0A1628]">At-a-Glance</span>
+          <span className="text-xs text-[#94A3B8]">Performance breakdown</span>
         </div>
         <ChevronDown 
           className={`w-4 h-4 text-[#64748B] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
