@@ -42,6 +42,7 @@ const MOCK_ANALYSIS: IQAnalysisResult = {
     motivation: 55,
     motivationLabel: 'Medium',
     daysOnMarket: 45,
+    buyerMarket: 'warm',
     distressedSale: false,
   },
   analyzedAt: new Date().toISOString(),
