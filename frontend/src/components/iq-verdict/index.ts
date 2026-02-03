@@ -21,6 +21,15 @@ export { InvestmentAnalysis } from './InvestmentAnalysis'
 export { SummarySnapshot } from './SummarySnapshot'
 export { AtAGlanceSection } from './AtAGlanceSection'
 export { PerformanceBenchmarksSection, NATIONAL_RANGES } from './PerformanceBenchmarksSection'
+export { FinancialBreakdown } from './FinancialBreakdown'
+
+// NEW Fresh Layout Components
+export { VerdictIQPageNew } from './VerdictIQPageNew'
+export { VerdictScoreHero } from './VerdictScoreHero'
+export { PropertyInfoDropdown } from './PropertyInfoDropdown'
+export { InvestmentAnalysisNew } from './InvestmentAnalysisNew'
+export { FinancialBreakdownColumns } from './FinancialBreakdownColumns'
+export { PerformanceMetricsTable, generateDefaultMetrics } from './PerformanceMetricsTable'
 
 // Decision-Grade UI Components
 export { PropertyContextBar } from './PropertyContextBar'
