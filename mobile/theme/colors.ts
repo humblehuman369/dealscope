@@ -270,9 +270,44 @@ export const a11y = {
 };
 
 // =============================================================================
+// DECISION-GRADE UI COLORS (High Contrast)
+// Per DealMakerIQ Design System & Style Guide
+// =============================================================================
+
+export const decisionGrade = {
+  // Core Brand - Per Style Guide
+  deepNavy: '#07172e',      // All primary text
+  pacificTeal: '#0891B2',   // Intelligence markers, positive signals
+  tealLight: '#06B6D4',     // Interactive states
+  electricCyan: '#00D4FF',  // Dark mode accents
+
+  // Semantic - Per Style Guide (NO GREEN - teal for positive)
+  positive: '#0891B2',      // Teal for positive signals
+  caution: '#B45309',       // Amber for caution
+  negative: '#DC2626',      // Red for loss/risk
+  infoBlue: '#3B82F6',      // Blue for informational
+
+  // Surfaces
+  bgPrimary: '#FFFFFF',
+  bgSecondary: '#F1F5F9',
+  bgSelected: '#E0F7FA',
+
+  // Borders (high contrast)
+  borderStrong: '#94A3B8',
+  borderMedium: '#CBD5E1',
+  borderLight: '#E2E8F0',
+
+  // Text - ALL readable (no washed-out text)
+  textPrimary: '#07172e',
+  textSecondary: '#07172e',   // Same as primary per Decision-Grade
+  textTertiary: '#07172e',    // Same as primary per Decision-Grade
+} as const;
+
+// =============================================================================
 // TYPE EXPORTS
 // =============================================================================
 
 export type ColorKey = keyof typeof colors;
 export type StrategyKey = keyof typeof colors.strategies;
 export type StatusType = 'profit' | 'loss' | 'warning' | 'info';
+export type DecisionGradeKey = keyof typeof decisionGrade;

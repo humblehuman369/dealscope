@@ -1,71 +1,50 @@
 /**
- * IQ Verdict Screen with CompactHeader
+ * VerdictIQ Screen - Decision-Grade UI
  * Route: /verdict-iq/[address]
  * 
- * Shows the IQ Verdict with ranked strategy recommendations
- * Uses the new CompactHeader design
+ * Complete VerdictIQ analysis page with high-contrast, decision-grade design
  */
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
 
-import { useTheme } from '../../context/ThemeContext';
-import { CompactHeader, PropertyData, NavItemId } from '../../components/header';
-import { colors } from '../../theme/colors';
+import { decisionGrade } from '../../theme/colors';
+import {
+  NavTabs,
+  NavTabId,
+  PropertyContextBar,
+  PropertyContextData,
+  VerdictHero,
+  InvestmentAnalysis,
+  IQPriceId,
+  IQPriceOption,
+  MetricData,
+  FinancialBreakdown,
+  BreakdownGroup,
+  DealGap,
+  AtAGlance,
+  GlanceMetric,
+  PerformanceBenchmarks,
+  BenchmarkGroup,
+} from '../../components/verdict-iq';
 
-// Types
-interface IQStrategy {
-  id: string;
-  name: string;
-  type?: string;
-  metric: string;
-  metricValue: number;
-  score: number;
-  badge: string | null;
-}
+// =============================================================================
+// MOCK DATA
+// =============================================================================
 
-// Helper functions
-const getScoreColor = (score: number): string => {
-  if (score >= 70) return colors.profit.main;
-  if (score >= 50) return '#0891B2';
-  if (score >= 30) return colors.warning.main;
-  return colors.loss.main;
-};
-
-const getGradeFromScore = (score: number): { label: string; grade: string } => {
-  if (score >= 85) return { label: 'STRONG', grade: 'A+' };
-  if (score >= 70) return { label: 'GOOD', grade: 'A' };
-  if (score >= 55) return { label: 'MODERATE', grade: 'B' };
-  if (score >= 40) return { label: 'POTENTIAL', grade: 'C' };
-  if (score >= 25) return { label: 'WEAK', grade: 'D' };
-  return { label: 'POOR', grade: 'F' };
-};
-
-const getGradeColor = (grade: string): string => {
-  if (grade.includes('A')) return colors.profit.main;
-  if (grade.includes('B')) return '#0891B2';
-  if (grade.includes('C')) return colors.warning.main;
-  return colors.loss.main;
-};
-
-const formatPrice = (price: number): string => {
-  return '$' + price.toLocaleString();
-};
-
-// Mock data
-const MOCK_PROPERTY: PropertyData = {
-  address: '1451 Sw 10th St',
+const MOCK_PROPERTY: PropertyContextData = {
+  street: '1451 SW 10th St.',
   city: 'Boca Raton',
   state: 'FL',
   zip: '33486',
@@ -73,68 +52,151 @@ const MOCK_PROPERTY: PropertyData = {
   baths: 2,
   sqft: 1722,
   price: 821000,
-  rent: 3200,
-  status: 'OFF-MARKET',
+  status: 'off-market',
   image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=200&h=150&fit=crop',
 };
 
-const MOCK_STRATEGIES: IQStrategy[] = [
-  { id: 'long-term-rental', name: 'Long-Term Rental', type: 'Annual', metric: '8.2%', metricValue: 8.2, score: 78, badge: 'Best Match' },
-  { id: 'short-term-rental', name: 'Short-Term Rental', type: 'Vacation', metric: '12.5%', metricValue: 12.5, score: 72, badge: 'Strong' },
-  { id: 'brrrr', name: 'BRRRR', metric: '15.8%', metricValue: 15.8, score: 68, badge: null },
-  { id: 'fix-and-flip', name: 'Fix & Flip', metric: '$52K', metricValue: 52000, score: 55, badge: null },
-  { id: 'house-hack', name: 'House Hack', metric: '65%', metricValue: 65, score: 48, badge: null },
-  { id: 'wholesale', name: 'Wholesale', metric: '$18K', metricValue: 18000, score: 35, badge: null },
+const STRATEGIES = [
+  'Long-term Rental',
+  'Short-term Rental',
+  'BRRRR',
+  'Fix & Flip',
+  'House Hack',
+  'Wholesale',
 ];
+
+const IQ_PRICES: IQPriceOption[] = [
+  { id: 'breakeven', label: 'BREAKEVEN', value: 784458, subtitle: 'Max price for $0 cashflow' },
+  { id: 'target', label: 'TARGET BUY', value: 745235, subtitle: 'Positive Cashflow' },
+  { id: 'wholesale', label: 'WHOLESALE', value: 549121, subtitle: '30% net discount for assignment' },
+];
+
+const METRICS: MetricData[] = [
+  { label: 'CASH FLOW', value: '$281/mo' },
+  { label: 'CASH NEEDED', value: '$171,404' },
+  { label: 'CAP RATE', value: '6.2%' },
+];
+
+const CONFIDENCE_METRICS = [
+  { label: 'Deal Probability', value: 78, color: 'teal' as const },
+  { label: 'Market Alignment', value: 54, color: 'amber' as const },
+  { label: 'Price Confidence', value: 65, color: 'teal' as const },
+];
+
+const PURCHASE_TERMS: BreakdownGroup = {
+  title: 'Purchase Terms',
+  adjustLabel: 'Adjust Terms',
+  rows: [
+    { label: 'Down Payment', value: '$147,333' },
+    { label: 'Down Payment %', value: '20.00%' },
+    { label: 'Loan Amount', value: '$586,332' },
+    { label: 'Interest Rate', value: '6.00%' },
+    { label: 'Loan Term (Years)', value: '30' },
+    { label: 'Monthly Payment (P&I)', value: '$3,533' },
+  ],
+};
+
+const INCOME: BreakdownGroup = {
+  title: 'Income',
+  adjustLabel: 'Adjust Income',
+  rows: [
+    { label: 'Gross Scheduled Rent', value: '$68,800' },
+    { label: 'Less: Vacancy Allowance', value: '($957)', isNegative: true },
+    { label: 'Other Income', value: '$0' },
+  ],
+  totalRow: { label: 'Effective Gross Income', value: '$65,990' },
+};
+
+const OPERATING_EXPENSES: BreakdownGroup = {
+  title: 'Operating Expenses',
+  adjustLabel: 'Adjust Expenses',
+  rows: [
+    { label: 'Property Taxes', value: '$6,840' },
+    { label: 'Insurance', value: '$7,367' },
+    { label: 'HOA Fees', value: '—' },
+    { label: 'Property Management', value: '—' },
+    { label: 'Maintenance & Repairs', value: '$3,333' },
+    { label: 'Utilities', value: '$1,200' },
+    { label: 'Capex Reserve', value: '$3,333' },
+  ],
+  totalRow: { label: 'Total Operating Expenses', value: '$24,073' },
+};
+
+const DEBT_SERVICE: BreakdownGroup = {
+  title: 'Debt Service',
+  rows: [
+    { label: 'Annual Mortgage (P&I)', value: '$42,400' },
+  ],
+};
+
+const GLANCE_METRICS: GlanceMetric[] = [
+  { label: 'Returns', value: 75, color: 'teal' },
+  { label: 'Cash Flow', value: 21, color: 'negative' },
+  { label: 'Equity Gain', value: 75, color: 'teal' },
+  { label: 'Debt Safety', value: 84, color: 'teal' },
+  { label: 'Cost Control', value: 55, color: 'amber' },
+  { label: 'Downside Risk', value: 18, color: 'negative' },
+];
+
+const BENCHMARK_GROUPS: BenchmarkGroup[] = [
+  {
+    title: 'Returns',
+    metrics: [
+      { label: 'Cash on Cash Return', value: '4.1%', position: 35, color: 'teal' },
+      { label: 'Cap Rate', value: '6.8%', position: 68, color: 'teal' },
+      { label: 'Total ROI (5yr)', value: '52%', position: 72, color: 'teal' },
+    ],
+  },
+  {
+    title: 'Cash Flow & Risk',
+    metrics: [
+      { label: 'Cash Flow Yield', value: '5.1%', position: 55, color: 'teal' },
+      { label: 'Debt Service Coverage', value: '1.20', position: 42, color: 'amber' },
+      { label: 'Expense Ratio', value: '23%', position: 25, color: 'negative' },
+      { label: 'Breakeven Occupancy', value: '82%', position: 78, color: 'teal' },
+    ],
+  },
+];
+
+// =============================================================================
+// SCREEN COMPONENT
+// =============================================================================
 
 export default function VerdictIQScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { isDark, toggleTheme } = useTheme();
   const { address } = useLocalSearchParams<{ address: string }>();
 
-  const [currentStrategy, setCurrentStrategy] = useState('Long-term');
-  const [activeNav, setActiveNav] = useState<NavItemId>('analysis');
-  const [showFactors, setShowFactors] = useState(false);
+  // State
+  const [activeTab, setActiveTab] = useState<NavTabId>('analyze');
+  const [currentStrategy, setCurrentStrategy] = useState('Long-term Rental');
+  const [selectedIQPrice, setSelectedIQPrice] = useState<IQPriceId>('target');
+  const [financialBreakdownOpen, setFinancialBreakdownOpen] = useState(true);
+  const [glanceOpen, setGlanceOpen] = useState(true);
 
   const decodedAddress = decodeURIComponent(address || '');
 
-  // Property data
-  const property: PropertyData = {
+  // Property data with decoded address
+  const property: PropertyContextData = {
     ...MOCK_PROPERTY,
-    ...(decodedAddress && { address: decodedAddress }),
+    ...(decodedAddress && { street: decodedAddress }),
   };
 
-  // Calculate prices
-  const dealScore = 78;
-  const breakevenPrice = property.price * 1.1;
-  const buyPrice = breakevenPrice * 0.95;
-  const wholesalePrice = breakevenPrice * 0.70;
+  // =============================================================================
+  // HANDLERS
+  // =============================================================================
 
-  const topStrategy = MOCK_STRATEGIES[0];
-
-  // Handlers
-  const handleBack = useCallback(() => {
+  const handleTabChange = useCallback((tabId: NavTabId) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.back();
-  }, [router]);
+    setActiveTab(tabId);
 
-  const handleStrategyChange = useCallback((strategy: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setCurrentStrategy(strategy);
-  }, []);
-
-  const handleNavChange = useCallback((navId: NavItemId) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setActiveNav(navId);
+    const encodedAddress = encodeURIComponent(property.street);
     
-    // Navigate based on nav item
-    const encodedAddress = encodeURIComponent(property.address);
-    switch (navId) {
-      case 'search':
-        router.push('/search');
+    switch (tabId) {
+      case 'analyze':
+        // Already on analyze (VerdictIQ)
         break;
-      case 'home':
+      case 'details':
         router.push({
           pathname: '/property-details/[address]',
           params: {
@@ -146,423 +208,340 @@ export default function VerdictIQScreen() {
           },
         });
         break;
-      case 'analysis':
-        router.push({
-          pathname: '/analysis-iq/[address]',
-          params: { address: encodedAddress },
-        });
+      case 'saleComps':
+        Alert.alert('Sale Comps', 'Sale Comps feature coming soon');
         break;
-      case 'deals':
-        router.push({
-          pathname: '/deal-maker/[address]',
-          params: { address: encodedAddress },
-        });
+      case 'rentComps':
+        Alert.alert('Rent Comps', 'Rent Comps feature coming soon');
         break;
-      // Other nav items to be connected later
-      default:
+      case 'dashboard':
+        router.push('/(tabs)/dashboard');
         break;
     }
-  }, [router, property.address]);
+  }, [router, property]);
 
-  const handleContinueToAnalysis = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push({
-      pathname: '/analysis-iq/[address]',
-      params: { address: encodeURIComponent(property.address) },
-    });
-  }, [router, property.address]);
-
-  const handleViewStrategy = useCallback((strategy: IQStrategy) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // Navigate to Analysis IQ with the selected strategy
-    router.push({
-      pathname: '/analysis-iq/[address]',
-      params: { 
-        address: encodeURIComponent(property.address),
-        strategy: strategy.id,
-      },
-    });
-  }, [router, property.address]);
-
-  const handleExportPDF = useCallback(() => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    // TODO: Implement PDF export
+  const handleStrategyChange = useCallback((strategy: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCurrentStrategy(strategy);
   }, []);
 
-  // Theme colors
-  const bgColor = isDark ? '#07172e' : '#F1F5F9';
-  const cardBg = isDark ? '#0F1D32' : 'white';
-  const textColor = isDark ? 'white' : '#0A1628';
-  const mutedColor = isDark ? 'rgba(255,255,255,0.6)' : '#64748B';
+  const handleIQPriceChange = useCallback((id: IQPriceId) => {
+    setSelectedIQPrice(id);
+  }, []);
+
+  const handleChangeTerms = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert('Adjust Terms', 'Opens financing terms adjustment modal');
+  }, []);
+
+  const handleHowCalculated = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Alert.alert(
+      'How BREAKEVEN is Calculated',
+      'Breakeven price is the maximum purchase price that results in $0 monthly cashflow after all expenses, including mortgage payment, taxes, insurance, maintenance, and vacancy allowance.',
+      [{ text: 'Got it' }]
+    );
+  }, []);
+
+  const handleHowVerdictWorks = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Alert.alert(
+      'How VerdictIQ Works',
+      'VerdictIQ analyzes multiple factors including deal probability, market alignment, and price confidence to give you a comprehensive score (0-100) for any investment opportunity.',
+      [{ text: 'Got it' }]
+    );
+  }, []);
+
+  const handleHowWeScore = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Alert.alert(
+      'How We Score',
+      'Scores are calculated based on:\n\n• Deal Probability: Likelihood of closing at target price\n• Market Alignment: How well the deal fits current market conditions\n• Price Confidence: Accuracy of our pricing models',
+      [{ text: 'Got it' }]
+    );
+  }, []);
+
+  const handleAdjustTerms = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert('Adjust Purchase Terms', 'Opens purchase terms adjustment modal');
+  }, []);
+
+  const handleAdjustIncome = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert('Adjust Income', 'Opens income adjustment modal');
+  }, []);
+
+  const handleAdjustExpenses = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert('Adjust Expenses', 'Opens expenses adjustment modal');
+  }, []);
+
+  const handleGotoDealMaker = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push({
+      pathname: '/deal-maker/[address]',
+      params: { address: encodeURIComponent(property.street) },
+    });
+  }, [router, property.street]);
+
+  const handleExportAnalysis = useCallback(() => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Alert.alert('Export Analysis', 'PDF export feature coming soon');
+  }, []);
+
+  const handleHowToReadBenchmarks = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Alert.alert(
+      'How to Read Benchmarks',
+      'The center line represents the national average for each metric.\n\n• Markers to the RIGHT are ABOVE average (better)\n• Markers to the LEFT are BELOW average\n\nTeal = Strong, Amber = Moderate, Red = Weak',
+      [{ text: 'Got it' }]
+    );
+  }, []);
+
+  // =============================================================================
+  // RENDER
+  // =============================================================================
 
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={[styles.container, { backgroundColor: bgColor }]}>
-        {/* Compact Header */}
-        <CompactHeader
-          property={property}
-          pageTitle="VERDICT"
-          pageTitleAccent="IQ"
-          currentStrategy={currentStrategy}
-          onStrategyChange={handleStrategyChange}
-          onBack={handleBack}
-          activeNav={activeNav}
-          onNavChange={handleNavChange}
-          onThemeToggle={toggleTheme}
-        />
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.brandContainer}>
+            <Text style={styles.brandLogo}>
+              <Text style={styles.brandDeal}>Deal</Text>
+              <Text style={styles.brandMaker}>Maker</Text>
+              <Text style={styles.brandIQ}>IQ</Text>
+            </Text>
+            <Text style={styles.brandSub}>
+              by Invest<Text style={styles.brandIQ}>IQ</Text>
+            </Text>
+          </View>
+          <View style={styles.headerActions}>
+            <TouchableOpacity onPress={() => router.push('/search')}>
+              <Ionicons name="search" size={20} color={decisionGrade.deepNavy} />
+            </TouchableOpacity>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>H</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Nav Tabs */}
+        <NavTabs activeTab={activeTab} onTabChange={handleTabChange} />
+
+        {/* Property Context Bar */}
+        <PropertyContextBar property={property} />
 
         {/* Scrollable Content */}
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 120 }]}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]}
           showsVerticalScrollIndicator={false}
         >
-          {/* IQ Verdict Card */}
-          <View style={[styles.verdictCard, { backgroundColor: cardBg }]}>
-            {/* Header Row: Score + Prices */}
-            <View style={styles.verdictHeader}>
-              {/* Score Container */}
-              <View style={styles.scoreContainer}>
-                <Text style={[styles.verdictLabel, { color: '#0891B2' }]}>IQ VERDICT</Text>
-                <View style={[styles.scoreRing, { borderColor: getScoreColor(dealScore) }]}>
-                  <Text style={[styles.scoreValue, { color: getScoreColor(dealScore) }]}>
-                    {dealScore}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.viewFactorsBtn}
-                  onPress={() => setShowFactors(!showFactors)}
-                >
-                  <Text style={[styles.viewFactorsText, { color: mutedColor }]}>View Factors</Text>
-                  <Ionicons
-                    name={showFactors ? 'chevron-up' : 'chevron-down'}
-                    size={12}
-                    color={mutedColor}
-                  />
-                </TouchableOpacity>
-              </View>
+          {/* Verdict Hero */}
+          <VerdictHero
+            score={84}
+            verdictLabel="Strong Opportunity"
+            verdictSubtitle="Deal Gap easily achievable"
+            confidenceMetrics={CONFIDENCE_METRICS}
+            onHowItWorksPress={handleHowVerdictWorks}
+            onHowWeScorePress={handleHowWeScore}
+          />
 
-              {/* Prices Column */}
-              <View style={styles.pricesContainer}>
-                <View style={styles.priceRow}>
-                  <Text style={[styles.priceLabel, { color: mutedColor }]}>Breakeven</Text>
-                  <Text style={[styles.priceValue, { color: textColor }]}>
-                    {formatPrice(Math.round(breakevenPrice))}
-                  </Text>
-                </View>
-                <View style={styles.priceRow}>
-                  <Text style={[styles.priceLabelHighlight, { color: '#0891B2' }]}>Buy Price</Text>
-                  <Text style={[styles.priceValueHighlight, { color: '#0891B2' }]}>
-                    {formatPrice(Math.round(buyPrice))}
-                  </Text>
-                </View>
-                <View style={styles.priceRow}>
-                  <Text style={[styles.priceLabel, { color: mutedColor }]}>Wholesale</Text>
-                  <Text style={[styles.priceValue, { color: textColor }]}>
-                    {formatPrice(Math.round(wholesalePrice))}
-                  </Text>
-                </View>
-              </View>
-            </View>
+          {/* Section Divider */}
+          <View style={styles.sectionDivider} />
 
-            {/* Verdict Description */}
-            <View style={styles.verdictDescContainer}>
-              <Text style={[styles.verdictDesc, { color: mutedColor }]}>
-                Excellent potential across multiple strategies. {topStrategy.name} shows best returns.
-              </Text>
-            </View>
-          </View>
+          {/* Investment Analysis */}
+          <InvestmentAnalysis
+            financingTerms="20% down, 6.0%"
+            currentStrategy={currentStrategy}
+            strategies={STRATEGIES}
+            iqPrices={IQ_PRICES}
+            selectedIQPrice={selectedIQPrice}
+            onIQPriceChange={handleIQPriceChange}
+            metrics={METRICS}
+            onChangeTerms={handleChangeTerms}
+            onStrategyChange={handleStrategyChange}
+            onHowCalculated={handleHowCalculated}
+          />
 
-          {/* CTA Section */}
-          <View style={styles.ctaSection}>
+          {/* Section Divider */}
+          <View style={styles.sectionDivider} />
+
+          {/* Financial Breakdown */}
+          <FinancialBreakdown
+            isOpen={financialBreakdownOpen}
+            onToggle={() => setFinancialBreakdownOpen(!financialBreakdownOpen)}
+            purchaseTerms={{ ...PURCHASE_TERMS, onAdjust: handleAdjustTerms }}
+            income={{ ...INCOME, onAdjust: handleAdjustIncome }}
+            operatingExpenses={{ ...OPERATING_EXPENSES, onAdjust: handleAdjustExpenses }}
+            noi={{ label: 'Net Operating Income (NOI)', value: '$41,920' }}
+            debtService={DEBT_SERVICE}
+            cashflow={{
+              annual: { label: 'Pre-Tax Cash Flow', value: '($480)', isNegative: true },
+              monthly: { label: 'Monthly Cash Flow', value: '($40)', isNegative: true },
+            }}
+          />
+
+          {/* Section Divider */}
+          <View style={styles.sectionDivider} />
+
+          {/* Deal Gap */}
+          <DealGap
+            isOffMarket={property.status === 'off-market'}
+            marketEstimate={821000}
+            targetPrice={775437}
+            dealGapPercent={-5.5}
+            discountNeeded={45563}
+            suggestedOfferRange="10% – 18% below asking"
+          />
+
+          {/* Section Divider */}
+          <View style={styles.sectionDivider} />
+
+          {/* At-a-Glance */}
+          <AtAGlance
+            metrics={GLANCE_METRICS}
+            compositeScore={75}
+            isOpen={glanceOpen}
+            onToggle={() => setGlanceOpen(!glanceOpen)}
+          />
+
+          {/* Section Divider */}
+          <View style={styles.sectionDivider} />
+
+          {/* Performance Benchmarks */}
+          <PerformanceBenchmarks
+            groups={BENCHMARK_GROUPS}
+            onHowToRead={handleHowToReadBenchmarks}
+          />
+
+          {/* Action Buttons */}
+          <View style={styles.actionSection}>
             <TouchableOpacity
-              style={styles.primaryCTABtn}
-              onPress={handleContinueToAnalysis}
+              style={styles.btnPrimary}
+              onPress={handleGotoDealMaker}
               activeOpacity={0.8}
             >
-              <LinearGradient
-                colors={['#0891B2', '#0e7490']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.primaryCTAGradient}
-              >
-                <Text style={styles.primaryCTAText}>Continue to Analysis</Text>
-                <Ionicons name="arrow-forward" size={18} color="white" />
-              </LinearGradient>
+              <Text style={styles.btnPrimaryText}>Go to DealMakerIQ →</Text>
             </TouchableOpacity>
-            <Text style={[styles.ctaDivider, { color: mutedColor }]}>or</Text>
-            <Text style={[styles.ctaSubtitle, { color: textColor }]}>Select a Strategy</Text>
+            <TouchableOpacity
+              style={styles.btnSecondary}
+              onPress={handleExportAnalysis}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.btnSecondaryText}>Export Analysis</Text>
+            </TouchableOpacity>
           </View>
-
-          {/* Strategy List */}
-          <View style={styles.strategySection}>
-            {MOCK_STRATEGIES.map((strategy, index) => {
-              const gradeDisplay = getGradeFromScore(strategy.score);
-              const isTopPick = index === 0 && strategy.score >= 70;
-
-              return (
-                <TouchableOpacity
-                  key={strategy.id}
-                  style={[
-                    styles.strategyCard,
-                    { backgroundColor: cardBg },
-                    isTopPick && styles.strategyCardTopPick,
-                  ]}
-                  onPress={() => handleViewStrategy(strategy)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.strategyContent}>
-                    <View style={styles.strategyInfo}>
-                      <Text style={[styles.strategyName, { color: textColor }]}>
-                        {strategy.name}
-                      </Text>
-                      {strategy.type && (
-                        <Text style={[styles.strategyType, { color: mutedColor }]}>
-                          {strategy.type}
-                        </Text>
-                      )}
-                      {strategy.badge && (
-                        <View style={[
-                          styles.strategyBadge,
-                          {
-                            backgroundColor: strategy.badge === 'Best Match'
-                              ? `${colors.profit.main}20`
-                              : `${colors.primary[500]}20`
-                          }
-                        ]}>
-                          <Text style={[
-                            styles.strategyBadgeText,
-                            {
-                              color: strategy.badge === 'Best Match'
-                                ? colors.profit.main
-                                : colors.primary[500]
-                            }
-                          ]}>
-                            {strategy.badge}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-
-                    <View style={styles.strategyMetrics}>
-                      <Text style={[styles.strategyReturn, { color: getScoreColor(strategy.score) }]}>
-                        {strategy.metric}
-                      </Text>
-                      <Text style={[styles.strategyGrade, { color: getGradeColor(gradeDisplay.grade) }]}>
-                        {gradeDisplay.label} {gradeDisplay.grade}
-                      </Text>
-                    </View>
-
-                    <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* Export Link */}
-          <TouchableOpacity style={styles.exportLink} onPress={handleExportPDF}>
-            <Ionicons name="download-outline" size={18} color={mutedColor} />
-            <Text style={[styles.exportLinkText, { color: mutedColor }]}>Export PDF Report</Text>
-          </TouchableOpacity>
         </ScrollView>
       </View>
     </>
   );
 }
 
+// =============================================================================
+// STYLES
+// =============================================================================
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: decisionGrade.bgSecondary,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: decisionGrade.bgPrimary,
+  },
+  brandContainer: {},
+  brandLogo: {
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    lineHeight: 20,
+  },
+  brandDeal: {
+    color: decisionGrade.deepNavy,
+  },
+  brandMaker: {
+    color: decisionGrade.deepNavy,
+  },
+  brandIQ: {
+    color: decisionGrade.pacificTeal,
+  },
+  brandSub: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: decisionGrade.textTertiary,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: decisionGrade.pacificTeal,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: 'white',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    flexGrow: 1,
   },
-
-  // Verdict Card
-  verdictCard: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-  },
-  verdictHeader: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 16,
-  },
-  scoreContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  verdictLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1,
-    marginBottom: 8,
-  },
-  scoreRing: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  scoreValue: {
-    fontSize: 28,
-    fontWeight: '800',
-  },
-  viewFactorsBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  viewFactorsText: {
-    fontSize: 12,
-  },
-  pricesContainer: {
-    flex: 1.5,
-    justifyContent: 'center',
-    gap: 10,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  priceLabel: {
-    fontSize: 13,
-  },
-  priceLabelHighlight: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  priceValue: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  priceValueHighlight: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  verdictDescContainer: {
+  sectionDivider: {
+    height: 8,
+    backgroundColor: decisionGrade.bgSecondary,
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
-    paddingTop: 16,
+    borderTopColor: decisionGrade.borderLight,
+    borderBottomWidth: 1,
+    borderBottomColor: decisionGrade.borderLight,
   },
-  verdictDesc: {
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: 'center',
-  },
-
-  // CTA Section
-  ctaSection: {
-    marginBottom: 20,
-  },
-  primaryCTABtn: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 12,
-  },
-  primaryCTAGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-  },
-  primaryCTAText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  ctaDivider: {
-    fontSize: 13,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-  ctaSubtitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginTop: 4,
-  },
-
-  // Strategy Cards
-  strategySection: {
-    gap: 8,
-    marginBottom: 16,
-  },
-  strategyCard: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  strategyCardTopPick: {
-    borderWidth: 2,
-    borderColor: '#22c55e',
-  },
-  strategyContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
+  actionSection: {
+    padding: 20,
     paddingHorizontal: 16,
-    gap: 12,
+    backgroundColor: decisionGrade.bgPrimary,
   },
-  strategyInfo: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  strategyName: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  strategyType: {
-    fontSize: 12,
-  },
-  strategyBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
-  strategyBadgeText: {
-    fontSize: 9,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-  },
-  strategyMetrics: {
-    alignItems: 'flex-end',
-  },
-  strategyReturn: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  strategyGrade: {
-    fontSize: 10,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-  },
-
-  // Export Link
-  exportLink: {
-    flexDirection: 'row',
+  btnPrimary: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
+    paddingVertical: 14,
+    backgroundColor: decisionGrade.pacificTeal,
+    borderRadius: 8,
+    marginBottom: 10,
   },
-  exportLinkText: {
+  btnPrimaryText: {
     fontSize: 14,
+    fontWeight: '700',
+    color: 'white',
+  },
+  btnSecondary: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    backgroundColor: decisionGrade.bgPrimary,
+    borderWidth: 2,
+    borderColor: decisionGrade.pacificTeal,
+    borderRadius: 8,
+  },
+  btnSecondaryText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: decisionGrade.pacificTeal,
   },
 });
