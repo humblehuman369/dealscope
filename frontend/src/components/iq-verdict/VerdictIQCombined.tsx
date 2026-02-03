@@ -191,22 +191,6 @@ export function VerdictIQCombined({
     }
   }, [isSavedPropertyMode, record, overrideValues])
 
-  // Build property data for CompactHeader
-  const headerPropertyData: PropertyData = useMemo(() => ({
-    address: property.address,
-    city: property.city || '',
-    state: property.state || '',
-    zip: property.zip || '',
-    beds: property.beds,
-    baths: property.baths,
-    sqft: property.sqft || 0,
-    price: property.price,
-    rent: property.monthlyRent || Math.round(property.price * 0.007),
-    status: 'OFF-MARKET',
-    image: property.imageUrl,
-    zpid: property.zpid?.toString(),
-  }), [property])
-
   // Verdict and pricing calculations
   const verdictInfo = getVerdictLabel(analysis.dealScore)
   
