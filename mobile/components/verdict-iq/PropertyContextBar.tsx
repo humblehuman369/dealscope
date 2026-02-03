@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { decisionGrade } from '../../theme/colors';
+import { rf, rs } from './responsive';
 
 export type PropertyStatus = 'off-market' | 'active' | 'pending';
 
@@ -123,17 +124,17 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    paddingHorizontal: 16,
+    padding: rs(12),
+    paddingHorizontal: rs(16),
     backgroundColor: decisionGrade.bgPrimary,
     borderBottomWidth: 1,
     borderBottomColor: decisionGrade.borderMedium,
-    gap: 12,
+    gap: rs(12),
   },
   photoContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 6,
+    width: rs(56),
+    height: rs(56),
+    borderRadius: rs(6),
     overflow: 'hidden',
     backgroundColor: decisionGrade.bgSecondary,
     borderWidth: 1,
@@ -150,64 +151,65 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     flex: 1,
-    gap: 4,
+    gap: rs(4),
   },
   addressRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    gap: 8,
+    gap: rs(8),
   },
   addressContainer: {
     flex: 1,
   },
   street: {
-    fontSize: 14,
+    fontSize: rf(14),
     fontWeight: '700',
     color: decisionGrade.textPrimary,
-    lineHeight: 18,
+    lineHeight: rf(18),
   },
   city: {
-    fontSize: 11,
+    fontSize: rf(11),
     fontWeight: '600',
     color: decisionGrade.textPrimary,
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 4,
+    gap: rs(4),
+    paddingVertical: rs(3),
+    paddingHorizontal: rs(8),
+    borderRadius: rs(4),
     borderWidth: 1,
   },
   statusDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
+    width: rs(5),
+    height: rs(5),
+    borderRadius: rs(2.5),
   },
   statusText: {
-    fontSize: 9,
+    fontSize: rf(9),
     fontWeight: '700',
     letterSpacing: 0.5,
   },
   detailsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 2,
+    gap: rs(6),
+    marginTop: rs(2),
+    flexWrap: 'wrap',
   },
   detailText: {
-    fontSize: 12,
+    fontSize: rf(11),
     fontWeight: '600',
     color: decisionGrade.textPrimary,
   },
   separator: {
-    fontSize: 12,
+    fontSize: rf(11),
     color: decisionGrade.borderStrong,
   },
   priceText: {
-    fontSize: 12,
+    fontSize: rf(12),
     fontWeight: '700',
     color: decisionGrade.pacificTeal,
   },

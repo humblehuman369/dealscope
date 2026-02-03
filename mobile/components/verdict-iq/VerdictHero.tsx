@@ -11,6 +11,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { decisionGrade } from '../../theme/colors';
+import { rf, rs } from './responsive';
 
 interface ConfidenceMetric {
   label: string;
@@ -114,12 +115,12 @@ export function VerdictHero({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: decisionGrade.bgPrimary,
-    paddingBottom: 20,
+    paddingBottom: rs(20),
   },
   verdictContent: {
     flexDirection: 'row',
-    paddingVertical: 24,
-    paddingHorizontal: 20,
+    paddingVertical: rs(24),
+    paddingHorizontal: rs(20),
   },
   scoreContainer: {
     flex: 1,
@@ -127,26 +128,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scoreRing: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 5,
+    width: rs(90),
+    height: rs(90),
+    borderRadius: rs(45),
+    borderWidth: rs(5),
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: decisionGrade.bgPrimary,
   },
   scoreValue: {
-    fontSize: 42,
+    fontSize: rf(38),
     fontWeight: '800',
     color: decisionGrade.deepNavy,
   },
   verdictInfo: {
     flex: 1,
-    paddingLeft: 8,
+    paddingLeft: rs(8),
     justifyContent: 'center',
   },
   verdictTitle: {
-    fontSize: 18,
+    fontSize: rf(16),
     fontWeight: '800',
     marginBottom: 0,
     letterSpacing: -0.3,
@@ -158,71 +159,72 @@ const styles = StyleSheet.create({
     color: decisionGrade.pacificTeal,
   },
   verdictLabel: {
-    fontSize: 20,
+    fontSize: rf(18),
     fontWeight: '700',
-    lineHeight: 24,
-    marginBottom: 1,
+    lineHeight: rf(22),
+    marginBottom: rs(1),
   },
   verdictSubtitle: {
-    fontSize: 12,
+    fontSize: rf(11),
     fontWeight: '500',
     color: decisionGrade.textSecondary,
-    marginBottom: 4,
+    marginBottom: rs(4),
   },
   verdictLinks: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 3,
+    gap: rs(6),
+    marginTop: rs(3),
+    flexWrap: 'wrap',
   },
   verdictLink: {
-    fontSize: 11,
+    fontSize: rf(10),
     fontWeight: '600',
     color: decisionGrade.pacificTeal,
   },
   linkSeparator: {
-    fontSize: 11,
+    fontSize: rf(10),
     color: decisionGrade.textPrimary,
   },
   confidenceSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: rs(20),
   },
   confidenceHeader: {
-    fontSize: 11,
+    fontSize: rf(10),
     fontWeight: '700',
     color: decisionGrade.textPrimary,
     letterSpacing: 0.8,
-    marginBottom: 12,
+    marginBottom: rs(12),
   },
   confidenceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-    gap: 12,
+    marginBottom: rs(8),
+    gap: rs(10),
   },
   confidenceLabel: {
-    fontSize: 13,
+    fontSize: rf(12),
     fontWeight: '500',
     color: decisionGrade.textSecondary,
-    width: 130,
+    width: rs(110),
   },
   confidenceBar: {
     flex: 1,
-    height: 10,
+    height: rs(10),
     backgroundColor: decisionGrade.bgSecondary,
-    borderRadius: 5,
+    borderRadius: rs(5),
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: decisionGrade.borderLight,
   },
   confidenceFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: rs(4),
   },
   confidenceValue: {
-    fontSize: 14,
+    fontSize: rf(13),
     fontWeight: '700',
-    width: 42,
+    width: rs(40),
     textAlign: 'right',
   },
 });

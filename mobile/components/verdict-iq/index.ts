@@ -3,6 +3,9 @@
  * Barrel export file
  */
 
+// Utilities
+export { rf, rs, rw, rh, isSmallScreen, isLargeScreen, screenWidth, screenHeight } from './responsive';
+
 // Components
 export { NavTabs } from './NavTabs';
 export type { NavTabId } from './NavTabs';

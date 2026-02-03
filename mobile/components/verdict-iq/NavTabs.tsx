@@ -1,17 +1,19 @@
 /**
  * NavTabs Component - Decision-Grade UI
- * Edge-to-edge navigation tabs
+ * Horizontally scrollable navigation tabs with responsive fonts
  */
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
+  ScrollView,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { decisionGrade } from '../../theme/colors';
+import { rf, rs } from './responsive';
 
 export type NavTabId = 'analyze' | 'details' | 'saleComps' | 'rentComps' | 'dashboard';
 
@@ -34,6 +36,8 @@ interface NavTabsProps {
 }
 
 export function NavTabs({ activeTab, onTabChange }: NavTabsProps) {
+  const scrollViewRef = useRef<ScrollView>(null);
+
   const handleTabPress = (tabId: NavTabId) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onTabChange(tabId);
@@ -41,47 +45,57 @@ export function NavTabs({ activeTab, onTabChange }: NavTabsProps) {
 
   return (
     <View style={styles.container}>
-      {NAV_TABS.map((tab, index) => {
-        const isActive = activeTab === tab.id;
-        const isLast = index === NAV_TABS.length - 1;
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        bounces={false}
+      >
+        {NAV_TABS.map((tab, index) => {
+          const isActive = activeTab === tab.id;
+          const isLast = index === NAV_TABS.length - 1;
 
-        return (
-          <TouchableOpacity
-            key={tab.id}
-            style={[
-              styles.tab,
-              isActive && styles.tabActive,
-              !isLast && styles.tabBorder,
-            ]}
-            onPress={() => handleTabPress(tab.id)}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
+          return (
+            <TouchableOpacity
+              key={tab.id}
+              style={[
+                styles.tab,
+                isActive && styles.tabActive,
+                !isLast && styles.tabBorder,
+              ]}
+              onPress={() => handleTabPress(tab.id)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
     backgroundColor: decisionGrade.bgPrimary,
     borderTopWidth: 1,
     borderTopColor: decisionGrade.borderMedium,
     borderBottomWidth: 1,
     borderBottomColor: decisionGrade.borderMedium,
   },
+  scrollContent: {
+    flexGrow: 1,
+  },
   tab: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 4,
+    paddingVertical: rs(10),
+    paddingHorizontal: rs(16),
     backgroundColor: decisionGrade.bgPrimary,
+    minWidth: rs(70),
   },
   tabActive: {
     backgroundColor: decisionGrade.pacificTeal,
@@ -91,7 +105,7 @@ const styles = StyleSheet.create({
     borderRightColor: decisionGrade.borderMedium,
   },
   tabText: {
-    fontSize: 11,
+    fontSize: rf(12),
     fontWeight: '600',
     color: decisionGrade.textPrimary,
   },
