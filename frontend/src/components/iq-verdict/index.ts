@@ -35,6 +35,11 @@ export { PerformanceMetricsTable, generateDefaultMetrics } from './PerformanceMe
 export { PropertyContextBar } from './PropertyContextBar'
 export { NavTabs } from './NavTabs'
 
+// Fresh VerdictIQ Components (v2 Design System)
+export { VerdictHeader, type VerdictTab } from './VerdictHeader'
+export { VerdictPageFresh } from './VerdictPageFresh'
+export * from './verdict-design-tokens'
+
 export {
   // Types
   type IQProperty,
