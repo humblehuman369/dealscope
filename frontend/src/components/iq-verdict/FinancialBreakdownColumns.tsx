@@ -213,7 +213,7 @@ export function FinancialBreakdownColumns({
                 {hoa > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-[#475569]">HOA</span>
-                    <span className="text-sm font-medium text-[#0A1628]">{formatCurrency(hoa)}</span>
+                    <span className="text-sm font-medium text-[#0A1628]">{formatCurrency(hoa / 12)}</span>
                   </div>
                 )}
               </>

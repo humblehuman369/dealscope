@@ -34,7 +34,7 @@ const MOCK_PROPERTY: IQProperty = {
 const MOCK_ANALYSIS: IQAnalysisResult = {
   propertyId: 'mock-001',
   dealScore: 78,
-  dealVerdict: 'Good Opportunity',
+  dealVerdict: 'Strong Opportunity',
   verdictDescription: 'Deal gap likely achievable with negotiation',
   purchasePrice: 736665,
   breakevenPrice: 784458,

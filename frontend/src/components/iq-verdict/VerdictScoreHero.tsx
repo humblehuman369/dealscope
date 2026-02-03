@@ -191,7 +191,7 @@ export function VerdictScoreHero({
             Vacancy
           </span>
           <span className={`text-base font-bold ${vacancy <= 5 ? 'text-[#10B981]' : vacancy <= 10 ? 'text-[#D97706]' : 'text-[#E11D48]'}`}>
-            &lt;{vacancy}%
+            {'<'}{vacancy}%
           </span>
           <span className="text-[10px] text-[#94A3B8]">
             {vacancy <= 5 ? 'Healthy' : vacancy <= 10 ? 'Moderate' : 'High'}
