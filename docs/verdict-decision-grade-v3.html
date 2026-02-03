@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VerdictIQ - DealMakerIQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/*
+  DECISION-GRADE HIGH-CONTRAST UI
+  ================================
+  Per DealMakerIQ Design System & Style Guide
+  
+  COLOR SYSTEM:
+  - Deep Navy #07172e: All text
+  - Pacific Teal #0891B2: Intelligence markers, positive signals
+  - Teal Light #06B6D4: Interactive states
+  - Amber #B45309: Caution
+  - Red #DC2626: Loss, risk, negative
+  
+  Green is intentionally avoided to preserve brand authority.
+  
+  PRINCIPLES:
+  - Legibility wins
+  - Numbers are the product
+  - Contrast over trend
+  - No washed-out text
+  - No decorative opacity
+*/
+
+:root {
+  /* Core Brand - Per Style Guide */
+  --deep-navy: #07172e;
+  --pacific-teal: #0891B2;
+  --teal-light: #06B6D4;
+  --electric-cyan: #00D4FF;
+  
+  /* Semantic - Per Style Guide */
+  --positive: #0891B2;  /* Teal for positive signals */
+  --caution: #B45309;   /* Amber for caution */
+  --negative: #DC2626;  /* Red for loss/risk */
+  
+  /* Surfaces */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F1F5F9;
+  --bg-selected: #E0F7FA;
+  
+  /* Borders */
+  --border-strong: #94A3B8;
+  --border-medium: #CBD5E1;
+  --border-light: #E2E8F0;
+  
+  /* TEXT - ALL #07172e (Black/Blue) */
+  /* Per style guide: No washed-out text. All text readable. */
+  --text-primary: #07172e;
+  --text-secondary: #07172e;
+  --text-tertiary: #07172e;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'tnum' on, 'lnum' on;
+}
+
+.num {
+  font-feature-settings: 'tnum' on, 'lnum' on;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===========================================
+   HEADER - Clean, Balanced (Status removed)
+   =========================================== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-primary);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-logo {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.brand-logo .deal,
+.brand-logo .maker { color: var(--deep-navy); }
+.brand-logo .iq { color: var(--pacific-teal); }
+
+.brand-sub {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.brand-sub .iq { color: var(--pacific-teal); }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-icon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.search-icon path {
+  fill: var(--text-primary);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--pacific-teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+}
+
+/* ===========================================
+   NAV TABS - Edge to Edge, Flat, Connected
+   =========================================== */
+.nav-tabs {
+  display: flex;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-medium);
+  border-bottom: 1px solid var(--border-medium);
+}
+
+.nav-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: none;
+  border-right: 1px solid var(--border-medium);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+
+.nav-tab:last-child {
+  border-right: none;
+}
+
+.nav-tab:hover {
+  background: var(--bg-secondary);
+}
+
+.nav-tab.active {
+  background: var(--pacific-teal);
+  color: white;
+}
+
+/* ===========================================
+   PROPERTY CONTEXT - Photo + Address + Status
+   =========================================== */
+.property-context {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-medium);
+  gap: 12px;
+}
+
+.property-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.property-photo-placeholder {
+  font-size: 24px;
+  color: var(--border-strong);
+}
+
+.property-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.property-address-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.property-address .street {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.property-address .city {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.property-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.property-status.off-market {
+  color: var(--negative);
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+}
+
+.property-status.active {
+  color: var(--pacific-teal);
+  background: var(--bg-selected);
+  border: 1px solid var(--pacific-teal);
+}
+
+.property-status.pending {
+  color: var(--caution);
+  background: #FEF3C7;
+  border: 1px solid var(--caution);
+}
+
+.property-status .status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.property-status.off-market .status-dot { background: var(--negative); }
+.property-status.active .status-dot { background: var(--pacific-teal); }
+.property-status.pending .status-dot { background: var(--caution); }
+
+.property-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+.property-details .separator {
+  color: var(--border-strong);
+}
+
+.property-price {
+  color: var(--pacific-teal);
+  font-weight: 700;
+}
+
+/* ===========================================
+   VERDICT SECTION
+   Score centered in left column, VerdictIQ in right
+   =========================================== */
+.verdict-section {
+  padding: 24px 20px 28px;
+  background: var(--bg-primary);
+}
+
+.verdict-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 0;
+}
+
+.score-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-ring {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 5px solid var(--pacific-teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.score-value {
+  font-size: 42px;
+  font-weight: 800;
+  color: #07172e;
+  line-height: 1;
+}
+
+.verdict-info {
+  text-align: left;
+  padding-left: 8px;
+}
+
+.verdict-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 0;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.verdict-title .verdict { color: var(--deep-navy); }
+.verdict-title .iq { color: var(--pacific-teal); }
+
+.verdict-label {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--pacific-teal);
+  line-height: 1.2;
+  margin-bottom: 1px;
+}
+
+.verdict-subtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.verdict-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.verdict-link {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pacific-teal);
+  text-decoration: none;
+}
+
+.verdict-link:hover {
+  text-decoration: underline;
+}
+
+.verdict-links .separator {
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+/* ===========================================
+   CONFIDENCE METRICS
+   =========================================== */
+.confidence-section {
+  padding: 0 20px 20px;
+}
+
+.confidence-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 12px;
+}
+
+.confidence-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.confidence-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  width: 130px;
+  flex-shrink: 0;
+}
+
+.confidence-bar {
+  flex: 1;
+  height: 10px;
+  background: var(--bg-secondary);
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+
+.confidence-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.confidence-fill.teal { background: var(--pacific-teal); }
+.confidence-fill.amber { background: var(--caution); }
+.confidence-fill.negative { background: var(--negative); }
+
+.confidence-value {
+  font-size: 14px;
+  font-weight: 700;
+  width: 42px;
+  text-align: right;
+  flex-shrink: 0;
+  color: var(--text-primary);
+}
+
+.confidence-value.teal { color: var(--pacific-teal); }
+.confidence-value.amber { color: var(--caution); }
+.confidence-value.negative { color: var(--negative); }
+
+/* ===========================================
+   YOUR INVESTMENT ANALYSIS SECTION
+   =========================================== */
+.analysis-section {
+  padding: 20px 16px 0;
+  background: var(--bg-primary);
+}
+
+.analysis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.analysis-header-left h2 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 0 0 2px 0;
+}
+
+.analysis-header-left .subtitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.analysis-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.change-terms-link {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pacific-teal);
+  text-decoration: none;
+}
+
+.strategy-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.strategy-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--pacific-teal);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.strategy-btn .arrow {
+  font-size: 10px;
+}
+
+.strategy-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: white;
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  min-width: 160px;
+  z-index: 100;
+  display: none;
+}
+
+.strategy-menu.open {
+  display: block;
+}
+
+.strategy-menu a {
+  display: block;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.strategy-menu a:last-child {
+  border-bottom: none;
+}
+
+.strategy-menu a:hover {
+  background: var(--bg-secondary);
+}
+
+.strategy-menu a.active {
+  color: var(--pacific-teal);
+  font-weight: 600;
+}
+
+.how-calculated {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pacific-teal);
+  margin: 12px 0;
+}
+
+.how-calculated .icon {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--pacific-teal);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ===========================================
+   IQ PRICE SELECTOR
+   =========================================== */
+.iq-section {
+  margin: 0 16px;
+}
+
+.iq-selector {
+  display: flex;
+  overflow: hidden;
+  border: 2px solid var(--border-strong);
+}
+
+.iq-option {
+  flex: 1;
+  padding: 14px 8px;
+  text-align: center;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  border-right: 1px solid var(--border-medium);
+  transition: all 0.15s ease;
+}
+
+.iq-option:last-child {
+  border-right: none;
+}
+
+.iq-option:hover:not(.selected) {
+  background: #E8EAED;
+}
+
+.iq-option.selected {
+  background: var(--bg-primary);
+}
+
+.iq-option-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.iq-option-label .info-icon {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--border-medium);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.iq-option-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.iq-option.selected .iq-option-value {
+  color: var(--pacific-teal);
+}
+
+.iq-option-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Bottom metrics row */
+.metrics-row {
+  display: flex;
+  margin: 12px 16px 20px;
+  border: 2px solid var(--border-strong);
+}
+
+.metrics-box {
+  flex: 1;
+  padding: 12px 8px;
+  text-align: center;
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-medium);
+}
+
+.metrics-box:last-child {
+  border-right: none;
+}
+
+.metrics-box-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.metrics-box-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--pacific-teal);
+}
+
+/* ===========================================
+   FINANCIAL BREAKDOWN
+   =========================================== */
+.section-divider {
+  height: 8px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 16px 12px;
+  cursor: pointer;
+}
+
+.section-header h2 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.section-header .toggle {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.table-group {
+  padding: 0 16px;
+}
+
+.table-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 2px solid var(--pacific-teal);
+}
+
+.table-group-header .title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--pacific-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.adjust-btn {
+  padding: 5px 12px;
+  background: var(--pacific-teal);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.adjust-btn:hover {
+  background: var(--teal-light);
+}
+
+.table-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.row-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.row-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.row-value.negative { color: var(--negative); }
+.row-value.teal { color: var(--pacific-teal); }
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  margin-top: 4px;
+  border-top: 2px solid var(--pacific-teal);
+}
+
+.total-row .row-label,
+.total-row .row-value {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Highlight Boxes */
+.highlight-box {
+  margin: 12px 16px;
+  padding: 14px 16px;
+  background: var(--bg-selected);
+  border: 2px solid var(--pacific-teal);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.highlight-box .label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.highlight-box .value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--pacific-teal);
+}
+
+.cashflow-box {
+  margin: 12px 16px 20px;
+  padding: 14px 16px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-medium);
+  border-radius: 8px;
+}
+
+.cashflow-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.cashflow-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cashflow-value {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.cashflow-value.negative { color: var(--negative); }
+.cashflow-value.positive { color: var(--pacific-teal); }
+
+.cashflow-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cashflow-detail-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.cashflow-detail-value {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ===========================================
+   DEAL GAP SECTION
+   =========================================== */
+.deal-section {
+  padding: 16px;
+}
+
+.deal-section h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--caution);
+  margin-bottom: 12px;
+}
+
+.callout-box {
+  background: #FEF3C7;
+  border: 2px solid var(--caution);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.callout-icon {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--caution);
+  line-height: 1;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--caution);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.callout-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.callout-text strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.gap-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.gap-row.main {
+  border-bottom: 2px solid var(--border-medium);
+}
+
+.gap-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.gap-label.main {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.gap-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.gap-value.main {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.gap-value.negative { color: var(--negative); }
+.gap-value.teal { color: var(--pacific-teal); }
+
+.recommended-box {
+  margin-top: 14px;
+  padding: 12px;
+  background: var(--bg-selected);
+  border: 2px solid var(--pacific-teal);
+  border-radius: 8px;
+}
+
+.recommended-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--pacific-teal);
+  margin-bottom: 4px;
+}
+
+.recommended-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ===========================================
+   AT-A-GLANCE - Performance Breakdown
+   =========================================== */
+.glance-section {
+  padding: 16px;
+}
+
+.glance-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.glance-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--deep-navy);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.glance-icon-inner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+
+.glance-icon-dot {
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 1px;
+}
+
+.glance-title-group {
+  flex: 1;
+}
+
+.glance-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.glance-subtitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.glance-toggle {
+  font-size: 16px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.glance-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-light);
+  gap: 12px;
+}
+
+.glance-row:last-child {
+  border-bottom: none;
+}
+
+.glance-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.glance-bar {
+  flex: 1;
+  height: 10px;
+  background: var(--bg-secondary);
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+
+.glance-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.glance-fill.teal { background: var(--pacific-teal); }
+.glance-fill.amber { background: var(--caution); }
+.glance-fill.negative { background: var(--negative); }
+
+.glance-value {
+  font-size: 14px;
+  font-weight: 700;
+  width: 42px;
+  text-align: right;
+  flex-shrink: 0;
+  color: var(--text-primary);
+}
+
+.glance-composite {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+}
+
+.glance-composite-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.glance-composite-text strong {
+  color: var(--pacific-teal);
+}
+
+/* ===========================================
+   PERFORMANCE BENCHMARKS - National Average
+   =========================================== */
+.benchmark-section {
+  padding: 16px;
+}
+
+.benchmark-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.benchmark-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.benchmark-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--deep-navy);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.benchmark-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: white;
+}
+
+.benchmark-title-group {
+  flex: 1;
+}
+
+.benchmark-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.benchmark-subtitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.benchmark-link {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pacific-teal);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.benchmark-intro {
+  margin-bottom: 16px;
+}
+
+.benchmark-intro-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.benchmark-intro-text {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* National Average Legend */
+.benchmark-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.benchmark-legend-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+
+.benchmark-legend-center {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--deep-navy);
+}
+
+/* Benchmark Scale Bar */
+.benchmark-scale {
+  position: relative;
+  height: 8px;
+  background: linear-gradient(to right, var(--negative), var(--bg-secondary) 50%, var(--pacific-teal));
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.benchmark-scale-marker {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 16px;
+  background: var(--deep-navy);
+}
+
+.benchmark-group {
+  margin-bottom: 20px;
+}
+
+.benchmark-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--pacific-teal);
+  padding: 8px 0;
+  border-bottom: 2px solid var(--pacific-teal);
+  margin-bottom: 12px;
+}
+
+.benchmark-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+  gap: 12px;
+}
+
+.benchmark-row:last-child {
+  border-bottom: none;
+}
+
+.benchmark-metric-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  width: 90px;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.benchmark-bar-container {
+  flex: 1;
+  position: relative;
+}
+
+.benchmark-bar {
+  height: 10px;
+  background: var(--bg-secondary);
+  border-radius: 5px;
+  overflow: visible;
+  border: 1px solid var(--border-light);
+  position: relative;
+}
+
+/* Center line for benchmark */
+.benchmark-bar::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--border-strong);
+}
+
+.benchmark-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.benchmark-marker.teal { background: var(--pacific-teal); }
+.benchmark-marker.amber { background: var(--caution); }
+.benchmark-marker.negative { background: var(--negative); }
+
+.benchmark-metric-value {
+  font-size: 13px;
+  font-weight: 700;
+  width: 50px;
+  text-align: right;
+  flex-shrink: 0;
+  color: var(--text-primary);
+}
+
+/* ===========================================
+   ACTION BUTTONS
+   =========================================== */
+.action-section {
+  padding: 20px 16px;
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background: var(--pacific-teal);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background: var(--bg-primary);
+  color: var(--pacific-teal);
+  border: 2px solid var(--pacific-teal);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.spacer { height: 16px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER (Status removed - now in Property Context) -->
+<header class="header">
+  <div class="brand">
+    <div class="brand-logo">
+      <span class="deal">Deal</span><span class="maker">Maker</span><span class="iq">IQ</span>
+    </div>
+    <div class="brand-sub">by Invest<span class="iq">IQ</span></div>
+  </div>
+  <div class="header-actions">
+    <svg class="search-icon" viewBox="0 0 2241.03 2241.03" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1220.52,129.8c-43.11-28.46-89.24-52.74-137.1-72.15-46.97-19.05-96.07-33.6-145.94-43.25C888.13,4.84,837.58,0,787.25,0c-50.33,0-100.88,4.84-150.24,14.4-49.87,9.66-98.97,24.21-145.94,43.25-47.86,19.41-93.99,43.68-137.1,72.15-44.17,29.17-85.69,63.07-123.4,100.78-37.71,37.71-71.61,79.22-100.78,123.4-28.46,43.11-52.74,89.24-72.15,137.1-19.05,46.97-33.6,96.07-43.25,145.94C4.84,686.37,0,736.92,0,787.25c0,50.33,4.84,100.88,14.4,150.24,9.66,49.87,24.21,98.97,43.25,145.94,19.41,47.86,43.68,93.99,72.15,137.1,29.17,44.17,63.07,85.69,100.78,123.4s79.22,71.61,123.4,100.78c43.11,28.46,89.24,52.74,137.1,72.15,46.97,19.05,96.07,33.6,145.94,43.25,49.36,9.56,99.9,14.4,150.24,14.4,50.33,0,100.88-4.84,150.24-14.4,49.87-9.66,98.97-24.21,145.94-43.25,47.86-19.41,93.99-43.68,137.1-72.15,24.19-15.97,47.57-33.37,69.97-52.03l155.78,155.78-7.76,7.76c-26.84,26.84-26.84,70.77,0,97.61l567.07,567.07c26.84,26.84,70.77,26.84,97.61,0l117.7-117.7c26.84-26.84,26.84-70.77,0-97.61l-567.07-567.07c-26.84-26.84-70.77-26.84-97.61,0l-7.76,7.76-155.78-155.78c18.66-22.4,36.06-45.79,52.03-69.97,28.46-43.11,52.74-89.24,72.15-137.1,19.05-46.97,33.6-96.07,43.25-145.94,9.56-49.36,14.4-99.9,14.4-150.24,0-50.33-4.84-100.88-14.4-150.24-9.66-49.87-24.21-98.97-43.25-145.94-19.41-47.86-43.68-93.99-72.15-137.1-29.17-44.17-63.07-85.69-100.78-123.4-37.71-37.71-79.22-71.61-123.4-100.78ZM1248.46,1248.46c-254.72,254.72-667.7,254.72-922.42,0-254.72-254.72-254.72-667.7,0-922.42,254.72-254.72,667.7-254.72,922.42,0,254.72,254.72,254.72,667.7,0,922.42Z"/>
+    </svg>
+    <div class="avatar">H</div>
+  </div>
+</header>
+
+<!-- NAVIGATION TABS -->
+<nav class="nav-tabs">
+  <a class="nav-tab active" href="#">Analyze</a>
+  <a class="nav-tab" href="#">Details</a>
+  <a class="nav-tab" href="#">Sale Comps</a>
+  <a class="nav-tab" href="#">Rent Comps</a>
+  <a class="nav-tab" href="#">Dashboard</a>
+</nav>
+
+<!-- PROPERTY CONTEXT - Photo + Address + Status -->
+<div class="property-context">
+  <div class="property-photo">
+    <span class="property-photo-placeholder">🏠</span>
+  </div>
+  <div class="property-info">
+    <div class="property-address-row">
+      <div class="property-address">
+        <div class="street">1451 SW 10th St.</div>
+        <div class="city">Boca Raton, FL 33486</div>
+      </div>
+      <span class="property-status off-market">
+        <span class="status-dot"></span>
+        Off-Market
+      </span>
+    </div>
+    <div class="property-details">
+      <span>4 Beds</span>
+      <span class="separator">|</span>
+      <span>2 Baths</span>
+      <span class="separator">|</span>
+      <span>1,722 SqFt</span>
+      <span class="separator">|</span>
+      <span class="property-price">$821,000</span>
+    </div>
+  </div>
+</div>
+
+<!-- VERDICT SECTION -->
+<section class="verdict-section">
+  <div class="verdict-content">
+    <div class="score-container">
+      <div class="score-ring">
+        <span class="score-value num">84</span>
+      </div>
+    </div>
+    <div class="verdict-info">
+      <div class="verdict-title"><span class="verdict">Verdict</span><span class="iq">IQ</span></div>
+      <div class="verdict-label">Strong Opportunity</div>
+      <div class="verdict-subtitle">Deal Gap easily achievable</div>
+      <div class="verdict-links">
+        <a class="verdict-link" href="#">How Verdict IQ Works</a>
+        <span class="separator">|</span>
+        <a class="verdict-link" href="#">How We Score</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONFIDENCE METRICS -->
+<section class="confidence-section">
+  <div class="confidence-header">Confidence Metrics</div>
+  
+  <div class="confidence-row">
+    <span class="confidence-label">Deal Probability</span>
+    <div class="confidence-bar"><div class="confidence-fill teal" style="width: 78%;"></div></div>
+    <span class="confidence-value teal num">78%</span>
+  </div>
+  <div class="confidence-row">
+    <span class="confidence-label">Market Alignment</span>
+    <div class="confidence-bar"><div class="confidence-fill amber" style="width: 54%;"></div></div>
+    <span class="confidence-value amber num">54%</span>
+  </div>
+  <div class="confidence-row">
+    <span class="confidence-label">Price Confidence</span>
+    <div class="confidence-bar"><div class="confidence-fill teal" style="width: 65%;"></div></div>
+    <span class="confidence-value teal num">65%</span>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- YOUR INVESTMENT ANALYSIS -->
+<section class="analysis-section">
+  <div class="analysis-header">
+    <div class="analysis-header-left">
+      <h2>YOUR INVESTMENT ANALYSIS</h2>
+      <span class="subtitle">Based on YOUR financing terms (20% down, 6.0%)</span>
+    </div>
+    <div class="analysis-header-right">
+      <a href="#" class="change-terms-link">Change terms</a>
+      <div class="strategy-dropdown">
+        <button class="strategy-btn" onclick="toggleStrategyMenu()">
+          Long-term <span class="arrow">▼</span>
+        </button>
+        <div class="strategy-menu" id="strategyMenu">
+          <a href="#" class="active">Long-term Rental</a>
+          <a href="#">Short-term Rental</a>
+          <a href="#">BRRRR</a>
+          <a href="#">Fix & Flip</a>
+          <a href="#">House Hack</a>
+          <a href="#">Wholesale</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="how-calculated">
+    <span class="icon">i</span>
+    <span>How BREAKEVEN is calculated</span>
+  </div>
+</section>
+
+<!-- IQ PRICE SELECTOR -->
+<div class="iq-section">
+  <div class="iq-selector">
+    <div class="iq-option" onclick="selectIQ(this, 'breakeven')">
+      <div class="iq-option-label">BREAKEVEN <span class="info-icon">i</span></div>
+      <div class="iq-option-value num">$784,458</div>
+      <div class="iq-option-sub">Max price for $0 cashflow</div>
+    </div>
+    <div class="iq-option selected" onclick="selectIQ(this, 'target')">
+      <div class="iq-option-label">TARGET BUY <span class="info-icon">i</span></div>
+      <div class="iq-option-value num">$745,235</div>
+      <div class="iq-option-sub">Positive Cashflow</div>
+    </div>
+    <div class="iq-option" onclick="selectIQ(this, 'wholesale')">
+      <div class="iq-option-label">WHOLESALE <span class="info-icon">i</span></div>
+      <div class="iq-option-value num">$549,121</div>
+      <div class="iq-option-sub">30% net discount for assignment</div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM METRICS ROW -->
+<div class="metrics-row">
+  <div class="metrics-box">
+    <div class="metrics-box-label">CASH FLOW</div>
+    <div class="metrics-box-value num">$281/mo</div>
+  </div>
+  <div class="metrics-box">
+    <div class="metrics-box-label">CASH NEEDED</div>
+    <div class="metrics-box-value num">$171,404</div>
+  </div>
+  <div class="metrics-box">
+    <div class="metrics-box-label">CAP RATE</div>
+    <div class="metrics-box-value num">6.2%</div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- FINANCIAL BREAKDOWN -->
+<div class="section-header">
+  <h2>Financial Breakdown</h2>
+  <span class="toggle">▼</span>
+</div>
+
+<!-- PURCHASE TERMS -->
+<div class="table-group">
+  <div class="table-group-header">
+    <span class="title">Purchase Terms</span>
+    <a href="#" class="adjust-btn">Adjust Terms</a>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Down Payment</span>
+    <span class="row-value num">$147,333</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Down Payment %</span>
+    <span class="row-value num">20.00%</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Loan Amount</span>
+    <span class="row-value num">$586,332</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Interest Rate</span>
+    <span class="row-value num">6.00%</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Loan Term (Years)</span>
+    <span class="row-value num">30</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Monthly Payment (P&I)</span>
+    <span class="row-value num">$3,533</span>
+  </div>
+</div>
+
+<div class="spacer"></div>
+
+<!-- INCOME -->
+<div class="table-group">
+  <div class="table-group-header">
+    <span class="title">Income</span>
+    <a href="#" class="adjust-btn">Adjust Income</a>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Gross Scheduled Rent</span>
+    <span class="row-value num">$68,800</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Less: Vacancy Allowance</span>
+    <span class="row-value negative num">($957)</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Other Income</span>
+    <span class="row-value num">$0</span>
+  </div>
+  <div class="total-row">
+    <span class="row-label">Effective Gross Income</span>
+    <span class="row-value num">$65,990</span>
+  </div>
+</div>
+
+<div class="spacer"></div>
+
+<!-- OPERATING EXPENSES -->
+<div class="table-group">
+  <div class="table-group-header">
+    <span class="title">Operating Expenses</span>
+    <a href="#" class="adjust-btn">Adjust Expenses</a>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Property Taxes</span>
+    <span class="row-value num">$6,840</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Insurance</span>
+    <span class="row-value num">$7,367</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">HOA Fees</span>
+    <span class="row-value">—</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Property Management</span>
+    <span class="row-value">—</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Maintenance & Repairs</span>
+    <span class="row-value num">$3,333</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Utilities</span>
+    <span class="row-value num">$1,200</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Capex Reserve</span>
+    <span class="row-value num">$3,333</span>
+  </div>
+  <div class="total-row">
+    <span class="row-label">Total Operating Expenses</span>
+    <span class="row-value num">$24,073</span>
+  </div>
+</div>
+
+<!-- NOI -->
+<div class="highlight-box">
+  <span class="label">Net Operating Income (NOI)</span>
+  <span class="value num">$41,920</span>
+</div>
+
+<!-- DEBT SERVICE -->
+<div class="table-group">
+  <div class="table-group-header">
+    <span class="title">Debt Service</span>
+  </div>
+  <div class="table-row">
+    <span class="row-label">Annual Mortgage (P&I)</span>
+    <span class="row-value num">$42,400</span>
+  </div>
+</div>
+
+<!-- CASHFLOW -->
+<div class="cashflow-box">
+  <div class="cashflow-header">
+    <span class="cashflow-label">Pre-Tax Cash Flow</span>
+    <span class="cashflow-value negative num">($480)</span>
+  </div>
+  <div class="cashflow-detail">
+    <span class="cashflow-detail-label">Monthly Cash Flow</span>
+    <span class="cashflow-detail-value negative num">($40)</span>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- DEAL GAP -->
+<div class="deal-section">
+  <h3>How Likely Can You Get This Price?</h3>
+  
+  <div class="callout-box">
+    <span class="callout-icon">!</span>
+    <span class="callout-text"><strong>Off-Market Property:</strong> No asking price available. Using Market Estimate of $821,000 for Deal Gap calculation.</span>
+  </div>
+  
+  <div class="gap-row main">
+    <span class="gap-label main">Deal Gap</span>
+    <span class="gap-value main negative num">-5.5%</span>
+  </div>
+  
+  <div class="gap-row">
+    <span class="gap-label">Market Estimate</span>
+    <span class="gap-value num">$821,000</span>
+  </div>
+  <div class="gap-row">
+    <span class="gap-label">Your Target</span>
+    <span class="gap-value teal num">$775,437</span>
+  </div>
+  <div class="gap-row">
+    <span class="gap-label">Discount Needed</span>
+    <span class="gap-value num">$45,563</span>
+  </div>
+  
+  <div class="recommended-box">
+    <div class="recommended-label">Recommended</div>
+    <div class="recommended-text">Suggested opening offer: 10% – 18% below asking</div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- AT-A-GLANCE - Performance Breakdown -->
+<section class="glance-section">
+  <div class="glance-header">
+    <div class="glance-icon">
+      <div class="glance-icon-inner">
+        <div class="glance-icon-dot"></div>
+        <div class="glance-icon-dot"></div>
+        <div class="glance-icon-dot"></div>
+        <div class="glance-icon-dot"></div>
+        <div class="glance-icon-dot"></div>
+        <div class="glance-icon-dot"></div>
+        <div class="glance-icon-dot"></div>
+        <div class="glance-icon-dot"></div>
+        <div class="glance-icon-dot"></div>
+      </div>
+    </div>
+    <div class="glance-title-group">
+      <div class="glance-title">At-a-Glance</div>
+      <div class="glance-subtitle">Performance breakdown</div>
+    </div>
+    <span class="glance-toggle">∧</span>
+  </div>
+
+  <div class="glance-row">
+    <span class="glance-label">Returns</span>
+    <div class="glance-bar"><div class="glance-fill teal" style="width: 75%;"></div></div>
+    <span class="glance-value num">75%</span>
+  </div>
+  <div class="glance-row">
+    <span class="glance-label">Cash Flow</span>
+    <div class="glance-bar"><div class="glance-fill negative" style="width: 21%;"></div></div>
+    <span class="glance-value num">21%</span>
+  </div>
+  <div class="glance-row">
+    <span class="glance-label">Equity Gain</span>
+    <div class="glance-bar"><div class="glance-fill teal" style="width: 75%;"></div></div>
+    <span class="glance-value num">75%</span>
+  </div>
+  <div class="glance-row">
+    <span class="glance-label">Debt Safety</span>
+    <div class="glance-bar"><div class="glance-fill teal" style="width: 84%;"></div></div>
+    <span class="glance-value num">84%</span>
+  </div>
+  <div class="glance-row">
+    <span class="glance-label">Cost Control</span>
+    <div class="glance-bar"><div class="glance-fill amber" style="width: 55%;"></div></div>
+    <span class="glance-value num">55%</span>
+  </div>
+  <div class="glance-row">
+    <span class="glance-label">Downside Risk</span>
+    <div class="glance-bar"><div class="glance-fill negative" style="width: 18%;"></div></div>
+    <span class="glance-value num">18%</span>
+  </div>
+
+  <div class="glance-composite">
+    <span class="glance-composite-text"><strong>Composite:</strong> 75% score across returns and risk protection.</span>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- PERFORMANCE BENCHMARKS - National Average Comparison -->
+<section class="benchmark-section">
+  <div class="benchmark-header">
+    <div class="benchmark-header-left">
+      <div class="benchmark-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 13h2v8H3v-8zm6-6h2v14H9V7zm6 3h2v11h-2V10zm6-7h2v18h-2V3z" fill="white"/>
+        </svg>
+      </div>
+      <div class="benchmark-title-group">
+        <div class="benchmark-title">Performance Benchmarks</div>
+        <div class="benchmark-subtitle">How this deal compares</div>
+      </div>
+    </div>
+    <a href="#" class="benchmark-link">∨ How to read</a>
+  </div>
+
+  <div class="benchmark-intro">
+    <div class="benchmark-intro-title">How This Deal Compares to National Average</div>
+    <div class="benchmark-intro-text">The center represents the national average. Markers to the left are below average, markers to the right are above average.</div>
+  </div>
+
+  <div class="benchmark-legend">
+    <span class="benchmark-legend-label">BELOW</span>
+    <span class="benchmark-legend-center">NATIONAL AVG</span>
+    <span class="benchmark-legend-label">ABOVE</span>
+  </div>
+  <div class="benchmark-scale">
+    <div class="benchmark-scale-marker"></div>
+  </div>
+
+  <!-- RETURNS -->
+  <div class="benchmark-group">
+    <div class="benchmark-group-title">Returns</div>
+    
+    <div class="benchmark-row">
+      <span class="benchmark-metric-label">Cash on Cash Return</span>
+      <div class="benchmark-bar-container">
+        <div class="benchmark-bar">
+          <div class="benchmark-marker teal" style="left: 35%;"></div>
+        </div>
+      </div>
+      <span class="benchmark-metric-value num">4.1%</span>
+    </div>
+    
+    <div class="benchmark-row">
+      <span class="benchmark-metric-label">Cap Rate</span>
+      <div class="benchmark-bar-container">
+        <div class="benchmark-bar">
+          <div class="benchmark-marker teal" style="left: 68%;"></div>
+        </div>
+      </div>
+      <span class="benchmark-metric-value num">6.8%</span>
+    </div>
+    
+    <div class="benchmark-row">
+      <span class="benchmark-metric-label">Total ROI (5yr)</span>
+      <div class="benchmark-bar-container">
+        <div class="benchmark-bar">
+          <div class="benchmark-marker teal" style="left: 72%;"></div>
+        </div>
+      </div>
+      <span class="benchmark-metric-value num">52%</span>
+    </div>
+  </div>
+
+  <!-- CASH FLOW & RISK -->
+  <div class="benchmark-group">
+    <div class="benchmark-group-title">Cash Flow & Risk</div>
+    
+    <div class="benchmark-row">
+      <span class="benchmark-metric-label">Cash Flow Yield</span>
+      <div class="benchmark-bar-container">
+        <div class="benchmark-bar">
+          <div class="benchmark-marker teal" style="left: 55%;"></div>
+        </div>
+      </div>
+      <span class="benchmark-metric-value num">5.1%</span>
+    </div>
+    
+    <div class="benchmark-row">
+      <span class="benchmark-metric-label">Debt Service Coverage</span>
+      <div class="benchmark-bar-container">
+        <div class="benchmark-bar">
+          <div class="benchmark-marker amber" style="left: 42%;"></div>
+        </div>
+      </div>
+      <span class="benchmark-metric-value num">1.20</span>
+    </div>
+    
+    <div class="benchmark-row">
+      <span class="benchmark-metric-label">Expense Ratio</span>
+      <div class="benchmark-bar-container">
+        <div class="benchmark-bar">
+          <div class="benchmark-marker negative" style="left: 25%;"></div>
+        </div>
+      </div>
+      <span class="benchmark-metric-value num">23%</span>
+    </div>
+    
+    <div class="benchmark-row">
+      <span class="benchmark-metric-label">Breakeven Occupancy</span>
+      <div class="benchmark-bar-container">
+        <div class="benchmark-bar">
+          <div class="benchmark-marker teal" style="left: 78%;"></div>
+        </div>
+      </div>
+      <span class="benchmark-metric-value num">82%</span>
+    </div>
+  </div>
+</section>
+
+<!-- ACTIONS -->
+<div class="action-section">
+  <a class="btn-primary" href="#">Go to DealMakerIQ →</a>
+  <a class="btn-secondary" href="#">Export Analysis</a>
+</div>
+
+<script>
+// IQ Selector Interaction
+function selectIQ(element, type) {
+  document.querySelectorAll('.iq-option').forEach(opt => {
+    opt.classList.remove('selected');
+  });
+  element.classList.add('selected');
+}
+
+// Strategy Dropdown
+function toggleStrategyMenu() {
+  const menu = document.getElementById('strategyMenu');
+  menu.classList.toggle('open');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.strategy-dropdown')) {
+    document.getElementById('strategyMenu').classList.remove('open');
+  }
+});
+</script>
+
+</body>
+</html>
