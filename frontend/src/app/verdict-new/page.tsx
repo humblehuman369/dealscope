@@ -41,7 +41,7 @@ const MOCK_ANALYSIS: IQAnalysisResult = {
   discountPercent: 10.3,
   strategies: [
     {
-      id: 'ltr',
+      id: 'long-term-rental',
       name: 'Long-Term Rental',
       icon: '🏠',
       metric: '10.7%',
@@ -52,7 +52,7 @@ const MOCK_ANALYSIS: IQAnalysisResult = {
       badge: 'Best Match',
     },
     {
-      id: 'str',
+      id: 'short-term-rental',
       name: 'Short-Term Rental',
       icon: '🏖️',
       metric: '21.7%',
