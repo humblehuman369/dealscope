@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VerdictIQ - Contrast-First Design</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       DEALMAKERIQ DESIGN SYSTEM
+       Decision-Grade Edition - Contrast-First
+       
+       Core Principles:
+       1. Legibility Wins - Readable in sunlight on mobile
+       2. Numbers Are the Product - UI serves calculations
+       3. Contrast Over Trend - Usability > aesthetics
+       4. Hierarchy via Size/Weight/Spacing - NOT opacity
+       5. Everything Has a Job - No decorative UI
+       
+       EXPLICIT PROHIBITIONS:
+       - No washed-out micro-text
+       - No decorative opacity-based hierarchy
+       - No hidden data
+       - All text WCAG AA compliant
+       ======================================== */
+    
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* Primary Brand Colors */
+      --deep-navy: #0A1628;
+      --pacific-teal: #0891B2;
+      --teal-light: #06B6D4;
+      --electric-cyan: #00D4FF;
+      
+      /* Semantic Colors - Per Style Guide */
+      --positive: #0891B2;    /* Teal for positive (NOT green) */
+      --negative: #EF4444;    /* Red for loss/risk */
+      --warning: #F59E0B;     /* Amber for caution */
+      --info-blue: #3B82F6;   /* Blue for informational */
+      
+      /* Surface Palette - CONTRAST FIRST */
+      --slate-50: #F8FAFC;
+      --slate-100: #F1F5F9;
+      --slate-200: #E2E8F0;
+      /* MINIMUM for any readable text */
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1E293B;
+      
+      /* Spacing (4px base) */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--slate-100);
+      color: var(--deep-navy);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* Tabular numerals for financial data */
+    .num {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    /* Layout */
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--slate-50);
+      min-height: 100vh;
+    }
+
+    /* ========================================
+       COMPACT HEADER
+       ======================================== */
+    .header {
+      background: white;
+      border-bottom: 1px solid var(--slate-200);
+      padding: var(--space-3) var(--space-4);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-3);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--pacific-teal);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .logo-brand {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .logo-brand .navy { color: var(--deep-navy); }
+    .logo-brand .teal { color: var(--pacific-teal); }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--slate-600);
+      font-weight: 500;
+    }
+
+    .logo-sub .teal { color: var(--pacific-teal); }
+
+    .header-actions {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .header-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--pacific-teal);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      transition: background 150ms ease;
+    }
+
+    .header-btn:hover {
+      background: var(--teal-light);
+    }
+
+    /* Navigation Pills */
+    .nav-pills {
+      display: flex;
+      gap: var(--space-2);
+      overflow-x: auto;
+      padding-bottom: var(--space-2);
+    }
+
+    .nav-pill {
+      padding: var(--space-2) var(--space-3);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--deep-navy);
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 150ms ease;
+    }
+
+    .nav-pill:hover {
+      border-color: var(--pacific-teal);
+    }
+
+    .nav-pill.active {
+      background: var(--pacific-teal);
+      border-color: var(--pacific-teal);
+      color: white;
+    }
+
+    /* ========================================
+       ADDRESS BAR
+       ======================================== */
+    .address-bar {
+      background: var(--slate-100);
+      padding: var(--space-3) var(--space-4);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .address-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--pacific-teal);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .address-text {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--deep-navy);
+      letter-spacing: 0.5px;
+    }
+
+    .address-action {
+      width: 28px;
+      height: 28px;
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--deep-navy);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    /* ========================================
+       PAGE TITLE
+       ======================================== */
+    .page-title-section {
+      background: white;
+      padding: var(--space-4);
+      text-align: center;
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--deep-navy);
+    }
+
+    .page-title .iq {
+      color: var(--pacific-teal);
+    }
+
+    /* ========================================
+       VERDICT HERO - CONTRAST FIRST DESIGN
+       Score Ring | Verdict | Confidence Metrics
+       ======================================== */
+    .verdict-hero {
+      background: white;
+      padding: var(--space-6);
+      border-bottom: 1px solid var(--slate-200);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: var(--space-5);
+    }
+
+    /* Simple Teal Score Ring - NO GRADIENT */
+    .score-ring {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      flex-shrink: 0;
+    }
+
+    .score-ring-circle {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 5px solid var(--pacific-teal);
+      background: white;
+    }
+
+    .score-ring-inner {
+      position: absolute;
+      inset: 5px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-number {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--deep-navy);
+      line-height: 1;
+    }
+
+    /* Readable, not washed out */
+    .score-max {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate-600);
+      margin-top: 2px;
+    }
+
+    /* Verdict Section */
+    .verdict-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Large, clear verdict label - TEAL per style guide (not green) */
+    .verdict-rating {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--pacific-teal);
+      line-height: 1.1;
+    }
+
+    .verdict-rating.strong { color: var(--pacific-teal); }
+    .verdict-rating.moderate { color: var(--warning); }
+    .verdict-rating.poor { color: var(--negative); }
+
+    /* Description text - READABLE, not washed out */
+    .verdict-desc {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate-700);
+      line-height: 1.4;
+      font-style: italic;
+    }
+
+    /* Info Links - clearly visible teal */
+    .verdict-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+    }
+
+    .verdict-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--pacific-teal);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: color 150ms ease;
+    }
+
+    .verdict-link:hover {
+      color: var(--teal-light);
+      text-decoration: underline;
+    }
+
+    .verdict-link-divider {
+      color: var(--slate-600);
+      font-weight: 400;
+    }
+
+    /* Confidence Metrics - SOLID COLORS, percentages in metric color */
+    .confidence-section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      min-width: 200px;
+    }
+
+    /* Readable title - not washed out */
+    .confidence-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--slate-700);
+      margin-bottom: 4px;
+    }
+
+    .confidence-metric {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .confidence-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Readable metric labels */
+    .confidence-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--deep-navy);
+    }
+
+    /* Percentage in its semantic color */
+    .confidence-value {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .confidence-value.teal { color: var(--pacific-teal); }
+    .confidence-value.amber { color: var(--warning); }
+    .confidence-value.blue { color: var(--info-blue); }
+
+    .confidence-bar {
+      height: 8px;
+      background: var(--slate-200);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    /* SOLID colors - no gradients */
+    .confidence-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 400ms ease;
+    }
+
+    .confidence-fill.teal { background: var(--pacific-teal); }
+    .confidence-fill.amber { background: var(--warning); }
+    .confidence-fill.blue { background: var(--info-blue); }
+
+    /* ========================================
+       STRATEGY SELECTOR
+       ======================================== */
+    .strategy-section {
+      background: white;
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    .strategy-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--deep-navy);
+      margin-bottom: var(--space-2);
+    }
+
+    .strategy-label .iq-mark {
+      color: var(--pacific-teal);
+    }
+
+    .strategy-pills {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .strategy-pill {
+      padding: var(--space-2) var(--space-3);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--deep-navy);
+      background: var(--slate-100);
+      border: 1px solid var(--slate-200);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .strategy-pill:hover {
+      border-color: var(--pacific-teal);
+    }
+
+    .strategy-pill.active {
+      background: rgba(8, 145, 178, 0.15);
+      border-color: var(--pacific-teal);
+      color: var(--pacific-teal);
+    }
+
+    /* ========================================
+       PRICE ANALYSIS SECTION
+       ======================================== */
+    .investment-section {
+      background: white;
+      padding: var(--space-5) var(--space-4);
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-4);
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--deep-navy);
+    }
+
+    .section-title .iq-mark {
+      color: var(--pacific-teal);
+    }
+
+    .section-action {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--pacific-teal);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 150ms ease;
+    }
+
+    .section-action:hover {
+      color: var(--teal-light);
+      text-decoration: underline;
+    }
+
+    .price-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr 1fr;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+
+    .price-card {
+      padding: var(--space-4);
+      text-align: center;
+      border: 2px solid var(--slate-200);
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .price-card:hover {
+      border-color: var(--pacific-teal);
+    }
+
+    .price-card.primary {
+      border: 2px solid var(--pacific-teal);
+      position: relative;
+    }
+
+    .price-card.primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--pacific-teal);
+      border-radius: 6px 6px 0 0;
+    }
+
+    .price-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--deep-navy);
+      margin-bottom: var(--space-2);
+    }
+
+    .price-card-label .iq-suffix {
+      color: var(--pacific-teal);
+    }
+
+    .price-card.primary .price-card-label {
+      color: var(--pacific-teal);
+    }
+
+    .price-card-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--deep-navy);
+      margin-bottom: 4px;
+    }
+
+    .price-card.primary .price-card-value {
+      font-size: 24px;
+      color: var(--pacific-teal);
+    }
+
+    /* Readable description - not washed out */
+    .price-card-desc {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--slate-600);
+      line-height: 1.3;
+    }
+
+    /* Metrics Row */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+    }
+
+    .metric-pill {
+      padding: var(--space-3);
+      text-align: center;
+      background: rgba(8, 145, 178, 0.1);
+      border-radius: 8px;
+    }
+
+    .metric-pill-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--deep-navy);
+      margin-bottom: 4px;
+    }
+
+    .metric-pill-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--pacific-teal);
+    }
+
+    /* ========================================
+       FINANCIAL BREAKDOWN
+       ======================================== */
+    .breakdown-section {
+      background: white;
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    .breakdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+      cursor: pointer;
+      background: white;
+      border: none;
+      width: 100%;
+      text-align: left;
+      transition: background 150ms ease;
+    }
+
+    .breakdown-header:hover {
+      background: var(--slate-50);
+    }
+
+    .breakdown-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--deep-navy);
+    }
+
+    .breakdown-title .iq-mark {
+      color: var(--pacific-teal);
+    }
+
+    .breakdown-toggle {
+      width: 20px;
+      height: 20px;
+      color: var(--deep-navy);
+      transition: transform 150ms ease;
+    }
+
+    .breakdown-toggle.open {
+      transform: rotate(180deg);
+    }
+
+    .breakdown-content {
+      padding: 0 var(--space-4) var(--space-5);
+    }
+
+    .breakdown-group {
+      margin-bottom: var(--space-4);
+    }
+
+    .breakdown-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .breakdown-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-2) var(--space-4);
+      background: #0E7490;
+      border-radius: 6px;
+      margin: 0 var(--space-1);
+      margin-bottom: var(--space-2);
+    }
+
+    .breakdown-group-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: white;
+    }
+
+    .breakdown-group-title .iq-tag {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--electric-cyan);
+      margin-left: 8px;
+    }
+
+    .breakdown-group-action {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--electric-cyan);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: opacity 150ms ease;
+    }
+
+    .breakdown-group-action:hover {
+      opacity: 0.8;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-2) var(--space-5);
+      font-size: 14px;
+      border-bottom: 1px solid var(--slate-100);
+    }
+
+    .breakdown-row:last-child {
+      border-bottom: none;
+    }
+
+    /* Readable row labels - not washed out */
+    .breakdown-row-label {
+      color: var(--slate-700);
+      font-weight: 500;
+    }
+
+    .breakdown-row-value {
+      font-weight: 600;
+      color: var(--deep-navy);
+    }
+
+    .breakdown-row.highlight {
+      background: rgba(8, 145, 178, 0.1);
+      margin: 0 var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border-radius: 6px;
+    }
+
+    .breakdown-row.highlight .breakdown-row-label {
+      font-weight: 600;
+    }
+
+    .breakdown-row.highlight .breakdown-row-value {
+      color: var(--pacific-teal);
+      font-weight: 700;
+    }
+
+    .breakdown-row.summary {
+      background: var(--slate-100);
+      margin: var(--space-2) var(--space-2) 0;
+      padding: var(--space-2) var(--space-4);
+      border-radius: 6px;
+    }
+
+    .breakdown-row.summary .breakdown-row-label {
+      font-weight: 600;
+    }
+
+    .breakdown-row.summary .breakdown-row-value {
+      font-weight: 700;
+    }
+
+    /* ========================================
+       SECTION DIVIDER
+       ======================================== */
+    .section-divider {
+      height: var(--space-3);
+      background: var(--slate-200);
+    }
+
+    /* ========================================
+       COLLAPSIBLE SECTIONS
+       ======================================== */
+    .collapsible-section {
+      background: white;
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    .collapsible-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+      cursor: pointer;
+      background: white;
+      border: none;
+      width: 100%;
+      text-align: left;
+      transition: background 150ms ease;
+    }
+
+    .collapsible-header:hover {
+      background: var(--slate-50);
+    }
+
+    .collapsible-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--deep-navy);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .collapsible-toggle {
+      width: 20px;
+      height: 20px;
+      color: var(--deep-navy);
+      transition: transform 150ms ease;
+    }
+
+    /* ========================================
+       FOOTER
+       ======================================== */
+    .page-footer {
+      padding: var(--space-6);
+      text-align: center;
+      background: white;
+      border-top: 1px solid var(--slate-200);
+    }
+
+    .footer-brand {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .footer-brand .navy { color: var(--deep-navy); }
+    .footer-brand .teal { color: var(--pacific-teal); }
+
+    .footer-tagline {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--slate-600);
+      margin-top: 4px;
+    }
+
+    .footer-tagline .teal {
+      color: var(--pacific-teal);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-top">
+        <div class="logo">
+          <div class="logo-icon">IQ</div>
+          <div class="logo-text">
+            <div class="logo-brand"><span class="navy">DealMaker</span><span class="teal">IQ</span></div>
+            <div class="logo-sub">by Invest<span class="teal">IQ</span></div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="header-btn" title="User">H</button>
+        </div>
+      </div>
+      <div class="nav-pills">
+        <div class="nav-pill">Search</div>
+        <div class="nav-pill active">Analyze</div>
+        <div class="nav-pill">Photos</div>
+        <div class="nav-pill">Sales</div>
+        <div class="nav-pill">Rents</div>
+        <div class="nav-pill">Dashboard</div>
+      </div>
+    </header>
+
+    <!-- Address Bar -->
+    <div class="address-bar">
+      <div class="address-icon">V</div>
+      <div class="address-text">1451 SW 10TH ST, BOCA RATON, FL 33483</div>
+      <div class="address-action">V</div>
+    </div>
+
+    <!-- Page Title -->
+    <section class="page-title-section">
+      <h1 class="page-title">Verdict<span class="iq">IQ</span></h1>
+    </section>
+
+    <!-- VerdictIQ Hero - Contrast First Design -->
+    <section class="verdict-hero">
+      <!-- Simple Teal Score Ring -->
+      <div class="score-ring">
+        <div class="score-ring-circle"></div>
+        <div class="score-ring-inner">
+          <span class="score-number num">84</span>
+          <span class="score-max">/100</span>
+        </div>
+      </div>
+
+      <!-- Verdict Section -->
+      <div class="verdict-section">
+        <div class="verdict-rating strong">Strong Buy</div>
+        <div class="verdict-desc">Deal Gap easily achievable</div>
+        <div class="verdict-links">
+          <button class="verdict-link">How Verdict IQ Works</button>
+          <span class="verdict-link-divider">|</span>
+          <button class="verdict-link">How We Score</button>
+        </div>
+      </div>
+
+      <!-- Confidence Metrics - Solid Colors -->
+      <div class="confidence-section">
+        <div class="confidence-title">Confidence Metrics</div>
+        
+        <div class="confidence-metric">
+          <div class="confidence-header">
+            <span class="confidence-label">Deal Probability</span>
+            <span class="confidence-value teal num">78%</span>
+          </div>
+          <div class="confidence-bar">
+            <div class="confidence-fill teal" style="width: 78%;"></div>
+          </div>
+        </div>
+
+        <div class="confidence-metric">
+          <div class="confidence-header">
+            <span class="confidence-label">Market Alignment</span>
+            <span class="confidence-value amber num">54%</span>
+          </div>
+          <div class="confidence-bar">
+            <div class="confidence-fill amber" style="width: 54%;"></div>
+          </div>
+        </div>
+
+        <div class="confidence-metric">
+          <div class="confidence-header">
+            <span class="confidence-label">Price Confidence</span>
+            <span class="confidence-value blue num">65%</span>
+          </div>
+          <div class="confidence-bar">
+            <div class="confidence-fill blue" style="width: 65%;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- StrategyIQ Selector -->
+    <section class="strategy-section">
+      <div class="strategy-label">
+        Strategy<span class="iq-mark">IQ</span>
+      </div>
+      <div class="strategy-pills">
+        <div class="strategy-pill active">Long-Term Rental</div>
+        <div class="strategy-pill">Short-Term Rental</div>
+        <div class="strategy-pill">BRRRR</div>
+        <div class="strategy-pill">Fix & Flip</div>
+        <div class="strategy-pill">House Hack</div>
+        <div class="strategy-pill">Wholesale</div>
+      </div>
+    </section>
+
+    <!-- PriceIQ Section -->
+    <section class="investment-section">
+      <div class="section-header">
+        <span class="section-title">Price<span class="iq-mark">IQ</span> Analysis</span>
+        <button class="section-action">Edit Assumptions</button>
+      </div>
+
+      <div class="price-grid">
+        <div class="price-card">
+          <div class="price-card-label">Breakeven<span class="iq-suffix">IQ</span></div>
+          <div class="price-card-value num">$782,400</div>
+          <div class="price-card-desc">Max for $0 cashflow</div>
+        </div>
+
+        <div class="price-card primary">
+          <div class="price-card-label">Target<span class="iq-suffix">IQ</span></div>
+          <div class="price-card-value num">$736,665</div>
+          <div class="price-card-desc">Positive Cashflow</div>
+        </div>
+
+        <div class="price-card">
+          <div class="price-card-label">Wholesale<span class="iq-suffix">IQ</span></div>
+          <div class="price-card-value num">$547,400</div>
+          <div class="price-card-desc">30% net discount</div>
+        </div>
+      </div>
+
+      <div class="metrics-row">
+        <div class="metric-pill">
+          <div class="metric-pill-label">Cash Flow</div>
+          <div class="metric-pill-value num">$482</div>
+        </div>
+        <div class="metric-pill">
+          <div class="metric-pill-label">Cash Needed</div>
+          <div class="metric-pill-value num">$184K</div>
+        </div>
+        <div class="metric-pill">
+          <div class="metric-pill-label">Cap Rate</div>
+          <div class="metric-pill-value num">5.69%</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ModelIQ Financial Breakdown -->
+    <section class="breakdown-section">
+      <button class="breakdown-header">
+        <span class="breakdown-title">Model<span class="iq-mark">IQ</span> Breakdown</span>
+        <svg class="breakdown-toggle open" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+        </svg>
+      </button>
+      <div class="breakdown-content">
+        <!-- Purchase Terms -->
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">
+              Purchase Terms
+              <span class="iq-tag">LenderIQ</span>
+            </span>
+            <button class="breakdown-group-action">Adjust</button>
+          </div>
+          <div class="breakdown-row highlight">
+            <span class="breakdown-row-label">TargetIQ Price</span>
+            <span class="breakdown-row-value num">$736,665</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Down Payment (25%)</span>
+            <span class="breakdown-row-value num">$184,166</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Loan Amount</span>
+            <span class="breakdown-row-value num">$552,499</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Interest Rate</span>
+            <span class="breakdown-row-value num">7.00%</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Monthly P&I</span>
+            <span class="breakdown-row-value num">$3,676</span>
+          </div>
+        </div>
+
+        <!-- Rental Income -->
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">
+              Rental Income
+              <span class="iq-tag">RentalIQ</span>
+            </span>
+            <button class="breakdown-group-action">Adjust</button>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Monthly Rent</span>
+            <span class="breakdown-row-value num">$5,800</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Vacancy (5%)</span>
+            <span class="breakdown-row-value num">-$290</span>
+          </div>
+          <div class="breakdown-row summary">
+            <span class="breakdown-row-label">Effective Gross Income</span>
+            <span class="breakdown-row-value num">$5,510</span>
+          </div>
+        </div>
+
+        <!-- Operating Expenses -->
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Operating Expenses</span>
+            <button class="breakdown-group-action">Adjust</button>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Property Taxes</span>
+            <span class="breakdown-row-value num">$613</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Insurance</span>
+            <span class="breakdown-row-value num">$245</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Repairs (5%)</span>
+            <span class="breakdown-row-value num">$290</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">CapEx (5%)</span>
+            <span class="breakdown-row-value num">$290</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Management (8%)</span>
+            <span class="breakdown-row-value num">$464</span>
+          </div>
+          <div class="breakdown-row summary">
+            <span class="breakdown-row-label">Total Operating Expenses</span>
+            <span class="breakdown-row-value num">$1,902</span>
+          </div>
+        </div>
+
+        <!-- Cash Flow Analysis -->
+        <div class="breakdown-group">
+          <div class="breakdown-group-header">
+            <span class="breakdown-group-title">Cash Flow Analysis</span>
+            <button class="breakdown-group-action">Adjust</button>
+          </div>
+          <div class="breakdown-row highlight">
+            <span class="breakdown-row-label">Net Operating Income (NOI)</span>
+            <span class="breakdown-row-value num">$3,608</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-row-label">Debt Service (P&I)</span>
+            <span class="breakdown-row-value num">-$3,126</span>
+          </div>
+          <div class="breakdown-row highlight">
+            <span class="breakdown-row-label">Pre-Tax Cash Flow</span>
+            <span class="breakdown-row-value num">$482</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section Divider -->
+    <div class="section-divider"></div>
+
+    <!-- Performance Breakdown -->
+    <section class="collapsible-section">
+      <button class="collapsible-header">
+        <span class="collapsible-title">Performance Breakdown</span>
+        <svg class="collapsible-toggle" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+        </svg>
+      </button>
+    </section>
+
+    <!-- Performance Benchmarks -->
+    <section class="collapsible-section">
+      <button class="collapsible-header">
+        <span class="collapsible-title">Performance Benchmarks</span>
+        <svg class="collapsible-toggle" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+        </svg>
+      </button>
+    </section>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+      <div class="footer-brand">
+        <span class="navy">DealMaker</span><span class="teal">IQ</span>
+      </div>
+      <div class="footer-tagline">by Invest<span class="teal">IQ</span> - Decision-Grade Intelligence</div>
+    </footer>
+  </div>
+</body>
+</html>
