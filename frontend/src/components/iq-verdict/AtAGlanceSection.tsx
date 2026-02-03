@@ -1,9 +1,10 @@
 'use client'
 
 /**
- * AtAGlanceSection Component
+ * AtAGlanceSection Component - Decision-Grade UI
  * 
  * Displays performance breakdown bars for key metrics.
+ * Per DealMakerIQ Design System - high contrast, legibility-first.
  */
 
 import React, { useState } from 'react'
@@ -21,10 +22,11 @@ interface AtAGlanceSectionProps {
   defaultExpanded?: boolean
 }
 
-function getBarColor(value: number): string {
-  if (value >= 70) return 'linear-gradient(90deg, #0891B2, #06B6D4)'
-  if (value >= 40) return 'linear-gradient(90deg, #D97706, #F59E0B)'
-  return 'linear-gradient(90deg, #DC2626, #EF4444)'
+// Get color class based on value
+function getBarColorClass(value: number): 'teal' | 'amber' | 'negative' {
+  if (value >= 70) return 'teal'
+  if (value >= 40) return 'amber'
+  return 'negative'
 }
 
 export function AtAGlanceSection({ 
@@ -35,50 +37,118 @@ export function AtAGlanceSection({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
   return (
-    <div className="bg-white border-b border-[#E2E8F0] overflow-hidden">
+    <div style={{ background: 'var(--dg-bg-primary)' }}>
+      {/* Section Divider */}
+      <div className="dg-section-divider" />
+      
       {/* Header */}
-      <button 
-        className="w-full flex items-center justify-between px-5 py-4 bg-white border-none cursor-pointer text-left hover:bg-[#F8FAFC] transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <span className="text-sm font-bold text-[#0A1628] uppercase tracking-wide">
-          Performance Breakdown
-        </span>
-        <ChevronDown 
-          className={`w-5 h-5 text-[#64748B] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
-        />
-      </button>
-
-      {/* Content */}
-      {isExpanded && (
-        <div className="px-5 pb-5 pt-1">
-          {bars.map((bar, idx) => (
-            <div key={idx} className="flex items-center mb-3 last:mb-0">
-              <span className="text-sm text-[#475569] min-w-[100px]">{bar.label}</span>
-              <div className="flex-1 mx-4 h-2 bg-[#E2E8F0] rounded overflow-hidden">
-                <div 
-                  className="h-full rounded transition-all duration-300"
-                  style={{ 
-                    width: `${Math.max(0, Math.min(100, bar.value))}%`, 
-                    background: getBarColor(bar.value)
-                  }} 
-                />
-              </div>
-              <span className="text-sm font-bold text-[#0A1628] tabular-nums min-w-[45px] text-right">
-                {Math.round(bar.value)}%
-              </span>
+      <section style={{ padding: '16px' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '12px',
+          marginBottom: '16px',
+        }}>
+          {/* Icon */}
+          <div style={{
+            width: '40px',
+            height: '40px',
+            background: 'var(--dg-deep-navy)',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '2px',
+            }}>
+              {[...Array(9)].map((_, i) => (
+                <div key={i} style={{
+                  width: '6px',
+                  height: '6px',
+                  background: 'white',
+                  borderRadius: '1px',
+                }} />
+              ))}
             </div>
-          ))}
+          </div>
           
-          {compositeScore !== undefined && (
-            <div className="mt-4 pt-4 border-t border-[#E2E8F0]">
-              <p className="text-[13px] text-[#64748B]">
-                <span className="font-semibold text-[#0A1628]">Composite:</span> {compositeScore}% score across returns and risk protection.
-              </p>
-            </div>
-          )}
+          {/* Title Group */}
+          <div style={{ flex: 1 }}>
+            <div style={{
+              fontSize: '14px',
+              fontWeight: 700,
+              color: 'var(--dg-text-primary)',
+            }}>At-a-Glance</div>
+            <div style={{
+              fontSize: '11px',
+              fontWeight: 500,
+              color: 'var(--dg-text-secondary)',
+            }}>Performance breakdown</div>
+          </div>
+          
+          {/* Toggle */}
+          <button 
+            onClick={() => setIsExpanded(!isExpanded)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px',
+            }}
+          >
+            <ChevronDown 
+              style={{ 
+                width: '20px', 
+                height: '20px', 
+                color: 'var(--dg-text-primary)',
+                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s ease',
+              }} 
+            />
+          </button>
         </div>
-      )}
+
+        {/* Content - always visible or expandable */}
+        {(isExpanded || defaultExpanded) && (
+          <>
+            {bars.map((bar, idx) => (
+              <div key={idx} className="dg-confidence-row">
+                <span className="dg-confidence-label" style={{ width: '100px' }}>{bar.label}</span>
+                <div className="dg-confidence-bar">
+                  <div 
+                    className={`dg-confidence-fill ${getBarColorClass(bar.value)}`}
+                    style={{ width: `${Math.max(0, Math.min(100, bar.value))}%` }}
+                  />
+                </div>
+                <span className={`dg-confidence-value ${getBarColorClass(bar.value)}`} style={{ width: '42px' }}>
+                  {Math.round(bar.value)}%
+                </span>
+              </div>
+            ))}
+            
+            {compositeScore !== undefined && (
+              <div style={{
+                marginTop: '12px',
+                padding: '12px',
+                background: 'var(--dg-bg-secondary)',
+                borderRadius: '6px',
+              }}>
+                <span style={{
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: 'var(--dg-text-primary)',
+                }}>
+                  <strong style={{ color: 'var(--dg-pacific-teal)' }}>Composite:</strong> {compositeScore}% score across returns and risk protection.
+                </span>
+              </div>
+            )}
+          </>
+        )}
+      </section>
     </div>
   )
 }

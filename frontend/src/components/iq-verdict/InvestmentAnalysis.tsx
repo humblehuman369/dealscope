@@ -1,41 +1,21 @@
 'use client'
 
 /**
- * InvestmentAnalysis Component
+ * InvestmentAnalysis Component - Decision-Grade UI
  * 
- * Displays price cards (Breakeven, Target Buy, Wholesale) with metrics row.
- * Redesigned with elevated Target Buy card and reordered metrics.
+ * Displays IQ Price Selector (Breakeven, Target Buy, Wholesale) with metrics row.
+ * Per DealMakerIQ Design System - high contrast, legibility-first.
  * 
  * DYNAMIC ANALYTICS:
  * - Price cards are clickable and trigger recalculation
  * - Metrics row updates based on active price target and strategy
  */
 
-import React, { useState, useMemo, useCallback } from 'react'
-import { ChevronDown, HelpCircle, Info } from 'lucide-react'
+import React, { useState, useCallback } from 'react'
+import { ChevronDown, Info } from 'lucide-react'
 import { formatPrice } from './types'
 import { PriceTarget } from '@/lib/priceUtils'
-import { MetricId, MetricDefinition, formatMetricValue, METRIC_DEFINITIONS } from '@/config/strategyMetrics'
-
-// Dynamic font size based on price length
-function getPriceFontSize(value: number, isPrimary: boolean = false): string {
-  const formatted = formatPrice(value)
-  const length = formatted.length
-  
-  if (isPrimary) {
-    // Primary card (Target Buy) - starts larger
-    if (length <= 8) return 'text-2xl'      // $999,999
-    if (length <= 10) return 'text-xl'      // $9,999,999
-    if (length <= 12) return 'text-lg'      // $99,999,999
-    return 'text-base'                       // $999,999,999+
-  } else {
-    // Standard cards (Breakeven, Wholesale)
-    if (length <= 8) return 'text-xl'       // $999,999
-    if (length <= 10) return 'text-lg'      // $9,999,999
-    if (length <= 12) return 'text-base'    // $99,999,999
-    return 'text-sm'                         // $999,999,999+
-  }
-}
+import { MetricId } from '@/config/strategyMetrics'
 
 interface FinancingDefaults {
   down_payment_pct: number
@@ -68,7 +48,7 @@ interface InvestmentAnalysisProps {
   currentStrategy?: string
   strategies?: Strategy[]
   onStrategyChange?: (strategy: string) => void
-  // New props for metrics row
+  // Metrics row
   monthlyCashFlow?: number
   cashNeeded?: number
   capRate?: number
@@ -76,111 +56,6 @@ interface InvestmentAnalysisProps {
   activePriceTarget?: PriceTarget
   onPriceTargetChange?: (target: PriceTarget) => void
   strategyMetrics?: Array<{ id: MetricId; label: string; value: string }>
-}
-
-// Standard price card (Breakeven, Wholesale) - Now clickable
-function PriceCard({ 
-  label, 
-  value, 
-  desc,
-  isSelected,
-  onClick,
-}: { 
-  label: string
-  value: number
-  desc: string
-  isSelected?: boolean
-  onClick?: () => void
-}) {
-  const fontSize = getPriceFontSize(value, false)
-  
-  return (
-    <button
-      onClick={onClick}
-      className={`bg-white p-4 text-center cursor-pointer transition-all duration-200 border-none w-full ${
-        isSelected 
-          ? 'border-2 border-[#0891B2] ring-2 ring-[#0891B2]/20' 
-          : 'border border-[#E2E8F0] hover:border-[#CBD5E1]'
-      }`}
-      style={{ border: isSelected ? '2px solid #0891B2' : '1px solid #E2E8F0' }}
-    >
-      <div className={`text-[10px] font-semibold uppercase tracking-wide mb-2 flex items-center justify-center gap-1 ${
-        isSelected ? 'text-[#0891B2]' : 'text-[#64748B]'
-      }`}>
-        {label}
-        <Info className={`w-3 h-3 ${isSelected ? 'text-[#0891B2]' : 'text-[#94A3B8]'}`} />
-      </div>
-      <div className={`${fontSize} font-bold mb-1 truncate ${
-        isSelected ? 'text-[#0891B2]' : 'text-[#0A1628]'
-      }`}>
-        {formatPrice(value)}
-      </div>
-      <div className="text-[11px] text-[#94A3B8] leading-tight">{desc}</div>
-    </button>
-  )
-}
-
-// Elevated price card (Target Buy) - Now clickable
-function PrimaryPriceCard({ 
-  label, 
-  value, 
-  desc,
-  isSelected,
-  onClick,
-}: { 
-  label: string
-  value: number
-  desc: string
-  isSelected?: boolean
-  onClick?: () => void
-}) {
-  const fontSize = getPriceFontSize(value, true)
-  
-  return (
-    <button
-      onClick={onClick}
-      className={`bg-white p-4 text-center relative overflow-hidden cursor-pointer transition-all duration-200 border-none w-full ${
-        isSelected ? 'ring-2 ring-[#0891B2]/30' : 'hover:ring-2 hover:ring-[#0891B2]/10'
-      }`}
-      style={{ border: '2px solid #0891B2' }}
-    >
-      {/* Teal top accent bar */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-[#0891B2]" />
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-[#0891B2] mb-2 flex items-center justify-center gap-1 pt-1">
-        {label}
-        <Info className="w-3 h-3 text-[#0891B2]" />
-      </div>
-      <div className={`${fontSize} font-bold text-[#0891B2] mb-1 truncate`}>
-        {formatPrice(value)}
-      </div>
-      <div className="text-[11px] text-[#94A3B8] leading-tight">{desc}</div>
-    </button>
-  )
-}
-
-// Dynamic font size for metric values
-function getMetricFontSize(value: string): string {
-  const length = value.length
-  if (length <= 8) return 'text-lg'       // $99,999 or 6.9%
-  if (length <= 10) return 'text-base'    // $999,999
-  if (length <= 12) return 'text-sm'      // $9,999,999
-  return 'text-xs'                         // Larger values
-}
-
-// Metric Pill component
-function MetricPill({ label, value }: { label: string; value: string }) {
-  const fontSize = getMetricFontSize(value)
-  
-  return (
-    <div className="border border-[#E2E8F0] p-4 text-center">
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-[#64748B] mb-1">
-        {label}
-      </div>
-      <div className={`${fontSize} font-bold text-[#0891B2] truncate`}>
-        {value}
-      </div>
-    </div>
-  )
 }
 
 const DEFAULT_STRATEGIES: Strategy[] = [
@@ -237,22 +112,44 @@ export function InvestmentAnalysis({
   }
 
   return (
-    <div className="bg-white border-b border-[#E2E8F0]">
+    <div style={{ background: 'var(--dg-bg-primary)' }}>
+      {/* Section Divider */}
+      <div className="dg-section-divider" />
+      
       {/* Header Section */}
       <div className="p-5 pb-3">
         {/* Header Row */}
         <div className="flex justify-between items-start mb-1">
           <div>
-            <div className="text-sm font-bold text-[#0A1628] uppercase tracking-wide">
-              Your Investment Analysis
-            </div>
-            <div className="text-[13px] text-[#64748B]">
+            <h2 style={{ 
+              fontSize: '14px', 
+              fontWeight: 700, 
+              color: 'var(--dg-text-primary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.3px',
+              margin: '0 0 2px 0'
+            }}>
+              YOUR INVESTMENT ANALYSIS
+            </h2>
+            <span style={{ 
+              fontSize: '11px', 
+              fontWeight: 500, 
+              color: 'var(--dg-text-primary)' 
+            }}>
               Based on YOUR financing terms ({(financing.down_payment_pct * 100).toFixed(0)}% down, {(financing.interest_rate * 100).toFixed(1)}%)
-            </div>
+            </span>
           </div>
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-col items-end gap-1.5">
             <button 
-              className="text-[#0891B2] text-[13px] font-semibold bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                color: 'var(--dg-pacific-teal)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+              }}
               onClick={onEditAssumptions}
             >
               Change terms
@@ -260,7 +157,8 @@ export function InvestmentAnalysis({
             {/* Strategy Dropdown */}
             <div className="relative">
               <button
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0891B2] text-white text-[12px] font-semibold rounded-full cursor-pointer border-none hover:bg-[#0E7490] transition-colors"
+                className="dg-adjust-btn flex items-center gap-1.5"
+                style={{ padding: '6px 12px', borderRadius: '4px' }}
                 onClick={() => setShowStrategyDropdown(!showStrategyDropdown)}
               >
                 {currentStrategy}
@@ -270,18 +168,42 @@ export function InvestmentAnalysis({
                 />
               </button>
               {showStrategyDropdown && (
-                <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-[#E2E8F0] py-1 z-50 min-w-[140px]">
+                <div 
+                  className="absolute right-0 top-full mt-1 z-50"
+                  style={{
+                    background: 'white',
+                    border: '1px solid var(--dg-border-medium)',
+                    borderRadius: '6px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    minWidth: '160px',
+                  }}
+                >
                   {strategies.map((strategy) => (
                     <button
                       key={strategy.short}
-                      className={`w-full text-left px-3 py-2 text-[12px] hover:bg-[#F1F5F9] border-none cursor-pointer ${
-                        currentStrategy === strategy.short 
-                          ? 'bg-[#F0FDFA] text-[#0891B2] font-semibold' 
-                          : 'bg-transparent text-[#475569]'
-                      }`}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        padding: '10px 14px',
+                        fontSize: '12px',
+                        fontWeight: currentStrategy === strategy.short ? 600 : 500,
+                        color: currentStrategy === strategy.short ? 'var(--dg-pacific-teal)' : 'var(--dg-text-primary)',
+                        textDecoration: 'none',
+                        borderBottom: '1px solid var(--dg-border-light)',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                      }}
                       onClick={() => {
                         onStrategyChange?.(strategy.short)
                         setShowStrategyDropdown(false)
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'var(--dg-bg-secondary)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent'
                       }}
                     >
                       {strategy.full}
@@ -294,97 +216,183 @@ export function InvestmentAnalysis({
         </div>
 
         {/* How Breakeven is calculated link */}
-        <div className="flex items-center justify-between mt-4 mb-4">
-          <button 
-            className="flex items-center gap-1.5 text-[#0891B2] text-[13px] font-medium bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
-            onClick={() => setShowCalculation(!showCalculation)}
-          >
-            <Info className="w-3.5 h-3.5" />
-            How BREAKEVEN is calculated
-          </button>
-        </div>
+        <button 
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '11px',
+            fontWeight: 600,
+            color: 'var(--dg-pacific-teal)',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 0,
+            margin: '12px 0',
+          }}
+          onClick={() => setShowCalculation(!showCalculation)}
+        >
+          <span style={{
+            width: '14px',
+            height: '14px',
+            border: '1.5px solid var(--dg-pacific-teal)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '10px',
+            fontWeight: 700,
+          }}>i</span>
+          How BREAKEVEN is calculated
+        </button>
 
         {/* Calculation Breakdown */}
         {showCalculation && (
-          <div className="mb-4 pb-4 border-b border-[#E2E8F0] space-y-2">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-[#475569] mb-2">
+          <div style={{
+            marginBottom: '16px',
+            paddingBottom: '16px',
+            borderBottom: '1px solid var(--dg-border-light)',
+          }}>
+            <div style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              color: 'var(--dg-text-primary)',
+              marginBottom: '8px',
+            }}>
               BREAKEVEN CALCULATION
             </div>
-            <div className="bg-[#F8FAFC] rounded-lg p-3 space-y-1.5 text-[11px]">
-              <div className="flex justify-between">
-                <span className="text-[#64748B]">Monthly Gross Rent</span>
-                <span className="font-medium text-[#0A1628]">× 12 months</span>
+            <div style={{
+              background: 'var(--dg-bg-secondary)',
+              borderRadius: '8px',
+              padding: '12px',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--dg-text-secondary)' }}>Monthly Gross Rent</span>
+                <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--dg-text-primary)' }}>× 12 months</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-[#64748B]">Less: Vacancy ({(operating.vacancy_rate * 100).toFixed(0)}%)</span>
-                <span className="font-medium text-[#0A1628]">= Effective Income</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--dg-text-secondary)' }}>Less: Vacancy ({(operating.vacancy_rate * 100).toFixed(0)}%)</span>
+                <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--dg-text-primary)' }}>= Effective Income</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-[#64748B]">Less: Operating Expenses</span>
-                <span className="font-medium text-[#0A1628]">= NOI</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--dg-text-secondary)' }}>Less: Operating Expenses</span>
+                <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--dg-text-primary)' }}>= NOI</span>
               </div>
-              <div className="flex justify-between pt-2 border-t border-[#E2E8F0]">
-                <span className="text-[#64748B]">NOI ÷ Mortgage Constant</span>
-                <span className="font-bold text-[#0891B2]">= Breakeven Price</span>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                paddingTop: '8px', 
+                borderTop: '1px solid var(--dg-border-light)' 
+              }}>
+                <span style={{ fontSize: '11px', color: 'var(--dg-text-secondary)' }}>NOI ÷ Mortgage Constant</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--dg-pacific-teal)' }}>= Breakeven Price</span>
               </div>
             </div>
           </div>
         )}
+      </div>
 
-        {/* Price Cards - Grid with Target Buy larger - Clickable */}
-        <div className="grid grid-cols-[1fr_1.3fr_1fr] gap-3 mb-4">
-          <PriceCard 
-            label="Breakeven" 
-            value={breakevenPrice} 
-            desc="Max price for $0 cashflow"
-            isSelected={activePriceTarget === 'breakeven'}
+      {/* IQ Price Selector */}
+      <div style={{ margin: '0 16px' }}>
+        <div className="dg-iq-selector">
+          {/* Breakeven */}
+          <div 
+            className={`dg-iq-option ${activePriceTarget === 'breakeven' ? 'selected' : ''}`}
             onClick={() => handlePriceCardClick('breakeven')}
-          />
-          <PrimaryPriceCard 
-            label="Target Buy" 
-            value={targetBuyPrice} 
-            desc="Positive Cashflow"
-            isSelected={activePriceTarget === 'targetBuy'}
+          >
+            <div className="dg-iq-option-label">
+              BREAKEVEN 
+              <span style={{
+                width: '12px',
+                height: '12px',
+                border: '1.5px solid var(--dg-border-medium)',
+                borderRadius: '50%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '8px',
+                fontWeight: 700,
+              }}>i</span>
+            </div>
+            <div className="dg-iq-option-value">{formatPrice(breakevenPrice)}</div>
+            <div className="dg-iq-option-sub">Max price for $0 cashflow</div>
+          </div>
+          
+          {/* Target Buy */}
+          <div 
+            className={`dg-iq-option ${activePriceTarget === 'targetBuy' ? 'selected' : ''}`}
             onClick={() => handlePriceCardClick('targetBuy')}
-          />
-          <PriceCard 
-            label="Wholesale" 
-            value={wholesalePrice} 
-            desc="30% net discount for assignment"
-            isSelected={activePriceTarget === 'wholesale'}
+          >
+            <div className="dg-iq-option-label">
+              TARGET BUY 
+              <span style={{
+                width: '12px',
+                height: '12px',
+                border: '1.5px solid var(--dg-border-medium)',
+                borderRadius: '50%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '8px',
+                fontWeight: 700,
+              }}>i</span>
+            </div>
+            <div className="dg-iq-option-value">{formatPrice(targetBuyPrice)}</div>
+            <div className="dg-iq-option-sub">Positive Cashflow</div>
+          </div>
+          
+          {/* Wholesale */}
+          <div 
+            className={`dg-iq-option ${activePriceTarget === 'wholesale' ? 'selected' : ''}`}
             onClick={() => handlePriceCardClick('wholesale')}
-          />
+          >
+            <div className="dg-iq-option-label">
+              WHOLESALE 
+              <span style={{
+                width: '12px',
+                height: '12px',
+                border: '1.5px solid var(--dg-border-medium)',
+                borderRadius: '50%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '8px',
+                fontWeight: 700,
+              }}>i</span>
+            </div>
+            <div className="dg-iq-option-value">{formatPrice(wholesalePrice)}</div>
+            <div className="dg-iq-option-sub">30% net discount for assignment</div>
+          </div>
         </div>
+      </div>
 
-        {/* Metrics Row - Dynamic based on strategy or defaults */}
-        <div className="grid grid-cols-3 gap-3">
-          {strategyMetrics && strategyMetrics.length === 3 ? (
-            // Use strategy-specific metrics when provided
-            strategyMetrics.map((metric) => (
-              <MetricPill 
-                key={metric.id}
-                label={metric.label} 
-                value={metric.value} 
-              />
-            ))
-          ) : (
-            // Default LTR metrics
-            <>
-              <MetricPill 
-                label="Cash Flow" 
-                value={formatCashFlow(monthlyCashFlow)} 
-              />
-              <MetricPill 
-                label="Cash Needed" 
-                value={formatCashNeeded(cashNeeded)} 
-              />
-              <MetricPill 
-                label="Cap Rate" 
-                value={formatCapRate(capRate)} 
-              />
-            </>
-          )}
-        </div>
+      {/* Metrics Row */}
+      <div className="dg-metrics-row">
+        {strategyMetrics && strategyMetrics.length === 3 ? (
+          strategyMetrics.map((metric) => (
+            <div key={metric.id} className="dg-metrics-box">
+              <div className="dg-metrics-box-label">{metric.label}</div>
+              <div className="dg-metrics-box-value">{metric.value}</div>
+            </div>
+          ))
+        ) : (
+          <>
+            <div className="dg-metrics-box">
+              <div className="dg-metrics-box-label">CASH FLOW</div>
+              <div className="dg-metrics-box-value">{formatCashFlow(monthlyCashFlow)}</div>
+            </div>
+            <div className="dg-metrics-box">
+              <div className="dg-metrics-box-label">CASH NEEDED</div>
+              <div className="dg-metrics-box-value">{formatCashNeeded(cashNeeded)}</div>
+            </div>
+            <div className="dg-metrics-box">
+              <div className="dg-metrics-box-label">CAP RATE</div>
+              <div className="dg-metrics-box-value">{formatCapRate(capRate)}</div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

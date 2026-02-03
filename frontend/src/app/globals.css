@@ -43,6 +43,36 @@
   /* Gradient endpoints for light mode */
   --gradient-teal-start: #0891B2;
   --gradient-teal-end: #0E7490;
+  
+  /* ==========================================
+     DECISION-GRADE UI COLORS
+     Per DealMakerIQ Design System & Style Guide
+     ========================================== */
+  --dg-deep-navy: #07172e;
+  --dg-pacific-teal: #0891B2;
+  --dg-teal-light: #06B6D4;
+  --dg-electric-cyan: #00D4FF;
+  
+  /* Semantic - Decision Grade */
+  --dg-positive: #0891B2;  /* Teal for positive signals */
+  --dg-caution: #B45309;   /* Amber for caution */
+  --dg-negative: #DC2626;  /* Red for loss/risk */
+  --dg-info-blue: #3B82F6; /* Blue for info/links */
+  
+  /* Surfaces - Decision Grade */
+  --dg-bg-primary: #FFFFFF;
+  --dg-bg-secondary: #F1F5F9;
+  --dg-bg-selected: #E0F7FA;
+  
+  /* Borders - Decision Grade */
+  --dg-border-strong: #94A3B8;
+  --dg-border-medium: #CBD5E1;
+  --dg-border-light: #E2E8F0;
+  
+  /* TEXT - Decision Grade (ALL high contrast) */
+  --dg-text-primary: #07172e;
+  --dg-text-secondary: #07172e;
+  --dg-text-tertiary: #07172e;
 }
 
 html.dark {
@@ -1597,6 +1627,609 @@ html:not(.dark) .strategy-stat-value-premium {
 /* ==========================================
    Landing Page Imports (moved to top of file)
    ========================================== */
+/* ==========================================
+   DECISION-GRADE UI COMPONENTS
+   Per DealMakerIQ Design System & Style Guide
+   ========================================== */
+
+/* Nav Tabs - Edge to Edge */
+.dg-nav-tabs {
+  display: flex;
+  background: var(--dg-bg-primary);
+  border-top: 1px solid var(--dg-border-medium);
+  border-bottom: 1px solid var(--dg-border-medium);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.dg-nav-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.dg-nav-tab {
+  flex: 1;
+  min-width: max-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dg-text-primary);
+  background: var(--dg-bg-primary);
+  border: none;
+  border-right: 1px solid var(--dg-border-medium);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+
+.dg-nav-tab:last-child {
+  border-right: none;
+}
+
+.dg-nav-tab:hover {
+  background: var(--dg-bg-secondary);
+}
+
+.dg-nav-tab.active {
+  background: var(--dg-pacific-teal);
+  color: white;
+}
+
+/* Property Context Bar */
+.dg-property-context {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--dg-bg-primary);
+  border-bottom: 1px solid var(--dg-border-medium);
+  gap: 12px;
+}
+
+.dg-property-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  background: var(--dg-bg-secondary);
+  border: 1px solid var(--dg-border-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.dg-property-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dg-property-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.dg-property-address-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dg-property-street {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dg-text-primary);
+  line-height: 1.2;
+}
+
+.dg-property-city {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dg-text-primary);
+}
+
+.dg-property-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.dg-property-status.off-market {
+  color: var(--dg-negative);
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+}
+
+.dg-property-status.active {
+  color: var(--dg-pacific-teal);
+  background: var(--dg-bg-selected);
+  border: 1px solid var(--dg-pacific-teal);
+}
+
+.dg-property-status.pending {
+  color: var(--dg-caution);
+  background: #FEF3C7;
+  border: 1px solid var(--dg-caution);
+}
+
+.dg-status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.dg-property-status.off-market .dg-status-dot { background: var(--dg-negative); }
+.dg-property-status.active .dg-status-dot { background: var(--dg-pacific-teal); }
+.dg-property-status.pending .dg-status-dot { background: var(--dg-caution); }
+
+.dg-property-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dg-text-primary);
+  margin-top: 2px;
+}
+
+.dg-property-details .separator {
+  color: var(--dg-border-strong);
+}
+
+.dg-property-price {
+  color: var(--dg-pacific-teal);
+  font-weight: 700;
+}
+
+/* Verdict Section */
+.dg-verdict-section {
+  padding: 24px 20px 28px;
+  background: var(--dg-bg-primary);
+}
+
+.dg-verdict-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 0;
+}
+
+.dg-score-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dg-score-ring {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 5px solid var(--dg-pacific-teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--dg-bg-primary);
+  flex-shrink: 0;
+}
+
+.dg-score-value {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--dg-deep-navy);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.dg-verdict-info {
+  text-align: left;
+  padding-left: 8px;
+}
+
+.dg-verdict-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 0;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.dg-verdict-title .verdict { color: var(--dg-deep-navy); }
+.dg-verdict-title .iq { color: var(--dg-pacific-teal); }
+
+.dg-verdict-label {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--dg-pacific-teal);
+  line-height: 1.2;
+  margin-bottom: 1px;
+}
+
+.dg-verdict-subtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dg-text-secondary);
+  margin-bottom: 2px;
+}
+
+.dg-verdict-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.dg-verdict-link {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dg-pacific-teal);
+  text-decoration: none;
+}
+
+.dg-verdict-link:hover {
+  text-decoration: underline;
+}
+
+/* Confidence Metrics */
+.dg-confidence-section {
+  padding: 0 20px 20px;
+}
+
+.dg-confidence-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--dg-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 12px;
+}
+
+.dg-confidence-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.dg-confidence-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dg-text-secondary);
+  width: 130px;
+  flex-shrink: 0;
+}
+
+.dg-confidence-bar {
+  flex: 1;
+  height: 10px;
+  background: var(--dg-bg-secondary);
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid var(--dg-border-light);
+}
+
+.dg-confidence-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.dg-confidence-fill.teal { background: var(--dg-pacific-teal); }
+.dg-confidence-fill.amber { background: var(--dg-caution); }
+.dg-confidence-fill.negative { background: var(--dg-negative); }
+
+.dg-confidence-value {
+  font-size: 14px;
+  font-weight: 700;
+  width: 42px;
+  text-align: right;
+  flex-shrink: 0;
+  color: var(--dg-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.dg-confidence-value.teal { color: var(--dg-pacific-teal); }
+.dg-confidence-value.amber { color: var(--dg-caution); }
+.dg-confidence-value.negative { color: var(--dg-negative); }
+
+/* IQ Price Selector */
+.dg-iq-selector {
+  display: flex;
+  overflow: hidden;
+  border: 2px solid var(--dg-border-strong);
+}
+
+.dg-iq-option {
+  flex: 1;
+  padding: 14px 8px;
+  text-align: center;
+  background: var(--dg-bg-secondary);
+  cursor: pointer;
+  border-right: 1px solid var(--dg-border-medium);
+  transition: all 0.15s ease;
+}
+
+.dg-iq-option:last-child {
+  border-right: none;
+}
+
+.dg-iq-option:hover:not(.selected) {
+  background: #E8EAED;
+}
+
+.dg-iq-option.selected {
+  background: var(--dg-bg-primary);
+}
+
+.dg-iq-option-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--dg-text-primary);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.dg-iq-option-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--dg-text-primary);
+  margin-bottom: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dg-iq-option.selected .dg-iq-option-value {
+  color: var(--dg-pacific-teal);
+}
+
+.dg-iq-option-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--dg-text-primary);
+}
+
+/* Metrics Row */
+.dg-metrics-row {
+  display: flex;
+  margin: 12px 16px 20px;
+  border: 2px solid var(--dg-border-strong);
+}
+
+.dg-metrics-box {
+  flex: 1;
+  padding: 12px 8px;
+  text-align: center;
+  background: var(--dg-bg-primary);
+  border-right: 1px solid var(--dg-border-medium);
+}
+
+.dg-metrics-box:last-child {
+  border-right: none;
+}
+
+.dg-metrics-box-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--dg-text-primary);
+  margin-bottom: 4px;
+}
+
+.dg-metrics-box-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--dg-pacific-teal);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Section Divider */
+.dg-section-divider {
+  height: 8px;
+  background: var(--dg-bg-secondary);
+  border-top: 1px solid var(--dg-border-light);
+  border-bottom: 1px solid var(--dg-border-light);
+}
+
+/* Benchmark Slider */
+.dg-benchmark-bar {
+  height: 10px;
+  background: var(--dg-bg-secondary);
+  border-radius: 5px;
+  overflow: visible;
+  border: 1px solid var(--dg-border-light);
+  position: relative;
+}
+
+.dg-benchmark-bar::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--dg-border-strong);
+}
+
+.dg-benchmark-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.dg-benchmark-marker.teal { background: var(--dg-pacific-teal); }
+.dg-benchmark-marker.amber { background: var(--dg-caution); }
+.dg-benchmark-marker.negative { background: var(--dg-negative); }
+
+/* Action Buttons */
+.dg-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background: var(--dg-pacific-teal);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.dg-btn-primary:hover {
+  background: var(--dg-teal-light);
+}
+
+.dg-btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background: var(--dg-bg-primary);
+  color: var(--dg-pacific-teal);
+  border: 2px solid var(--dg-pacific-teal);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.dg-btn-secondary:hover {
+  background: var(--dg-bg-selected);
+}
+
+/* Adjust Button (inline) */
+.dg-adjust-btn {
+  padding: 5px 12px;
+  background: var(--dg-pacific-teal);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.dg-adjust-btn:hover {
+  background: var(--dg-teal-light);
+}
+
+/* Table Styling */
+.dg-table-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 2px solid var(--dg-pacific-teal);
+}
+
+.dg-table-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--dg-pacific-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dg-table-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--dg-border-light);
+}
+
+.dg-table-row:last-child {
+  border-bottom: none;
+}
+
+.dg-row-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dg-text-secondary);
+}
+
+.dg-row-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dg-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.dg-row-value.negative { color: var(--dg-negative); }
+.dg-row-value.teal { color: var(--dg-pacific-teal); }
+
+.dg-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  margin-top: 4px;
+  border-top: 2px solid var(--dg-pacific-teal);
+}
+
+.dg-total-row .dg-row-label,
+.dg-total-row .dg-row-value {
+  font-weight: 700;
+  color: var(--dg-text-primary);
+}
+
+/* Highlight Box */
+.dg-highlight-box {
+  margin: 12px 16px;
+  padding: 14px 16px;
+  background: var(--dg-bg-selected);
+  border: 2px solid var(--dg-pacific-teal);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dg-highlight-box .label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dg-text-primary);
+}
+
+.dg-highlight-box .value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--dg-pacific-teal);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ==========================================
    WORKSHEET TAB NAVIGATION
    Add this to the END of your globals.css

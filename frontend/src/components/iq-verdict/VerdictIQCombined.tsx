@@ -20,7 +20,6 @@ import React, { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, TrendingDown, Target, Clock, AlertTriangle, ChevronDown, FileSpreadsheet, Loader2 } from 'lucide-react'
 import api from '@/lib/api'
-import { CompactHeader, PropertyData } from '../layout/CompactHeader'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 import { ScoreMethodologySheet } from './ScoreMethodologySheet'
 import { VerdictHero } from './VerdictHero'
@@ -28,6 +27,8 @@ import { InvestmentAnalysis } from './InvestmentAnalysis'
 import { FinancialBreakdown } from './FinancialBreakdown'
 import { AtAGlanceSection } from './AtAGlanceSection'
 import { PerformanceBenchmarksSection, NATIONAL_RANGES } from './PerformanceBenchmarksSection'
+import { PropertyContextBar } from './PropertyContextBar'
+import { NavTabs } from './NavTabs'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType, DealMakerTab } from '../deal-maker/DealMakerPopup'
 import {
   IQProperty,
@@ -672,29 +673,111 @@ export function VerdictIQCombined({
     }
   }, [property.id, analysis.propertyId, savedPropertyId, currentStrategy, property.address, activePriceTarget])
 
+  // Build full address for navigation
+  const fullAddress = [property.address, property.city, property.state, property.zip]
+    .filter(Boolean)
+    .join(', ')
+
+  // Determine property status
+  const propertyStatus: 'active' | 'pending' | 'off-market' | 'sold' = isOffMarket 
+    ? 'off-market' 
+    : (property.listingStatus === 'PENDING' ? 'pending' : 'active')
+
   return (
     <div 
       className="min-h-screen flex flex-col max-w-[480px] mx-auto"
       style={{ 
-        background: '#E8ECF0',
+        background: 'var(--dg-bg-primary)',
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+        fontFeatureSettings: "'tnum' on, 'lnum' on",
       }}
     >
-      {/* Compact Header */}
-      <CompactHeader
-        property={headerPropertyData}
-        activeNav="analysis"
-        currentStrategy={currentStrategy}
-        pageTitle="VERDICT"
-        pageTitleAccent="IQ"
-        onStrategyChange={handleStrategyChange}
-        defaultPropertyOpen={true}
-        savedPropertyId={savedPropertyId}
+      {/* Brand Header */}
+      <header style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '12px 16px',
+        background: 'var(--dg-bg-primary)',
+      }}>
+        <div>
+          <div style={{
+            fontSize: '18px',
+            fontWeight: 800,
+            letterSpacing: '-0.5px',
+            lineHeight: 1.1,
+          }}>
+            <span style={{ color: 'var(--dg-deep-navy)' }}>Deal</span>
+            <span style={{ color: 'var(--dg-deep-navy)' }}>Maker</span>
+            <span style={{ color: 'var(--dg-pacific-teal)' }}>IQ</span>
+          </div>
+          <div style={{
+            fontSize: '10px',
+            fontWeight: 600,
+            color: 'var(--dg-text-tertiary)',
+          }}>
+            by Invest<span style={{ color: 'var(--dg-pacific-teal)' }}>IQ</span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Search Icon */}
+          <svg 
+            style={{ width: '20px', height: '20px', cursor: 'pointer' }} 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+              stroke="var(--dg-text-primary)" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            />
+          </svg>
+          {/* Avatar */}
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '8px',
+            background: 'var(--dg-pacific-teal)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '16px',
+            fontWeight: 700,
+            color: 'white',
+          }}>
+            U
+          </div>
+        </div>
+      </header>
+
+      {/* Navigation Tabs */}
+      <NavTabs 
+        activeTab="analyze" 
+        address={fullAddress}
+        propertyId={savedPropertyId}
+        zpid={property.zpid?.toString()}
+      />
+
+      {/* Property Context Bar */}
+      <PropertyContextBar
+        address={property.address}
+        city={property.city}
+        state={property.state}
+        zip={property.zip}
+        beds={property.beds}
+        baths={property.baths}
+        sqft={property.sqft || 0}
+        price={estValue}
+        status={propertyStatus}
+        imageUrl={property.imageUrl}
       />
 
       {/* Main Content - Scrollable */}
       <main className="flex-1 overflow-y-auto pb-36">
-        {/* Verdict Hero */}
+        {/* Verdict Hero with Confidence Metrics */}
         <VerdictHero
           dealScore={analysis.dealScore}
           verdictLabel={verdictInfo.label}
@@ -889,41 +972,51 @@ export function VerdictIQCombined({
         />
       </main>
 
-      {/* Fixed Bottom Actions */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white border-t border-[#E2E8F0] p-4 px-5">
+      {/* Fixed Bottom Actions - Decision-Grade UI */}
+      <div 
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px]"
+        style={{
+          background: 'var(--dg-bg-primary)',
+          borderTop: '1px solid var(--dg-border-medium)',
+          padding: '20px 16px',
+        }}
+      >
         <button 
-          className="w-full flex items-center justify-center gap-2 bg-[#0891B2] text-white py-4 rounded-xl text-[15px] font-semibold cursor-pointer border-none mb-3 hover:bg-[#0E7490] active:scale-[0.98] transition-all"
+          className="dg-btn-primary"
+          style={{ marginBottom: '10px' }}
           onClick={handleNavigateToDealMaker}
         >
-          Go to Deal Maker IQ
-          <ArrowRight className="w-[18px] h-[18px]" />
+          Go to DealMakerIQ →
         </button>
         
-        {/* Export Proforma Button - Direct Excel Download */}
-        <div className="relative">
-          <button 
-            className="w-full flex items-center justify-center gap-2 bg-transparent text-[#64748B] py-3 text-[13px] font-medium cursor-pointer border-none hover:text-[#0A1628] transition-colors disabled:opacity-50"
-            onClick={() => handleExportProforma('excel')}
-            disabled={isExporting}
-          >
-            {isExporting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Exporting...
-              </>
-            ) : (
-              <>
-                <FileSpreadsheet className="w-4 h-4" />
-                Export Financial Proforma
-              </>
-            )}
-          </button>
-          
-          {/* Export Error */}
-          {exportError && (
-            <p className="text-center text-[11px] text-red-500 mt-1">{exportError}</p>
+        <button 
+          className="dg-btn-secondary"
+          onClick={() => handleExportProforma('excel')}
+          disabled={isExporting}
+          style={{ opacity: isExporting ? 0.5 : 1 }}
+        >
+          {isExporting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Exporting...
+            </>
+          ) : (
+            <>
+              <FileSpreadsheet className="w-4 h-4" />
+              Export Analysis
+            </>
           )}
-        </div>
+        </button>
+        
+        {/* Export Error */}
+        {exportError && (
+          <p style={{ 
+            textAlign: 'center', 
+            fontSize: '11px', 
+            color: 'var(--dg-negative)', 
+            marginTop: '8px' 
+          }}>{exportError}</p>
+        )}
       </div>
 
       {/* Score Methodology Sheet */}

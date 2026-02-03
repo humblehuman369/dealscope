@@ -22,6 +22,10 @@ export { SummarySnapshot } from './SummarySnapshot'
 export { AtAGlanceSection } from './AtAGlanceSection'
 export { PerformanceBenchmarksSection, NATIONAL_RANGES } from './PerformanceBenchmarksSection'
 
+// Decision-Grade UI Components
+export { PropertyContextBar } from './PropertyContextBar'
+export { NavTabs } from './NavTabs'
+
 export {
   // Types
   type IQProperty,

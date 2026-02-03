@@ -1,14 +1,19 @@
 'use client'
 
 /**
- * PerformanceBenchmarksSection Component
+ * PerformanceBenchmarksSection Component - Decision-Grade UI
  * 
- * Displays national benchmark comparisons with visual spectrum bars.
- * Matches the VerdictIQ-Combined-pages.html design.
+ * Displays national benchmark comparisons with slider-style bars.
+ * Per DealMakerIQ Design System - high contrast, legibility-first.
+ * 
+ * Features:
+ * - Center line = National Average
+ * - Markers to left = Below average
+ * - Markers to right = Above average
  */
 
 import React, { useState } from 'react'
-import { ChevronDown, ArrowRight, Plus, ArrowLeft, ArrowRightIcon, RefreshCw } from 'lucide-react'
+import { ChevronDown, ArrowRight, BarChart3 } from 'lucide-react'
 
 interface BenchmarkRange {
   low: number
@@ -34,7 +39,7 @@ interface PerformanceBenchmarksSectionProps {
   defaultExpanded?: boolean
 }
 
-// Calculate position on the gradient benchmark bar (0-100%)
+// Calculate position on the benchmark bar (0-100%)
 // 50% = national average (center line)
 function getPosition(value: number, range: BenchmarkRange): number {
   const { low, avg, high, higherIsBetter } = range
@@ -42,33 +47,27 @@ function getPosition(value: number, range: BenchmarkRange): number {
   let position: number
   
   if (higherIsBetter) {
-    // Higher is better: low values on left, high on right
     if (value <= low) {
       position = 10
     } else if (value >= high) {
       position = 90
     } else if (value < avg) {
-      // Between low and avg: maps to 10-50%
       const t = (value - low) / (avg - low)
       position = 10 + t * 40
     } else {
-      // Between avg and high: maps to 50-90%
       const t = (value - avg) / (high - avg)
       position = 50 + t * 40
     }
   } else {
     // Lower is better (Expense Ratio, Breakeven Occ): inverted
-    // Low values = good = right side
     if (value <= low) {
       position = 90
     } else if (value >= high) {
       position = 10
     } else if (value < avg) {
-      // Below average = good = right side
       const t = (avg - value) / (avg - low)
       position = 50 + t * 40
     } else {
-      // Above average = bad = left side
       const t = (value - avg) / (high - avg)
       position = 50 - t * 40
     }
@@ -77,220 +76,53 @@ function getPosition(value: number, range: BenchmarkRange): number {
   return Math.max(5, Math.min(95, position))
 }
 
-// Benchmark Row Component - Inline layout with value above marker
+// Get marker color class based on position
+function getMarkerColorClass(position: number): 'teal' | 'amber' | 'negative' {
+  if (position >= 55) return 'teal'
+  if (position >= 40) return 'amber'
+  return 'negative'
+}
+
+// Benchmark Row Component
 function BenchmarkRow({ metric }: { metric: BenchmarkMetric }) {
   const position = getPosition(metric.value, metric.range)
+  const colorClass = getMarkerColorClass(position)
   
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-[#F1F5F9] last:border-b-0 last:pb-0">
-      <div className="w-[95px] flex-shrink-0">
-        <div className="text-xs font-medium text-[#334155] leading-tight">{metric.label}</div>
-      </div>
-      <div className="flex-1 relative pt-5">
-        {/* Value label above marker */}
-        <span 
-          className="absolute top-0 text-[11px] font-bold text-[#0891B2] whitespace-nowrap"
-          style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
-        >
-          {metric.displayValue}
-        </span>
-        {/* Gradient bar */}
-        <div 
-          className="relative h-2 rounded"
-          style={{ 
-            background: 'linear-gradient(to right, #1E293B 0%, #334155 20%, #475569 40%, #0E7490 60%, #0891B2 75%, #06B6D4 90%, #00D4FF 100%)'
-          }}
-        >
-          {/* Center line (national average) */}
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      padding: '12px 0',
+      borderBottom: '1px solid var(--dg-border-light)',
+      gap: '12px',
+    }}>
+      <span style={{
+        fontSize: '12px',
+        fontWeight: 500,
+        color: 'var(--dg-text-primary)',
+        width: '90px',
+        flexShrink: 0,
+        lineHeight: 1.2,
+      }}>{metric.label}</span>
+      
+      <div style={{ flex: 1, position: 'relative' }}>
+        <div className="dg-benchmark-bar">
           <div 
-            className="absolute top-[-2px] bottom-[-2px] left-1/2 -translate-x-1/2 w-0.5 bg-white"
-            style={{ boxShadow: '0 0 2px rgba(0,0,0,0.3)' }}
-          />
-          {/* Marker */}
-          <div 
-            className="absolute top-1/2 w-3 h-3 rounded-full bg-[#0A1628] border-2 border-white"
-            style={{ 
-              left: `${position}%`, 
-              transform: 'translate(-50%, -50%)',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.3)'
-            }}
+            className={`dg-benchmark-marker ${colorClass}`}
+            style={{ left: `${position}%` }}
           />
         </div>
-      </div>
-    </div>
-  )
-}
-
-// Help Point Component
-function HelpPoint({ icon, title, desc }: { icon: 'plus' | 'left' | 'right' | 'swap'; title: string; desc: string }) {
-  return (
-    <div className="flex gap-2.5 mb-3 last:mb-0">
-      <div className="w-7 h-7 bg-[#F0FDFA] rounded-md flex items-center justify-center flex-shrink-0">
-        {icon === 'plus' && <Plus className="w-3.5 h-3.5 text-[#0891B2]" />}
-        {icon === 'left' && <ArrowLeft className="w-3.5 h-3.5 text-[#0891B2]" />}
-        {icon === 'right' && <ArrowRightIcon className="w-3.5 h-3.5 text-[#0891B2]" />}
-        {icon === 'swap' && <RefreshCw className="w-3.5 h-3.5 text-[#0891B2]" />}
-      </div>
-      <div className="flex-1">
-        <div className="text-xs font-semibold text-[#0A1628] mb-0.5">{title}</div>
-        <div className="text-[11px] text-[#64748B] leading-relaxed">{desc}</div>
-      </div>
-    </div>
-  )
-}
-
-// Help Metric Row Component
-function HelpMetricRow({ name, value }: { name: string; value: string }) {
-  return (
-    <div className="flex justify-between items-center py-1.5 border-b border-[#E2E8F0] last:border-b-0 text-xs">
-      <span className="text-[#475569]">{name}</span>
-      <span className="text-[#0891B2] font-semibold">{value}</span>
-    </div>
-  )
-}
-
-// How to Read Dropdown Component
-function HowToReadDropdown() {
-  return (
-    <div className="bg-white py-5 px-5 border-b border-[#E2E8F0]">
-      {/* How It Works */}
-      <div className="mb-5">
-        <div className="text-[11px] font-bold text-[#0891B2] uppercase tracking-wide mb-2.5">How It Works</div>
-        <p className="text-[13px] text-[#475569] leading-relaxed">
-          Each benchmark compares this property to the <strong className="text-[#0A1628]">national average</strong>. 
-          The <strong className="text-[#0A1628]">center of the bar</strong> represents average performance. 
-          Markers to the <strong className="text-[#0A1628]">left</strong> mean below average, 
-          markers to the <strong className="text-[#0A1628]">right</strong> mean above average.
-        </p>
-      </div>
-
-      {/* The Performance Scale */}
-      <div className="mb-5">
-        <div className="bg-[#F8FAFC] rounded-lg p-3.5 mt-3">
-          <div className="text-[13px] font-semibold text-[#0A1628] mb-3">The Performance Scale</div>
-          <div className="relative pt-5 mb-2">
-            <span className="absolute top-0 left-1/2 -translate-x-1/2 text-[10px] font-bold text-[#0891B2] uppercase tracking-wide">
-              National Avg
-            </span>
-            <div 
-              className="h-2.5 rounded-md relative"
-              style={{ 
-                background: 'linear-gradient(to right, #1E293B 0%, #334155 20%, #475569 40%, #0E7490 60%, #0891B2 75%, #06B6D4 90%, #00D4FF 100%)'
-              }}
-            >
-              <div 
-                className="absolute top-[-2px] bottom-[-2px] left-1/2 -translate-x-1/2 w-0.5 bg-white"
-                style={{ boxShadow: '0 0 2px rgba(0,0,0,0.3)' }}
-              />
-            </div>
-          </div>
-          <div className="flex justify-between mt-1.5 text-[10px] font-semibold">
-            <span className="text-[#64748B]">Below</span>
-            <span className="text-[#64748B]">Average</span>
-            <span className="text-[#0891B2]">Above</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Guide */}
-      <div className="mb-5">
-        <div className="text-[11px] font-bold text-[#0891B2] uppercase tracking-wide mb-2.5">Quick Guide</div>
-        <HelpPoint 
-          icon="plus" 
-          title="Center = National Average" 
-          desc="The white line marks the national average for each metric." 
-        />
-        <HelpPoint 
-          icon="left" 
-          title="Left = Below Average" 
-          desc="Markers to the left of center mean this deal under-performs." 
-        />
-        <HelpPoint 
-          icon="right" 
-          title="Right = Above Average" 
-          desc="Markers to the right of center mean this deal out-performs." 
-        />
-        <HelpPoint 
-          icon="swap" 
-          title="Some Metrics Are Inverted" 
-          desc="For Expense Ratio and Breakeven Occupancy, lower is better." 
-        />
-      </div>
-
-      {/* National Averages */}
-      <div>
-        <div className="text-[11px] font-bold text-[#0891B2] uppercase tracking-wide mb-2.5">National Averages</div>
-        <div className="bg-[#F8FAFC] rounded-lg p-3">
-          <HelpMetricRow name="Cash on Cash Return" value="5%" />
-          <HelpMetricRow name="Cap Rate" value="6%" />
-          <HelpMetricRow name="Debt Service Coverage" value="1.25" />
-          <HelpMetricRow name="Expense Ratio" value="35%" />
-          <HelpMetricRow name="Breakeven Occupancy" value="80%" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Legend Bar Intro Section
-function BenchmarkIntro() {
-  return (
-    <div className="py-4 px-5 bg-[#F8FAFC] border-b border-[#E2E8F0]">
-      <div className="text-[13px] font-semibold text-[#0A1628] mb-1">
-        How This Deal Compares to National Average
-      </div>
-      <div className="text-xs text-[#64748B] leading-relaxed mb-3.5">
-        The center represents the national average. Markers to the left are below average, 
-        markers to the right are above average.
       </div>
       
-      {/* Full-width legend bar */}
-      <div className="relative pt-5">
-        <span className="absolute top-0 left-1/2 -translate-x-1/2 text-[10px] font-bold text-[#0891B2] uppercase tracking-wide whitespace-nowrap">
-          National Avg
-        </span>
-        <div 
-          className="h-2.5 rounded-md relative"
-          style={{ 
-            background: 'linear-gradient(to right, #1E293B 0%, #334155 20%, #475569 40%, #0E7490 60%, #0891B2 75%, #06B6D4 90%, #00D4FF 100%)'
-          }}
-        >
-          <div 
-            className="absolute top-[-3px] bottom-[-3px] left-1/2 -translate-x-1/2 w-[3px] bg-white rounded-sm"
-            style={{ boxShadow: '0 0 3px rgba(0,0,0,0.3)' }}
-          />
-        </div>
-        <div className="flex justify-between mt-1.5 text-[10px] font-semibold uppercase tracking-wide">
-          <span className="text-[#64748B]">Below</span>
-          <span className="text-[#64748B]">Average</span>
-          <span className="text-[#0891B2]">Above</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// CTA Section
-function CTASection({ onNavigateToDealMaker }: { onNavigateToDealMaker?: () => void }) {
-  return (
-    <div 
-      className="relative rounded-xl p-5 mt-5 border border-[#0891B2]"
-      style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #E0F7FA 100%)' }}
-    >
-      <span className="absolute -top-2.5 left-4 bg-[#0891B2] text-white text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded">
-        Take Action
-      </span>
-      <div className="text-sm text-[#0A1628] mb-3.5 leading-relaxed">
-        Want to <strong className="text-[#0891B2]">improve this deal</strong>? 
-        Adjust pricing, financing, and strategy to push these metrics above average.
-      </div>
-      <button 
-        onClick={onNavigateToDealMaker}
-        className="w-full flex items-center justify-center gap-2 bg-[#0891B2] text-white py-3.5 rounded-xl text-sm font-semibold cursor-pointer border-none hover:bg-[#0E7490] transition-colors"
-      >
-        Go to Deal Maker IQ
-        <ArrowRight className="w-[18px] h-[18px]" />
-      </button>
+      <span style={{
+        fontSize: '13px',
+        fontWeight: 700,
+        width: '50px',
+        textAlign: 'right',
+        flexShrink: 0,
+        color: 'var(--dg-text-primary)',
+        fontVariantNumeric: 'tabular-nums',
+      }}>{metric.displayValue}</span>
     </div>
   )
 }
@@ -308,77 +140,189 @@ export function PerformanceBenchmarksSection({
   const cashflowMetrics = metrics.filter(m => m.category === 'cashflow')
 
   return (
-    <div className="bg-white border-b border-[#E2E8F0]">
-      {/* Header - Clickable to expand/collapse */}
-      <button 
-        className="w-full flex items-center justify-between px-5 py-4 bg-white border-none cursor-pointer text-left hover:bg-[#F8FAFC] transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <span className="text-sm font-bold text-[#0A1628] uppercase tracking-wide">
-          Performance Benchmarks
-        </span>
-        <div className="flex items-center gap-2">
-          {isExpanded && (
-            <span 
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                showHelp 
-                  ? 'bg-[#F0FDFA] text-[#0891B2]' 
-                  : 'bg-transparent text-[#0891B2] hover:bg-[#F8FAFC]'
-              }`}
-              onClick={(e) => {
-                e.stopPropagation()
-                setShowHelp(!showHelp)
-              }}
-            >
-              How to read
-            </span>
-          )}
-          <ChevronDown 
-            className={`w-5 h-5 text-[#64748B] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
-          />
-        </div>
-      </button>
-
-      {/* Expandable Content */}
-      {isExpanded && (
-        <>
-          {/* How to Read Dropdown */}
-          {showHelp && <HowToReadDropdown />}
-
-          {/* Benchmark Intro with Legend */}
-          <BenchmarkIntro />
-
-          {/* Benchmarks Container */}
-          <div className="py-4 px-5 pb-5">
-            {/* Returns Category */}
-            {returnsMetrics.length > 0 && (
-              <>
-                <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide text-center py-2.5 bg-[#F8FAFC] rounded-lg mb-3">
-                  Returns
-                </div>
-                {returnsMetrics.map((metric) => (
-                  <BenchmarkRow key={metric.key} metric={metric} />
-                ))}
-              </>
-            )}
-
-            {/* Cash Flow & Risk Category */}
-            {cashflowMetrics.length > 0 && (
-              <>
-                <div className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wide text-center py-2.5 bg-[#F8FAFC] rounded-lg mt-5 mb-3">
-                  Cash Flow & Risk
-                </div>
-                {cashflowMetrics.map((metric) => (
-                  <BenchmarkRow key={metric.key} metric={metric} />
-                ))}
-              </>
-            )}
-
-            {/* CTA Section */}
-            <CTASection onNavigateToDealMaker={onNavigateToDealMaker} />
+    <div style={{ background: 'var(--dg-bg-primary)' }}>
+      {/* Section Divider */}
+      <div className="dg-section-divider" />
+      
+      {/* Header Section */}
+      <section style={{ padding: '16px' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          marginBottom: '16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            {/* Icon */}
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: 'var(--dg-deep-navy)',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <BarChart3 style={{ width: '20px', height: '20px', color: 'white' }} />
+            </div>
+            
+            {/* Title Group */}
+            <div>
+              <div style={{
+                fontSize: '14px',
+                fontWeight: 700,
+                color: 'var(--dg-text-primary)',
+              }}>Performance Benchmarks</div>
+              <div style={{
+                fontSize: '11px',
+                fontWeight: 500,
+                color: 'var(--dg-text-secondary)',
+              }}>How this deal compares</div>
+            </div>
           </div>
-        </>
-      )}
+          
+          {/* Toggle */}
+          <button 
+            onClick={() => setShowHelp(!showHelp)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontSize: '11px',
+              fontWeight: 600,
+              color: 'var(--dg-pacific-teal)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            <ChevronDown style={{ 
+              width: '14px', 
+              height: '14px',
+              transform: showHelp ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease',
+            }} />
+            How to read
+          </button>
+        </div>
+
+        {/* Help Panel */}
+        {showHelp && (
+          <div style={{
+            background: 'var(--dg-bg-secondary)',
+            borderRadius: '8px',
+            padding: '12px',
+            marginBottom: '16px',
+          }}>
+            <div style={{
+              fontSize: '13px',
+              fontWeight: 700,
+              color: 'var(--dg-text-primary)',
+              marginBottom: '4px',
+            }}>How This Deal Compares to National Average</div>
+            <div style={{
+              fontSize: '11px',
+              fontWeight: 500,
+              color: 'var(--dg-text-secondary)',
+              lineHeight: 1.4,
+            }}>
+              The center represents the national average. Markers to the left are below average, markers to the right are above average.
+            </div>
+          </div>
+        )}
+
+        {/* Legend */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '8px',
+          padding: '0 4px',
+        }}>
+          <span style={{
+            fontSize: '10px',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            color: 'var(--dg-text-primary)',
+          }}>BELOW</span>
+          <span style={{
+            fontSize: '10px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            color: 'var(--dg-deep-navy)',
+          }}>NATIONAL AVG</span>
+          <span style={{
+            fontSize: '10px',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            color: 'var(--dg-text-primary)',
+          }}>ABOVE</span>
+        </div>
+        
+        {/* Scale Bar */}
+        <div style={{
+          position: 'relative',
+          height: '8px',
+          background: 'linear-gradient(to right, var(--dg-negative), var(--dg-bg-secondary) 50%, var(--dg-pacific-teal))',
+          borderRadius: '4px',
+          marginBottom: '16px',
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '-4px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '2px',
+            height: '16px',
+            background: 'var(--dg-deep-navy)',
+          }} />
+        </div>
+
+        {/* Returns Group */}
+        {returnsMetrics.length > 0 && (
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              color: 'var(--dg-pacific-teal)',
+              padding: '8px 0',
+              borderBottom: '2px solid var(--dg-pacific-teal)',
+              marginBottom: '12px',
+            }}>Returns</div>
+            
+            {returnsMetrics.map((metric) => (
+              <BenchmarkRow key={metric.key} metric={metric} />
+            ))}
+          </div>
+        )}
+
+        {/* Cash Flow & Risk Group */}
+        {cashflowMetrics.length > 0 && (
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              color: 'var(--dg-pacific-teal)',
+              padding: '8px 0',
+              borderBottom: '2px solid var(--dg-pacific-teal)',
+              marginBottom: '12px',
+            }}>Cash Flow & Risk</div>
+            
+            {cashflowMetrics.map((metric) => (
+              <BenchmarkRow key={metric.key} metric={metric} />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   )
 }
