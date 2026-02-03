@@ -1949,7 +1949,6 @@ html:not(.dark) .strategy-stat-value-premium {
 .dg-iq-selector {
   display: flex;
   overflow: hidden;
-  border: 2px solid var(--dg-border-strong);
 }
 
 .dg-iq-option {
@@ -1958,12 +1957,7 @@ html:not(.dark) .strategy-stat-value-premium {
   text-align: center;
   background: var(--dg-bg-secondary);
   cursor: pointer;
-  border-right: 1px solid var(--dg-border-medium);
   transition: all 0.15s ease;
-}
-
-.dg-iq-option:last-child {
-  border-right: none;
 }
 
 .dg-iq-option:hover:not(.selected) {
@@ -2009,7 +2003,6 @@ html:not(.dark) .strategy-stat-value-premium {
 .dg-metrics-row {
   display: flex;
   margin: 12px 16px 20px;
-  border: 2px solid var(--dg-border-strong);
 }
 
 .dg-metrics-box {
@@ -2017,11 +2010,6 @@ html:not(.dark) .strategy-stat-value-premium {
   padding: 12px 8px;
   text-align: center;
   background: var(--dg-bg-primary);
-  border-right: 1px solid var(--dg-border-medium);
-}
-
-.dg-metrics-box:last-child {
-  border-right: none;
 }
 
 .dg-metrics-box-label {
