@@ -72,7 +72,7 @@ export default function AnalyzingScreen() {
 
     // Replace current screen with verdict screen (no back to analyzing)
     // Using type assertion to handle new route until types are regenerated
-    router.replace(`/verdict/${encodedAddress}?${queryParams.toString()}` as any);
+    router.replace(`/verdict-iq/${encodedAddress}?${queryParams.toString()}` as any);
   }, [property, params.monthlyRent, router]);
 
   return (

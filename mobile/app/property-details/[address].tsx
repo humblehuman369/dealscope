@@ -52,7 +52,7 @@ export default function PropertyDetailsRoute() {
   const handleAnalyze = useCallback(() => {
     const encodedAddress = encodeURIComponent(property.address);
     router.push({
-      pathname: '/verdict/[address]',
+      pathname: '/verdict-iq/[address]',
       params: {
         address: encodedAddress,
         price: String(property.price),
