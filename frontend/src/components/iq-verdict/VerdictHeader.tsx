@@ -12,7 +12,7 @@
  * │  DealMakerIQ          [🔍] [👤]                 │  ← Dark navy bar
  * │  by InvestIQ                                    │
  * ├─────────────────────────────────────────────────┤
- * │  [Analyze]  Details  Sale Comps  Rent  Dashboard│  ← White tab bar
+ * │  [Analyze]  Details  Sale Comps  Rent Comps  Dashboard│  ← White tab bar
  * └─────────────────────────────────────────────────┘
  */
 
@@ -47,7 +47,7 @@ const TABS: { id: VerdictTab; label: string }[] = [
   { id: 'analyze', label: 'Analyze' },
   { id: 'details', label: 'Details' },
   { id: 'sale-comps', label: 'Sale Comps' },
-  { id: 'rent', label: 'Rent' },
+  { id: 'rent', label: 'Rent Comps' },
   { id: 'dashboard', label: 'Dashboard' },
 ]
 
