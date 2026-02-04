@@ -75,8 +75,8 @@ export const colors = {
   brand: {
     /** #0891B2 - Primary teal for dark backgrounds, header, navigation */
     teal: '#0891B2',
-    /** #06B6D4 - Brighter teal for white backgrounds (score ring, bars, links) */
-    tealBright: '#06B6D4',
+    /** #0EA5E9 - Vibrant sky blue for white backgrounds (score ring, bars, links) */
+    tealBright: '#0EA5E9',
     /** #00D4FF - Electric cyan for accents */
     cyan: '#00D4FF',
   },
