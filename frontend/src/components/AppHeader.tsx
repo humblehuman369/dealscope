@@ -173,44 +173,63 @@ export function AppHeader({
 
   // Check if property is already saved on mount
   useEffect(() => {
-    // Only check if authenticated, has address, and not already checking
+    // Only check if authenticated and has address
     if (!isAuthenticated || !displayAddress) return
     
-    let isMounted = true
+    const token = localStorage.getItem('access_token')
+    if (!token) return
+    
+    // Parse address components for matching
+    const addressParts = displayAddress.split(',').map(s => s.trim())
+    const streetAddress = addressParts[0] || ''
+    const city = addressParts[1] || ''
+    
+    if (!streetAddress) return
+    
+    // Use AbortController to cancel fetch on unmount
+    const abortController = new AbortController()
     
     const checkIfSaved = async () => {
-      const token = localStorage.getItem('access_token')
-      if (!token) return
-      
       try {
-        // Parse the street address for search
-        const streetAddress = displayAddress.split(',')[0]?.trim() || ''
-        if (!streetAddress) return
+        const response = await fetch(
+          `/api/v1/properties/saved?search=${encodeURIComponent(streetAddress)}`, 
+          {
+            headers: { 'Authorization': `Bearer ${token}` },
+            signal: abortController.signal
+          }
+        )
         
-        const response = await fetch(`/api/v1/properties/saved?search=${encodeURIComponent(streetAddress)}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-        
-        if (response.ok && isMounted) {
+        if (response.ok) {
           const data = await response.json()
           // Backend returns a direct array of SavedPropertySummary objects
           const properties = Array.isArray(data) ? data : (data.properties || data.items || [])
           
-          // Check if any saved property matches this address
-          const isAlreadySaved = properties.some((p: { full_address?: string; address_street?: string }) => 
-            p.address_street?.toLowerCase() === streetAddress.toLowerCase()
-          )
+          // Check if any saved property matches BOTH street address AND city
+          // This prevents false positives for same street names in different cities
+          const isAlreadySaved = properties.some((p: { 
+            full_address?: string
+            address_street?: string
+            address_city?: string 
+          }) => {
+            const streetMatch = p.address_street?.toLowerCase() === streetAddress.toLowerCase()
+            const cityMatch = !city || !p.address_city || 
+              p.address_city.toLowerCase() === city.toLowerCase()
+            return streetMatch && cityMatch
+          })
           setIsSaved(!!isAlreadySaved)
         }
       } catch (error) {
+        // Ignore abort errors (expected on cleanup)
+        if (error instanceof Error && error.name === 'AbortError') return
         console.error('Error checking saved status:', error)
       }
     }
     
     checkIfSaved()
     
+    // Cleanup: abort fetch request on unmount
     return () => {
-      isMounted = false
+      abortController.abort()
     }
   }, [displayAddress, isAuthenticated])
 
