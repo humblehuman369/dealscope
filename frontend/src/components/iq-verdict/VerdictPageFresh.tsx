@@ -192,13 +192,13 @@ function PropertySummaryBar({
         </div>
         <button
           onClick={onToggle}
-          className="p-1 hover:bg-slate-100 rounded transition-colors flex-shrink-0 ml-2"
+          className="p-1 hover:bg-neutral-100 rounded transition-colors flex-shrink-0 ml-2"
           aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
         >
           {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-slate-400" />
+            <ChevronUp className="w-4 h-4 text-neutral-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-neutral-400" />
           )}
         </button>
       </div>
@@ -210,20 +210,20 @@ function PropertySummaryBar({
           style={{ borderColor: colors.ui.border }}
         >
           <div className="text-center pt-3">
-            <div className="text-xs text-slate-500 mb-0.5">Beds</div>
-            <div className="font-semibold text-slate-800">{property.beds}</div>
+            <div className="text-xs text-neutral-500 mb-0.5">Beds</div>
+            <div className="font-semibold text-neutral-800">{property.beds}</div>
           </div>
           <div className="text-center pt-3">
-            <div className="text-xs text-slate-500 mb-0.5">Baths</div>
-            <div className="font-semibold text-slate-800">{property.baths}</div>
+            <div className="text-xs text-neutral-500 mb-0.5">Baths</div>
+            <div className="font-semibold text-neutral-800">{property.baths}</div>
           </div>
           <div className="text-center pt-3">
-            <div className="text-xs text-slate-500 mb-0.5">Sqft</div>
-            <div className="font-semibold text-slate-800">{property.sqft.toLocaleString()}</div>
+            <div className="text-xs text-neutral-500 mb-0.5">Sqft</div>
+            <div className="font-semibold text-neutral-800">{property.sqft.toLocaleString()}</div>
           </div>
           <div className="text-center pt-3">
-            <div className="text-xs text-slate-500 mb-0.5">{priceLabel}</div>
-            <div className="font-semibold text-slate-800">{formatShortPrice(property.price)}</div>
+            <div className="text-xs text-neutral-500 mb-0.5">{priceLabel}</div>
+            <div className="font-semibold text-neutral-800">{formatShortPrice(property.price)}</div>
           </div>
         </div>
       )}
@@ -569,10 +569,13 @@ function InvestmentAnalysisSection({
 }) {
   return (
     <div className="px-4 py-[30px]">
-      {/* White Card Container */}
+      {/* White Card Container - Crisp shadow for definition */}
       <div 
-        className="bg-white rounded-xl p-5"
-        style={{ boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06)' }}
+        className="bg-white rounded-xl p-5 border"
+        style={{ 
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)', 
+          borderColor: colors.ui.border,
+        }}
       >
         {/* Section Header */}
         <div className="flex items-start justify-between mb-5">
@@ -598,7 +601,7 @@ function InvestmentAnalysisSection({
           <div className="flex items-center gap-2">
             <button 
               onClick={onExportClick}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-slate-50"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-neutral-50"
               style={{ 
                 fontSize: typography.caption.size + 1,
                 color: colors.text.secondary,
@@ -610,7 +613,7 @@ function InvestmentAnalysisSection({
             </button>
             <button 
               onClick={onChangeTerms}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-slate-50"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-neutral-50"
               style={{ 
                 fontSize: typography.caption.size + 1,
                 color: colors.text.secondary,
@@ -624,7 +627,7 @@ function InvestmentAnalysisSection({
         </div>
 
         {/* Price Selector - Segmented Control Style */}
-        <div className="bg-slate-100 rounded-lg p-1 mb-4">
+        <div className="bg-neutral-100 rounded-lg p-1 mb-4">
           <div className="grid grid-cols-3 gap-1">
             {priceCards.map((card) => {
               const isSelected = card.variant === selectedPriceCard
@@ -635,7 +638,7 @@ function InvestmentAnalysisSection({
                   className={`py-3 px-2 rounded-md transition-all ${
                     isSelected 
                       ? 'bg-white shadow-sm' 
-                      : 'hover:bg-slate-50/50'
+                      : 'hover:bg-neutral-50/50'
                   }`}
                 >
                   <div 
@@ -646,12 +649,12 @@ function InvestmentAnalysisSection({
                       letterSpacing: '0.5px',
                     }}
                   >
-                    <span className={isSelected ? 'text-slate-700' : 'text-slate-500'}>
+                    <span className={isSelected ? 'text-neutral-700' : 'text-neutral-500'}>
                       {card.label}
                     </span>
                   </div>
                   <div 
-                    className={`text-center font-bold ${isSelected ? 'text-slate-900' : 'text-slate-600'}`}
+                    className={`text-center font-bold ${isSelected ? 'text-neutral-900' : 'text-neutral-600'}`}
                     style={{ fontSize: 20 }}
                   >
                     {formatPrice(card.value)}
@@ -663,18 +666,18 @@ function InvestmentAnalysisSection({
         </div>
 
         {/* Metrics Card - Unified Display */}
-        <div className="bg-slate-50 rounded-lg p-4">
+        <div className="bg-neutral-50 rounded-lg p-4">
           <div className="grid grid-cols-3 gap-4">
             {keyMetrics.map((metric) => (
               <div key={metric.label} className="text-center">
                 <div 
-                  className="font-bold text-slate-900 mb-0.5"
+                  className="font-bold text-neutral-900 mb-0.5"
                   style={{ fontSize: 22 }}
                 >
                   {metric.value}
                 </div>
                 <div 
-                  className="text-slate-500 uppercase tracking-wide"
+                  className="text-neutral-500 uppercase tracking-wide"
                   style={{ fontSize: 9, fontWeight: 500 }}
                 >
                   {metric.label}
@@ -961,7 +964,7 @@ export function VerdictPageFresh({
   return (
     <div 
       className="min-h-screen"
-      style={{ backgroundColor: colors.background.light }}
+      style={{ backgroundColor: colors.background.white }}
     >
       {/* Header */}
       <VerdictHeader

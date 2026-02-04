@@ -81,28 +81,28 @@ export const colors = {
     cyan: '#00D4FF',
   },
   
-  // Text Colors
+  // Text Colors - Neutral grays (no blue undertone)
   text: {
-    /** #0A1628 - Primary dark text */
-    primary: '#0A1628',
-    /** #475569 - Secondary text */
-    secondary: '#475569',
-    /** #64748B - Tertiary/muted text */
-    tertiary: '#64748B',
-    /** #94A3B8 - Placeholder text */
-    muted: '#94A3B8',
+    /** #171717 - Primary dark text (neutral-900) */
+    primary: '#171717',
+    /** #525252 - Secondary text (neutral-600) */
+    secondary: '#525252',
+    /** #737373 - Tertiary/muted text (neutral-500) */
+    tertiary: '#737373',
+    /** #A3A3A3 - Placeholder text (neutral-400) */
+    muted: '#A3A3A3',
     /** #FFFFFF - White text */
     white: '#FFFFFF',
   },
   
-  // Backgrounds
+  // Backgrounds - Pure whites and neutral grays (no blue undertone)
   background: {
-    /** #FFFFFF - White background */
+    /** #FFFFFF - Pure white background */
     white: '#FFFFFF',
-    /** #F8FAFC - Light gray background */
-    light: '#F8FAFC',
-    /** #F1F5F9 - Subtle gray background */
-    subtle: '#F1F5F9',
+    /** #FAFAFA - Near-white for subtle contrast */
+    light: '#FAFAFA',
+    /** #F5F5F5 - Light neutral gray */
+    subtle: '#F5F5F5',
     /** #0A1628 - Dark navy background */
     dark: '#0A1628',
     /** #07172E - Deep navy background */
@@ -121,12 +121,14 @@ export const colors = {
     amber: '#F59E0B',
   },
   
-  // UI Elements
+  // UI Elements - Neutral grays (no blue undertone)
   ui: {
-    /** #E2E8F0 - Border color, dividers */
-    border: '#E2E8F0',
-    /** #CBD5E1 - Darker border */
-    borderDark: '#CBD5E1',
+    /** #E5E5E5 - Border color, dividers (neutral gray) */
+    border: '#E5E5E5',
+    /** #D4D4D4 - Darker border (neutral gray) */
+    borderDark: '#D4D4D4',
+    /** #A3A3A3 - Medium gray for icons */
+    iconMuted: '#A3A3A3',
   },
 } as const
 
