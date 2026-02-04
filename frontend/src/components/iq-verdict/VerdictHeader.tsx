@@ -85,11 +85,9 @@ export function VerdictHeader({
               IQ
             </span>
           </div>
-          <span 
-            className="text-[10px] font-medium -mt-0.5"
-            style={{ color: colors.text.tertiary }}
-          >
-            by InvestIQ
+          <span className="text-[10px] font-medium -mt-0.5">
+            <span style={{ color: colors.text.white }}>by Invest</span>
+            <span style={{ color: colors.brand.teal }}>IQ</span>
           </span>
         </div>
 
@@ -102,7 +100,7 @@ export function VerdictHeader({
           >
             <Search 
               className="w-5 h-5" 
-              style={{ color: colors.text.muted }}
+              style={{ color: colors.text.white }}
             />
           </button>
           <button
@@ -112,7 +110,7 @@ export function VerdictHeader({
           >
             <User 
               className="w-5 h-5" 
-              style={{ color: colors.text.muted }}
+              style={{ color: colors.text.white }}
             />
           </button>
         </div>
