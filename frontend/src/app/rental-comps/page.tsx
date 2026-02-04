@@ -17,8 +17,11 @@ function RentalCompsContent() {
   const searchParams = useSearchParams()
   const addressParam = searchParams.get('address') || ''
   
+  // Decode the address in case it was double-encoded
+  const decodedAddress = addressParam ? decodeURIComponent(addressParam) : ''
+  
   // Parse address components from the full address
-  const addressParts = addressParam.split(',').map(s => s.trim())
+  const addressParts = decodedAddress.split(',').map(s => s.trim())
   const streetAddress = addressParts[0] || '1451 Sw 10th St'
   const city = addressParts[1] || 'Boca Raton'
   const stateZip = addressParts[2] || 'FL 33486'

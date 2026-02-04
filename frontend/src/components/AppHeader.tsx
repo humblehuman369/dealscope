@@ -166,8 +166,10 @@ export function AppHeader({
     : !NO_PROPERTY_BAR_ROUTES.some(route => pathname?.startsWith(route))
 
   // Get address from URL params if not provided
+  // Use decodeURIComponent to handle any double-encoding that may have occurred
   const addressFromUrl = searchParams?.get('address') || ''
-  const displayAddress = propertyAddress || addressFromUrl || (property 
+  const decodedAddressFromUrl = addressFromUrl ? decodeURIComponent(addressFromUrl) : ''
+  const displayAddress = propertyAddress || decodedAddressFromUrl || (property 
     ? `${property.address}, ${property.city}, ${property.state} ${property.zip}`
     : '')
 
