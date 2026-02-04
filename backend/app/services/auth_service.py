@@ -1,12 +1,15 @@
 """
 Authentication service for user registration, login, and token management.
 Handles password hashing, JWT tokens, and session management.
+
+Integrates with TokenBlacklistService for token revocation on logout.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple
 import secrets
 import logging
+import hashlib
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -171,6 +174,123 @@ class AuthService:
         except JWTError as e:
             logger.warning(f"Token verification failed: {e}")
             return None
+    
+    async def verify_token_with_blacklist(
+        self,
+        token: str,
+        token_type: str = "access"
+    ) -> Optional[TokenPayload]:
+        """
+        Verify a JWT token and check if it's blacklisted.
+        
+        Args:
+            token: The JWT token to verify
+            token_type: Expected token type ("access" or "refresh")
+        
+        Returns:
+            TokenPayload if valid and not blacklisted, None otherwise
+        """
+        # First verify the token structure and signature
+        payload = self.verify_token(token, token_type)
+        if not payload:
+            return None
+        
+        # Check token blacklist
+        try:
+            from app.services.token_blacklist_service import token_blacklist_service
+            
+            # Generate JTI from token hash
+            token_jti = self._get_token_jti(token)
+            
+            if await token_blacklist_service.is_blacklisted(token_jti):
+                logger.warning(f"Token is blacklisted: {token_jti[:8]}...")
+                return None
+            
+            # Check user-level blacklist
+            if payload.iat:
+                token_iat = int(payload.iat.timestamp())
+                if await token_blacklist_service.is_user_token_blacklisted(payload.sub, token_iat):
+                    logger.warning(f"User tokens blacklisted after token issuance")
+                    return None
+                    
+        except Exception as e:
+            logger.error(f"Error checking token blacklist: {e}")
+            # Continue with validation - don't block if blacklist check fails
+        
+        return payload
+    
+    def _get_token_jti(self, token: str) -> str:
+        """Generate a unique identifier for a token."""
+        return hashlib.sha256(token.encode()).hexdigest()[:32]
+    
+    async def blacklist_token(
+        self,
+        token: str,
+        reason: str = "logout"
+    ) -> bool:
+        """
+        Add a token to the blacklist.
+        
+        Args:
+            token: The JWT token to blacklist
+            reason: Why the token is being blacklisted
+            
+        Returns:
+            True if successfully blacklisted, False otherwise
+        """
+        try:
+            from app.services.token_blacklist_service import token_blacklist_service
+            
+            # Decode token to get expiry
+            payload = jwt.decode(
+                token,
+                self.secret_key,
+                algorithms=[self.algorithm],
+                options={"verify_exp": False}  # Allow expired tokens to be blacklisted
+            )
+            
+            token_jti = self._get_token_jti(token)
+            expiry_timestamp = payload.get("exp", 0)
+            
+            return await token_blacklist_service.blacklist_token(
+                token_jti=token_jti,
+                expiry_timestamp=expiry_timestamp,
+                reason=reason
+            )
+            
+        except JWTError as e:
+            logger.warning(f"Failed to decode token for blacklisting: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Failed to blacklist token: {e}")
+            return False
+    
+    async def logout(
+        self,
+        access_token: Optional[str] = None,
+        refresh_token: Optional[str] = None
+    ) -> bool:
+        """
+        Logout by blacklisting the provided tokens.
+        
+        Args:
+            access_token: Access token to blacklist
+            refresh_token: Refresh token to blacklist
+            
+        Returns:
+            True if at least one token was blacklisted
+        """
+        success = False
+        
+        if access_token:
+            if await self.blacklist_token(access_token, "logout"):
+                success = True
+                
+        if refresh_token:
+            if await self.blacklist_token(refresh_token, "logout"):
+                success = True
+        
+        return success
     
     # ===========================================
     # User Authentication

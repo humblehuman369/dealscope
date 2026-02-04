@@ -2,7 +2,7 @@
 User and UserProfile schemas for API responses and updates.
 """
 import re
-from pydantic import BaseModel, EmailStr, Field, field_validator, HttpUrl
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator, HttpUrl
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -244,6 +244,17 @@ class UserProfileBase(BaseModel):
         description="Target cap rate (0.06 = 6%)"
     )
     risk_tolerance: Optional[RiskTolerance] = None
+    
+    @model_validator(mode='after')
+    def validate_budget_range(self):
+        """Ensure investment_budget_min <= investment_budget_max."""
+        if self.investment_budget_min is not None and self.investment_budget_max is not None:
+            if self.investment_budget_min > self.investment_budget_max:
+                raise ValueError(
+                    f"investment_budget_min ({self.investment_budget_min}) must be less than "
+                    f"or equal to investment_budget_max ({self.investment_budget_max})"
+                )
+        return self
 
 
 class UserProfileCreate(UserProfileBase):

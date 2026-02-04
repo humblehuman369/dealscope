@@ -22,17 +22,26 @@ logger = logging.getLogger(__name__)
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """
-    Simple in-memory rate limiting middleware.
+    Rate limiting middleware with Redis support.
     
-    For production with multiple instances, consider using Redis-based rate limiting.
+    Uses Redis when available for distributed rate limiting across
+    multiple server instances. Falls back to in-memory for single-instance
+    deployments or when Redis is unavailable.
+    
+    Implements sliding window rate limiting.
     """
     
     def __init__(self, app, default_limit: int = 100, default_period: int = 60):
         super().__init__(app)
         self.default_limit = default_limit
         self.default_period = default_period
-        # In-memory storage: {client_key: [(timestamp, count)]}
+        
+        # In-memory storage fallback
         self.requests: Dict[str, list] = defaultdict(list)
+        
+        # Redis client (lazy initialization)
+        self._redis_client = None
+        self._redis_available = None
         
         # Route-specific limits (path prefix -> (limit, period))
         self.route_limits: Dict[str, tuple] = {
@@ -42,57 +51,129 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             "/api/v1/properties/search": (30, 60),    # 30 per minute for property search
         }
     
+    async def _get_redis_client(self):
+        """Lazy initialization of Redis client."""
+        if self._redis_available is None:
+            if settings.REDIS_URL:
+                try:
+                    import redis.asyncio as redis
+                    self._redis_client = redis.from_url(
+                        settings.REDIS_URL,
+                        encoding="utf-8",
+                        decode_responses=True,
+                        socket_connect_timeout=2,
+                        socket_timeout=2,
+                    )
+                    # Test connection
+                    await self._redis_client.ping()
+                    self._redis_available = True
+                    logger.info("Rate limiting using Redis")
+                except Exception as e:
+                    logger.warning(f"Redis not available for rate limiting: {e}")
+                    self._redis_available = False
+            else:
+                self._redis_available = False
+                
+        return self._redis_client if self._redis_available else None
+    
     def _get_client_key(self, request: Request) -> str:
         """Get a unique key for the client (IP + path)."""
-        # Use X-Forwarded-For if behind a proxy
         forwarded = request.headers.get("X-Forwarded-For")
         if forwarded:
             client_ip = forwarded.split(",")[0].strip()
         else:
             client_ip = request.client.host if request.client else "unknown"
         
-        return f"{client_ip}:{request.url.path}"
+        return f"ratelimit:{client_ip}:{request.url.path}"
     
     def _get_limits(self, path: str) -> tuple:
         """Get rate limits for a specific path."""
-        # Check for route-specific limits
         for route_prefix, limits in self.route_limits.items():
             if path.startswith(route_prefix):
                 return limits
-        
-        # Use default limits
         return (self.default_limit, self.default_period)
     
-    def _cleanup_old_requests(self, client_key: str, window_start: float):
-        """Remove requests older than the current window."""
-        self.requests[client_key] = [
-            (ts, count) for ts, count in self.requests[client_key]
-            if ts >= window_start
-        ]
-    
-    def _is_rate_limited(self, request: Request) -> tuple:
+    async def _is_rate_limited_redis(
+        self,
+        client_key: str,
+        limit: int,
+        period: int
+    ) -> tuple:
         """
-        Check if the request should be rate limited.
+        Check rate limit using Redis sliding window.
         
         Returns: (is_limited: bool, retry_after: int)
         """
-        client_key = self._get_client_key(request)
-        limit, period = self._get_limits(request.url.path)
+        redis = await self._get_redis_client()
+        if not redis:
+            return await self._is_rate_limited_memory(client_key, limit, period)
         
+        try:
+            current_time = time.time()
+            window_start = current_time - period
+            
+            # Use Redis sorted set for sliding window
+            # Score = timestamp, member = unique request ID
+            pipe = redis.pipeline()
+            
+            # Remove old entries
+            pipe.zremrangebyscore(client_key, 0, window_start)
+            
+            # Count current entries
+            pipe.zcard(client_key)
+            
+            # Add new entry
+            request_id = f"{current_time}:{id(self)}"
+            pipe.zadd(client_key, {request_id: current_time})
+            
+            # Set expiry on the key
+            pipe.expire(client_key, period + 1)
+            
+            results = await pipe.execute()
+            current_count = results[1]  # zcard result
+            
+            if current_count >= limit:
+                # Get oldest entry to calculate retry_after
+                oldest = await redis.zrange(client_key, 0, 0, withscores=True)
+                if oldest:
+                    oldest_time = oldest[0][1]
+                    retry_after = int(period - (current_time - oldest_time)) + 1
+                else:
+                    retry_after = period
+                return True, max(retry_after, 1)
+            
+            return False, 0
+            
+        except Exception as e:
+            logger.warning(f"Redis rate limit error, falling back to memory: {e}")
+            return await self._is_rate_limited_memory(client_key, limit, period)
+    
+    async def _is_rate_limited_memory(
+        self,
+        client_key: str,
+        limit: int,
+        period: int
+    ) -> tuple:
+        """Check rate limit using in-memory storage."""
         current_time = time.time()
         window_start = current_time - period
         
         # Clean up old requests
-        self._cleanup_old_requests(client_key, window_start)
+        self.requests[client_key] = [
+            (ts, count) for ts, count in self.requests[client_key]
+            if ts >= window_start
+        ]
         
         # Count requests in current window
         request_count = sum(count for _, count in self.requests[client_key])
         
         if request_count >= limit:
-            # Calculate retry after
-            oldest_request = min((ts for ts, _ in self.requests[client_key]), default=current_time)
+            oldest_request = min(
+                (ts for ts, _ in self.requests[client_key]),
+                default=current_time
+            )
             retry_after = int(period - (current_time - oldest_request)) + 1
-            return True, retry_after
+            return True, max(retry_after, 1)
         
         # Record this request
         self.requests[client_key].append((current_time, 1))
@@ -106,11 +187,18 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if any(request.url.path.startswith(path) for path in skip_paths):
             return await call_next(request)
         
-        # Check rate limit
-        is_limited, retry_after = self._is_rate_limited(request)
+        # Get rate limits for this path
+        client_key = self._get_client_key(request)
+        limit, period = self._get_limits(request.url.path)
+        
+        # Check rate limit (use Redis if available)
+        is_limited, retry_after = await self._is_rate_limited_redis(
+            client_key, limit, period
+        )
         
         if is_limited:
-            logger.warning(f"Rate limit exceeded for {request.client.host}: {request.url.path}")
+            client_ip = request.client.host if request.client else "unknown"
+            logger.warning(f"Rate limit exceeded for {client_ip}: {request.url.path}")
             return JSONResponse(
                 status_code=429,
                 content={

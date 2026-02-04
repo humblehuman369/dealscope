@@ -11,7 +11,7 @@ This record is created ONCE when a property is first viewed/saved, and the
 default assumptions are locked at that moment - never re-fetched.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, Dict, Any
 from datetime import datetime
 
@@ -351,6 +351,42 @@ class DealMakerRecordUpdate(BaseModel):
     
     # Strategy type
     strategy_type: Optional[str] = Field(None, description="Strategy type")
+    
+    @model_validator(mode='after')
+    def validate_cross_field_constraints(self):
+        """Validate cross-field constraints for financial calculations."""
+        # BRRRR: buy_price should typically be less than ARV (buying below market)
+        if self.buy_price is not None and self.arv is not None:
+            if self.buy_price > self.arv:
+                # This is a warning, not an error - user might have a reason
+                # But for extreme cases, we reject
+                if self.buy_price > self.arv * 1.5:
+                    raise ValueError(
+                        f"buy_price ({self.buy_price:,.0f}) is significantly higher than "
+                        f"ARV ({self.arv:,.0f}). For BRRRR strategy, buy_price should "
+                        "typically be below ARV."
+                    )
+        
+        # Refinance LTV must allow cash-out
+        if (self.refinance_ltv is not None and 
+            self.buy_price is not None and 
+            self.arv is not None and
+            self.arv > 0):
+            max_loan = self.arv * self.refinance_ltv
+            # Warning if refinance won't cover original purchase
+            if max_loan < self.buy_price * 0.8:
+                pass  # Just a warning, don't block
+        
+        # Total units must be >= owner_occupied_units for house hack
+        if (self.total_units is not None and 
+            self.owner_occupied_units is not None):
+            if self.owner_occupied_units > self.total_units:
+                raise ValueError(
+                    f"owner_occupied_units ({self.owner_occupied_units}) cannot be "
+                    f"greater than total_units ({self.total_units})"
+                )
+        
+        return self
 
 
 class DealMakerResponse(BaseModel):

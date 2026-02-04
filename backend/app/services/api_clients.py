@@ -1,14 +1,21 @@
 """
 External API integrations for RentCast and AXESSO.
 Includes error handling, retries, and data normalization.
+
+Uses BaseAPIClient for shared request logic including:
+- Retry with exponential backoff
+- Rate limit handling
+- Circuit breaker pattern
 """
 import httpx
 from typing import Dict, Any, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
+
+from app.services.base_client import BaseAPIClient, CircuitBreaker, BaseAPIResponse
 
 logger = logging.getLogger(__name__)
 
@@ -19,138 +26,58 @@ class APIProvider(str, Enum):
 
 
 @dataclass
-class APIResponse:
-    """Standardized API response wrapper."""
-    success: bool
-    data: Optional[Dict[str, Any]]
-    error: Optional[str]
-    provider: APIProvider
-    timestamp: datetime
-    raw_response: Optional[Dict[str, Any]] = None
+class APIResponse(BaseAPIResponse):
+    """Standardized API response wrapper with provider info."""
+    provider: APIProvider = APIProvider.RENTCAST
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-class CircuitBreaker:
-    """Simple circuit breaker implementation."""
+class RentCastClient(BaseAPIClient[APIResponse]):
+    """
+    Client for RentCast API.
     
-    def __init__(self, failure_threshold: int = 3, recovery_timeout: float = 30.0):
-        self.failure_threshold = failure_threshold
-        self.recovery_timeout = recovery_timeout
-        self.failures = 0
-        self.last_failure_time: Optional[datetime] = None
-        self.state = "closed"
-    
-    def record_failure(self):
-        self.failures += 1
-        self.last_failure_time = datetime.utcnow()
-        if self.failures >= self.failure_threshold:
-            self.state = "open"
-            logger.warning(f"Circuit breaker opened after {self.failures} failures")
-    
-    def record_success(self):
-        self.failures = 0
-        self.state = "closed"
-    
-    def can_execute(self) -> bool:
-        if self.state == "closed":
-            return True
-        if self.state == "open":
-            if self.last_failure_time:
-                elapsed = (datetime.utcnow() - self.last_failure_time).total_seconds()
-                if elapsed >= self.recovery_timeout:
-                    self.state = "half-open"
-                    return True
-            return False
-        return True  # half-open allows one request
-
-
-class RentCastClient:
-    """Client for RentCast API."""
+    Extends BaseAPIClient with RentCast-specific authentication and response handling.
+    """
     
     def __init__(self, api_key: str, base_url: str = "https://api.rentcast.io/v1"):
-        self.api_key = api_key
-        self.base_url = base_url.rstrip("/")
-        self.circuit_breaker = CircuitBreaker()
-        self.timeout = httpx.Timeout(10.0, connect=5.0)
+        super().__init__(
+            api_key=api_key,
+            base_url=base_url,
+            timeout=10.0,
+            connect_timeout=5.0,
+            max_retries=3,
+            enable_circuit_breaker=True
+        )
     
-    async def _make_request(
-        self, 
-        endpoint: str, 
-        params: Dict[str, Any] = None
-    ) -> APIResponse:
-        """Make authenticated request to RentCast API."""
-        
-        if not self.circuit_breaker.can_execute():
-            return APIResponse(
-                success=False,
-                data=None,
-                error="Circuit breaker is open - service temporarily unavailable",
-                provider=APIProvider.RENTCAST,
-                timestamp=datetime.utcnow()
-            )
-        
-        headers = {
+    def _get_headers(self) -> Dict[str, str]:
+        """Return RentCast authentication headers."""
+        return {
             "X-Api-Key": self.api_key,
             "Accept": "application/json"
         }
-        
-        url = f"{self.base_url}/{endpoint}"
-        
-        for attempt in range(3):
-            try:
-                async with httpx.AsyncClient(timeout=self.timeout) as client:
-                    response = await client.get(url, headers=headers, params=params)
-                    
-                    if response.status_code == 200:
-                        data = response.json()
-                        self.circuit_breaker.record_success()
-                        return APIResponse(
-                            success=True,
-                            data=data,
-                            error=None,
-                            provider=APIProvider.RENTCAST,
-                            timestamp=datetime.utcnow(),
-                            raw_response=data
-                        )
-                    elif response.status_code == 429:
-                        # Rate limited
-                        wait_time = 2 ** attempt
-                        logger.warning(f"RentCast rate limited, waiting {wait_time}s")
-                        await asyncio.sleep(wait_time)
-                        continue
-                    else:
-                        error_msg = f"RentCast API error: {response.status_code}"
-                        logger.error(error_msg)
-                        self.circuit_breaker.record_failure()
-                        return APIResponse(
-                            success=False,
-                            data=None,
-                            error=error_msg,
-                            provider=APIProvider.RENTCAST,
-                            timestamp=datetime.utcnow()
-                        )
-                        
-            except httpx.TimeoutException:
-                logger.warning(f"RentCast timeout, attempt {attempt + 1}")
-                await asyncio.sleep(2 ** attempt)
-            except Exception as e:
-                logger.error(f"RentCast error: {str(e)}")
-                self.circuit_breaker.record_failure()
-                return APIResponse(
-                    success=False,
-                    data=None,
-                    error=str(e),
-                    provider=APIProvider.RENTCAST,
-                    timestamp=datetime.utcnow()
-                )
-        
-        self.circuit_breaker.record_failure()
+    
+    def _create_response(
+        self,
+        success: bool,
+        data: Optional[Dict[str, Any]],
+        error: Optional[str],
+        status_code: Optional[int],
+        raw_response: Optional[Dict[str, Any]] = None,
+        **kwargs
+    ) -> APIResponse:
+        """Create RentCast-specific response."""
         return APIResponse(
-            success=False,
-            data=None,
-            error="Max retries exceeded",
+            success=success,
+            data=data,
+            error=error,
+            status_code=status_code,
             provider=APIProvider.RENTCAST,
-            timestamp=datetime.utcnow()
+            raw_response=raw_response
         )
+    
+    def _get_provider_name(self) -> str:
+        """Return provider name for logging."""
+        return "RentCast"
     
     async def get_property(self, address: str) -> APIResponse:
         """Get property records by address."""
@@ -216,93 +143,52 @@ class RentCastClient:
         return await self._make_request("markets", params)
 
 
-class AXESSOClient:
-    """Client for AXESSO Zillow API."""
+class AXESSOClient(BaseAPIClient[APIResponse]):
+    """
+    Client for AXESSO Zillow API.
+    
+    Extends BaseAPIClient with AXESSO-specific authentication and response handling.
+    """
     
     def __init__(self, api_key: str, base_url: str = "https://api.axesso.de/zil"):
-        self.api_key = api_key
-        self.base_url = base_url.rstrip("/")
-        self.circuit_breaker = CircuitBreaker()
-        self.timeout = httpx.Timeout(10.0, connect=5.0)
+        super().__init__(
+            api_key=api_key,
+            base_url=base_url,
+            timeout=10.0,
+            connect_timeout=5.0,
+            max_retries=3,
+            enable_circuit_breaker=True
+        )
     
-    async def _make_request(
-        self, 
-        endpoint: str, 
-        params: Dict[str, Any] = None
-    ) -> APIResponse:
-        """Make authenticated request to AXESSO API."""
-        
-        if not self.circuit_breaker.can_execute():
-            return APIResponse(
-                success=False,
-                data=None,
-                error="Circuit breaker is open - service temporarily unavailable",
-                provider=APIProvider.AXESSO,
-                timestamp=datetime.utcnow()
-            )
-        
-        headers = {
-            "axesso-api-key": self.api_key,  # Fixed: AXESSO uses 'axesso-api-key' header
+    def _get_headers(self) -> Dict[str, str]:
+        """Return AXESSO authentication headers."""
+        return {
+            "axesso-api-key": self.api_key,
             "Accept": "application/json"
         }
-        
-        url = f"{self.base_url}/{endpoint}"
-        
-        for attempt in range(3):
-            try:
-                async with httpx.AsyncClient(timeout=self.timeout) as client:
-                    response = await client.get(url, headers=headers, params=params)
-                    
-                    if response.status_code == 200:
-                        data = response.json()
-                        self.circuit_breaker.record_success()
-                        return APIResponse(
-                            success=True,
-                            data=data,
-                            error=None,
-                            provider=APIProvider.AXESSO,
-                            timestamp=datetime.utcnow(),
-                            raw_response=data
-                        )
-                    elif response.status_code == 429:
-                        wait_time = 2 ** attempt
-                        logger.warning(f"AXESSO rate limited, waiting {wait_time}s")
-                        await asyncio.sleep(wait_time)
-                        continue
-                    else:
-                        error_msg = f"AXESSO API error: {response.status_code}"
-                        logger.error(error_msg)
-                        self.circuit_breaker.record_failure()
-                        return APIResponse(
-                            success=False,
-                            data=None,
-                            error=error_msg,
-                            provider=APIProvider.AXESSO,
-                            timestamp=datetime.utcnow()
-                        )
-                        
-            except httpx.TimeoutException:
-                logger.warning(f"AXESSO timeout, attempt {attempt + 1}")
-                await asyncio.sleep(2 ** attempt)
-            except Exception as e:
-                logger.error(f"AXESSO error: {str(e)}")
-                self.circuit_breaker.record_failure()
-                return APIResponse(
-                    success=False,
-                    data=None,
-                    error=str(e),
-                    provider=APIProvider.AXESSO,
-                    timestamp=datetime.utcnow()
-                )
-        
-        self.circuit_breaker.record_failure()
+    
+    def _create_response(
+        self,
+        success: bool,
+        data: Optional[Dict[str, Any]],
+        error: Optional[str],
+        status_code: Optional[int],
+        raw_response: Optional[Dict[str, Any]] = None,
+        **kwargs
+    ) -> APIResponse:
+        """Create AXESSO-specific response."""
         return APIResponse(
-            success=False,
-            data=None,
-            error="Max retries exceeded",
+            success=success,
+            data=data,
+            error=error,
+            status_code=status_code,
             provider=APIProvider.AXESSO,
-            timestamp=datetime.utcnow()
+            raw_response=raw_response
         )
+    
+    def _get_provider_name(self) -> str:
+        """Return provider name for logging."""
+        return "AXESSO"
     
     async def get_property_details(self, zpid: str = None, address: str = None) -> APIResponse:
         """Get property details from Zillow."""

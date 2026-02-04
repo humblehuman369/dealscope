@@ -8,15 +8,22 @@ AXESSO API Documentation: https://axesso.developer.azure-api.net/api-details#api
 
 Authentication: Uses 'axesso-api-key' header (NOT Ocp-Apim-Subscription-Key)
 Base URL: https://api.axesso.de/zil
+
+Uses BaseAPIClient for shared request logic including:
+- Retry with exponential backoff
+- Rate limit handling
+- Circuit breaker pattern
 """
 import httpx
 from typing import Dict, Any, Optional, List, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 from urllib.parse import quote
 import asyncio
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
+
+from app.services.base_client import BaseAPIClient
 
 logger = logging.getLogger(__name__)
 
@@ -48,14 +55,16 @@ class ZillowAPIResponse:
     data: Optional[Dict[str, Any]]
     error: Optional[str]
     status_code: Optional[int]
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     raw_response: Optional[Dict[str, Any]] = None
     zpid: Optional[str] = None
 
 
-class ZillowClient:
+class ZillowClient(BaseAPIClient['ZillowAPIResponse']):
     """
     Comprehensive Zillow data client via AXESSO API.
+    
+    Extends BaseAPIClient with Zillow-specific response handling.
     
     Endpoints available:
     - search-by-address: Find property by address, returns zpid
@@ -74,11 +83,14 @@ class ZillowClient:
     """
     
     def __init__(self, api_key: str, base_url: str = "https://api.axesso.de/zil"):
-        self.api_key = api_key
-        self.base_url = base_url.rstrip("/")
-        self.timeout = httpx.Timeout(15.0, connect=5.0)
-        self._failure_count = 0
-        self._last_success = None
+        super().__init__(
+            api_key=api_key,
+            base_url=base_url,
+            timeout=15.0,
+            connect_timeout=5.0,
+            max_retries=3,
+            enable_circuit_breaker=True
+        )
     
     def _get_headers(self) -> Dict[str, str]:
         """Get authenticated headers for AXESSO API."""
@@ -88,96 +100,48 @@ class ZillowClient:
             "Content-Type": "application/json"
         }
     
-    async def _make_request(
+    def _create_response(
+        self,
+        success: bool,
+        data: Optional[Dict[str, Any]],
+        error: Optional[str],
+        status_code: Optional[int],
+        raw_response: Optional[Dict[str, Any]] = None,
+        endpoint: Optional[ZillowEndpoint] = None,
+        **kwargs
+    ) -> 'ZillowAPIResponse':
+        """Create Zillow-specific response."""
+        # Extract zpid if present
+        zpid = None
+        if isinstance(data, dict):
+            zpid = data.get('zpid') or data.get('zillow_id')
+        
+        return ZillowAPIResponse(
+            success=success,
+            endpoint=endpoint or ZillowEndpoint.PROPERTY_V2,
+            data=data,
+            error=error,
+            status_code=status_code,
+            raw_response=raw_response,
+            zpid=zpid
+        )
+    
+    def _get_provider_name(self) -> str:
+        """Return provider name for logging."""
+        return "AXESSO/Zillow"
+    
+    async def _make_zillow_request(
         self,
         endpoint: ZillowEndpoint,
         params: Dict[str, Any] = None
     ) -> ZillowAPIResponse:
         """Make authenticated request to AXESSO Zillow API."""
-        
-        headers = self._get_headers()
-        url = f"{self.base_url}/{endpoint.value}"
-        
-        # Clean params - remove None values
-        if params:
-            params = {k: v for k, v in params.items() if v is not None}
-        
-        for attempt in range(3):
-            try:
-                async with httpx.AsyncClient(timeout=self.timeout) as client:
-                    response = await client.get(url, headers=headers, params=params)
-                    
-                    if response.status_code == 200:
-                        data = response.json()
-                        self._failure_count = 0
-                        self._last_success = datetime.utcnow()
-                        
-                        # Extract zpid if present
-                        zpid = None
-                        if isinstance(data, dict):
-                            zpid = data.get('zpid') or data.get('zillow_id')
-                        
-                        return ZillowAPIResponse(
-                            success=True,
-                            endpoint=endpoint,
-                            data=data,
-                            error=None,
-                            status_code=response.status_code,
-                            raw_response=data,
-                            zpid=zpid
-                        )
-                    
-                    elif response.status_code == 429:
-                        # Rate limited - exponential backoff
-                        wait_time = 2 ** attempt
-                        logger.warning(f"AXESSO rate limited, waiting {wait_time}s")
-                        await asyncio.sleep(wait_time)
-                        continue
-                    
-                    elif response.status_code == 404:
-                        # Not found - may be valid (property doesn't exist in Zillow)
-                        return ZillowAPIResponse(
-                            success=False,
-                            endpoint=endpoint,
-                            data=None,
-                            error=f"Property not found in Zillow database",
-                            status_code=response.status_code
-                        )
-                    
-                    else:
-                        error_msg = f"AXESSO API error: {response.status_code} - {response.text}"
-                        logger.error(error_msg)
-                        self._failure_count += 1
-                        return ZillowAPIResponse(
-                            success=False,
-                            endpoint=endpoint,
-                            data=None,
-                            error=error_msg,
-                            status_code=response.status_code
-                        )
-                        
-            except httpx.TimeoutException:
-                logger.warning(f"AXESSO timeout on {endpoint.value}, attempt {attempt + 1}")
-                await asyncio.sleep(2 ** attempt)
-                
-            except Exception as e:
-                logger.error(f"AXESSO error: {str(e)}")
-                self._failure_count += 1
-                return ZillowAPIResponse(
-                    success=False,
-                    endpoint=endpoint,
-                    data=None,
-                    error=str(e),
-                    status_code=None
-                )
-        
-        self._failure_count += 1
-        return ZillowAPIResponse(
-            success=False,
-            endpoint=endpoint,
-            data=None,
-            error="Max retries exceeded",
-            status_code=None
+        # Use base class _make_request with endpoint value as path
+        # Pass endpoint enum as response_kwargs for _create_response
+        return await super()._make_request(
+            endpoint=endpoint.value,
+            params=params,
+            endpoint=endpoint  # This goes to **response_kwargs in _create_response
         )
     
     # =========================================================================
@@ -197,7 +161,7 @@ class ZillowClient:
         Returns:
             ZillowAPIResponse with zpid and basic property info
         """
-        return await self._make_request(
+        return await self._make_zillow_request(
             ZillowEndpoint.SEARCH_BY_ADDRESS,
             {"address": address}
         )
@@ -228,7 +192,7 @@ class ZillowClient:
         if url:
             params["url"] = url
             
-        return await self._make_request(ZillowEndpoint.PROPERTY_V2, params)
+        return await self._make_zillow_request(ZillowEndpoint.PROPERTY_V2, params)
     
     # =========================================================================
     # VALUATION METHODS
@@ -252,7 +216,7 @@ class ZillowClient:
         if url:
             params["url"] = url
             
-        return await self._make_request(ZillowEndpoint.PRICE_TAX_HISTORY, params)
+        return await self._make_zillow_request(ZillowEndpoint.PRICE_TAX_HISTORY, params)
     
     async def get_zestimate_history(
         self,
@@ -271,7 +235,7 @@ class ZillowClient:
         if url:
             params["url"] = url
             
-        return await self._make_request(ZillowEndpoint.ZESTIMATE_HISTORY, params)
+        return await self._make_zillow_request(ZillowEndpoint.ZESTIMATE_HISTORY, params)
     
     async def get_rent_estimate(
         self,
@@ -304,7 +268,7 @@ class ZillowClient:
         if property_type:
             params["propertyType"] = property_type
             
-        return await self._make_request(ZillowEndpoint.RENT_ESTIMATE, params)
+        return await self._make_zillow_request(ZillowEndpoint.RENT_ESTIMATE, params)
     
     # =========================================================================
     # COMPARABLE PROPERTIES METHODS
@@ -329,7 +293,7 @@ class ZillowClient:
         if address:
             params["address"] = address
             
-        return await self._make_request(ZillowEndpoint.SIMILAR_PROPERTIES, params)
+        return await self._make_zillow_request(ZillowEndpoint.SIMILAR_PROPERTIES, params)
     
     async def get_similar_rentals(
         self,
@@ -350,7 +314,7 @@ class ZillowClient:
         if address:
             params["address"] = address
             
-        return await self._make_request(ZillowEndpoint.SIMILAR_RENT, params)
+        return await self._make_zillow_request(ZillowEndpoint.SIMILAR_RENT, params)
 
     async def get_similar_rent(
         self,
@@ -380,7 +344,7 @@ class ZillowClient:
         if address:
             params["address"] = address
             
-        return await self._make_request(ZillowEndpoint.SIMILAR_SOLD, params)
+        return await self._make_zillow_request(ZillowEndpoint.SIMILAR_SOLD, params)
     
     # =========================================================================
     # MARKET & NEIGHBORHOOD METHODS
@@ -396,7 +360,7 @@ class ZillowClient:
         Returns:
             Market trends, median values, inventory levels, etc.
         """
-        return await self._make_request(
+        return await self._make_zillow_request(
             ZillowEndpoint.MARKET_DATA,
             {"location": location}
         )
@@ -417,7 +381,7 @@ class ZillowClient:
         if url:
             params["url"] = url
             
-        return await self._make_request(ZillowEndpoint.SCHOOLS, params)
+        return await self._make_zillow_request(ZillowEndpoint.SCHOOLS, params)
     
     async def get_accessibility_scores(
         self,
@@ -435,7 +399,7 @@ class ZillowClient:
         if url:
             params["url"] = url
             
-        return await self._make_request(ZillowEndpoint.ACCESSIBILITY_SCORES, params)
+        return await self._make_zillow_request(ZillowEndpoint.ACCESSIBILITY_SCORES, params)
     
     async def get_photos(
         self,
@@ -459,7 +423,7 @@ class ZillowClient:
             params["url"] = url
         
         # Use the dedicated photos endpoint
-        return await self._make_request(ZillowEndpoint.PHOTOS, params)
+        return await self._make_zillow_request(ZillowEndpoint.PHOTOS, params)
     
     # =========================================================================
     # SEARCH METHODS
@@ -532,7 +496,7 @@ class ZillowClient:
         # Additional filters from kwargs
         params.update(kwargs)
         
-        return await self._make_request(ZillowEndpoint.SEARCH, params)
+        return await self._make_zillow_request(ZillowEndpoint.SEARCH, params)
     
     async def search_by_coordinates(
         self,
@@ -553,7 +517,7 @@ class ZillowClient:
         params = {"lat": lat, "long": lng, "d": radius_miles}
         params.update(kwargs)
         
-        return await self._make_request(ZillowEndpoint.SEARCH_BY_COORDINATES, params)
+        return await self._make_zillow_request(ZillowEndpoint.SEARCH_BY_COORDINATES, params)
     
     # =========================================================================
     # COMPREHENSIVE DATA FETCH

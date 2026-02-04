@@ -7,7 +7,7 @@ Provides:
 - Readiness check (for Kubernetes-style deployments)
 """
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 
 from fastapi import APIRouter, Depends
@@ -33,7 +33,7 @@ async def health_check():
     return {
         "status": "healthy",
         "version": settings.APP_VERSION,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -43,28 +43,44 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
     Readiness check endpoint.
     
     Verifies that the application is ready to serve traffic.
-    Checks database connectivity.
+    Checks database and Redis connectivity.
     """
+    checks = {}
+    overall_ready = True
+    
+    # Database check
     try:
-        # Test database connection
         await db.execute(text("SELECT 1"))
-        
-        return {
-            "status": "ready",
-            "checks": {
-                "database": "connected"
-            },
-            "timestamp": datetime.utcnow().isoformat(),
-        }
+        checks["database"] = "connected"
     except Exception as e:
-        logger.error(f"Readiness check failed: {e}")
-        return {
-            "status": "not_ready",
-            "checks": {
-                "database": f"error: {str(e)}"
-            },
-            "timestamp": datetime.utcnow().isoformat(),
-        }
+        logger.error(f"Database check failed: {e}")
+        checks["database"] = f"error: {str(e)}"
+        overall_ready = False
+    
+    # Redis check (if configured)
+    if settings.REDIS_URL:
+        try:
+            import redis.asyncio as redis
+            redis_client = redis.from_url(
+                settings.REDIS_URL,
+                socket_connect_timeout=2,
+                socket_timeout=2
+            )
+            await redis_client.ping()
+            await redis_client.close()
+            checks["redis"] = "connected"
+        except Exception as e:
+            logger.warning(f"Redis check failed: {e}")
+            checks["redis"] = f"error: {str(e)}"
+            # Redis failure is not critical for readiness
+    else:
+        checks["redis"] = "not_configured"
+    
+    return {
+        "status": "ready" if overall_ready else "not_ready",
+        "checks": checks,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 @router.get("/health/deep")
@@ -164,5 +180,5 @@ async def deep_health_check(db: AsyncSession = Depends(get_db)):
         "version": settings.APP_VERSION,
         "environment": settings.ENVIRONMENT,
         "checks": checks,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }

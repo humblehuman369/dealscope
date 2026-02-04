@@ -8,8 +8,6 @@ import time
 from typing import Optional, List, Dict, Any
 
 from fastapi import APIRouter, HTTPException, status, Query
-from sqlalchemy import select, and_, or_
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import CurrentUser, DbSession
 from app.schemas.sync import (
@@ -20,8 +18,7 @@ from app.schemas.sync import (
     SyncPushResponse,
     SyncPushResult,
 )
-from app.models.saved_property import SavedProperty
-from app.models.search_history import SearchHistory
+from app.services.sync_service import sync_service
 
 logger = logging.getLogger(__name__)
 
@@ -67,96 +64,29 @@ async def pull_sync(
     
     # Sync scanned properties (from search history for this user)
     if "scanned_properties" in request.tables:
-        try:
-            query = (
-                select(SearchHistory)
-                .where(
-                    and_(
-                        SearchHistory.user_id == current_user.id,
-                        SearchHistory.search_source == "scanner",
-                        SearchHistory.searched_at >= since_ts if since_ts > 0 else True,
-                    )
-                )
-                .order_by(SearchHistory.searched_at.asc())
-                .limit(limit)
-            )
-            
-            result = await db.execute(query)
-            searches = result.scalars().all()
-            
-            for s in searches:
-                ts = int(s.searched_at.timestamp()) if s.searched_at else server_time
-                response.scanned_properties.append(
-                    SyncRecord(
-                        id=str(s.id),
-                        table_name="scanned_properties",
-                        action="create",  # We don't track soft deletes for now
-                        data={
-                            "id": str(s.id),
-                            "address": s.address_street or s.search_query,
-                            "city": s.address_city,
-                            "state": s.address_state,
-                            "zip": s.address_zip,
-                            "property_data": s.result_summary,
-                            "scanned_at": ts,
-                            "is_favorite": False,  # Would need a favorites table
-                        },
-                        updated_at=ts,
-                        created_at=ts,
-                    )
-                )
-                latest_ts = max(latest_ts, ts)
-                total_records += 1
-                
-        except Exception as e:
-            logger.error(f"Error syncing scanned_properties: {e}")
+        records = await sync_service.pull_scanned_properties(
+            db=db,
+            user_id=current_user.id,
+            since_ts=since_ts,
+            limit=limit
+        )
+        for record in records:
+            response.scanned_properties.append(SyncRecord(**record))
+            latest_ts = max(latest_ts, record["updated_at"])
+            total_records += 1
     
     # Sync portfolio/saved properties
     if "portfolio_properties" in request.tables:
-        try:
-            query = (
-                select(SavedProperty)
-                .where(
-                    and_(
-                        SavedProperty.user_id == current_user.id,
-                        SavedProperty.updated_at >= since_ts if since_ts > 0 else True,
-                    )
-                )
-                .order_by(SavedProperty.updated_at.asc())
-                .limit(limit)
-            )
-            
-            result = await db.execute(query)
-            properties = result.scalars().all()
-            
-            for p in properties:
-                ts = int(p.updated_at.timestamp()) if p.updated_at else server_time
-                created = int(p.created_at.timestamp()) if p.created_at else ts
-                response.portfolio_properties.append(
-                    SyncRecord(
-                        id=str(p.id),
-                        table_name="portfolio_properties",
-                        action="update" if p.updated_at != p.created_at else "create",
-                        data={
-                            "id": str(p.id),
-                            "address": p.address_street,
-                            "city": p.address_city,
-                            "state": p.address_state,
-                            "zip": p.address_zip,
-                            "purchase_price": p.purchase_price,
-                            "strategy": p.strategy,
-                            "property_data": p.property_snapshot,
-                            "notes": p.notes,
-                        },
-                        updated_at=ts,
-                        created_at=created,
-                    )
-                )
-                latest_ts = max(latest_ts, ts)
-                total_records += 1
-                
-        except Exception as e:
-            logger.error(f"Error syncing portfolio_properties: {e}")
+        records = await sync_service.pull_portfolio_properties(
+            db=db,
+            user_id=current_user.id,
+            since_ts=since_ts,
+            limit=limit
+        )
+        for record in records:
+            response.portfolio_properties.append(SyncRecord(**record))
+            latest_ts = max(latest_ts, record["updated_at"])
+            total_records += 1
     
     # Check if there are more records
     if total_records >= limit:
@@ -181,35 +111,4 @@ async def get_sync_status(
     
     Returns counts and last modification times for each syncable table.
     """
-    user_id = str(current_user.id)
-    server_time = int(time.time())
-    
-    # Count scanned properties
-    scanned_count_query = (
-        select(SearchHistory)
-        .where(
-            and_(
-                SearchHistory.user_id == current_user.id,
-                SearchHistory.search_source == "scanner",
-            )
-        )
-    )
-    scanned_result = await db.execute(scanned_count_query)
-    scanned_count = len(scanned_result.scalars().all())
-    
-    # Count saved properties
-    saved_count_query = select(SavedProperty).where(SavedProperty.user_id == current_user.id)
-    saved_result = await db.execute(saved_count_query)
-    saved_count = len(saved_result.scalars().all())
-    
-    return {
-        "server_time": server_time,
-        "tables": {
-            "scanned_properties": {
-                "count": scanned_count,
-            },
-            "portfolio_properties": {
-                "count": saved_count,
-            },
-        },
-    }
+    return await sync_service.get_sync_status(db=db, user_id=current_user.id)

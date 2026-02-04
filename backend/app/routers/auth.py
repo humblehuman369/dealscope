@@ -5,7 +5,8 @@ Authentication router for user registration, login, and session management.
 from datetime import datetime
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
+from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -248,6 +249,11 @@ async def refresh_token(
 # Logout
 # ===========================================
 
+class LogoutRequest(BaseModel):
+    """Optional request body for logout with refresh token."""
+    refresh_token: Optional[str] = None
+
+
 @router.post(
     "/logout",
     response_model=AuthMessage,
@@ -255,16 +261,29 @@ async def refresh_token(
 )
 async def logout(
     current_user: CurrentUser,
-    response: Response
+    response: Response,
+    request: Request,
+    body: Optional[LogoutRequest] = None
 ):
     """
     Logout the current user session.
     
-    Note: With stateless JWT, this primarily clears client-side tokens.
-    For true session invalidation, implement a token blacklist in Redis.
+    Blacklists the current access token (and optionally refresh token)
+    to prevent further use. Tokens are stored in Redis with TTL matching
+    their original expiration.
     """
-    # In a stateless JWT system, logout is client-side
-    # For server-side invalidation, add token to blacklist (Redis)
+    # Extract access token from authorization header
+    auth_header = request.headers.get("Authorization", "")
+    access_token = None
+    if auth_header.startswith("Bearer "):
+        access_token = auth_header[7:]
+    
+    # Blacklist tokens
+    refresh_token = body.refresh_token if body else None
+    await auth_service.logout(
+        access_token=access_token,
+        refresh_token=refresh_token
+    )
     
     logger.info(f"User logged out: {current_user.email}")
     

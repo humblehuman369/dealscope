@@ -5,7 +5,7 @@ Defines the data structures for generating professional LOIs
 with intelligent defaults from property analysis.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List
 from datetime import date, datetime
 from enum import Enum
@@ -119,6 +119,34 @@ class LOITerms(BaseModel):
     # Financing (for reference/transparency)
     is_cash_offer: bool = Field(default=True, description="Cash or financed")
     proof_of_funds_included: bool = Field(default=False, description="POF attached")
+    
+    @model_validator(mode='after')
+    def validate_financial_terms(self):
+        """Validate financial terms are sensible."""
+        # Earnest money should not exceed offer price
+        if self.earnest_money > self.offer_price:
+            raise ValueError(
+                f"earnest_money ({self.earnest_money:,.0f}) cannot exceed "
+                f"offer_price ({self.offer_price:,.0f})"
+            )
+        
+        # Earnest money should typically be a reasonable percentage (0.5% - 10%)
+        if self.offer_price > 0:
+            earnest_pct = self.earnest_money / self.offer_price
+            if earnest_pct > 0.15:
+                raise ValueError(
+                    f"earnest_money ({self.earnest_money:,.0f}) is over 15% of "
+                    f"offer_price ({self.offer_price:,.0f}). This seems unusually high."
+                )
+        
+        # Seller concessions shouldn't exceed offer price
+        if self.seller_concessions > self.offer_price:
+            raise ValueError(
+                f"seller_concessions ({self.seller_concessions:,.0f}) cannot exceed "
+                f"offer_price ({self.offer_price:,.0f})"
+            )
+        
+        return self
 
 
 class LOIAnalysisData(BaseModel):

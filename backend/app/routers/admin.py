@@ -7,22 +7,20 @@ import logging
 from typing import Optional, List, Any
 from pathlib import Path
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, status, Query
-from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, EmailStr
 
 from app.core.deps import SuperUser, DbSession
 from app.models.user import User
-from app.models.saved_property import SavedProperty
 from app.schemas.property import AllAssumptions
 from app.services.assumptions_service import (
     get_assumptions_record,
     get_default_assumptions,
     upsert_default_assumptions,
 )
+from app.services.admin_service import admin_service
 
 logger = logging.getLogger(__name__)
 
@@ -99,52 +97,8 @@ async def get_platform_stats(
     
     Requires superuser privileges.
     """
-    now = datetime.utcnow()
-    thirty_days_ago = now - timedelta(days=30)
-    
-    # Total users
-    total_users_result = await db.execute(select(func.count(User.id)))
-    total_users = total_users_result.scalar() or 0
-    
-    # Active users (logged in within 30 days)
-    active_users_result = await db.execute(
-        select(func.count(User.id)).where(
-            User.last_login >= thirty_days_ago,
-            User.is_active == True
-        )
-    )
-    active_users = active_users_result.scalar() or 0
-    
-    # Total saved properties
-    total_properties_result = await db.execute(select(func.count(SavedProperty.id)))
-    total_properties = total_properties_result.scalar() or 0
-    
-    # New users in last 30 days
-    new_users_result = await db.execute(
-        select(func.count(User.id)).where(User.created_at >= thirty_days_ago)
-    )
-    new_users_30d = new_users_result.scalar() or 0
-    
-    # Verified users
-    verified_users_result = await db.execute(
-        select(func.count(User.id)).where(User.is_verified == True)
-    )
-    verified_users = verified_users_result.scalar() or 0
-    
-    # Admin users
-    admin_users_result = await db.execute(
-        select(func.count(User.id)).where(User.is_superuser == True)
-    )
-    admin_users = admin_users_result.scalar() or 0
-    
-    return PlatformStats(
-        total_users=total_users,
-        active_users=active_users,
-        total_properties_saved=total_properties,
-        new_users_30d=new_users_30d,
-        verified_users=verified_users,
-        admin_users=admin_users
-    )
+    stats = await admin_service.get_platform_stats(db)
+    return PlatformStats(**stats)
 
 
 # ===========================================
@@ -171,71 +125,16 @@ async def list_users(
     
     Requires superuser privileges.
     """
-    query = select(User)
-    
-    # Apply filters
-    if search:
-        search_pattern = f"%{search}%"
-        query = query.where(
-            (User.email.ilike(search_pattern)) |
-            (User.full_name.ilike(search_pattern))
-        )
-    
-    if is_active is not None:
-        query = query.where(User.is_active == is_active)
-    
-    if is_superuser is not None:
-        query = query.where(User.is_superuser == is_superuser)
-    
-    # Apply ordering
-    if order_by == "created_at_desc":
-        query = query.order_by(User.created_at.desc())
-    elif order_by == "created_at_asc":
-        query = query.order_by(User.created_at.asc())
-    elif order_by == "email_asc":
-        query = query.order_by(User.email.asc())
-    elif order_by == "last_login_desc":
-        query = query.order_by(User.last_login.desc().nullsfirst())
-    else:
-        query = query.order_by(User.created_at.desc())
-    
-    # Apply pagination
-    query = query.limit(limit).offset(offset)
-    
-    result = await db.execute(query)
-    users = result.scalars().all()
-    
-    # Get saved property counts for each user
-    user_ids = [user.id for user in users]
-    
-    if user_ids:
-        counts_query = select(
-            SavedProperty.user_id,
-            func.count(SavedProperty.id).label('count')
-        ).where(
-            SavedProperty.user_id.in_(user_ids)
-        ).group_by(SavedProperty.user_id)
-        
-        counts_result = await db.execute(counts_query)
-        counts_map = {row.user_id: row.count for row in counts_result}
-    else:
-        counts_map = {}
-    
-    return [
-        AdminUserResponse(
-            id=str(user.id),
-            email=user.email,
-            full_name=user.full_name,
-            avatar_url=user.avatar_url,
-            is_active=user.is_active,
-            is_verified=user.is_verified,
-            is_superuser=user.is_superuser,
-            created_at=user.created_at,
-            last_login=user.last_login,
-            saved_properties_count=counts_map.get(user.id, 0)
-        )
-        for user in users
-    ]
+    users = await admin_service.list_users(
+        db=db,
+        search=search,
+        is_active=is_active,
+        is_superuser=is_superuser,
+        limit=limit,
+        offset=offset,
+        order_by=order_by
+    )
+    return [AdminUserResponse(**user) for user in users]
 
 
 # ===========================================
