@@ -26,6 +26,8 @@ export default function AnalyzingScreen() {
     city?: string;
     state?: string;
     zip?: string;
+    lat?: string;
+    lng?: string;
   }>();
 
   const decodedAddress = decodeURIComponent(params.address || '');
@@ -43,6 +45,8 @@ export default function AnalyzingScreen() {
     beds: params.beds ? parseInt(params.beds, 10) : 3,
     baths: params.baths ? parseFloat(params.baths) : 2,
     sqft: params.sqft ? parseInt(params.sqft, 10) : 1500,
+    latitude: params.lat ? parseFloat(params.lat) : undefined,
+    longitude: params.lng ? parseFloat(params.lng) : undefined,
   }), [params, decodedAddress]);
 
   // Handle analysis complete - navigate to verdict screen
@@ -68,6 +72,12 @@ export default function AnalyzingScreen() {
     }
     if (property.zip) {
       queryParams.set('zip', property.zip);
+    }
+    if (params.lat) {
+      queryParams.set('lat', params.lat);
+    }
+    if (params.lng) {
+      queryParams.set('lng', params.lng);
     }
 
     // Replace current screen with verdict screen (no back to analyzing)

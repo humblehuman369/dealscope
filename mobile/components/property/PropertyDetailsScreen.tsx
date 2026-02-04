@@ -20,7 +20,9 @@ import {
   Image,
   Dimensions,
   FlatList,
+  Platform,
 } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -50,6 +52,8 @@ export interface PropertyDetailsData {
   heating?: string;
   cooling?: string;
   mlsNumber?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface PropertyDetailsScreenProps {
@@ -527,9 +531,37 @@ export function PropertyDetailsScreen({
           {expandedSections.location && (
             <View style={styles.accordionContent}>
               <View style={styles.locationMap}>
-                <Ionicons name="location" size={32} color={COLORS.teal} />
-                <Text style={styles.locationAddress}>{fullAddress}</Text>
+                {property.latitude && property.longitude ? (
+                  <MapView
+                    provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+                    style={StyleSheet.absoluteFill}
+                    initialRegion={{
+                      latitude: property.latitude,
+                      longitude: property.longitude,
+                      latitudeDelta: 0.005,
+                      longitudeDelta: 0.005,
+                    }}
+                    scrollEnabled={false}
+                    zoomEnabled={false}
+                    liteMode={true} // Use lite mode on Android for better performance in lists/scrollviews
+                  >
+                    <Marker
+                      coordinate={{
+                        latitude: property.latitude,
+                        longitude: property.longitude,
+                      }}
+                    />
+                  </MapView>
+                ) : (
+                  <>
+                    <Ionicons name="location" size={32} color={COLORS.teal} />
+                    <Text style={styles.locationAddress}>{fullAddress}</Text>
+                  </>
+                )}
               </View>
+              {property.latitude && property.longitude && (
+                <Text style={[styles.locationAddress, { marginTop: 8 }]}>{fullAddress}</Text>
+              )}
             </View>
           )}
         </View>
@@ -1031,12 +1063,13 @@ const styles = StyleSheet.create({
 
   // Location
   locationMap: {
-    height: 140,
+    height: 180,
     backgroundColor: COLORS.surface200,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+    overflow: 'hidden',
   },
   locationAddress: {
     fontSize: 12,

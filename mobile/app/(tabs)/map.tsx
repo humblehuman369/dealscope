@@ -212,7 +212,11 @@ export default function MapScreen() {
         selectedProperty.state,
       ].filter(Boolean).join(', ');
       // Use new IQ Verdict flow
-      router.push(`/analyzing/${encodeURIComponent(fullAddress)}` as any);
+      const queryParams = new URLSearchParams();
+      if (selectedProperty.lat) queryParams.set('lat', selectedProperty.lat.toString());
+      if (selectedProperty.lng) queryParams.set('lng', selectedProperty.lng.toString());
+      
+      router.push(`/analyzing/${encodeURIComponent(fullAddress)}?${queryParams.toString()}` as any);
     }
   }, [selectedProperty, router]);
 

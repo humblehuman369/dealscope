@@ -24,6 +24,8 @@ export default function PropertyDetailsRoute() {
     city?: string;
     state?: string;
     zip?: string;
+    lat?: string;
+    lng?: string;
   }>();
 
   const decodedAddress = decodeURIComponent(params.address || '');
@@ -42,6 +44,8 @@ export default function PropertyDetailsRoute() {
     yearBuilt: 1969,
     status: 'FOR SALE',
     images: Array(12).fill('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&h=400&fit=crop&q=80'),
+    latitude: params.lat ? parseFloat(params.lat) : undefined,
+    longitude: params.lng ? parseFloat(params.lng) : undefined,
   };
 
   // Navigation handlers

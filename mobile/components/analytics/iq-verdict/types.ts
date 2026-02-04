@@ -24,6 +24,8 @@ export interface IQProperty {
   lotSize?: number;
   propertyType?: 'single_family' | 'multi_family' | 'condo' | 'townhouse';
   mlsNumber?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 // ===================

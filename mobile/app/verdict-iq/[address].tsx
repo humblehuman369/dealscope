@@ -167,7 +167,7 @@ const BENCHMARK_GROUPS: BenchmarkGroup[] = [
 export default function VerdictIQScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { address } = useLocalSearchParams<{ address: string }>();
+  const { address, lat, lng } = useLocalSearchParams<{ address: string; lat?: string; lng?: string }>();
 
   // State
   const [activeTab, setActiveTab] = useState<NavTabId>('analyze');
@@ -207,6 +207,8 @@ export default function VerdictIQScreen() {
             beds: String(property.beds),
             baths: String(property.baths),
             sqft: String(property.sqft),
+            lat: lat,
+            lng: lng,
           },
         });
         break;
