@@ -291,6 +291,18 @@ function VerdictContent() {
 
         setProperty(propertyData)
         
+        // Store zpid to sessionStorage so global AppHeader can access it for navigation
+        if (propertyData.zpid) {
+          try {
+            const existingData = sessionStorage.getItem('dealMakerOverrides')
+            const parsed = existingData ? JSON.parse(existingData) : {}
+            parsed.zpid = propertyData.zpid
+            sessionStorage.setItem('dealMakerOverrides', JSON.stringify(parsed))
+          } catch {
+            // Ignore storage errors
+          }
+        }
+        
         // Fetch analysis from backend API (all calculations done server-side)
         // Priority for calculation values:
         // 1. DealMakerStore (for saved properties) - has locked assumptions from Deal Maker

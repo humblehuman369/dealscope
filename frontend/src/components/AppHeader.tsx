@@ -189,7 +189,36 @@ export function AppHeader({
   const handleTabChange = (tab: AppTab) => {
     // Build address params for navigation
     const encodedAddress = encodeURIComponent(displayAddress)
-    const zpid = property?.zpid || searchParams?.get('propertyId') || ''
+    
+    // Check multiple possible sources for zpid/propertyId
+    // 1. From property prop
+    // 2. From URL params (zpid or propertyId)
+    // 3. From pathname (e.g., /property/12345)
+    // 4. From sessionStorage (set by verdict page after API fetch)
+    let zpid = property?.zpid || searchParams?.get('zpid') || searchParams?.get('propertyId') || ''
+    
+    // Extract zpid from pathname if on property details page
+    if (!zpid && pathname?.startsWith('/property/')) {
+      const pathParts = pathname.split('/')
+      if (pathParts.length >= 3 && pathParts[2]) {
+        zpid = pathParts[2]
+      }
+    }
+    
+    // Fallback: check sessionStorage for current property zpid
+    if (!zpid && typeof window !== 'undefined') {
+      try {
+        const sessionData = sessionStorage.getItem('dealMakerOverrides')
+        if (sessionData) {
+          const parsed = JSON.parse(sessionData)
+          if (parsed.zpid) {
+            zpid = String(parsed.zpid)
+          }
+        }
+      } catch {
+        // Ignore parsing errors
+      }
+    }
 
     switch (tab) {
       case 'analyze':
