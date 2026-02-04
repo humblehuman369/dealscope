@@ -640,13 +640,10 @@ function InvestmentAnalysisSection({
 
       {/* Key Metrics Row - shaded, shows metrics for selected price */}
       <div className="border border-slate-200 overflow-hidden bg-cyan-50">
-        {/* Selected indicator - white background with teal top border */}
+        {/* Selected indicator - white background */}
         <div 
           className="text-center py-1.5 border-b border-slate-200 bg-white"
-          style={{ 
-            fontSize: typography.caption.size,
-            borderTop: `2px solid ${colors.brand.teal}`,
-          }}
+          style={{ fontSize: typography.caption.size }}
         >
           <span className="text-slate-500">
             Metrics based on <span className="font-semibold text-cyan-600">{selectedLabel}</span> price
