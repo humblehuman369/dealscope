@@ -713,18 +713,17 @@ function FinancialBreakdownSection({
         style={{ borderColor: colors.ui.border }}
       >
         {columns.map((column) => (
-          <div key={column.title}>
-            <span 
-              className="uppercase tracking-wide"
-              style={{ 
-                fontSize: typography.caption.size,
-                fontWeight: typography.heading.weight,
-                color: colors.text.tertiary,
-              }}
-            >
-              {column.title}
-            </span>
-          </div>
+          <span 
+            key={column.title}
+            className="uppercase tracking-wide"
+            style={{ 
+              fontSize: typography.caption.size,
+              fontWeight: typography.heading.weight,
+              color: colors.text.tertiary,
+            }}
+          >
+            {column.title}
+          </span>
         ))}
       </div>
 
