@@ -767,6 +767,7 @@ function FinancialBreakdownSection({
 
 /**
  * Section F: Performance Metrics Table
+ * Styled to match Financial Breakdown section
  */
 function PerformanceMetricsSection({
   metrics,
@@ -774,80 +775,87 @@ function PerformanceMetricsSection({
   metrics: PerformanceMetric[]
 }) {
   return (
-    <div className="bg-white px-4 py-4 border-b" style={{ borderColor: colors.ui.border }}>
-      <h3 
-        className="uppercase tracking-wide mb-3"
-        style={{ 
-          fontSize: typography.label.size,
-          fontWeight: typography.heading.weight,
-          color: colors.text.tertiary,
-        }}
-      >
-        Performance Metrics
-      </h3>
+    <div className="bg-white border-b" style={{ borderColor: colors.ui.border }}>
+      {/* Header - matches Financial Breakdown header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: colors.ui.border }}>
+        <h3 
+          className="font-semibold"
+          style={{ 
+            fontSize: typography.body.size + 1,
+            color: colors.text.primary,
+          }}
+        >
+          Performance Metrics
+        </h3>
+      </div>
 
       {/* Table Header */}
       <div 
-        className="grid grid-cols-4 gap-2 pb-2 border-b mb-2"
+        className="grid grid-cols-4 gap-2 px-4 py-2 border-b"
         style={{ borderColor: colors.ui.border }}
       >
         <span 
-          className="uppercase"
+          className="uppercase tracking-wide"
           style={{ 
             fontSize: typography.caption.size,
-            color: colors.text.muted,
+            fontWeight: typography.heading.weight,
+            color: colors.text.tertiary,
           }}
         >
           Metric
         </span>
         <span 
-          className="uppercase text-right"
+          className="uppercase tracking-wide text-right"
           style={{ 
             fontSize: typography.caption.size,
-            color: colors.text.muted,
+            fontWeight: typography.heading.weight,
+            color: colors.text.tertiary,
           }}
         >
           Value
         </span>
         <span 
-          className="uppercase text-right"
+          className="uppercase tracking-wide text-right"
           style={{ 
             fontSize: typography.caption.size,
-            color: colors.text.muted,
+            fontWeight: typography.heading.weight,
+            color: colors.text.tertiary,
           }}
         >
           Benchmark
         </span>
         <span 
-          className="uppercase text-center"
+          className="uppercase tracking-wide text-center"
           style={{ 
             fontSize: typography.caption.size,
-            color: colors.text.muted,
+            fontWeight: typography.heading.weight,
+            color: colors.text.tertiary,
           }}
         >
           Status
         </span>
       </div>
 
-      {/* Table Rows */}
-      <div className="space-y-2">
+      {/* Table Rows - font sizes match Financial Breakdown content */}
+      <div className="px-4 py-3 space-y-1.5">
         {metrics.map((metric) => {
           const assessment = getAssessment(metric.numValue, metric.benchmarkNum, metric.higherIsBetter)
           return (
             <div key={metric.name} className="grid grid-cols-4 gap-2 items-center">
               <span 
                 style={{ 
-                  fontSize: typography.body.size - 1,
+                  fontSize: typography.caption.size + 1,
                   color: colors.text.secondary,
                 }}
               >
                 {metric.name}
               </span>
               <span 
-                className="text-right font-semibold"
+                className="text-right"
                 style={{ 
-                  fontSize: typography.body.size - 1,
+                  fontSize: typography.caption.size + 1,
                   color: colors.text.primary,
+                  fontWeight: 500,
                 }}
               >
                 {metric.value}
