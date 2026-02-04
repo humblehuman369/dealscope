@@ -23,8 +23,9 @@ function AnalyzingContent() {
   const sqft = searchParams.get('sqft')
 
   // Build property object from query params
+  // Note: searchParams.get() already returns decoded values, so no need to decode again
   const property = useMemo((): IQProperty => ({
-    address: decodeURIComponent(address) || 'Unknown Address',
+    address: address || 'Unknown Address',
     price: price ? parseInt(price, 10) : 350000,
     beds: beds ? parseInt(beds, 10) : 3,
     baths: baths ? parseFloat(baths) : 2,

@@ -202,7 +202,8 @@ function VerdictContent() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ address: decodeURIComponent(addressParam) })
+          // Note: addressParam from searchParams is already decoded, so use as-is
+          body: JSON.stringify({ address: addressParam })
         })
 
         if (!response.ok) {
@@ -267,7 +268,8 @@ function VerdictContent() {
         const propertyData: IQProperty = {
           id: data.property_id,
           zpid: data.zpid,
-          address: data.address?.street || parsedAddress.street || decodeURIComponent(addressParam),
+          // Note: addressParam from searchParams is already decoded
+          address: data.address?.street || parsedAddress.street || addressParam,
           city: data.address?.city || parsedAddress.city,
           state: data.address?.state || parsedAddress.state,
           zip: data.address?.zip_code || parsedAddress.zip,

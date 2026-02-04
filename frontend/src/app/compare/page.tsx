@@ -17,8 +17,8 @@ function SalesCompsContent() {
   const searchParams = useSearchParams()
   const addressParam = searchParams.get('address') || ''
   
-  // Decode the address in case it was double-encoded
-  const decodedAddress = addressParam ? decodeURIComponent(addressParam) : ''
+  // Note: searchParams.get() already returns decoded values, so use as-is
+  const decodedAddress = addressParam || ''
   
   // Parse address components from the full address
   const addressParts = decodedAddress.split(',').map(s => s.trim())

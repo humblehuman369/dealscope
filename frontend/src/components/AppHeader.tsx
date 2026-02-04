@@ -159,15 +159,9 @@ export function AppHeader({
   const { isAuthenticated, setShowAuthModal } = useAuth()
 
   // Get address from URL params if not provided (needed before early return)
+  // Note: searchParams.get() already returns decoded values
   const addressFromUrl = searchParams?.get('address') || ''
-  let decodedAddressFromUrl = ''
-  try {
-    decodedAddressFromUrl = addressFromUrl ? decodeURIComponent(addressFromUrl) : ''
-  } catch {
-    // If decoding fails, use the raw address
-    decodedAddressFromUrl = addressFromUrl
-  }
-  const displayAddress = propertyAddress || decodedAddressFromUrl || (property 
+  const displayAddress = propertyAddress || addressFromUrl || (property 
     ? `${property.address}, ${property.city}, ${property.state} ${property.zip}`
     : '')
 
