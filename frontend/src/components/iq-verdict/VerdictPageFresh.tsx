@@ -28,6 +28,7 @@ import {
   colors, 
   components, 
   tw,
+  layout,
   getScoreColor,
   getAssessment,
   getUrgencyColor,
@@ -964,55 +965,61 @@ export function VerdictPageFresh({
   return (
     <div 
       className="min-h-screen"
-      style={{ backgroundColor: colors.background.white }}
+      style={{ backgroundColor: colors.background.light }}
     >
-      {/* Header */}
+      {/* Header - Full width */}
       <VerdictHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
 
-      {/* Section A: Property Summary Bar */}
-      <PropertySummaryBar
-        property={property}
-        isExpanded={isPropertyExpanded}
-        onToggle={() => setIsPropertyExpanded(!isPropertyExpanded)}
-        onPropertyClick={onPropertyClick}
-      />
+      {/* Content Container - Max width for readability on wide screens */}
+      <div 
+        className="mx-auto w-full"
+        style={{ maxWidth: layout.maxWidth }}
+      >
+        {/* Section A: Property Summary Bar */}
+        <PropertySummaryBar
+          property={property}
+          isExpanded={isPropertyExpanded}
+          onToggle={() => setIsPropertyExpanded(!isPropertyExpanded)}
+          onPropertyClick={onPropertyClick}
+        />
 
-      {/* Section B: Score Hero */}
-      <ScoreHero
-        score={score}
-        verdictLabel={verdictLabel}
-        verdictSubtitle={verdictSubtitle}
-        quickStats={quickStats}
-        onShowMethodology={onShowMethodology}
-      />
+        {/* Section B: Score Hero */}
+        <ScoreHero
+          score={score}
+          verdictLabel={verdictLabel}
+          verdictSubtitle={verdictSubtitle}
+          quickStats={quickStats}
+          onShowMethodology={onShowMethodology}
+        />
 
-      {/* Section C: Confidence Metrics */}
-      <ConfidenceMetricsSection metrics={confidenceMetrics} />
+        {/* Section C: Confidence Metrics */}
+        <ConfidenceMetricsSection metrics={confidenceMetrics} />
 
-      {/* Section D: Investment Analysis */}
-      <InvestmentAnalysisSection
-        financingTerms={financingTerms}
-        priceCards={priceCards}
-        keyMetrics={keyMetrics}
-        selectedPriceCard={selectedPriceCard}
-        onPriceCardSelect={onPriceCardSelect}
-        onChangeTerms={onChangeTerms}
-        onExportClick={onExportClick}
-      />
+        {/* Section D: Investment Analysis */}
+        <InvestmentAnalysisSection
+          financingTerms={financingTerms}
+          priceCards={priceCards}
+          keyMetrics={keyMetrics}
+          selectedPriceCard={selectedPriceCard}
+          onPriceCardSelect={onPriceCardSelect}
+          onChangeTerms={onChangeTerms}
+          onExportClick={onExportClick}
+        />
 
-      {/* Section E: Financial Breakdown */}
-      <FinancialBreakdownSection columns={financialBreakdown} />
+        {/* Section E: Financial Breakdown */}
+        <FinancialBreakdownSection columns={financialBreakdown} />
 
-      {/* Section F: Performance Metrics */}
-      <PerformanceMetricsSection metrics={performanceMetrics} />
+        {/* Section F: Performance Metrics */}
+        <PerformanceMetricsSection metrics={performanceMetrics} />
 
-      {/* Section G: DealMakerIQ Link */}
-      <DealMakerLink
-        onDealMakerClick={onDealMakerClick}
-      />
+        {/* Section G: DealMakerIQ Link */}
+        <DealMakerLink
+          onDealMakerClick={onDealMakerClick}
+        />
+      </div>
     </div>
   )
 }

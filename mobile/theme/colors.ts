@@ -276,31 +276,32 @@ export const a11y = {
 
 export const decisionGrade = {
   // Core Brand - Per Style Guide
-  deepNavy: '#07172e',      // All primary text
+  deepNavy: '#07172e',      // Header backgrounds
   pacificTeal: '#0891B2',   // Intelligence markers, positive signals
-  tealLight: '#06B6D4',     // Interactive states
+  tealLight: '#0891B2',     // Interactive states (matching header)
   electricCyan: '#00D4FF',  // Dark mode accents
 
   // Semantic - Per Style Guide (NO GREEN - teal for positive)
-  positive: '#0891B2',      // Teal for positive signals
-  caution: '#B45309',       // Amber for caution
+  positive: '#10B981',      // Green for positive (emerald)
+  caution: '#D97706',       // Amber for caution
   negative: '#DC2626',      // Red for loss/risk
-  infoBlue: '#3B82F6',      // Blue for informational
+  infoBlue: '#0891B2',      // Teal for informational
 
-  // Surfaces
+  // Surfaces - Pure white with neutral grays (no blue undertone)
   bgPrimary: '#FFFFFF',
-  bgSecondary: '#F1F5F9',
-  bgSelected: '#E0F7FA',
+  bgSecondary: '#FAFAFA',   // Near-white neutral
+  bgSelected: '#F5F5F5',    // Light neutral gray
 
-  // Borders (high contrast)
-  borderStrong: '#94A3B8',
-  borderMedium: '#CBD5E1',
-  borderLight: '#E2E8F0',
+  // Borders - Neutral grays (no blue undertone)
+  borderStrong: '#A3A3A3',  // neutral-400
+  borderMedium: '#D4D4D4',  // neutral-300
+  borderLight: '#E5E5E5',   // neutral-200
 
-  // Text - ALL readable (no washed-out text)
-  textPrimary: '#07172e',
-  textSecondary: '#07172e',   // Same as primary per Decision-Grade
-  textTertiary: '#07172e',    // Same as primary per Decision-Grade
+  // Text - Neutral grays (no blue undertone)
+  textPrimary: '#171717',   // neutral-900
+  textSecondary: '#525252', // neutral-600
+  textTertiary: '#737373',  // neutral-500
+  textMuted: '#A3A3A3',     // neutral-400
 } as const;
 
 // =============================================================================

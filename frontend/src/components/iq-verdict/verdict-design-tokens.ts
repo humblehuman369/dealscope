@@ -10,6 +10,32 @@
  */
 
 // ===================
+// BREAKPOINTS & LAYOUT
+// ===================
+
+export const breakpoints = {
+  /** Mobile: 0-639px */
+  sm: 640,
+  /** Tablet: 640-767px */
+  md: 768,
+  /** Desktop: 768-1023px */
+  lg: 1024,
+  /** Large desktop: 1024px+ */
+  xl: 1280,
+} as const
+
+export const layout = {
+  /** Max content width for readability on wide screens */
+  maxWidth: 640,
+  /** Max width with padding */
+  maxWidthPadded: 672,
+  /** Container padding on mobile */
+  mobilePadding: 16,
+  /** Container padding on desktop */
+  desktopPadding: 24,
+} as const
+
+// ===================
 // SPACING SCALE (8px base)
 // ===================
 
@@ -253,33 +279,42 @@ export function getMarketTempColor(temp: string): string {
 
 /**
  * Common Tailwind class compositions for consistent styling
+ * Uses neutral grays (no blue undertone) for crisp appearance
  */
 export const tw = {
   // Cards
-  card: 'bg-white rounded-xl shadow-sm border border-slate-200',
+  card: 'bg-white rounded-xl shadow-sm border border-neutral-200',
   cardHover: 'hover:shadow-md transition-shadow',
   
   // Section headers
-  sectionHeader: 'text-xs font-semibold text-slate-500 uppercase tracking-wide',
+  sectionHeader: 'text-xs font-semibold text-neutral-500 uppercase tracking-wide',
   
   // Labels
-  label: 'text-[11px] font-medium text-slate-500 uppercase tracking-wide',
+  label: 'text-[11px] font-medium text-neutral-500 uppercase tracking-wide',
   
   // Values
-  valueLg: 'text-2xl font-bold text-slate-800',
-  valueMd: 'text-lg font-semibold text-slate-800',
+  valueLg: 'text-2xl font-bold text-neutral-800',
+  valueMd: 'text-lg font-semibold text-neutral-800',
   
   // Buttons
   buttonPrimary: 'h-12 px-6 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg transition-colors',
-  buttonSecondary: 'h-10 px-4 border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-lg transition-colors',
+  buttonSecondary: 'h-10 px-4 border border-neutral-300 hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-colors',
   buttonGhost: 'text-cyan-600 hover:text-cyan-700 font-medium transition-colors',
   
   // Dividers
-  divider: 'border-t border-slate-200',
+  divider: 'border-t border-neutral-200',
   
-  // Layout
+  // Layout - max-width for readability on wide screens
+  pageContainer: 'min-h-screen max-w-2xl mx-auto',
   container: 'max-w-2xl mx-auto',
-  section: 'px-4 py-4',
+  section: 'px-4 py-4 sm:px-6',
+  
+  // Responsive typography
+  textDisplay: 'text-2xl sm:text-3xl md:text-4xl font-bold',
+  textHeading: 'text-base sm:text-lg font-semibold',
+  textBody: 'text-sm sm:text-base',
+  textCaption: 'text-xs sm:text-sm',
+  textLabel: 'text-[10px] sm:text-[11px] font-medium uppercase tracking-wide',
 } as const
 
 // ===================

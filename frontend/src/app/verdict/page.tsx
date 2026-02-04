@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { 
-  VerdictIQCombined,
+  VerdictPageAdapter,
   IQProperty, 
   IQStrategy,
   IQAnalysisResult,
@@ -476,6 +476,21 @@ function VerdictContent() {
     router.push(url)
   }, [property, propertyIdParam, router])
 
+  // Navigate to property details page
+  const handlePropertyClick = useCallback(() => {
+    if (!property) return
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+    const encodedAddress = encodeURIComponent(fullAddress)
+    router.push(`/property/${encodedAddress}`)
+  }, [property, router])
+
+  // Handle export
+  const handleExport = useCallback(() => {
+    // TODO: Implement export functionality
+    console.log('Export clicked')
+  }, [])
+
   // Loading state
   if (isLoading) {
     return (
@@ -517,11 +532,12 @@ function VerdictContent() {
 
   return (
     <>
-      <VerdictIQCombined
+      <VerdictPageAdapter
         property={property}
         analysis={analysis}
-        onNavigateToDealMaker={handleNavigateToDealMaker}
-        savedPropertyId={propertyIdParam || undefined}
+        onDealMakerClick={handleNavigateToDealMaker}
+        onExportClick={handleExport}
+        onPropertyClick={handlePropertyClick}
       />
 
       {/* Progressive Profiling Prompt - Shows after analysis completion */}
