@@ -32,12 +32,12 @@ import { ScoreMethodologySheet } from './ScoreMethodologySheet'
 import { SummarySnapshot } from './SummarySnapshot'
 
 // =============================================================================
-// BRAND COLORS - From design files
+// BRAND COLORS - From design files (synced with verdict-design-tokens.ts)
 // =============================================================================
 const COLORS = {
   navy: '#0A1628',
   teal: '#0891B2',
-  tealLight: '#06B6D4',
+  tealLight: '#0891B2', // Synced with design tokens - was #06B6D4
   cyan: '#00D4FF',
   rose: '#E11D48',
   warning: '#F59E0B',
