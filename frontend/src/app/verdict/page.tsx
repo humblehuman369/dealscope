@@ -477,17 +477,21 @@ function VerdictContent() {
   }, [property, propertyIdParam, router])
 
   // Navigate to property details page - uses zpid or propertyId
+  // Property page requires address query param for backend fetch
   const handlePropertyClick = useCallback(() => {
     if (!property) return
+    // Build address for query param
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+    const encodedAddress = encodeURIComponent(fullAddress)
+    
     // Prefer zpid, fall back to propertyIdParam
     const propertyId = property.zpid || propertyIdParam
     if (propertyId) {
-      router.push(`/property/${propertyId}`)
+      router.push(`/property/${propertyId}?address=${encodedAddress}`)
     } else {
-      // Fallback: encode address and try search
-      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-      const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-      router.push(`/search?q=${encodeURIComponent(fullAddress)}`)
+      // Fallback: no zpid, try search instead
+      router.push(`/search?q=${encodedAddress}`)
     }
   }, [property, propertyIdParam, router])
 
@@ -525,7 +529,7 @@ function VerdictContent() {
   const handleTabChange = useCallback((tab: 'analyze' | 'details' | 'sale-comps' | 'rent' | 'dashboard') => {
     if (!property) return
     
-    // Build base URL params
+    // Build base URL params - property page requires address query param
     const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
     const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
     const encodedAddress = encodeURIComponent(fullAddress)
@@ -536,15 +540,15 @@ function VerdictContent() {
         // Already on analyze page - no action needed
         break
       case 'details':
-        // Navigate to property details page
+        // Navigate to property details page - requires address query param
         if (propertyId) {
-          router.push(`/property/${propertyId}`)
+          router.push(`/property/${propertyId}?address=${encodedAddress}`)
         }
         break
       case 'sale-comps':
         // Navigate to sale comps / analytics page
         if (propertyId) {
-          router.push(`/property/${propertyId}?tab=comps`)
+          router.push(`/property/${propertyId}?address=${encodedAddress}&tab=comps`)
         }
         break
       case 'rent':

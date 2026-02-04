@@ -163,15 +163,22 @@ export default function VerdictFreshPage() {
 
   const handlePropertyClick = () => {
     console.log('Navigate to property details:', sampleProperty.zpid)
-    // Use zpid for property details route
+    // Use zpid for property details route - requires address query param
     if (sampleProperty.zpid) {
-      window.location.href = `/property/${sampleProperty.zpid}`
+      const fullAddress = `${sampleProperty.address}, ${sampleProperty.city}, ${sampleProperty.state} ${sampleProperty.zip}`
+      const encodedAddress = encodeURIComponent(fullAddress)
+      window.location.href = `/property/${sampleProperty.zpid}?address=${encodedAddress}`
     }
   }
 
   const handlePriceCardSelect = (variant: PriceCardVariant) => {
     setSelectedPriceCard(variant)
     console.log('Selected price card:', variant)
+  }
+
+  // Build full address for navigation
+  const getFullAddress = () => {
+    return `${sampleProperty.address}, ${sampleProperty.city}, ${sampleProperty.state} ${sampleProperty.zip}`
   }
 
   // Header handlers
@@ -190,22 +197,24 @@ export default function VerdictFreshPage() {
   // Tab navigation handler
   const handleTabChange = (tab: 'analyze' | 'details' | 'sale-comps' | 'rent' | 'dashboard') => {
     console.log('Tab changed to:', tab)
+    const encodedAddress = encodeURIComponent(getFullAddress())
+    
     switch (tab) {
       case 'analyze':
         // Already on analyze - no action
         break
       case 'details':
         if (sampleProperty.zpid) {
-          window.location.href = `/property/${sampleProperty.zpid}`
+          window.location.href = `/property/${sampleProperty.zpid}?address=${encodedAddress}`
         }
         break
       case 'sale-comps':
         if (sampleProperty.zpid) {
-          window.location.href = `/property/${sampleProperty.zpid}?tab=comps`
+          window.location.href = `/property/${sampleProperty.zpid}?address=${encodedAddress}&tab=comps`
         }
         break
       case 'rent':
-        window.location.href = `/rental-comps?address=${encodeURIComponent(sampleProperty.address)}`
+        window.location.href = `/rental-comps?address=${encodedAddress}`
         break
       case 'dashboard':
         window.location.href = '/dashboard'
