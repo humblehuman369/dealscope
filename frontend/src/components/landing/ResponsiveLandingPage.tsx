@@ -107,7 +107,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
                 <span className="iq">60 Seconds</span>
               </h1>
               <p className="hero-subtitle">
-                Point your phone at any property. Get the <span className="highlight">Breakeven Price</span>, <span className="highlight">Target Buy Price</span>, and <span className="highlight">Wholesale Max Price</span> instantly — plus analysis across 6 investment strategies.
+                Point your phone at any property. Get the <span className="highlight">Breakeven</span>, <span className="highlight">Target Buy</span>, and <span className="highlight">Wholesale</span> Price instantly — plus analysis across 6 investment strategies.
               </p>
               <div className="hero-cta">
                 <button onClick={handleTryItNow} className="btn btn-glow">
