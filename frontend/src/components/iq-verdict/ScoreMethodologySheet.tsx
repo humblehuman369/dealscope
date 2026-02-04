@@ -80,15 +80,15 @@ const SCORE_FORMULA = {
 }
 
 // =============================================================================
-// GRADE TIERS
+// GRADE TIERS - Unified rating system across all VerdictIQ pages
 // =============================================================================
 const GRADE_TIERS = [
-  { grade: 'A+', range: '90-100', label: 'Strong Buy', color: '#22c55e', meaning: 'Deal Gap easily achievable' },
-  { grade: 'A', range: '80-89', label: 'Good Buy', color: '#22c55e', meaning: 'Deal Gap likely achievable' },
-  { grade: 'B', range: '65-79', label: 'Moderate', color: '#84cc16', meaning: 'Negotiation required' },
-  { grade: 'C', range: '50-64', label: 'Stretch', color: '#f97316', meaning: 'Aggressive discount needed' },
-  { grade: 'D', range: '30-49', label: 'Unlikely', color: '#f97316', meaning: 'Deal Gap probably too large' },
-  { grade: 'F', range: '0-29', label: 'Pass', color: '#ef4444', meaning: 'Discount unrealistic' },
+  { grade: 'A+', range: '90-100', label: 'Strong', color: '#0891B2', meaning: 'Deal Gap easily achievable' },
+  { grade: 'A', range: '80-89', label: 'Good', color: '#0891B2', meaning: 'Deal Gap likely achievable' },
+  { grade: 'B', range: '65-79', label: 'Average', color: '#D97706', meaning: 'Negotiation required' },
+  { grade: 'C', range: '50-64', label: 'Marginal', color: '#D97706', meaning: 'Aggressive discount needed' },
+  { grade: 'D', range: '30-49', label: 'Unlikely', color: '#EF4444', meaning: 'Deal Gap probably too large' },
+  { grade: 'F', range: '0-29', label: 'Pass', color: '#EF4444', meaning: 'Not a viable investment' },
 ]
 
 // =============================================================================

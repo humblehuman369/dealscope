@@ -27,22 +27,25 @@ interface VerdictPageAdapterProps {
 }
 
 // Helper to get verdict label from score
+// Unified rating system across all VerdictIQ pages
 function getVerdictLabel(score: number): string {
-  if (score >= 80) return 'Strong Buy'
-  if (score >= 65) return 'Good Opportunity'
-  if (score >= 50) return 'Fair Deal'
-  if (score >= 35) return 'Proceed with Caution'
-  return 'Not Recommended'
+  if (score >= 90) return 'Strong'
+  if (score >= 80) return 'Good'
+  if (score >= 65) return 'Average'
+  if (score >= 50) return 'Marginal'
+  if (score >= 30) return 'Unlikely'
+  return 'Pass'
 }
 
 // Helper to get verdict subtitle
+// Unified rating system across all VerdictIQ pages
 function getVerdictSubtitle(score: number, discountPercent: number): string {
-  if (score >= 80) return 'Excellent investment potential'
-  if (score >= 65) return discountPercent > 0 
-    ? 'Deal gap achievable with negotiation' 
-    : 'Solid fundamentals for investment'
-  if (score >= 50) return 'Marginal returns, consider alternatives'
-  return 'High risk, low reward potential'
+  if (score >= 90) return 'Deal Gap easily achievable'
+  if (score >= 80) return 'Deal Gap likely achievable'
+  if (score >= 65) return 'Negotiation required'
+  if (score >= 50) return 'Aggressive discount needed'
+  if (score >= 30) return 'Deal Gap probably too large'
+  return 'Not a viable investment'
 }
 
 export function VerdictPageAdapter({

@@ -254,17 +254,18 @@ export const getVerdictDescription = (
     : '';
   const motivationText = motivationLabel || 'Unknown';
   
+  // Unified rating system across all VerdictIQ pages
   if (score >= 90) {
-    return `Strong Buy — ${dealGapText}. ${motivationText} motivation makes this easily achievable.`;
+    return `Strong — ${dealGapText}. ${motivationText} motivation makes this easily achievable.`;
   }
   if (score >= 80) {
-    return `Good Buy — ${dealGapText}. ${motivationText} motivation suggests good negotiation potential.`;
+    return `Good — ${dealGapText}. ${motivationText} motivation suggests good negotiation potential.`;
   }
   if (score >= 65) {
-    return `Moderate — ${dealGapText}. ${motivationText} motivation means negotiation is possible.`;
+    return `Average — ${dealGapText}. ${motivationText} motivation means negotiation is possible.`;
   }
   if (score >= 50) {
-    return `Stretch — ${dealGapText}. ${motivationText} motivation requires aggressive negotiation.`;
+    return `Marginal — ${dealGapText}. ${motivationText} motivation requires aggressive negotiation.`;
   }
   if (score >= 30) {
     return `Unlikely — ${dealGapText}. ${motivationText} motivation makes this discount hard to achieve.`;

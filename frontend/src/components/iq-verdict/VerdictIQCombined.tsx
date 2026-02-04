@@ -88,13 +88,14 @@ function getPopupStrategyType(headerStrategy: string): PopupStrategyType {
 // HELPER FUNCTIONS
 // =============================================================================
 
+// Unified rating system across all VerdictIQ pages
 const getVerdictLabel = (score: number): { label: string; sublabel: string } => {
-  if (score >= 90) return { label: 'Strong Buy', sublabel: 'Deal Gap easily achievable' }
-  if (score >= 80) return { label: 'Good Buy', sublabel: 'Deal Gap likely achievable' }
-  if (score >= 65) return { label: 'Moderate', sublabel: 'Negotiation required' }
-  if (score >= 50) return { label: 'Stretch', sublabel: 'Aggressive discount needed' }
+  if (score >= 90) return { label: 'Strong', sublabel: 'Deal Gap easily achievable' }
+  if (score >= 80) return { label: 'Good', sublabel: 'Deal Gap likely achievable' }
+  if (score >= 65) return { label: 'Average', sublabel: 'Negotiation required' }
+  if (score >= 50) return { label: 'Marginal', sublabel: 'Aggressive discount needed' }
   if (score >= 30) return { label: 'Unlikely', sublabel: 'Deal Gap probably too large' }
-  return { label: 'Pass', sublabel: 'Discount unrealistic' }
+  return { label: 'Pass', sublabel: 'Not a viable investment' }
 }
 
 const getMotivationColor = (score: number): string => {

@@ -31,11 +31,11 @@ interface VerdictScoreHeroProps {
 }
 
 // Get score color based on tier
+// Unified color system across all VerdictIQ pages
 function getScoreColor(score: number): string {
-  if (score >= 80) return '#10B981' // green
-  if (score >= 65) return '#0891B2' // teal
-  if (score >= 50) return '#F59E0B' // amber
-  return '#E11D48' // rose
+  if (score >= 80) return '#0891B2' // Teal - Strong/Good (A+/A)
+  if (score >= 50) return '#D97706' // Amber - Average/Marginal (B/C)
+  return '#EF4444'                  // Red - Unlikely/Pass (D/F)
 }
 
 // Get urgency color

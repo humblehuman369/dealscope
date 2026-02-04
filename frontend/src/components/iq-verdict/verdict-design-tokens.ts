@@ -139,12 +139,12 @@ export const colors = {
   status: {
     /** #10B981 - Positive/success */
     positive: '#10B981',
-    /** #D97706 - Warning/caution */
+    /** #D97706 - Warning/caution (Amber) */
     warning: '#D97706',
-    /** #E11D48 - Negative/danger */
-    negative: '#E11D48',
-    /** #F59E0B - Amber for neutral-warning */
-    amber: '#F59E0B',
+    /** #EF4444 - Negative/danger (Red) - Unified */
+    negative: '#EF4444',
+    /** #D97706 - Amber for Average/Marginal scores - Unified */
+    amber: '#D97706',
   },
   
   // UI Elements - Neutral grays (no blue undertone)
@@ -205,13 +205,20 @@ export const components = {
 
 /**
  * Get color based on score value (0-100)
- * Uses tealBright for better visibility on white backgrounds
+ * Unified color system across all VerdictIQ pages
+ * 
+ * Score Tiers:
+ * 90-100 (A+) Strong - Teal
+ * 80-89  (A)  Good   - Teal
+ * 65-79  (B)  Average - Amber
+ * 50-64  (C)  Marginal - Amber
+ * 30-49  (D)  Unlikely - Red
+ * 0-29   (F)  Pass - Red
  */
 export function getScoreColor(score: number): string {
-  if (score >= 80) return colors.status.positive
-  if (score >= 65) return colors.brand.tealBright
-  if (score >= 50) return colors.status.amber
-  return colors.status.negative
+  if (score >= 80) return colors.brand.tealBright  // A+ and A: Strong/Good
+  if (score >= 50) return colors.status.amber      // B and C: Average/Marginal
+  return colors.status.negative                     // D and F: Unlikely/Pass
 }
 
 /**
