@@ -209,9 +209,8 @@ export default function VerdictFreshPage() {
         }
         break
       case 'sale-comps':
-        if (sampleProperty.zpid) {
-          window.location.href = `/property/${sampleProperty.zpid}?address=${encodedAddress}&tab=comps`
-        }
+        // Navigate to sale comps page (/compare)
+        window.location.href = `/compare?address=${encodedAddress}`
         break
       case 'rent':
         window.location.href = `/rental-comps?address=${encodedAddress}`

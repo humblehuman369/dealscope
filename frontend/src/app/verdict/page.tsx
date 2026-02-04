@@ -546,10 +546,8 @@ function VerdictContent() {
         }
         break
       case 'sale-comps':
-        // Navigate to sale comps / analytics page
-        if (propertyId) {
-          router.push(`/property/${propertyId}?address=${encodedAddress}&tab=comps`)
-        }
+        // Navigate to sale comps page (/compare)
+        router.push(`/compare?address=${encodedAddress}`)
         break
       case 'rent':
         // Navigate to rental comps page
