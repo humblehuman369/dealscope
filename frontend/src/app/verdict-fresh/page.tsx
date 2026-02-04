@@ -141,6 +141,7 @@ const samplePerformanceMetrics = [
 export default function VerdictFreshPage() {
   const [selectedPriceCard, setSelectedPriceCard] = useState<PriceCardVariant>('target')
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   // Handle opening the DealMaker popup
   const handleOpenTermsPopup = useCallback(() => {
@@ -160,8 +161,12 @@ export default function VerdictFreshPage() {
   }
 
   const handleExportClick = () => {
-    // Open the DealMaker popup for editing terms
-    handleOpenTermsPopup()
+    // Simulate export for demo page (real export requires actual property data)
+    setIsExporting(true)
+    setTimeout(() => {
+      setIsExporting(false)
+      alert('Export complete! (Demo mode - no file downloaded)')
+    }, 1500)
   }
 
   const handleChangeTerms = () => {
@@ -271,6 +276,7 @@ export default function VerdictFreshPage() {
         onChangeTerms={handleChangeTerms}
         onShowMethodology={handleShowMethodology}
         onPriceCardSelect={handlePriceCardSelect}
+        isExporting={isExporting}
         // Note: Header and navigation are now handled by global AppHeader
       />
 

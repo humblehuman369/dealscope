@@ -12,6 +12,7 @@ import { VerdictPageFresh } from './VerdictPageFresh'
 import { type PriceCardVariant } from './verdict-design-tokens'
 import { type IQProperty, type IQAnalysisResult } from './types'
 import { DealMakerPopup, DealMakerValues, PopupStrategyType } from '../deal-maker/DealMakerPopup'
+import api from '@/lib/api'
 
 // Re-export types for convenience
 export type { IQProperty, IQAnalysisResult }
@@ -52,11 +53,54 @@ export function VerdictPageAdapter({
 }: VerdictPageAdapterProps) {
   const [selectedPriceCard, setSelectedPriceCard] = useState<PriceCardVariant>('target')
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   // Handle opening the DealMaker popup for editing terms
   const handleOpenTermsPopup = useCallback(() => {
     setShowDealMakerPopup(true)
   }, [])
+
+  // Handle export to Excel
+  const handleExport = useCallback(async () => {
+    // Use property.id or zpid as fallback (convert to string)
+    const propertyIdToUse = String(property.id || property.zpid || '')
+    if (!propertyIdToUse) {
+      console.error('Property ID not found for export')
+      return
+    }
+
+    setIsExporting(true)
+
+    try {
+      // Build full address for property lookup
+      const fullAddress = [property.address, property.city, property.state, property.zip]
+        .filter(Boolean)
+        .join(', ')
+      
+      // Download Excel proforma
+      const blob = await api.proforma.downloadExcel({
+        propertyId: propertyIdToUse,
+        address: fullAddress,
+        strategy: 'ltr', // Default to long-term rental
+        holdPeriodYears: 10,
+      })
+      const filename = `Proforma_${property.address?.replace(/\s+/g, '_').slice(0, 30)}_LTR.xlsx`
+
+      // Create download link and trigger download
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Export failed:', error)
+    } finally {
+      setIsExporting(false)
+    }
+  }, [property])
 
   // Handle applying values from DealMaker popup
   const handleApplyDealMakerValues = useCallback((values: DealMakerValues) => {
@@ -271,9 +315,10 @@ export function VerdictPageAdapter({
         onPriceCardSelect={handlePriceCardSelect}
         // Action callbacks
         onDealMakerClick={onDealMakerClick}
-        onExportClick={handleOpenTermsPopup}
+        onExportClick={handleExport}
         onChangeTerms={handleOpenTermsPopup}
         onShowMethodology={onShowMethodology}
+        isExporting={isExporting}
         // Note: Header callbacks are now handled by global AppHeader
       />
 

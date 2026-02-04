@@ -21,6 +21,7 @@ import {
   ExternalLink,
   Download,
   Info,
+  Loader2,
 } from 'lucide-react'
 import { 
   spacing, 
@@ -119,6 +120,8 @@ interface VerdictPageFreshProps {
   onShowMethodology?: () => void
   /** Callback when a price card is selected - triggers metrics recalculation */
   onPriceCardSelect?: (variant: PriceCardVariant) => void
+  /** Whether an export is currently in progress */
+  isExporting?: boolean
   // Note: Header callbacks (logo, search, profile, tabs) are now handled by global AppHeader
 }
 
@@ -560,6 +563,7 @@ function InvestmentAnalysisSection({
   onPriceCardSelect,
   onChangeTerms,
   onExportClick,
+  isExporting = false,
 }: {
   financingTerms: string
   priceCards: PriceCard[]
@@ -568,6 +572,7 @@ function InvestmentAnalysisSection({
   onPriceCardSelect?: (variant: PriceCardVariant) => void
   onChangeTerms?: () => void
   onExportClick?: () => void
+  isExporting?: boolean
 }) {
   return (
     <div className="px-4 py-[30px]">
@@ -603,15 +608,25 @@ function InvestmentAnalysisSection({
           <div className="flex items-center gap-2">
             <button 
               onClick={onExportClick}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-neutral-50"
+              disabled={isExporting}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ 
                 fontSize: typography.caption.size + 1,
                 color: colors.text.secondary,
                 borderColor: colors.ui.border,
               }}
             >
-              <Download className="w-3.5 h-3.5" />
-              Export
+              {isExporting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className="w-3.5 h-3.5" />
+                  Export
+                </>
+              )}
             </button>
             <button 
               onClick={onChangeTerms}
@@ -958,6 +973,7 @@ export function VerdictPageFresh({
   onChangeTerms,
   onShowMethodology,
   onPriceCardSelect,
+  isExporting = false,
 }: VerdictPageFreshProps) {
   const [isMethodologyOpen, setIsMethodologyOpen] = useState(false)
 
@@ -1000,6 +1016,7 @@ export function VerdictPageFresh({
           onPriceCardSelect={onPriceCardSelect}
           onChangeTerms={onChangeTerms}
           onExportClick={onExportClick}
+          isExporting={isExporting}
         />
 
         {/* Section E: Financial Breakdown */}
