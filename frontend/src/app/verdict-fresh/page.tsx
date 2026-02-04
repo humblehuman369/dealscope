@@ -163,7 +163,10 @@ export default function VerdictFreshPage() {
 
   const handlePropertyClick = () => {
     console.log('Navigate to property details:', sampleProperty.zpid)
-    window.location.href = `/property/${encodeURIComponent(sampleProperty.address)}`
+    // Use zpid for property details route
+    if (sampleProperty.zpid) {
+      window.location.href = `/property/${sampleProperty.zpid}`
+    }
   }
 
   const handlePriceCardSelect = (variant: PriceCardVariant) => {
@@ -182,6 +185,32 @@ export default function VerdictFreshPage() {
 
   const handleProfileClick = () => {
     window.location.href = '/profile'
+  }
+
+  // Tab navigation handler
+  const handleTabChange = (tab: 'analyze' | 'details' | 'sale-comps' | 'rent' | 'dashboard') => {
+    console.log('Tab changed to:', tab)
+    switch (tab) {
+      case 'analyze':
+        // Already on analyze - no action
+        break
+      case 'details':
+        if (sampleProperty.zpid) {
+          window.location.href = `/property/${sampleProperty.zpid}`
+        }
+        break
+      case 'sale-comps':
+        if (sampleProperty.zpid) {
+          window.location.href = `/property/${sampleProperty.zpid}?tab=comps`
+        }
+        break
+      case 'rent':
+        window.location.href = `/rental-comps?address=${encodeURIComponent(sampleProperty.address)}`
+        break
+      case 'dashboard':
+        window.location.href = '/dashboard'
+        break
+    }
   }
 
   return (
@@ -209,6 +238,8 @@ export default function VerdictFreshPage() {
       onLogoClick={handleLogoClick}
       onSearchClick={handleSearchClick}
       onProfileClick={handleProfileClick}
+      // Tab navigation
+      onTabChange={handleTabChange}
     />
   )
 }

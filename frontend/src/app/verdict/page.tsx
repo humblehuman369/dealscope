@@ -476,14 +476,20 @@ function VerdictContent() {
     router.push(url)
   }, [property, propertyIdParam, router])
 
-  // Navigate to property details page
+  // Navigate to property details page - uses zpid or propertyId
   const handlePropertyClick = useCallback(() => {
     if (!property) return
-    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
-    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
-    const encodedAddress = encodeURIComponent(fullAddress)
-    router.push(`/property/${encodedAddress}`)
-  }, [property, router])
+    // Prefer zpid, fall back to propertyIdParam
+    const propertyId = property.zpid || propertyIdParam
+    if (propertyId) {
+      router.push(`/property/${propertyId}`)
+    } else {
+      // Fallback: encode address and try search
+      const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+      const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+      router.push(`/search?q=${encodeURIComponent(fullAddress)}`)
+    }
+  }, [property, propertyIdParam, router])
 
   // Handle export
   const handleExport = useCallback(() => {
@@ -514,6 +520,43 @@ function VerdictContent() {
   const handleProfileClick = useCallback(() => {
     router.push('/profile')
   }, [router])
+
+  // Handle tab change - navigate to appropriate pages
+  const handleTabChange = useCallback((tab: 'analyze' | 'details' | 'sale-comps' | 'rent' | 'dashboard') => {
+    if (!property) return
+    
+    // Build base URL params
+    const stateZip = [property.state, property.zip].filter(Boolean).join(' ')
+    const fullAddress = [property.address, property.city, stateZip].filter(Boolean).join(', ')
+    const encodedAddress = encodeURIComponent(fullAddress)
+    const propertyId = property.zpid || propertyIdParam
+    
+    switch (tab) {
+      case 'analyze':
+        // Already on analyze page - no action needed
+        break
+      case 'details':
+        // Navigate to property details page
+        if (propertyId) {
+          router.push(`/property/${propertyId}`)
+        }
+        break
+      case 'sale-comps':
+        // Navigate to sale comps / analytics page
+        if (propertyId) {
+          router.push(`/property/${propertyId}?tab=comps`)
+        }
+        break
+      case 'rent':
+        // Navigate to rental comps page
+        router.push(`/rental-comps?address=${encodedAddress}`)
+        break
+      case 'dashboard':
+        // Navigate to dashboard
+        router.push('/dashboard')
+        break
+    }
+  }, [property, propertyIdParam, router])
 
   // Loading state
   if (isLoading) {
@@ -569,6 +612,8 @@ function VerdictContent() {
         onLogoClick={handleLogoClick}
         onSearchClick={handleSearchClick}
         onProfileClick={handleProfileClick}
+        // Tab navigation
+        onTabChange={handleTabChange}
       />
 
       {/* Progressive Profiling Prompt - Shows after analysis completion */}

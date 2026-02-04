@@ -37,6 +37,7 @@ import {
   type PriceCardVariant,
 } from './verdict-design-tokens'
 import { VerdictHeader, type VerdictTab } from './VerdictHeader'
+import { ScoreMethodologySheet } from './ScoreMethodologySheet'
 
 // ===================
 // TYPES
@@ -976,11 +977,18 @@ export function VerdictPageFresh({
 }: VerdictPageFreshProps) {
   const [activeTab, setActiveTab] = useState<VerdictTab>('analyze')
   const [isPropertyExpanded, setIsPropertyExpanded] = useState(false)
+  const [isMethodologyOpen, setIsMethodologyOpen] = useState(false)
 
   // Handle tab change - use external handler if provided, otherwise use local state
   const handleTabChange = (tab: VerdictTab) => {
     setActiveTab(tab)
     onTabChange?.(tab)
+  }
+
+  // Handle methodology popup
+  const handleMethodologyClick = () => {
+    setIsMethodologyOpen(true)
+    onShowMethodology?.()
   }
 
   return (
@@ -1016,7 +1024,7 @@ export function VerdictPageFresh({
           verdictLabel={verdictLabel}
           verdictSubtitle={verdictSubtitle}
           quickStats={quickStats}
-          onShowMethodology={onShowMethodology}
+          onShowMethodology={handleMethodologyClick}
         />
 
         {/* Section C: Confidence Metrics */}
@@ -1044,6 +1052,14 @@ export function VerdictPageFresh({
           onDealMakerClick={onDealMakerClick}
         />
       </div>
+
+      {/* Score Methodology Popup */}
+      <ScoreMethodologySheet
+        isOpen={isMethodologyOpen}
+        onClose={() => setIsMethodologyOpen(false)}
+        currentScore={score}
+        scoreType="verdict"
+      />
     </div>
   )
 }

@@ -28,6 +28,8 @@ interface VerdictPageAdapterProps {
   onLogoClick?: () => void
   onSearchClick?: () => void
   onProfileClick?: () => void
+  // Tab navigation callback
+  onTabChange?: (tab: 'analyze' | 'details' | 'sale-comps' | 'rent' | 'dashboard') => void
 }
 
 // Helper to get verdict label from score
@@ -60,6 +62,7 @@ export function VerdictPageAdapter({
   onLogoClick,
   onSearchClick,
   onProfileClick,
+  onTabChange,
 }: VerdictPageAdapterProps) {
   const [selectedPriceCard, setSelectedPriceCard] = useState<PriceCardVariant>('target')
 
@@ -260,6 +263,7 @@ export function VerdictPageAdapter({
       onLogoClick={onLogoClick}
       onSearchClick={onSearchClick}
       onProfileClick={onProfileClick}
+      onTabChange={onTabChange}
     />
   )
 }
