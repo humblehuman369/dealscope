@@ -13,7 +13,7 @@
  * Uses InvestIQ Universal Style Guide colors
  */
 
-import React, { useState, useCallback } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 // Note: CompactHeader removed - now using global AppHeader from layout
@@ -39,7 +39,8 @@ interface PropertyDetailsScreenProps {
 
 export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDetailsScreenProps) {
   const router = useRouter()
-  const { isAuthenticated, setShowAuthModal } = useAuth()
+  // Auth context is used in global AppHeader for save functionality
+  useAuth()
   
   // Image gallery state
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -57,10 +58,6 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
   // Strategy state
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
   
-  // Save state
-  const [isSaved, setIsSaved] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveMessage, setSaveMessage] = useState<string | null>(null)
 
   const fullAddress = `${property.address.streetAddress}, ${property.address.city}, ${property.address.state} ${property.address.zipcode}`
 
@@ -104,69 +101,6 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
   const handleBack = () => {
     router.back()
   }
-
-  // Handle save property
-  const handleSave = useCallback(async () => {
-    if (!isAuthenticated) {
-      setShowAuthModal('login')
-      return
-    }
-
-    if (isSaving || isSaved) return
-
-    setIsSaving(true)
-    try {
-      const token = localStorage.getItem('access_token')
-      if (!token) {
-        setShowAuthModal('login')
-        setIsSaving(false)
-        return
-      }
-
-      const response = await fetch('/api/v1/properties/saved', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          address_street: property.address.streetAddress,
-          address_city: property.address.city,
-          address_state: property.address.state,
-          address_zip: property.address.zipcode,
-          full_address: fullAddress,
-          status: 'watching',
-          property_data_snapshot: {
-            zpid: property.zpid,
-            street: property.address.streetAddress,
-            city: property.address.city,
-            state: property.address.state,
-            zipCode: property.address.zipcode,
-            listPrice: property.price,
-            bedrooms: property.bedrooms,
-            bathrooms: property.bathrooms,
-            sqft: property.livingArea,
-            yearBuilt: property.yearBuilt,
-            photos: property.images,
-          },
-        }),
-      })
-
-      if (response.ok || response.status === 409) {
-        setIsSaved(true)
-        setSaveMessage(response.status === 409 ? 'Already saved!' : 'Saved!')
-        setTimeout(() => setSaveMessage(null), 3000)
-      } else {
-        setSaveMessage('Failed to save')
-        setTimeout(() => setSaveMessage(null), 3000)
-      }
-    } catch {
-      setSaveMessage('Error saving property')
-      setTimeout(() => setSaveMessage(null), 3000)
-    } finally {
-      setIsSaving(false)
-    }
-  }, [property, isAuthenticated, setShowAuthModal, isSaving, isSaved, fullAddress])
 
   // Icon renderers
   const renderFactIcon = (iconType: string) => {
@@ -257,22 +191,6 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
                 </button>
               </>
             )}
-
-            {/* Save Button - Top Left */}
-            <button 
-              className={`absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
-                isSaved 
-                  ? 'bg-[#0891B2] text-white' 
-                  : 'bg-white/90 text-[#0A1628] hover:bg-white'
-              } ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-              onClick={handleSave}
-              disabled={isSaving}
-            >
-              <svg className="w-4 h-4" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
-              </svg>
-              {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save'}
-            </button>
 
             {/* Image Counter */}
             <div className="absolute top-3 right-3 bg-[#0A1628]/70 text-white px-2.5 py-1 rounded-xl text-xs font-medium flex items-center gap-1">
@@ -455,14 +373,6 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
           )}
         </div>
       </main>
-
-      {/* Toast Message */}
-      {saveMessage && (
-        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg shadow-lg z-50">
-          {saveMessage}
-        </div>
-      )}
-
 
       {/* CSS for tabular-nums */}
       <style>{`.tabular-nums { font-variant-numeric: tabular-nums; }`}</style>

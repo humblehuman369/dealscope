@@ -20,10 +20,11 @@
  * └─────────────────────────────────────────────────┘
  */
 
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Search, User, ChevronDown, ChevronUp } from 'lucide-react'
+import { Search, User, ChevronDown, ChevronUp, Heart } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
+import { useAuth } from '@/context/AuthContext'
 
 // ===================
 // DESIGN TOKENS (synced with verdict-design-tokens.ts)
@@ -151,6 +152,11 @@ export function AppHeader({
   
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [isPropertyExpanded, setIsPropertyExpanded] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  
+  // Auth context for save functionality
+  const { isAuthenticated, setShowAuthModal } = useAuth()
 
   // Determine if header should be hidden
   if (HIDDEN_ROUTES.includes(pathname || '')) {
@@ -262,6 +268,56 @@ export function AppHeader({
       router.push(`/property/${property.zpid}?address=${encodeURIComponent(displayAddress)}`)
     }
   }
+
+  // Handle save property
+  const handleSave = useCallback(async () => {
+    if (!isAuthenticated) {
+      setShowAuthModal('login')
+      return
+    }
+
+    if (isSaving || isSaved || !displayAddress) return
+
+    setIsSaving(true)
+    try {
+      // Parse address for API
+      const addressParts = displayAddress.split(',').map(s => s.trim())
+      const streetAddress = addressParts[0] || ''
+      const city = addressParts[1] || ''
+      const stateZip = addressParts[2] || ''
+      const [state, zipCode] = stateZip.split(/\s+/)
+
+      const response = await fetch('/api/v1/saved-properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          zpid: property?.zpid || null,
+          address: streetAddress,
+          city: city,
+          state: state || '',
+          zip_code: zipCode || '',
+          property_type: 'Single Family',
+          bedrooms: property?.beds || null,
+          bathrooms: property?.baths || null,
+          square_feet: property?.sqft || null,
+          list_price: property?.price || null,
+          latitude: null,
+          longitude: null,
+          photo_url: null,
+          notes: '',
+        }),
+      })
+
+      if (response.ok || response.status === 409) {
+        setIsSaved(true)
+      }
+    } catch (error) {
+      console.error('Failed to save property:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }, [displayAddress, property, isAuthenticated, setShowAuthModal, isSaving, isSaved])
 
   return (
     <>
@@ -383,19 +439,46 @@ export function AppHeader({
                   {displayAddress}
                 </button>
               </div>
-              {property && (
+              
+              {/* Right side actions */}
+              <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                {/* Save Button */}
                 <button
-                  onClick={() => setIsPropertyExpanded(!isPropertyExpanded)}
-                  className="p-1 hover:bg-neutral-100 rounded transition-colors flex-shrink-0 ml-2"
-                  aria-label={isPropertyExpanded ? 'Collapse details' : 'Expand details'}
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className={`p-1.5 rounded transition-colors flex items-center gap-1 ${
+                    isSaved 
+                      ? 'text-[#0891B2]' 
+                      : 'text-neutral-400 hover:text-[#0891B2] hover:bg-neutral-100'
+                  } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  aria-label={isSaved ? 'Saved' : 'Save property'}
+                  title={isSaved ? 'Saved' : 'Save property'}
                 >
-                  {isPropertyExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-neutral-400" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-neutral-400" />
-                  )}
+                  <Heart 
+                    className="w-4 h-4" 
+                    fill={isSaved ? 'currentColor' : 'none'}
+                    strokeWidth={1.5}
+                  />
+                  <span className="text-xs font-medium">
+                    {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save'}
+                  </span>
                 </button>
-              )}
+
+                {/* Expand/Collapse Button */}
+                {property && (
+                  <button
+                    onClick={() => setIsPropertyExpanded(!isPropertyExpanded)}
+                    className="p-1 hover:bg-neutral-100 rounded transition-colors"
+                    aria-label={isPropertyExpanded ? 'Collapse details' : 'Expand details'}
+                  >
+                    {isPropertyExpanded ? (
+                      <ChevronUp className="w-4 h-4 text-neutral-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-neutral-400" />
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Expanded Details - 4 columns */}
