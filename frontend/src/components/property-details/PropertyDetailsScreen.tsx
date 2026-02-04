@@ -18,7 +18,6 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 // Note: CompactHeader removed - now using global AppHeader from layout
 import { PropertyData } from './types'
-import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
 // Helper functions
 function formatPrice(price: number): string {
@@ -58,11 +57,10 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
   // Strategy state
   const [currentStrategy, setCurrentStrategy] = useState(initialStrategy || 'Long-term')
   
-  // Save/Share state
+  // Save state
   const [isSaved, setIsSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
-  const [showSearchModal, setShowSearchModal] = useState(false)
 
   const fullAddress = `${property.address.streetAddress}, ${property.address.city}, ${property.address.state} ${property.address.zipcode}`
 
@@ -170,30 +168,6 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
     }
   }, [property, isAuthenticated, setShowAuthModal, isSaving, isSaved, fullAddress])
 
-  // Handle share
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${property.address.streetAddress} - InvestIQ`,
-          text: `Check out this property: ${fullAddress}`,
-          url: window.location.href
-        })
-      } catch {
-        // User cancelled
-      }
-    } else {
-      await navigator.clipboard.writeText(window.location.href)
-      setSaveMessage('Link copied!')
-      setTimeout(() => setSaveMessage(null), 2000)
-    }
-  }
-
-  // Navigate to analysis
-  const handleAnalyze = () => {
-    router.push(`/verdict?address=${encodeURIComponent(fullAddress)}`)
-  }
-
   // Icon renderers
   const renderFactIcon = (iconType: string) => {
     const icons: Record<string, React.ReactNode> = {
@@ -243,7 +217,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
       {/* Header is now handled by global AppHeader in layout */}
 
       {/* Main Content */}
-      <main className="pb-[100px]">
+      <main className="pb-6">
         {/* Image Gallery */}
         <section className="bg-white border-b border-[#CBD5E1]">
           {/* Main Image */}
@@ -283,6 +257,22 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
                 </button>
               </>
             )}
+
+            {/* Save Button - Top Left */}
+            <button 
+              className={`absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
+                isSaved 
+                  ? 'bg-[#0891B2] text-white' 
+                  : 'bg-white/90 text-[#0A1628] hover:bg-white'
+              } ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              <svg className="w-4 h-4" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+              </svg>
+              {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save'}
+            </button>
 
             {/* Image Counter */}
             <div className="absolute top-3 right-3 bg-[#0A1628]/70 text-white px-2.5 py-1 rounded-xl text-xs font-medium flex items-center gap-1">
@@ -473,61 +463,6 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
         </div>
       )}
 
-      {/* Bottom Action Bar */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white px-4 py-3 pb-[max(12px,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 border-t border-[#E2E8F0] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-        {/* Search Button */}
-        <button 
-          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[#64748B] hover:text-[#0891B2] transition-colors"
-          onClick={() => setShowSearchModal(true)}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
-          </svg>
-          <span className="text-[10px] font-medium">Search</span>
-        </button>
-
-        {/* Save Button */}
-        <button 
-          className={`flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer transition-colors ${
-            isSaved ? 'text-[#0891B2]' : 'text-[#64748B] hover:text-[#0891B2]'
-          } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-          onClick={handleSave}
-          disabled={isSaving}
-        >
-          <svg className="w-5 h-5" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
-          </svg>
-          <span className="text-[10px] font-medium">{isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save'}</span>
-        </button>
-
-        {/* Analyze Property Button - Primary CTA */}
-        <button 
-          className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-[#0891B2] text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-[#0E7490] active:bg-[#0E7490] transition-colors"
-          onClick={handleAnalyze}
-        >
-          <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
-          </svg>
-          Analyze Property
-        </button>
-
-        {/* Share Button */}
-        <button 
-          className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 bg-transparent border-none cursor-pointer text-[#64748B] hover:text-[#0891B2] transition-colors"
-          onClick={handleShare}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"/>
-          </svg>
-          <span className="text-[10px] font-medium">Share</span>
-        </button>
-      </div>
-
-      {/* Search Modal */}
-      <SearchPropertyModal 
-        isOpen={showSearchModal} 
-        onClose={() => setShowSearchModal(false)} 
-      />
 
       {/* CSS for tabular-nums */}
       <style>{`.tabular-nums { font-variant-numeric: tabular-nums; }`}</style>
