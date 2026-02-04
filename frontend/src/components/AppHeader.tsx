@@ -154,36 +154,44 @@ export function AppHeader({
   const [isPropertyExpanded, setIsPropertyExpanded] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [isCheckingSaved, setIsCheckingSaved] = useState(false)
   
   // Auth context for save functionality
   const { isAuthenticated, setShowAuthModal } = useAuth()
 
   // Get address from URL params if not provided (needed before early return)
   const addressFromUrl = searchParams?.get('address') || ''
-  const decodedAddressFromUrl = addressFromUrl ? decodeURIComponent(addressFromUrl) : ''
+  let decodedAddressFromUrl = ''
+  try {
+    decodedAddressFromUrl = addressFromUrl ? decodeURIComponent(addressFromUrl) : ''
+  } catch {
+    // If decoding fails, use the raw address
+    decodedAddressFromUrl = addressFromUrl
+  }
   const displayAddress = propertyAddress || decodedAddressFromUrl || (property 
     ? `${property.address}, ${property.city}, ${property.state} ${property.zip}`
     : '')
 
   // Check if property is already saved on mount
   useEffect(() => {
+    // Only check if authenticated, has address, and not already checking
+    if (!isAuthenticated || !displayAddress) return
+    
+    let isMounted = true
+    
     const checkIfSaved = async () => {
-      if (!isAuthenticated || !displayAddress || isCheckingSaved) return
-      
       const token = localStorage.getItem('access_token')
       if (!token) return
       
-      setIsCheckingSaved(true)
       try {
         // Parse the street address for search
         const streetAddress = displayAddress.split(',')[0]?.trim() || ''
+        if (!streetAddress) return
         
         const response = await fetch(`/api/v1/properties/saved?search=${encodeURIComponent(streetAddress)}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
         
-        if (response.ok) {
+        if (response.ok && isMounted) {
           const data = await response.json()
           // Backend returns a direct array of SavedPropertySummary objects
           const properties = Array.isArray(data) ? data : (data.properties || data.items || [])
@@ -196,13 +204,15 @@ export function AppHeader({
         }
       } catch (error) {
         console.error('Error checking saved status:', error)
-      } finally {
-        setIsCheckingSaved(false)
       }
     }
     
     checkIfSaved()
-  }, [displayAddress, isAuthenticated]) // eslint-disable-line react-hooks/exhaustive-deps
+    
+    return () => {
+      isMounted = false
+    }
+  }, [displayAddress, isAuthenticated])
 
   // Determine if header should be hidden
   if (HIDDEN_ROUTES.includes(pathname || '')) {
