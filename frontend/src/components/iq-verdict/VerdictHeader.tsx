@@ -116,10 +116,10 @@ export function VerdictHeader({
         </div>
       </div>
 
-      {/* Tab Bar - White */}
+      {/* Tab Bar - White, rectangular tabs touching side by side */}
       {showTabs && (
         <div 
-          className="flex items-center gap-1 px-3 py-2 overflow-x-auto scrollbar-hide"
+          className="flex items-stretch overflow-x-auto scrollbar-hide"
           style={{ 
             backgroundColor: colors.background.white,
             borderBottom: `1px solid ${colors.ui.border}`,
@@ -132,16 +132,13 @@ export function VerdictHeader({
                 key={tab.id}
                 onClick={() => onTabChange?.(tab.id)}
                 className={`
-                  px-4 py-1.5 rounded-full text-sm font-medium 
-                  transition-all whitespace-nowrap
-                  ${isActive 
-                    ? 'shadow-sm' 
-                    : 'hover:bg-slate-100'
-                  }
+                  flex-1 px-4 py-2.5 text-sm font-medium 
+                  transition-all whitespace-nowrap border-r last:border-r-0
                 `}
                 style={{
                   backgroundColor: isActive ? colors.brand.teal : 'transparent',
                   color: isActive ? colors.text.white : colors.text.secondary,
+                  borderColor: colors.ui.border,
                 }}
               >
                 {tab.label}
