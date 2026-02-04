@@ -286,7 +286,7 @@ export function VerdictPageAdapter({
         onPriceCardSelect={handlePriceCardSelect}
         // Action callbacks
         onDealMakerClick={onDealMakerClick}
-        onExportClick={onExportClick}
+        onExportClick={handleOpenTermsPopup}
         onPropertyClick={onPropertyClick}
         onChangeTerms={handleOpenTermsPopup}
         onShowMethodology={onShowMethodology}
