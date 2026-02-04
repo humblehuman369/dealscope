@@ -539,6 +539,7 @@ function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
 
 /**
  * Section D: Investment Analysis
+ * Redesigned with segmented control price selector and unified metrics card
  */
 function InvestmentAnalysisSection({
   financingTerms,
@@ -557,133 +558,121 @@ function InvestmentAnalysisSection({
   onChangeTerms?: () => void
   onExportClick?: () => void
 }) {
-  // Get the label of the selected card for display
-  const selectedCard = priceCards.find(c => c.variant === selectedPriceCard)
-  const selectedLabel = selectedCard?.label || 'Target Buy'
-
   return (
-    <div 
-      className="px-4 py-5"
-      style={{ backgroundColor: colors.background.light }}
-    >
-      {/* Section Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <h3 
-            className="uppercase tracking-wide mb-1"
-            style={{ 
-              fontSize: typography.label.size,
-              fontWeight: typography.heading.weight,
-              color: colors.text.tertiary,
-            }}
-          >
-            Your Investment Analysis
-          </h3>
-          <p 
-            style={{ 
-              fontSize: typography.caption.size + 1,
-              color: colors.text.tertiary,
-            }}
-          >
-            Based on YOUR financing terms ({financingTerms})
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={onExportClick}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-slate-50"
-            style={{ 
-              fontSize: typography.caption.size + 1,
-              color: colors.text.secondary,
-              borderColor: colors.ui.border,
-            }}
-          >
-            <Download className="w-3.5 h-3.5" />
-            Export
-          </button>
-          <button 
-            onClick={onChangeTerms}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-slate-50"
-            style={{ 
-              fontSize: typography.caption.size + 1,
-              color: colors.text.secondary,
-              borderColor: colors.ui.border,
-            }}
-          >
-            <Settings2 className="w-3.5 h-3.5" />
-            Change terms
-          </button>
-        </div>
-      </div>
-
-      {/* Price Cards - selectable, square corners, full border */}
-      <div className="grid grid-cols-3 gap-3">
-        {priceCards.map((card) => {
-          const isSelected = card.variant === selectedPriceCard
-          return (
-            <button 
-              key={card.label}
-              onClick={() => onPriceCardSelect?.(card.variant)}
-              className={`p-3 border transition-all ${
-                isSelected 
-                  ? 'bg-cyan-50 border-slate-300 shadow-sm' 
-                  : 'bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300'
-              }`}
+    <div className="px-4 py-[30px]">
+      {/* White Card Container */}
+      <div 
+        className="bg-white rounded-xl p-5"
+        style={{ boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06)' }}
+      >
+        {/* Section Header */}
+        <div className="flex items-start justify-between mb-5">
+          <div>
+            <h3 
+              className="font-semibold mb-0.5"
+              style={{ 
+                fontSize: typography.body.size + 2,
+                color: colors.text.primary,
+              }}
             >
-              <div 
-                className="uppercase tracking-wide text-center mb-1"
-                style={{ 
-                  fontSize: typography.caption.size,
-                  fontWeight: typography.label.weight,
-                }}
-              >
-                <span className={isSelected ? 'text-cyan-700' : 'text-slate-600'}>
-                  {card.label}
-                </span>
-              </div>
-              <div 
-                className="text-center font-bold"
-                style={{ fontSize: typography.heading.size }}
-              >
-                <span className={isSelected ? 'text-cyan-900' : 'text-slate-800'}>
-                  {formatPrice(card.value)}
-                </span>
-              </div>
+              Investment Analysis
+            </h3>
+            <p 
+              style={{ 
+                fontSize: typography.caption.size + 1,
+                color: colors.text.tertiary,
+              }}
+            >
+              Based on your terms ({financingTerms})
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={onExportClick}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-slate-50"
+              style={{ 
+                fontSize: typography.caption.size + 1,
+                color: colors.text.secondary,
+                borderColor: colors.ui.border,
+              }}
+            >
+              <Download className="w-3.5 h-3.5" />
+              Export
             </button>
-          )
-        })}
-      </div>
-
-      {/* Key Metrics Row - shaded, shows metrics for selected price */}
-      <div className="border border-slate-200 overflow-hidden bg-cyan-50">
-        {/* Selected indicator - white background */}
-        <div 
-          className="text-center py-1.5 border-b border-slate-200 bg-white"
-          style={{ fontSize: typography.caption.size }}
-        >
-          <span className="text-slate-500">
-            Metrics based on <span className="font-semibold text-cyan-600">{selectedLabel}</span> price
-          </span>
+            <button 
+              onClick={onChangeTerms}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-slate-50"
+              style={{ 
+                fontSize: typography.caption.size + 1,
+                color: colors.text.secondary,
+                borderColor: colors.ui.border,
+              }}
+            >
+              <Settings2 className="w-3.5 h-3.5" />
+              Terms
+            </button>
+          </div>
         </div>
-        
-        {/* Metrics grid */}
-        <div className="grid grid-cols-3 gap-4 py-4 px-3">
-          {keyMetrics.map((metric) => (
-            <div key={metric.label} className="text-center">
-              <div 
-                className="font-bold mb-0.5 text-cyan-900"
-                style={{ fontSize: typography.heading.size }}
-              >
-                {metric.value}
+
+        {/* Price Selector - Segmented Control Style */}
+        <div className="bg-slate-100 rounded-lg p-1 mb-4">
+          <div className="grid grid-cols-3 gap-1">
+            {priceCards.map((card) => {
+              const isSelected = card.variant === selectedPriceCard
+              return (
+                <button 
+                  key={card.label}
+                  onClick={() => onPriceCardSelect?.(card.variant)}
+                  className={`py-3 px-2 rounded-md transition-all ${
+                    isSelected 
+                      ? 'bg-white shadow-sm' 
+                      : 'hover:bg-slate-50/50'
+                  }`}
+                >
+                  <div 
+                    className="uppercase tracking-wide text-center mb-1"
+                    style={{ 
+                      fontSize: 9,
+                      fontWeight: 600,
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    <span className={isSelected ? 'text-slate-700' : 'text-slate-500'}>
+                      {card.label}
+                    </span>
+                  </div>
+                  <div 
+                    className={`text-center font-bold ${isSelected ? 'text-slate-900' : 'text-slate-600'}`}
+                    style={{ fontSize: 20 }}
+                  >
+                    {formatPrice(card.value)}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Metrics Card - Unified Display */}
+        <div className="bg-slate-50 rounded-lg p-4">
+          <div className="grid grid-cols-3 gap-4">
+            {keyMetrics.map((metric) => (
+              <div key={metric.label} className="text-center">
+                <div 
+                  className="font-bold text-slate-900 mb-0.5"
+                  style={{ fontSize: 22 }}
+                >
+                  {metric.value}
+                </div>
+                <div 
+                  className="text-slate-500 uppercase tracking-wide"
+                  style={{ fontSize: 9, fontWeight: 500 }}
+                >
+                  {metric.label}
+                </div>
               </div>
-              <div 
-                className="text-cyan-700"
-                style={{ fontSize: typography.caption.size }}
-              >
-                {metric.label}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
