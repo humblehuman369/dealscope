@@ -36,8 +36,8 @@ import {
   priceCardStyles,
   type PriceCardVariant,
 } from './verdict-design-tokens'
-import { VerdictHeader, type VerdictTab } from './VerdictHeader'
 import { ScoreMethodologySheet } from './ScoreMethodologySheet'
+// Note: VerdictHeader and PropertySummaryBar are now handled by the global AppHeader in layout
 
 // ===================
 // TYPES
@@ -117,19 +117,9 @@ interface VerdictPageFreshProps {
   onExportClick?: () => void
   onChangeTerms?: () => void
   onShowMethodology?: () => void
-  /** Callback when property address is clicked - navigate to property details */
-  onPropertyClick?: () => void
   /** Callback when a price card is selected - triggers metrics recalculation */
   onPriceCardSelect?: (variant: PriceCardVariant) => void
-  // Header callbacks
-  /** Callback when logo is clicked - navigate to homepage */
-  onLogoClick?: () => void
-  /** Callback when search icon is clicked */
-  onSearchClick?: () => void
-  /** Callback when profile icon is clicked */
-  onProfileClick?: () => void
-  /** Callback when a tab is clicked */
-  onTabChange?: (tab: VerdictTab) => void
+  // Note: Header callbacks (logo, search, profile, tabs) are now handled by global AppHeader
 }
 
 // ===================
@@ -967,23 +957,9 @@ export function VerdictPageFresh({
   onExportClick,
   onChangeTerms,
   onShowMethodology,
-  onPropertyClick,
   onPriceCardSelect,
-  // Header callbacks
-  onLogoClick,
-  onSearchClick,
-  onProfileClick,
-  onTabChange,
 }: VerdictPageFreshProps) {
-  const [activeTab, setActiveTab] = useState<VerdictTab>('analyze')
-  const [isPropertyExpanded, setIsPropertyExpanded] = useState(false)
   const [isMethodologyOpen, setIsMethodologyOpen] = useState(false)
-
-  // Handle tab change - use external handler if provided, otherwise use local state
-  const handleTabChange = (tab: VerdictTab) => {
-    setActiveTab(tab)
-    onTabChange?.(tab)
-  }
 
   // Handle methodology popup
   const handleMethodologyClick = () => {
@@ -996,28 +972,13 @@ export function VerdictPageFresh({
       className="min-h-screen"
       style={{ backgroundColor: colors.background.light }}
     >
-      {/* Header - Full width */}
-      <VerdictHeader
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        onLogoClick={onLogoClick}
-        onSearchClick={onSearchClick}
-        onProfileClick={onProfileClick}
-      />
+      {/* Header and Property Bar are now handled by global AppHeader in layout */}
 
       {/* Content Container - Max width for readability on wide screens */}
       <div 
         className="mx-auto w-full"
         style={{ maxWidth: layout.maxWidth }}
       >
-        {/* Section A: Property Summary Bar */}
-        <PropertySummaryBar
-          property={property}
-          isExpanded={isPropertyExpanded}
-          onToggle={() => setIsPropertyExpanded(!isPropertyExpanded)}
-          onPropertyClick={onPropertyClick}
-        />
-
         {/* Section B: Score Hero */}
         <ScoreHero
           score={score}

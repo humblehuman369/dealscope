@@ -21,16 +21,8 @@ interface VerdictPageAdapterProps {
   analysis: IQAnalysisResult
   // Action callbacks
   onDealMakerClick?: () => void
-  onExportClick?: () => void
-  onPropertyClick?: () => void
-  onChangeTerms?: () => void
   onShowMethodology?: () => void
-  // Header callbacks
-  onLogoClick?: () => void
-  onSearchClick?: () => void
-  onProfileClick?: () => void
-  // Tab navigation callback
-  onTabChange?: (tab: 'analyze' | 'details' | 'sale-comps' | 'rent' | 'dashboard') => void
+  // Note: Header and navigation callbacks are now handled by global AppHeader
 }
 
 // Helper to get verdict label from score
@@ -56,14 +48,7 @@ export function VerdictPageAdapter({
   property,
   analysis,
   onDealMakerClick,
-  onExportClick,
-  onPropertyClick,
-  onChangeTerms,
   onShowMethodology,
-  onLogoClick,
-  onSearchClick,
-  onProfileClick,
-  onTabChange,
 }: VerdictPageAdapterProps) {
   const [selectedPriceCard, setSelectedPriceCard] = useState<PriceCardVariant>('target')
   const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
@@ -287,14 +272,9 @@ export function VerdictPageAdapter({
         // Action callbacks
         onDealMakerClick={onDealMakerClick}
         onExportClick={handleOpenTermsPopup}
-        onPropertyClick={onPropertyClick}
         onChangeTerms={handleOpenTermsPopup}
         onShowMethodology={onShowMethodology}
-        // Header callbacks
-        onLogoClick={onLogoClick}
-        onSearchClick={onSearchClick}
-        onProfileClick={onProfileClick}
-        onTabChange={onTabChange}
+        // Note: Header callbacks are now handled by global AppHeader
       />
 
       {/* DealMaker Popup for editing terms/assumptions */}

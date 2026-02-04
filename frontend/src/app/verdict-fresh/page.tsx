@@ -240,14 +240,8 @@ export default function VerdictFreshPage() {
       onExportClick={handleExportClick}
       onChangeTerms={handleChangeTerms}
       onShowMethodology={handleShowMethodology}
-      onPropertyClick={handlePropertyClick}
       onPriceCardSelect={handlePriceCardSelect}
-      // Header callbacks
-      onLogoClick={handleLogoClick}
-      onSearchClick={handleSearchClick}
-      onProfileClick={handleProfileClick}
-      // Tab navigation
-      onTabChange={handleTabChange}
+      // Note: Header and navigation are now handled by global AppHeader
     />
   )
 }

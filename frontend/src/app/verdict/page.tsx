@@ -604,18 +604,9 @@ function VerdictContent() {
       <VerdictPageAdapter
         property={property}
         analysis={analysis}
-        // Action callbacks
         onDealMakerClick={handleNavigateToDealMaker}
-        onExportClick={handleExport}
-        onPropertyClick={handlePropertyClick}
-        onChangeTerms={handleChangeTerms}
         onShowMethodology={handleShowMethodology}
-        // Header callbacks
-        onLogoClick={handleLogoClick}
-        onSearchClick={handleSearchClick}
-        onProfileClick={handleProfileClick}
-        // Tab navigation
-        onTabChange={handleTabChange}
+        // Note: Header and navigation are now handled by global AppHeader
       />
 
       {/* Progressive Profiling Prompt - Shows after analysis completion */}

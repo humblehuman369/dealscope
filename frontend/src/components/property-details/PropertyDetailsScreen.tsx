@@ -16,7 +16,7 @@
 import React, { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { CompactHeader, type PropertyData as HeaderPropertyData } from '@/components/layout/CompactHeader'
+// Note: CompactHeader removed - now using global AppHeader from layout
 import { PropertyData } from './types'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
@@ -66,21 +66,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
 
   const fullAddress = `${property.address.streetAddress}, ${property.address.city}, ${property.address.state} ${property.address.zipcode}`
 
-  // Convert PropertyData to CompactHeader format
-  const headerPropertyData: HeaderPropertyData = {
-    address: property.address.streetAddress,
-    city: property.address.city,
-    state: property.address.state,
-    zip: property.address.zipcode,
-    beds: property.bedrooms,
-    baths: property.bathrooms,
-    sqft: property.livingArea,
-    price: property.price,
-    rent: property.rentZestimate || Math.round(property.price * 0.007),
-    status: property.isOffMarket ? 'OFF-MARKET' : 'FOR SALE',
-    image: property.images?.[0],
-    zpid: String(property.zpid),
-  }
+  // Note: Header is now handled by global AppHeader
 
   // Key specs for the hero row
   const keySpecs = [
@@ -254,17 +240,7 @@ export function PropertyDetailsScreen({ property, initialStrategy }: PropertyDet
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] max-w-[480px] mx-auto relative font-['Inter',sans-serif]">
-      {/* Compact Header */}
-      <CompactHeader
-        property={headerPropertyData}
-        pageTitle="PROPERTY"
-        pageTitleAccent="DETAILS"
-        currentStrategy={currentStrategy}
-        onStrategyChange={handleStrategyChange}
-        onBack={handleBack}
-        activeNav="home"
-        defaultPropertyOpen={false}
-      />
+      {/* Header is now handled by global AppHeader in layout */}
 
       {/* Main Content */}
       <main className="pb-[100px]">

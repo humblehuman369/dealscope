@@ -15,7 +15,7 @@
 import React, { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { CompactHeader, type PropertyData as HeaderPropertyData } from '@/components/layout/CompactHeader'
+// Note: CompactHeader removed - now using global AppHeader from layout
 
 // Types
 export interface SalesCompProperty {
@@ -187,28 +187,10 @@ export function SalesCompsScreen({
   const comps = propsComps || DEFAULT_COMPS
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
 
-  // Convert to CompactHeader format
-  const headerPropertyData: HeaderPropertyData = {
-    address: property.address,
-    city: property.city,
-    state: property.state,
-    zip: property.zipCode,
-    beds: property.beds,
-    baths: property.baths,
-    sqft: property.sqft,
-    price: property.price,
-    rent: property.rent || Math.round(property.price * 0.007),
-    status: 'OFF-MARKET',
-    image: property.image,
-    zpid: property.zpid,
-  }
+  // Note: Header is now handled by global AppHeader
 
   const handleStrategyChange = (strategy: string) => {
     setCurrentStrategy(strategy)
-  }
-
-  const handleBack = () => {
-    router.back()
   }
 
   const handleArvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -295,17 +277,7 @@ export function SalesCompsScreen({
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] max-w-[480px] mx-auto font-['Inter',sans-serif]">
-      {/* Compact Header */}
-      <CompactHeader
-        property={headerPropertyData}
-        pageTitle="SIMILAR"
-        pageTitleAccent="SALES"
-        currentStrategy={currentStrategy}
-        onStrategyChange={handleStrategyChange}
-        onBack={handleBack}
-        activeNav="compare"
-        defaultPropertyOpen={true}
-      />
+      {/* Header is now handled by global AppHeader in layout */}
 
       {/* Main Content */}
       <main className="pb-[100px]">

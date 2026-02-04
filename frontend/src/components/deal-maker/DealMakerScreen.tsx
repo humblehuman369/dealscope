@@ -21,7 +21,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { CompactHeader, type PropertyData as HeaderPropertyData } from '@/components/layout/CompactHeader'
+// Note: CompactHeader removed - now using global AppHeader from layout
 import { useDealMakerStore, useDealMakerDerived, useDealMakerReady } from '@/stores/dealMakerStore'
 import { 
   StrategyType,
@@ -878,21 +878,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
 
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
 
-  // Convert to CompactHeader format
-  const headerPropertyData: HeaderPropertyData = {
-    address: property.address,
-    city: property.city,
-    state: property.state,
-    zip: property.zipCode,
-    beds: property.beds,
-    baths: property.baths,
-    sqft: property.sqft,
-    price: property.price,
-    rent: property.rent ?? Math.round(property.price * 0.008),
-    status: 'FOR-SALE',
-    image: property.image,
-    zpid: property.zpid,
-  }
+  // Note: Header is now handled by global AppHeader
 
   // Get metrics - from store for saved properties, calculate locally for unsaved
   const isCalculating = isSavedPropertyMode ? dealMakerStore.isSaving : false
@@ -1221,18 +1207,7 @@ export function DealMakerScreen({ property, listPrice, initialStrategy, savedPro
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] max-w-[480px] mx-auto font-['Inter',sans-serif]">
-      {/* Compact Header */}
-      <CompactHeader
-        property={headerPropertyData}
-        pageTitle="DEAL"
-        pageTitleAccent="MAKER IQ"
-        currentStrategy={currentStrategy}
-        onStrategyChange={handleStrategyChange}
-        onBack={handleBack}
-        activeNav="deals"
-        defaultPropertyOpen={false}
-        savedPropertyId={savedPropertyId}
-      />
+      {/* Header is now handled by global AppHeader in layout */}
 
       {/* Key Metrics Row */}
       <div className="bg-[#0A1628] px-4 pb-4 -mt-1">
