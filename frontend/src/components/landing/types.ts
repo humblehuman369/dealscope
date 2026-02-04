@@ -40,14 +40,14 @@ export interface PriceIQCard {
 export const priceIQData: PriceIQCard[] = [
   {
     name: 'Breakeven',
-    suffix: 'IQ',
+    suffix: '',
     value: '$807,087',
     description: 'Max price for $0 cashflow',
     subtext: 'Your ceiling. Don\'t cross it.',
   },
   {
     name: 'Target',
-    suffix: 'IQ',
+    suffix: '',
     value: '$766,733',
     description: '5% discount for profit',
     subtext: 'Your optimal offer price',
@@ -55,7 +55,7 @@ export const priceIQData: PriceIQCard[] = [
   },
   {
     name: 'Wholesale',
-    suffix: 'IQ',
+    suffix: '',
     value: '$564,961',
     description: '30% discount for assignment',
     subtext: 'Your wholesale number',
@@ -105,22 +105,22 @@ export const verdictTypes: VerdictType[] = [
     verdict: 'Strong Buy',
     color: 'emerald',
     title: 'Move Fast',
-    description: 'Asking price is at or below your TargetIQ. This deal works across multiple strategies.',
-    logic: 'Asking ≤ TargetIQ',
+    description: 'Asking price is at or below your Target. This deal works across multiple strategies.',
+    logic: 'Asking ≤ Target',
   },
   {
     verdict: 'Marginal',
     color: 'amber',
     title: 'Negotiate Down',
-    description: 'Asking price is between TargetIQ and BreakevenIQ. Thin margins — proceed with caution.',
-    logic: 'TargetIQ < Asking < BreakevenIQ',
+    description: 'Asking price is between Target and Breakeven. Thin margins — proceed with caution.',
+    logic: 'Target < Asking < Breakeven',
   },
   {
     verdict: 'Pass',
     color: 'red',
     title: 'Walk Away',
-    description: "Asking price exceeds your BreakevenIQ. This deal doesn't work at any strategy.",
-    logic: 'Asking > BreakevenIQ',
+    description: "Asking price exceeds your Breakeven. This deal doesn't work at any strategy.",
+    logic: 'Asking > Breakeven',
   },
 ];
 

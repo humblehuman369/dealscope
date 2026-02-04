@@ -107,7 +107,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
                 <span className="iq">60 Seconds</span>
               </h1>
               <p className="hero-subtitle">
-                Point your phone at any property. Get your <span className="highlight">BreakevenIQ</span>, <span className="highlight">TargetIQ</span>, and <span className="highlight">WholesaleIQ</span> prices instantly — plus analysis across 6 investment strategies.
+                Point your phone at any property. Get the <span className="highlight">Breakeven Price</span>, <span className="highlight">Target Buy Price</span>, and <span className="highlight">Wholesale Max Price</span> instantly — plus analysis across 6 investment strategies.
               </p>
               <div className="hero-cta">
                 <button onClick={handleTryItNow} className="btn btn-glow">
@@ -225,9 +225,8 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
 
           <div className="priceiq-card">
             <div className="priceiq-sample">
-              <p className="priceiq-sample-label">Sample Analysis</p>
               <p className="priceiq-sample-address font-display">
-                3742 Lighthouse Circle, Boca Raton FL
+                The only site that looks at residential real estate as an investor.
               </p>
             </div>
 
@@ -366,15 +365,15 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
               </h4>
               <div className="modeliq-results-grid">
                 <div className="result-card">
-                  <p className="result-label">BreakevenIQ</p>
+                  <p className="result-label">Breakeven</p>
                   <p className="result-value font-display">$456K</p>
                 </div>
                 <div className="result-card featured">
-                  <p className="result-label">TargetIQ</p>
+                  <p className="result-label">Target</p>
                   <p className="result-value font-display">{formatCurrency(sliderValues.askingPrice)}</p>
                 </div>
                 <div className="result-card">
-                  <p className="result-label">WholesaleIQ</p>
+                  <p className="result-label">Wholesale</p>
                   <p className="result-value font-display">$319K</p>
                 </div>
               </div>
