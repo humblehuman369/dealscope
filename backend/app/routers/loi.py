@@ -51,6 +51,12 @@ async def generate_loi(
         
         return loi_doc
         
+    except ValueError as e:
+        logger.warning(f"LOI validation error: {str(e)}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid LOI request: {str(e)}"
+        )
     except Exception as e:
         logger.error(f"Failed to generate LOI: {str(e)}")
         raise HTTPException(
@@ -76,7 +82,7 @@ async def generate_loi_pdf(
         loi_doc = loi_service.generate_loi(request)
         
         if not loi_doc.pdf_base64:
-            raise HTTPException(status_code=500, detail="PDF generation failed")
+            raise HTTPException(status_code=422, detail="PDF generation failed - missing required data")
         
         # Decode base64 to bytes
         pdf_bytes = base64.b64decode(loi_doc.pdf_base64)
@@ -95,6 +101,12 @@ async def generate_loi_pdf(
         
     except HTTPException:
         raise
+    except ValueError as e:
+        logger.warning(f"PDF LOI validation error: {str(e)}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid request: {str(e)}"
+        )
     except Exception as e:
         logger.error(f"Failed to generate PDF LOI: {str(e)}")
         raise HTTPException(
@@ -132,6 +144,12 @@ async def generate_loi_from_wholesale_analysis(
         
         return loi_doc
         
+    except ValueError as e:
+        logger.warning(f"LOI from analysis validation error: {str(e)}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid analysis data: {str(e)}"
+        )
     except Exception as e:
         logger.error(f"Failed to generate LOI from analysis: {str(e)}")
         raise HTTPException(
@@ -200,6 +218,12 @@ async def quick_generate_loi(
         
         return loi_service.generate_loi(request)
         
+    except ValueError as e:
+        logger.warning(f"Quick LOI validation error: {str(e)}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid request: {str(e)}"
+        )
     except Exception as e:
         logger.error(f"Quick LOI generation failed: {str(e)}")
         raise HTTPException(

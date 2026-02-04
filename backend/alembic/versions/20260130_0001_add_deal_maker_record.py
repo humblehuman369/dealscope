@@ -4,6 +4,13 @@ This migration adds the central DealMakerRecord column which replaces
 custom_assumptions and worksheet_assumptions as the single source of truth
 for Deal Maker data.
 
+IMPORTANT: This migration performs a DATA MIGRATION and is IRREVERSIBLE.
+The downgrade will DROP user financial data stored in deal_maker_record.
+Before running downgrade in production:
+  1. Export deal_maker_record data for all affected rows
+  2. Notify users of potential data loss
+  3. Consider if original custom_assumptions/worksheet_assumptions can be restored
+
 Revision ID: 20260130_0001
 Revises: 20260122_0001
 Create Date: 2026-01-30 12:00:00.000000
@@ -139,5 +146,29 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Remove deal_maker_record column from saved_properties table."""
+    """
+    Remove deal_maker_record column from saved_properties table.
+    
+    WARNING: This is a DESTRUCTIVE operation that will permanently delete
+    user financial data stored in deal_maker_record. The original
+    custom_assumptions and worksheet_assumptions columns may not contain
+    the most recent user edits.
+    
+    Before running this downgrade in production:
+    1. Create a backup: SELECT id, deal_maker_record FROM saved_properties WHERE deal_maker_record IS NOT NULL;
+    2. Verify custom_assumptions/worksheet_assumptions contain acceptable fallback data
+    3. Notify affected users of potential data loss
+    """
+    import os
+    
+    # Safety check: require explicit confirmation in production
+    if os.environ.get('ENVIRONMENT', 'development').lower() == 'production':
+        confirm = os.environ.get('CONFIRM_DESTRUCTIVE_MIGRATION', '')
+        if confirm != 'YES_I_UNDERSTAND_DATA_WILL_BE_LOST':
+            raise RuntimeError(
+                "DESTRUCTIVE MIGRATION: This downgrade will permanently delete deal_maker_record data. "
+                "Set CONFIRM_DESTRUCTIVE_MIGRATION='YES_I_UNDERSTAND_DATA_WILL_BE_LOST' to proceed."
+            )
+    
+    print("WARNING: Dropping deal_maker_record column - user financial data will be lost!")
     op.drop_column('saved_properties', 'deal_maker_record')

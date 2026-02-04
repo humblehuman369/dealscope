@@ -58,31 +58,26 @@ class FeatureFlags:
     # ===========================================
     
     @classmethod
-    @property
     def auth_required(cls) -> bool:
         """Whether authentication is required for all routes."""
         return cls.is_enabled("auth_required")
     
     @classmethod
-    @property
     def dashboard_enabled(cls) -> bool:
         """Whether the dashboard feature is enabled."""
         return cls.is_enabled("dashboard_enabled")
     
     @classmethod
-    @property
     def document_upload_enabled(cls) -> bool:
         """Whether document upload is enabled."""
         return cls.is_enabled("document_upload_enabled")
     
     @classmethod
-    @property
     def sharing_enabled(cls) -> bool:
         """Whether sharing features are enabled."""
         return cls.is_enabled("sharing_enabled")
     
     @classmethod
-    @property
     def email_verification_required(cls) -> bool:
         """Whether email verification is required for new accounts."""
         return cls.is_enabled("email_verification_required")

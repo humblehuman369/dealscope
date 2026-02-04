@@ -232,7 +232,7 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS if settings.CORS_ORIGINS else ["*"],
+    allow_origins=settings.CORS_ORIGINS,  # CORS_ORIGINS must be configured; no wildcard fallback
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
