@@ -7,9 +7,10 @@
  * Uses sample data to showcase all components and sections.
  */
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { VerdictPageFresh } from '@/components/iq-verdict/VerdictPageFresh'
 import type { PriceCardVariant } from '@/components/iq-verdict/verdict-design-tokens'
+import { DealMakerPopup, DealMakerValues } from '@/components/deal-maker/DealMakerPopup'
 
 // ===================
 // SAMPLE DATA
@@ -139,6 +140,18 @@ const samplePerformanceMetrics = [
 
 export default function VerdictFreshPage() {
   const [selectedPriceCard, setSelectedPriceCard] = useState<PriceCardVariant>('target')
+  const [showDealMakerPopup, setShowDealMakerPopup] = useState(false)
+
+  // Handle opening the DealMaker popup
+  const handleOpenTermsPopup = useCallback(() => {
+    setShowDealMakerPopup(true)
+  }, [])
+
+  // Handle applying values from DealMaker popup
+  const handleApplyDealMakerValues = useCallback((values: DealMakerValues) => {
+    setShowDealMakerPopup(false)
+    console.log('Applied DealMaker values:', values)
+  }, [])
 
   // Action handlers
   const handleDealMakerClick = () => {
@@ -147,13 +160,13 @@ export default function VerdictFreshPage() {
   }
 
   const handleExportClick = () => {
-    console.log('Export analysis')
-    // TODO: Implement export functionality
+    // Open the DealMaker popup for editing terms
+    handleOpenTermsPopup()
   }
 
   const handleChangeTerms = () => {
-    console.log('Open change terms - navigating to DealMaker')
-    window.location.href = '/deal-maker'
+    // Open the DealMaker popup for editing terms
+    handleOpenTermsPopup()
   }
 
   const handleShowMethodology = () => {
@@ -221,27 +234,54 @@ export default function VerdictFreshPage() {
     }
   }
 
+  // Initial values for DealMaker popup
+  const dealMakerInitialValues = {
+    buyPrice: sampleProperty.price,
+    downPayment: 20,
+    closingCosts: 3,
+    interestRate: 6,
+    loanTerm: 30,
+    rehabBudget: 0,
+    arv: sampleProperty.price,
+    propertyTaxes: 4200,
+    insurance: 1800,
+    monthlyRent: sampleProperty.monthlyRent,
+    vacancyRate: 5,
+    managementRate: 8,
+  }
+
   return (
-    <VerdictPageFresh
-      property={sampleProperty}
-      score={78}
-      verdictLabel="Good Opportunity"
-      verdictSubtitle="Deal gap achievable with negotiation"
-      quickStats={sampleQuickStats}
-      confidenceMetrics={sampleConfidenceMetrics}
-      financingTerms="20% down, 6.0%"
-      priceCards={samplePriceCards}
-      keyMetrics={metricsForPrice[selectedPriceCard]}
-      selectedPriceCard={selectedPriceCard}
-      financialBreakdown={sampleFinancialBreakdown}
-      performanceMetrics={samplePerformanceMetrics}
-      // Action callbacks
-      onDealMakerClick={handleDealMakerClick}
-      onExportClick={handleExportClick}
-      onChangeTerms={handleChangeTerms}
-      onShowMethodology={handleShowMethodology}
-      onPriceCardSelect={handlePriceCardSelect}
-      // Note: Header and navigation are now handled by global AppHeader
-    />
+    <>
+      <VerdictPageFresh
+        property={sampleProperty}
+        score={78}
+        verdictLabel="Good Opportunity"
+        verdictSubtitle="Deal gap achievable with negotiation"
+        quickStats={sampleQuickStats}
+        confidenceMetrics={sampleConfidenceMetrics}
+        financingTerms="20% down, 6.0%"
+        priceCards={samplePriceCards}
+        keyMetrics={metricsForPrice[selectedPriceCard]}
+        selectedPriceCard={selectedPriceCard}
+        financialBreakdown={sampleFinancialBreakdown}
+        performanceMetrics={samplePerformanceMetrics}
+        // Action callbacks
+        onDealMakerClick={handleDealMakerClick}
+        onExportClick={handleExportClick}
+        onChangeTerms={handleChangeTerms}
+        onShowMethodology={handleShowMethodology}
+        onPriceCardSelect={handlePriceCardSelect}
+        // Note: Header and navigation are now handled by global AppHeader
+      />
+
+      {/* DealMaker Popup for editing terms/assumptions */}
+      <DealMakerPopup
+        isOpen={showDealMakerPopup}
+        onClose={() => setShowDealMakerPopup(false)}
+        onApply={handleApplyDealMakerValues}
+        strategyType="ltr"
+        initialValues={dealMakerInitialValues}
+      />
+    </>
   )
 }
