@@ -7,7 +7,9 @@
  * Uses sample data to showcase all components and sections.
  */
 
+import { useState } from 'react'
 import { VerdictPageFresh } from '@/components/iq-verdict/VerdictPageFresh'
+import type { PriceCardVariant } from '@/components/iq-verdict/verdict-design-tokens'
 
 // ===================
 // SAMPLE DATA
@@ -47,11 +49,24 @@ const samplePriceCards = [
   { label: 'Wholesale', value: 549121, variant: 'wholesale' as const },
 ]
 
-const sampleKeyMetrics = [
-  { value: '10.7%', label: 'Cap Rate' },
-  { value: '21.7%', label: 'Cash-on-Cash' },
-  { value: '1.87', label: 'DSCR' },
-]
+// Metrics vary based on selected price card
+const metricsForPrice: Record<PriceCardVariant, { value: string; label: string }[]> = {
+  breakeven: [
+    { value: '5.2%', label: 'Cap Rate' },
+    { value: '0.0%', label: 'Cash-on-Cash' },
+    { value: '1.00', label: 'DSCR' },
+  ],
+  target: [
+    { value: '10.7%', label: 'Cap Rate' },
+    { value: '21.7%', label: 'Cash-on-Cash' },
+    { value: '1.87', label: 'DSCR' },
+  ],
+  wholesale: [
+    { value: '18.4%', label: 'Cap Rate' },
+    { value: '52.3%', label: 'Cash-on-Cash' },
+    { value: '2.45', label: 'DSCR' },
+  ],
+}
 
 const sampleFinancialBreakdown = [
   {
@@ -123,6 +138,8 @@ const samplePerformanceMetrics = [
 // ===================
 
 export default function VerdictFreshPage() {
+  const [selectedPriceCard, setSelectedPriceCard] = useState<PriceCardVariant>('target')
+
   const handleDealMakerClick = () => {
     console.log('Navigate to DealMakerIQ')
   }
@@ -145,6 +162,12 @@ export default function VerdictFreshPage() {
     // In real usage: router.push(`/property/${sampleProperty.zpid}`)
   }
 
+  const handlePriceCardSelect = (variant: PriceCardVariant) => {
+    setSelectedPriceCard(variant)
+    console.log('Selected price card:', variant)
+    // In real usage, this would trigger a recalculation of metrics
+  }
+
   return (
     <VerdictPageFresh
       property={sampleProperty}
@@ -155,7 +178,8 @@ export default function VerdictFreshPage() {
       confidenceMetrics={sampleConfidenceMetrics}
       financingTerms="20% down, 6.0%"
       priceCards={samplePriceCards}
-      keyMetrics={sampleKeyMetrics}
+      keyMetrics={metricsForPrice[selectedPriceCard]}
+      selectedPriceCard={selectedPriceCard}
       financialBreakdown={sampleFinancialBreakdown}
       performanceMetrics={samplePerformanceMetrics}
       onDealMakerClick={handleDealMakerClick}
@@ -163,6 +187,7 @@ export default function VerdictFreshPage() {
       onChangeTerms={handleChangeTerms}
       onShowMethodology={handleShowMethodology}
       onPropertyClick={handlePropertyClick}
+      onPriceCardSelect={handlePriceCardSelect}
     />
   )
 }

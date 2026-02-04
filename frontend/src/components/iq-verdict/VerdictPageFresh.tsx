@@ -108,12 +108,16 @@ interface VerdictPageFreshProps {
   keyMetrics: KeyMetric[]
   financialBreakdown: FinancialColumn[]
   performanceMetrics: PerformanceMetric[]
+  /** Currently selected price card for metrics calculation */
+  selectedPriceCard?: PriceCardVariant
   onDealMakerClick?: () => void
   onExportClick?: () => void
   onChangeTerms?: () => void
   onShowMethodology?: () => void
   /** Callback when property address is clicked - navigate to property details */
   onPropertyClick?: () => void
+  /** Callback when a price card is selected - triggers metrics recalculation */
+  onPriceCardSelect?: (variant: PriceCardVariant) => void
 }
 
 // ===================
@@ -540,13 +544,21 @@ function InvestmentAnalysisSection({
   financingTerms,
   priceCards,
   keyMetrics,
+  selectedPriceCard,
+  onPriceCardSelect,
   onChangeTerms,
 }: {
   financingTerms: string
   priceCards: PriceCard[]
   keyMetrics: KeyMetric[]
+  selectedPriceCard: PriceCardVariant
+  onPriceCardSelect?: (variant: PriceCardVariant) => void
   onChangeTerms?: () => void
 }) {
+  // Get the label of the selected card for display
+  const selectedCard = priceCards.find(c => c.variant === selectedPriceCard)
+  const selectedLabel = selectedCard?.label || 'Target Buy'
+
   return (
     <div 
       className="px-4 py-5"
@@ -588,17 +600,18 @@ function InvestmentAnalysisSection({
         </button>
       </div>
 
-      {/* Price Cards - rounded top, square bottom to connect with metrics */}
+      {/* Price Cards - selectable, rounded top, square bottom to connect with metrics */}
       <div className="grid grid-cols-3 gap-3">
         {priceCards.map((card) => {
-          const isSelected = card.variant === 'target'
+          const isSelected = card.variant === selectedPriceCard
           return (
-            <div 
+            <button 
               key={card.label}
-              className={`rounded-t-xl p-3 border-t border-x ${
+              onClick={() => onPriceCardSelect?.(card.variant)}
+              className={`rounded-t-xl p-3 border-t border-x transition-all ${
                 isSelected 
-                  ? 'bg-cyan-50 border-cyan-200' 
-                  : 'bg-white border-slate-200'
+                  ? 'bg-cyan-50 border-cyan-200 shadow-sm' 
+                  : 'bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300'
               }`}
             >
               <div 
@@ -620,31 +633,42 @@ function InvestmentAnalysisSection({
                   {formatPrice(card.value)}
                 </span>
               </div>
-            </div>
+            </button>
           )
         })}
       </div>
 
-      {/* Key Metrics Row - shaded to match selected card, rounded bottom corners */}
-      <div 
-        className="grid grid-cols-3 gap-4 py-4 px-3 rounded-b-xl border-x border-b bg-cyan-50 border-cyan-200"
-      >
-        {keyMetrics.map((metric) => (
-          <div key={metric.label} className="text-center">
-            <div 
-              className="font-bold mb-0.5 text-cyan-900"
-              style={{ fontSize: typography.heading.size }}
-            >
-              {metric.value}
+      {/* Key Metrics Row - shaded, shows metrics for selected price */}
+      <div className="rounded-b-xl border-x border-b bg-cyan-50 border-cyan-200 overflow-hidden">
+        {/* Selected indicator */}
+        <div 
+          className="text-center py-1.5 border-b border-cyan-200/50"
+          style={{ fontSize: typography.caption.size }}
+        >
+          <span className="text-cyan-600">
+            Metrics based on <span className="font-semibold">{selectedLabel}</span> price
+          </span>
+        </div>
+        
+        {/* Metrics grid */}
+        <div className="grid grid-cols-3 gap-4 py-4 px-3">
+          {keyMetrics.map((metric) => (
+            <div key={metric.label} className="text-center">
+              <div 
+                className="font-bold mb-0.5 text-cyan-900"
+                style={{ fontSize: typography.heading.size }}
+              >
+                {metric.value}
+              </div>
+              <div 
+                className="text-cyan-700"
+                style={{ fontSize: typography.caption.size }}
+              >
+                {metric.label}
+              </div>
             </div>
-            <div 
-              className="text-cyan-700"
-              style={{ fontSize: typography.caption.size }}
-            >
-              {metric.label}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -912,11 +936,13 @@ export function VerdictPageFresh({
   keyMetrics,
   financialBreakdown,
   performanceMetrics,
+  selectedPriceCard = 'target',
   onDealMakerClick,
   onExportClick,
   onChangeTerms,
   onShowMethodology,
   onPropertyClick,
+  onPriceCardSelect,
 }: VerdictPageFreshProps) {
   const [activeTab, setActiveTab] = useState<VerdictTab>('analyze')
   const [isPropertyExpanded, setIsPropertyExpanded] = useState(false)
@@ -957,6 +983,8 @@ export function VerdictPageFresh({
         financingTerms={financingTerms}
         priceCards={priceCards}
         keyMetrics={keyMetrics}
+        selectedPriceCard={selectedPriceCard}
+        onPriceCardSelect={onPriceCardSelect}
         onChangeTerms={onChangeTerms}
       />
 
