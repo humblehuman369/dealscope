@@ -140,32 +140,48 @@ const samplePerformanceMetrics = [
 export default function VerdictFreshPage() {
   const [selectedPriceCard, setSelectedPriceCard] = useState<PriceCardVariant>('target')
 
+  // Action handlers
   const handleDealMakerClick = () => {
     console.log('Navigate to DealMakerIQ')
+    window.location.href = '/deal-maker'
   }
 
   const handleExportClick = () => {
     console.log('Export analysis')
+    // TODO: Implement export functionality
   }
 
   const handleChangeTerms = () => {
-    console.log('Open change terms modal')
+    console.log('Open change terms - navigating to DealMaker')
+    window.location.href = '/deal-maker'
   }
 
   const handleShowMethodology = () => {
     console.log('Show methodology sheet')
+    // TODO: Open methodology modal
   }
 
   const handlePropertyClick = () => {
-    // Navigate to property details page
     console.log('Navigate to property details:', sampleProperty.zpid)
-    // In real usage: router.push(`/property/${sampleProperty.zpid}`)
+    window.location.href = `/property/${encodeURIComponent(sampleProperty.address)}`
   }
 
   const handlePriceCardSelect = (variant: PriceCardVariant) => {
     setSelectedPriceCard(variant)
     console.log('Selected price card:', variant)
-    // In real usage, this would trigger a recalculation of metrics
+  }
+
+  // Header handlers
+  const handleLogoClick = () => {
+    window.location.href = '/'
+  }
+
+  const handleSearchClick = () => {
+    window.location.href = '/search'
+  }
+
+  const handleProfileClick = () => {
+    window.location.href = '/profile'
   }
 
   return (
@@ -182,12 +198,17 @@ export default function VerdictFreshPage() {
       selectedPriceCard={selectedPriceCard}
       financialBreakdown={sampleFinancialBreakdown}
       performanceMetrics={samplePerformanceMetrics}
+      // Action callbacks
       onDealMakerClick={handleDealMakerClick}
       onExportClick={handleExportClick}
       onChangeTerms={handleChangeTerms}
       onShowMethodology={handleShowMethodology}
       onPropertyClick={handlePropertyClick}
       onPriceCardSelect={handlePriceCardSelect}
+      // Header callbacks
+      onLogoClick={handleLogoClick}
+      onSearchClick={handleSearchClick}
+      onProfileClick={handleProfileClick}
     />
   )
 }

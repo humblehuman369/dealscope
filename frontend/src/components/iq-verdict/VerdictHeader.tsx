@@ -31,6 +31,8 @@ interface VerdictHeaderProps {
   activeTab: VerdictTab
   /** Callback when a tab is clicked */
   onTabChange?: (tab: VerdictTab) => void
+  /** Callback when logo is clicked - navigate to homepage */
+  onLogoClick?: () => void
   /** Callback when search icon is clicked */
   onSearchClick?: () => void
   /** Callback when profile icon is clicked */
@@ -58,6 +60,7 @@ const TABS: { id: VerdictTab; label: string }[] = [
 export function VerdictHeader({
   activeTab,
   onTabChange,
+  onLogoClick,
   onSearchClick,
   onProfileClick,
   showTabs = true,
@@ -69,8 +72,11 @@ export function VerdictHeader({
         className="flex items-center justify-between px-4 py-3"
         style={{ backgroundColor: colors.background.deepNavy }}
       >
-        {/* Logo */}
-        <div className="flex flex-col">
+        {/* Logo - Clickable to go home */}
+        <button 
+          onClick={onLogoClick}
+          className="flex flex-col cursor-pointer bg-transparent border-none hover:opacity-80 transition-opacity"
+        >
           <div className="flex items-baseline">
             <span 
               className="text-lg font-bold tracking-tight"
@@ -86,12 +92,12 @@ export function VerdictHeader({
             </span>
           </div>
           <span 
-            className="text-[12px] font-medium -mt-0.5"
+            className="text-[12px] font-medium -mt-0.5 text-left"
             style={{ color: colors.text.white }}
           >
             by InvestIQ
           </span>
-        </div>
+        </button>
 
         {/* Right Icons */}
         <div className="flex items-center gap-3">

@@ -18,9 +18,16 @@ export type { IQProperty, IQAnalysisResult }
 interface VerdictPageAdapterProps {
   property: IQProperty
   analysis: IQAnalysisResult
+  // Action callbacks
   onDealMakerClick?: () => void
   onExportClick?: () => void
   onPropertyClick?: () => void
+  onChangeTerms?: () => void
+  onShowMethodology?: () => void
+  // Header callbacks
+  onLogoClick?: () => void
+  onSearchClick?: () => void
+  onProfileClick?: () => void
 }
 
 // Helper to get verdict label from score
@@ -48,6 +55,11 @@ export function VerdictPageAdapter({
   onDealMakerClick,
   onExportClick,
   onPropertyClick,
+  onChangeTerms,
+  onShowMethodology,
+  onLogoClick,
+  onSearchClick,
+  onProfileClick,
 }: VerdictPageAdapterProps) {
   const [selectedPriceCard, setSelectedPriceCard] = useState<PriceCardVariant>('target')
 
@@ -238,9 +250,16 @@ export function VerdictPageAdapter({
       performanceMetrics={performanceMetrics}
       selectedPriceCard={selectedPriceCard}
       onPriceCardSelect={handlePriceCardSelect}
+      // Action callbacks
       onDealMakerClick={onDealMakerClick}
       onExportClick={onExportClick}
       onPropertyClick={onPropertyClick}
+      onChangeTerms={onChangeTerms}
+      onShowMethodology={onShowMethodology}
+      // Header callbacks
+      onLogoClick={onLogoClick}
+      onSearchClick={onSearchClick}
+      onProfileClick={onProfileClick}
     />
   )
 }

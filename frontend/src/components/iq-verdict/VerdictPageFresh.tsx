@@ -111,6 +111,7 @@ interface VerdictPageFreshProps {
   performanceMetrics: PerformanceMetric[]
   /** Currently selected price card for metrics calculation */
   selectedPriceCard?: PriceCardVariant
+  // Action callbacks
   onDealMakerClick?: () => void
   onExportClick?: () => void
   onChangeTerms?: () => void
@@ -119,6 +120,15 @@ interface VerdictPageFreshProps {
   onPropertyClick?: () => void
   /** Callback when a price card is selected - triggers metrics recalculation */
   onPriceCardSelect?: (variant: PriceCardVariant) => void
+  // Header callbacks
+  /** Callback when logo is clicked - navigate to homepage */
+  onLogoClick?: () => void
+  /** Callback when search icon is clicked */
+  onSearchClick?: () => void
+  /** Callback when profile icon is clicked */
+  onProfileClick?: () => void
+  /** Callback when a tab is clicked */
+  onTabChange?: (tab: VerdictTab) => void
 }
 
 // ===================
@@ -958,9 +968,20 @@ export function VerdictPageFresh({
   onShowMethodology,
   onPropertyClick,
   onPriceCardSelect,
+  // Header callbacks
+  onLogoClick,
+  onSearchClick,
+  onProfileClick,
+  onTabChange,
 }: VerdictPageFreshProps) {
   const [activeTab, setActiveTab] = useState<VerdictTab>('analyze')
   const [isPropertyExpanded, setIsPropertyExpanded] = useState(false)
+
+  // Handle tab change - use external handler if provided, otherwise use local state
+  const handleTabChange = (tab: VerdictTab) => {
+    setActiveTab(tab)
+    onTabChange?.(tab)
+  }
 
   return (
     <div 
@@ -970,7 +991,10 @@ export function VerdictPageFresh({
       {/* Header - Full width */}
       <VerdictHeader
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
+        onLogoClick={onLogoClick}
+        onSearchClick={onSearchClick}
+        onProfileClick={onProfileClick}
       />
 
       {/* Content Container - Max width for readability on wide screens */}

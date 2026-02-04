@@ -491,6 +491,30 @@ function VerdictContent() {
     console.log('Export clicked')
   }, [])
 
+  // Handle change terms - navigate to Deal Maker to adjust assumptions
+  const handleChangeTerms = useCallback(() => {
+    handleNavigateToDealMaker()
+  }, [handleNavigateToDealMaker])
+
+  // Handle show methodology - could open a modal or navigate
+  const handleShowMethodology = useCallback(() => {
+    // TODO: Implement methodology popup/modal
+    console.log('Show methodology clicked')
+  }, [])
+
+  // Header navigation handlers
+  const handleLogoClick = useCallback(() => {
+    router.push('/')
+  }, [router])
+
+  const handleSearchClick = useCallback(() => {
+    router.push('/search')
+  }, [router])
+
+  const handleProfileClick = useCallback(() => {
+    router.push('/profile')
+  }, [router])
+
   // Loading state
   if (isLoading) {
     return (
@@ -535,9 +559,16 @@ function VerdictContent() {
       <VerdictPageAdapter
         property={property}
         analysis={analysis}
+        // Action callbacks
         onDealMakerClick={handleNavigateToDealMaker}
         onExportClick={handleExport}
         onPropertyClick={handlePropertyClick}
+        onChangeTerms={handleChangeTerms}
+        onShowMethodology={handleShowMethodology}
+        // Header callbacks
+        onLogoClick={handleLogoClick}
+        onSearchClick={handleSearchClick}
+        onProfileClick={handleProfileClick}
       />
 
       {/* Progressive Profiling Prompt - Shows after analysis completion */}
