@@ -908,35 +908,26 @@ function PerformanceMetricsSection({
 }
 
 /**
- * Section G: Fixed Bottom Actions
+ * Section G: DealMakerIQ Link (bottom right)
  */
-function BottomActions({
+function DealMakerLink({
   onDealMakerClick,
 }: {
   onDealMakerClick?: () => void
 }) {
   return (
-    <div 
-      className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-3"
-      style={{ 
-        borderColor: colors.ui.border,
-        boxShadow: '0 -4px 12px rgba(0, 0, 0, 0.05)',
-      }}
-    >
-      <div className="max-w-2xl mx-auto">
-        <button
-          onClick={onDealMakerClick}
-          className="w-full flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors"
-          style={{ 
-            height: components.button.primaryHeight,
-            backgroundColor: colors.brand.teal,
-            color: colors.text.white,
-          }}
-        >
-          Go to DealMakerIQ
-          <ExternalLink className="w-4 h-4" />
-        </button>
-      </div>
+    <div className="flex justify-end px-4 py-4">
+      <button
+        onClick={onDealMakerClick}
+        className="flex items-center gap-1.5 font-medium transition-colors hover:opacity-75"
+        style={{ 
+          color: colors.brand.teal,
+          fontSize: typography.body.size,
+        }}
+      >
+        Go to DealMakerIQ
+        <ExternalLink className="w-4 h-4" />
+      </button>
     </div>
   )
 }
@@ -970,7 +961,7 @@ export function VerdictPageFresh({
 
   return (
     <div 
-      className="min-h-screen pb-32"
+      className="min-h-screen"
       style={{ backgroundColor: colors.background.light }}
     >
       {/* Header */}
@@ -1016,8 +1007,8 @@ export function VerdictPageFresh({
       {/* Section F: Performance Metrics */}
       <PerformanceMetricsSection metrics={performanceMetrics} />
 
-      {/* Section G: Fixed Bottom Actions */}
-      <BottomActions
+      {/* Section G: DealMakerIQ Link */}
+      <DealMakerLink
         onDealMakerClick={onDealMakerClick}
       />
     </div>
