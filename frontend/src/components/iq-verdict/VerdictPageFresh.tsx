@@ -547,6 +547,7 @@ function InvestmentAnalysisSection({
   selectedPriceCard,
   onPriceCardSelect,
   onChangeTerms,
+  onExportClick,
 }: {
   financingTerms: string
   priceCards: PriceCard[]
