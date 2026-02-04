@@ -709,11 +709,11 @@ function FinancialBreakdownSection({
 
       {/* Column Headers - matches Performance Metrics table header style */}
       <div 
-        className="grid grid-cols-3 divide-x px-3 py-2 border-b"
+        className="grid grid-cols-3 gap-2 px-4 py-2 border-b"
         style={{ borderColor: colors.ui.border }}
       >
         {columns.map((column) => (
-          <div key={column.title} className="px-2">
+          <div key={column.title}>
             <span 
               className="uppercase tracking-wide"
               style={{ 
@@ -728,11 +728,11 @@ function FinancialBreakdownSection({
         ))}
       </div>
 
-      {/* Column Content */}
-      <div className="grid grid-cols-3 divide-x" style={{ borderColor: colors.ui.border }}>
+      {/* Column Content - no vertical separators, matching row height with Performance Metrics */}
+      <div className="grid grid-cols-3 gap-2 px-4 py-3">
         {columns.map((column) => (
-          <div key={column.title} className="px-3 py-3">
-            <div className="space-y-1.5">
+          <div key={column.title}>
+            <div className="space-y-2">
               {column.items
                 .slice(0, isExpanded ? undefined : 3)
                 .map((item, idx) => (
