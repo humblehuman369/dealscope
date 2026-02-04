@@ -554,6 +554,7 @@ function InvestmentAnalysisSection({
   selectedPriceCard: PriceCardVariant
   onPriceCardSelect?: (variant: PriceCardVariant) => void
   onChangeTerms?: () => void
+  onExportClick?: () => void
 }) {
   // Get the label of the selected card for display
   const selectedCard = priceCards.find(c => c.variant === selectedPriceCard)
@@ -586,18 +587,32 @@ function InvestmentAnalysisSection({
             Based on YOUR financing terms ({financingTerms})
           </p>
         </div>
-        <button 
-          onClick={onChangeTerms}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-slate-50"
-          style={{ 
-            fontSize: typography.caption.size + 1,
-            color: colors.text.secondary,
-            borderColor: colors.ui.border,
-          }}
-        >
-          <Settings2 className="w-3.5 h-3.5" />
-          Change terms
-        </button>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={onExportClick}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-slate-50"
+            style={{ 
+              fontSize: typography.caption.size + 1,
+              color: colors.text.secondary,
+              borderColor: colors.ui.border,
+            }}
+          >
+            <Download className="w-3.5 h-3.5" />
+            Export
+          </button>
+          <button 
+            onClick={onChangeTerms}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-slate-50"
+            style={{ 
+              fontSize: typography.caption.size + 1,
+              color: colors.text.secondary,
+              borderColor: colors.ui.border,
+            }}
+          >
+            <Settings2 className="w-3.5 h-3.5" />
+            Change terms
+          </button>
+        </div>
       </div>
 
       {/* Price Cards - selectable, square corners, full border */}
@@ -897,14 +912,12 @@ function PerformanceMetricsSection({
  */
 function BottomActions({
   onDealMakerClick,
-  onExportClick,
 }: {
   onDealMakerClick?: () => void
-  onExportClick?: () => void
 }) {
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-4"
+      className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-3"
       style={{ 
         borderColor: colors.ui.border,
         boxShadow: '0 -4px 12px rgba(0, 0, 0, 0.05)',
@@ -922,17 +935,6 @@ function BottomActions({
         >
           Go to DealMakerIQ
           <ExternalLink className="w-4 h-4" />
-        </button>
-        <button
-          onClick={onExportClick}
-          className="w-full mt-2 flex items-center justify-center gap-2 font-medium transition-colors hover:opacity-75"
-          style={{ 
-            height: components.button.secondaryHeight,
-            color: colors.text.secondary,
-          }}
-        >
-          <Download className="w-4 h-4" />
-          Export Analysis
         </button>
       </div>
     </div>
@@ -1005,6 +1007,7 @@ export function VerdictPageFresh({
         selectedPriceCard={selectedPriceCard}
         onPriceCardSelect={onPriceCardSelect}
         onChangeTerms={onChangeTerms}
+        onExportClick={onExportClick}
       />
 
       {/* Section E: Financial Breakdown */}
@@ -1016,7 +1019,6 @@ export function VerdictPageFresh({
       {/* Section G: Fixed Bottom Actions */}
       <BottomActions
         onDealMakerClick={onDealMakerClick}
-        onExportClick={onExportClick}
       />
     </div>
   )
