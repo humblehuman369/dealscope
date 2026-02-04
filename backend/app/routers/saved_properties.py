@@ -231,9 +231,16 @@ async def save_property(
         )
         
     except ValueError as e:
+        # Check if it's a duplicate property error
+        error_msg = str(e)
+        if "already in your saved list" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=error_msg
+            )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
+            detail=error_msg
         )
 
 

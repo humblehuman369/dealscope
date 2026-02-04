@@ -166,15 +166,15 @@ export default function DashboardPage() {
       const token = localStorage.getItem('access_token')
       if (!token) return
 
-      // Fetch saved properties and stats in parallel
+      // Fetch saved properties and stats in parallel via Next.js API routes
       const [propertiesRes, statsRes, historyRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/v1/properties/saved?limit=20`, {
+        fetch(`/api/v1/properties/saved?limit=20`, {
           headers: { 'Authorization': `Bearer ${token}` },
         }),
-        fetch(`${API_BASE_URL}/api/v1/properties/saved/stats`, {
+        fetch(`/api/v1/properties/saved/stats`, {
           headers: { 'Authorization': `Bearer ${token}` },
         }),
-        fetch(`${API_BASE_URL}/api/v1/search-history/recent?limit=5`, {
+        fetch(`/api/v1/search-history/recent?limit=5`, {
           headers: { 'Authorization': `Bearer ${token}` },
         })
       ])

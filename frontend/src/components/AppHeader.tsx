@@ -20,7 +20,7 @@
  * └─────────────────────────────────────────────────┘
  */
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, User, ChevronDown, ChevronUp, Heart } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
@@ -154,9 +154,55 @@ export function AppHeader({
   const [isPropertyExpanded, setIsPropertyExpanded] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isCheckingSaved, setIsCheckingSaved] = useState(false)
   
   // Auth context for save functionality
   const { isAuthenticated, setShowAuthModal } = useAuth()
+
+  // Get address from URL params if not provided (needed before early return)
+  const addressFromUrl = searchParams?.get('address') || ''
+  const decodedAddressFromUrl = addressFromUrl ? decodeURIComponent(addressFromUrl) : ''
+  const displayAddress = propertyAddress || decodedAddressFromUrl || (property 
+    ? `${property.address}, ${property.city}, ${property.state} ${property.zip}`
+    : '')
+
+  // Check if property is already saved on mount
+  useEffect(() => {
+    const checkIfSaved = async () => {
+      if (!isAuthenticated || !displayAddress || isCheckingSaved) return
+      
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+      
+      setIsCheckingSaved(true)
+      try {
+        // Parse the street address for search
+        const streetAddress = displayAddress.split(',')[0]?.trim() || ''
+        
+        const response = await fetch(`/api/v1/properties/saved?search=${encodeURIComponent(streetAddress)}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          // Backend returns a direct array of SavedPropertySummary objects
+          const properties = Array.isArray(data) ? data : (data.properties || data.items || [])
+          
+          // Check if any saved property matches this address
+          const isAlreadySaved = properties.some((p: { full_address?: string; address_street?: string }) => 
+            p.address_street?.toLowerCase() === streetAddress.toLowerCase()
+          )
+          setIsSaved(!!isAlreadySaved)
+        }
+      } catch (error) {
+        console.error('Error checking saved status:', error)
+      } finally {
+        setIsCheckingSaved(false)
+      }
+    }
+    
+    checkIfSaved()
+  }, [displayAddress, isAuthenticated]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Determine if header should be hidden
   if (HIDDEN_ROUTES.includes(pathname || '')) {
@@ -170,14 +216,6 @@ export function AppHeader({
   const shouldShowPropertyBar = showPropertyBarProp !== undefined 
     ? showPropertyBarProp 
     : !NO_PROPERTY_BAR_ROUTES.some(route => pathname?.startsWith(route))
-
-  // Get address from URL params if not provided
-  // Use decodeURIComponent to handle any double-encoding that may have occurred
-  const addressFromUrl = searchParams?.get('address') || ''
-  const decodedAddressFromUrl = addressFromUrl ? decodeURIComponent(addressFromUrl) : ''
-  const displayAddress = propertyAddress || decodedAddressFromUrl || (property 
-    ? `${property.address}, ${property.city}, ${property.state} ${property.zip}`
-    : '')
 
   // Navigation handlers
   const handleLogoClick = () => {
@@ -322,7 +360,19 @@ export function AppHeader({
       })
 
       if (response.ok || response.status === 409) {
+        // 201 = created, 409 = already exists (both mean it's saved)
         setIsSaved(true)
+      } else if (response.status === 400) {
+        // Check if it's a duplicate error (backend may return 400 for duplicates)
+        const errorText = await response.text()
+        if (errorText.includes('already in your saved list') || errorText.includes('already saved')) {
+          setIsSaved(true)
+        } else {
+          console.error('Failed to save property:', response.status, errorText)
+        }
+      } else if (response.status === 401) {
+        // Token expired - prompt login
+        setShowAuthModal('login')
       } else {
         console.error('Failed to save property:', response.status, await response.text())
       }
