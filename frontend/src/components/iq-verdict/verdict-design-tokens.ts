@@ -73,8 +73,10 @@ export const typography = {
 export const colors = {
   // Brand - InvestIQ Voice
   brand: {
-    /** #0891B2 - Primary teal for IQ voice, CTAs, navigation */
+    /** #0891B2 - Primary teal for dark backgrounds, header, navigation */
     teal: '#0891B2',
+    /** #06B6D4 - Brighter teal for white backgrounds (score ring, bars, links) */
+    tealBright: '#06B6D4',
     /** #00D4FF - Electric cyan for accents */
     cyan: '#00D4FF',
   },
@@ -175,10 +177,11 @@ export const components = {
 
 /**
  * Get color based on score value (0-100)
+ * Uses tealBright for better visibility on white backgrounds
  */
 export function getScoreColor(score: number): string {
   if (score >= 80) return colors.status.positive
-  if (score >= 65) return colors.brand.teal
+  if (score >= 65) return colors.brand.tealBright
   if (score >= 50) return colors.status.amber
   return colors.status.negative
 }
@@ -231,10 +234,11 @@ export function getUrgencyColor(urgency: string): string {
 
 /**
  * Get market temperature color
+ * Uses tealBright for better visibility on white backgrounds
  */
 export function getMarketTempColor(temp: string): string {
   switch (temp.toLowerCase()) {
-    case 'cold': return colors.brand.teal
+    case 'cold': return colors.brand.tealBright
     case 'warm': return colors.status.warning
     case 'hot': return colors.status.negative
     default: return colors.text.tertiary
