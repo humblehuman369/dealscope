@@ -136,7 +136,7 @@ export function VerdictHeader({
                   transition-all whitespace-nowrap border-r last:border-r-0
                 `}
                 style={{
-                  backgroundColor: isActive ? colors.brand.teal : 'transparent',
+                  backgroundColor: isActive ? colors.background.deepNavy : 'transparent',
                   color: isActive ? colors.text.white : colors.text.secondary,
                   borderColor: colors.ui.border,
                 }}
