@@ -85,9 +85,11 @@ export function VerdictHeader({
               IQ
             </span>
           </div>
-          <span className="text-[12px] font-medium -mt-0.5">
-            <span style={{ color: colors.text.white }}>by Invest</span>
-            <span style={{ color: colors.brand.teal }}>IQ</span>
+          <span 
+            className="text-[12px] font-medium -mt-0.5"
+            style={{ color: colors.text.white }}
+          >
+            by InvestIQ
           </span>
         </div>
 
