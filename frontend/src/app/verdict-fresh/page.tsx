@@ -23,6 +23,8 @@ const sampleProperty = {
   sqft: 1722,
   price: 821000,
   monthlyRent: 5555,
+  listingStatus: 'FOR_SALE' as const,
+  zpid: '123456789',
 }
 
 const sampleQuickStats = {
@@ -137,6 +139,12 @@ export default function VerdictFreshPage() {
     console.log('Show methodology sheet')
   }
 
+  const handlePropertyClick = () => {
+    // Navigate to property details page
+    console.log('Navigate to property details:', sampleProperty.zpid)
+    // In real usage: router.push(`/property/${sampleProperty.zpid}`)
+  }
+
   return (
     <VerdictPageFresh
       property={sampleProperty}
@@ -154,6 +162,7 @@ export default function VerdictFreshPage() {
       onExportClick={handleExportClick}
       onChangeTerms={handleChangeTerms}
       onShowMethodology={handleShowMethodology}
+      onPropertyClick={handlePropertyClick}
     />
   )
 }

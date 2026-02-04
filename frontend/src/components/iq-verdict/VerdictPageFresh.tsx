@@ -51,6 +51,10 @@ interface PropertySummary {
   sqft: number
   price: number
   monthlyRent: number
+  /** Listing status to determine price label */
+  listingStatus?: 'FOR_SALE' | 'PENDING' | 'SOLD' | 'OFF_MARKET' | string
+  /** Property ID for linking to details page */
+  zpid?: string | number
 }
 
 interface QuickStats {
@@ -108,6 +112,8 @@ interface VerdictPageFreshProps {
   onExportClick?: () => void
   onChangeTerms?: () => void
   onShowMethodology?: () => void
+  /** Callback when property address is clicked - navigate to property details */
+  onPropertyClick?: () => void
 }
 
 // ===================
@@ -141,42 +147,53 @@ function formatShortPrice(price: number): string {
 function PropertySummaryBar({ 
   property, 
   isExpanded, 
-  onToggle 
+  onToggle,
+  onPropertyClick,
 }: { 
   property: PropertySummary
   isExpanded: boolean
   onToggle: () => void
+  onPropertyClick?: () => void
 }) {
+  // Determine price label based on listing status
+  const isListed = property.listingStatus === 'FOR_SALE' || property.listingStatus === 'PENDING'
+  const priceLabel = isListed ? 'List Price' : 'Est. Market'
+
   return (
     <div 
       className="bg-white border-b"
       style={{ borderColor: colors.ui.border }}
     >
       {/* Collapsed Header */}
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-slate-400">📍</span>
-          <span 
-            className="font-medium text-sm"
-            style={{ color: colors.text.primary }}
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-slate-400 flex-shrink-0">📍</span>
+          <button
+            onClick={onPropertyClick}
+            className="font-medium text-sm truncate hover:underline transition-colors text-left"
+            style={{ color: colors.brand.teal }}
+            title="View property details"
           >
             {property.address}, {property.city}, {property.state} {property.zip}
-          </span>
+          </button>
         </div>
-        {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-slate-400" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-slate-400" />
-        )}
-      </button>
+        <button
+          onClick={onToggle}
+          className="p-1 hover:bg-slate-100 rounded transition-colors flex-shrink-0 ml-2"
+          aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+        >
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4 text-slate-400" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-slate-400" />
+          )}
+        </button>
+      </div>
 
-      {/* Expanded Details */}
+      {/* Expanded Details - 4 columns (removed Rent) */}
       {isExpanded && (
         <div 
-          className="grid grid-cols-5 gap-2 px-4 pb-3 border-t"
+          className="grid grid-cols-4 gap-2 px-4 pb-3 border-t"
           style={{ borderColor: colors.ui.border }}
         >
           <div className="text-center pt-3">
@@ -192,12 +209,8 @@ function PropertySummaryBar({
             <div className="font-semibold text-slate-800">{property.sqft.toLocaleString()}</div>
           </div>
           <div className="text-center pt-3">
-            <div className="text-xs text-slate-500 mb-0.5">Price</div>
+            <div className="text-xs text-slate-500 mb-0.5">{priceLabel}</div>
             <div className="font-semibold text-slate-800">{formatShortPrice(property.price)}</div>
-          </div>
-          <div className="text-center pt-3">
-            <div className="text-xs text-slate-500 mb-0.5">Rent</div>
-            <div className="font-semibold text-slate-800">${property.monthlyRent.toLocaleString()}/mo</div>
           </div>
         </div>
       )}
@@ -898,6 +911,7 @@ export function VerdictPageFresh({
   onExportClick,
   onChangeTerms,
   onShowMethodology,
+  onPropertyClick,
 }: VerdictPageFreshProps) {
   const [activeTab, setActiveTab] = useState<VerdictTab>('analyze')
   const [isPropertyExpanded, setIsPropertyExpanded] = useState(false)
@@ -918,6 +932,7 @@ export function VerdictPageFresh({
         property={property}
         isExpanded={isPropertyExpanded}
         onToggle={() => setIsPropertyExpanded(!isPropertyExpanded)}
+        onPropertyClick={onPropertyClick}
       />
 
       {/* Section B: Score Hero */}
