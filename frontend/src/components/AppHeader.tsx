@@ -278,6 +278,13 @@ export function AppHeader({
 
     if (isSaving || isSaved || !displayAddress) return
 
+    // Get auth token
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      setShowAuthModal('login')
+      return
+    }
+
     setIsSaving(true)
     try {
       // Parse address for API
@@ -287,30 +294,37 @@ export function AppHeader({
       const stateZip = addressParts[2] || ''
       const [state, zipCode] = stateZip.split(/\s+/)
 
-      const response = await fetch('/api/v1/saved-properties', {
+      const response = await fetch('/api/v1/properties/saved', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          zpid: property?.zpid || null,
-          address: streetAddress,
-          city: city,
-          state: state || '',
-          zip_code: zipCode || '',
-          property_type: 'Single Family',
-          bedrooms: property?.beds || null,
-          bathrooms: property?.baths || null,
-          square_feet: property?.sqft || null,
-          list_price: property?.price || null,
-          latitude: null,
-          longitude: null,
-          photo_url: null,
-          notes: '',
+          address_street: streetAddress,
+          address_city: city,
+          address_state: state || '',
+          address_zip: zipCode || '',
+          full_address: displayAddress,
+          status: 'watching',
+          property_data_snapshot: {
+            zpid: property?.zpid || null,
+            street: streetAddress,
+            city: city,
+            state: state || '',
+            zipCode: zipCode || '',
+            listPrice: property?.price || null,
+            bedrooms: property?.beds || null,
+            bathrooms: property?.baths || null,
+            sqft: property?.sqft || null,
+          },
         }),
       })
 
       if (response.ok || response.status === 409) {
         setIsSaved(true)
+      } else {
+        console.error('Failed to save property:', response.status, await response.text())
       }
     } catch (error) {
       console.error('Failed to save property:', error)
