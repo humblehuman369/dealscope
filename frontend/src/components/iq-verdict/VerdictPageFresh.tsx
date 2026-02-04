@@ -588,14 +588,18 @@ function InvestmentAnalysisSection({
         </button>
       </div>
 
-      {/* Price Cards */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
+      {/* Price Cards - rounded top, square bottom to connect with metrics */}
+      <div className="grid grid-cols-3 gap-3">
         {priceCards.map((card) => {
-          const styles = priceCardStyles[card.variant]
+          const isSelected = card.variant === 'target'
           return (
             <div 
               key={card.label}
-              className={`rounded-xl p-3 border ${styles.bgClass} ${styles.borderClass}`}
+              className={`rounded-t-xl p-3 border-t border-x ${
+                isSelected 
+                  ? 'bg-cyan-50 border-cyan-200' 
+                  : 'bg-white border-slate-200'
+              }`}
             >
               <div 
                 className="uppercase tracking-wide text-center mb-1"
@@ -604,37 +608,38 @@ function InvestmentAnalysisSection({
                   fontWeight: typography.label.weight,
                 }}
               >
-                <span className={styles.labelClass}>{card.label}</span>
+                <span className={isSelected ? 'text-cyan-700' : 'text-slate-600'}>
+                  {card.label}
+                </span>
               </div>
               <div 
                 className="text-center font-bold"
                 style={{ fontSize: typography.heading.size }}
               >
-                <span className={styles.valueClass}>{formatPrice(card.value)}</span>
+                <span className={isSelected ? 'text-cyan-900' : 'text-slate-800'}>
+                  {formatPrice(card.value)}
+                </span>
               </div>
             </div>
           )
         })}
       </div>
 
-      {/* Key Metrics Row */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Key Metrics Row - shaded to match selected card, rounded bottom corners */}
+      <div 
+        className="grid grid-cols-3 gap-4 py-4 px-3 rounded-b-xl border-x border-b bg-cyan-50 border-cyan-200"
+      >
         {keyMetrics.map((metric) => (
           <div key={metric.label} className="text-center">
             <div 
-              className="font-bold mb-0.5"
-              style={{ 
-                fontSize: typography.heading.size,
-                color: colors.text.primary,
-              }}
+              className="font-bold mb-0.5 text-cyan-900"
+              style={{ fontSize: typography.heading.size }}
             >
               {metric.value}
             </div>
             <div 
-              style={{ 
-                fontSize: typography.caption.size,
-                color: colors.text.tertiary,
-              }}
+              className="text-cyan-700"
+              style={{ fontSize: typography.caption.size }}
             >
               {metric.label}
             </div>
