@@ -600,7 +600,7 @@ function InvestmentAnalysisSection({
         </button>
       </div>
 
-      {/* Price Cards - selectable, rounded top, square bottom to connect with metrics */}
+      {/* Price Cards - selectable, square corners */}
       <div className="grid grid-cols-3 gap-3">
         {priceCards.map((card) => {
           const isSelected = card.variant === selectedPriceCard
@@ -608,7 +608,7 @@ function InvestmentAnalysisSection({
             <button 
               key={card.label}
               onClick={() => onPriceCardSelect?.(card.variant)}
-              className={`rounded-t-xl p-3 border-t border-x transition-all ${
+              className={`p-3 border-t border-x transition-all ${
                 isSelected 
                   ? 'bg-cyan-50 border-cyan-200 shadow-sm' 
                   : 'bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300'
@@ -639,7 +639,7 @@ function InvestmentAnalysisSection({
       </div>
 
       {/* Key Metrics Row - shaded, shows metrics for selected price */}
-      <div className="rounded-b-xl border-x border-b bg-cyan-50 border-cyan-200 overflow-hidden">
+      <div className="border-x border-b bg-cyan-50 border-cyan-200 overflow-hidden">
         {/* Selected indicator */}
         <div 
           className="text-center py-1.5 border-b border-cyan-200/50"
