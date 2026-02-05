@@ -111,6 +111,8 @@ class Address(BaseModel):
     state: str
     zip_code: str
     county: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     full_address: str
 
 

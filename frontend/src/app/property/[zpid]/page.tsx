@@ -132,6 +132,8 @@ function normalizePropertyData(
       city?: string
       state?: string
       zip_code?: string
+      latitude?: number
+      longitude?: number
     }
     details?: {
       property_type?: string
@@ -304,6 +306,8 @@ function normalizePropertyData(
     annualTax: p.market?.property_taxes_annual,
     taxAssessedValue: p.valuations?.tax_assessed_value,
     hoaFee: p.market?.hoa_fees_monthly,
+    latitude: p.address?.latitude,
+    longitude: p.address?.longitude,
     description: p.description || `${p.details?.bedrooms || 0} bed, ${p.details?.bathrooms || 0} bath property in ${city}, ${state}.`,
     images,
     totalPhotos: images.length,

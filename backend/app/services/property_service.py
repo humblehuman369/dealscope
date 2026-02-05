@@ -140,6 +140,11 @@ class PropertyService:
         
         # Build address object
         address_obj = self._parse_address(address, rentcast_data)
+        # Ensure lat/long are set from normalized data if missing from rentcast_data
+        if address_obj.latitude is None:
+            address_obj.latitude = normalized.get("latitude")
+        if address_obj.longitude is None:
+            address_obj.longitude = normalized.get("longitude")
         
         # Build response
         response = PropertyResponse(
@@ -303,6 +308,8 @@ class PropertyService:
                 state=data.get("state", ""),
                 zip_code=data.get("zipCode", ""),
                 county=data.get("county"),
+                latitude=data.get("latitude"),
+                longitude=data.get("longitude"),
                 full_address=data.get("formattedAddress", address)
             )
         
@@ -314,6 +321,8 @@ class PropertyService:
             state=parts[2].strip().split()[0] if len(parts) > 2 else "",
             zip_code=parts[2].strip().split()[1] if len(parts) > 2 and len(parts[2].strip().split()) > 1 else "",
             county=None,
+            latitude=None,
+            longitude=None,
             full_address=address
         )
     
