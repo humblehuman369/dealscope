@@ -109,7 +109,7 @@ export default function AnalysisIQScreen() {
     setActiveNav(navId);
     
     // Navigate based on nav item
-    const encodedAddress = encodeURIComponent(property.address);
+    const addressParam = property.address;
     switch (navId) {
       case 'search':
         router.push('/search');
@@ -118,7 +118,7 @@ export default function AnalysisIQScreen() {
         router.push({
           pathname: '/property-details/[address]',
           params: {
-            address: encodedAddress,
+            address: addressParam,
             price: String(property.price),
             beds: String(property.beds),
             baths: String(property.baths),
@@ -132,7 +132,7 @@ export default function AnalysisIQScreen() {
       case 'deals':
         router.push({
           pathname: '/deal-maker/[address]',
-          params: { address: encodedAddress },
+          params: { address: addressParam },
         });
         break;
       // Other nav items to be connected later
@@ -155,7 +155,7 @@ export default function AnalysisIQScreen() {
     router.push({
       pathname: '/analytics/[address]',
       params: { 
-        address: encodeURIComponent(property.address),
+        address: property.address,
         strategy: strategyMap[currentStrategy] || 'ltr',
       },
     });

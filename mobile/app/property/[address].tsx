@@ -186,7 +186,7 @@ export default function PropertyDetailScreen() {
             router.push({
               pathname: '/deal-maker/[address]',
               params: {
-                address: encodeURIComponent(decodedAddress),
+                address: decodedAddress,
                 listPrice: String(analytics.pricing.listPrice),
                 rent: String(analytics.pricing.rentEstimate),
                 tax: String(analytics.property.yearBuilt ? 3600 : 3600), // Default tax

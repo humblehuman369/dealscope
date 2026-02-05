@@ -99,7 +99,7 @@ export default function PropertyAnalyticsScreen() {
                 router.push({
                   pathname: '/deal-maker/[address]',
                   params: {
-                    address: encodeURIComponent(decodedAddress),
+                    address: decodedAddress,
                     listPrice: String(property.listPrice),
                     rent: String(property.monthlyRent),
                     tax: String(property.propertyTaxes),

@@ -68,7 +68,7 @@ export default function VerdictScreen() {
   }, [router]);
 
   const handleViewStrategy = useCallback((strategy: IQStrategy) => {
-    const encodedAddress = encodeURIComponent(property.address);
+    const addressParam = property.address;
     
     const redesignStrategyMap: Record<IQStrategy['id'], StrategyId> = {
       'long-term-rental': 'ltr',
@@ -84,7 +84,7 @@ export default function VerdictScreen() {
     router.push({
       pathname: '/analysis-iq/[address]',
       params: {
-        address: encodedAddress,
+        address: addressParam,
         strategy: redesignStrategy,
         price: String(property.price),
         beds: String(property.beds),
@@ -96,11 +96,11 @@ export default function VerdictScreen() {
 
   const handleCompareAll = useCallback(() => {
     // Navigate to Analysis IQ page for strategy comparison
-    const encodedAddress = encodeURIComponent(property.address);
+    const addressParam = property.address;
     router.push({
       pathname: '/analysis-iq/[address]',
       params: {
-        address: encodedAddress,
+        address: addressParam,
         price: String(property.price),
         beds: String(property.beds),
         baths: String(property.baths),
@@ -112,7 +112,7 @@ export default function VerdictScreen() {
 
   // Handle navigation from CompactHeader
   const handleNavChange = useCallback((navId: NavItemId) => {
-    const encodedAddress = encodeURIComponent(property.address);
+    const addressParam = property.address;
     switch (navId) {
       case 'search':
         router.push('/(tabs)/search');
@@ -121,7 +121,7 @@ export default function VerdictScreen() {
         router.push({
           pathname: '/property-details/[address]',
           params: {
-            address: encodedAddress,
+            address: addressParam,
             price: String(property.price),
             beds: String(property.beds),
             baths: String(property.baths),
@@ -136,7 +136,7 @@ export default function VerdictScreen() {
         router.push({
           pathname: '/analysis-iq/[address]',
           params: {
-            address: encodedAddress,
+            address: addressParam,
             price: String(property.price),
             beds: String(property.beds),
             baths: String(property.baths),
@@ -147,7 +147,7 @@ export default function VerdictScreen() {
       case 'deal-maker':
         router.push({
           pathname: '/deal-maker/[address]',
-          params: { address: encodedAddress },
+          params: { address: addressParam },
         } as any);
         break;
     }

@@ -192,7 +192,7 @@ export default function VerdictIQScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setActiveTab(tabId);
 
-    const encodedAddress = encodeURIComponent(property.street);
+    const addressParam = property.street;
     
     switch (tabId) {
       case 'analyze':
@@ -202,7 +202,7 @@ export default function VerdictIQScreen() {
         router.push({
           pathname: '/property-details/[address]',
           params: {
-            address: encodedAddress,
+            address: addressParam,
             price: String(property.price),
             beds: String(property.beds),
             baths: String(property.baths),
@@ -284,7 +284,7 @@ export default function VerdictIQScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({
       pathname: '/deal-maker/[address]',
-      params: { address: encodeURIComponent(property.street) },
+      params: { address: property.street },
     });
   }, [router, property.street]);
 

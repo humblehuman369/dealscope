@@ -54,11 +54,11 @@ export default function PropertyDetailsRoute() {
   }, [router]);
 
   const handleAnalyze = useCallback(() => {
-    const encodedAddress = encodeURIComponent(property.address);
+    const addressParam = property.address;
     router.push({
       pathname: '/verdict-iq/[address]',
       params: {
-        address: encodedAddress,
+        address: addressParam,
         price: String(property.price),
         beds: String(property.beds),
         baths: String(property.baths),
@@ -85,7 +85,7 @@ export default function PropertyDetailsRoute() {
   }, []);
 
   const handleNavChange = useCallback((navId: string) => {
-    const encodedAddress = encodeURIComponent(property.address);
+    const addressParam = property.address;
     switch (navId) {
       case 'search':
         router.push('/(tabs)/search');
@@ -97,7 +97,7 @@ export default function PropertyDetailsRoute() {
         router.push({
           pathname: '/analysis-iq/[address]',
           params: {
-            address: encodedAddress,
+            address: addressParam,
             price: String(property.price),
             beds: String(property.beds),
             baths: String(property.baths),
@@ -108,7 +108,7 @@ export default function PropertyDetailsRoute() {
       case 'deals':
         router.push({
           pathname: '/deal-maker/[address]',
-          params: { address: encodedAddress },
+          params: { address: addressParam },
         } as any);
         break;
       default:
