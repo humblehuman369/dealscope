@@ -191,10 +191,19 @@ export function VerdictPageAdapter({
     const capRate = selectedPrice > 0 ? (noi / selectedPrice) * 100 : 0
     const cashOnCash = selectedPrice > 0 ? ((noi - (selectedPrice * 0.8 * 0.07)) / (selectedPrice * 0.2)) * 100 : 0
 
+    if (selectedPriceCard === 'wholesale') {
+      const assignmentFee = Math.round((property.price || 0) * 0.10)
+      return [
+        { value: `${capRate.toFixed(1)}%`, label: 'Cap Rate' },
+        { value: `${Math.max(0, cashOnCash).toFixed(1)}%`, label: 'Cash-on-Cash' },
+        { value: `$${assignmentFee.toLocaleString()}`, label: 'Assignment Fee' },
+      ]
+    }
+
     return [
       { value: `${capRate.toFixed(1)}%`, label: 'Cap Rate' },
       { value: `${Math.max(0, cashOnCash).toFixed(1)}%`, label: 'Cash-on-Cash' },
-      { value: `$${Math.round(noi / 12).toLocaleString()}`, label: 'Monthly NOI' },
+      { value: `$${Math.round(rent).toLocaleString()}`, label: 'Monthly Rent' },
     ]
   }, [selectedPriceCard, breakevenPrice, purchasePrice, wholesalePrice, property])
 
