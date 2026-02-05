@@ -196,8 +196,14 @@ export function AppHeader({
         
         if (response.ok) {
           const data = await response.json()
+          
+          // Fix: Handle null/undefined data safely to prevent crashes
+          if (!data) return
+
           // Backend returns a direct array of SavedPropertySummary objects
-          const properties = Array.isArray(data) ? data : (data.properties || data.items || [])
+          const properties = Array.isArray(data) 
+            ? data 
+            : (data?.properties || data?.items || [])
           
           // Check if any saved property matches BOTH street address AND city
           // This prevents false positives for same street names in different cities
