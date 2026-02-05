@@ -209,8 +209,6 @@ function transformSoldResponse(apiData: Record<string, unknown>, subjectLat: num
 
 function transformRentResponse(apiData: Record<string, unknown>, subjectLat: number, subjectLon: number): LocalComp[] {
   const rawResults = (apiData.rentalComps || apiData.results || apiData.data || apiData.rentals || []) as Record<string, unknown>[]
-  console.log('[RentTransform] Raw results count:', rawResults.length, 'keys in response:', Object.keys(apiData))
-  
   return rawResults.map((item, index) => {
     const comp = (item.property || item) as Record<string, unknown>
     
@@ -635,14 +633,10 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     setRentLoading(true); setRentError(null)
     try {
       const params = buildParams(offset, excludeZpids)
-      console.log('[PriceChecker] Fetching rent comps with params:', params)
       const data = await fetchSimilarRent(params)
-      console.log('[PriceChecker] Rent API response:', { success: data.success, resultCount: data.results?.length, keys: Object.keys(data) })
       const transformed = transformRentResponse(data, 0, 0)
-      console.log('[PriceChecker] Transformed rent comps:', transformed.length)
       return transformed
     } catch (err) {
-      console.error('[PriceChecker] Rent fetch error:', err)
       setRentError(err instanceof Error ? err.message : 'Failed to fetch rental comps')
       return []
     } finally { setRentLoading(false) }
