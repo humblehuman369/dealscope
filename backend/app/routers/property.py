@@ -227,7 +227,10 @@ async def get_market_assumptions(
 async def get_similar_rent(
     zpid: Optional[str] = None,
     url: Optional[str] = None,
-    address: Optional[str] = None
+    address: Optional[str] = None,
+    limit: int = Query(default=10, ge=1, le=50, description="Number of comps to return"),
+    offset: int = Query(default=0, ge=0, description="Number of comps to skip"),
+    exclude_zpids: Optional[str] = Query(default=None, description="Comma-separated zpids to exclude")
 ):
     """
     Get similar rental properties from Zillow via AXESSO API.
@@ -236,9 +239,12 @@ async def get_similar_rent(
         zpid: Zillow Property ID
         url: Property URL on Zillow
         address: Property address
+        limit: Number of comps to return (1-50, default 10)
+        offset: Number of comps to skip for pagination
+        exclude_zpids: Comma-separated list of zpids to exclude from results
     
     Returns:
-        List of similar rental properties
+        List of similar rental properties with pagination metadata
     """
     try:
         if not zpid and not url and not address:
@@ -247,9 +253,21 @@ async def get_similar_rent(
                 detail="At least one of zpid, url, or address is required"
             )
         
-        logger.info(f"Similar rent request - zpid: {zpid}, address: {address}")
+        # Parse exclude_zpids into list
+        exclude_list = []
+        if exclude_zpids:
+            exclude_list = [z.strip() for z in exclude_zpids.split(",") if z.strip()]
         
-        result = await property_service.get_similar_rent(zpid=zpid, url=url, address=address)
+        logger.info(f"Similar rent request - zpid: {zpid}, address: {address}, limit: {limit}, offset: {offset}, exclude: {len(exclude_list)} zpids")
+        
+        result = await property_service.get_similar_rent(
+            zpid=zpid, 
+            url=url, 
+            address=address,
+            limit=limit,
+            offset=offset,
+            exclude_zpids=exclude_list
+        )
         return result
         
     except HTTPException:
@@ -266,7 +284,10 @@ async def get_similar_rent(
 async def get_similar_sold(
     zpid: Optional[str] = None,
     url: Optional[str] = None,
-    address: Optional[str] = None
+    address: Optional[str] = None,
+    limit: int = Query(default=10, ge=1, le=50, description="Number of comps to return"),
+    offset: int = Query(default=0, ge=0, description="Number of comps to skip"),
+    exclude_zpids: Optional[str] = Query(default=None, description="Comma-separated zpids to exclude")
 ):
     """
     Get similar sold properties from Zillow via AXESSO API.
@@ -275,9 +296,12 @@ async def get_similar_sold(
         zpid: Zillow Property ID
         url: Property URL on Zillow
         address: Property address
+        limit: Number of comps to return (1-50, default 10)
+        offset: Number of comps to skip for pagination
+        exclude_zpids: Comma-separated list of zpids to exclude from results
     
     Returns:
-        List of similar recently sold properties
+        List of similar recently sold properties with pagination metadata
     """
     try:
         if not zpid and not url and not address:
@@ -286,9 +310,21 @@ async def get_similar_sold(
                 detail="At least one of zpid, url, or address is required"
             )
         
-        logger.info(f"Similar sold request - zpid: {zpid}, address: {address}")
+        # Parse exclude_zpids into list
+        exclude_list = []
+        if exclude_zpids:
+            exclude_list = [z.strip() for z in exclude_zpids.split(",") if z.strip()]
         
-        result = await property_service.get_similar_sold(zpid=zpid, url=url, address=address)
+        logger.info(f"Similar sold request - zpid: {zpid}, address: {address}, limit: {limit}, offset: {offset}, exclude: {len(exclude_list)} zpids")
+        
+        result = await property_service.get_similar_sold(
+            zpid=zpid, 
+            url=url, 
+            address=address,
+            limit=limit,
+            offset=offset,
+            exclude_zpids=exclude_list
+        )
         return result
         
     except HTTPException:

@@ -805,7 +805,10 @@ class PropertyService:
         self,
         zpid: Optional[str] = None,
         url: Optional[str] = None,
-        address: Optional[str] = None
+        address: Optional[str] = None,
+        limit: int = 10,
+        offset: int = 0,
+        exclude_zpids: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Fetch similar rental properties from Zillow via AXESSO API.
@@ -814,11 +817,14 @@ class PropertyService:
             zpid: Zillow Property ID
             url: Property URL on Zillow
             address: Property address
+            limit: Number of results to return
+            offset: Number of results to skip
+            exclude_zpids: List of zpids to exclude from results
             
         Returns:
-            Dict with similar rental properties
+            Dict with similar rental properties and pagination metadata
         """
-        logger.info(f"Fetching similar rentals - zpid: {zpid}, address: {address}")
+        logger.info(f"Fetching similar rentals - zpid: {zpid}, address: {address}, limit: {limit}, offset: {offset}")
         
         try:
             resolved_zpid = zpid
@@ -843,10 +849,29 @@ class PropertyService:
                         "similarProperties",
                         result.data.get("properties", result.data.get("results", []))
                     )
+                
+                # Filter out excluded zpids
+                if exclude_zpids:
+                    exclude_set = set(str(z) for z in exclude_zpids)
+                    results = [
+                        r for r in results 
+                        if str(r.get("zpid", r.get("id", ""))) not in exclude_set
+                    ]
+                
+                # Store total before pagination for metadata
+                total_available = len(results)
+                
+                # Apply pagination
+                paginated_results = results[offset:offset + limit]
+                
                 return {
                     "success": True,
-                    "results": results,
-                    "total_count": len(results),
+                    "results": paginated_results,
+                    "total_count": len(paginated_results),
+                    "total_available": total_available,
+                    "offset": offset,
+                    "limit": limit,
+                    "has_more": (offset + limit) < total_available,
                     "fetched_at": datetime.utcnow().isoformat()
                 }
             else:
@@ -856,6 +881,10 @@ class PropertyService:
                     "error": result.error or "Failed to fetch similar rentals from AXESSO API",
                     "results": [],
                     "total_count": 0,
+                    "total_available": 0,
+                    "offset": offset,
+                    "limit": limit,
+                    "has_more": False,
                     "fetched_at": datetime.utcnow().isoformat()
                 }
         except Exception as e:
@@ -865,6 +894,10 @@ class PropertyService:
                 "error": str(e),
                 "results": [],
                 "total_count": 0,
+                "total_available": 0,
+                "offset": offset,
+                "limit": limit,
+                "has_more": False,
                 "fetched_at": datetime.utcnow().isoformat()
             }
     
@@ -872,7 +905,10 @@ class PropertyService:
         self,
         zpid: Optional[str] = None,
         url: Optional[str] = None,
-        address: Optional[str] = None
+        address: Optional[str] = None,
+        limit: int = 10,
+        offset: int = 0,
+        exclude_zpids: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Fetch similar sold properties from Zillow via AXESSO API.
@@ -881,11 +917,14 @@ class PropertyService:
             zpid: Zillow Property ID
             url: Property URL on Zillow
             address: Property address
+            limit: Number of results to return
+            offset: Number of results to skip
+            exclude_zpids: List of zpids to exclude from results
             
         Returns:
-            Dict with similar sold properties
+            Dict with similar sold properties and pagination metadata
         """
-        logger.info(f"Fetching similar sold - zpid: {zpid}, address: {address}")
+        logger.info(f"Fetching similar sold - zpid: {zpid}, address: {address}, limit: {limit}, offset: {offset}")
         
         try:
             resolved_zpid = zpid
@@ -910,10 +949,29 @@ class PropertyService:
                         "similarProperties",
                         result.data.get("properties", result.data.get("results", []))
                     )
+                
+                # Filter out excluded zpids
+                if exclude_zpids:
+                    exclude_set = set(str(z) for z in exclude_zpids)
+                    results = [
+                        r for r in results 
+                        if str(r.get("zpid", r.get("id", ""))) not in exclude_set
+                    ]
+                
+                # Store total before pagination for metadata
+                total_available = len(results)
+                
+                # Apply pagination
+                paginated_results = results[offset:offset + limit]
+                
                 return {
                     "success": True,
-                    "results": results,
-                    "total_count": len(results),
+                    "results": paginated_results,
+                    "total_count": len(paginated_results),
+                    "total_available": total_available,
+                    "offset": offset,
+                    "limit": limit,
+                    "has_more": (offset + limit) < total_available,
                     "fetched_at": datetime.utcnow().isoformat()
                 }
             else:
@@ -923,6 +981,10 @@ class PropertyService:
                     "error": result.error or "Failed to fetch similar sold from AXESSO API",
                     "results": [],
                     "total_count": 0,
+                    "total_available": 0,
+                    "offset": offset,
+                    "limit": limit,
+                    "has_more": False,
                     "fetched_at": datetime.utcnow().isoformat()
                 }
         except Exception as e:
@@ -932,6 +994,10 @@ class PropertyService:
                 "error": str(e),
                 "results": [],
                 "total_count": 0,
+                "total_available": 0,
+                "offset": offset,
+                "limit": limit,
+                "has_more": False,
                 "fetched_at": datetime.utcnow().isoformat()
             }
     

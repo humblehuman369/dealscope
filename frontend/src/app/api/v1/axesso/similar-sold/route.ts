@@ -15,6 +15,9 @@ const BACKEND_URL = process.env.BACKEND_URL || 'https://dealscope-production.up.
  * - zpid: Zillow Property ID
  * - url: Zillow property URL
  * - address: Property address
+ * - limit: Number of comps to return (default 10)
+ * - offset: Number of comps to skip for pagination
+ * - exclude_zpids: Comma-separated zpids to exclude from results
  */
 export async function GET(request: NextRequest) {
   try {
@@ -24,6 +27,9 @@ export async function GET(request: NextRequest) {
     const zpid = searchParams.get('zpid')
     const url = searchParams.get('url')
     const address = searchParams.get('address')
+    const limit = searchParams.get('limit')
+    const offset = searchParams.get('offset')
+    const excludeZpids = searchParams.get('exclude_zpids')
     
     if (!zpid && !url && !address) {
       return NextResponse.json(
@@ -37,6 +43,9 @@ export async function GET(request: NextRequest) {
     if (zpid) backendUrl.searchParams.append('zpid', zpid)
     if (url) backendUrl.searchParams.append('url', url)
     if (address) backendUrl.searchParams.append('address', address)
+    if (limit) backendUrl.searchParams.append('limit', limit)
+    if (offset) backendUrl.searchParams.append('offset', offset)
+    if (excludeZpids) backendUrl.searchParams.append('exclude_zpids', excludeZpids)
 
     console.log('[Similar Sold Proxy] Fetching from backend:', backendUrl.toString())
 
