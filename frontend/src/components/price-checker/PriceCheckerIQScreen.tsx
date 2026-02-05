@@ -209,36 +209,67 @@ function transformSoldResponse(apiData: Record<string, unknown>, subjectLat: num
 
 function transformRentResponse(apiData: Record<string, unknown>, subjectLat: number, subjectLon: number): LocalComp[] {
   const rawResults = (apiData.rentalComps || apiData.results || apiData.data || apiData.rentals || []) as Record<string, unknown>[]
+  console.log('[RentTransform] Raw results count:', rawResults.length, 'keys in response:', Object.keys(apiData))
+  
   return rawResults.map((item, index) => {
     const comp = (item.property || item) as Record<string, unknown>
-    const addr = (comp.address || {}) as Record<string, unknown>
+    
+    // Address can be an object or a string
+    const addrRaw = comp.address
+    const addr: Record<string, unknown> = (typeof addrRaw === 'object' && addrRaw !== null) ? addrRaw as Record<string, unknown> : {}
+    const addrStr = typeof addrRaw === 'string' ? addrRaw : ''
+    
+    // Images -- try multiple formats
     let imageUrl = ''
     const photos = comp.compsCarouselPropertyPhotos as Record<string, unknown>[] | undefined
     if (photos?.length) {
       const ms = (photos[0].mixedSources || {}) as Record<string, unknown[]>
       if (ms.jpeg?.length) imageUrl = ((ms.jpeg[0] as Record<string, string>).url) || ''
     }
-    imageUrl = imageUrl || (comp.imgSrc as string) || (comp.imageUrl as string) || ''
-    const monthlyRent = parseFloat(String(comp.rent || comp.monthlyRent || comp.price || 0))
-    const sqft = parseInt(String(comp.livingAreaValue || comp.livingArea || comp.sqft || 0))
-    const lat = parseFloat(String(comp.latitude || 0))
-    const lon = parseFloat(String(comp.longitude || 0))
+    // Fallback image sources
+    // Fallback image sources
+    const miniPhotos = comp.miniCardPhotos as Record<string, unknown>[] | undefined
+    const miniPhotoUrl = miniPhotos?.[0]?.url as string | undefined
+    if (!imageUrl) imageUrl = (comp.imgSrc as string) || (comp.imageUrl as string) || miniPhotoUrl || ''
+    
+    // Rent -- try many field names
+    const units = comp.units as Record<string, unknown>[] | undefined
+    const unitPrice = units?.[0]?.price
+    const monthlyRent = parseFloat(String(
+      comp.rent || comp.monthlyRent || comp.price || comp.listPrice || 
+      comp.unformattedPrice || unitPrice || 0
+    )) || 0
+    
+    // Sqft
+    const sqft = parseInt(String(comp.livingAreaValue || comp.livingArea || comp.sqft || comp.area || 0)) || 0
+    
+    // Coordinates
+    const latObj = comp.latLong as Record<string, number> | undefined
+    const lat = parseFloat(String(comp.latitude || latObj?.latitude || 0)) || 0
+    const lon = parseFloat(String(comp.longitude || latObj?.longitude || 0)) || 0
     const distance = (subjectLat && subjectLon && lat && lon) ? haversineDistance(subjectLat, subjectLon, lat, lon) : 1
+    
+    // Build address fields from object or string
+    const streetAddress = (addr.streetAddress as string) || (comp.streetAddress as string) || addrStr || ''
+    const city = (addr.city as string) || (comp.city as string) || ''
+    const state = (addr.state as string) || (comp.state as string) || ''
+    const zip = (addr.zipcode as string) || (comp.zipcode as string) || (comp.zip as string) || ''
+    
     return {
-      id: (comp.zpid as string) || index + 1,
-      zpid: comp.zpid as string,
-      address: (addr.streetAddress as string) || (comp.streetAddress as string) || (comp.address as string) || '',
-      city: (addr.city as string) || (comp.city as string) || '',
-      state: (addr.state as string) || (comp.state as string) || '',
-      zip: (addr.zipcode as string) || (comp.zipcode as string) || (comp.zip as string) || '',
+      id: (comp.zpid as string) || (comp.id as string) || `rent-${index + 1}`,
+      zpid: (comp.zpid as string) || undefined,
+      address: streetAddress,
+      city,
+      state,
+      zip,
       price: monthlyRent,
       pricePerSqft: sqft > 0 ? Math.round((monthlyRent / sqft) * 100) / 100 : 0,
-      beds: parseInt(String(comp.bedrooms || comp.beds || 0)),
-      baths: parseFloat(String(comp.bathrooms || comp.baths || 0)),
+      beds: parseInt(String(comp.bedrooms || comp.beds || 0)) || 0,
+      baths: parseFloat(String(comp.bathrooms || comp.baths || 0)) || 0,
       sqft,
       lotSize: 0,
-      yearBuilt: parseInt(String(comp.yearBuilt || 0)),
-      date: (comp.listingDate as string) || (comp.seenDate as string) || (comp.datePosted as string) || '',
+      yearBuilt: parseInt(String(comp.yearBuilt || 0)) || 0,
+      date: (comp.listingDate as string) || (comp.seenDate as string) || (comp.datePosted as string) || (comp.dateSeen as string) || '',
       distance: Math.round(distance * 100) / 100,
       image: imageUrl,
       latitude: lat,
@@ -603,9 +634,15 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const fetchRentComps = useCallback(async (offset = 0, excludeZpids: string[] = []) => {
     setRentLoading(true); setRentError(null)
     try {
-      const data = await fetchSimilarRent(buildParams(offset, excludeZpids))
-      return transformRentResponse(data, 0, 0)
+      const params = buildParams(offset, excludeZpids)
+      console.log('[PriceChecker] Fetching rent comps with params:', params)
+      const data = await fetchSimilarRent(params)
+      console.log('[PriceChecker] Rent API response:', { success: data.success, resultCount: data.results?.length, keys: Object.keys(data) })
+      const transformed = transformRentResponse(data, 0, 0)
+      console.log('[PriceChecker] Transformed rent comps:', transformed.length)
+      return transformed
     } catch (err) {
+      console.error('[PriceChecker] Rent fetch error:', err)
       setRentError(err instanceof Error ? err.message : 'Failed to fetch rental comps')
       return []
     } finally { setRentLoading(false) }
