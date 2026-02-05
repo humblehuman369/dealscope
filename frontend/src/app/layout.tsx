@@ -3,6 +3,7 @@ import './globals.css'
 import { Providers } from './providers'
 import { LayoutWrapper } from '@/components/LayoutWrapper'
 import { Toaster } from '@/components/feedback'
+import { SentryInit } from '@/components/SentryInit'
 
 export const metadata: Metadata = {
   title: 'InvestIQ - Real Estate Investment Analytics',
@@ -36,6 +37,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="font-sans bg-neutral-50 text-navy-900 dark:bg-navy-900 dark:text-neutral-100 transition-colors duration-300">
+        <SentryInit />
         <Providers>
           {/* Layout with unified AppHeader */}
           <LayoutWrapper>
