@@ -281,6 +281,10 @@ class DataNormalizer:
         "listing_status": (None, "homeStatus", "axesso"),
         "days_on_market": (None, "daysOnZillow", "axesso"),
         "brokerage_name": (None, "brokerageName", "axesso"),
+        
+        # Location
+        "latitude": ("latitude", "latitude", "rentcast"),
+        "longitude": ("longitude", "longitude", "rentcast"),
     }
     
     def __init__(self):
