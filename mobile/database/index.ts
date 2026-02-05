@@ -14,6 +14,12 @@ export type {
   Setting,
   PropertyData,
   AnalyticsData,
+  CachedSavedProperty,
+  CachedSearchHistory,
+  CachedDocument,
+  CachedDealMakerRecord,
+  CachedLOIHistory,
+  SyncMetadata,
 } from './schema';
 
 // Query functions

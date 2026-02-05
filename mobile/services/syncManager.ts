@@ -1,699 +1,611 @@
 /**
- * Sync Manager for offline-first data synchronization.
- * Monitors network status and processes queued changes when online.
+ * Sync Manager Service
+ *
+ * Handles synchronization between the local SQLite database and the backend API.
+ * Provides offline-first capabilities with background sync.
  */
 
-import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
-import axios, { AxiosError } from 'axios';
-import {
-  getOfflineQueue,
-  removeFromOfflineQueue,
-  markQueueItemFailed,
-  getOfflineQueueCount,
-  OfflineQueueItem,
-  getSetting,
-  setSetting,
-} from '../database';
+import NetInfo from '@react-native-community/netinfo';
 import { getDatabase } from '../database/db';
-import { getAccessToken } from './authService';
+import {
+  CachedSavedProperty,
+  CachedSearchHistory,
+  CachedDocument,
+  CachedDealMakerRecord,
+  CachedLOIHistory,
+  SyncMetadata,
+  OfflineQueueItem,
+} from '../database/schema';
+import { savedPropertiesService } from './savedPropertiesService';
+import { searchHistoryService } from './searchHistoryService';
+import { documentsService } from './documentsService';
+import { loiService } from './loiService';
+import type {
+  SavedPropertySummary,
+  SearchHistoryResponse,
+  DocumentResponse,
+  DealMakerRecord,
+  LOIHistoryItem,
+} from '../types';
 
-// Types for pull sync response
-interface SyncRecord {
-  id: string;
-  table_name: string;
-  action: 'create' | 'update' | 'delete';
-  data: Record<string, any> | null;
-  updated_at: number;
-  created_at: number;
+// Sync status enum
+export type SyncStatus = 'idle' | 'syncing' | 'success' | 'error' | 'offline';
+
+// Sync result interface
+export interface SyncResult {
+  success: boolean;
+  itemsSynced: number;
+  errors: string[];
+  timestamp: number;
 }
 
-interface PullSyncResponse {
-  scanned_properties: SyncRecord[];
-  portfolio_properties: SyncRecord[];
-  settings: SyncRecord[];
-  server_time: number;
-  has_more: boolean;
-  next_since?: number;
+// Sync options
+export interface SyncOptions {
+  forceSync?: boolean;
+  tables?: string[];
+  onProgress?: (table: string, current: number, total: number) => void;
 }
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
-const MAX_RETRY_ATTEMPTS = 3;
-const SYNC_INTERVAL_MS = 30000; // 30 seconds
-
-type SyncEventType = 'started' | 'completed' | 'failed' | 'progress' | 'network_change' | 'conflict';
-type SyncEventHandler = (event: SyncEvent) => void;
-
-interface ConflictInfo {
-  recordId: string;
-  tableName: string;
-  localTimestamp: number;
-  serverTimestamp: number;
-  resolution: 'local_wins' | 'server_wins';
+/**
+ * Get current sync status for a table.
+ */
+export async function getSyncMetadata(tableName: string): Promise<SyncMetadata | null> {
+  const db = await getDatabase();
+  return db.getFirstAsync<SyncMetadata>(
+    'SELECT * FROM sync_metadata WHERE table_name = ?',
+    tableName
+  );
 }
 
-interface SyncEvent {
-  type: SyncEventType;
-  isOnline?: boolean;
-  processed?: number;
-  total?: number;
-  error?: string;
-  conflict?: ConflictInfo;
+/**
+ * Update sync metadata for a table.
+ */
+export async function updateSyncMetadata(
+  tableName: string,
+  status: string,
+  itemsSynced: number
+): Promise<void> {
+  const db = await getDatabase();
+  const now = Math.floor(Date.now() / 1000);
+
+  await db.runAsync(
+    `INSERT OR REPLACE INTO sync_metadata (table_name, last_synced_at, last_sync_status, items_synced)
+     VALUES (?, ?, ?, ?)`,
+    tableName,
+    now,
+    status,
+    itemsSynced
+  );
 }
 
-class SyncManager {
-  private isOnline: boolean = true;
-  private isSyncing: boolean = false;
-  private syncInterval: ReturnType<typeof setInterval> | null = null;
-  private unsubscribeNetInfo: (() => void) | null = null;
-  private eventHandlers: Set<SyncEventHandler> = new Set();
-  private lastSyncTime: Date | null = null;
-  private lastPullTimestamp: number = 0; // Unix timestamp of last successful pull
+/**
+ * Check if device is online.
+ */
+export async function isOnline(): Promise<boolean> {
+  const state = await NetInfo.fetch();
+  return state.isConnected === true && state.isInternetReachable !== false;
+}
 
-  /**
-   * Initialize the sync manager.
-   * Call this when the app starts.
-   */
-  async initialize(): Promise<void> {
-    // Subscribe to network state changes
-    this.unsubscribeNetInfo = NetInfo.addEventListener(this.handleNetworkChange);
-    
-    // Get initial network state
-    const state = await NetInfo.fetch();
-    this.isOnline = state.isConnected === true && state.isInternetReachable !== false;
-    
-    // Start periodic sync
-    this.startPeriodicSync();
-    
-    // Do initial sync if online
-    if (this.isOnline) {
-      this.sync();
+/**
+ * Sync saved properties from the API to local cache.
+ */
+export async function syncSavedProperties(
+  onProgress?: (current: number, total: number) => void
+): Promise<SyncResult> {
+  const errors: string[] = [];
+  let itemsSynced = 0;
+
+  try {
+    const online = await isOnline();
+    if (!online) {
+      return { success: false, itemsSynced: 0, errors: ['Device is offline'], timestamp: Date.now() };
     }
-    
-    console.log('[SyncManager] Initialized, online:', this.isOnline);
-  }
 
-  /**
-   * Clean up resources.
-   * Call this when the app is closing.
-   */
-  destroy(): void {
-    if (this.unsubscribeNetInfo) {
-      this.unsubscribeNetInfo();
-      this.unsubscribeNetInfo = null;
-    }
-    
-    this.stopPeriodicSync();
-    this.eventHandlers.clear();
-    
-    console.log('[SyncManager] Destroyed');
-  }
+    // Fetch all saved properties from API
+    const properties = await savedPropertiesService.getSavedProperties({ limit: 500 });
+    const total = properties.length;
 
-  /**
-   * Subscribe to sync events.
-   */
-  addEventListener(handler: SyncEventHandler): () => void {
-    this.eventHandlers.add(handler);
-    return () => this.eventHandlers.delete(handler);
-  }
+    const db = await getDatabase();
+    const now = Math.floor(Date.now() / 1000);
 
-  /**
-   * Emit an event to all handlers.
-   */
-  private emit(event: SyncEvent): void {
-    this.eventHandlers.forEach(handler => {
+    // Upsert each property
+    for (let i = 0; i < properties.length; i++) {
+      const prop = properties[i];
       try {
-        handler(event);
-      } catch (error) {
-        console.warn('[SyncManager] Event handler error:', error);
-      }
-    });
-  }
-
-  /**
-   * Handle network state changes.
-   */
-  private handleNetworkChange = (state: NetInfoState): void => {
-    const wasOnline = this.isOnline;
-    this.isOnline = state.isConnected === true && state.isInternetReachable !== false;
-    
-    if (wasOnline !== this.isOnline) {
-      console.log('[SyncManager] Network changed, online:', this.isOnline);
-      this.emit({ type: 'network_change', isOnline: this.isOnline });
-      
-      // Sync when coming back online
-      if (this.isOnline && !wasOnline) {
-        this.sync();
-      }
-    }
-  };
-
-  /**
-   * Start periodic sync interval.
-   */
-  private startPeriodicSync(): void {
-    if (this.syncInterval) return;
-    
-    this.syncInterval = setInterval(() => {
-      if (this.isOnline && !this.isSyncing) {
-        this.sync();
-      }
-    }, SYNC_INTERVAL_MS);
-  }
-
-  /**
-   * Stop periodic sync interval.
-   */
-  private stopPeriodicSync(): void {
-    if (this.syncInterval) {
-      clearInterval(this.syncInterval);
-      this.syncInterval = null;
-    }
-  }
-
-  /**
-   * Get current sync status.
-   */
-  getStatus(): {
-    isOnline: boolean;
-    isSyncing: boolean;
-    lastSyncTime: Date | null;
-    pendingChanges: Promise<number>;
-  } {
-    return {
-      isOnline: this.isOnline,
-      isSyncing: this.isSyncing,
-      lastSyncTime: this.lastSyncTime,
-      pendingChanges: getOfflineQueueCount(),
-    };
-  }
-
-  /**
-   * Trigger a manual sync (bidirectional).
-   * First pushes local changes, then pulls server changes.
-   */
-  async sync(): Promise<void> {
-    if (this.isSyncing) {
-      console.log('[SyncManager] Already syncing, skipping');
-      return;
-    }
-    
-    if (!this.isOnline) {
-      console.log('[SyncManager] Offline, cannot sync');
-      return;
-    }
-    
-    this.isSyncing = true;
-    this.emit({ type: 'started' });
-    
-    try {
-      // PHASE 1: Push local changes to server
-      const queue = await getOfflineQueue();
-      let pushProcessed = 0;
-      
-      if (queue.length > 0) {
-        console.log(`[SyncManager] Phase 1: Pushing ${queue.length} local changes`);
-        
-        for (const item of queue) {
-          // Skip items that have exceeded retry attempts
-          if (item.attempts >= MAX_RETRY_ATTEMPTS) {
-            console.log(`[SyncManager] Skipping item ${item.id}, max retries exceeded`);
-            continue;
-          }
-          
-          try {
-            await this.processQueueItem(item);
-            await removeFromOfflineQueue(item.id);
-            pushProcessed++;
-            
-            this.emit({
-              type: 'progress',
-              processed: pushProcessed,
-              total: queue.length,
-            });
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            console.warn(`[SyncManager] Failed to process item ${item.id}:`, errorMessage);
-            await markQueueItemFailed(item.id, errorMessage);
-          }
-        }
-        
-        console.log(`[SyncManager] Push completed: ${pushProcessed}/${queue.length}`);
-      }
-      
-      // PHASE 2: Pull changes from server
-      console.log('[SyncManager] Phase 2: Pulling server changes');
-      const pullCount = await this.pullFromServer();
-      console.log(`[SyncManager] Pull completed: ${pullCount} records merged`);
-      
-      this.lastSyncTime = new Date();
-      
-      this.emit({
-        type: 'completed',
-        processed: pushProcessed + pullCount,
-        total: queue.length + pullCount,
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Sync failed';
-      console.error('[SyncManager] Sync error:', error);
-      
-      this.emit({
-        type: 'failed',
-        error: errorMessage,
-      });
-    } finally {
-      this.isSyncing = false;
-    }
-  }
-
-  /**
-   * Pull changes from server and merge into local database.
-   * Uses last pull timestamp to fetch only new/modified records.
-   */
-  async pullFromServer(): Promise<number> {
-    try {
-      const token = await getAccessToken();
-      // #region agent log
-      console.log('[DEBUG-H2,H4] pullFromServer:entry:', JSON.stringify({hasToken:!!token,tokenLength:token?.length||0,apiBaseUrl:API_BASE_URL}));
-      // #endregion
-      if (!token) {
-        console.log('[SyncManager] No auth token, skipping pull');
-        return 0;
-      }
-      
-      // Load last pull timestamp from settings
-      const lastPullStr = await getSetting('sync_last_pull_timestamp');
-      this.lastPullTimestamp = lastPullStr ? parseInt(lastPullStr, 10) : 0;
-      
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      };
-      // #region agent log
-      console.log('[DEBUG-H4,H5] pullFromServer:headers:', JSON.stringify({authHeaderPrefix:headers.Authorization?.substring(0,30),fullUrl:`${API_BASE_URL}/api/v1/sync/pull`}));
-      
-      let totalMerged = 0;
-      let hasMore = true;
-      let since = this.lastPullTimestamp;
-      
-      // Paginate through all changes
-      while (hasMore) {
-        const response = await axios.post<PullSyncResponse>(
-          `${API_BASE_URL}/api/v1/sync/pull`,
-          {
-            since: since > 0 ? since : null,
-            tables: ['scanned_properties', 'portfolio_properties'],
-            limit: 100,
-          },
-          { headers, timeout: 30000 }
+        await db.runAsync(
+          `INSERT OR REPLACE INTO saved_properties 
+           (id, user_id, address_street, address_city, address_state, address_zip, 
+            list_price, status, nickname, notes, color_label, is_priority, tags,
+            best_strategy, best_cash_flow, best_coc_return, deal_maker_id, 
+            last_analysis_at, synced_at, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          prop.id,
+          null, // user_id not in summary
+          prop.address_street,
+          prop.address_city,
+          prop.address_state,
+          prop.address_zip,
+          prop.list_price,
+          prop.status,
+          prop.nickname,
+          prop.notes,
+          prop.color_label,
+          prop.is_priority ? 1 : 0,
+          prop.tags ? JSON.stringify(prop.tags) : null,
+          prop.best_strategy,
+          prop.best_cash_flow,
+          prop.best_coc_return,
+          prop.deal_maker_id,
+          prop.last_analysis_at ? new Date(prop.last_analysis_at).getTime() / 1000 : null,
+          now,
+          prop.created_at ? new Date(prop.created_at).getTime() / 1000 : now,
+          prop.updated_at ? new Date(prop.updated_at).getTime() / 1000 : now
         );
-        
-        const data = response.data;
-        
-        // Merge scanned properties
-        for (const record of data.scanned_properties) {
-          await this.mergeRecord('scanned_properties', record);
-          totalMerged++;
-        }
-        
-        // Merge portfolio properties
-        for (const record of data.portfolio_properties) {
-          await this.mergeRecord('portfolio_properties', record);
-          totalMerged++;
-        }
-        
-        hasMore = data.has_more;
-        since = data.next_since || data.server_time;
-        
-        // Update last pull timestamp
-        this.lastPullTimestamp = data.server_time;
+        itemsSynced++;
+        onProgress?.(i + 1, total);
+      } catch (err: any) {
+        errors.push(`Property ${prop.id}: ${err.message}`);
       }
-      
-      // Save last pull timestamp
-      await setSetting('sync_last_pull_timestamp', String(this.lastPullTimestamp));
-      
-      return totalMerged;
-    } catch (error: any) {
-      // #region agent log
-      console.log('[DEBUG-H1,H4] pullFromServer:error:', JSON.stringify({errorStatus:error?.response?.status,errorMessage:error?.response?.data?.detail||error?.message,errorName:error?.name,errorUrl:error?.config?.url}));
-      // #endregion
-      console.error('[SyncManager] Pull sync error:', error);
-      // Don't throw - pull errors shouldn't fail the entire sync
-      return 0;
     }
-  }
 
-  /**
-   * Merge a single record from server into local database.
-   * Uses last-write-wins strategy based on updated_at timestamp.
-   */
-  private async mergeRecord(tableName: string, record: SyncRecord): Promise<void> {
-    const db = await getDatabase();
-    
-    if (record.action === 'delete') {
-      // Delete the local record
-      await db.runAsync(`DELETE FROM ${tableName} WHERE id = ?`, record.id);
-      console.log(`[SyncManager] Deleted ${tableName}/${record.id}`);
-      return;
+    // Remove local properties that no longer exist on server
+    const serverIds = properties.map((p) => p.id);
+    if (serverIds.length > 0) {
+      const placeholders = serverIds.map(() => '?').join(',');
+      await db.runAsync(
+        `DELETE FROM saved_properties WHERE id NOT IN (${placeholders}) AND synced_at IS NOT NULL`,
+        ...serverIds
+      );
     }
-    
-    // Check if local record exists and its timestamp
-    const localRecord = await db.getFirstAsync<{ id: string; updated_at: number }>(
-      `SELECT id, updated_at FROM ${tableName} WHERE id = ?`,
-      record.id
+
+    await updateSyncMetadata('saved_properties', 'success', itemsSynced);
+    return { success: errors.length === 0, itemsSynced, errors, timestamp: Date.now() };
+  } catch (err: any) {
+    await updateSyncMetadata('saved_properties', 'error', itemsSynced);
+    return { success: false, itemsSynced, errors: [err.message], timestamp: Date.now() };
+  }
+}
+
+/**
+ * Sync search history from the API to local cache.
+ */
+export async function syncSearchHistory(
+  onProgress?: (current: number, total: number) => void
+): Promise<SyncResult> {
+  const errors: string[] = [];
+  let itemsSynced = 0;
+
+  try {
+    const online = await isOnline();
+    if (!online) {
+      return { success: false, itemsSynced: 0, errors: ['Device is offline'], timestamp: Date.now() };
+    }
+
+    // Fetch search history from API
+    const historyList = await searchHistoryService.getSearchHistory({ limit: 100 });
+    const total = historyList.items.length;
+
+    const db = await getDatabase();
+    const now = Math.floor(Date.now() / 1000);
+
+    for (let i = 0; i < historyList.items.length; i++) {
+      const entry = historyList.items[i];
+      try {
+        await db.runAsync(
+          `INSERT OR REPLACE INTO search_history 
+           (id, user_id, search_type, query, results_count, source, 
+            location_city, location_state, property_types, 
+            price_range_min, price_range_max, synced_at, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          entry.id,
+          null,
+          entry.search_type,
+          entry.query,
+          entry.results_count,
+          entry.source,
+          entry.location?.city,
+          entry.location?.state,
+          entry.property_types ? JSON.stringify(entry.property_types) : null,
+          entry.price_range?.min,
+          entry.price_range?.max,
+          now,
+          entry.created_at ? new Date(entry.created_at).getTime() / 1000 : now
+        );
+        itemsSynced++;
+        onProgress?.(i + 1, total);
+      } catch (err: any) {
+        errors.push(`Search ${entry.id}: ${err.message}`);
+      }
+    }
+
+    await updateSyncMetadata('search_history', 'success', itemsSynced);
+    return { success: errors.length === 0, itemsSynced, errors, timestamp: Date.now() };
+  } catch (err: any) {
+    await updateSyncMetadata('search_history', 'error', itemsSynced);
+    return { success: false, itemsSynced, errors: [err.message], timestamp: Date.now() };
+  }
+}
+
+/**
+ * Sync documents from the API to local cache.
+ */
+export async function syncDocuments(
+  onProgress?: (current: number, total: number) => void
+): Promise<SyncResult> {
+  const errors: string[] = [];
+  let itemsSynced = 0;
+
+  try {
+    const online = await isOnline();
+    if (!online) {
+      return { success: false, itemsSynced: 0, errors: ['Device is offline'], timestamp: Date.now() };
+    }
+
+    // Fetch documents from API
+    const docsList = await documentsService.getDocuments({ limit: 200 });
+    const total = docsList.items.length;
+
+    const db = await getDatabase();
+    const now = Math.floor(Date.now() / 1000);
+
+    for (let i = 0; i < docsList.items.length; i++) {
+      const doc = docsList.items[i];
+      try {
+        await db.runAsync(
+          `INSERT OR REPLACE INTO documents 
+           (id, user_id, saved_property_id, document_type, original_filename, 
+            file_size, mime_type, description, synced_at, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          doc.id,
+          null,
+          doc.saved_property_id,
+          doc.document_type,
+          doc.original_filename,
+          doc.file_size,
+          doc.mime_type,
+          doc.description,
+          now,
+          doc.created_at ? new Date(doc.created_at).getTime() / 1000 : now,
+          doc.updated_at ? new Date(doc.updated_at).getTime() / 1000 : now
+        );
+        itemsSynced++;
+        onProgress?.(i + 1, total);
+      } catch (err: any) {
+        errors.push(`Document ${doc.id}: ${err.message}`);
+      }
+    }
+
+    await updateSyncMetadata('documents', 'success', itemsSynced);
+    return { success: errors.length === 0, itemsSynced, errors, timestamp: Date.now() };
+  } catch (err: any) {
+    await updateSyncMetadata('documents', 'error', itemsSynced);
+    return { success: false, itemsSynced, errors: [err.message], timestamp: Date.now() };
+  }
+}
+
+/**
+ * Sync LOI history from the API to local cache.
+ */
+export async function syncLOIHistory(
+  onProgress?: (current: number, total: number) => void
+): Promise<SyncResult> {
+  const errors: string[] = [];
+  let itemsSynced = 0;
+
+  try {
+    const online = await isOnline();
+    if (!online) {
+      return { success: false, itemsSynced: 0, errors: ['Device is offline'], timestamp: Date.now() };
+    }
+
+    // Fetch LOI history from API
+    const loiHistory = await loiService.getHistory();
+    const total = loiHistory.length;
+
+    const db = await getDatabase();
+    const now = Math.floor(Date.now() / 1000);
+
+    for (let i = 0; i < loiHistory.length; i++) {
+      const loi = loiHistory[i];
+      try {
+        await db.runAsync(
+          `INSERT OR REPLACE INTO loi_history 
+           (id, user_id, saved_property_id, property_address, offer_price, 
+            earnest_money, inspection_days, closing_days, status, pdf_url, 
+            synced_at, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          loi.id,
+          null,
+          loi.saved_property_id,
+          loi.property_address,
+          loi.offer_price,
+          loi.earnest_money,
+          loi.inspection_days,
+          loi.closing_days,
+          loi.status,
+          loi.pdf_url,
+          now,
+          loi.created_at ? new Date(loi.created_at).getTime() / 1000 : now
+        );
+        itemsSynced++;
+        onProgress?.(i + 1, total);
+      } catch (err: any) {
+        errors.push(`LOI ${loi.id}: ${err.message}`);
+      }
+    }
+
+    await updateSyncMetadata('loi_history', 'success', itemsSynced);
+    return { success: errors.length === 0, itemsSynced, errors, timestamp: Date.now() };
+  } catch (err: any) {
+    await updateSyncMetadata('loi_history', 'error', itemsSynced);
+    return { success: false, itemsSynced, errors: [err.message], timestamp: Date.now() };
+  }
+}
+
+/**
+ * Process the offline queue - push local changes to server.
+ */
+export async function processOfflineQueue(): Promise<SyncResult> {
+  const errors: string[] = [];
+  let itemsSynced = 0;
+
+  try {
+    const online = await isOnline();
+    if (!online) {
+      return { success: false, itemsSynced: 0, errors: ['Device is offline'], timestamp: Date.now() };
+    }
+
+    const db = await getDatabase();
+    const queueItems = await db.getAllAsync<OfflineQueueItem>(
+      'SELECT * FROM offline_queue ORDER BY created_at ASC LIMIT 50'
     );
-    
-    if (localRecord) {
-      // Record exists - check timestamps (last-write-wins)
-      if (record.updated_at > localRecord.updated_at) {
-        // Server is newer - update local
-        await this.updateLocalRecord(tableName, record);
-        console.log(`[SyncManager] Updated ${tableName}/${record.id} from server`);
-      } else {
-        console.log(`[SyncManager] Skipping ${tableName}/${record.id} - local is newer`);
-      }
-    } else {
-      // Record doesn't exist - insert
-      await this.insertLocalRecord(tableName, record);
-      console.log(`[SyncManager] Inserted ${tableName}/${record.id} from server`);
-    }
-  }
 
-  /**
-   * Insert a new record from server into local database.
-   */
-  private async insertLocalRecord(tableName: string, record: SyncRecord): Promise<void> {
-    if (!record.data) return;
-    
-    const db = await getDatabase();
-    const data = record.data;
-    
-    if (tableName === 'scanned_properties') {
-      await db.runAsync(
-        `INSERT OR REPLACE INTO scanned_properties 
-         (id, address, city, state, zip, lat, lng, geohash, property_data, analytics_data, scanned_at, is_favorite, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        record.id,
-        data.address || '',
-        data.city || null,
-        data.state || null,
-        data.zip || null,
-        data.lat || null,
-        data.lng || null,
-        data.geohash || null,
-        data.property_data ? JSON.stringify(data.property_data) : null,
-        data.analytics_data ? JSON.stringify(data.analytics_data) : null,
-        data.scanned_at || record.created_at,
-        data.is_favorite ? 1 : 0,
-        record.created_at,
-        record.updated_at
-      );
-    } else if (tableName === 'portfolio_properties') {
-      await db.runAsync(
-        `INSERT OR REPLACE INTO portfolio_properties 
-         (id, address, city, state, zip, purchase_price, purchase_date, current_value, strategy, property_data, monthly_cash_flow, notes, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        record.id,
-        data.address || '',
-        data.city || null,
-        data.state || null,
-        data.zip || null,
-        data.purchase_price || null,
-        data.purchase_date || null,
-        data.current_value || null,
-        data.strategy || null,
-        data.property_data ? JSON.stringify(data.property_data) : null,
-        data.monthly_cash_flow || null,
-        data.notes || null,
-        record.created_at,
-        record.updated_at
-      );
-    }
-  }
+    for (const item of queueItems) {
+      try {
+        const payload = item.payload ? JSON.parse(item.payload) : null;
 
-  /**
-   * Update an existing local record with server data.
-   */
-  private async updateLocalRecord(tableName: string, record: SyncRecord): Promise<void> {
-    // Use the same logic as insert with REPLACE
-    await this.insertLocalRecord(tableName, record);
-  }
-
-  /**
-   * Process a single queue item with conflict resolution.
-   */
-  private async processQueueItem(item: OfflineQueueItem): Promise<void> {
-    const token = await getAccessToken();
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const payload = item.payload ? JSON.parse(item.payload) : null;
-    
-    switch (item.action) {
-      case 'create':
-        await this.syncCreate(item.table_name, payload, headers);
-        break;
-        
-      case 'update':
-        await this.syncUpdateWithConflictResolution(item.table_name, item.record_id, payload, headers, item);
-        break;
-        
-      case 'delete':
-        await this.syncDelete(item.table_name, item.record_id, headers);
-        break;
-        
-      default:
-        console.warn(`[SyncManager] Unknown action: ${item.action}`);
-    }
-  }
-
-  /**
-   * Sync a create action.
-   */
-  private async syncCreate(
-    tableName: string,
-    payload: any,
-    headers: Record<string, string>
-  ): Promise<void> {
-    const endpoint = this.getEndpoint(tableName);
-    if (!endpoint) return;
-    
-    await axios.post(`${API_BASE_URL}${endpoint}`, payload, { headers });
-  }
-
-  /**
-   * Sync an update action with last-write-wins conflict resolution.
-   * Fetches server timestamp and compares with local timestamp.
-   */
-  private async syncUpdateWithConflictResolution(
-    tableName: string,
-    recordId: string | null,
-    payload: any,
-    headers: Record<string, string>,
-    queueItem: OfflineQueueItem
-  ): Promise<void> {
-    const endpoint = this.getEndpoint(tableName);
-    if (!endpoint || !recordId) return;
-    
-    const localTimestamp = payload?.updated_at || queueItem.created_at;
-    
-    try {
-      // First, try to get the server's current version to check for conflicts
-      const serverResponse = await axios.get(
-        `${API_BASE_URL}${endpoint}/${recordId}`,
-        { headers, validateStatus: (status) => status < 500 }
-      );
-      
-      if (serverResponse.status === 200) {
-        const serverData = serverResponse.data;
-        const serverTimestamp = serverData?.updated_at || serverData?.created_at || 0;
-        
-        // Check for conflict: server was modified after local change was queued
-        if (serverTimestamp > localTimestamp) {
-          // Conflict detected - server has newer data
-          // Using last-write-wins: local wins since user explicitly made this change
-          console.log(`[SyncManager] Conflict detected for ${tableName}/${recordId}. Local timestamp: ${localTimestamp}, Server timestamp: ${serverTimestamp}. Applying local changes (last-write-wins).`);
-          
-          this.emit({
-            type: 'conflict',
-            conflict: {
-              recordId,
-              tableName,
-              localTimestamp,
-              serverTimestamp,
-              resolution: 'local_wins',
-            },
-          });
+        // Process based on table and action
+        if (item.table_name === 'saved_properties') {
+          await processSavedPropertyAction(item.action, item.record_id, payload);
+        } else if (item.table_name === 'scanned_properties') {
+          // Scanned properties might be saved to server as saved properties
+          if (item.action === 'create' && payload) {
+            await savedPropertiesService.saveProperty({
+              address_street: payload.address,
+              address_city: payload.city,
+              address_state: payload.state,
+              address_zip: payload.zip,
+            });
+          }
         }
-      }
-      
-      // Apply the local update (last-write-wins)
-      await axios.patch(`${API_BASE_URL}${endpoint}/${recordId}`, payload, { headers });
-      
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError;
-        
-        // 404 means record doesn't exist on server - create it instead
-        if (axiosError.response?.status === 404) {
-          console.log(`[SyncManager] Record ${recordId} not found on server, creating instead of updating`);
-          await this.syncCreate(tableName, { id: recordId, ...payload }, headers);
-          return;
-        }
-        
-        // 409 Conflict - server explicitly reports conflict
-        if (axiosError.response?.status === 409) {
-          const serverData = axiosError.response?.data as any;
-          const serverTimestamp = serverData?.updated_at || 0;
-          
-          console.log(`[SyncManager] Server reported conflict for ${tableName}/${recordId}. Resolving with last-write-wins.`);
-          
-          this.emit({
-            type: 'conflict',
-            conflict: {
-              recordId,
-              tableName,
-              localTimestamp,
-              serverTimestamp,
-              resolution: 'local_wins',
-            },
-          });
-          
-          // Force update with local data (add conflict resolution header)
-          await axios.patch(
-            `${API_BASE_URL}${endpoint}/${recordId}`,
-            payload,
-            { 
-              headers: { 
-                ...headers, 
-                'X-Force-Update': 'true',
-                'X-Local-Timestamp': String(localTimestamp),
-              } 
-            }
-          );
-          return;
-        }
-      }
-      
-      throw error;
-    }
-  }
 
-  /**
-   * Sync a delete action.
-   */
-  private async syncDelete(
-    tableName: string,
-    recordId: string | null,
-    headers: Record<string, string>
-  ): Promise<void> {
-    const endpoint = this.getEndpoint(tableName);
-    if (!endpoint || !recordId) return;
-    
-    try {
-      await axios.delete(`${API_BASE_URL}${endpoint}/${recordId}`, { headers });
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        // Already deleted on server - not an error
-        console.log(`[SyncManager] Record ${recordId} already deleted on server`);
-        return;
+        // Remove from queue on success
+        await db.runAsync('DELETE FROM offline_queue WHERE id = ?', item.id);
+        itemsSynced++;
+      } catch (err: any) {
+        errors.push(`Queue item ${item.id}: ${err.message}`);
+        // Increment attempt count
+        await db.runAsync(
+          'UPDATE offline_queue SET attempts = attempts + 1, last_error = ? WHERE id = ?',
+          err.message,
+          item.id
+        );
       }
-      throw error;
     }
-  }
 
-  /**
-   * Get API endpoint for a table.
-   */
-  private getEndpoint(tableName: string): string | null {
-    const endpoints: Record<string, string> = {
-      'portfolio_properties': '/api/v1/saved-properties',
-      'scanned_properties': '/api/v1/scan-history',
-      'settings': '/api/v1/user/settings',
-    };
-    
-    return endpoints[tableName] || null;
+    return { success: errors.length === 0, itemsSynced, errors, timestamp: Date.now() };
+  } catch (err: any) {
+    return { success: false, itemsSynced, errors: [err.message], timestamp: Date.now() };
   }
 }
 
-// Singleton instance
-export const syncManager = new SyncManager();
-
-// React hook for sync status
-import { useState, useEffect, useCallback } from 'react';
-
-export function useSyncStatus() {
-  const [isOnline, setIsOnline] = useState(true);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [pendingChanges, setPendingChanges] = useState(0);
-  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
-  const [conflictCount, setConflictCount] = useState(0);
-  const [lastConflict, setLastConflict] = useState<ConflictInfo | null>(null);
-
-  useEffect(() => {
-    // Get initial status
-    const status = syncManager.getStatus();
-    setIsOnline(status.isOnline);
-    setIsSyncing(status.isSyncing);
-    setLastSyncTime(status.lastSyncTime);
-    status.pendingChanges.then(setPendingChanges);
-
-    // Subscribe to sync events
-    const unsubscribe = syncManager.addEventListener((event) => {
-      switch (event.type) {
-        case 'network_change':
-          setIsOnline(event.isOnline ?? true);
-          break;
-        case 'started':
-          setIsSyncing(true);
-          setConflictCount(0); // Reset conflict count on new sync
-          break;
-        case 'completed':
-        case 'failed':
-          setIsSyncing(false);
-          getOfflineQueueCount().then(setPendingChanges);
-          if (event.type === 'completed') {
-            setLastSyncTime(new Date());
-          }
-          break;
-        case 'conflict':
-          if (event.conflict) {
-            setConflictCount(prev => prev + 1);
-            setLastConflict(event.conflict);
-          }
-          break;
+/**
+ * Process a saved property action from offline queue.
+ */
+async function processSavedPropertyAction(
+  action: string,
+  recordId: string | null,
+  payload: any
+): Promise<void> {
+  switch (action) {
+    case 'create':
+      if (payload) {
+        await savedPropertiesService.saveProperty(payload);
       }
-    });
+      break;
+    case 'update':
+      if (recordId && payload) {
+        await savedPropertiesService.updateSavedProperty(recordId, payload);
+      }
+      break;
+    case 'delete':
+      if (recordId) {
+        await savedPropertiesService.deleteSavedProperty(recordId);
+      }
+      break;
+  }
+}
 
-    return unsubscribe;
-  }, []);
+/**
+ * Run a full sync of all tables.
+ */
+export async function syncAll(options?: SyncOptions): Promise<{
+  savedProperties: SyncResult;
+  searchHistory: SyncResult;
+  documents: SyncResult;
+  loiHistory: SyncResult;
+  offlineQueue: SyncResult;
+}> {
+  const tables = options?.tables || ['saved_properties', 'search_history', 'documents', 'loi_history'];
 
-  const triggerSync = useCallback(() => {
-    syncManager.sync();
-  }, []);
-
-  const clearConflicts = useCallback(() => {
-    setConflictCount(0);
-    setLastConflict(null);
-  }, []);
-
-  return {
-    isOnline,
-    isSyncing,
-    pendingChanges,
-    lastSyncTime,
-    triggerSync,
-    conflictCount,
-    lastConflict,
-    clearConflicts,
+  const results = {
+    savedProperties: { success: true, itemsSynced: 0, errors: [] as string[], timestamp: Date.now() },
+    searchHistory: { success: true, itemsSynced: 0, errors: [] as string[], timestamp: Date.now() },
+    documents: { success: true, itemsSynced: 0, errors: [] as string[], timestamp: Date.now() },
+    loiHistory: { success: true, itemsSynced: 0, errors: [] as string[], timestamp: Date.now() },
+    offlineQueue: { success: true, itemsSynced: 0, errors: [] as string[], timestamp: Date.now() },
   };
+
+  // First, process offline queue to push local changes
+  results.offlineQueue = await processOfflineQueue();
+
+  // Then pull from server
+  if (tables.includes('saved_properties')) {
+    results.savedProperties = await syncSavedProperties(
+      options?.onProgress ? (c, t) => options.onProgress!('saved_properties', c, t) : undefined
+    );
+  }
+
+  if (tables.includes('search_history')) {
+    results.searchHistory = await syncSearchHistory(
+      options?.onProgress ? (c, t) => options.onProgress!('search_history', c, t) : undefined
+    );
+  }
+
+  if (tables.includes('documents')) {
+    results.documents = await syncDocuments(
+      options?.onProgress ? (c, t) => options.onProgress!('documents', c, t) : undefined
+    );
+  }
+
+  if (tables.includes('loi_history')) {
+    results.loiHistory = await syncLOIHistory(
+      options?.onProgress ? (c, t) => options.onProgress!('loi_history', c, t) : undefined
+    );
+  }
+
+  return results;
 }
 
-// Initialize sync manager on import
-// This will be called once when the module is first imported
-syncManager.initialize().catch(console.error);
+/**
+ * Get cached saved properties from local database.
+ */
+export async function getCachedSavedProperties(options?: {
+  status?: string;
+  priorityOnly?: boolean;
+  limit?: number;
+  offset?: number;
+}): Promise<CachedSavedProperty[]> {
+  const db = await getDatabase();
 
+  let query = 'SELECT * FROM saved_properties';
+  const conditions: string[] = [];
+  const params: any[] = [];
+
+  if (options?.status) {
+    conditions.push('status = ?');
+    params.push(options.status);
+  }
+
+  if (options?.priorityOnly) {
+    conditions.push('is_priority = 1');
+  }
+
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
+  }
+
+  query += ' ORDER BY is_priority DESC, created_at DESC';
+
+  if (options?.limit) {
+    query += ' LIMIT ?';
+    params.push(options.limit);
+  }
+
+  if (options?.offset) {
+    query += ' OFFSET ?';
+    params.push(options.offset);
+  }
+
+  return db.getAllAsync<CachedSavedProperty>(query, ...params);
+}
+
+/**
+ * Get cached search history from local database.
+ */
+export async function getCachedSearchHistory(limit: number = 20): Promise<CachedSearchHistory[]> {
+  const db = await getDatabase();
+  return db.getAllAsync<CachedSearchHistory>(
+    'SELECT * FROM search_history ORDER BY created_at DESC LIMIT ?',
+    limit
+  );
+}
+
+/**
+ * Get cached documents from local database.
+ */
+export async function getCachedDocuments(propertyId?: string): Promise<CachedDocument[]> {
+  const db = await getDatabase();
+
+  if (propertyId) {
+    return db.getAllAsync<CachedDocument>(
+      'SELECT * FROM documents WHERE saved_property_id = ? ORDER BY created_at DESC',
+      propertyId
+    );
+  }
+
+  return db.getAllAsync<CachedDocument>('SELECT * FROM documents ORDER BY created_at DESC');
+}
+
+/**
+ * Get cached LOI history from local database.
+ */
+export async function getCachedLOIHistory(propertyId?: string): Promise<CachedLOIHistory[]> {
+  const db = await getDatabase();
+
+  if (propertyId) {
+    return db.getAllAsync<CachedLOIHistory>(
+      'SELECT * FROM loi_history WHERE saved_property_id = ? ORDER BY created_at DESC',
+      propertyId
+    );
+  }
+
+  return db.getAllAsync<CachedLOIHistory>('SELECT * FROM loi_history ORDER BY created_at DESC');
+}
+
+/**
+ * Get sync status summary for all tables.
+ */
+export async function getSyncStatus(): Promise<{
+  [table: string]: SyncMetadata | null;
+}> {
+  const tables = ['saved_properties', 'search_history', 'documents', 'loi_history', 'deal_maker_records'];
+  const status: { [table: string]: SyncMetadata | null } = {};
+
+  for (const table of tables) {
+    status[table] = await getSyncMetadata(table);
+  }
+
+  return status;
+}
+
+/**
+ * Clear all cached data.
+ */
+export async function clearCache(): Promise<void> {
+  const db = await getDatabase();
+
+  await db.runAsync('DELETE FROM saved_properties WHERE synced_at IS NOT NULL');
+  await db.runAsync('DELETE FROM search_history WHERE synced_at IS NOT NULL');
+  await db.runAsync('DELETE FROM documents WHERE synced_at IS NOT NULL');
+  await db.runAsync('DELETE FROM loi_history WHERE synced_at IS NOT NULL');
+  await db.runAsync('DELETE FROM deal_maker_records WHERE synced_at IS NOT NULL');
+  await db.runAsync('DELETE FROM sync_metadata');
+}
+
+export const syncManager = {
+  isOnline,
+  getSyncMetadata,
+  syncSavedProperties,
+  syncSearchHistory,
+  syncDocuments,
+  syncLOIHistory,
+  processOfflineQueue,
+  syncAll,
+  getCachedSavedProperties,
+  getCachedSearchHistory,
+  getCachedDocuments,
+  getCachedLOIHistory,
+  getSyncStatus,
+  clearCache,
+};

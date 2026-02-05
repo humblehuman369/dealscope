@@ -4,7 +4,7 @@
  */
 
 export const DATABASE_NAME = 'investiq.db';
-export const DATABASE_VERSION = 1;
+export const DATABASE_VERSION = 2; // Incremented for new tables
 
 /**
  * SQL statements to create all tables.
@@ -83,6 +83,121 @@ CREATE TABLE IF NOT EXISTS settings (
 CREATE TABLE IF NOT EXISTS db_version (
   version INTEGER PRIMARY KEY,
   applied_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
+-- Saved properties (synced from API)
+CREATE TABLE IF NOT EXISTS saved_properties (
+  id TEXT PRIMARY KEY,
+  user_id TEXT,
+  address_street TEXT,
+  address_city TEXT,
+  address_state TEXT,
+  address_zip TEXT,
+  list_price REAL,
+  status TEXT DEFAULT 'watching',
+  nickname TEXT,
+  notes TEXT,
+  color_label TEXT,
+  is_priority INTEGER DEFAULT 0,
+  tags TEXT,
+  best_strategy TEXT,
+  best_cash_flow REAL,
+  best_coc_return REAL,
+  deal_maker_id TEXT,
+  last_analysis_at INTEGER,
+  synced_at INTEGER,
+  created_at INTEGER DEFAULT (strftime('%s', 'now')),
+  updated_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
+-- Index for saved properties status
+CREATE INDEX IF NOT EXISTS idx_saved_status ON saved_properties(status);
+
+-- Index for saved properties priority
+CREATE INDEX IF NOT EXISTS idx_saved_priority ON saved_properties(is_priority DESC);
+
+-- Index for saved properties date
+CREATE INDEX IF NOT EXISTS idx_saved_date ON saved_properties(created_at DESC);
+
+-- Search history cache
+CREATE TABLE IF NOT EXISTS search_history (
+  id TEXT PRIMARY KEY,
+  user_id TEXT,
+  search_type TEXT NOT NULL,
+  query TEXT,
+  results_count INTEGER DEFAULT 0,
+  source TEXT,
+  location_city TEXT,
+  location_state TEXT,
+  property_types TEXT,
+  price_range_min REAL,
+  price_range_max REAL,
+  synced_at INTEGER,
+  created_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
+-- Index for search history date
+CREATE INDEX IF NOT EXISTS idx_search_date ON search_history(created_at DESC);
+
+-- Documents cache
+CREATE TABLE IF NOT EXISTS documents (
+  id TEXT PRIMARY KEY,
+  user_id TEXT,
+  saved_property_id TEXT,
+  document_type TEXT NOT NULL,
+  original_filename TEXT NOT NULL,
+  file_size INTEGER NOT NULL,
+  mime_type TEXT NOT NULL,
+  description TEXT,
+  synced_at INTEGER,
+  created_at INTEGER DEFAULT (strftime('%s', 'now')),
+  updated_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
+-- Index for documents by property
+CREATE INDEX IF NOT EXISTS idx_documents_property ON documents(saved_property_id);
+
+-- Deal maker records cache
+CREATE TABLE IF NOT EXISTS deal_maker_records (
+  id TEXT PRIMARY KEY,
+  saved_property_id TEXT NOT NULL,
+  initial_assumptions TEXT,
+  cached_metrics TEXT,
+  last_calculated_at INTEGER,
+  synced_at INTEGER,
+  created_at INTEGER DEFAULT (strftime('%s', 'now')),
+  updated_at INTEGER DEFAULT (strftime('%s', 'now')),
+  FOREIGN KEY (saved_property_id) REFERENCES saved_properties(id) ON DELETE CASCADE
+);
+
+-- Index for deal maker by property
+CREATE INDEX IF NOT EXISTS idx_deal_maker_property ON deal_maker_records(saved_property_id);
+
+-- LOI history cache
+CREATE TABLE IF NOT EXISTS loi_history (
+  id TEXT PRIMARY KEY,
+  user_id TEXT,
+  saved_property_id TEXT,
+  property_address TEXT NOT NULL,
+  offer_price REAL NOT NULL,
+  earnest_money REAL,
+  inspection_days INTEGER,
+  closing_days INTEGER,
+  status TEXT DEFAULT 'draft',
+  pdf_url TEXT,
+  synced_at INTEGER,
+  created_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
+-- Index for LOI by property
+CREATE INDEX IF NOT EXISTS idx_loi_property ON loi_history(saved_property_id);
+
+-- Sync metadata for tracking last sync times
+CREATE TABLE IF NOT EXISTS sync_metadata (
+  table_name TEXT PRIMARY KEY,
+  last_synced_at INTEGER,
+  last_sync_status TEXT,
+  items_synced INTEGER DEFAULT 0
 );
 `;
 
@@ -178,5 +293,110 @@ interface StrategyResult {
   secondaryValue: number;
   secondaryLabel: string;
   isProfit: boolean;
+}
+
+/**
+ * Saved property from API cache.
+ */
+export interface CachedSavedProperty {
+  id: string;
+  user_id: string | null;
+  address_street: string | null;
+  address_city: string | null;
+  address_state: string | null;
+  address_zip: string | null;
+  list_price: number | null;
+  status: string;
+  nickname: string | null;
+  notes: string | null;
+  color_label: string | null;
+  is_priority: number; // 0 or 1
+  tags: string | null; // JSON array
+  best_strategy: string | null;
+  best_cash_flow: number | null;
+  best_coc_return: number | null;
+  deal_maker_id: string | null;
+  last_analysis_at: number | null;
+  synced_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
+/**
+ * Search history entry from API cache.
+ */
+export interface CachedSearchHistory {
+  id: string;
+  user_id: string | null;
+  search_type: string;
+  query: string | null;
+  results_count: number;
+  source: string | null;
+  location_city: string | null;
+  location_state: string | null;
+  property_types: string | null; // JSON array
+  price_range_min: number | null;
+  price_range_max: number | null;
+  synced_at: number | null;
+  created_at: number;
+}
+
+/**
+ * Document metadata from API cache.
+ */
+export interface CachedDocument {
+  id: string;
+  user_id: string | null;
+  saved_property_id: string | null;
+  document_type: string;
+  original_filename: string;
+  file_size: number;
+  mime_type: string;
+  description: string | null;
+  synced_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
+/**
+ * Deal maker record from API cache.
+ */
+export interface CachedDealMakerRecord {
+  id: string;
+  saved_property_id: string;
+  initial_assumptions: string | null; // JSON object
+  cached_metrics: string | null; // JSON object
+  last_calculated_at: number | null;
+  synced_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
+/**
+ * LOI history entry from API cache.
+ */
+export interface CachedLOIHistory {
+  id: string;
+  user_id: string | null;
+  saved_property_id: string | null;
+  property_address: string;
+  offer_price: number;
+  earnest_money: number | null;
+  inspection_days: number | null;
+  closing_days: number | null;
+  status: string;
+  pdf_url: string | null;
+  synced_at: number | null;
+  created_at: number;
+}
+
+/**
+ * Sync metadata for tracking sync state.
+ */
+export interface SyncMetadata {
+  table_name: string;
+  last_synced_at: number | null;
+  last_sync_status: string | null;
+  items_synced: number;
 }
 

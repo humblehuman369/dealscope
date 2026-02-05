@@ -301,3 +301,161 @@ export function parseAnalyticsData(json: string | null): AnalyticsData | null {
   }
 }
 
+// =============================================
+// SYNC HOOKS
+// =============================================
+
+import {
+  syncManager,
+  getCachedSavedProperties,
+  getCachedSearchHistory,
+  getCachedDocuments,
+  getCachedLOIHistory,
+  getSyncStatus,
+  SyncResult,
+  SyncOptions,
+} from '../services/syncManager';
+import type {
+  CachedSavedProperty,
+  CachedSearchHistory,
+  CachedDocument,
+  CachedLOIHistory,
+  SyncMetadata,
+} from '../database';
+
+// Additional query keys for sync
+export const syncQueryKeys = {
+  cachedSavedProperties: ['cached-saved-properties'] as const,
+  cachedSearchHistory: ['cached-search-history'] as const,
+  cachedDocuments: ['cached-documents'] as const,
+  cachedLOIHistory: ['cached-loi-history'] as const,
+  syncStatus: ['sync-status'] as const,
+};
+
+/**
+ * Hook to get cached saved properties from local database.
+ */
+export function useCachedSavedProperties(options?: {
+  status?: string;
+  priorityOnly?: boolean;
+  limit?: number;
+}) {
+  return useQuery({
+    queryKey: [...syncQueryKeys.cachedSavedProperties, options],
+    queryFn: () => getCachedSavedProperties(options),
+    staleTime: 1000 * 30, // 30 seconds
+  });
+}
+
+/**
+ * Hook to get cached search history from local database.
+ */
+export function useCachedSearchHistory(limit?: number) {
+  return useQuery({
+    queryKey: [...syncQueryKeys.cachedSearchHistory, limit],
+    queryFn: () => getCachedSearchHistory(limit),
+    staleTime: 1000 * 60, // 1 minute
+  });
+}
+
+/**
+ * Hook to get cached documents from local database.
+ */
+export function useCachedDocuments(propertyId?: string) {
+  return useQuery({
+    queryKey: [...syncQueryKeys.cachedDocuments, propertyId],
+    queryFn: () => getCachedDocuments(propertyId),
+    staleTime: 1000 * 60, // 1 minute
+  });
+}
+
+/**
+ * Hook to get cached LOI history from local database.
+ */
+export function useCachedLOIHistory(propertyId?: string) {
+  return useQuery({
+    queryKey: [...syncQueryKeys.cachedLOIHistory, propertyId],
+    queryFn: () => getCachedLOIHistory(propertyId),
+    staleTime: 1000 * 60, // 1 minute
+  });
+}
+
+/**
+ * Hook to get sync status for all tables.
+ */
+export function useSyncStatus() {
+  return useQuery({
+    queryKey: syncQueryKeys.syncStatus,
+    queryFn: getSyncStatus,
+    staleTime: 1000 * 10, // 10 seconds
+  });
+}
+
+/**
+ * Hook to perform a full sync.
+ */
+export function useSync() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (options?: SyncOptions) => syncManager.syncAll(options),
+    onSuccess: () => {
+      // Invalidate all cached data queries
+      queryClient.invalidateQueries({ queryKey: syncQueryKeys.cachedSavedProperties });
+      queryClient.invalidateQueries({ queryKey: syncQueryKeys.cachedSearchHistory });
+      queryClient.invalidateQueries({ queryKey: syncQueryKeys.cachedDocuments });
+      queryClient.invalidateQueries({ queryKey: syncQueryKeys.cachedLOIHistory });
+      queryClient.invalidateQueries({ queryKey: syncQueryKeys.syncStatus });
+    },
+  });
+}
+
+/**
+ * Hook to sync saved properties only.
+ */
+export function useSyncSavedProperties() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (onProgress?: (current: number, total: number) => void) =>
+      syncManager.syncSavedProperties(onProgress),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: syncQueryKeys.cachedSavedProperties });
+      queryClient.invalidateQueries({ queryKey: syncQueryKeys.syncStatus });
+    },
+  });
+}
+
+/**
+ * Hook to process offline queue.
+ */
+export function useProcessOfflineQueue() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => syncManager.processOfflineQueue(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: dbQueryKeys.scannedProperties });
+      queryClient.invalidateQueries({ queryKey: dbQueryKeys.portfolioProperties });
+    },
+  });
+}
+
+/**
+ * Hook to clear all cached data.
+ */
+export function useClearCache() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => syncManager.clearCache(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: syncQueryKeys.cachedSavedProperties });
+      queryClient.invalidateQueries({ queryKey: syncQueryKeys.cachedSearchHistory });
+      queryClient.invalidateQueries({ queryKey: syncQueryKeys.cachedDocuments });
+      queryClient.invalidateQueries({ queryKey: syncQueryKeys.cachedLOIHistory });
+      queryClient.invalidateQueries({ queryKey: syncQueryKeys.syncStatus });
+    },
+  });
+}
+

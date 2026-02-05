@@ -390,3 +390,59 @@ export function validateEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
+// ============================================
+// Email Verification Functions
+// ============================================
+
+/**
+ * Verify email with token from email link.
+ */
+export async function verifyEmail(token: string): Promise<void> {
+  try {
+    await axios.post(`${API_BASE_URL}/api/v1/auth/verify-email`, { token });
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.detail || 'Email verification failed';
+      throw new AuthError(message, error.response?.status);
+    }
+    throw new AuthError('Email verification failed. Please try again.');
+  }
+}
+
+/**
+ * Resend verification email.
+ */
+export async function resendVerificationEmail(): Promise<void> {
+  try {
+    await authApi.post('/api/v1/auth/resend-verification');
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.detail || 'Failed to resend verification email';
+      throw new AuthError(message, error.response?.status);
+    }
+    throw new AuthError('Failed to resend verification email. Please try again.');
+  }
+}
+
+// ============================================
+// Password Reset Functions
+// ============================================
+
+/**
+ * Reset password with token from email.
+ */
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  try {
+    await axios.post(`${API_BASE_URL}/api/v1/auth/reset-password`, {
+      token,
+      new_password: newPassword,
+    });
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.detail || 'Password reset failed';
+      throw new AuthError(message, error.response?.status);
+    }
+    throw new AuthError('Password reset failed. Please try again.');
+  }
+}
+
