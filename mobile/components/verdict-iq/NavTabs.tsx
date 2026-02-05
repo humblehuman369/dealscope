@@ -23,7 +23,7 @@ interface NavTab {
 }
 
 const NAV_TABS: NavTab[] = [
-  { id: 'analyze', label: 'Analyze' },
+  { id: 'analyze', label: 'VerdictIQ' },
   { id: 'details', label: 'Details' },
   { id: 'saleComps', label: 'Sale Comps' },
   { id: 'rentComps', label: 'Rent Comps' },
