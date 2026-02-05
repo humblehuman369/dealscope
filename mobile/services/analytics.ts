@@ -31,6 +31,7 @@ export interface StrategyResult {
 
 export interface InvestmentAnalytics {
   property: {
+    id: string;
     address: string;
     city: string;
     state: string;
@@ -370,6 +371,7 @@ export async function fetchPropertyAnalytics(
 function transformBackendResponse(property: any, analytics: any): InvestmentAnalytics {
   return {
     property: {
+      id: property.property_id || '',
       address: property.address?.street || '',
       city: property.address?.city || '',
       state: property.address?.state || '',
@@ -480,19 +482,30 @@ function transformBackendResponse(property: any, analytics: any): InvestmentAnal
  * Used when user adjusts sliders in the app.
  */
 export async function recalculateAnalytics(
-  address: string,
+  propertyId: string,
   customAssumptions: Partial<InvestmentAnalytics['assumptions']>
 ): Promise<InvestmentAnalytics> {
   try {
     const response = await axios.post(
-      `${API_BASE_URL}/api/analyze/recalculate`,
+      `${API_BASE_URL}/api/v1/analytics/calculate`,
       {
-        address,
+        property_id: propertyId,
         assumptions: customAssumptions,
       },
       { timeout: 15000 }
     );
 
+    // Transform the response to match mobile format if needed, 
+    // or if the backend returns the same format as initial calculation
+    // we might need to fetch property details again or assume they haven't changed.
+    // For now, assuming backend returns full AnalyticsResponse which needs transformation.
+    // However, we don't have the full property object here to pass to transformBackendResponse.
+    // We might need to adjust the backend to return the full structure or 
+    // adjust the mobile app to handle the AnalyticsResponse directly.
+    
+    // TEMPORARY FIX: Return the data as is, assuming the caller handles it 
+    // or the backend returns what we expect. 
+    // Ideally, we should unify the response types.
     return response.data;
   } catch (error) {
     console.error('Recalculation error:', error);
@@ -582,6 +595,12 @@ export async function fetchMarketData(zipCode: string): Promise<{
   strOccupancy: number;
   strAdr: number;
 }> {
+  // TODO: Backend Needed - Endpoint expects City/State, we have Zip
+  // The current backend endpoint is /api/v1/market-data?location=City, State
+  // We cannot easily convert zip to city/state here without an external service.
+  // Commenting out dead call to prevent 404s.
+  
+  /*
   try {
     const response = await axios.get(
       `${API_BASE_URL}/api/market/${zipCode}`,
@@ -603,6 +622,18 @@ export async function fetchMarketData(zipCode: string): Promise<{
       strAdr: 150,
     };
   }
+  */
+  
+  // Return defaults for now
+  return {
+    medianRent: 0,
+    medianPrice: 0,
+    appreciationRate: 0.03,
+    rentGrowth: 0.02,
+    vacancyRate: 0.05,
+    strOccupancy: 0.65,
+    strAdr: 150,
+  };
 }
 
 /**

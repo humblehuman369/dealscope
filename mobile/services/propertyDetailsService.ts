@@ -120,7 +120,9 @@ export async function getPropertyPhotos(
 export async function getMarketData(
   zipCode: string
 ): Promise<MarketData> {
-  return api.get<MarketData>(ENDPOINTS.MARKET_DATA, { zip_code: zipCode });
+  // TODO: Backend Needed - Endpoint expects City/State, we have Zip
+  // return api.get<MarketData>(ENDPOINTS.MARKET_DATA, { zip_code: zipCode });
+  throw new Error('Backend Needed: /api/v1/market-data requires location (City, State), but mobile has Zip.');
 }
 
 // ===========================================
