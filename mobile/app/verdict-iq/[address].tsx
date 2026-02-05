@@ -3,9 +3,10 @@
  * Route: /verdict-iq/[address]
  * 
  * Complete VerdictIQ analysis page with high-contrast, decision-grade design
+ * Fetches real data from the analysis API.
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -40,23 +42,12 @@ import {
   rf,
   rs,
 } from '../../components/verdict-iq';
+import { usePropertyAnalysis, IQVerdictResponse } from '../../hooks/usePropertyAnalysis';
+import { PropertyData } from '../../components/analytics/redesign/types';
 
 // =============================================================================
-// MOCK DATA
+// CONSTANTS
 // =============================================================================
-
-const MOCK_PROPERTY: PropertyContextData = {
-  street: '1451 SW 10th St.',
-  city: 'Boca Raton',
-  state: 'FL',
-  zip: '33486',
-  beds: 4,
-  baths: 2,
-  sqft: 1722,
-  price: 821000,
-  status: 'off-market',
-  image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=200&h=150&fit=crop',
-};
 
 const STRATEGIES = [
   'Long-term Rental',
@@ -67,98 +58,254 @@ const STRATEGIES = [
   'Wholesale',
 ];
 
-const IQ_PRICES: IQPriceOption[] = [
-  { id: 'breakeven', label: 'BREAKEVEN', value: 784458, subtitle: 'Max price for $0 cashflow' },
-  { id: 'target', label: 'TARGET BUY', value: 745235, subtitle: 'Positive Cashflow' },
-  { id: 'wholesale', label: 'WHOLESALE', value: 549121, subtitle: '30% net discount for assignment' },
-];
+// =============================================================================
+// HELPER FUNCTIONS - Transform API data to component props
+// =============================================================================
 
-const METRICS: MetricData[] = [
-  { label: 'CASH FLOW', value: '$281/mo' },
-  { label: 'CASH NEEDED', value: '$171,404' },
-  { label: 'CAP RATE', value: '6.2%' },
-];
+function formatCurrency(value: number): string {
+  if (Math.abs(value) >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  }
+  if (Math.abs(value) >= 1000) {
+    return `$${Math.round(value).toLocaleString()}`;
+  }
+  return `$${Math.round(value)}`;
+}
 
-const CONFIDENCE_METRICS = [
-  { label: 'Deal Probability', value: 78, color: 'teal' as const },
-  { label: 'Market Alignment', value: 54, color: 'amber' as const },
-  { label: 'Price Confidence', value: 65, color: 'teal' as const },
-];
+function formatCurrencyCompact(value: number): string {
+  return `$${Math.round(value).toLocaleString()}`;
+}
 
-const PURCHASE_TERMS: BreakdownGroup = {
-  title: 'Purchase Terms',
-  adjustLabel: 'Adjust Terms',
-  rows: [
-    { label: 'Down Payment', value: '$147,333' },
-    { label: 'Down Payment %', value: '20.00%' },
-    { label: 'Loan Amount', value: '$586,332' },
-    { label: 'Interest Rate', value: '6.00%' },
-    { label: 'Loan Term (Years)', value: '30' },
-    { label: 'Monthly Payment (P&I)', value: '$3,533' },
-  ],
-};
+function formatPercent(value: number): string {
+  return `${(value * 100).toFixed(2)}%`;
+}
 
-const INCOME: BreakdownGroup = {
-  title: 'Income',
-  adjustLabel: 'Adjust Income',
-  rows: [
-    { label: 'Gross Scheduled Rent', value: '$68,800' },
-    { label: 'Less: Vacancy Allowance', value: '($957)', isNegative: true },
-    { label: 'Other Income', value: '$0' },
-  ],
-  totalRow: { label: 'Effective Gross Income', value: '$65,990' },
-};
+function getColorFromScore(score: number): 'teal' | 'amber' | 'negative' {
+  if (score >= 60) return 'teal';
+  if (score >= 40) return 'amber';
+  return 'negative';
+}
 
-const OPERATING_EXPENSES: BreakdownGroup = {
-  title: 'Operating Expenses',
-  adjustLabel: 'Adjust Expenses',
-  rows: [
-    { label: 'Property Taxes', value: '$6,840' },
-    { label: 'Insurance', value: '$7,367' },
-    { label: 'HOA Fees', value: '—' },
-    { label: 'Property Management', value: '—' },
-    { label: 'Maintenance & Repairs', value: '$3,333' },
-    { label: 'Utilities', value: '$1,200' },
-    { label: 'Capex Reserve', value: '$3,333' },
-  ],
-  totalRow: { label: 'Total Operating Expenses', value: '$24,073' },
-};
+function buildIQPrices(
+  breakevenPrice: number,
+  targetPrice: number,
+  listPrice: number
+): IQPriceOption[] {
+  const wholesalePrice = Math.round(targetPrice * 0.70); // 30% below target
+  return [
+    { id: 'breakeven', label: 'BREAKEVEN', value: breakevenPrice, subtitle: 'Max price for $0 cashflow' },
+    { id: 'target', label: 'TARGET BUY', value: targetPrice, subtitle: 'Positive Cashflow' },
+    { id: 'wholesale', label: 'WHOLESALE', value: wholesalePrice, subtitle: '30% net discount for assignment' },
+  ];
+}
 
-const DEBT_SERVICE: BreakdownGroup = {
-  title: 'Debt Service',
-  rows: [
-    { label: 'Annual Mortgage (P&I)', value: '$42,400' },
-  ],
-};
+function buildMetricsFromAPI(
+  raw: IQVerdictResponse | null,
+  targetPrice: number,
+  downPaymentPct: number = 0.20,
+  closingCostsPct: number = 0.03
+): MetricData[] {
+  const cashNeeded = Math.round(targetPrice * (downPaymentPct + closingCostsPct));
+  
+  if (!raw || !raw.returnFactors) {
+    return [
+      { label: 'CASH FLOW', value: '—' },
+      { label: 'CASH NEEDED', value: formatCurrencyCompact(cashNeeded) },
+      { label: 'CAP RATE', value: '—' },
+    ];
+  }
+  
+  const monthlyCashFlow = raw.strategies[0]?.monthlyCashFlow ?? 0;
+  const capRate = raw.returnFactors.capRate ?? 0;
+  
+  return [
+    { label: 'CASH FLOW', value: `$${Math.round(monthlyCashFlow)}/mo` },
+    { label: 'CASH NEEDED', value: formatCurrencyCompact(cashNeeded) },
+    { label: 'CAP RATE', value: `${(capRate * 100).toFixed(1)}%` },
+  ];
+}
 
-const GLANCE_METRICS: GlanceMetric[] = [
-  { label: 'Returns', value: 75, color: 'teal' },
-  { label: 'Cash Flow', value: 21, color: 'negative' },
-  { label: 'Equity Gain', value: 75, color: 'teal' },
-  { label: 'Debt Safety', value: 84, color: 'teal' },
-  { label: 'Cost Control', value: 55, color: 'amber' },
-  { label: 'Downside Risk', value: 18, color: 'negative' },
-];
+function buildConfidenceMetrics(raw: IQVerdictResponse | null): Array<{ label: string; value: number; color: 'teal' | 'amber' | 'negative' }> {
+  if (!raw || !raw.opportunityFactors) {
+    return [
+      { label: 'Deal Probability', value: 0, color: 'negative' },
+      { label: 'Market Alignment', value: 0, color: 'negative' },
+      { label: 'Price Confidence', value: 0, color: 'negative' },
+    ];
+  }
+  
+  const dealGap = raw.opportunityFactors.dealGap ?? 0;
+  const motivation = raw.opportunityFactors.motivation ?? 50;
+  
+  // Calculate scores from opportunity factors
+  const dealProbability = Math.min(100, Math.max(0, 50 + dealGap * 5));
+  const marketAlignment = motivation;
+  const priceConfidence = raw.opportunity?.score ?? 65;
+  
+  return [
+    { label: 'Deal Probability', value: Math.round(dealProbability), color: getColorFromScore(dealProbability) },
+    { label: 'Market Alignment', value: Math.round(marketAlignment), color: getColorFromScore(marketAlignment) },
+    { label: 'Price Confidence', value: Math.round(priceConfidence), color: getColorFromScore(priceConfidence) },
+  ];
+}
 
-const BENCHMARK_GROUPS: BenchmarkGroup[] = [
-  {
-    title: 'Returns',
-    metrics: [
-      { label: 'Cash on Cash Return', value: '4.1%', position: 35, color: 'teal' },
-      { label: 'Cap Rate', value: '6.8%', position: 68, color: 'teal' },
-      { label: 'Total ROI (5yr)', value: '52%', position: 72, color: 'teal' },
+function buildPurchaseTerms(
+  targetPrice: number,
+  downPaymentPct: number = 0.20,
+  interestRate: number = 0.073,
+  loanTermYears: number = 30
+): BreakdownGroup {
+  const downPayment = targetPrice * downPaymentPct;
+  const loanAmount = targetPrice - downPayment;
+  const monthlyRate = interestRate / 12;
+  const numPayments = loanTermYears * 12;
+  const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+  
+  return {
+    title: 'Purchase Terms',
+    adjustLabel: 'Adjust Terms',
+    rows: [
+      { label: 'Down Payment', value: formatCurrencyCompact(downPayment) },
+      { label: 'Down Payment %', value: formatPercent(downPaymentPct) },
+      { label: 'Loan Amount', value: formatCurrencyCompact(loanAmount) },
+      { label: 'Interest Rate', value: formatPercent(interestRate) },
+      { label: 'Loan Term (Years)', value: String(loanTermYears) },
+      { label: 'Monthly Payment (P&I)', value: formatCurrencyCompact(monthlyPI) },
     ],
-  },
-  {
-    title: 'Cash Flow & Risk',
-    metrics: [
-      { label: 'Cash Flow Yield', value: '5.1%', position: 55, color: 'teal' },
-      { label: 'Debt Service Coverage', value: '1.20', position: 42, color: 'amber' },
-      { label: 'Expense Ratio', value: '23%', position: 25, color: 'negative' },
-      { label: 'Breakeven Occupancy', value: '82%', position: 78, color: 'teal' },
+  };
+}
+
+function buildIncomeSection(monthlyRent: number, vacancyRate: number = 0.05): BreakdownGroup {
+  const annualRent = monthlyRent * 12;
+  const vacancyLoss = annualRent * vacancyRate;
+  const effectiveIncome = annualRent - vacancyLoss;
+  
+  return {
+    title: 'Income',
+    adjustLabel: 'Adjust Income',
+    rows: [
+      { label: 'Gross Scheduled Rent', value: formatCurrencyCompact(annualRent) },
+      { label: 'Less: Vacancy Allowance', value: `(${formatCurrencyCompact(vacancyLoss)})`, isNegative: true },
+      { label: 'Other Income', value: '$0' },
     ],
-  },
-];
+    totalRow: { label: 'Effective Gross Income', value: formatCurrencyCompact(effectiveIncome) },
+  };
+}
+
+function buildOperatingExpenses(
+  propertyTaxes: number,
+  insurance: number,
+  monthlyRent: number,
+  maintenancePct: number = 0.05,
+  hoa: number = 0
+): BreakdownGroup {
+  const maintenance = monthlyRent * 12 * maintenancePct;
+  const capex = monthlyRent * 12 * maintenancePct;
+  const totalExpenses = propertyTaxes + insurance + hoa + maintenance + capex;
+  
+  return {
+    title: 'Operating Expenses',
+    adjustLabel: 'Adjust Expenses',
+    rows: [
+      { label: 'Property Taxes', value: formatCurrencyCompact(propertyTaxes) },
+      { label: 'Insurance', value: formatCurrencyCompact(insurance) },
+      { label: 'HOA Fees', value: hoa > 0 ? formatCurrencyCompact(hoa) : '—' },
+      { label: 'Property Management', value: '—' },
+      { label: 'Maintenance & Repairs', value: formatCurrencyCompact(maintenance) },
+      { label: 'Utilities', value: '$0' },
+      { label: 'Capex Reserve', value: formatCurrencyCompact(capex) },
+    ],
+    totalRow: { label: 'Total Operating Expenses', value: formatCurrencyCompact(totalExpenses) },
+  };
+}
+
+function buildDebtService(monthlyPI: number): BreakdownGroup {
+  return {
+    title: 'Debt Service',
+    rows: [
+      { label: 'Annual Mortgage (P&I)', value: formatCurrencyCompact(monthlyPI * 12) },
+    ],
+  };
+}
+
+function buildGlanceMetrics(raw: IQVerdictResponse | null): GlanceMetric[] {
+  if (!raw || !raw.returnFactors) {
+    return [
+      { label: 'Returns', value: 0, color: 'negative' },
+      { label: 'Cash Flow', value: 0, color: 'negative' },
+      { label: 'Equity Gain', value: 0, color: 'negative' },
+      { label: 'Debt Safety', value: 0, color: 'negative' },
+      { label: 'Cost Control', value: 50, color: 'amber' },
+      { label: 'Downside Risk', value: 50, color: 'amber' },
+    ];
+  }
+  
+  const returnScore = raw.returnRating?.score ?? 50;
+  const dscr = raw.returnFactors.dscr ?? 1.0;
+  const cashFlow = raw.strategies[0]?.monthlyCashFlow ?? 0;
+  
+  // Derive scores from API data
+  const cashFlowScore = cashFlow > 200 ? 75 : (cashFlow > 0 ? 50 : 20);
+  const equityScore = Math.min(100, returnScore + 10);
+  const debtSafetyScore = Math.min(100, dscr * 50);
+  
+  return [
+    { label: 'Returns', value: returnScore, color: getColorFromScore(returnScore) },
+    { label: 'Cash Flow', value: cashFlowScore, color: getColorFromScore(cashFlowScore) },
+    { label: 'Equity Gain', value: equityScore, color: getColorFromScore(equityScore) },
+    { label: 'Debt Safety', value: Math.round(debtSafetyScore), color: getColorFromScore(debtSafetyScore) },
+    { label: 'Cost Control', value: 55, color: 'amber' },
+    { label: 'Downside Risk', value: 30, color: 'amber' },
+  ];
+}
+
+function buildBenchmarkGroups(raw: IQVerdictResponse | null): BenchmarkGroup[] {
+  if (!raw || !raw.returnFactors) {
+    return [
+      { title: 'Returns', metrics: [] },
+      { title: 'Cash Flow & Risk', metrics: [] },
+    ];
+  }
+  
+  const { capRate, cashOnCash, dscr, annualRoi } = raw.returnFactors;
+  
+  return [
+    {
+      title: 'Returns',
+      metrics: [
+        { 
+          label: 'Cash on Cash Return', 
+          value: cashOnCash ? `${(cashOnCash * 100).toFixed(1)}%` : '—', 
+          position: cashOnCash ? Math.min(100, cashOnCash * 100 * 10) : 50, 
+          color: getColorFromScore(cashOnCash ? cashOnCash * 100 * 10 : 0) 
+        },
+        { 
+          label: 'Cap Rate', 
+          value: capRate ? `${(capRate * 100).toFixed(1)}%` : '—', 
+          position: capRate ? Math.min(100, capRate * 100 * 10) : 50, 
+          color: getColorFromScore(capRate ? capRate * 100 * 10 : 0) 
+        },
+        { 
+          label: 'Annual ROI', 
+          value: annualRoi ? `${(annualRoi * 100).toFixed(0)}%` : '—', 
+          position: annualRoi ? Math.min(100, annualRoi * 100 * 1.5) : 50, 
+          color: getColorFromScore(annualRoi ? annualRoi * 100 : 0) 
+        },
+      ],
+    },
+    {
+      title: 'Cash Flow & Risk',
+      metrics: [
+        { 
+          label: 'Debt Service Coverage', 
+          value: dscr ? dscr.toFixed(2) : '—', 
+          position: dscr ? Math.min(100, (dscr - 0.8) * 100) : 50, 
+          color: dscr && dscr >= 1.25 ? 'teal' : (dscr && dscr >= 1.0 ? 'amber' : 'negative') 
+        },
+      ],
+    },
+  ];
+}
 
 // =============================================================================
 // SCREEN COMPONENT
@@ -167,7 +314,35 @@ const BENCHMARK_GROUPS: BenchmarkGroup[] = [
 export default function VerdictIQScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { address, lat, lng } = useLocalSearchParams<{ address: string; lat?: string; lng?: string }>();
+  const { 
+    address, 
+    lat, 
+    lng,
+    price,
+    beds,
+    baths,
+    sqft,
+    rent,
+    city,
+    state,
+    zip,
+    status,
+    image,
+  } = useLocalSearchParams<{ 
+    address: string; 
+    lat?: string; 
+    lng?: string;
+    price?: string;
+    beds?: string;
+    baths?: string;
+    sqft?: string;
+    rent?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    status?: string;
+    image?: string;
+  }>();
 
   // State
   const [activeTab, setActiveTab] = useState<NavTabId>('analyze');
@@ -177,12 +352,101 @@ export default function VerdictIQScreen() {
   const [glanceOpen, setGlanceOpen] = useState(true);
 
   const decodedAddress = decodeURIComponent(address || '');
+  
+  // Parse URL params for property data
+  const listPrice = price ? parseFloat(price) : 350000;
+  const bedroomCount = beds ? parseInt(beds, 10) : 3;
+  const bathroomCount = baths ? parseFloat(baths) : 2;
+  const sqftValue = sqft ? parseInt(sqft, 10) : 1500;
+  const monthlyRent = rent ? parseFloat(rent) : Math.round(listPrice * 0.008);
+  
+  // Estimate taxes and insurance if not provided
+  const propertyTaxes = Math.round(listPrice * 0.012);
+  const insurance = Math.round(1500 + sqftValue * 3);
 
-  // Property data with decoded address
-  const property: PropertyContextData = {
-    ...MOCK_PROPERTY,
-    ...(decodedAddress && { street: decodedAddress }),
-  };
+  // Build property data for API hook
+  const propertyData = useMemo((): PropertyData => ({
+    address: decodedAddress || 'Unknown Address',
+    city: city || 'Unknown',
+    state: state || 'FL',
+    zipCode: zip || '00000',
+    listPrice,
+    monthlyRent,
+    propertyTaxes,
+    insurance,
+    bedrooms: bedroomCount,
+    bathrooms: bathroomCount,
+    sqft: sqftValue,
+    arv: Math.round(listPrice * 1.2),
+    averageDailyRate: 195,
+    occupancyRate: 0.72,
+    photos: image ? [image] : [],
+    photoCount: 1,
+  }), [decodedAddress, city, state, zip, listPrice, monthlyRent, propertyTaxes, insurance, bedroomCount, bathroomCount, sqftValue, image]);
+
+  // Fetch real analysis data from API
+  const analysisResult = usePropertyAnalysis(propertyData);
+  const { raw, targetPrice, breakevenPrice, discountPercent, dealScore, isLoading, error } = analysisResult;
+
+  // Property context data for UI components
+  const property: PropertyContextData = useMemo(() => ({
+    street: decodedAddress || 'Unknown Address',
+    city: city || 'Unknown',
+    state: state || 'FL',
+    zip: zip || '00000',
+    beds: bedroomCount,
+    baths: bathroomCount,
+    sqft: sqftValue,
+    price: listPrice,
+    status: (status as 'active' | 'pending' | 'off-market') || 'off-market',
+    image: image || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=200&h=150&fit=crop',
+  }), [decodedAddress, city, state, zip, bedroomCount, bathroomCount, sqftValue, listPrice, status, image]);
+
+  // Build derived data from API response
+  const iqPrices = useMemo(() => buildIQPrices(breakevenPrice, targetPrice, listPrice), [breakevenPrice, targetPrice, listPrice]);
+  const metrics = useMemo(() => buildMetricsFromAPI(raw, targetPrice), [raw, targetPrice]);
+  const confidenceMetrics = useMemo(() => buildConfidenceMetrics(raw), [raw]);
+  const purchaseTerms = useMemo(() => buildPurchaseTerms(targetPrice), [targetPrice]);
+  const incomeSection = useMemo(() => buildIncomeSection(monthlyRent), [monthlyRent]);
+  const operatingExpenses = useMemo(() => buildOperatingExpenses(propertyTaxes, insurance, monthlyRent), [propertyTaxes, insurance, monthlyRent]);
+  const debtService = useMemo(() => {
+    const loanAmount = targetPrice * 0.80;
+    const monthlyRate = 0.073 / 12;
+    const numPayments = 360;
+    const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+    return buildDebtService(monthlyPI);
+  }, [targetPrice]);
+  const glanceMetrics = useMemo(() => buildGlanceMetrics(raw), [raw]);
+  const benchmarkGroups = useMemo(() => buildBenchmarkGroups(raw), [raw]);
+  
+  // Calculate NOI and cash flow from API data
+  const noiValue = useMemo(() => {
+    const annualRent = monthlyRent * 12 * 0.95; // After vacancy
+    const totalExpenses = propertyTaxes + insurance + (monthlyRent * 12 * 0.10);
+    return annualRent - totalExpenses;
+  }, [monthlyRent, propertyTaxes, insurance]);
+  
+  const cashFlowValues = useMemo(() => {
+    const loanAmount = targetPrice * 0.80;
+    const monthlyRate = 0.073 / 12;
+    const numPayments = 360;
+    const monthlyPI = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+    const annualDebtService = monthlyPI * 12;
+    const annualCashFlow = noiValue - annualDebtService;
+    const monthlyCashFlow = annualCashFlow / 12;
+    return {
+      annual: { 
+        label: 'Pre-Tax Cash Flow', 
+        value: annualCashFlow >= 0 ? formatCurrencyCompact(annualCashFlow) : `(${formatCurrencyCompact(Math.abs(annualCashFlow))})`,
+        isNegative: annualCashFlow < 0 
+      },
+      monthly: { 
+        label: 'Monthly Cash Flow', 
+        value: monthlyCashFlow >= 0 ? formatCurrencyCompact(monthlyCashFlow) : `(${formatCurrencyCompact(Math.abs(monthlyCashFlow))})`,
+        isNegative: monthlyCashFlow < 0 
+      },
+    };
+  }, [noiValue, targetPrice]);
 
   // =============================================================================
   // HANDLERS
@@ -306,6 +570,36 @@ export default function VerdictIQScreen() {
   // RENDER
   // =============================================================================
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]}>
+          <ActivityIndicator size="large" color={decisionGrade.pacificTeal} />
+          <Text style={styles.loadingText}>Analyzing property...</Text>
+        </View>
+      </>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]}>
+          <Ionicons name="alert-circle-outline" size={48} color={decisionGrade.signalRed} />
+          <Text style={styles.errorText}>Unable to analyze property</Text>
+          <Text style={styles.errorSubtext}>{error}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={() => analysisResult.refetch()}>
+            <Text style={styles.retryBtnText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </>
+    );
+  }
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -345,12 +639,12 @@ export default function VerdictIQScreen() {
           contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]}
           showsVerticalScrollIndicator={false}
         >
-          {/* Verdict Hero */}
+          {/* Verdict Hero - Uses API data */}
           <VerdictHero
-            score={84}
-            verdictLabel="Strong Opportunity"
-            verdictSubtitle="Deal Gap easily achievable"
-            confidenceMetrics={CONFIDENCE_METRICS}
+            score={dealScore.score}
+            verdictLabel={dealScore.label || 'Analyzing...'}
+            verdictSubtitle={raw?.verdictDescription || 'Calculating deal metrics...'}
+            confidenceMetrics={confidenceMetrics}
             onHowItWorksPress={handleHowVerdictWorks}
             onHowWeScorePress={handleHowWeScore}
           />
@@ -358,15 +652,15 @@ export default function VerdictIQScreen() {
           {/* Section Divider */}
           <View style={styles.sectionDivider} />
 
-          {/* Investment Analysis */}
+          {/* Investment Analysis - Uses API data */}
           <InvestmentAnalysis
-            financingTerms="20% down, 6.0%"
+            financingTerms="20% down, 7.3%"
             currentStrategy={currentStrategy}
             strategies={STRATEGIES}
-            iqPrices={IQ_PRICES}
+            iqPrices={iqPrices}
             selectedIQPrice={selectedIQPrice}
             onIQPriceChange={handleIQPriceChange}
-            metrics={METRICS}
+            metrics={metrics}
             onChangeTerms={handleChangeTerms}
             onStrategyChange={handleStrategyChange}
             onHowCalculated={handleHowCalculated}
@@ -375,41 +669,38 @@ export default function VerdictIQScreen() {
           {/* Section Divider */}
           <View style={styles.sectionDivider} />
 
-          {/* Financial Breakdown */}
+          {/* Financial Breakdown - Uses calculated data */}
           <FinancialBreakdown
             isOpen={financialBreakdownOpen}
             onToggle={() => setFinancialBreakdownOpen(!financialBreakdownOpen)}
-            purchaseTerms={{ ...PURCHASE_TERMS, onAdjust: handleAdjustTerms }}
-            income={{ ...INCOME, onAdjust: handleAdjustIncome }}
-            operatingExpenses={{ ...OPERATING_EXPENSES, onAdjust: handleAdjustExpenses }}
-            noi={{ label: 'Net Operating Income (NOI)', value: '$41,920' }}
-            debtService={DEBT_SERVICE}
-            cashflow={{
-              annual: { label: 'Pre-Tax Cash Flow', value: '($480)', isNegative: true },
-              monthly: { label: 'Monthly Cash Flow', value: '($40)', isNegative: true },
-            }}
+            purchaseTerms={{ ...purchaseTerms, onAdjust: handleAdjustTerms }}
+            income={{ ...incomeSection, onAdjust: handleAdjustIncome }}
+            operatingExpenses={{ ...operatingExpenses, onAdjust: handleAdjustExpenses }}
+            noi={{ label: 'Net Operating Income (NOI)', value: formatCurrencyCompact(noiValue) }}
+            debtService={debtService}
+            cashflow={cashFlowValues}
           />
 
           {/* Section Divider */}
           <View style={styles.sectionDivider} />
 
-          {/* Deal Gap */}
+          {/* Deal Gap - Uses API data */}
           <DealGap
             isOffMarket={property.status === 'off-market'}
-            marketEstimate={821000}
-            targetPrice={775437}
-            dealGapPercent={-5.5}
-            discountNeeded={45563}
-            suggestedOfferRange="10% – 18% below asking"
+            marketEstimate={listPrice}
+            targetPrice={targetPrice}
+            dealGapPercent={-discountPercent}
+            discountNeeded={listPrice - targetPrice}
+            suggestedOfferRange={`${Math.round(discountPercent - 5)}% – ${Math.round(discountPercent + 5)}% below asking`}
           />
 
           {/* Section Divider */}
           <View style={styles.sectionDivider} />
 
-          {/* At-a-Glance */}
+          {/* At-a-Glance - Uses API data */}
           <AtAGlance
-            metrics={GLANCE_METRICS}
-            compositeScore={75}
+            metrics={glanceMetrics}
+            compositeScore={dealScore.score}
             isOpen={glanceOpen}
             onToggle={() => setGlanceOpen(!glanceOpen)}
           />
@@ -417,9 +708,9 @@ export default function VerdictIQScreen() {
           {/* Section Divider */}
           <View style={styles.sectionDivider} />
 
-          {/* Performance Benchmarks */}
+          {/* Performance Benchmarks - Uses API data */}
           <PerformanceBenchmarks
-            groups={BENCHMARK_GROUPS}
+            groups={benchmarkGroups}
             onHowToRead={handleHowToReadBenchmarks}
           />
 
@@ -454,6 +745,41 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: decisionGrade.bgSecondary,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: rs(16),
+  },
+  loadingText: {
+    fontSize: rf(16),
+    fontWeight: '600',
+    color: decisionGrade.deepNavy,
+    marginTop: rs(12),
+  },
+  errorText: {
+    fontSize: rf(18),
+    fontWeight: '700',
+    color: decisionGrade.deepNavy,
+    marginTop: rs(12),
+  },
+  errorSubtext: {
+    fontSize: rf(14),
+    color: decisionGrade.textTertiary,
+    textAlign: 'center',
+    paddingHorizontal: rs(32),
+  },
+  retryBtn: {
+    marginTop: rs(20),
+    paddingHorizontal: rs(24),
+    paddingVertical: rs(12),
+    backgroundColor: decisionGrade.pacificTeal,
+    borderRadius: rs(8),
+  },
+  retryBtnText: {
+    fontSize: rf(14),
+    fontWeight: '600',
+    color: 'white',
   },
   header: {
     flexDirection: 'row',

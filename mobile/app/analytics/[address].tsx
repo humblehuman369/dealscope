@@ -3,6 +3,7 @@
  * Route: /analytics/[address]
  * 
  * REDESIGNED: Now uses the new analytics components from redesign/
+ * Property data is fetched from URL params passed by navigation.
  */
 
 import React, { useMemo, useCallback } from 'react';
@@ -22,33 +23,99 @@ export default function PropertyAnalyticsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDark } = useTheme();
-  const { address, strategy } = useLocalSearchParams<{ address: string; strategy?: StrategyId }>();
+  const { 
+    address, 
+    strategy,
+    price,
+    beds,
+    baths,
+    sqft,
+    rent,
+    adr, // average daily rate
+    occupancy,
+    tax,
+    insurance: insuranceParam,
+    arv: arvParam,
+    city,
+    state,
+    zip,
+    image,
+  } = useLocalSearchParams<{ 
+    address: string; 
+    strategy?: StrategyId;
+    price?: string;
+    beds?: string;
+    baths?: string;
+    sqft?: string;
+    rent?: string;
+    adr?: string;
+    occupancy?: string;
+    tax?: string;
+    insurance?: string;
+    arv?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    image?: string;
+  }>();
   
   const decodedAddress = decodeURIComponent(address || '');
 
-  // Mock property data - in real app, fetch from API
+  // Parse URL params for property data with sensible defaults
+  const listPrice = price ? parseFloat(price) : 350000;
+  const bedroomCount = beds ? parseInt(beds, 10) : 3;
+  const bathroomCount = baths ? parseFloat(baths) : 2;
+  const sqftValue = sqft ? parseInt(sqft, 10) : 1500;
+  
+  // Income estimates
+  const monthlyRent = rent ? parseFloat(rent) : Math.round(listPrice * 0.008);
+  const averageDailyRate = adr ? parseFloat(adr) : 195;
+  const occupancyRate = occupancy ? parseFloat(occupancy) : 0.72;
+  
+  // Expense estimates
+  const propertyTaxes = tax ? parseFloat(tax) : Math.round(listPrice * 0.012);
+  const insurance = insuranceParam ? parseFloat(insuranceParam) : Math.round(1500 + sqftValue * 3);
+  
+  // ARV estimate for BRRRR/Flip strategies
+  const arv = arvParam ? parseFloat(arvParam) : Math.round(listPrice * 1.2);
+
+  // Build property data from URL params
   const property = useMemo((): PropertyData => ({
-    address: decodedAddress || '953 Banyan Dr',
-    city: 'Delray Beach',
-    state: 'FL',
-    zipCode: '33483',
-    listPrice: 350000,
-    monthlyRent: 2800,
-    averageDailyRate: 195,
-    occupancyRate: 0.72,
-    propertyTaxes: 4200,
-    insurance: 2100,
-    bedrooms: 4,
-    bathrooms: 2,
-    sqft: 1850,
-    arv: 425000,
-    photos: [
-      'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=400&fit=crop',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=400&fit=crop',
-    ],
-    photoCount: 24,
-  }), [decodedAddress]);
+    address: decodedAddress || 'Unknown Address',
+    city: city || 'Unknown',
+    state: state || 'FL',
+    zipCode: zip || '00000',
+    listPrice,
+    monthlyRent,
+    averageDailyRate,
+    occupancyRate,
+    propertyTaxes,
+    insurance,
+    bedrooms: bedroomCount,
+    bathrooms: bathroomCount,
+    sqft: sqftValue,
+    arv,
+    photos: image 
+      ? [image] 
+      : ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=400&fit=crop'],
+    photoCount: 1,
+  }), [
+    decodedAddress, 
+    city, 
+    state, 
+    zip, 
+    listPrice, 
+    monthlyRent, 
+    averageDailyRate, 
+    occupancyRate, 
+    propertyTaxes, 
+    insurance, 
+    bedroomCount, 
+    bathroomCount, 
+    sqftValue, 
+    arv, 
+    image
+  ]);
 
   // Navigation handlers
   const handleBack = useCallback(() => {
