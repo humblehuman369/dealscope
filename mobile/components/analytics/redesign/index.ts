@@ -40,10 +40,7 @@ export {
 } from './TuneSectionNew';
 
 // Deal Score Display
-export { 
-  DealScoreDisplayNew, 
-  calculateDealScoreData 
-} from './DealScoreDisplayNew';
+export { DealScoreDisplayNew } from './DealScoreDisplayNew';
 
 // Insight Card
 export { InsightCard, createIQInsight } from './InsightCard';
@@ -70,7 +67,6 @@ export { GrowthTabContent } from './GrowthTabContent';
 // Profit Zone Dashboard
 export { 
   ProfitZoneDashboard,
-  generateProfitZoneTips,
   type ProfitZoneMetrics, 
   type ProfitZoneTip, 
   type ProfitZoneDashboardProps 

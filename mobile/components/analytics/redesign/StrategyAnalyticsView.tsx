@@ -344,11 +344,28 @@ export function StrategyAnalyticsView({
     };
   }, [iqTarget, assumptions, dealScore]);
 
-  const profitZoneTips = useMemo(() => {
-    // Calculate projected profit (10-year equity gain estimate)
-    const projectedProfit = iqTarget.monthlyCashFlow * 12 * 10 + (assumptions.arv - iqTarget.targetPrice);
-    return generateProfitZoneTips(profitZoneMetrics, projectedProfit);
-  }, [profitZoneMetrics, iqTarget, assumptions]);
+  // Profit Zone Tips - TODO: fetch from API in future
+  const profitZoneTips = useMemo((): ProfitZoneTip[] => {
+    // Default tips based on current metrics
+    // These should eventually come from the analysis API
+    const tips: ProfitZoneTip[] = [];
+    
+    if (iqTarget.monthlyCashFlow > 300) {
+      tips.push({ type: 'success', icon: '💰', title: 'Strong cash flow', description: 'Monthly returns exceed benchmarks' });
+    } else if (iqTarget.monthlyCashFlow > 0) {
+      tips.push({ type: 'tip', icon: '💡', title: 'Positive cash flow', description: 'Consider ways to increase income' });
+    } else {
+      tips.push({ type: 'warning', icon: '⚠️', title: 'Negative cash flow', description: 'May require additional capital' });
+    }
+    
+    if (dealScore.score >= 70) {
+      tips.push({ type: 'success', icon: '⭐', title: 'Strong opportunity', description: 'Meets most investment criteria' });
+    }
+    
+    tips.push({ type: 'action', icon: '📋', title: 'Get pre-approval', description: 'Strengthen your offer' });
+    
+    return tips.slice(0, 4);
+  }, [iqTarget, dealScore]);
 
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#07172e' : '#f8fafc' }]}>
