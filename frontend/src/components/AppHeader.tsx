@@ -197,11 +197,9 @@ export function AppHeader({
         if (response.ok) {
           const data = await response.json()
           
-          // Fix: Handle null/undefined data safely to prevent crashes
-          if (!data) return
-
-          // Backend returns a direct array of SavedPropertySummary objects
-          const properties = Array.isArray(data) 
+          // Handle null/undefined data safely
+          // If data is null, default to empty array so we fall through to clearing state
+          const properties = (data && Array.isArray(data))
             ? data 
             : (data?.properties || data?.items || [])
           
