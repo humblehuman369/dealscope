@@ -713,8 +713,8 @@ export function SalesCompsSection() {
     yearBuilt: snapshot?.yearBuilt || 0,
     latitude: snapshot?.latitude || 0,
     longitude: snapshot?.longitude || 0,
-    rehabCost: assumptions.rehabCost || 0,
-  }), [snapshot, propertyData, assumptions.purchasePrice, assumptions.rehabCost])
+    rehabCost: assumptions.rehabCosts || 0,
+  }), [snapshot, propertyData, assumptions.purchasePrice, assumptions.rehabCosts])
 
   const zpid = propertyData?.zpid?.toString() || snapshot?.zpid?.toString() || ''
 
