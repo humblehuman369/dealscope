@@ -5,6 +5,7 @@ SavedProperty service for CRUD operations on user's saved properties.
 from typing import Optional, List
 from datetime import datetime
 import logging
+import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
@@ -99,8 +100,8 @@ class SavedPropertyService:
             .options(selectinload(SavedProperty.documents))
             .where(
                 and_(
-                    SavedProperty.id == property_id,
-                    SavedProperty.user_id == user_id
+                    SavedProperty.id == uuid.UUID(property_id),
+                    SavedProperty.user_id == uuid.UUID(user_id)
                 )
             )
         )
@@ -114,7 +115,7 @@ class SavedPropertyService:
         address: Optional[str] = None
     ) -> Optional[SavedProperty]:
         """Check if a property is already saved."""
-        conditions = [SavedProperty.user_id == user_id]
+        conditions = [SavedProperty.user_id == uuid.UUID(user_id)]
         
         if external_id:
             conditions.append(SavedProperty.external_property_id == external_id)
@@ -142,7 +143,7 @@ class SavedPropertyService:
         """
         List saved properties with filtering and pagination.
         """
-        query = select(SavedProperty).where(SavedProperty.user_id == user_id)
+        query = select(SavedProperty).where(SavedProperty.user_id == uuid.UUID(user_id))
         
         # Apply filters
         if status:
@@ -189,7 +190,7 @@ class SavedPropertyService:
     ) -> int:
         """Count saved properties."""
         query = select(func.count(SavedProperty.id)).where(
-            SavedProperty.user_id == user_id
+            SavedProperty.user_id == uuid.UUID(user_id)
         )
         
         if status:
@@ -400,15 +401,17 @@ class SavedPropertyService:
         user_id: str,
         limit: int = 50
     ) -> List[PropertyAdjustment]:
-        """Get adjustment history for a property."""
-        # First verify ownership
-        saved_property = await self.get_by_id(db, property_id, user_id)
-        if not saved_property:
-            return []
-        
+        """Get adjustment history for a property, verifying user ownership."""
+        # Single query with join to verify ownership at database level
         result = await db.execute(
             select(PropertyAdjustment)
-            .where(PropertyAdjustment.property_id == property_id)
+            .join(SavedProperty, PropertyAdjustment.property_id == SavedProperty.id)
+            .where(
+                and_(
+                    PropertyAdjustment.property_id == uuid.UUID(property_id),
+                    SavedProperty.user_id == uuid.UUID(user_id)
+                )
+            )
             .order_by(PropertyAdjustment.created_at.desc())
             .limit(limit)
         )
@@ -428,7 +431,7 @@ class SavedPropertyService:
             return None
         
         adjustment = PropertyAdjustment(
-            property_id=property_id,
+            property_id=uuid.UUID(property_id),
             adjustment_type=data.adjustment_type,
             field_name=data.field_name,
             previous_value=data.previous_value,

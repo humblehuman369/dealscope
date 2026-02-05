@@ -51,8 +51,8 @@ async def get_current_user(
     if not token:
         raise credentials_exception
     
-    # Verify the token
-    payload = auth_service.verify_token(token, token_type="access")
+    # Verify the token and check blacklist
+    payload = await auth_service.verify_token_with_blacklist(token, token_type="access")
     if not payload:
         raise credentials_exception
     
@@ -94,8 +94,8 @@ async def get_current_user_optional(
         return None
     
     try:
-        # Verify the token
-        payload = auth_service.verify_token(token, token_type="access")
+        # Verify the token and check blacklist
+        payload = await auth_service.verify_token_with_blacklist(token, token_type="access")
         if not payload:
             return None
         

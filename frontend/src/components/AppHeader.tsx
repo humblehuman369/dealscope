@@ -154,6 +154,7 @@ export function AppHeader({
   const [isPropertyExpanded, setIsPropertyExpanded] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [savedPropertyId, setSavedPropertyId] = useState<string | null>(null)
   
   // Auth context for save functionality
   const { isAuthenticated, setShowAuthModal } = useAuth()
@@ -200,17 +201,30 @@ export function AppHeader({
           
           // Check if any saved property matches BOTH street address AND city
           // This prevents false positives for same street names in different cities
-          const isAlreadySaved = properties.some((p: { 
+          const savedProperty = properties.find((p: { 
+            id?: string
             full_address?: string
             address_street?: string
-            address_city?: string 
+            address_city?: string
+            zpid?: string
           }) => {
+            // Prefer zpid matching if available
+            if (property?.zpid && p.zpid) {
+              return p.zpid === property.zpid
+            }
+            // Fall back to address matching
             const streetMatch = p.address_street?.toLowerCase() === streetAddress.toLowerCase()
             const cityMatch = !city || !p.address_city || 
               p.address_city.toLowerCase() === city.toLowerCase()
             return streetMatch && cityMatch
           })
-          setIsSaved(!!isAlreadySaved)
+          if (savedProperty) {
+            setIsSaved(true)
+            setSavedPropertyId(savedProperty.id || null)
+          } else {
+            setIsSaved(false)
+            setSavedPropertyId(null)
+          }
         }
       } catch (error) {
         // Ignore abort errors (expected on cleanup)
@@ -382,8 +396,13 @@ export function AppHeader({
         }),
       })
 
-      if (response.ok || response.status === 409) {
-        // 201 = created, 409 = already exists (both mean it's saved)
+      if (response.ok) {
+        // 201 = created - capture the property ID from response
+        const data = await response.json()
+        setIsSaved(true)
+        setSavedPropertyId(data.id || null)
+      } else if (response.status === 409) {
+        // Already exists - it's saved
         setIsSaved(true)
       } else if (response.status === 400) {
         // Check if it's a duplicate error (backend may return 400 for duplicates)
@@ -405,6 +424,40 @@ export function AppHeader({
       setIsSaving(false)
     }
   }, [displayAddress, property, isAuthenticated, setShowAuthModal, isSaving, isSaved])
+
+  // Handle unsave property
+  const handleUnsave = useCallback(async () => {
+    if (!isAuthenticated || !savedPropertyId || isSaving) return
+
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      setShowAuthModal('login')
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      const response = await fetch(`/api/v1/properties/saved/${savedPropertyId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok || response.status === 204) {
+        setIsSaved(false)
+        setSavedPropertyId(null)
+      } else if (response.status === 401) {
+        setShowAuthModal('login')
+      } else {
+        console.error('Failed to unsave property:', response.status)
+      }
+    } catch (error) {
+      console.error('Failed to unsave property:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }, [savedPropertyId, isAuthenticated, setShowAuthModal, isSaving])
 
   return (
     <>
@@ -529,17 +582,17 @@ export function AppHeader({
               
               {/* Right side actions */}
               <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                {/* Save Button */}
+                {/* Save/Unsave Button */}
                 <button
-                  onClick={handleSave}
+                  onClick={isSaved ? handleUnsave : handleSave}
                   disabled={isSaving}
                   className={`p-1.5 rounded transition-colors flex items-center gap-1 ${
                     isSaved 
-                      ? 'text-[#0891B2]' 
+                      ? 'text-[#0891B2] hover:text-red-500 hover:bg-red-50' 
                       : 'text-neutral-400 hover:text-[#0891B2] hover:bg-neutral-100'
                   } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  aria-label={isSaved ? 'Saved' : 'Save property'}
-                  title={isSaved ? 'Saved' : 'Save property'}
+                  aria-label={isSaved ? 'Unsave property' : 'Save property'}
+                  title={isSaved ? 'Click to unsave' : 'Save property'}
                 >
                   <Heart 
                     className="w-4 h-4" 
@@ -547,7 +600,7 @@ export function AppHeader({
                     strokeWidth={1.5}
                   />
                   <span className="text-xs font-medium">
-                    {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save'}
+                    {isSaving ? (isSaved ? 'Removing...' : 'Saving...') : isSaved ? 'Saved' : 'Save'}
                   </span>
                 </button>
 

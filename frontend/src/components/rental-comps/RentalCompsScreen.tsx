@@ -236,16 +236,73 @@ export function RentalCompsScreen({
     console.log('Refreshing rental comps...')
   }
 
-  // Handle save
+  // Handle save - saves property to user's saved list via API
   const handleSave = useCallback(async () => {
     if (!isAuthenticated) {
       setShowAuthModal('login')
       return
     }
-    setIsSaved(true)
-    setSaveMessage('Saved!')
-    setTimeout(() => setSaveMessage(null), 2000)
-  }, [isAuthenticated, setShowAuthModal])
+
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      setShowAuthModal('login')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/v1/properties/saved', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          address_street: property.address,
+          address_city: property.city,
+          address_state: property.state,
+          address_zip: property.zipCode,
+          full_address: fullAddress,
+          status: 'watching',
+          zpid: property.zpid || null,
+          property_data_snapshot: {
+            zpid: property.zpid || null,
+            street: property.address,
+            city: property.city,
+            state: property.state,
+            zipCode: property.zipCode,
+            listPrice: property.price || null,
+            bedrooms: property.beds || null,
+            bathrooms: property.baths || null,
+            sqft: property.sqft || null,
+            yearBuilt: property.yearBuilt || null,
+            rent: property.rent || rentEstimate || null,
+          },
+        }),
+      })
+
+      if (response.ok || response.status === 409) {
+        // 201 = created, 409 = already exists
+        setIsSaved(true)
+        setSaveMessage('Saved!')
+        setTimeout(() => setSaveMessage(null), 2000)
+      } else if (response.status === 400) {
+        const errorText = await response.text()
+        if (errorText.includes('already in your saved list') || errorText.includes('already saved')) {
+          setIsSaved(true)
+          setSaveMessage('Already saved!')
+          setTimeout(() => setSaveMessage(null), 2000)
+        } else {
+          console.error('Failed to save property:', response.status, errorText)
+        }
+      } else if (response.status === 401) {
+        setShowAuthModal('login')
+      } else {
+        console.error('Failed to save property:', response.status)
+      }
+    } catch (error) {
+      console.error('Failed to save property:', error)
+    }
+  }, [isAuthenticated, setShowAuthModal, property, fullAddress, rentEstimate])
 
   // Handle share
   const handleShare = async () => {

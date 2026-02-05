@@ -43,7 +43,7 @@ interface AuthContextType {
   needsOnboarding: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, fullName: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
   refreshUser: () => Promise<void>
   showAuthModal: 'login' | 'register' | null
   setShowAuthModal: (modal: 'login' | 'register' | null) => void
@@ -222,8 +222,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Logout
-  const logout = useCallback(() => {
+  // Logout - calls backend to blacklist tokens, then clears local state
+  const logout = useCallback(async () => {
+    const accessToken = localStorage.getItem('access_token')
+    const refreshToken = localStorage.getItem('refresh_token')
+    
+    // Call backend to blacklist tokens (best effort)
+    if (accessToken) {
+      try {
+        await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        })
+      } catch (error) {
+        // Best effort - still clear local state even if API call fails
+        console.error('Logout API call failed:', error)
+      }
+    }
+    
+    // Always clear local state
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     setUser(null)

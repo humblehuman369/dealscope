@@ -12,18 +12,20 @@ import type { NextRequest } from 'next/server'
  */
 
 // Routes that require authentication
-// NOTE: These routes will be protected at the edge (proxy level)
-// This only works if the token is stored in a cookie (not just localStorage)
-// For routes where the page handles auth client-side (like /dashboard), 
-// don't include them here to avoid double-redirect issues.
-const protectedRoutes = [
-  // '/dashboard',    // Removed: Dashboard handles its own auth with proper loading states
-  '/profile',
-  '/worksheet',
-  // '/deal-maker', // Removed: Deal Maker is part of the public analysis flow (Analysis IQ → Deal Maker)
-  // '/compare',    // Removed: Part of analysis flow, should be accessible
-  '/search-history',
-  '/billing',
+// NOTE: Proxy-level protection is DISABLED because tokens are stored in localStorage,
+// not cookies. The proxy cannot access localStorage tokens. All protected routes
+// handle their own auth client-side with proper loading states.
+// 
+// To re-enable proxy protection, migrate to httpOnly cookies for token storage.
+const protectedRoutes: string[] = [
+  // All routes disabled - they handle auth client-side:
+  // '/dashboard',    // Handles its own auth with proper loading states
+  // '/profile',      // Handles its own auth
+  // '/worksheet',    // Handles its own auth
+  // '/deal-maker',   // Part of public analysis flow
+  // '/compare',      // Part of analysis flow
+  // '/search-history', // Handles its own auth
+  // '/billing',      // Handles its own auth
 ]
 
 // Routes that are only for unauthenticated users

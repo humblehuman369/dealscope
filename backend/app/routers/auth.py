@@ -219,9 +219,10 @@ async def refresh_token(
     - **refresh_token**: Valid refresh token from login
     
     Returns new access_token and refresh_token.
+    The old refresh token is blacklisted to prevent reuse.
     """
-    # Verify the refresh token
-    payload = auth_service.verify_token(data.refresh_token, token_type="refresh")
+    # Verify the refresh token with blacklist check
+    payload = await auth_service.verify_token_with_blacklist(data.refresh_token, token_type="refresh")
     
     if not payload:
         raise HTTPException(
@@ -241,6 +242,9 @@ async def refresh_token(
     
     # Create new tokens
     tokens = auth_service.create_tokens(user_id=str(user.id))
+    
+    # Blacklist the old refresh token to prevent reuse (token rotation)
+    await auth_service.blacklist_token(data.refresh_token, reason="refresh_token_rotated")
     
     return tokens
 
