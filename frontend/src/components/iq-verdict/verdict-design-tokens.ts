@@ -156,6 +156,18 @@ export const colors = {
     /** #A3A3A3 - Medium gray for icons */
     iconMuted: '#A3A3A3',
   },
+
+  // Gradients & Shadows (VerdictIQ visual polish)
+  gradient: {
+    tealStart: 'rgba(8,145,178,0.10)',
+    cyanMid: 'rgba(6,182,212,0.05)',
+    tealEnd: 'rgba(8,145,178,0.10)',
+  },
+  shadow: {
+    card: '0 2px 8px rgba(0,0,0,0.06)',
+    glow: '0 0 20px rgba(8,145,178,0.15)',
+    metricCard: '0 1px 4px rgba(0,0,0,0.06)',
+  },
 } as const
 
 // ===================
@@ -310,6 +322,12 @@ export const tw = {
   
   // Dividers
   divider: 'border-t border-neutral-200',
+
+  // VerdictIQ Visual Polish
+  investmentCard: 'bg-gradient-to-r from-teal-500/10 via-cyan-500/5 to-teal-500/10 rounded-xl border border-teal-200/50 p-5',
+  metricCard: 'bg-white rounded-lg shadow-sm border border-neutral-200 p-4 text-center',
+  pillBadge: 'px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wide',
+  glowRing: 'drop-shadow-[0_0_12px_rgba(8,145,178,0.25)]',
   
   // Layout - max-width for readability on wide screens
   pageContainer: 'min-h-screen max-w-2xl mx-auto',

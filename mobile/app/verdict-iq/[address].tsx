@@ -589,7 +589,7 @@ export default function VerdictIQScreen() {
       <>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]}>
-          <Ionicons name="alert-circle-outline" size={48} color={decisionGrade.signalRed} />
+          <Ionicons name="alert-circle-outline" size={48} color={decisionGrade.negative} />
           <Text style={styles.errorText}>Unable to analyze property</Text>
           <Text style={styles.errorSubtext}>{error}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={() => analysisResult.refetch()}>
@@ -649,10 +649,10 @@ export default function VerdictIQScreen() {
             onHowWeScorePress={handleHowWeScore}
           />
 
-          {/* Section Divider */}
-          <View style={styles.sectionDivider} />
+          {/* Spacer before Investment Analysis (breathing room) */}
+          <View style={styles.sectionSpacer} />
 
-          {/* Investment Analysis - Uses API data */}
+          {/* Investment Analysis - Uses API data (Star of the show) */}
           <InvestmentAnalysis
             financingTerms="20% down, 7.3%"
             currentStrategy={currentStrategy}
@@ -666,8 +666,8 @@ export default function VerdictIQScreen() {
             onHowCalculated={handleHowCalculated}
           />
 
-          {/* Section Divider */}
-          <View style={styles.sectionDivider} />
+          {/* Spacer after Investment Analysis (breathing room) */}
+          <View style={styles.sectionSpacer} />
 
           {/* Financial Breakdown - Uses calculated data */}
           <FinancialBreakdown
@@ -681,8 +681,8 @@ export default function VerdictIQScreen() {
             cashflow={cashFlowValues}
           />
 
-          {/* Section Divider */}
-          <View style={styles.sectionDivider} />
+          {/* Subtle divider */}
+          <View style={styles.sectionDividerSubtle} />
 
           {/* Deal Gap - Uses API data */}
           <DealGap
@@ -694,8 +694,8 @@ export default function VerdictIQScreen() {
             suggestedOfferRange={`${Math.round(discountPercent - 5)}% – ${Math.round(discountPercent + 5)}% below asking`}
           />
 
-          {/* Section Divider */}
-          <View style={styles.sectionDivider} />
+          {/* Subtle divider */}
+          <View style={styles.sectionDividerSubtle} />
 
           {/* At-a-Glance - Uses API data */}
           <AtAGlance
@@ -705,8 +705,8 @@ export default function VerdictIQScreen() {
             onToggle={() => setGlanceOpen(!glanceOpen)}
           />
 
-          {/* Section Divider */}
-          <View style={styles.sectionDivider} />
+          {/* Subtle divider */}
+          <View style={styles.sectionDividerSubtle} />
 
           {/* Performance Benchmarks - Uses API data */}
           <PerformanceBenchmarks
@@ -841,6 +841,15 @@ const styles = StyleSheet.create({
     borderTopColor: decisionGrade.borderLight,
     borderBottomWidth: 1,
     borderBottomColor: decisionGrade.borderLight,
+  },
+  sectionSpacer: {
+    height: rs(6),
+    backgroundColor: decisionGrade.bgSecondary,
+  },
+  sectionDividerSubtle: {
+    height: rs(1),
+    backgroundColor: decisionGrade.borderLight,
+    marginHorizontal: rs(16),
   },
   actionSection: {
     padding: rs(20),

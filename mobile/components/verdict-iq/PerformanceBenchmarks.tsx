@@ -1,9 +1,9 @@
 /**
- * Performance Benchmarks Components - Decision-Grade UI
- * At-a-Glance + National Average comparison
+ * Performance Benchmarks Components - Decision-Grade UI (Polished)
+ * At-a-Glance with composite score pill + National Average comparison
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -40,6 +40,18 @@ const getGlanceColor = (color: 'teal' | 'amber' | 'negative'): string => {
   }
 };
 
+const getCompositePillBg = (score: number): string => {
+  if (score >= 60) return 'rgba(8,145,178,0.10)';
+  if (score >= 40) return 'rgba(217,119,6,0.10)';
+  return 'rgba(220,38,38,0.10)';
+};
+
+const getCompositeColor = (score: number): string => {
+  if (score >= 60) return decisionGrade.pacificTeal;
+  if (score >= 40) return decisionGrade.caution;
+  return decisionGrade.negative;
+};
+
 export function AtAGlance({
   metrics,
   compositeScore,
@@ -55,18 +67,24 @@ export function AtAGlance({
     <View style={glanceStyles.container}>
       {/* Header */}
       <TouchableOpacity style={glanceStyles.header} onPress={handleToggle}>
-        <View style={glanceStyles.iconContainer}>
-          <View style={glanceStyles.iconGrid}>
-            {[...Array(9)].map((_, i) => (
-              <View key={i} style={glanceStyles.iconDot} />
-            ))}
+        <View style={glanceStyles.headerLeft}>
+          <View style={glanceStyles.iconContainer}>
+            <View style={glanceStyles.iconGrid}>
+              {[...Array(9)].map((_, i) => (
+                <View key={i} style={glanceStyles.iconDot} />
+              ))}
+            </View>
+          </View>
+          <View style={glanceStyles.titleGroup}>
+            <Text style={glanceStyles.title}>At-a-Glance</Text>
+            <Text style={glanceStyles.subtitle}>Performance breakdown</Text>
           </View>
         </View>
-        <View style={glanceStyles.titleGroup}>
-          <Text style={glanceStyles.title}>At-a-Glance</Text>
-          <Text style={glanceStyles.subtitle}>Performance breakdown</Text>
-        </View>
-        <Text style={glanceStyles.toggle}>{isOpen ? '∧' : '∨'}</Text>
+        <Ionicons
+          name={isOpen ? 'chevron-up' : 'chevron-down'}
+          size={16}
+          color={decisionGrade.textSecondary}
+        />
       </TouchableOpacity>
 
       {isOpen && (
@@ -85,17 +103,31 @@ export function AtAGlance({
                     ]}
                   />
                 </View>
-                <Text style={glanceStyles.value}>{metric.value}%</Text>
+                <Text style={[glanceStyles.value, { color: metricColor }]}>
+                  {metric.value}%
+                </Text>
               </View>
             );
           })}
 
-          {/* Composite */}
+          {/* Composite - Pill Style */}
           <View style={glanceStyles.composite}>
-            <Text style={glanceStyles.compositeText}>
-              <Text style={glanceStyles.compositeLabel}>Composite: </Text>
-              <Text style={glanceStyles.compositeValue}>{compositeScore}%</Text>
-              <Text> score across returns and risk protection.</Text>
+            <View style={glanceStyles.compositeRow}>
+              <Text style={glanceStyles.compositeLabel}>Composite Score</Text>
+              <View style={[
+                glanceStyles.compositePill,
+                { backgroundColor: getCompositePillBg(compositeScore) },
+              ]}>
+                <Text style={[
+                  glanceStyles.compositePillText,
+                  { color: getCompositeColor(compositeScore) },
+                ]}>
+                  {compositeScore}%
+                </Text>
+              </View>
+            </View>
+            <Text style={glanceStyles.compositeDesc}>
+              Across returns and risk protection
             </Text>
           </View>
         </>
@@ -111,13 +143,18 @@ const glanceStyles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: rs(12),
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: rs(16),
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: rs(12),
+  },
   iconContainer: {
-    width: rs(40),
-    height: rs(40),
+    width: rs(36),
+    height: rs(36),
     backgroundColor: decisionGrade.deepNavy,
     borderRadius: rs(8),
     alignItems: 'center',
@@ -148,10 +185,6 @@ const glanceStyles = StyleSheet.create({
     fontWeight: '500',
     color: decisionGrade.textSecondary,
   },
-  toggle: {
-    fontSize: rf(14),
-    color: decisionGrade.textPrimary,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -168,12 +201,10 @@ const glanceStyles = StyleSheet.create({
   },
   bar: {
     flex: 1,
-    height: rs(10),
-    backgroundColor: decisionGrade.bgSecondary,
-    borderRadius: rs(5),
+    height: rs(8),
+    backgroundColor: 'rgba(229,229,229,0.5)',
+    borderRadius: rs(4),
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: decisionGrade.borderLight,
   },
   fill: {
     height: '100%',
@@ -184,25 +215,39 @@ const glanceStyles = StyleSheet.create({
     fontWeight: '700',
     width: rs(38),
     textAlign: 'right',
-    color: decisionGrade.textPrimary,
   },
   composite: {
-    marginTop: rs(12),
-    padding: rs(12),
-    backgroundColor: decisionGrade.bgSecondary,
-    borderRadius: rs(6),
+    marginTop: rs(14),
+    padding: rs(14),
+    backgroundColor: 'rgba(8,145,178,0.04)',
+    borderRadius: rs(10),
+    borderWidth: 1,
+    borderColor: 'rgba(8,145,178,0.12)',
   },
-  compositeText: {
-    fontSize: rf(12),
-    fontWeight: '500',
-    color: decisionGrade.textPrimary,
+  compositeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: rs(4),
   },
   compositeLabel: {
+    fontSize: rf(12),
     fontWeight: '700',
+    color: decisionGrade.textPrimary,
   },
-  compositeValue: {
-    fontWeight: '700',
-    color: decisionGrade.pacificTeal,
+  compositePill: {
+    paddingHorizontal: rs(12),
+    paddingVertical: rs(4),
+    borderRadius: rs(12),
+  },
+  compositePillText: {
+    fontSize: rf(14),
+    fontWeight: '800',
+  },
+  compositeDesc: {
+    fontSize: rf(11),
+    fontWeight: '500',
+    color: decisionGrade.textSecondary,
   },
 });
 
@@ -245,7 +290,7 @@ export function PerformanceBenchmarks({
       <View style={benchmarkStyles.header}>
         <View style={benchmarkStyles.headerLeft}>
           <View style={benchmarkStyles.iconContainer}>
-            <Ionicons name="bar-chart" size={20} color="white" />
+            <Ionicons name="bar-chart" size={16} color="white" />
           </View>
           <View style={benchmarkStyles.titleGroup}>
             <Text style={benchmarkStyles.title}>Performance Benchmarks</Text>
@@ -253,7 +298,7 @@ export function PerformanceBenchmarks({
           </View>
         </View>
         <TouchableOpacity onPress={onHowToRead}>
-          <Text style={benchmarkStyles.howToRead}>∨ How to read</Text>
+          <Text style={benchmarkStyles.howToRead}>How to read</Text>
         </TouchableOpacity>
       </View>
 
@@ -282,7 +327,10 @@ export function PerformanceBenchmarks({
       {/* Groups */}
       {groups.map((group, groupIndex) => (
         <View key={groupIndex} style={benchmarkStyles.group}>
-          <Text style={benchmarkStyles.groupTitle}>{group.title}</Text>
+          <View style={benchmarkStyles.groupTitleRow}>
+            <View style={benchmarkStyles.groupAccent} />
+            <Text style={benchmarkStyles.groupTitle}>{group.title}</Text>
+          </View>
           {group.metrics.map((metric, metricIndex) => {
             const markerColor = getBenchmarkColor(metric.color);
             return (
@@ -299,7 +347,9 @@ export function PerformanceBenchmarks({
                     />
                   </View>
                 </View>
-                <Text style={benchmarkStyles.metricValue}>{metric.value}</Text>
+                <Text style={[benchmarkStyles.metricValue, { color: markerColor }]}>
+                  {metric.value}
+                </Text>
               </View>
             );
           })}
@@ -316,18 +366,18 @@ const benchmarkStyles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: rs(16),
   },
   headerLeft: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: rs(12),
   },
   iconContainer: {
-    width: rs(40),
-    height: rs(40),
+    width: rs(36),
+    height: rs(36),
     backgroundColor: decisionGrade.deepNavy,
     borderRadius: rs(8),
     alignItems: 'center',
@@ -377,7 +427,7 @@ const benchmarkStyles = StyleSheet.create({
     fontSize: rf(9),
     fontWeight: '600',
     letterSpacing: 0.5,
-    color: decisionGrade.textPrimary,
+    color: decisionGrade.textTertiary,
   },
   legendCenter: {
     fontSize: rf(9),
@@ -391,7 +441,7 @@ const benchmarkStyles = StyleSheet.create({
     marginBottom: rs(16),
     position: 'relative',
     overflow: 'visible',
-    backgroundColor: decisionGrade.bgSecondary,
+    backgroundColor: 'rgba(229,229,229,0.5)',
   },
   scaleMarker: {
     position: 'absolute',
@@ -405,15 +455,27 @@ const benchmarkStyles = StyleSheet.create({
   group: {
     marginBottom: rs(20),
   },
+  groupTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: rs(8),
+    borderBottomWidth: 2,
+    borderBottomColor: decisionGrade.pacificTeal,
+    marginBottom: rs(12),
+  },
+  groupAccent: {
+    width: rs(4),
+    height: rs(14),
+    backgroundColor: decisionGrade.pacificTeal,
+    borderRadius: rs(2),
+    marginRight: rs(8),
+  },
   groupTitle: {
     fontSize: rf(10),
     fontWeight: '700',
     letterSpacing: 0.5,
     color: decisionGrade.pacificTeal,
-    paddingVertical: rs(8),
-    borderBottomWidth: 2,
-    borderBottomColor: decisionGrade.pacificTeal,
-    marginBottom: rs(12),
+    textTransform: 'uppercase',
   },
   row: {
     flexDirection: 'row',
@@ -434,11 +496,9 @@ const benchmarkStyles = StyleSheet.create({
     flex: 1,
   },
   bar: {
-    height: rs(10),
-    backgroundColor: decisionGrade.bgSecondary,
-    borderRadius: rs(5),
-    borderWidth: 1,
-    borderColor: decisionGrade.borderLight,
+    height: rs(8),
+    backgroundColor: 'rgba(229,229,229,0.5)',
+    borderRadius: rs(4),
     position: 'relative',
     overflow: 'visible',
   },
@@ -472,7 +532,6 @@ const benchmarkStyles = StyleSheet.create({
     fontWeight: '700',
     width: rs(45),
     textAlign: 'right',
-    color: decisionGrade.textPrimary,
   },
 });
 

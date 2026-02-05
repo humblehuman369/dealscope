@@ -302,6 +302,16 @@ export const decisionGrade = {
   textSecondary: '#525252', // neutral-600
   textTertiary: '#737373',  // neutral-500
   textMuted: '#A3A3A3',     // neutral-400
+
+  // Gradients & Shadows (for VerdictIQ visual polish)
+  gradientTealStart: 'rgba(8,145,178,0.10)',
+  gradientCyanMid: 'rgba(6,182,212,0.05)',
+  gradientTealEnd: 'rgba(8,145,178,0.10)',
+  cardShadow: 'rgba(0,0,0,0.06)',
+  tealGlow: 'rgba(8,145,178,0.15)',
+  selectedCardBg: '#FFFFFF',
+  unselectedCardBg: '#F5F5F5',
+  recommendedBadgeBg: 'rgba(8,145,178,0.12)',
 } as const;
 
 // =============================================================================

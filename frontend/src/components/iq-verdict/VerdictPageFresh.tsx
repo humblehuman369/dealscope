@@ -237,7 +237,8 @@ function PropertySummaryBar({
 }
 
 /**
- * Section B: Score Hero
+ * Section B: Score Hero (Polished)
+ * Gradient bg, progress ring with glow, pill verdict label
  */
 function ScoreHero({
   score,
@@ -259,12 +260,25 @@ function ScoreHero({
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (score / 100) * circumference
 
+  // Pill background based on score
+  const getPillBg = (s: number) => {
+    if (s >= 80) return 'bg-teal-500/10'
+    if (s >= 50) return 'bg-amber-500/10'
+    return 'bg-red-500/10'
+  }
+
   return (
-    <div className="bg-white border-b" style={{ borderColor: colors.ui.border }}>
+    <div className="bg-white border-b relative overflow-hidden" style={{ borderColor: colors.ui.border }}>
+      {/* Teal accent line */}
+      <div className="h-[3px]" style={{ backgroundColor: colors.brand.tealBright }} />
+
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-teal-500/5 via-transparent to-transparent pointer-events-none" />
+
       {/* Score Circle Section - Centered */}
-      <div className="flex flex-col items-center py-8 px-5">
-        {/* Score Circle with Progress Ring */}
-        <div className="relative w-32 h-32 mb-4">
+      <div className="flex flex-col items-center py-8 px-5 relative">
+        {/* Score Circle with Progress Ring and Glow */}
+        <div className="relative w-32 h-32 mb-4" style={{ filter: `drop-shadow(0 0 12px ${scoreColor}30)` }}>
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
             {/* Background circle */}
             <circle
@@ -286,7 +300,7 @@ function ScoreHero({
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
-              className="transition-all duration-500"
+              className="transition-all duration-700 ease-out"
             />
           </svg>
           {/* Score text in center */}
@@ -312,16 +326,18 @@ function ScoreHero({
           </div>
         </div>
 
-        {/* Verdict Label */}
-        <h2 
-          className="font-bold mb-1"
-          style={{ 
-            fontSize: typography.heading.size + 2,
-            color: colors.text.primary,
-          }}
-        >
-          {verdictLabel}
-        </h2>
+        {/* Verdict Label - Pill */}
+        <div className={`${getPillBg(score)} px-4 py-1.5 rounded-full mb-2`}>
+          <h2 
+            className="font-bold"
+            style={{ 
+              fontSize: typography.heading.size + 2,
+              color: scoreColor,
+            }}
+          >
+            {verdictLabel}
+          </h2>
+        </div>
         
         {/* Verdict Subtitle */}
         <p 
@@ -479,7 +495,8 @@ function ScoreHero({
 }
 
 /**
- * Section C: Confidence Metrics
+ * Section C: Confidence Metrics (Polished)
+ * Smoother bars with animated fills
  */
 function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
   const getBarColor = (value: number): string => {
@@ -502,7 +519,7 @@ function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
         style={{ 
           fontSize: typography.label.size,
           fontWeight: typography.heading.weight,
-          color: colors.text.tertiary,
+          color: colors.text.secondary,
         }}
       >
         Confidence Metrics
@@ -521,14 +538,14 @@ function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
               {item.label}
             </span>
             <div 
-              className="flex-1 h-1.5 rounded-full overflow-hidden"
+              className="flex-1 rounded-full overflow-hidden"
               style={{ 
-                backgroundColor: colors.ui.border,
-                height: components.progressBar.height,
+                backgroundColor: 'rgba(229,229,229,0.5)',
+                height: 7,
               }}
             >
               <div 
-                className="h-full rounded-full transition-all duration-300"
+                className="h-full rounded-full transition-all duration-700 ease-out"
                 style={{ 
                   width: `${item.value}%`,
                   backgroundColor: getBarColor(item.value),
@@ -536,7 +553,7 @@ function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
               />
             </div>
             <span 
-              className="w-12 text-right font-semibold"
+              className="w-12 text-right font-bold tabular-nums"
               style={{ 
                 fontSize: typography.body.size,
                 color: getBarColor(item.value),
@@ -552,8 +569,9 @@ function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
 }
 
 /**
- * Section D: Investment Analysis
- * Redesigned with segmented control price selector and unified metrics card
+ * Section D: Investment Analysis (Redesigned)
+ * Gradient card, pill-style price selector with RECOMMENDED badge,
+ * white metric cards with teal accents, dynamic context label
  */
 function InvestmentAnalysisSection({
   financingTerms,
@@ -574,42 +592,51 @@ function InvestmentAnalysisSection({
   onExportClick?: () => void
   isExporting?: boolean
 }) {
+  const selectedLabel = selectedPriceCard === 'target' ? 'TARGET BUY'
+    : selectedPriceCard === 'breakeven' ? 'BREAKEVEN' : 'WHOLESALE'
+
   return (
-    <div className="px-4 py-[30px]">
-      {/* White Card Container - Crisp shadow for definition */}
+    <div className="px-4 py-8">
+      {/* Gradient Card Container */}
       <div 
-        className="bg-white rounded-xl p-5 border"
-        style={{ 
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)', 
-          borderColor: colors.ui.border,
-        }}
+        className={tw.investmentCard}
       >
-        {/* Section Header */}
+        {/* Section Header with Icon */}
         <div className="flex items-start justify-between mb-5">
-          <div>
-            <h3 
-              className="font-semibold mb-0.5"
-              style={{ 
-                fontSize: typography.body.size + 2,
-                color: colors.text.primary,
-              }}
-            >
-              Investment Analysis
-            </h3>
-            <p 
-              style={{ 
-                fontSize: typography.caption.size + 1,
-                color: colors.text.tertiary,
-              }}
-            >
-              Based on your terms ({financingTerms})
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke={colors.brand.tealBright} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="20" x2="12" y2="10" />
+                <line x1="18" y1="20" x2="18" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="16" />
+              </svg>
+            </div>
+            <div>
+              <h3 
+                className="font-bold tracking-wide mb-0.5"
+                style={{ 
+                  fontSize: typography.body.size,
+                  color: colors.text.primary,
+                  letterSpacing: '0.3px',
+                }}
+              >
+                YOUR INVESTMENT ANALYSIS
+              </h3>
+              <p 
+                style={{ 
+                  fontSize: typography.caption.size + 1,
+                  color: colors.text.secondary,
+                }}
+              >
+                Based on your terms ({financingTerms})
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button 
               onClick={onExportClick}
               disabled={isExporting}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border bg-white transition-colors hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ 
                 fontSize: typography.caption.size + 1,
                 color: colors.text.secondary,
@@ -630,7 +657,7 @@ function InvestmentAnalysisSection({
             </button>
             <button 
               onClick={onChangeTerms}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:bg-neutral-50"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border bg-white transition-colors hover:bg-neutral-50"
               style={{ 
                 fontSize: typography.caption.size + 1,
                 color: colors.text.secondary,
@@ -643,36 +670,53 @@ function InvestmentAnalysisSection({
           </div>
         </div>
 
-        {/* Price Selector - Segmented Control Style */}
-        <div className="bg-neutral-100 rounded-lg p-1 mb-4">
+        {/* Price Selector - Pill Style with RECOMMENDED badge */}
+        <div className="bg-neutral-100 rounded-xl p-1 mb-5">
           <div className="grid grid-cols-3 gap-1">
             {priceCards.map((card) => {
               const isSelected = card.variant === selectedPriceCard
+              const isTarget = card.variant === 'target'
               return (
                 <button 
                   key={card.label}
                   onClick={() => onPriceCardSelect?.(card.variant)}
-                  className={`py-3 px-2 rounded-md transition-all ${
+                  className={`relative py-3.5 px-2 rounded-lg transition-all ${
                     isSelected 
-                      ? 'bg-white shadow-sm' 
-                      : 'hover:bg-neutral-50/50'
+                      ? 'bg-white shadow-md' 
+                      : 'hover:bg-neutral-50/60'
                   }`}
                 >
+                  {/* RECOMMENDED badge for Target Buy */}
+                  {isTarget && (
+                    <span 
+                      className="absolute top-1 left-1/2 -translate-x-1/2 px-1.5 py-[1px] rounded text-[7px] font-bold tracking-wide uppercase"
+                      style={{ 
+                        backgroundColor: 'rgba(8,145,178,0.12)',
+                        color: colors.brand.tealBright,
+                      }}
+                    >
+                      Recommended
+                    </span>
+                  )}
                   <div 
                     className="uppercase tracking-wide text-center mb-1"
                     style={{ 
                       fontSize: 9,
                       fontWeight: 600,
                       letterSpacing: '0.5px',
+                      marginTop: isTarget ? 6 : 0,
                     }}
                   >
-                    <span className={isSelected ? 'text-neutral-700' : 'text-neutral-500'}>
+                    <span className={isSelected ? 'text-neutral-800 font-bold' : 'text-neutral-500'}>
                       {card.label}
                     </span>
                   </div>
                   <div 
-                    className={`text-center font-bold ${isSelected ? 'text-neutral-900' : 'text-neutral-600'}`}
-                    style={{ fontSize: 20 }}
+                    className="text-center font-bold transition-all"
+                    style={{ 
+                      fontSize: isSelected ? 22 : 17,
+                      color: isSelected ? colors.brand.tealBright : colors.text.tertiary,
+                    }}
                   >
                     {formatPrice(card.value)}
                   </div>
@@ -682,26 +726,49 @@ function InvestmentAnalysisSection({
           </div>
         </div>
 
-        {/* Metrics Card - Unified Display */}
-        <div className="bg-neutral-50 rounded-lg p-4">
-          <div className="grid grid-cols-3 gap-4">
-            {keyMetrics.map((metric) => (
-              <div key={metric.label} className="text-center">
-                <div 
-                  className="font-bold text-neutral-900 mb-0.5"
-                  style={{ fontSize: 22 }}
-                >
-                  {metric.value}
-                </div>
-                <div 
-                  className="text-neutral-500 uppercase tracking-wide"
-                  style={{ fontSize: 9, fontWeight: 500 }}
-                >
-                  {metric.label}
-                </div>
+        {/* Metrics Cards - Individual white cards with teal accent */}
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          {keyMetrics.map((metric) => (
+            <div 
+              key={metric.label} 
+              className="bg-white rounded-lg p-4 text-center relative overflow-hidden border border-neutral-200/60"
+              style={{ boxShadow: colors.shadow.metricCard }}
+            >
+              {/* Teal top accent */}
+              <div 
+                className="absolute top-0 left-0 right-0 h-[3px] rounded-t-lg"
+                style={{ backgroundColor: colors.brand.tealBright }}
+              />
+              <div 
+                className="text-neutral-500 uppercase tracking-wide mb-1.5"
+                style={{ fontSize: 9, fontWeight: 600 }}
+              >
+                {metric.label}
               </div>
-            ))}
-          </div>
+              <div 
+                className="font-bold tabular-nums transition-all duration-300"
+                style={{ 
+                  fontSize: 20,
+                  color: colors.brand.tealBright,
+                }}
+              >
+                {metric.value}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Dynamic Context Label */}
+        <div className="flex items-center justify-center gap-1.5">
+          <Info className="w-3.5 h-3.5 text-neutral-400" />
+          <span 
+            style={{ 
+              fontSize: typography.caption.size + 1,
+              color: colors.text.tertiary,
+            }}
+          >
+            Based on <strong style={{ color: colors.brand.tealBright, fontWeight: 700 }}>{selectedLabel}</strong> price
+          </span>
         </div>
       </div>
     </div>
@@ -709,7 +776,8 @@ function InvestmentAnalysisSection({
 }
 
 /**
- * Section E: Financial Breakdown
+ * Section E: Financial Breakdown (Polished)
+ * Icon header, accent bars on column titles, gradient totals
  */
 function FinancialBreakdownSection({
   columns,
@@ -720,17 +788,35 @@ function FinancialBreakdownSection({
 
   return (
     <div className="bg-white border-b" style={{ borderColor: colors.ui.border }}>
-      {/* Header */}
+      {/* Header with Icon */}
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: colors.ui.border }}>
-        <h3 
-          className="font-semibold"
-          style={{ 
-            fontSize: typography.body.size + 1,
-            color: colors.text.primary,
-          }}
-        >
-          Financial Breakdown
-        </h3>
+        <div className="flex items-center gap-3">
+          <div 
+            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: colors.background.deepNavy }}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="4" y="2" width="16" height="20" rx="2" />
+              <line x1="8" y1="6" x2="16" y2="6" />
+              <line x1="8" y1="10" x2="16" y2="10" />
+              <line x1="8" y1="14" x2="12" y2="14" />
+            </svg>
+          </div>
+          <div>
+            <h3 
+              className="font-semibold"
+              style={{ 
+                fontSize: typography.body.size + 1,
+                color: colors.text.primary,
+              }}
+            >
+              Financial Breakdown
+            </h3>
+            <span style={{ fontSize: typography.caption.size, color: colors.text.tertiary }}>
+              Detailed proforma
+            </span>
+          </div>
+        </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex items-center gap-1 text-sm transition-colors hover:opacity-75"
@@ -741,27 +827,32 @@ function FinancialBreakdownSection({
         </button>
       </div>
 
-      {/* Column Headers - matches Performance Metrics table header style */}
+      {/* Column Headers with teal accent */}
       <div 
         className="grid grid-cols-3 gap-2 px-4 py-2 border-b"
         style={{ borderColor: colors.ui.border }}
       >
         {columns.map((column) => (
-          <span 
-            key={column.title}
-            className="uppercase tracking-wide"
-            style={{ 
-              fontSize: typography.caption.size,
-              fontWeight: typography.heading.weight,
-              color: colors.text.tertiary,
-            }}
-          >
-            {column.title}
-          </span>
+          <div key={column.title} className="flex items-center gap-2">
+            <div 
+              className="w-[3px] h-3.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: colors.brand.tealBright }}
+            />
+            <span 
+              className="uppercase tracking-wide"
+              style={{ 
+                fontSize: typography.caption.size,
+                fontWeight: typography.heading.weight,
+                color: colors.brand.tealBright,
+              }}
+            >
+              {column.title}
+            </span>
+          </div>
         ))}
       </div>
 
-      {/* Column Content - no vertical separators, matching row height with Performance Metrics */}
+      {/* Column Content */}
       <div className="grid grid-cols-3 gap-2 px-4 py-3">
         {columns.map((column) => (
           <div key={column.title}>
@@ -771,9 +862,12 @@ function FinancialBreakdownSection({
                 .map((item, idx) => (
                   <div 
                     key={idx}
-                    className="flex justify-between items-center"
+                    className={`flex justify-between items-center ${
+                      item.isTotal 
+                        ? 'bg-teal-500/5 -mx-1 px-1 py-1 rounded border-t border-teal-200/50' 
+                        : ''
+                    }`}
                     style={{
-                      borderTop: item.isTotal ? `1px solid ${colors.ui.border}` : undefined,
                       paddingTop: item.isTotal ? spacing.xs : undefined,
                       marginTop: item.isTotal ? spacing.xs : undefined,
                     }}
@@ -781,7 +875,7 @@ function FinancialBreakdownSection({
                     <span 
                       style={{ 
                         fontSize: typography.caption.size + 1,
-                        color: colors.text.secondary,
+                        color: item.isTotal ? colors.text.primary : colors.text.secondary,
                         fontWeight: item.isTotal ? 600 : 400,
                       }}
                     >
@@ -790,8 +884,8 @@ function FinancialBreakdownSection({
                     <span 
                       style={{ 
                         fontSize: typography.caption.size + 1,
-                        color: colors.text.primary,
-                        fontWeight: item.isTotal ? 600 : 500,
+                        color: item.isTotal ? colors.brand.tealBright : colors.text.primary,
+                        fontWeight: item.isTotal ? 700 : 500,
                       }}
                     >
                       {item.value}
@@ -807,8 +901,8 @@ function FinancialBreakdownSection({
 }
 
 /**
- * Section F: Performance Metrics Table
- * Styled to match Financial Breakdown section
+ * Section F: Performance Metrics Table (Polished)
+ * Icon header, colored assessment pills
  */
 function PerformanceMetricsSection({
   metrics,
@@ -817,17 +911,34 @@ function PerformanceMetricsSection({
 }) {
   return (
     <div className="bg-white border-b" style={{ borderColor: colors.ui.border }}>
-      {/* Header - matches Financial Breakdown header */}
+      {/* Header with Icon */}
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: colors.ui.border }}>
-        <h3 
-          className="font-semibold"
-          style={{ 
-            fontSize: typography.body.size + 1,
-            color: colors.text.primary,
-          }}
-        >
-          Performance Metrics
-        </h3>
+        <div className="flex items-center gap-3">
+          <div 
+            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: colors.background.deepNavy }}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+          </div>
+          <div>
+            <h3 
+              className="font-semibold"
+              style={{ 
+                fontSize: typography.body.size + 1,
+                color: colors.text.primary,
+              }}
+            >
+              Performance Metrics
+            </h3>
+            <span style={{ fontSize: typography.caption.size, color: colors.text.tertiary }}>
+              How this deal compares
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Table Header */}
@@ -877,12 +988,12 @@ function PerformanceMetricsSection({
         </span>
       </div>
 
-      {/* Table Rows - font sizes match Financial Breakdown content */}
+      {/* Table Rows with colored assessment pills */}
       <div className="px-4 py-3 space-y-1.5">
         {metrics.map((metric) => {
           const assessment = getAssessment(metric.numValue, metric.benchmarkNum, metric.higherIsBetter)
           return (
-            <div key={metric.name} className="grid grid-cols-4 gap-2 items-center">
+            <div key={metric.name} className="grid grid-cols-4 gap-2 items-center py-0.5">
               <span 
                 style={{ 
                   fontSize: typography.caption.size + 1,
@@ -892,17 +1003,16 @@ function PerformanceMetricsSection({
                 {metric.name}
               </span>
               <span 
-                className="text-right"
+                className="text-right font-medium tabular-nums"
                 style={{ 
                   fontSize: typography.caption.size + 1,
                   color: colors.text.primary,
-                  fontWeight: 500,
                 }}
               >
                 {metric.value}
               </span>
               <span 
-                className="text-right"
+                className="text-right tabular-nums"
                 style={{ 
                   fontSize: typography.caption.size + 1,
                   color: colors.text.muted,
@@ -911,10 +1021,7 @@ function PerformanceMetricsSection({
                 {metric.benchmark}
               </span>
               <div className="flex justify-center">
-                <span 
-                  className="text-[11px] font-semibold"
-                  style={{ color: assessment.color }}
-                >
+                <span className={`${assessment.bgClass} px-2 py-0.5 rounded-full text-[10px] font-semibold`}>
                   {assessment.label}
                 </span>
               </div>
@@ -1007,7 +1114,10 @@ export function VerdictPageFresh({
         {/* Section C: Confidence Metrics */}
         <ConfidenceMetricsSection metrics={confidenceMetrics} />
 
-        {/* Section D: Investment Analysis */}
+        {/* Breathing room before Investment Analysis */}
+        <div className="h-2" style={{ backgroundColor: colors.background.light }} />
+
+        {/* Section D: Investment Analysis (Star of the show) */}
         <InvestmentAnalysisSection
           financingTerms={financingTerms}
           priceCards={priceCards}
@@ -1019,8 +1129,14 @@ export function VerdictPageFresh({
           isExporting={isExporting}
         />
 
+        {/* Breathing room after Investment Analysis */}
+        <div className="h-2" style={{ backgroundColor: colors.background.light }} />
+
         {/* Section E: Financial Breakdown */}
         <FinancialBreakdownSection columns={financialBreakdown} />
+
+        {/* Subtle divider */}
+        <div className="h-px mx-4" style={{ backgroundColor: colors.ui.border }} />
 
         {/* Section F: Performance Metrics */}
         <PerformanceMetricsSection metrics={performanceMetrics} />

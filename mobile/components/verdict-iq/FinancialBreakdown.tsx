@@ -1,9 +1,10 @@
 /**
- * FinancialBreakdown Component - Decision-Grade UI
- * Expandable financial tables with adjust buttons
+ * FinancialBreakdown Component - Decision-Grade UI (Polished)
+ * Expandable financial tables with icon header, accent bars,
+ * gradient NOI/cashflow highlight boxes
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -48,6 +49,8 @@ function TableGroup({ group }: { group: BreakdownGroup }) {
   return (
     <View style={styles.tableGroup}>
       <View style={styles.tableGroupHeader}>
+        {/* Left accent bar */}
+        <View style={styles.groupAccentBar} />
         <Text style={styles.tableGroupTitle}>{group.title}</Text>
         {group.adjustLabel && (
           <TouchableOpacity
@@ -95,15 +98,25 @@ export function FinancialBreakdown({
     onToggle?.();
   };
 
+  const isPositiveCashflow = !cashflow.annual.isNegative;
+
   return (
     <View style={styles.container}>
-      {/* Section Header */}
+      {/* Section Header with Icon */}
       <TouchableOpacity style={styles.sectionHeader} onPress={handleToggle}>
-        <Text style={styles.sectionTitle}>Financial Breakdown</Text>
+        <View style={styles.sectionHeaderLeft}>
+          <View style={styles.sectionIcon}>
+            <Ionicons name="calculator" size={16} color="white" />
+          </View>
+          <View>
+            <Text style={styles.sectionTitle}>Financial Breakdown</Text>
+            <Text style={styles.sectionSubtitle}>Detailed proforma</Text>
+          </View>
+        </View>
         <Ionicons
           name={isOpen ? 'chevron-up' : 'chevron-down'}
           size={16}
-          color={decisionGrade.textPrimary}
+          color={decisionGrade.textSecondary}
         />
       </TouchableOpacity>
 
@@ -122,8 +135,9 @@ export function FinancialBreakdown({
           {/* Operating Expenses */}
           <TableGroup group={operatingExpenses} />
 
-          {/* NOI Highlight Box */}
+          {/* NOI Highlight Box - Gradient */}
           <View style={styles.highlightBox}>
+            <View style={styles.highlightAccent} />
             <Text style={styles.highlightLabel}>{noi.label}</Text>
             <Text style={styles.highlightValue}>{noi.value}</Text>
           </View>
@@ -131,10 +145,20 @@ export function FinancialBreakdown({
           {/* Debt Service */}
           <TableGroup group={debtService} />
 
-          {/* Cashflow Box */}
-          <View style={styles.cashflowBox}>
+          {/* Cashflow Box - Color-coded */}
+          <View style={[
+            styles.cashflowBox,
+            isPositiveCashflow ? styles.cashflowBoxPositive : styles.cashflowBoxNegative,
+          ]}>
             <View style={styles.cashflowHeader}>
-              <Text style={styles.cashflowLabel}>{cashflow.annual.label}</Text>
+              <View style={styles.cashflowLabelRow}>
+                <Ionicons
+                  name={isPositiveCashflow ? 'trending-up' : 'trending-down'}
+                  size={16}
+                  color={isPositiveCashflow ? decisionGrade.pacificTeal : decisionGrade.negative}
+                />
+                <Text style={styles.cashflowLabel}>{cashflow.annual.label}</Text>
+              </View>
               <Text style={[
                 styles.cashflowValue,
                 cashflow.annual.isNegative && styles.cashflowValueNegative,
@@ -166,15 +190,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: rs(16),
+    paddingVertical: rs(14),
     paddingHorizontal: rs(16),
+  },
+  sectionHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: rs(12),
+  },
+  sectionIcon: {
+    width: rs(36),
+    height: rs(36),
+    backgroundColor: decisionGrade.deepNavy,
+    borderRadius: rs(8),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sectionTitle: {
     fontSize: rf(13),
     fontWeight: '700',
     color: decisionGrade.textPrimary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  },
+  sectionSubtitle: {
+    fontSize: rf(10),
+    fontWeight: '500',
+    color: decisionGrade.textSecondary,
   },
   content: {
     paddingBottom: rs(20),
@@ -184,11 +224,17 @@ const styles = StyleSheet.create({
   },
   tableGroupHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: rs(10),
     borderBottomWidth: 2,
     borderBottomColor: decisionGrade.pacificTeal,
+  },
+  groupAccentBar: {
+    width: rs(4),
+    height: rs(16),
+    backgroundColor: decisionGrade.pacificTeal,
+    borderRadius: rs(2),
+    marginRight: rs(8),
   },
   tableGroupTitle: {
     fontSize: rf(10),
@@ -196,6 +242,7 @@ const styles = StyleSheet.create({
     color: decisionGrade.pacificTeal,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    flex: 1,
   },
   adjustBtn: {
     paddingVertical: rs(5),
@@ -259,19 +306,36 @@ const styles = StyleSheet.create({
     marginVertical: rs(12),
     paddingVertical: rs(14),
     paddingHorizontal: rs(16),
-    backgroundColor: decisionGrade.bgSelected,
-    borderWidth: 2,
-    borderColor: decisionGrade.pacificTeal,
-    borderRadius: rs(8),
+    backgroundColor: 'rgba(8,145,178,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(8,145,178,0.20)',
+    borderRadius: rs(10),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    overflow: 'hidden',
+    shadowColor: decisionGrade.pacificTeal,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  highlightAccent: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: rs(4),
+    backgroundColor: decisionGrade.pacificTeal,
+    borderTopLeftRadius: rs(10),
+    borderBottomLeftRadius: rs(10),
   },
   highlightLabel: {
     fontSize: rf(12),
     fontWeight: '700',
     color: decisionGrade.textPrimary,
     flex: 1,
+    paddingLeft: rs(8),
   },
   highlightValue: {
     fontSize: rf(16),
@@ -284,16 +348,27 @@ const styles = StyleSheet.create({
     marginBottom: rs(20),
     paddingVertical: rs(14),
     paddingHorizontal: rs(16),
-    backgroundColor: decisionGrade.bgSecondary,
-    borderWidth: 2,
-    borderColor: decisionGrade.borderMedium,
-    borderRadius: rs(8),
+    borderRadius: rs(10),
+    borderWidth: 1,
+  },
+  cashflowBoxPositive: {
+    backgroundColor: 'rgba(8,145,178,0.05)',
+    borderColor: 'rgba(8,145,178,0.20)',
+  },
+  cashflowBoxNegative: {
+    backgroundColor: 'rgba(220,38,38,0.05)',
+    borderColor: 'rgba(220,38,38,0.20)',
   },
   cashflowHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: rs(6),
+  },
+  cashflowLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: rs(6),
   },
   cashflowLabel: {
     fontSize: rf(12),

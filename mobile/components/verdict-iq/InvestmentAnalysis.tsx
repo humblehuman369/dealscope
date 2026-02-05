@@ -1,6 +1,9 @@
 /**
- * InvestmentAnalysis Component - Decision-Grade UI
- * IQ Price selector + Metrics row
+ * InvestmentAnalysis Component - Decision-Grade UI (Redesigned)
+ * 
+ * Gradient floating card with pill-style price selector,
+ * RECOMMENDED badge on Target Buy, white metric cards with shadows,
+ * and dynamic context label.
  */
 
 import React, { useState } from 'react';
@@ -12,6 +15,7 @@ import {
   Modal,
   Pressable,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { decisionGrade } from '../../theme/colors';
@@ -48,6 +52,14 @@ const formatPrice = (price: number): string => {
   return '$' + price.toLocaleString();
 };
 
+const getPriceLabel = (id: IQPriceId): string => {
+  switch (id) {
+    case 'breakeven': return 'BREAKEVEN';
+    case 'target': return 'TARGET BUY';
+    case 'wholesale': return 'WHOLESALE';
+  }
+};
+
 export function InvestmentAnalysis({
   financingTerms,
   currentStrategy,
@@ -74,89 +86,128 @@ export function InvestmentAnalysis({
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.title}>YOUR INVESTMENT ANALYSIS</Text>
-          <Text style={styles.subtitle}>Based on YOUR financing terms ({financingTerms})</Text>
-        </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity onPress={onChangeTerms}>
-            <Text style={styles.changeTermsLink}>Change terms</Text>
-          </TouchableOpacity>
-          
-          {/* Strategy Dropdown */}
-          <TouchableOpacity
-            style={styles.strategyBtn}
-            onPress={() => setStrategyMenuOpen(true)}
-          >
-            <Text style={styles.strategyBtnText}>
-              {currentStrategy.replace(' Rental', '')}
-            </Text>
-            <Ionicons name="chevron-down" size={12} color="white" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* How Calculated Link */}
-      <TouchableOpacity style={styles.howCalculated} onPress={onHowCalculated}>
-        <View style={styles.infoIcon}>
-          <Text style={styles.infoIconText}>i</Text>
-        </View>
-        <Text style={styles.howCalculatedText}>How BREAKEVEN is calculated</Text>
-      </TouchableOpacity>
-
-      {/* IQ Price Selector */}
-      <View style={styles.iqSelector}>
-        {iqPrices.map((option, index) => {
-          const isSelected = selectedIQPrice === option.id;
-          const isLast = index === iqPrices.length - 1;
-
-          return (
-            <TouchableOpacity
-              key={option.id}
-              style={[
-                styles.iqOption,
-                isSelected && styles.iqOptionSelected,
-                !isLast && styles.iqOptionBorder,
-              ]}
-              onPress={() => handleIQSelect(option.id)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.iqOptionLabel}>
-                <Text style={styles.iqOptionLabelText}>{option.label}</Text>
-                <View style={styles.iqInfoIcon}>
-                  <Text style={styles.iqInfoIconText}>i</Text>
-                </View>
-              </View>
-              <Text style={[
-                styles.iqOptionValue,
-                isSelected && styles.iqOptionValueSelected,
-              ]}>
-                {formatPrice(option.value)}
-              </Text>
-              <Text style={styles.iqOptionSub}>{option.subtitle}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      {/* Metrics Row */}
-      <View style={styles.metricsRow}>
-        {metrics.map((metric, index) => {
-          const isLast = index === metrics.length - 1;
-          return (
-            <View
-              key={index}
-              style={[styles.metricsBox, !isLast && styles.metricsBoxBorder]}
-            >
-              <Text style={styles.metricsBoxLabel}>{metric.label}</Text>
-              <Text style={styles.metricsBoxValue}>{metric.value}</Text>
+    <View style={styles.outerContainer}>
+      <LinearGradient
+        colors={[
+          decisionGrade.gradientTealStart,
+          decisionGrade.gradientCyanMid,
+          decisionGrade.gradientTealEnd,
+        ]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.gradientCard}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="analytics" size={18} color={decisionGrade.pacificTeal} />
             </View>
-          );
-        })}
-      </View>
+            <View style={styles.headerTextGroup}>
+              <Text style={styles.title}>YOUR INVESTMENT ANALYSIS</Text>
+              <Text style={styles.subtitle}>Based on your terms ({financingTerms})</Text>
+            </View>
+          </View>
+          <View style={styles.headerRight}>
+            <TouchableOpacity onPress={onChangeTerms} style={styles.termsBtn}>
+              <Ionicons name="settings-outline" size={14} color={decisionGrade.textSecondary} />
+              <Text style={styles.termsBtnText}>Terms</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.strategyBtn}
+              onPress={() => setStrategyMenuOpen(true)}
+            >
+              <Text style={styles.strategyBtnText}>
+                {currentStrategy.replace(' Rental', '')}
+              </Text>
+              <Ionicons name="chevron-down" size={12} color="white" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* IQ Price Selector - Pill Style */}
+        <View style={styles.selectorContainer}>
+          <View style={styles.iqSelector}>
+            {iqPrices.map((option) => {
+              const isSelected = selectedIQPrice === option.id;
+              const isTarget = option.id === 'target';
+
+              return (
+                <TouchableOpacity
+                  key={option.id}
+                  style={[
+                    styles.iqOption,
+                    isSelected && styles.iqOptionSelected,
+                  ]}
+                  onPress={() => handleIQSelect(option.id)}
+                  activeOpacity={0.7}
+                >
+                  {/* RECOMMENDED badge for Target Buy */}
+                  {isTarget && (
+                    <View style={styles.recommendedBadge}>
+                      <Text style={styles.recommendedText}>RECOMMENDED</Text>
+                    </View>
+                  )}
+
+                  <Text style={[
+                    styles.iqOptionLabelText,
+                    isSelected && styles.iqOptionLabelSelected,
+                  ]}>
+                    {option.label}
+                  </Text>
+
+                  <Text style={[
+                    styles.iqOptionValue,
+                    isSelected && styles.iqOptionValueSelected,
+                  ]}>
+                    {formatPrice(option.value)}
+                  </Text>
+
+                  <Text style={[
+                    styles.iqOptionSub,
+                    isSelected && styles.iqOptionSubSelected,
+                  ]}>
+                    {option.subtitle}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* How Calculated Link */}
+        <TouchableOpacity style={styles.howCalculated} onPress={onHowCalculated}>
+          <View style={styles.infoIcon}>
+            <Text style={styles.infoIconText}>i</Text>
+          </View>
+          <Text style={styles.howCalculatedText}>
+            How {getPriceLabel(selectedIQPrice)} is calculated
+          </Text>
+        </TouchableOpacity>
+
+        {/* Metrics Cards */}
+        <View style={styles.metricsRow}>
+          {metrics.map((metric, index) => (
+            <View key={index} style={styles.metricCard}>
+              <View style={styles.metricAccent} />
+              <Text style={styles.metricLabel}>{metric.label}</Text>
+              <Text style={styles.metricValue}>{metric.value}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Dynamic Context Label */}
+        <View style={styles.contextLabelRow}>
+          <Ionicons name="information-circle-outline" size={14} color={decisionGrade.textTertiary} />
+          <Text style={styles.contextLabel}>
+            Based on{' '}
+            <Text style={styles.contextLabelHighlight}>
+              {getPriceLabel(selectedIQPrice)}
+            </Text>
+            {' '}price
+          </Text>
+        </View>
+      </LinearGradient>
 
       {/* Strategy Menu Modal */}
       <Modal
@@ -199,40 +250,77 @@ export function InvestmentAnalysis({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: decisionGrade.bgPrimary,
-    paddingTop: rs(20),
+  outerContainer: {
     paddingHorizontal: rs(16),
+    paddingVertical: rs(8),
+    backgroundColor: decisionGrade.bgSecondary,
+  },
+  gradientCard: {
+    borderRadius: rs(12),
+    borderWidth: 1,
+    borderColor: 'rgba(8,145,178,0.20)',
+    padding: rs(16),
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: rs(4),
+    marginBottom: rs(14),
   },
   headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: rs(10),
+    flex: 1,
+  },
+  iconCircle: {
+    width: rs(36),
+    height: rs(36),
+    borderRadius: rs(18),
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  headerTextGroup: {
     flex: 1,
   },
   title: {
-    fontSize: rf(13),
+    fontSize: rf(12),
     fontWeight: '700',
     color: decisionGrade.textPrimary,
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
     marginBottom: rs(2),
   },
   subtitle: {
     fontSize: rf(10),
     fontWeight: '500',
-    color: decisionGrade.textPrimary,
+    color: decisionGrade.textSecondary,
   },
   headerRight: {
     alignItems: 'flex-end',
     gap: rs(6),
   },
-  changeTermsLink: {
+  termsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: rs(4),
+    paddingVertical: rs(5),
+    paddingHorizontal: rs(10),
+    borderRadius: rs(6),
+    borderWidth: 1,
+    borderColor: decisionGrade.borderLight,
+    backgroundColor: 'white',
+  },
+  termsBtnText: {
     fontSize: rf(10),
-    fontWeight: '600',
-    color: decisionGrade.pacificTeal,
+    fontWeight: '500',
+    color: decisionGrade.textSecondary,
   },
   strategyBtn: {
     flexDirection: 'row',
@@ -241,18 +329,91 @@ const styles = StyleSheet.create({
     paddingVertical: rs(6),
     paddingHorizontal: rs(12),
     backgroundColor: decisionGrade.pacificTeal,
-    borderRadius: rs(4),
+    borderRadius: rs(6),
   },
   strategyBtnText: {
     fontSize: rf(11),
     fontWeight: '600',
     color: 'white',
   },
+  selectorContainer: {
+    marginBottom: rs(10),
+  },
+  iqSelector: {
+    flexDirection: 'row',
+    backgroundColor: decisionGrade.unselectedCardBg,
+    borderRadius: rs(10),
+    padding: rs(4),
+    gap: rs(4),
+  },
+  iqOption: {
+    flex: 1,
+    paddingVertical: rs(12),
+    paddingHorizontal: rs(6),
+    alignItems: 'center',
+    borderRadius: rs(8),
+    backgroundColor: 'transparent',
+  },
+  iqOptionSelected: {
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  recommendedBadge: {
+    position: 'absolute',
+    top: rs(2),
+    alignSelf: 'center',
+    backgroundColor: decisionGrade.recommendedBadgeBg,
+    paddingHorizontal: rs(6),
+    paddingVertical: rs(1),
+    borderRadius: rs(4),
+  },
+  recommendedText: {
+    fontSize: rf(6),
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    color: decisionGrade.pacificTeal,
+  },
+  iqOptionLabelText: {
+    fontSize: rf(9),
+    fontWeight: '600',
+    letterSpacing: 0.3,
+    color: decisionGrade.textTertiary,
+    marginTop: rs(6),
+    marginBottom: rs(4),
+  },
+  iqOptionLabelSelected: {
+    color: decisionGrade.textPrimary,
+    fontWeight: '700',
+  },
+  iqOptionValue: {
+    fontSize: rf(15),
+    fontWeight: '700',
+    color: decisionGrade.textTertiary,
+    marginBottom: rs(2),
+  },
+  iqOptionValueSelected: {
+    fontSize: rf(20),
+    fontWeight: '800',
+    color: decisionGrade.pacificTeal,
+  },
+  iqOptionSub: {
+    fontSize: rf(8),
+    fontWeight: '500',
+    color: decisionGrade.textMuted,
+    textAlign: 'center',
+  },
+  iqOptionSubSelected: {
+    color: decisionGrade.textSecondary,
+  },
   howCalculated: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: rs(6),
-    marginVertical: rs(12),
+    marginBottom: rs(14),
   },
   infoIcon: {
     width: rs(14),
@@ -273,95 +434,64 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: decisionGrade.pacificTeal,
   },
-  iqSelector: {
-    flexDirection: 'row',
-    borderWidth: 2,
-    borderColor: decisionGrade.borderStrong,
-    overflow: 'hidden',
-  },
-  iqOption: {
-    flex: 1,
-    paddingVertical: rs(12),
-    paddingHorizontal: rs(6),
-    alignItems: 'center',
-    backgroundColor: decisionGrade.bgSecondary,
-  },
-  iqOptionSelected: {
-    backgroundColor: decisionGrade.bgPrimary,
-  },
-  iqOptionBorder: {
-    borderRightWidth: 1,
-    borderRightColor: decisionGrade.borderMedium,
-  },
-  iqOptionLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: rs(4),
-    marginBottom: rs(4),
-  },
-  iqOptionLabelText: {
-    fontSize: rf(9),
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    color: decisionGrade.textPrimary,
-  },
-  iqInfoIcon: {
-    width: rs(12),
-    height: rs(12),
-    borderRadius: rs(6),
-    borderWidth: 1.5,
-    borderColor: decisionGrade.borderMedium,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iqInfoIconText: {
-    fontSize: rf(7),
-    fontWeight: '700',
-    color: decisionGrade.textPrimary,
-  },
-  iqOptionValue: {
-    fontSize: rf(18),
-    fontWeight: '800',
-    color: decisionGrade.textPrimary,
-    marginBottom: rs(2),
-  },
-  iqOptionValueSelected: {
-    color: decisionGrade.pacificTeal,
-  },
-  iqOptionSub: {
-    fontSize: rf(9),
-    fontWeight: '500',
-    color: decisionGrade.textPrimary,
-    textAlign: 'center',
-  },
   metricsRow: {
     flexDirection: 'row',
-    marginTop: rs(12),
-    marginBottom: rs(20),
-    borderWidth: 2,
-    borderColor: decisionGrade.borderStrong,
+    gap: rs(8),
+    marginBottom: rs(10),
   },
-  metricsBox: {
+  metricCard: {
     flex: 1,
-    paddingVertical: rs(10),
-    paddingHorizontal: rs(6),
+    backgroundColor: 'white',
+    borderRadius: rs(10),
+    paddingTop: rs(14),
+    paddingBottom: rs(12),
+    paddingHorizontal: rs(8),
     alignItems: 'center',
-    backgroundColor: decisionGrade.bgPrimary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(229,229,229,0.6)',
+    overflow: 'hidden',
   },
-  metricsBoxBorder: {
-    borderRightWidth: 1,
-    borderRightColor: decisionGrade.borderMedium,
+  metricAccent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: rs(3),
+    backgroundColor: decisionGrade.pacificTeal,
+    borderTopLeftRadius: rs(10),
+    borderTopRightRadius: rs(10),
   },
-  metricsBoxLabel: {
+  metricLabel: {
     fontSize: rf(9),
-    fontWeight: '700',
+    fontWeight: '600',
     letterSpacing: 0.3,
-    color: decisionGrade.textPrimary,
+    color: decisionGrade.textSecondary,
     marginBottom: rs(4),
+    textTransform: 'uppercase',
   },
-  metricsBoxValue: {
-    fontSize: rf(16),
+  metricValue: {
+    fontSize: rf(17),
     fontWeight: '800',
+    color: decisionGrade.pacificTeal,
+  },
+  contextLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: rs(4),
+  },
+  contextLabel: {
+    fontSize: rf(10),
+    fontWeight: '500',
+    color: decisionGrade.textTertiary,
+  },
+  contextLabelHighlight: {
+    fontWeight: '700',
     color: decisionGrade.pacificTeal,
   },
   modalOverlay: {
@@ -374,7 +504,7 @@ const styles = StyleSheet.create({
   },
   strategyMenu: {
     backgroundColor: 'white',
-    borderRadius: rs(6),
+    borderRadius: rs(8),
     borderWidth: 1,
     borderColor: decisionGrade.borderMedium,
     minWidth: rs(160),
