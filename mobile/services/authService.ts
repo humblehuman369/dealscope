@@ -6,6 +6,8 @@
 import axios, { AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
+import { UserResponse as User } from '../types';
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
 
 // Secure storage keys
@@ -13,22 +15,8 @@ const ACCESS_TOKEN_KEY = 'investiq_access_token';
 const REFRESH_TOKEN_KEY = 'investiq_refresh_token';
 const USER_DATA_KEY = 'investiq_user_data';
 
-/**
- * User data returned from the API.
- */
-export interface User {
-  id: string;
-  email: string;
-  full_name: string;
-  avatar_url: string | null;
-  is_active: boolean;
-  is_verified: boolean;
-  is_superuser: boolean;
-  created_at: string;
-  last_login: string | null;
-  has_profile: boolean;
-  onboarding_completed: boolean;
-}
+// User type imported from centralized types
+// export interface User { ... } removed to avoid duplication
 
 /**
  * Token response from login/refresh endpoints.
