@@ -1,28 +1,39 @@
 /**
  * FundingTabContent - Comprehensive Funding/Loan analysis
  * Includes loan terms, summary stats, P&I chart, and amortization table
+ * 
+ * Now supports API-provided amortization data (Phase 1, Step 2)
  */
 
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
-import { TargetAssumptions, TuneGroup } from './types';
+import { TargetAssumptions, TuneGroup, AmortizationRow, ProjectionsData } from './types';
 import { TuneSectionNew, createSliderConfig, formatCurrency, formatPercent } from './TuneSectionNew';
 
 interface FundingTabContentProps {
   assumptions: TargetAssumptions;
   onAssumptionChange: (key: keyof TargetAssumptions, value: number) => void;
   isDark?: boolean;
+  // NEW: API-provided projections data (includes amortization)
+  apiProjections?: ProjectionsData | null;
+  isLoading?: boolean;
+  // NEW: Target price from API (instead of listPrice * 0.8)
+  targetPrice?: number;
 }
 
 export function FundingTabContent({
   assumptions,
   onAssumptionChange,
   isDark = true,
+  apiProjections,
+  isLoading = false,
+  targetPrice: apiTargetPrice,
 }: FundingTabContentProps) {
-  // Calculate loan details
+  // Calculate loan details - USE API DATA when available
   const loanDetails = useMemo(() => {
-    const purchasePrice = assumptions.listPrice * 0.8; // At IQ Target (20% discount)
+    // USE API target price if available, otherwise fall back to 20% discount
+    const purchasePrice = apiTargetPrice || Math.round(assumptions.listPrice * 0.8);
     const downPaymentAmount = purchasePrice * assumptions.downPaymentPct;
     const loanAmount = purchasePrice - downPaymentAmount;
     const closingCosts = purchasePrice * assumptions.closingCostsPct;
@@ -39,12 +50,14 @@ export function FundingTabContent({
     const totalPayments = monthlyPI * numPayments;
     const totalInterest = totalPayments - loanAmount;
     
-    // Generate amortization schedule (yearly summary)
-    const amortization = generateAmortizationSchedule(
-      loanAmount,
-      assumptions.interestRate,
-      assumptions.loanTermYears
-    );
+    // ============================================
+    // AMORTIZATION: Use API data if available
+    // ============================================
+    // OLD: const amortization = generateAmortizationSchedule(loanAmount, assumptions.interestRate, assumptions.loanTermYears);
+    // NEW: Use API amortization or fall back to local calculation
+    const amortization = apiProjections?.amortization && apiProjections.amortization.length > 0
+      ? apiProjections.amortization
+      : generateAmortizationSchedule(loanAmount, assumptions.interestRate, assumptions.loanTermYears);
     
     return {
       purchasePrice,
@@ -58,8 +71,10 @@ export function FundingTabContent({
       principalPercent: (loanAmount / totalPayments) * 100,
       interestPercent: (totalInterest / totalPayments) * 100,
       amortization,
+      // Flag to show if using API data
+      isFromApi: !!(apiProjections?.amortization && apiProjections.amortization.length > 0),
     };
-  }, [assumptions]);
+  }, [assumptions, apiProjections, apiTargetPrice]);
 
   // Tune groups for financing
   const tuneGroups = useMemo((): TuneGroup[] => [
@@ -162,9 +177,14 @@ export function FundingTabContent({
           borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(7,23,46,0.1)',
         }
       ]}>
-        <Text style={[styles.sectionTitle, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
-          Amortization Schedule
-        </Text>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
+            Amortization Schedule
+          </Text>
+          {isLoading && (
+            <ActivityIndicator size="small" color={isDark ? '#4dd0e1' : '#007ea7'} />
+          )}
+        </View>
         
         {/* Table Header */}
         <View style={[styles.tableHeader, { borderBottomColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,23,46,0.08)' }]}>
@@ -417,6 +437,12 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: 0,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 14,

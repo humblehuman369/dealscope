@@ -360,4 +360,9 @@ export type {
   StrategyGrades,
   PropertyAnalysisResult,
   VerdictInput,
+  // Projections types
+  YearlyProjection,
+  AmortizationRow,
+  ProjectionsData,
+  GrowthAssumptions,
 } from '../../../hooks/usePropertyAnalysis';

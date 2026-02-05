@@ -1,18 +1,23 @@
 /**
  * TenYearTabContent - 10-Year Projection Analysis
  * Shows long-term wealth building projections
+ * 
+ * Now supports API-provided yearly projection data (Phase 1, Step 2)
  */
 
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { TargetAssumptions, IQTargetResult, StrategyId } from './types';
+import { TargetAssumptions, IQTargetResult, StrategyId, ProjectionsData } from './types';
 
 interface TenYearTabContentProps {
   assumptions: TargetAssumptions;
   iqTarget: IQTargetResult;
   strategy: StrategyId;
   isDark?: boolean;
+  // NEW: API-provided projections data
+  apiProjections?: ProjectionsData | null;
+  isLoading?: boolean;
 }
 
 export function TenYearTabContent({
@@ -20,12 +25,33 @@ export function TenYearTabContent({
   iqTarget,
   strategy,
   isDark = true,
+  apiProjections,
+  isLoading = false,
 }: TenYearTabContentProps) {
-  // Calculate 10-year projections
+  // ============================================
+  // 10-YEAR PROJECTIONS: Use API data if available
+  // ============================================
   const projections = useMemo(() => {
-    const annualRentGrowth = 0.03; // 3% default
-    const propertyAppreciation = 0.035; // 3.5% default
-    const purchasePrice = assumptions.listPrice * 0.8; // IQ Target
+    // If API data is available and has yearly data, use it
+    if (apiProjections && apiProjections.yearlyData && apiProjections.yearlyData.length >= 10) {
+      return {
+        initialInvestment: apiProjections.initialInvestment,
+        totalCashFlow: apiProjections.totalCashFlow,
+        equityBuilt: apiProjections.equityBuilt,
+        portfolioValue: apiProjections.portfolioValue,
+        totalReturn: apiProjections.totalReturn,
+        totalROI: apiProjections.totalROI,
+        yearlyData: apiProjections.yearlyData,
+        isFromApi: true,
+      };
+    }
+    
+    // ============================================
+    // FALLBACK: Local calculation (old code, kept for Phase 3 cleanup)
+    // ============================================
+    const annualRentGrowth = apiProjections?.rentGrowthRate ?? 0.03; // 3% default
+    const propertyAppreciation = apiProjections?.appreciationRate ?? 0.035; // 3.5% default
+    const purchasePrice = iqTarget.targetPrice || assumptions.listPrice * 0.8; // Use API target
     const downPayment = purchasePrice * assumptions.downPaymentPct;
     const closingCosts = purchasePrice * assumptions.closingCostsPct;
     const initialInvestment = downPayment + closingCosts;
@@ -101,8 +127,9 @@ export function TenYearTabContent({
       totalReturn,
       totalROI,
       yearlyData,
+      isFromApi: false,
     };
-  }, [assumptions, strategy]);
+  }, [assumptions, strategy, iqTarget, apiProjections]);
 
   const formatCurrency = (value: number) => {
     if (Math.abs(value) >= 1000000) {
@@ -123,6 +150,11 @@ export function TenYearTabContent({
         end={{ x: 1, y: 1 }}
         style={[styles.heroCard, { borderColor: isDark ? 'rgba(77,208,225,0.25)' : 'rgba(0,126,167,0.2)' }]}
       >
+        {isLoading && (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="small" color={isDark ? '#4dd0e1' : '#007ea7'} />
+          </View>
+        )}
         <Text style={[styles.heroLabel, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(7,23,46,0.5)' }]}>
           10-YEAR TOTAL ROI
         </Text>
@@ -275,6 +307,11 @@ function StatCard({
 const styles = StyleSheet.create({
   container: {
     gap: 14,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
   },
   
   // Hero Card

@@ -18,6 +18,7 @@ import {
   BenchmarkConfig,
   TuneGroup,
   IQTargetResult,
+  GrowthAssumptions,
 } from './types';
 
 // Import the real data hook
@@ -103,7 +104,21 @@ export function StrategyAnalyticsView({
   }, []);
 
   // ============================================
+  // Growth Assumptions State - Triggers API refresh on change
+  // ============================================
+  const [growthAssumptions, setGrowthAssumptions] = useState<GrowthAssumptions>({
+    appreciationRate: 0.035, // 3.5% default
+    rentGrowthRate: 0.03,    // 3% default
+    expenseGrowthRate: 0.025, // 2.5% default
+  });
+
+  const updateGrowthAssumption = useCallback((key: keyof GrowthAssumptions, value: number) => {
+    setGrowthAssumptions(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  // ============================================
   // REAL DATA HOOK - Fetches from backend API
+  // Includes projections data for Funding, TenYear, and Growth tabs
   // ============================================
   const {
     strategyGrades: apiStrategyGrades,
@@ -112,10 +127,11 @@ export function StrategyAnalyticsView({
     discountPercent: apiDiscountPercent,
     dealScore: apiDealScore,
     strategies: apiStrategies,
+    projections: apiProjections,
     isLoading: isAnalysisLoading,
     error: analysisError,
     refetch: refetchAnalysis,
-  } = usePropertyAnalysis(property, assumptions);
+  } = usePropertyAnalysis(property, assumptions, growthAssumptions);
 
   // ============================================
   // Calculate IQ Target - Now uses backend data
@@ -574,6 +590,9 @@ export function StrategyAnalyticsView({
                   assumptions={assumptions}
                   onAssumptionChange={updateAssumption}
                   isDark={isDark}
+                  apiProjections={apiProjections}
+                  isLoading={isAnalysisLoading}
+                  targetPrice={apiTargetPrice}
                 />
               </View>
             )}
@@ -585,6 +604,8 @@ export function StrategyAnalyticsView({
                   iqTarget={iqTarget}
                   strategy={activeStrategy}
                   isDark={isDark}
+                  apiProjections={apiProjections}
+                  isLoading={isAnalysisLoading}
                 />
               </View>
             )}
@@ -594,6 +615,11 @@ export function StrategyAnalyticsView({
                 <GrowthTabContent
                   assumptions={assumptions}
                   isDark={isDark}
+                  growthAssumptions={growthAssumptions}
+                  onGrowthAssumptionChange={updateGrowthAssumption}
+                  apiProjections={apiProjections}
+                  isLoading={isAnalysisLoading}
+                  targetPrice={apiTargetPrice}
                 />
               </View>
             )}

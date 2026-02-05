@@ -1,33 +1,100 @@
 /**
  * GrowthTabContent - Growth Assumptions and Projections
  * Allows tuning rent increases and appreciation rates
+ * 
+ * This component is now controlled - growth assumptions are passed in as props
+ * and changes trigger an API refresh via the onGrowthAssumptionChange callback.
  */
 
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
-import { TargetAssumptions } from './types';
+import { TargetAssumptions, GrowthAssumptions, ProjectionsData } from './types';
 
 interface GrowthTabContentProps {
   assumptions: TargetAssumptions;
   isDark?: boolean;
+  // NEW: Controlled growth assumptions from parent (connected to API)
+  growthAssumptions: GrowthAssumptions;
+  onGrowthAssumptionChange: (key: keyof GrowthAssumptions, value: number) => void;
+  // NEW: API-provided projections data for enhanced display
+  apiProjections?: ProjectionsData | null;
+  isLoading?: boolean;
+  // NEW: Target price from API (instead of listPrice * 0.8)
+  targetPrice?: number;
 }
 
 export function GrowthTabContent({
   assumptions,
   isDark = true,
+  growthAssumptions,
+  onGrowthAssumptionChange,
+  apiProjections,
+  isLoading = false,
+  targetPrice: apiTargetPrice,
 }: GrowthTabContentProps) {
-  // Local state for growth assumptions
-  const [annualRentIncrease, setAnnualRentIncrease] = useState(0.03); // 3%
-  const [propertyAppreciation, setPropertyAppreciation] = useState(0.035); // 3.5%
-  const [expenseInflation, setExpenseInflation] = useState(0.025); // 2.5%
+  // Use controlled values from props (connected to API refresh)
+  const annualRentIncrease = growthAssumptions.rentGrowthRate;
+  const propertyAppreciation = growthAssumptions.appreciationRate;
+  const expenseInflation = growthAssumptions.expenseGrowthRate;
   
-  // Calculate projections
+  // Handlers that trigger API refresh via parent callback
+  const handleRentIncreaseChange = useCallback((value: number) => {
+    onGrowthAssumptionChange('rentGrowthRate', value);
+  }, [onGrowthAssumptionChange]);
+  
+  const handleAppreciationChange = useCallback((value: number) => {
+    onGrowthAssumptionChange('appreciationRate', value);
+  }, [onGrowthAssumptionChange]);
+  
+  const handleExpenseInflationChange = useCallback((value: number) => {
+    onGrowthAssumptionChange('expenseGrowthRate', value);
+  }, [onGrowthAssumptionChange]);
+  
+  // Calculate projections - use API data if available, otherwise calculate locally
   const projections = useMemo(() => {
-    const purchasePrice = assumptions.listPrice * 0.8;
+    // Use API target price if available, otherwise fallback to estimate
+    const purchasePrice = apiTargetPrice || Math.round(assumptions.listPrice * 0.8);
     const currentRent = assumptions.monthlyRent;
     
+    // If we have API projections with sufficient yearly data, use it for 5 and 10 year values
+    if (apiProjections?.yearlyData && apiProjections.yearlyData.length >= 10) {
+      const year5Data = apiProjections.yearlyData[4]; // 0-indexed, so year 5 is index 4
+      const year10Data = apiProjections.yearlyData[9]; // year 10 is index 9
+      
+      // Calculate rent progression from API data if available
+      const year5Value = year5Data?.propertyValue || purchasePrice * Math.pow(1 + propertyAppreciation, 5);
+      const year10Value = year10Data?.propertyValue || purchasePrice * Math.pow(1 + propertyAppreciation, 10);
+      
+      // Estimate rent values based on growth rate
+      const year5Rent = currentRent * Math.pow(1 + annualRentIncrease, 5);
+      const year10Rent = currentRent * Math.pow(1 + annualRentIncrease, 10);
+      
+      return {
+        currentRent,
+        purchasePrice,
+        year5: {
+          rent: year5Rent,
+          rentIncrease: year5Rent - currentRent,
+          rentIncreasePercent: ((year5Rent - currentRent) / currentRent) * 100,
+          value: year5Value,
+          appreciation: year5Value - purchasePrice,
+          appreciationPercent: ((year5Value - purchasePrice) / purchasePrice) * 100,
+        },
+        year10: {
+          rent: year10Rent,
+          rentIncrease: year10Rent - currentRent,
+          rentIncreasePercent: ((year10Rent - currentRent) / currentRent) * 100,
+          value: year10Value,
+          appreciation: year10Value - purchasePrice,
+          appreciationPercent: ((year10Value - purchasePrice) / purchasePrice) * 100,
+        },
+        isFromApi: true,
+      };
+    }
+    
+    // FALLBACK: Local calculation when API data is not available
     // 5-year projections
     const year5Rent = currentRent * Math.pow(1 + annualRentIncrease, 5);
     const year5Value = purchasePrice * Math.pow(1 + propertyAppreciation, 5);
@@ -57,8 +124,9 @@ export function GrowthTabContent({
         appreciation: year10Appreciation,
         appreciationPercent: (year10Appreciation / purchasePrice) * 100,
       },
+      isFromApi: false,
     };
-  }, [assumptions, annualRentIncrease, propertyAppreciation]);
+  }, [assumptions, annualRentIncrease, propertyAppreciation, apiProjections, apiTargetPrice]);
 
   const formatCurrency = (value: number) => {
     if (Math.abs(value) >= 1000000) {
@@ -91,9 +159,12 @@ export function GrowthTabContent({
             <Text style={[styles.sliderLabel, { color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(7,23,46,0.8)' }]}>
               Annual Rent Increase
             </Text>
-            <Text style={[styles.sliderValue, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
-              {formatPercent(annualRentIncrease)}
-            </Text>
+            <View style={styles.sliderValueContainer}>
+              {isLoading && <ActivityIndicator size="small" color={isDark ? '#4dd0e1' : '#007ea7'} style={styles.sliderLoading} />}
+              <Text style={[styles.sliderValue, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
+                {formatPercent(annualRentIncrease)}
+              </Text>
+            </View>
           </View>
           <Slider
             style={styles.slider}
@@ -101,7 +172,7 @@ export function GrowthTabContent({
             maximumValue={0.08}
             step={0.005}
             value={annualRentIncrease}
-            onValueChange={setAnnualRentIncrease}
+            onSlidingComplete={handleRentIncreaseChange}
             minimumTrackTintColor={isDark ? '#4dd0e1' : '#007ea7'}
             maximumTrackTintColor={isDark ? 'rgba(255,255,255,0.1)' : 'rgba(7,23,46,0.1)'}
             thumbTintColor={isDark ? '#fff' : '#007ea7'}
@@ -118,9 +189,12 @@ export function GrowthTabContent({
             <Text style={[styles.sliderLabel, { color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(7,23,46,0.8)' }]}>
               Property Appreciation
             </Text>
-            <Text style={[styles.sliderValue, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
-              {formatPercent(propertyAppreciation)}
-            </Text>
+            <View style={styles.sliderValueContainer}>
+              {isLoading && <ActivityIndicator size="small" color={isDark ? '#4dd0e1' : '#007ea7'} style={styles.sliderLoading} />}
+              <Text style={[styles.sliderValue, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
+                {formatPercent(propertyAppreciation)}
+              </Text>
+            </View>
           </View>
           <Slider
             style={styles.slider}
@@ -128,7 +202,7 @@ export function GrowthTabContent({
             maximumValue={0.10}
             step={0.005}
             value={propertyAppreciation}
-            onValueChange={setPropertyAppreciation}
+            onSlidingComplete={handleAppreciationChange}
             minimumTrackTintColor={isDark ? '#4dd0e1' : '#007ea7'}
             maximumTrackTintColor={isDark ? 'rgba(255,255,255,0.1)' : 'rgba(7,23,46,0.1)'}
             thumbTintColor={isDark ? '#fff' : '#007ea7'}
@@ -145,9 +219,12 @@ export function GrowthTabContent({
             <Text style={[styles.sliderLabel, { color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(7,23,46,0.8)' }]}>
               Expense Inflation
             </Text>
-            <Text style={[styles.sliderValue, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
-              {formatPercent(expenseInflation)}
-            </Text>
+            <View style={styles.sliderValueContainer}>
+              {isLoading && <ActivityIndicator size="small" color={isDark ? '#4dd0e1' : '#007ea7'} style={styles.sliderLoading} />}
+              <Text style={[styles.sliderValue, { color: isDark ? '#4dd0e1' : '#007ea7' }]}>
+                {formatPercent(expenseInflation)}
+              </Text>
+            </View>
           </View>
           <Slider
             style={styles.slider}
@@ -155,7 +232,7 @@ export function GrowthTabContent({
             maximumValue={0.06}
             step={0.005}
             value={expenseInflation}
-            onValueChange={setExpenseInflation}
+            onSlidingComplete={handleExpenseInflationChange}
             minimumTrackTintColor={isDark ? '#4dd0e1' : '#007ea7'}
             maximumTrackTintColor={isDark ? 'rgba(255,255,255,0.1)' : 'rgba(7,23,46,0.1)'}
             thumbTintColor={isDark ? '#fff' : '#007ea7'}
@@ -341,6 +418,14 @@ const styles = StyleSheet.create({
   sliderValue: {
     fontSize: 14,
     fontWeight: '700',
+  },
+  sliderValueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  sliderLoading: {
+    marginRight: 4,
   },
   slider: {
     width: '100%',
