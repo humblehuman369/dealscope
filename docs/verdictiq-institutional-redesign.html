@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VerdictIQ - Investment Decision Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       VERDICTIQ INSTITUTIONAL REDESIGN
+       
+       Design Philosophy:
+       - Decision-intelligence layer, not a toy metric
+       - Authoritative, data-driven, calm and confident
+       - Clear section separation with strong typography
+       - Neutral professional color palette
+       - Analytical framing over emotional framing
+       ============================================ */
+    
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* Neutral grays - no blue undertone */
+      --gray-950: #0A0A0A;
+      --gray-900: #171717;
+      --gray-800: #262626;
+      --gray-700: #404040;
+      --gray-600: #525252;
+      --gray-500: #737373;
+      --gray-400: #A3A3A3;
+      --gray-300: #D4D4D4;
+      --gray-200: #E5E5E5;
+      --gray-100: #F5F5F5;
+      --gray-50: #FAFAFA;
+      --white: #FFFFFF;
+      
+      /* Semantic colors - muted, professional */
+      --positive: #059669;
+      --positive-bg: #ECFDF5;
+      --warning: #B45309;
+      --warning-bg: #FFFBEB;
+      --negative: #DC2626;
+      --negative-bg: #FEF2F2;
+      
+      /* Brand accent - used sparingly */
+      --accent: #0891B2;
+      --accent-light: #F0FDFA;
+    }
+
+    html {
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--gray-100);
+      color: var(--gray-900);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* Layout */
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    @media (max-width: 768px) {
+      .page {
+        padding: 16px;
+      }
+    }
+
+    /* ============================================
+       HEADER
+       ============================================ */
+    
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .page-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .page-title {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .page-title-main {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gray-900);
+      letter-spacing: -0.02em;
+    }
+
+    .page-title-accent {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+
+    .page-subtitle {
+      font-size: 13px;
+      color: var(--gray-500);
+    }
+
+    .page-header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .strategy-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gray-700);
+      cursor: pointer;
+    }
+
+    .strategy-selector:hover {
+      background: var(--gray-50);
+    }
+
+    .strategy-selector svg {
+      width: 14px;
+      height: 14px;
+      color: var(--gray-400);
+    }
+
+    .report-date {
+      font-size: 12px;
+      color: var(--gray-400);
+    }
+
+    /* ============================================
+       PROPERTY CONTEXT BAR
+       ============================================ */
+    
+    .property-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+
+    .property-image {
+      width: 64px;
+      height: 48px;
+      background: var(--gray-200);
+      border-radius: 4px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .property-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .property-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .property-address {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--gray-900);
+      margin-bottom: 2px;
+    }
+
+    .property-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--gray-500);
+    }
+
+    .property-meta-separator {
+      color: var(--gray-300);
+    }
+
+    .property-stats {
+      display: flex;
+      gap: 24px;
+      margin-left: auto;
+    }
+
+    .property-stat {
+      text-align: right;
+    }
+
+    .property-stat-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .property-stat-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--gray-900);
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 640px) {
+      .property-bar {
+        flex-wrap: wrap;
+      }
+      
+      .property-stats {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--gray-100);
+      }
+    }
+
+    /* ============================================
+       MAIN CONTENT GRID
+       ============================================ */
+    
+    .main-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ============================================
+       VERDICT PANEL (Left Column)
+       ============================================ */
+    
+    .verdict-panel {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .verdict-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--gray-200);
+      text-align: center;
+    }
+
+    .verdict-score-container {
+      margin-bottom: 16px;
+    }
+
+    .verdict-score {
+      font-size: 64px;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .verdict-score-suffix {
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--gray-400);
+      margin-left: 2px;
+    }
+
+    .verdict-label {
+      display: inline-flex;
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .verdict-label.strong {
+      background: var(--positive-bg);
+      color: var(--positive);
+    }
+
+    .verdict-label.fair {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    .verdict-label.weak {
+      background: var(--negative-bg);
+      color: var(--negative);
+    }
+
+    .verdict-summary {
+      padding: 16px 20px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .verdict-summary-text {
+      font-size: 14px;
+      color: var(--gray-600);
+      line-height: 1.6;
+    }
+
+    .verdict-factors {
+      padding: 0;
+    }
+
+    .verdict-factor {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+
+    .verdict-factor:last-child {
+      border-bottom: none;
+    }
+
+    .verdict-factor-label {
+      font-size: 13px;
+      color: var(--gray-600);
+    }
+
+    .verdict-factor-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-900);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .verdict-factor-value.positive {
+      color: var(--positive);
+    }
+
+    .verdict-factor-value.warning {
+      color: var(--warning);
+    }
+
+    .verdict-factor-value.negative {
+      color: var(--negative);
+    }
+
+    .verdict-confidence {
+      padding: 16px 20px;
+      background: var(--gray-50);
+    }
+
+    .confidence-header {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .confidence-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .confidence-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .confidence-label {
+      flex: 1;
+      font-size: 12px;
+      color: var(--gray-500);
+    }
+
+    .confidence-bar {
+      width: 80px;
+      height: 4px;
+      background: var(--gray-200);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--gray-400);
+    }
+
+    .confidence-fill.high {
+      background: var(--positive);
+    }
+
+    .confidence-fill.medium {
+      background: var(--warning);
+    }
+
+    .confidence-value {
+      width: 32px;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ============================================
+       ANALYSIS PANEL (Right Column)
+       ============================================ */
+    
+    .analysis-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Section Card */
+    .section-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .section-action {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .section-action:hover {
+      text-decoration: underline;
+    }
+
+    /* Price Targets */
+    .price-targets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .price-target {
+      padding: 20px;
+      text-align: center;
+      border-right: 1px solid var(--gray-100);
+      transition: background 0.15s;
+    }
+
+    .price-target:last-child {
+      border-right: none;
+    }
+
+    .price-target.primary {
+      background: var(--accent-light);
+      position: relative;
+    }
+
+    .price-target.primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent);
+    }
+
+    .price-target-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .price-target.primary .price-target-label {
+      color: var(--accent);
+    }
+
+    .price-target-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gray-900);
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 4px;
+    }
+
+    .price-target.primary .price-target-value {
+      color: var(--gray-900);
+    }
+
+    .price-target-desc {
+      font-size: 12px;
+      color: var(--gray-400);
+    }
+
+    @media (max-width: 640px) {
+      .price-targets {
+        grid-template-columns: 1fr;
+      }
+      
+      .price-target {
+        border-right: none;
+        border-bottom: 1px solid var(--gray-100);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+        padding: 14px 20px;
+      }
+      
+      .price-target:last-child {
+        border-bottom: none;
+      }
+      
+      .price-target-label {
+        margin-bottom: 0;
+      }
+      
+      .price-target-value {
+        font-size: 18px;
+        margin-bottom: 0;
+      }
+      
+      .price-target-desc {
+        display: none;
+      }
+    }
+
+    /* Metrics Table */
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .metrics-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 20px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .metrics-table th:last-child {
+      text-align: center;
+      width: 80px;
+    }
+
+    .metrics-table td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 14px;
+    }
+
+    .metrics-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .metrics-table .metric-name {
+      color: var(--gray-600);
+    }
+
+    .metrics-table .metric-value {
+      font-weight: 600;
+      color: var(--gray-900);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metrics-table .metric-benchmark {
+      color: var(--gray-400);
+      text-align: right;
+      font-size: 13px;
+    }
+
+    .metrics-table .metric-status {
+      text-align: center;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status-dot.good { background: var(--positive); }
+    .status-dot.fair { background: var(--warning); }
+    .status-dot.poor { background: var(--negative); }
+
+    /* Financial Breakdown */
+    .breakdown-group {
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .breakdown-group:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: var(--gray-50);
+      cursor: pointer;
+    }
+
+    .breakdown-group-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+
+    .breakdown-group-total {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-900);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .breakdown-rows {
+      padding: 0;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 20px;
+      padding-left: 36px;
+      border-bottom: 1px solid var(--gray-50);
+      font-size: 13px;
+    }
+
+    .breakdown-row:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-row-label {
+      color: var(--gray-500);
+    }
+
+    .breakdown-row-value {
+      font-weight: 500;
+      color: var(--gray-700);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .breakdown-row.highlight {
+      background: var(--positive-bg);
+      padding-left: 20px;
+    }
+
+    .breakdown-row.highlight .breakdown-row-label {
+      color: var(--positive);
+      font-weight: 600;
+    }
+
+    .breakdown-row.highlight .breakdown-row-value {
+      color: var(--positive);
+      font-weight: 700;
+    }
+
+    /* ============================================
+       RISK INDICATORS
+       ============================================ */
+    
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--gray-100);
+    }
+
+    .risk-item {
+      padding: 16px 20px;
+      background: var(--white);
+    }
+
+    .risk-label {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-bottom: 4px;
+    }
+
+    .risk-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+
+    .risk-value.positive { color: var(--positive); }
+    .risk-value.warning { color: var(--warning); }
+    .risk-value.negative { color: var(--negative); }
+
+    /* ============================================
+       FOOTER ACTIONS
+       ============================================ */
+    
+    .page-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--gray-200);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      color: var(--gray-500);
+      text-decoration: none;
+    }
+
+    .footer-link:hover {
+      color: var(--gray-700);
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--gray-900);
+      color: var(--white);
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: var(--gray-800);
+    }
+
+    .btn-secondary {
+      background: var(--white);
+      color: var(--gray-700);
+      border: 1px solid var(--gray-200);
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray-50);
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ============================================
+       DISCLAIMER
+       ============================================ */
+    
+    .disclaimer {
+      margin-top: 24px;
+      padding: 16px 20px;
+      background: var(--gray-50);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--gray-400);
+      line-height: 1.6;
+    }
+
+    .disclaimer strong {
+      color: var(--gray-500);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="page-header-left">
+        <div class="page-title">
+          <span class="page-title-main">Verdict</span><span class="page-title-accent">IQ</span>
+        </div>
+        <p class="page-subtitle">Investment Decision Intelligence</p>
+      </div>
+      <div class="page-header-right">
+        <button class="strategy-selector">
+          Long-Term Rental
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <span class="report-date">Feb 5, 2026</span>
+      </div>
+    </header>
+
+    <!-- Property Context Bar -->
+    <div class="property-bar">
+      <div class="property-image">
+        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #E5E5E5 0%, #D4D4D4 100%);"></div>
+      </div>
+      <div class="property-details">
+        <div class="property-address">1451 SW 10th Street</div>
+        <div class="property-meta">
+          <span>Boca Raton, FL 33486</span>
+          <span class="property-meta-separator">|</span>
+          <span>4 bed, 2 bath, 1,722 sqft</span>
+        </div>
+      </div>
+      <div class="property-stats">
+        <div class="property-stat">
+          <div class="property-stat-label">Asking</div>
+          <div class="property-stat-value">$821,000</div>
+        </div>
+        <div class="property-stat">
+          <div class="property-stat-label">Est. Rent</div>
+          <div class="property-stat-value">$5,800/mo</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="main-grid">
+      <!-- Verdict Panel (Left) -->
+      <aside class="verdict-panel">
+        <div class="verdict-header">
+          <div class="verdict-score-container">
+            <span class="verdict-score">78</span><span class="verdict-score-suffix">/100</span>
+          </div>
+          <span class="verdict-label strong">Favorable Investment</span>
+        </div>
+        
+        <div class="verdict-summary">
+          <p class="verdict-summary-text">
+            This property requires a 10.3% discount from asking price to meet target returns. 
+            Based on current market conditions and seller signals, this gap is likely achievable 
+            with moderate negotiation.
+          </p>
+        </div>
+
+        <div class="verdict-factors">
+          <div class="verdict-factor">
+            <span class="verdict-factor-label">Deal Gap Required</span>
+            <span class="verdict-factor-value">-10.3%</span>
+          </div>
+          <div class="verdict-factor">
+            <span class="verdict-factor-label">Seller Motivation</span>
+            <span class="verdict-factor-value warning">Medium</span>
+          </div>
+          <div class="verdict-factor">
+            <span class="verdict-factor-label">Days on Market</span>
+            <span class="verdict-factor-value">87 days</span>
+          </div>
+          <div class="verdict-factor">
+            <span class="verdict-factor-label">Market Temperature</span>
+            <span class="verdict-factor-value">Balanced</span>
+          </div>
+        </div>
+
+        <div class="verdict-confidence">
+          <div class="confidence-header">Signal Confidence</div>
+          <div class="confidence-row">
+            <span class="confidence-label">Deal Probability</span>
+            <div class="confidence-bar">
+              <div class="confidence-fill high" style="width: 72%;"></div>
+            </div>
+            <span class="confidence-value">72%</span>
+          </div>
+          <div class="confidence-row">
+            <span class="confidence-label">Price Confidence</span>
+            <div class="confidence-bar">
+              <div class="confidence-fill high" style="width: 85%;"></div>
+            </div>
+            <span class="confidence-value">85%</span>
+          </div>
+          <div class="confidence-row">
+            <span class="confidence-label">Data Quality</span>
+            <div class="confidence-bar">
+              <div class="confidence-fill medium" style="width: 68%;"></div>
+            </div>
+            <span class="confidence-value">68%</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Analysis Panel (Right) -->
+      <main class="analysis-panel">
+        <!-- Price Target Analysis -->
+        <section class="section-card">
+          <div class="section-header">
+            <span class="section-title">Price Target Analysis</span>
+            <button class="section-action">Adjust Terms</button>
+          </div>
+          <div class="price-targets">
+            <div class="price-target">
+              <div class="price-target-label">Breakeven</div>
+              <div class="price-target-value">$782,400</div>
+              <div class="price-target-desc">Maximum for $0 cash flow</div>
+            </div>
+            <div class="price-target primary">
+              <div class="price-target-label">Target Buy</div>
+              <div class="price-target-value">$736,665</div>
+              <div class="price-target-desc">5% discount for positive returns</div>
+            </div>
+            <div class="price-target">
+              <div class="price-target-label">Wholesale</div>
+              <div class="price-target-value">$547,400</div>
+              <div class="price-target-desc">30% discount for assignment</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Key Performance Metrics -->
+        <section class="section-card">
+          <div class="section-header">
+            <span class="section-title">Key Performance Metrics</span>
+            <span style="font-size: 12px; color: var(--gray-400);">At Target Buy Price</span>
+          </div>
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th style="text-align: right;">Value</th>
+                <th style="text-align: right;">Benchmark</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="metric-name">Monthly Cash Flow</td>
+                <td class="metric-value">$482</td>
+                <td class="metric-benchmark">&gt; $200</td>
+                <td class="metric-status"><span class="status-dot good"></span></td>
+              </tr>
+              <tr>
+                <td class="metric-name">Cap Rate</td>
+                <td class="metric-value">5.69%</td>
+                <td class="metric-benchmark">&gt; 5.0%</td>
+                <td class="metric-status"><span class="status-dot good"></span></td>
+              </tr>
+              <tr>
+                <td class="metric-name">Cash-on-Cash Return</td>
+                <td class="metric-value">3.14%</td>
+                <td class="metric-benchmark">&gt; 8.0%</td>
+                <td class="metric-status"><span class="status-dot fair"></span></td>
+              </tr>
+              <tr>
+                <td class="metric-name">Debt Service Coverage</td>
+                <td class="metric-value">1.08</td>
+                <td class="metric-benchmark">&gt; 1.20</td>
+                <td class="metric-status"><span class="status-dot fair"></span></td>
+              </tr>
+              <tr>
+                <td class="metric-name">Cash Required to Close</td>
+                <td class="metric-value">$184,166</td>
+                <td class="metric-benchmark">—</td>
+                <td class="metric-status"><span class="status-dot good"></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Financial Breakdown -->
+        <section class="section-card">
+          <div class="section-header">
+            <span class="section-title">Financial Breakdown</span>
+          </div>
+          
+          <div class="breakdown-group">
+            <div class="breakdown-group-header">
+              <span class="breakdown-group-title">Purchase Terms</span>
+              <span class="breakdown-group-total">$736,665</span>
+            </div>
+            <div class="breakdown-rows">
+              <div class="breakdown-row">
+                <span class="breakdown-row-label">Down Payment (25%)</span>
+                <span class="breakdown-row-value">$184,166</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="breakdown-row-label">Loan Amount</span>
+                <span class="breakdown-row-value">$552,499</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="breakdown-row-label">Interest Rate</span>
+                <span class="breakdown-row-value">7.00%</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="breakdown-row-label">Monthly P&I</span>
+                <span class="breakdown-row-value">$3,676</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="breakdown-group">
+            <div class="breakdown-group-header">
+              <span class="breakdown-group-title">Monthly Income</span>
+              <span class="breakdown-group-total">$5,510</span>
+            </div>
+            <div class="breakdown-rows">
+              <div class="breakdown-row">
+                <span class="breakdown-row-label">Gross Rent</span>
+                <span class="breakdown-row-value">$5,800</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="breakdown-row-label">Vacancy (5%)</span>
+                <span class="breakdown-row-value">-$290</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="breakdown-group">
+            <div class="breakdown-group-header">
+              <span class="breakdown-group-title">Operating Expenses</span>
+              <span class="breakdown-group-total">$1,352</span>
+            </div>
+            <div class="breakdown-rows">
+              <div class="breakdown-row">
+                <span class="breakdown-row-label">Property Taxes</span>
+                <span class="breakdown-row-value">$613</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="breakdown-row-label">Insurance</span>
+                <span class="breakdown-row-value">$245</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="breakdown-row-label">Maintenance (5%)</span>
+                <span class="breakdown-row-value">$290</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="breakdown-row-label">Management (0%)</span>
+                <span class="breakdown-row-value">$0</span>
+              </div>
+              <div class="breakdown-row">
+                <span class="breakdown-row-label">HOA</span>
+                <span class="breakdown-row-value">$204</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="breakdown-group">
+            <div class="breakdown-rows">
+              <div class="breakdown-row highlight">
+                <span class="breakdown-row-label">Net Monthly Cash Flow</span>
+                <span class="breakdown-row-value">$482</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Risk Indicators -->
+        <section class="section-card">
+          <div class="section-header">
+            <span class="section-title">Risk Assessment</span>
+          </div>
+          <div class="risk-grid">
+            <div class="risk-item">
+              <div class="risk-label">Market Vacancy Rate</div>
+              <div class="risk-value positive">3.2% (Low)</div>
+            </div>
+            <div class="risk-item">
+              <div class="risk-label">Price Volatility</div>
+              <div class="risk-value warning">Moderate</div>
+            </div>
+            <div class="risk-item">
+              <div class="risk-label">Rent Growth Forecast</div>
+              <div class="risk-value positive">+2.8% YoY</div>
+            </div>
+            <div class="risk-item">
+              <div class="risk-label">Property Condition</div>
+              <div class="risk-value">Good (Est.)</div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Footer Actions -->
+    <footer class="page-footer">
+      <div class="footer-links">
+        <a href="#" class="footer-link">Methodology</a>
+        <a href="#" class="footer-link">Data Sources</a>
+        <a href="#" class="footer-link">Assumptions</a>
+      </div>
+      <div class="footer-actions">
+        <button class="btn btn-secondary">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Export Report
+        </button>
+        <button class="btn btn-primary">
+          Continue to Deal Maker
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </button>
+      </div>
+    </footer>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <strong>Disclaimer:</strong> This analysis is provided for informational purposes only and does not constitute financial, investment, or legal advice. 
+      All projections are estimates based on the assumptions provided and actual results may vary. Past performance is not indicative of future results. 
+      Investors should conduct their own due diligence before making any investment decisions.
+    </div>
+  </div>
+</body>
+</html>
