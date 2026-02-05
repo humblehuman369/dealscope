@@ -34,6 +34,7 @@ export interface PriceIQCard {
   value: string;
   description: string;
   subtext: string;
+  subtext2?: string;
   featured?: boolean;
 }
 
@@ -51,6 +52,7 @@ export const priceIQData: PriceIQCard[] = [
     value: '$766,733',
     description: '5% discount for profit',
     subtext: 'Your optimal offer price',
+    subtext2: 'Your optimal ARV price',
     featured: true,
   },
   {

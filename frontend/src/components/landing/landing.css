@@ -822,6 +822,12 @@
   font-style: italic;
 }
 
+/* Breakeven card subtext - fixed on one line, responsive sizing */
+.landing-page .price-card-subtext-nowrap {
+  white-space: nowrap;
+  font-size: clamp(0.6rem, 2vw, 0.75rem);
+}
+
 .landing-page .price-card.featured .price-card-desc,
 .landing-page .price-card.featured .price-card-subtext {
   color: rgba(255, 255, 255, 0.9);

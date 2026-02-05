@@ -258,7 +258,8 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
                   </p>
                   <p className="price-card-value font-display">{price.value}</p>
                   <p className="price-card-desc">{price.description}</p>
-                  <p className="price-card-subtext">{price.subtext}</p>
+                  <p className={`price-card-subtext ${i === 0 ? 'price-card-subtext-nowrap' : ''}`}>{price.subtext}</p>
+                  {price.subtext2 && <p className="price-card-subtext">{price.subtext2}</p>}
                 </div>
               ))}
             </div>
