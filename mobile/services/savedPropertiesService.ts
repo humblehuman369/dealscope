@@ -24,10 +24,10 @@ import { DealMakerRecord, DealMakerRecordUpdate, DealMakerResponse } from '../ty
 
 // API Endpoints
 const ENDPOINTS = {
-  BASE: '/api/v1/saved-properties',
-  STATS: '/api/v1/saved-properties/stats',
-  BULK_STATUS: '/api/v1/saved-properties/bulk/status',
-  BULK_DELETE: '/api/v1/saved-properties/bulk',
+  BASE: '/api/v1/properties/saved',
+  STATS: '/api/v1/properties/saved/stats',
+  BULK_STATUS: '/api/v1/properties/saved/bulk/status',
+  BULK_DELETE: '/api/v1/properties/saved/bulk',
 };
 
 // ===========================================

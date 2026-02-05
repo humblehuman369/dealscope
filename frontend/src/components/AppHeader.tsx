@@ -135,6 +135,36 @@ function formatShortPrice(price: number): string {
   return `$${(price / 1000).toFixed(0)}K`
 }
 
+function parseDisplayAddress(fullAddress: string): {
+  streetAddress: string
+  city: string
+  state: string
+  zipCode: string
+} {
+  const parts = fullAddress.split(',').map(s => s.trim()).filter(Boolean)
+  const streetAddress = parts[0] || ''
+  const city = parts.length > 1 ? parts[1] : ''
+  const lastPart = parts.length > 2 ? parts[parts.length - 1] : ''
+  const stateZipMatch = lastPart.match(/^([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/i)
+
+  if (stateZipMatch) {
+    return {
+      streetAddress,
+      city,
+      state: stateZipMatch[1],
+      zipCode: stateZipMatch[2],
+    }
+  }
+
+  const stateMatch = lastPart.match(/^([A-Z]{2})/i)
+  return {
+    streetAddress,
+    city,
+    state: stateMatch ? stateMatch[1] : '',
+    zipCode: '',
+  }
+}
+
 // ===================
 // COMPONENT
 // ===================
@@ -159,12 +189,71 @@ export function AppHeader({
   // Auth context for save functionality
   const { isAuthenticated, setShowAuthModal } = useAuth()
 
+  // Helper to fully decode a URL-encoded string (handles double/triple encoding)
+  const fullyDecode = (str: string): string => {
+    if (!str) return str
+    try {
+      let decoded = str
+      while (decoded.includes('%')) {
+        const newDecoded = decodeURIComponent(decoded)
+        if (newDecoded === decoded) break // No more decoding possible
+        decoded = newDecoded
+      }
+      return decoded
+    } catch {
+      return str // If decoding fails, return original
+    }
+  }
+
   // Get address from URL params if not provided (needed before early return)
-  // Note: searchParams.get() already returns decoded values
-  const addressFromUrl = searchParams?.get('address') || ''
-  const displayAddress = propertyAddress || addressFromUrl || (property 
+  // Decode explicitly to handle double-encoding issues
+  const rawAddressFromUrl = searchParams?.get('address') || ''
+  const addressFromUrl = fullyDecode(rawAddressFromUrl)
+  
+  // Also decode propertyAddress prop in case it's passed encoded
+  const decodedPropertyAddress = fullyDecode(propertyAddress || '')
+  
+  const displayAddress = decodedPropertyAddress || addressFromUrl || (property 
     ? `${property.address}, ${property.city}, ${property.state} ${property.zip}`
     : '')
+
+  const fetchExistingSavedProperty = useCallback(async (token: string) => {
+    if (!displayAddress) return null
+    const { streetAddress, city } = parseDisplayAddress(displayAddress)
+    if (!streetAddress) return null
+
+    const response = await fetch(
+      `/api/v1/properties/saved?search=${encodeURIComponent(streetAddress)}`, 
+      {
+        headers: { 'Authorization': `Bearer ${token}` },
+      }
+    )
+
+    if (!response.ok) return null
+    const data = await response.json()
+    const properties = (data && Array.isArray(data))
+      ? data 
+      : (data?.properties || data?.items || [])
+
+    return properties.find((p: { 
+      id?: string
+      address_street?: string
+      address_city?: string
+      zpid?: string
+    }) => {
+      if (!p) return false
+      if (property?.zpid && p.zpid) {
+        return String(p.zpid) === String(property.zpid)
+      }
+      const pStreet = p.address_street ? String(p.address_street).toLowerCase() : ''
+      const pCity = p.address_city ? String(p.address_city).toLowerCase() : ''
+      const targetStreet = streetAddress.toLowerCase()
+      const targetCity = city.toLowerCase()
+      const streetMatch = pStreet === targetStreet
+      const cityMatch = !city || !pCity || pCity === targetCity
+      return streetMatch && cityMatch
+    })
+  }, [displayAddress, property?.zpid])
 
   // Check if property is already saved on mount
   useEffect(() => {
@@ -174,68 +263,18 @@ export function AppHeader({
     const token = localStorage.getItem('access_token')
     if (!token) return
     
-    // Parse address components for matching
-    const addressParts = displayAddress.split(',').map(s => s.trim())
-    const streetAddress = addressParts[0] || ''
-    const city = addressParts[1] || ''
-    
-    if (!streetAddress) return
-    
     // Use AbortController to cancel fetch on unmount
     const abortController = new AbortController()
     
     const checkIfSaved = async () => {
       try {
-        const response = await fetch(
-          `/api/v1/properties/saved?search=${encodeURIComponent(streetAddress)}`, 
-          {
-            headers: { 'Authorization': `Bearer ${token}` },
-            signal: abortController.signal
-          }
-        )
-        
-        if (response.ok) {
-          const data = await response.json()
-          
-          // Handle null/undefined data safely
-          // If data is null, default to empty array so we fall through to clearing state
-          const properties = (data && Array.isArray(data))
-            ? data 
-            : (data?.properties || data?.items || [])
-          
-          // Check if any saved property matches BOTH street address AND city
-          // This prevents false positives for same street names in different cities
-          const savedProperty = properties.find((p: { 
-            id?: string
-            full_address?: string
-            address_street?: string
-            address_city?: string
-            zpid?: string
-          }) => {
-            if (!p) return false
-            
-            // Prefer zpid matching if available
-            if (property?.zpid && p.zpid) {
-              return String(p.zpid) === String(property.zpid)
-            }
-            // Fall back to address matching
-            const pStreet = p.address_street ? String(p.address_street).toLowerCase() : ''
-            const pCity = p.address_city ? String(p.address_city).toLowerCase() : ''
-            const targetStreet = streetAddress.toLowerCase()
-            const targetCity = city.toLowerCase()
-            
-            const streetMatch = pStreet === targetStreet
-            const cityMatch = !city || !pCity || pCity === targetCity
-            
-            return streetMatch && cityMatch
-          })
-          if (savedProperty) {
-            setIsSaved(true)
-            setSavedPropertyId(savedProperty.id || null)
-          } else {
-            setIsSaved(false)
-            setSavedPropertyId(null)
-          }
+        const savedProperty = await fetchExistingSavedProperty(token)
+        if (savedProperty) {
+          setIsSaved(true)
+          setSavedPropertyId(savedProperty.id || null)
+        } else {
+          setIsSaved(false)
+          setSavedPropertyId(null)
         }
       } catch (error) {
         // Ignore abort errors (expected on cleanup)
@@ -250,7 +289,7 @@ export function AppHeader({
     return () => {
       abortController.abort()
     }
-  }, [displayAddress, isAuthenticated])
+  }, [displayAddress, isAuthenticated, fetchExistingSavedProperty])
 
   // Determine if header should be hidden - Moved to end of component to prevent React Hook errors
   // if (HIDDEN_ROUTES.includes(pathname || '')) {
@@ -374,11 +413,7 @@ export function AppHeader({
     setIsSaving(true)
     try {
       // Parse address for API
-      const addressParts = displayAddress.split(',').map(s => s.trim())
-      const streetAddress = addressParts[0] || ''
-      const city = addressParts[1] || ''
-      const stateZip = addressParts[2] || ''
-      const [state, zipCode] = stateZip.split(/\s+/)
+      const { streetAddress, city, state, zipCode } = parseDisplayAddress(displayAddress)
 
       const response = await fetch('/api/v1/properties/saved', {
         method: 'POST',
@@ -413,13 +448,17 @@ export function AppHeader({
         setIsSaved(true)
         setSavedPropertyId(data.id || null)
       } else if (response.status === 409) {
-        // Already exists - it's saved
+        // Already exists - fetch existing ID for correct unsave behavior
+        const existing = await fetchExistingSavedProperty(token)
         setIsSaved(true)
+        setSavedPropertyId(existing?.id || null)
       } else if (response.status === 400) {
         // Check if it's a duplicate error (backend may return 400 for duplicates)
         const errorText = await response.text()
         if (errorText.includes('already in your saved list') || errorText.includes('already saved')) {
+          const existing = await fetchExistingSavedProperty(token)
           setIsSaved(true)
+          setSavedPropertyId(existing?.id || null)
         } else {
           console.error('Failed to save property:', response.status, errorText)
         }
@@ -434,7 +473,7 @@ export function AppHeader({
     } finally {
       setIsSaving(false)
     }
-  }, [displayAddress, property, isAuthenticated, setShowAuthModal, isSaving, isSaved])
+  }, [displayAddress, property, isAuthenticated, setShowAuthModal, isSaving, isSaved, fetchExistingSavedProperty])
 
   // Handle unsave property
   const handleUnsave = useCallback(async () => {

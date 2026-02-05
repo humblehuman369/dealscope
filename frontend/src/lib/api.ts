@@ -54,31 +54,41 @@ function clearTokens(): void {
 /**
  * Attempt to refresh the access token using the refresh token
  */
+let refreshPromise: Promise<string | null> | null = null
+
 async function refreshAccessToken(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise
+
   const refreshToken = getRefreshToken()
   if (!refreshToken) return null
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: refreshToken }),
-    })
+  refreshPromise = (async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      })
 
-    if (!response.ok) {
-      // Refresh failed - clear tokens and return null
+      if (!response.ok) {
+        // Refresh failed - clear tokens and return null
+        clearTokens()
+        return null
+      }
+
+      const data = await response.json()
+      storeTokens(data.access_token, data.refresh_token)
+      return data.access_token
+    } catch (error) {
+      console.error('Token refresh failed:', error)
       clearTokens()
       return null
+    } finally {
+      refreshPromise = null
     }
+  })()
 
-    const data = await response.json()
-    storeTokens(data.access_token, data.refresh_token)
-    return data.access_token
-  } catch (error) {
-    console.error('Token refresh failed:', error)
-    clearTokens()
-    return null
-  }
+  return refreshPromise
 }
 
 /**

@@ -25,7 +25,8 @@ import { formatCurrency, InvestmentAnalytics } from '../../services/analytics';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
 import { AuthRequiredModal } from '../AuthRequiredModal';
-import { togglePropertyFavorite } from '../../database';
+import { APIRequestError } from '../../services/apiClient';
+import { savedPropertiesService } from '../../services/savedPropertiesService';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SHEET_MIN_HEIGHT = 280;
@@ -64,8 +65,46 @@ export function ScanResultSheet({
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [savedPropertyId, setSavedPropertyId] = useState<string | null>(null);
+
+  const { property, analytics } = result;
+
+  // Cast analytics to full type (API returns complete data)
+  const fullAnalytics = analytics as unknown as InvestmentAnalytics & { 
+    isEstimated?: boolean; 
+    estimateReason?: string;
+  };
+  
+  // Use property details from analytics (API data) which has full property info
+  const propertyDetails = fullAnalytics.property || property;
+
+  // Check if this is estimated data (fallback when API fails)
+  const isEstimatedData = (fullAnalytics as any).isEstimated === true;
 
   // Handle save property action
+  const resolveSavedPropertyId = useCallback(async () => {
+    const searchAddress = propertyDetails.address || property.address;
+    if (!searchAddress) return null;
+
+    const properties = await savedPropertiesService.getSavedProperties({
+      search: searchAddress,
+      limit: 10,
+    });
+
+    const targetStreet = searchAddress.toLowerCase();
+    const targetCity = (propertyDetails.city || property.city || '').toLowerCase();
+
+    const match = properties.find((p) => {
+      const pStreet = (p.address_street || '').toLowerCase();
+      const pCity = (p.address_city || '').toLowerCase();
+      const streetMatch = pStreet === targetStreet;
+      const cityMatch = !targetCity || !pCity || pCity === targetCity;
+      return streetMatch && cityMatch;
+    });
+
+    return match?.id || null;
+  }, [property.address, property.city, propertyDetails.address, propertyDetails.city]);
+
   const handleSaveProperty = useCallback(async () => {
     // Check if user is authenticated
     if (!isAuthenticated) {
@@ -74,34 +113,90 @@ export function ScanResultSheet({
       return;
     }
 
-    // User is authenticated, save the property
-    if (result.savedId) {
-      try {
-        setIsSaving(true);
-        await togglePropertyFavorite(result.savedId);
-        setIsSaved(true);
+    try {
+      setIsSaving(true);
+
+      if (isSaved) {
+        const existingId = savedPropertyId || (await resolveSavedPropertyId());
+        if (!existingId) {
+          Alert.alert('Unable to Unsave', 'Saved property ID not found.');
+          return;
+        }
+        await savedPropertiesService.deleteSavedProperty(existingId);
+        setIsSaved(false);
+        setSavedPropertyId(null);
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert(
-          'Property Saved! 🏠',
-          'This property has been added to your saved properties.',
-          [{ text: 'OK' }]
-        );
-      } catch (error) {
+        return;
+      }
+
+      const addressStreet = propertyDetails.address || property.address;
+      const addressCity = propertyDetails.city || property.city || null;
+      const addressState = propertyDetails.state || property.state || null;
+      const addressZip = propertyDetails.zip || property.zip || null;
+
+      const saved = await savedPropertiesService.saveProperty({
+        address_street: addressStreet,
+        address_city: addressCity,
+        address_state: addressState,
+        address_zip: addressZip,
+        full_address: [addressStreet, addressCity, addressState, addressZip]
+          .filter(Boolean)
+          .join(', '),
+        status: 'watching',
+        property_data_snapshot: {
+          bedrooms: propertyDetails.bedrooms,
+          bathrooms: propertyDetails.bathrooms,
+          sqft: propertyDetails.sqft,
+          yearBuilt: propertyDetails.yearBuilt,
+          lotSize: propertyDetails.lotSize,
+          estimatedValue: fullAnalytics.pricing?.estimatedValue,
+          listPrice: fullAnalytics.pricing?.listPrice,
+        },
+      });
+
+      setIsSaved(true);
+      setSavedPropertyId(saved.id || null);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert(
+        'Property Saved! 🏠',
+        'This property has been added to your saved properties.',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      if (error instanceof APIRequestError && error.statusCode === 409) {
+        const existingId = await resolveSavedPropertyId();
+        setIsSaved(true);
+        setSavedPropertyId(existingId);
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Already Saved', 'This property is already saved.');
+      } else {
         console.error('Failed to save property:', error);
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         Alert.alert('Error', 'Failed to save property. Please try again.');
-      } finally {
-        setIsSaving(false);
       }
-    } else {
-      // Property wasn't saved during scan (shouldn't happen normally)
-      Alert.alert(
-        'Scan Again',
-        'Please scan the property again to save it.',
-        [{ text: 'OK' }]
-      );
+    } finally {
+      setIsSaving(false);
     }
-  }, [isAuthenticated, result.savedId]);
+  }, [
+    isAuthenticated,
+    isSaved,
+    property.address,
+    property.city,
+    property.state,
+    property.zip,
+    propertyDetails.address,
+    propertyDetails.bathrooms,
+    propertyDetails.bedrooms,
+    propertyDetails.city,
+    propertyDetails.lotSize,
+    propertyDetails.sqft,
+    propertyDetails.state,
+    propertyDetails.yearBuilt,
+    propertyDetails.zip,
+    fullAnalytics.pricing,
+    resolveSavedPropertyId,
+    savedPropertyId,
+  ]);
 
   const gesture = Gesture.Pan()
     .onStart(() => {
@@ -125,20 +220,6 @@ export function ScanResultSheet({
     transform: [{ translateY: translateY.value }],
   }));
 
-  const { property, analytics } = result;
-
-  // Cast analytics to full type (API returns complete data)
-  const fullAnalytics = analytics as unknown as InvestmentAnalytics & { 
-    isEstimated?: boolean; 
-    estimateReason?: string;
-  };
-  
-  // Check if this is estimated data (fallback when API fails)
-  const isEstimatedData = (fullAnalytics as any).isEstimated === true;
-  
-  // Use property details from analytics (API data) which has full property info
-  const propertyDetails = fullAnalytics.property || property;
-  
   // Get estimated value (Zestimate / AVM)
   const estimatedValue = fullAnalytics.pricing?.estimatedValue || fullAnalytics.pricing?.listPrice || 0;
 
