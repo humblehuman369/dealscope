@@ -212,14 +212,21 @@ export function AppHeader({
             address_city?: string
             zpid?: string
           }) => {
+            if (!p) return false
+            
             // Prefer zpid matching if available
             if (property?.zpid && p.zpid) {
-              return p.zpid === property.zpid
+              return String(p.zpid) === String(property.zpid)
             }
             // Fall back to address matching
-            const streetMatch = p.address_street?.toLowerCase() === streetAddress.toLowerCase()
-            const cityMatch = !city || !p.address_city || 
-              p.address_city.toLowerCase() === city.toLowerCase()
+            const pStreet = p.address_street ? String(p.address_street).toLowerCase() : ''
+            const pCity = p.address_city ? String(p.address_city).toLowerCase() : ''
+            const targetStreet = streetAddress.toLowerCase()
+            const targetCity = city.toLowerCase()
+            
+            const streetMatch = pStreet === targetStreet
+            const cityMatch = !city || !pCity || pCity === targetCity
+            
             return streetMatch && cityMatch
           })
           if (savedProperty) {

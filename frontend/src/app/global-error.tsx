@@ -79,7 +79,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               color: '#1e293b',
               marginBottom: '0.5rem'
             }}>
-              Critical Error
+              Something went wrong
             </h1>
 
             {/* Error Message */}
@@ -88,7 +88,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               marginBottom: '1.5rem',
               lineHeight: 1.5
             }}>
-              A critical error occurred in the application. 
+              We encountered an unexpected error. 
               We apologize for the inconvenience.
             </p>
 
