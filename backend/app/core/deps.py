@@ -5,7 +5,7 @@ FastAPI dependencies for authentication and database access.
 from typing import Optional, Annotated
 import logging
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +17,7 @@ from app.core.features import FeatureFlags
 
 logger = logging.getLogger(__name__)
 
-# OAuth2 scheme for token extraction
+# OAuth2 scheme for token extraction from Authorization header
 # tokenUrl points to the login endpoint
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/login",
@@ -25,12 +25,34 @@ oauth2_scheme = OAuth2PasswordBearer(
 )
 
 
+def get_token_from_request(request: Request, header_token: Optional[str] = None) -> Optional[str]:
+    """
+    Extract access token from request, checking both:
+    1. httpOnly cookie (preferred, XSS-safe)
+    2. Authorization header (fallback for mobile/API clients)
+    
+    Cookie takes precedence if both are present.
+    """
+    # First try httpOnly cookie
+    cookie_token = request.cookies.get("access_token")
+    if cookie_token:
+        return cookie_token
+    
+    # Fall back to Authorization header (for mobile clients)
+    return header_token
+
+
 async def get_current_user(
+    request: Request,
     db: AsyncSession = Depends(get_db),
-    token: Optional[str] = Depends(oauth2_scheme)
+    header_token: Optional[str] = Depends(oauth2_scheme)
 ) -> User:
     """
     Dependency to get the current authenticated user.
+    
+    Supports both:
+    - httpOnly cookie (preferred for web, XSS-safe)
+    - Authorization header (for mobile/API clients)
     
     Raises HTTPException if:
     - No token provided
@@ -47,6 +69,9 @@ async def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
+    # Get token from cookie or header
+    token = get_token_from_request(request, header_token)
     
     if not token:
         raise credentials_exception
@@ -71,11 +96,16 @@ async def get_current_user(
 
 
 async def get_current_user_optional(
+    request: Request,
     db: AsyncSession = Depends(get_db),
-    token: Optional[str] = Depends(oauth2_scheme)
+    header_token: Optional[str] = Depends(oauth2_scheme)
 ) -> Optional[User]:
     """
     Dependency to get the current user if authenticated, or None.
+    
+    Supports both:
+    - httpOnly cookie (preferred for web, XSS-safe)
+    - Authorization header (for mobile/API clients)
     
     Useful for endpoints that work with or without authentication
     but may provide additional features for logged-in users.
@@ -90,6 +120,9 @@ async def get_current_user_optional(
             else:
                 # Show public results
     """
+    # Get token from cookie or header
+    token = get_token_from_request(request, header_token)
+    
     if not token:
         return None
     

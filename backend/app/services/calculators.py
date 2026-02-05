@@ -17,6 +17,103 @@ from app.core.defaults import (
 
 
 # ============================================
+# INPUT VALIDATION
+# ============================================
+
+class CalculationInputError(ValueError):
+    """Raised when calculator inputs are outside acceptable bounds."""
+    pass
+
+
+def validate_financial_inputs(
+    purchase_price: Optional[float] = None,
+    monthly_rent: Optional[float] = None,
+    interest_rate: Optional[float] = None,
+    down_payment_pct: Optional[float] = None,
+    loan_term_years: Optional[int] = None,
+    arv: Optional[float] = None,
+    rehab_cost: Optional[float] = None,
+    holding_period_months: Optional[int] = None,
+    assignment_fee: Optional[float] = None,
+) -> None:
+    """
+    Validate financial calculation inputs are within reasonable bounds.
+    
+    Raises CalculationInputError if any input is invalid.
+    
+    Bounds are intentionally conservative to prevent obviously incorrect
+    financial advice while allowing legitimate edge cases.
+    """
+    errors = []
+    
+    # Purchase price validation
+    if purchase_price is not None:
+        if purchase_price <= 0:
+            errors.append("Purchase price must be greater than $0")
+        elif purchase_price > 100_000_000:
+            errors.append("Purchase price exceeds maximum of $100,000,000")
+    
+    # Monthly rent validation
+    if monthly_rent is not None:
+        if monthly_rent < 0:
+            errors.append("Monthly rent cannot be negative")
+        elif monthly_rent > 1_000_000:
+            errors.append("Monthly rent exceeds maximum of $1,000,000")
+    
+    # Interest rate validation (as decimal, e.g., 0.06 = 6%)
+    if interest_rate is not None:
+        if interest_rate < 0:
+            errors.append("Interest rate cannot be negative")
+        elif interest_rate > 0.30:  # 30% maximum
+            errors.append("Interest rate exceeds maximum of 30%")
+    
+    # Down payment percentage validation
+    if down_payment_pct is not None:
+        if down_payment_pct < 0:
+            errors.append("Down payment percentage cannot be negative")
+        elif down_payment_pct > 1.0:  # 100% = cash purchase
+            errors.append("Down payment percentage cannot exceed 100%")
+    
+    # Loan term validation
+    if loan_term_years is not None:
+        if loan_term_years < 1:
+            errors.append("Loan term must be at least 1 year")
+        elif loan_term_years > 50:
+            errors.append("Loan term exceeds maximum of 50 years")
+    
+    # ARV validation
+    if arv is not None:
+        if arv <= 0:
+            errors.append("After Repair Value (ARV) must be greater than $0")
+        elif arv > 100_000_000:
+            errors.append("ARV exceeds maximum of $100,000,000")
+    
+    # Rehab cost validation
+    if rehab_cost is not None:
+        if rehab_cost < 0:
+            errors.append("Rehab cost cannot be negative")
+        elif rehab_cost > 10_000_000:
+            errors.append("Rehab cost exceeds maximum of $10,000,000")
+    
+    # Holding period validation
+    if holding_period_months is not None:
+        if holding_period_months < 1:
+            errors.append("Holding period must be at least 1 month")
+        elif holding_period_months > 120:  # 10 years
+            errors.append("Holding period exceeds maximum of 120 months (10 years)")
+    
+    # Assignment fee validation
+    if assignment_fee is not None:
+        if assignment_fee < 0:
+            errors.append("Assignment fee cannot be negative")
+        elif assignment_fee > 1_000_000:
+            errors.append("Assignment fee exceeds maximum of $1,000,000")
+    
+    if errors:
+        raise CalculationInputError("; ".join(errors))
+
+
+# ============================================
 # COMMON CALCULATIONS
 # ============================================
 
@@ -94,6 +191,19 @@ def calculate_ltr(
     rent_growth_rate: float = None,
     expense_growth_rate: float = None,
 ) -> Dict[str, Any]:
+    """
+    Calculate Long-Term Rental metrics.
+    Based on '1. Long-Term Rental' sheet from Excel.
+    """
+    # Validate inputs
+    validate_financial_inputs(
+        purchase_price=purchase_price,
+        monthly_rent=monthly_rent,
+        interest_rate=interest_rate,
+        down_payment_pct=down_payment_pct,
+        loan_term_years=loan_term_years,
+    )
+    
     # Apply centralized defaults for any unspecified values
     down_payment_pct = down_payment_pct if down_payment_pct is not None else FINANCING.down_payment_pct
     interest_rate = interest_rate if interest_rate is not None else FINANCING.interest_rate
@@ -109,10 +219,6 @@ def calculate_ltr(
     appreciation_rate = appreciation_rate if appreciation_rate is not None else GROWTH.appreciation_rate
     rent_growth_rate = rent_growth_rate if rent_growth_rate is not None else GROWTH.rent_growth_rate
     expense_growth_rate = expense_growth_rate if expense_growth_rate is not None else GROWTH.expense_growth_rate
-    """
-    Calculate Long-Term Rental metrics.
-    Based on '1. Long-Term Rental' sheet from Excel.
-    """
     
     # Acquisition
     down_payment = purchase_price * down_payment_pct
@@ -252,6 +358,18 @@ def calculate_str(
     landscaping_annual: float = None,
     pest_control_annual: float = None,
 ) -> Dict[str, Any]:
+    """
+    Calculate Short-Term Rental metrics.
+    Based on '2. Short-Term Rental' sheet from Excel.
+    """
+    # Validate inputs
+    validate_financial_inputs(
+        purchase_price=purchase_price,
+        interest_rate=interest_rate,
+        down_payment_pct=down_payment_pct,
+        loan_term_years=loan_term_years,
+    )
+    
     # Apply centralized defaults for any unspecified values
     down_payment_pct = down_payment_pct if down_payment_pct is not None else FINANCING.down_payment_pct
     interest_rate = interest_rate if interest_rate is not None else FINANCING.interest_rate
@@ -269,10 +387,6 @@ def calculate_str(
     maintenance_annual = maintenance_annual if maintenance_annual is not None else purchase_price * OPERATING.maintenance_pct
     landscaping_annual = landscaping_annual if landscaping_annual is not None else OPERATING.landscaping_annual
     pest_control_annual = pest_control_annual if pest_control_annual is not None else OPERATING.pest_control_annual
-    """
-    Calculate Short-Term Rental metrics.
-    Based on '2. Short-Term Rental' sheet from Excel.
-    """
     
     # Acquisition
     down_payment = purchase_price * down_payment_pct
@@ -421,6 +535,21 @@ def calculate_brrrr(
     operating_expense_pct: float = None,
     insurance_annual: float = None,
 ) -> Dict[str, Any]:
+    """
+    Calculate BRRRR (Buy, Rehab, Rent, Refinance, Repeat) metrics.
+    """
+    # Validate inputs
+    validate_financial_inputs(
+        purchase_price=market_value,
+        arv=arv,
+        monthly_rent=monthly_rent_post_rehab,
+        interest_rate=interest_rate,
+        down_payment_pct=down_payment_pct,
+        loan_term_years=loan_term_years,
+        rehab_cost=renovation_budget,
+        holding_period_months=holding_period_months,
+    )
+    
     # Apply centralized defaults for any unspecified values
     purchase_discount_pct = purchase_discount_pct if purchase_discount_pct is not None else BRRRR.buy_discount_pct
     down_payment_pct = down_payment_pct if down_payment_pct is not None else FINANCING.down_payment_pct
@@ -438,10 +567,6 @@ def calculate_brrrr(
     vacancy_rate = vacancy_rate if vacancy_rate is not None else OPERATING.vacancy_rate
     operating_expense_pct = operating_expense_pct if operating_expense_pct is not None else (OPERATING.maintenance_pct + OPERATING.property_management_pct)
     insurance_annual = insurance_annual if insurance_annual is not None else arv * OPERATING.insurance_pct
-    """
-    Calculate BRRRR Strategy metrics.
-    Based on '3. BRRRR Strategy' sheet from Excel.
-    """
     
     # Phase 1: Buy (at discount)
     purchase_price = market_value * (1 - purchase_discount_pct)
@@ -563,6 +688,19 @@ def calculate_flip(
     selling_costs_pct: float = None,
     capital_gains_rate: float = 0.15,
 ) -> Dict[str, Any]:
+    """
+    Calculate Fix & Flip metrics.
+    Based on '4. Fix & Flip' sheet from Excel.
+    """
+    # Validate inputs
+    validate_financial_inputs(
+        purchase_price=market_value,
+        arv=arv,
+        interest_rate=hard_money_rate,
+        rehab_cost=renovation_budget,
+        holding_period_months=int(holding_period_months) if holding_period_months else None,
+    )
+    
     # Apply centralized defaults for any unspecified values
     purchase_discount_pct = purchase_discount_pct if purchase_discount_pct is not None else BRRRR.buy_discount_pct
     hard_money_ltv = hard_money_ltv if hard_money_ltv is not None else FLIP.hard_money_ltv
@@ -575,10 +713,6 @@ def calculate_flip(
     insurance_annual = insurance_annual if insurance_annual is not None else market_value * OPERATING.insurance_pct
     utilities_monthly = utilities_monthly if utilities_monthly is not None else OPERATING.utilities_monthly
     selling_costs_pct = selling_costs_pct if selling_costs_pct is not None else FLIP.selling_costs_pct
-    """
-    Calculate Fix & Flip metrics.
-    Based on '4. Fix & Flip' sheet from Excel.
-    """
     
     # Acquisition
     purchase_price = market_value * (1 - purchase_discount_pct)
@@ -705,6 +839,19 @@ def calculate_house_hack(
     conversion_cost: float = None,
     unit2_rent: float = None,
 ) -> Dict[str, Any]:
+    """
+    Calculate House Hacking metrics.
+    Based on '5. House Hacking' sheet from Excel.
+    """
+    # Validate inputs
+    validate_financial_inputs(
+        purchase_price=purchase_price,
+        monthly_rent=monthly_rent_per_room,
+        interest_rate=interest_rate,
+        down_payment_pct=down_payment_pct,
+        loan_term_years=loan_term_years,
+    )
+    
     # Apply centralized defaults for any unspecified values (FHA defaults for house hack)
     down_payment_pct = down_payment_pct if down_payment_pct is not None else HOUSE_HACK.fha_down_payment_pct
     interest_rate = interest_rate if interest_rate is not None else FINANCING.interest_rate
@@ -712,10 +859,6 @@ def calculate_house_hack(
     closing_costs_pct = closing_costs_pct if closing_costs_pct is not None else FINANCING.closing_costs_pct
     fha_mip_rate = fha_mip_rate if fha_mip_rate is not None else HOUSE_HACK.fha_mip_rate
     insurance_annual = insurance_annual if insurance_annual is not None else purchase_price * OPERATING.insurance_pct
-    """
-    Calculate House Hacking metrics.
-    Based on '5. House Hacking' sheet from Excel.
-    """
     
     # Acquisition (FHA)
     down_payment = purchase_price * down_payment_pct
@@ -810,16 +953,23 @@ def calculate_wholesale(
     days_to_close: int = None,
     time_investment_hours: float = 50,
 ) -> Dict[str, Any]:
+    """
+    Calculate Wholesale Deal metrics.
+    Based on '6. Wholesale' sheet from Excel.
+    """
+    # Validate inputs
+    validate_financial_inputs(
+        arv=arv,
+        rehab_cost=estimated_rehab_costs,
+        assignment_fee=assignment_fee,
+    )
+    
     # Apply centralized defaults for any unspecified values
     assignment_fee = assignment_fee if assignment_fee is not None else WHOLESALE.assignment_fee
     marketing_costs = marketing_costs if marketing_costs is not None else WHOLESALE.marketing_costs
     earnest_money_deposit = earnest_money_deposit if earnest_money_deposit is not None else WHOLESALE.earnest_money_deposit
     arv_discount_pct = arv_discount_pct if arv_discount_pct is not None else WHOLESALE.target_purchase_discount_pct
     days_to_close = days_to_close if days_to_close is not None else WHOLESALE.days_to_close
-    """
-    Calculate Wholesale Deal metrics.
-    Based on '6. Wholesale' sheet from Excel.
-    """
     
     # 70% Rule
     seventy_pct_max_offer = (arv * (1 - arv_discount_pct)) - estimated_rehab_costs

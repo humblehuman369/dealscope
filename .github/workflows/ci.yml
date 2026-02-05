@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+jobs:
+  # ===========================================
+  # Backend Tests
+  # ===========================================
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: backend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: 'backend/requirements.txt'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+        env:
+          ENVIRONMENT: test
+          SECRET_KEY: test-secret-key-at-least-32-characters-long-for-testing
+          DATABASE_URL: sqlite+aiosqlite:///:memory:
+      
+      - name: Check for linting issues (pyright)
+        run: |
+          pip install pyright
+          pyright app/ --level basic || true
+        continue-on-error: true
+
+  # ===========================================
+  # Frontend Tests & Build
+  # ===========================================
+  frontend-tests:
+    name: Frontend Tests & Build
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: frontend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run linter
+        run: npm run lint
+        continue-on-error: true
+      
+      - name: Run tests
+        run: npm run test:run
+        continue-on-error: true
+      
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://dealscope-production.up.railway.app
+
+  # ===========================================
+  # Mobile Type Check
+  # ===========================================
+  mobile-typecheck:
+    name: Mobile Type Check
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: mobile
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'mobile/package-lock.json'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+  # ===========================================
+  # Security Scan
+  # ===========================================
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'  # Don't fail the build, just report
+        continue-on-error: true

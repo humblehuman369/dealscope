@@ -6,10 +6,32 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Platform } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 
 import { AuthProvider } from '../context/AuthContext';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { AnimatedSplash } from '../components/AnimatedSplash';
+
+// Initialize Sentry for error tracking
+const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    environment: __DEV__ ? 'development' : 'production',
+    tracesSampleRate: 0.1, // 10% of transactions
+    enableAutoSessionTracking: true,
+    // Don't send errors in development
+    enabled: !__DEV__,
+    beforeSend(event) {
+      // Don't send PII
+      if (event.user) {
+        delete event.user.ip_address;
+        delete event.user.email;
+      }
+      return event;
+    },
+  });
+}
 
 // Prevent splash screen from hiding until app is ready
 SplashScreen.preventAutoHideAsync().catch(() => {

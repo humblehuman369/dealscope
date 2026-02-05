@@ -3,9 +3,10 @@
  * Handles all communication with the backend API
  * 
  * Features:
- * - Automatic auth header injection
- * - 401 interceptor with token refresh
+ * - httpOnly cookie-based authentication (XSS-safe)
+ * - Automatic 401 interceptor with token refresh
  * - Centralized error handling
+ * - credentials: 'include' for cookie transmission
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
@@ -18,71 +19,57 @@ interface RequestOptions {
 }
 
 /**
- * Get the current access token from localStorage
+ * DEPRECATED: localStorage token storage removed for security.
+ * Tokens are now stored in httpOnly cookies (inaccessible to JavaScript).
+ * These functions are kept for backward compatibility during migration.
  */
 function getAccessToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('access_token')
+  // httpOnly cookies are not accessible via JavaScript
+  // This is by design - tokens are sent automatically with requests
+  return null
 }
 
-/**
- * Get the refresh token from localStorage
- */
 function getRefreshToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('refresh_token')
+  // httpOnly cookies are not accessible via JavaScript
+  return null
 }
 
-/**
- * Store tokens in localStorage
- */
-function storeTokens(accessToken: string, refreshToken: string): void {
-  if (typeof window === 'undefined') return
-  localStorage.setItem('access_token', accessToken)
-  localStorage.setItem('refresh_token', refreshToken)
+function storeTokens(_accessToken: string, _refreshToken: string): void {
+  // No-op: tokens are stored in httpOnly cookies by the server
+  // This function is kept for backward compatibility
 }
 
-/**
- * Clear tokens from localStorage
- */
 function clearTokens(): void {
-  if (typeof window === 'undefined') return
-  localStorage.removeItem('access_token')
-  localStorage.removeItem('refresh_token')
+  // Tokens are cleared by calling the logout endpoint
+  // which clears the httpOnly cookies on the server side
 }
 
 /**
- * Attempt to refresh the access token using the refresh token
+ * Attempt to refresh the access token using httpOnly cookie
  */
-let refreshPromise: Promise<string | null> | null = null
+let refreshPromise: Promise<boolean> | null = null
 
-async function refreshAccessToken(): Promise<string | null> {
+async function refreshAccessToken(): Promise<boolean> {
   if (refreshPromise) return refreshPromise
-
-  const refreshToken = getRefreshToken()
-  if (!refreshToken) return null
 
   refreshPromise = (async () => {
     try {
+      // Refresh token is sent automatically via httpOnly cookie
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh_token: refreshToken }),
+        credentials: 'include', // Send cookies
       })
 
       if (!response.ok) {
-        // Refresh failed - clear tokens and return null
-        clearTokens()
-        return null
+        return false
       }
 
-      const data = await response.json()
-      storeTokens(data.access_token, data.refresh_token)
-      return data.access_token
+      // New tokens are set as httpOnly cookies by the server
+      return true
     } catch (error) {
       console.error('Token refresh failed:', error)
-      clearTokens()
-      return null
+      return false
     } finally {
       refreshPromise = null
     }
@@ -102,27 +89,23 @@ function redirectToLogin(): void {
 
 /**
  * Main API request function with auth handling
+ * 
+ * Uses httpOnly cookies for authentication (XSS-safe).
+ * Tokens are sent automatically via cookies, not Authorization headers.
  */
 async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, headers = {}, skipAuth = false } = options
 
-  // Build headers with auth token if available
+  // Build headers
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     ...headers,
   }
 
-  // Add auth header if not skipping auth
-  if (!skipAuth) {
-    const token = getAccessToken()
-    if (token) {
-      requestHeaders['Authorization'] = `Bearer ${token}`
-    }
-  }
-
   const config: RequestInit = {
     method,
     headers: requestHeaders,
+    credentials: 'include', // Always send cookies for auth
   }
 
   if (body) {
@@ -133,12 +116,10 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
 
   // Handle 401 Unauthorized - attempt token refresh
   if (response.status === 401 && !skipAuth) {
-    const newToken = await refreshAccessToken()
+    const refreshSuccess = await refreshAccessToken()
     
-    if (newToken) {
-      // Retry the request with the new token
-      requestHeaders['Authorization'] = `Bearer ${newToken}`
-      config.headers = requestHeaders
+    if (refreshSuccess) {
+      // Retry the request - new tokens are in cookies
       response = await fetch(`${API_BASE_URL}${endpoint}`, config)
     } else {
       // Token refresh failed - redirect to login
@@ -157,13 +138,11 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
 
 /**
  * Create an authenticated API request (convenience wrapper)
+ * 
+ * Note: With httpOnly cookies, we can't check if user is authenticated client-side.
+ * The server will return 401 if not authenticated, which triggers redirect.
  */
 async function authenticatedRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  const token = getAccessToken()
-  if (!token) {
-    redirectToLogin()
-    throw new Error('Authentication required')
-  }
   return apiRequest<T>(endpoint, options)
 }
 
@@ -485,14 +464,8 @@ export const api = {
       if (params.marginalTaxRate) searchParams.set('marginal_tax_rate', String(params.marginalTaxRate))
       if (params.capitalGainsTaxRate) searchParams.set('capital_gains_tax_rate', String(params.capitalGainsTaxRate))
       
-      const token = getAccessToken()
-      const headers: Record<string, string> = {}
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
-      }
-      
       const url = `${API_BASE_URL}/api/v1/proforma/property/${params.propertyId}/excel?${searchParams}`
-      const response = await fetch(url, { headers })
+      const response = await fetch(url, { credentials: 'include' })
       
       if (!response.ok) {
         const errorText = await response.text()
@@ -522,15 +495,9 @@ export const api = {
       if (params.marginalTaxRate) searchParams.set('marginal_tax_rate', String(params.marginalTaxRate))
       if (params.capitalGainsTaxRate) searchParams.set('capital_gains_tax_rate', String(params.capitalGainsTaxRate))
       
-      const token = getAccessToken()
-      const headers: Record<string, string> = {}
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
-      }
-      
       const response = await fetch(
         `${API_BASE_URL}/api/v1/proforma/property/${params.propertyId}/pdf?${searchParams}`,
-        { headers }
+        { credentials: 'include' }
       )
       
       if (!response.ok) {

@@ -125,22 +125,14 @@ export async function storeTokens(tokens: TokenResponse): Promise<void> {
  * Get the stored access token.
  */
 export async function getAccessToken(): Promise<string | null> {
-  // #region agent log
-  const token = await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
-  console.log('[DEBUG-H2,H5] getAccessToken:', JSON.stringify({hasToken:!!token,tokenLength:token?.length||0,tokenPrefix:token?.substring(0,20)||'NULL',tokenSuffix:token?.substring((token?.length||0)-10)||'NULL'}));
-  // #endregion
-  return token;
+  return await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
 }
 
 /**
  * Get the stored refresh token.
  */
 export async function getRefreshToken(): Promise<string | null> {
-  // #region agent log
-  const token = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
-  console.log('[DEBUG-H1,H2] getRefreshToken:', JSON.stringify({hasToken:!!token,tokenLength:token?.length||0,tokenPrefix:token?.substring(0,20)||'NULL'}));
-  // #endregion
-  return token;
+  return await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
 }
 
 /**
@@ -277,23 +269,14 @@ export async function logout(): Promise<void> {
  * Refresh the access token.
  */
 export async function refreshAccessToken(refreshToken: string): Promise<TokenResponse | null> {
-  // #region agent log
-  console.log('[DEBUG-H1,H3,H4] refreshAccessToken:entry:', JSON.stringify({apiUrl:API_BASE_URL,refreshTokenLength:refreshToken?.length||0,refreshTokenPrefix:refreshToken?.substring(0,20)||'NULL'}));
-  // #endregion
   try {
     const response = await axios.post<TokenResponse>(
       `${API_BASE_URL}/api/v1/auth/refresh`,
       { refresh_token: refreshToken }
     );
-    // #region agent log
-    console.log('[DEBUG-H1] refreshAccessToken:success:', JSON.stringify({hasNewToken:!!response.data?.access_token}));
-    // #endregion
     return response.data;
   } catch (error: any) {
-    // #region agent log
-    console.log('[DEBUG-H1,H3] refreshAccessToken:error:', JSON.stringify({errorStatus:error?.response?.status,errorMessage:error?.response?.data?.detail||error?.message,errorName:error?.name}));
-    // #endregion
-    console.warn('Token refresh failed:', error);
+    console.warn('Token refresh failed');
     return null;
   }
 }

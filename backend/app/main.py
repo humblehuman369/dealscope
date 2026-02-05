@@ -35,6 +35,34 @@ except Exception as e:
     logger.error(f"Failed to load config: {e}")
     raise
 
+# ===========================================
+# Sentry Integration (Error Tracking)
+# ===========================================
+if settings.SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.fastapi import FastApiIntegration
+        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+        
+        sentry_sdk.init(
+            dsn=settings.SENTRY_DSN,
+            environment=settings.ENVIRONMENT,
+            traces_sample_rate=settings.SENTRY_TRACES_SAMPLE_RATE,
+            profiles_sample_rate=settings.SENTRY_PROFILES_SAMPLE_RATE,
+            integrations=[
+                FastApiIntegration(transaction_style="endpoint"),
+                SqlalchemyIntegration(),
+            ],
+            send_default_pii=False,  # Don't send personally identifiable information
+        )
+        logger.info(f"Sentry initialized for environment: {settings.ENVIRONMENT}")
+    except ImportError:
+        logger.warning("sentry-sdk not installed, error tracking disabled")
+    except Exception as e:
+        logger.error(f"Failed to initialize Sentry: {e}")
+else:
+    logger.info("SENTRY_DSN not configured, error tracking disabled")
+
 # Import property schemas from the new location
 try:
     from app.schemas.property import (
@@ -413,17 +441,70 @@ if health_router is not None:
 
 
 # ============================================
-# HEALTH CHECK (basic - kept for backward compatibility)
-# Additional health endpoints are in health router
+# HEALTH CHECK (enhanced with dependency checks)
 # ============================================
+
+async def check_database_connection() -> dict:
+    """Check database connectivity."""
+    try:
+        from app.db.session import get_engine
+        from sqlalchemy import text
+        engine = get_engine()
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        return {"status": "ok", "latency_ms": None}
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+async def check_redis_connection() -> dict:
+    """Check Redis connectivity."""
+    try:
+        from app.services.cache_service import cache_service
+        if cache_service.use_redis and cache_service.redis_client:
+            await cache_service.redis_client.ping()
+            return {"status": "ok"}
+        else:
+            return {"status": "unavailable", "note": "using in-memory cache"}
+    except Exception as e:
+        logger.error(f"Redis health check failed: {e}")
+        return {"status": "error", "error": str(e)}
+
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
+    """
+    Health check endpoint with dependency status.
+    
+    Returns:
+    - status: "healthy" if all critical dependencies are up
+    - status: "degraded" if non-critical dependencies are down
+    - status: "unhealthy" if critical dependencies are down
+    """
+    # Check dependencies
+    db_status = await check_database_connection()
+    redis_status = await check_redis_connection()
+    
+    # Determine overall status
+    db_ok = db_status.get("status") == "ok"
+    redis_ok = redis_status.get("status") in ["ok", "unavailable"]  # Redis is optional
+    
+    if db_ok and redis_ok:
+        overall_status = "healthy"
+    elif db_ok:
+        overall_status = "degraded"
+    else:
+        overall_status = "unhealthy"
+    
     return {
-        "status": "healthy",
+        "status": overall_status,
         "version": settings.APP_VERSION,
         "timestamp": datetime.utcnow().isoformat(),
+        "dependencies": {
+            "database": db_status,
+            "redis": redis_status,
+        },
         "features": {
             "auth_required": settings.FEATURE_AUTH_REQUIRED,
             "dashboard_enabled": settings.FEATURE_DASHBOARD_ENABLED,

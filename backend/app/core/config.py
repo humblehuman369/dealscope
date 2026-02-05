@@ -57,6 +57,13 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     
     # ===========================================
+    # Observability (Sentry)
+    # ===========================================
+    SENTRY_DSN: str = ""  # Set via environment variable
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.1  # 10% of transactions
+    SENTRY_PROFILES_SAMPLE_RATE: float = 0.1  # 10% of profiled transactions
+    
+    # ===========================================
     # API Keys (External Services)
     # ===========================================
     RENTCAST_API_KEY: str = ""
@@ -75,6 +82,13 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    
+    # ===========================================
+    # Cookie Settings (for httpOnly auth cookies)
+    # ===========================================
+    COOKIE_SECURE: bool = True  # Set to False for local dev without HTTPS
+    COOKIE_SAMESITE: str = "lax"  # lax, strict, or none
+    COOKIE_DOMAIN: Optional[str] = None  # Set for cross-subdomain cookies
     
     # Password Reset
     PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = 1  # 1 hour for security

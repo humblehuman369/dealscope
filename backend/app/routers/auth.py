@@ -4,6 +4,7 @@ Authentication router for user registration, login, and session management.
 
 from datetime import datetime
 import logging
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from pydantic import BaseModel
@@ -130,6 +131,7 @@ async def register(
 )
 async def login(
     data: UserLogin,
+    response: Response,
     db: DbSession
 ):
     """
@@ -139,7 +141,9 @@ async def login(
     - **password**: User's password
     - **remember_me**: If true, extends token expiration
     
-    Returns access_token and refresh_token.
+    Returns access_token and refresh_token in response body.
+    Also sets httpOnly cookies for web clients (XSS-safe).
+    Mobile clients should use the tokens from the response body.
     """
     user = await auth_service.authenticate_user(
         db=db,
@@ -164,6 +168,27 @@ async def login(
     tokens = auth_service.create_tokens(
         user_id=str(user.id),
         remember_me=data.remember_me
+    )
+    
+    # Set httpOnly cookies for web clients (XSS-safe)
+    # Mobile clients will use the tokens from the response body
+    response.set_cookie(
+        key="access_token",
+        value=tokens.access_token,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        domain=settings.COOKIE_DOMAIN,
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=tokens.refresh_token,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        domain=settings.COOKIE_DOMAIN,
     )
     
     return tokens
@@ -210,19 +235,37 @@ async def login_form(
     summary="Refresh access token"
 )
 async def refresh_token(
-    data: RefreshTokenRequest,
-    db: DbSession
+    request: Request,
+    response: Response,
+    db: DbSession,
+    data: Optional[RefreshTokenRequest] = None
 ):
     """
     Get a new access token using a refresh token.
     
-    - **refresh_token**: Valid refresh token from login
+    Accepts refresh token from:
+    - Request body (for mobile clients)
+    - httpOnly cookie (for web clients)
     
     Returns new access_token and refresh_token.
     The old refresh token is blacklisted to prevent reuse.
     """
+    # Get refresh token from body or cookie
+    refresh_token_value = None
+    if data and data.refresh_token:
+        refresh_token_value = data.refresh_token
+    else:
+        refresh_token_value = request.cookies.get("refresh_token")
+    
+    if not refresh_token_value:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token required",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     # Verify the refresh token with blacklist check
-    payload = await auth_service.verify_token_with_blacklist(data.refresh_token, token_type="refresh")
+    payload = await auth_service.verify_token_with_blacklist(refresh_token_value, token_type="refresh")
     
     if not payload:
         raise HTTPException(
@@ -244,7 +287,27 @@ async def refresh_token(
     tokens = auth_service.create_tokens(user_id=str(user.id))
     
     # Blacklist the old refresh token to prevent reuse (token rotation)
-    await auth_service.blacklist_token(data.refresh_token, reason="refresh_token_rotated")
+    await auth_service.blacklist_token(refresh_token_value, reason="refresh_token_rotated")
+    
+    # Set httpOnly cookies for web clients
+    response.set_cookie(
+        key="access_token",
+        value=tokens.access_token,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        domain=settings.COOKIE_DOMAIN,
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=tokens.refresh_token,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        domain=settings.COOKIE_DOMAIN,
+    )
     
     return tokens
 
@@ -275,18 +338,42 @@ async def logout(
     Blacklists the current access token (and optionally refresh token)
     to prevent further use. Tokens are stored in Redis with TTL matching
     their original expiration.
+    
+    Also clears httpOnly cookies for web clients.
     """
-    # Extract access token from authorization header
+    # Extract access token from authorization header or cookie
     auth_header = request.headers.get("Authorization", "")
     access_token = None
     if auth_header.startswith("Bearer "):
         access_token = auth_header[7:]
+    else:
+        access_token = request.cookies.get("access_token")
+    
+    # Get refresh token from body or cookie
+    refresh_token = None
+    if body and body.refresh_token:
+        refresh_token = body.refresh_token
+    else:
+        refresh_token = request.cookies.get("refresh_token")
     
     # Blacklist tokens
-    refresh_token = body.refresh_token if body else None
     await auth_service.logout(
         access_token=access_token,
         refresh_token=refresh_token
+    )
+    
+    # Clear httpOnly cookies for web clients
+    response.delete_cookie(
+        key="access_token",
+        domain=settings.COOKIE_DOMAIN,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+    )
+    response.delete_cookie(
+        key="refresh_token",
+        domain=settings.COOKIE_DOMAIN,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
     )
     
     logger.info(f"User logged out: {current_user.email}")

@@ -8,16 +8,19 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { useState, useEffect, useCallback } from 'react';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
 
-// Storage keys
+// Storage keys for non-sensitive cached data (AsyncStorage)
 const STORAGE_KEYS = {
   DEFAULTS: 'investiq_defaults',
   DEFAULTS_TIMESTAMP: 'investiq_defaults_timestamp',
-  AUTH_TOKEN: 'auth_token',
 };
+
+// Secure storage key for auth token (SecureStore)
+const ACCESS_TOKEN_KEY = 'investiq_access_token';
 
 // Cache TTL
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -209,11 +212,11 @@ let memoryCache: AllDefaults | null = null;
 let memoryCacheTimestamp: number = 0;
 
 /**
- * Get auth token from AsyncStorage
+ * Get auth token from SecureStore (encrypted storage)
  */
 async function getAuthToken(): Promise<string | null> {
   try {
-    return await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+    return await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
   } catch {
     return null;
   }

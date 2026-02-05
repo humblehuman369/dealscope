@@ -70,19 +70,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const [showAuthModal, setShowAuthModal] = useState<'login' | 'register' | null>(null)
 
-  // Load user from stored token on mount
+  // Check for existing session on mount
+  // With httpOnly cookies, we can't check the token directly
+  // Instead, we try to fetch the current user
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('access_token')
-      if (token) {
-        try {
-          await fetchCurrentUser(token)
-        } catch (error) {
-          // Token expired or invalid - clear it
-          console.error('Failed to restore session:', error)
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
-        }
+      try {
+        await fetchCurrentUser()
+      } catch (error) {
+        // No valid session - this is normal for logged out users
+        console.debug('No active session')
       }
       setIsLoading(false)
     }
@@ -90,58 +87,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth()
   }, [])
 
-  // Refresh access token using refresh token
-  const refreshAccessToken = async (): Promise<string | null> => {
-    const refreshToken = localStorage.getItem('refresh_token')
-    if (!refreshToken) {
-      return null
-    }
-
+  // Refresh access token using httpOnly cookie
+  const refreshAccessToken = async (): Promise<boolean> => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ refresh_token: refreshToken }),
+        credentials: 'include', // Send httpOnly cookies
       })
 
       if (!response.ok) {
-        // Refresh token is invalid - clear auth data
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
+        // Refresh token is invalid
         setUser(null)
-        return null
+        return false
       }
 
-      const tokens: AuthTokens = await response.json()
-      localStorage.setItem('access_token', tokens.access_token)
-      localStorage.setItem('refresh_token', tokens.refresh_token)
-      return tokens.access_token
+      // New tokens are set as httpOnly cookies by the server
+      return true
     } catch (error) {
       console.error('Token refresh failed:', error)
-      return null
+      return false
     }
   }
 
   // Fetch current user from API with automatic token refresh on 401
-  const fetchCurrentUser = async (token: string) => {
+  const fetchCurrentUser = async () => {
     let response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // Send httpOnly cookies
     })
 
     // If 401, try to refresh token and retry
     if (response.status === 401) {
-      const newToken = await refreshAccessToken()
-      if (newToken) {
+      const refreshed = await refreshAccessToken()
+      if (refreshed) {
         response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
           headers: {
-            'Authorization': `Bearer ${newToken}`,
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
         })
       }
     }
@@ -163,6 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Receive and store httpOnly cookies
         body: JSON.stringify({ email, password }),
       })
 
@@ -171,14 +160,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(error.detail || 'Login failed')
       }
 
-      const tokens: AuthTokens = await response.json()
-      
-      // Store tokens
-      localStorage.setItem('access_token', tokens.access_token)
-      localStorage.setItem('refresh_token', tokens.refresh_token)
+      // Tokens are now stored in httpOnly cookies by the server
+      // No need to store in localStorage
 
       // Fetch user data
-      await fetchCurrentUser(tokens.access_token)
+      await fetchCurrentUser()
       
       // Note: Modal closing is handled by the component after redirect
     } finally {
@@ -195,6 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ 
           email, 
           password,
@@ -222,39 +209,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Logout - calls backend to blacklist tokens, then clears local state
+  // Logout - calls backend to blacklist tokens and clear cookies
   const logout = useCallback(async () => {
-    const accessToken = localStorage.getItem('access_token')
-    const refreshToken = localStorage.getItem('refresh_token')
-    
-    // Call backend to blacklist tokens (best effort)
-    if (accessToken) {
-      try {
-        await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ refresh_token: refreshToken }),
-        })
-      } catch (error) {
-        // Best effort - still clear local state even if API call fails
-        console.error('Logout API call failed:', error)
-      }
+    try {
+      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Send cookies for auth, server will clear them
+      })
+    } catch (error) {
+      // Best effort - still clear local state even if API call fails
+      console.error('Logout API call failed:', error)
     }
     
-    // Always clear local state
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
+    // Clear user state
     setUser(null)
   }, [])
 
   // Refresh user data
   const refreshUser = useCallback(async () => {
-    const token = localStorage.getItem('access_token')
-    if (token) {
-      await fetchCurrentUser(token)
+    try {
+      await fetchCurrentUser()
+    } catch (error) {
+      console.error('Failed to refresh user:', error)
     }
   }, [])
 
