@@ -171,20 +171,7 @@ export function StrategyAnalyticsView({
     };
   }, [assumptions, activeStrategy, apiTargetPrice, apiBreakevenPrice, apiDiscountPercent, apiStrategies]);
 
-  // ============================================
-  // Strategy Grades - USE BACKEND DATA
-  // ============================================
-  // OLD MOCK DATA (commented out for Phase 3 cleanup):
-  // const strategyGradesMock = useMemo(() => ({
-  //   ltr: { grade: 'B+', score: 72 },
-  //   str: { grade: 'A-', score: 84 },
-  //   brrrr: { grade: 'A', score: 88 },
-  //   flip: { grade: 'B', score: 68 },
-  //   house_hack: { grade: 'A-', score: 82 },
-  //   wholesale: { grade: 'C+', score: 55 },
-  // }), []);
-  
-  // USE REAL DATA from API
+  // Strategy Grades from API
   const strategyGrades = useMemo((): StrategyGrades => {
     // Use API data if available, otherwise provide loading state
     if (apiStrategyGrades) {
@@ -292,30 +279,20 @@ export function StrategyAnalyticsView({
     );
   }, [assumptions.listPrice, iqTarget]);
 
-  // ============================================
-  // Deal Score - USE BACKEND DATA
-  // ============================================
-  // OLD MOCK DATA (commented out for Phase 3 cleanup):
-  // const dealScoreMock = useMemo(() => {
-  //   const breakevenPrice = iqTarget.breakeven || iqTarget.targetPrice;
-  //   const listPrice = assumptions.listPrice;
-  //   return calculateDealScoreData(breakevenPrice, listPrice);
-  // }, [iqTarget, assumptions]);
-  
-  // USE REAL DATA from API
+  // Deal Score from API
   const dealScore = useMemo(() => {
-    // If API data is available, use it directly
+    // Build breakdown from opportunity factors
+    const breakdown = [
+      { 
+        id: 'discount', 
+        label: 'Discount Required', 
+        points: Math.round(100 - (apiDiscountPercent || 0)), 
+        maxPoints: 100 
+      }
+    ];
+    
+    // Use API data if available
     if (apiDealScore && apiDealScore.score > 0) {
-      // Build breakdown from opportunity factors if available
-      const breakdown = [
-        { 
-          id: 'discount', 
-          label: 'Discount Required', 
-          points: Math.round(100 - (apiDiscountPercent || 0)), 
-          maxPoints: 100 
-        }
-      ];
-      
       return {
         score: apiDealScore.score,
         grade: apiDealScore.grade,
@@ -328,10 +305,17 @@ export function StrategyAnalyticsView({
       };
     }
     
-    // Fallback to local calculation if API not available
-    const breakevenPrice = iqTarget.breakeven || iqTarget.targetPrice;
-    const listPrice = assumptions.listPrice;
-    return calculateDealScoreData(breakevenPrice, listPrice);
+    // Loading/default state when API data not yet available
+    return {
+      score: 0,
+      grade: '-',
+      label: 'Calculating...',
+      color: '#6b7280',
+      breakdown,
+      discountPercent: 0,
+      breakevenPrice: iqTarget.breakeven,
+      listPrice: assumptions.listPrice,
+    };
   }, [apiDealScore, apiDiscountPercent, apiBreakevenPrice, iqTarget, assumptions]);
 
   // Insight
