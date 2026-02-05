@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,7 +23,15 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { userService } from '../../services/userService';
 import { changePassword } from '../../services/authService';
-import type { UserResponse, UserProfileResponse, ExperienceLevel, RiskTolerance } from '../../types';
+import type { 
+  UserResponse, 
+  UserProfileResponse, 
+  ExperienceLevel, 
+  RiskTolerance,
+  PhoneNumber,
+  SocialLinks,
+  PhoneType
+} from '../../types';
 
 const EXPERIENCE_OPTIONS: { label: string; value: ExperienceLevel }[] = [
   { label: 'Beginner', value: 'beginner' },
@@ -45,6 +55,16 @@ const STRATEGY_OPTIONS = [
   { label: 'Wholesale', value: 'wholesale' },
 ];
 
+const US_STATES = [
+  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+];
+
+const PHONE_TYPES: PhoneType[] = ['mobile', 'work', 'home', 'fax', 'other'];
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -58,10 +78,16 @@ export default function ProfileScreen() {
   // User data
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
 
-  // Form state - Account
+  // Form state - Account & Business
   const [fullName, setFullName] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [businessType, setBusinessType] = useState('');
+  const [businessStreet, setBusinessStreet] = useState('');
+  const [businessCity, setBusinessCity] = useState('');
+  const [businessState, setBusinessState] = useState('');
+  const [businessZip, setBusinessZip] = useState('');
+  const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([]);
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>({});
   const [licenseNumber, setLicenseNumber] = useState('');
   const [licenseState, setLicenseState] = useState('');
   const [bio, setBio] = useState('');
@@ -70,11 +96,18 @@ export default function ProfileScreen() {
   const [experience, setExperience] = useState<ExperienceLevel | null>(null);
   const [riskTolerance, setRiskTolerance] = useState<RiskTolerance | null>(null);
   const [selectedStrategies, setSelectedStrategies] = useState<string[]>([]);
+  const [targetMarkets, setTargetMarkets] = useState<string[]>([]);
+  const [targetCoC, setTargetCoC] = useState('');
+  const [targetCapRate, setTargetCapRate] = useState('');
   const [budgetMin, setBudgetMin] = useState('');
   const [budgetMax, setBudgetMax] = useState('');
 
-  // Password change state
+  // UI States
+  const [showStateModal, setShowStateModal] = useState(false);
+  const [stateModalType, setStateModalType] = useState<'business' | 'license' | 'target'>('business');
   const [showPasswordChange, setShowPasswordChange] = useState(false);
+  
+  // Password change state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -97,6 +130,12 @@ export default function ProfileScreen() {
       setFullName(userData.full_name || '');
       setBusinessName(userData.business_name || '');
       setBusinessType(userData.business_type || '');
+      setBusinessStreet(userData.business_address_street || '');
+      setBusinessCity(userData.business_address_city || '');
+      setBusinessState(userData.business_address_state || '');
+      setBusinessZip(userData.business_address_zip || '');
+      setPhoneNumbers(userData.phone_numbers || []);
+      setSocialLinks(userData.social_links || {});
       setLicenseNumber(userData.license_number || '');
       setLicenseState(userData.license_state || '');
       setBio(userData.bio || '');
@@ -107,6 +146,9 @@ export default function ProfileScreen() {
         setExperience(profileData.investment_experience);
         setRiskTolerance(profileData.risk_tolerance);
         setSelectedStrategies(profileData.preferred_strategies || []);
+        setTargetMarkets(profileData.target_markets || []);
+        setTargetCoC(profileData.target_cash_on_cash ? (profileData.target_cash_on_cash * 100).toFixed(1) : '');
+        setTargetCapRate(profileData.target_cap_rate ? (profileData.target_cap_rate * 100).toFixed(1) : '');
         setBudgetMin(profileData.investment_budget_min?.toString() || '');
         setBudgetMax(profileData.investment_budget_max?.toString() || '');
       }
@@ -127,6 +169,12 @@ export default function ProfileScreen() {
         full_name: fullName || null,
         business_name: businessName || null,
         business_type: businessType || null,
+        business_address_street: businessStreet || null,
+        business_address_city: businessCity || null,
+        business_address_state: businessState || null,
+        business_address_zip: businessZip || null,
+        phone_numbers: phoneNumbers.length > 0 ? phoneNumbers : null,
+        social_links: Object.keys(socialLinks).length > 0 ? socialLinks : null,
         license_number: licenseNumber || null,
         license_state: licenseState || null,
         bio: bio || null,
@@ -150,6 +198,9 @@ export default function ProfileScreen() {
         investment_experience: experience,
         risk_tolerance: riskTolerance,
         preferred_strategies: selectedStrategies.length > 0 ? selectedStrategies : null,
+        target_markets: targetMarkets.length > 0 ? targetMarkets : null,
+        target_cash_on_cash: targetCoC ? parseFloat(targetCoC) / 100 : null,
+        target_cap_rate: targetCapRate ? parseFloat(targetCapRate) / 100 : null,
         investment_budget_min: budgetMin ? parseFloat(budgetMin) : null,
         investment_budget_max: budgetMax ? parseFloat(budgetMax) : null,
       });
@@ -220,6 +271,40 @@ export default function ProfileScreen() {
     );
   };
 
+  const toggleTargetMarket = (state: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setTargetMarkets((prev) =>
+      prev.includes(state) ? prev.filter((s) => s !== state) : [...prev, state]
+    );
+  };
+
+  const addPhoneNumber = () => {
+    setPhoneNumbers([...phoneNumbers, { type: 'mobile', number: '', primary: phoneNumbers.length === 0 }]);
+  };
+
+  const updatePhoneNumber = (index: number, field: keyof PhoneNumber, value: any) => {
+    const updated = [...phoneNumbers];
+    updated[index] = { ...updated[index], [field]: value };
+    setPhoneNumbers(updated);
+  };
+
+  const removePhoneNumber = (index: number) => {
+    setPhoneNumbers(phoneNumbers.filter((_, i) => i !== index));
+  };
+
+  const openStateModal = (type: 'business' | 'license' | 'target') => {
+    setStateModalType(type);
+    setShowStateModal(true);
+  };
+
+  const handleStateSelect = (state: string) => {
+    if (stateModalType === 'business') setBusinessState(state);
+    else if (stateModalType === 'license') setLicenseState(state);
+    else toggleTargetMarket(state);
+    
+    if (stateModalType !== 'target') setShowStateModal(false);
+  };
+
   // Dynamic styles
   const dynamicStyles = {
     container: { backgroundColor: theme.background },
@@ -279,6 +364,7 @@ export default function ProfileScreen() {
 
             <View style={[styles.divider, dynamicStyles.divider]} />
 
+            {/* Business Info */}
             <View style={styles.field}>
               <Text style={[styles.label, dynamicStyles.label]}>Business Name</Text>
               <TextInput
@@ -289,8 +375,6 @@ export default function ProfileScreen() {
                 placeholderTextColor={theme.textMuted}
               />
             </View>
-
-            <View style={[styles.divider, dynamicStyles.divider]} />
 
             <View style={styles.field}>
               <Text style={[styles.label, dynamicStyles.label]}>Business Type</Text>
@@ -305,6 +389,160 @@ export default function ProfileScreen() {
 
             <View style={[styles.divider, dynamicStyles.divider]} />
 
+            {/* Business Address */}
+            <Text style={[styles.subSectionTitle, { color: theme.text }]}>Business Address</Text>
+            <View style={styles.field}>
+              <TextInput
+                style={[styles.input, dynamicStyles.input]}
+                value={businessStreet}
+                onChangeText={setBusinessStreet}
+                placeholder="Street Address"
+                placeholderTextColor={theme.textMuted}
+              />
+            </View>
+            <View style={styles.fieldRow}>
+              <View style={[styles.field, { flex: 2, marginRight: 8 }]}>
+                <TextInput
+                  style={[styles.input, dynamicStyles.input]}
+                  value={businessCity}
+                  onChangeText={setBusinessCity}
+                  placeholder="City"
+                  placeholderTextColor={theme.textMuted}
+                />
+              </View>
+              <TouchableOpacity 
+                style={[styles.field, { flex: 1 }]}
+                onPress={() => openStateModal('business')}
+              >
+                <View style={[styles.input, dynamicStyles.input, styles.dropdownInput]}>
+                  <Text style={{ color: businessState ? theme.text : theme.textMuted }}>
+                    {businessState || 'State'}
+                  </Text>
+                  <Ionicons name="chevron-down" size={16} color={theme.textMuted} />
+                </View>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.field}>
+              <TextInput
+                style={[styles.input, dynamicStyles.input]}
+                value={businessZip}
+                onChangeText={setBusinessZip}
+                placeholder="ZIP Code"
+                placeholderTextColor={theme.textMuted}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View style={[styles.divider, dynamicStyles.divider]} />
+
+            {/* Phone Numbers */}
+            <View style={styles.rowBetween}>
+              <Text style={[styles.subSectionTitle, { color: theme.text }]}>Phone Numbers</Text>
+              <TouchableOpacity onPress={addPhoneNumber}>
+                <Text style={{ color: colors.primary[500], fontWeight: '600' }}>+ Add</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {phoneNumbers.map((phone, index) => (
+              <View key={index} style={styles.phoneRow}>
+                <View style={{ flex: 1 }}>
+                  <TextInput
+                    style={[styles.input, dynamicStyles.input, { marginBottom: 4 }]}
+                    value={phone.number}
+                    onChangeText={(text) => updatePhoneNumber(index, 'number', text)}
+                    placeholder="Phone Number"
+                    placeholderTextColor={theme.textMuted}
+                    keyboardType="phone-pad"
+                  />
+                  <View style={styles.row}>
+                    <TouchableOpacity 
+                      style={[styles.typeButton, { borderColor: theme.border }]}
+                      onPress={() => {
+                        const nextType = PHONE_TYPES[(PHONE_TYPES.indexOf(phone.type) + 1) % PHONE_TYPES.length];
+                        updatePhoneNumber(index, 'type', nextType);
+                      }}
+                    >
+                      <Text style={{ color: theme.textSecondary, fontSize: 12, textTransform: 'capitalize' }}>{phone.type}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={[styles.primaryButton, phone.primary && { backgroundColor: colors.primary[100] }]}
+                      onPress={() => {
+                        const updated = phoneNumbers.map((p, i) => ({ ...p, primary: i === index }));
+                        setPhoneNumbers(updated);
+                      }}
+                    >
+                      <Text style={{ color: phone.primary ? colors.primary[600] : theme.textMuted, fontSize: 12 }}>
+                        {phone.primary ? 'Primary' : 'Set Primary'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <TouchableOpacity onPress={() => removePhoneNumber(index)} style={styles.deleteButton}>
+                  <Ionicons name="trash-outline" size={20} color={colors.loss.main} />
+                </TouchableOpacity>
+              </View>
+            ))}
+
+            <View style={[styles.divider, dynamicStyles.divider]} />
+
+            {/* Social Links */}
+            <Text style={[styles.subSectionTitle, { color: theme.text }]}>Social Links</Text>
+            <View style={styles.field}>
+              <View style={styles.iconInputRow}>
+                <Ionicons name="globe-outline" size={20} color={theme.textMuted} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, dynamicStyles.input, styles.iconInput]}
+                  value={socialLinks.website || ''}
+                  onChangeText={(text) => setSocialLinks({...socialLinks, website: text})}
+                  placeholder="Website URL"
+                  placeholderTextColor={theme.textMuted}
+                  autoCapitalize="none"
+                />
+              </View>
+            </View>
+            <View style={styles.field}>
+              <View style={styles.iconInputRow}>
+                <Ionicons name="logo-linkedin" size={20} color="#0077b5" style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, dynamicStyles.input, styles.iconInput]}
+                  value={socialLinks.linkedin || ''}
+                  onChangeText={(text) => setSocialLinks({...socialLinks, linkedin: text})}
+                  placeholder="LinkedIn URL"
+                  placeholderTextColor={theme.textMuted}
+                  autoCapitalize="none"
+                />
+              </View>
+            </View>
+            <View style={styles.field}>
+              <View style={styles.iconInputRow}>
+                <Ionicons name="logo-instagram" size={20} color="#e4405f" style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, dynamicStyles.input, styles.iconInput]}
+                  value={socialLinks.instagram || ''}
+                  onChangeText={(text) => setSocialLinks({...socialLinks, instagram: text})}
+                  placeholder="Instagram URL"
+                  placeholderTextColor={theme.textMuted}
+                  autoCapitalize="none"
+                />
+              </View>
+            </View>
+            <View style={styles.field}>
+              <View style={styles.iconInputRow}>
+                <Ionicons name="logo-twitter" size={20} color="#1da1f2" style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, dynamicStyles.input, styles.iconInput]}
+                  value={socialLinks.twitter || ''}
+                  onChangeText={(text) => setSocialLinks({...socialLinks, twitter: text})}
+                  placeholder="Twitter/X URL"
+                  placeholderTextColor={theme.textMuted}
+                  autoCapitalize="none"
+                />
+              </View>
+            </View>
+
+            <View style={[styles.divider, dynamicStyles.divider]} />
+
+            {/* License */}
             <View style={styles.fieldRow}>
               <View style={[styles.field, { flex: 1, marginRight: 8 }]}>
                 <Text style={[styles.label, dynamicStyles.label]}>License #</Text>
@@ -316,18 +554,17 @@ export default function ProfileScreen() {
                   placeholderTextColor={theme.textMuted}
                 />
               </View>
-              <View style={[styles.field, { width: 80 }]}>
+              <TouchableOpacity 
+                style={[styles.field, { width: 80 }]}
+                onPress={() => openStateModal('license')}
+              >
                 <Text style={[styles.label, dynamicStyles.label]}>State</Text>
-                <TextInput
-                  style={[styles.input, dynamicStyles.input]}
-                  value={licenseState}
-                  onChangeText={setLicenseState}
-                  placeholder="FL"
-                  placeholderTextColor={theme.textMuted}
-                  maxLength={2}
-                  autoCapitalize="characters"
-                />
-              </View>
+                <View style={[styles.input, dynamicStyles.input, styles.dropdownInput]}>
+                  <Text style={{ color: licenseState ? theme.text : theme.textMuted }}>
+                    {licenseState || 'FL'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
             </View>
 
             <View style={[styles.divider, dynamicStyles.divider]} />
@@ -471,6 +708,64 @@ export default function ProfileScreen() {
 
             <View style={[styles.divider, dynamicStyles.divider]} />
 
+            {/* Target Markets */}
+            <View style={styles.field}>
+              <View style={styles.rowBetween}>
+                <Text style={[styles.label, dynamicStyles.label]}>Target Markets</Text>
+                <TouchableOpacity onPress={() => openStateModal('target')}>
+                  <Text style={{ color: colors.primary[500], fontSize: 13, fontWeight: '600' }}>Edit Markets</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.strategyGrid}>
+                {targetMarkets.length > 0 ? (
+                  targetMarkets.map((state) => (
+                    <View
+                      key={state}
+                      style={[
+                        styles.strategyChip,
+                        { backgroundColor: isDark ? colors.primary[900] : colors.primary[50], borderColor: colors.primary[500] }
+                      ]}
+                    >
+                      <Text style={[styles.strategyChipText, { color: colors.primary[500] }]}>{state}</Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={{ color: theme.textMuted, fontStyle: 'italic', fontSize: 13 }}>No markets selected</Text>
+                )}
+              </View>
+            </View>
+
+            <View style={[styles.divider, dynamicStyles.divider]} />
+
+            {/* Target Returns */}
+            <Text style={[styles.label, dynamicStyles.label]}>Target Returns</Text>
+            <View style={styles.fieldRow}>
+              <View style={[styles.field, { flex: 1, marginRight: 8 }]}>
+                <Text style={[styles.label, { fontSize: 11, marginBottom: 4 }]}>Cash on Cash (%)</Text>
+                <TextInput
+                  style={[styles.input, dynamicStyles.input]}
+                  value={targetCoC}
+                  onChangeText={setTargetCoC}
+                  placeholder="e.g. 8.0"
+                  placeholderTextColor={theme.textMuted}
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={[styles.field, { flex: 1, marginLeft: 8 }]}>
+                <Text style={[styles.label, { fontSize: 11, marginBottom: 4 }]}>Cap Rate (%)</Text>
+                <TextInput
+                  style={[styles.input, dynamicStyles.input]}
+                  value={targetCapRate}
+                  onChangeText={setTargetCapRate}
+                  placeholder="e.g. 6.0"
+                  placeholderTextColor={theme.textMuted}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+
+            <View style={[styles.divider, dynamicStyles.divider]} />
+
             <View style={styles.field}>
               <Text style={[styles.label, dynamicStyles.label]}>Investment Budget</Text>
               <View style={styles.fieldRow}>
@@ -598,6 +893,44 @@ export default function ProfileScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* State Selection Modal */}
+      <Modal
+        visible={showStateModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowStateModal(false)}
+      >
+        <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
+          <View style={styles.modalHeader}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              {stateModalType === 'target' ? 'Select Target Markets' : 'Select State'}
+            </Text>
+            <TouchableOpacity onPress={() => setShowStateModal(false)}>
+              <Text style={{ color: colors.primary[500], fontSize: 16 }}>Done</Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={US_STATES}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => {
+              const isSelected = stateModalType === 'target' 
+                ? targetMarkets.includes(item)
+                : (stateModalType === 'business' ? businessState === item : licenseState === item);
+              
+              return (
+                <TouchableOpacity
+                  style={[styles.stateItem, { borderBottomColor: theme.border }]}
+                  onPress={() => handleStateSelect(item)}
+                >
+                  <Text style={[styles.stateText, { color: theme.text }]}>{item}</Text>
+                  {isSelected && <Ionicons name="checkmark" size={20} color={colors.primary[500]} />}
+                </TouchableOpacity>
+              );
+            }}
+          />
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -647,17 +980,34 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginLeft: 4,
   },
+  subSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginTop: 8,
+  },
   section: {
     borderRadius: 16,
     borderWidth: 1.5,
     padding: 16,
   },
   field: {
-    marginBottom: 4,
+    marginBottom: 12,
   },
   fieldRow: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rowBetween: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
   label: {
     fontSize: 13,
@@ -681,7 +1031,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    marginVertical: 12,
+    marginVertical: 16,
   },
   optionRow: {
     flexDirection: 'row',
@@ -764,5 +1114,74 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: colors.gray[200],
+  },
+  dropdownInput: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  phoneRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  typeButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    marginRight: 8,
+  },
+  primaryButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  deleteButton: {
+    padding: 10,
+    marginLeft: 4,
+    marginTop: 2,
+  },
+  iconInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  inputIcon: {
+    position: 'absolute',
+    left: 12,
+    zIndex: 1,
+  },
+  iconInput: {
+    paddingLeft: 40,
+    flex: 1,
+  },
+  modalContainer: {
+    flex: 1,
+    paddingTop: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  stateItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+  },
+  stateText: {
+    fontSize: 16,
   },
 });
