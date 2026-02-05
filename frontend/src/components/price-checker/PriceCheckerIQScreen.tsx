@@ -16,7 +16,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
 import {
   MapPin, Bed, Bath, Square, Calendar, Check, ChevronDown, ChevronUp,
   Target, DollarSign, RefreshCw, AlertCircle, Building2, Home,
@@ -270,17 +269,21 @@ const CompCardSkeleton = () => (
   </div>
 )
 
-const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: number; icon: React.ElementType }) => (
-  <div className="flex items-center gap-2">
-    <Icon className="w-3 h-3 text-slate-400 flex-shrink-0" />
-    <span className="text-xs text-slate-500 w-14">{label}</span>
-    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-      <div className="h-full rounded-full transition-all duration-500"
-        style={{ width: `${value}%`, backgroundColor: value >= 90 ? '#0891B2' : value >= 75 ? '#0E7490' : '#F59E0B' }} />
+const SimilarityBar = ({ label, value, icon: Icon }: { label: string; value: number; icon: React.ElementType }) => {
+  // Guard against NaN or invalid values
+  const safeValue = isNaN(value) || !isFinite(value) ? 0 : Math.max(0, Math.min(100, value))
+  return (
+    <div className="flex items-center gap-2">
+      <Icon className="w-3 h-3 text-slate-400 flex-shrink-0" />
+      <span className="text-xs text-slate-500 w-14">{label}</span>
+      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${safeValue}%`, backgroundColor: safeValue >= 90 ? '#0891B2' : safeValue >= 75 ? '#0E7490' : '#F59E0B' }} />
+      </div>
+      <span className="text-xs font-semibold text-slate-700 w-8 text-right tabular-nums">{safeValue}%</span>
     </div>
-    <span className="text-xs font-semibold text-slate-700 w-8 text-right tabular-nums">{value}%</span>
-  </div>
-)
+  )
+}
 
 // Comp Card -- key metrics always visible, match score in expandable details
 function CompCard({ comp, subject, isSale, isSelected, onToggle, isExpanded, onExpand, onRefreshComp, refreshing }: {
@@ -506,7 +509,6 @@ function AdjustmentGrid({ compAdjustments, isExpanded, onToggle, isSale }: {
 // ============================================
 export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCheckerIQScreenProps) {
   const router = useRouter()
-  const { isAuthenticated, setShowAuthModal } = useAuth()
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`.trim()
 
   // View state
@@ -536,7 +538,6 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const [recencyFilter, setRecencyFilter] = useState<'all' | '30' | '90'>('all')
   const [refreshingCompId, setRefreshingCompId] = useState<string | number | null>(null)
   const [showAdjGrid, setShowAdjGrid] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
 
   // Active state shortcuts
@@ -545,14 +546,22 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const loading = isSale ? saleLoading : rentLoading
   const error = isSale ? saleError : rentError
 
-  // Subject property for calculations
-  const subject: SubjectProperty = useMemo(() => ({
-    sqft: property.sqft || 1500,
-    beds: property.beds || 3,
-    baths: property.baths || 2,
-    yearBuilt: property.yearBuilt || 2000,
+  // Subject property for calculations -- infer from comps average if not provided
+  const subject: SubjectProperty = useMemo(() => {
+    // If subject data not provided, infer from the median of loaded comps
+    const allComps = [...saleComps, ...rentComps]
+    const inferSqft = allComps.length > 0 ? Math.round(allComps.reduce((s, c) => s + c.sqft, 0) / allComps.length) : 1500
+    const inferYear = allComps.length > 0 ? Math.round(allComps.reduce((s, c) => s + c.yearBuilt, 0) / allComps.filter(c => c.yearBuilt > 0).length) || 2000 : 2000
+    const inferBeds = allComps.length > 0 ? Math.round(allComps.reduce((s, c) => s + c.beds, 0) / allComps.length) : 3
+    const inferBaths = allComps.length > 0 ? Math.round(allComps.reduce((s, c) => s + c.baths, 0) / allComps.length) : 2
+
+    return {
+    sqft: property.sqft || inferSqft,
+    beds: property.beds || inferBeds,
+    baths: property.baths || inferBaths,
+    yearBuilt: property.yearBuilt || inferYear,
     lotSize: property.lotSize || 0.25,
-  }), [property])
+  }}, [property, saleComps, rentComps])
 
   // Appraisal calculations
   const saleAppraisal = useMemo(() => {
@@ -696,34 +705,11 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     router.push(`/verdict?${params.toString()}`)
   }
 
-  // Save handler
-  const handleSave = useCallback(async () => {
-    if (!isAuthenticated) { setShowAuthModal('login'); return }
-    const token = localStorage.getItem('access_token')
-    if (!token) { setShowAuthModal('login'); return }
-    try {
-      const response = await fetch('/api/v1/properties/saved', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({
-          address_street: property.address, address_city: property.city,
-          address_state: property.state, address_zip: property.zipCode,
-          full_address: fullAddress, status: 'watching',
-          property_data_snapshot: { zpid: property.zpid || null, street: property.address, city: property.city, state: property.state, zipCode: property.zipCode },
-        }),
-      })
-      if (response.ok || response.status === 409 || response.status === 400) {
-        setIsSaved(true); setSaveMessage('Saved!'); setTimeout(() => setSaveMessage(null), 2000)
-      } else if (response.status === 401) { setShowAuthModal('login') }
-    } catch { /* ignore */ }
-  }, [isAuthenticated, setShowAuthModal, property, fullAddress])
-
+  // Share handler (used by toast messages)
   const handleShare = async () => {
     if (navigator.share) { try { await navigator.share({ title: `PriceCheckerIQ - ${property.address}`, url: window.location.href }) } catch { /* cancelled */ } }
     else { await navigator.clipboard.writeText(window.location.href); setSaveMessage('Link copied!'); setTimeout(() => setSaveMessage(null), 2000) }
   }
-
-  const handleAnalyze = () => router.push(`/verdict?address=${encodeURIComponent(fullAddress)}`)
 
   // Filtered comps
   const filteredComps = useMemo(() => comps.filter(c => {
@@ -745,7 +731,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] max-w-[480px] mx-auto font-['Inter',sans-serif]">
-      <main className="pb-[100px]">
+      <main className="pb-6">
         {/* Page Header */}
         <div className="bg-white border-b border-[#E2E8F0] p-4">
           <div className="flex items-center justify-between mb-3">
@@ -988,30 +974,10 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
 
       {/* Toast */}
       {saveMessage && (
-        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg shadow-lg z-50">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg shadow-lg z-50">
           {saveMessage}
         </div>
       )}
-
-      {/* Bottom Action Bar */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-white px-4 py-3 pb-[max(12px,env(safe-area-inset-bottom))] flex items-center justify-between gap-2 border-t border-[#E2E8F0] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-        <button onClick={() => router.push('/search')} className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 text-[#64748B] hover:text-[#0891B2] transition-colors">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-          <span className="text-[10px] font-medium">Search</span>
-        </button>
-        <button onClick={handleSave} className={`flex flex-col items-center gap-0.5 px-2.5 py-1.5 transition-colors ${isSaved ? 'text-[#0891B2]' : 'text-[#64748B] hover:text-[#0891B2]'}`}>
-          <svg className="w-5 h-5" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
-          <span className="text-[10px] font-medium">{isSaved ? 'Saved' : 'Save'}</span>
-        </button>
-        <button onClick={handleAnalyze} className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-[#0891B2] text-white rounded-xl text-sm font-semibold hover:bg-[#0E7490] transition-colors">
-          <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
-          Analyze Property
-        </button>
-        <button onClick={handleShare} className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 text-[#64748B] hover:text-[#0891B2] transition-colors">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"/></svg>
-          <span className="text-[10px] font-medium">Share</span>
-        </button>
-      </div>
     </div>
   )
 }
