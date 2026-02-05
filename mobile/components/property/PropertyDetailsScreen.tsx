@@ -10,7 +10,8 @@
  * - Bottom action bar
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import * as Location from 'expo-location';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -154,6 +155,31 @@ export function PropertyDetailsScreen({
     location: false,
   });
   const [activeFeatureTab, setActiveFeatureTab] = useState('interior');
+  const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number } | null>(
+    property?.latitude && property?.longitude
+      ? { latitude: property.latitude, longitude: property.longitude }
+      : null
+  );
+
+  // Effect to geocode address if coordinates are missing
+  useEffect(() => {
+    if (!coordinates && property?.address && property?.city && property?.state) {
+      (async () => {
+        try {
+          const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zip}`;
+          const result = await Location.geocodeAsync(fullAddress);
+          if (result && result.length > 0) {
+            setCoordinates({
+              latitude: result[0].latitude,
+              longitude: result[0].longitude,
+            });
+          }
+        } catch (error) {
+          console.log('Geocoding failed:', error);
+        }
+      })();
+    }
+  }, [property, coordinates]);
 
   const property = propOverride || DEFAULT_PROPERTY;
   const fullAddress = `${property.address}, ${property.city}, ${property.state} ${property.zip}`;
@@ -531,13 +557,13 @@ export function PropertyDetailsScreen({
           {expandedSections.location && (
             <View style={styles.accordionContent}>
               <View style={styles.locationMap}>
-                {property.latitude && property.longitude ? (
+                {coordinates ? (
                   <MapView
                     provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
                     style={StyleSheet.absoluteFill}
                     initialRegion={{
-                      latitude: property.latitude,
-                      longitude: property.longitude,
+                      latitude: coordinates.latitude,
+                      longitude: coordinates.longitude,
                       latitudeDelta: 0.005,
                       longitudeDelta: 0.005,
                     }}
@@ -547,8 +573,8 @@ export function PropertyDetailsScreen({
                   >
                     <Marker
                       coordinate={{
-                        latitude: property.latitude,
-                        longitude: property.longitude,
+                        latitude: coordinates.latitude,
+                        longitude: coordinates.longitude,
                       }}
                     />
                   </MapView>
@@ -559,7 +585,7 @@ export function PropertyDetailsScreen({
                   </>
                 )}
               </View>
-              {property.latitude && property.longitude && (
+              {coordinates && (
                 <Text style={[styles.locationAddress, { marginTop: 8 }]}>{fullAddress}</Text>
               )}
             </View>
