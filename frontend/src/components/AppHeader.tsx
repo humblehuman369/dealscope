@@ -252,10 +252,10 @@ export function AppHeader({
     }
   }, [displayAddress, isAuthenticated])
 
-  // Determine if header should be hidden
-  if (HIDDEN_ROUTES.includes(pathname || '')) {
-    return null
-  }
+  // Determine if header should be hidden - Moved to end of component to prevent React Hook errors
+  // if (HIDDEN_ROUTES.includes(pathname || '')) {
+  //   return null
+  // }
 
   // Determine active tab from prop or pathname
   const activeTab = activeTabProp || getActiveTabFromPath(pathname || '')
@@ -469,6 +469,12 @@ export function AppHeader({
       setIsSaving(false)
     }
   }, [savedPropertyId, isAuthenticated, setShowAuthModal, isSaving])
+
+  // Determine if header should be hidden
+  // Moved here to ensure all hooks (useCallback) are called before return
+  if (HIDDEN_ROUTES.includes(pathname || '')) {
+    return null
+  }
 
   return (
     <>
