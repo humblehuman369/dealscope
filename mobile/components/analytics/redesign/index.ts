@@ -78,3 +78,6 @@ export {
 
 // Main Container View
 export { StrategyAnalyticsView } from './StrategyAnalyticsView';
+
+// Context
+export { AnalysisProvider, useAnalysis } from './AnalysisContext';

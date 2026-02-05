@@ -2,12 +2,13 @@
  * TuneSectionNew - Collapsible tune sliders with groups
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { TuneGroup, SliderConfig, TargetAssumptions } from './types';
+import { useAnalysis } from './AnalysisContext';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -15,14 +16,43 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 interface TuneSectionNewProps {
-  groups: TuneGroup[];
-  onSliderChange: (key: keyof TargetAssumptions, value: number) => void;
+  // Props are now optional/removed as we use context
   isDark?: boolean;
 }
 
-export function TuneSectionNew({ groups, onSliderChange, isDark = true }: TuneSectionNewProps) {
+export function TuneSectionNew({ isDark = true }: TuneSectionNewProps) {
+  const { assumptions, updateAssumption } = useAnalysis();
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  // Generate tune groups from context assumptions
+  const groups = useMemo((): TuneGroup[] => {
+    return [
+      {
+        id: 'purchase',
+        title: 'Buy Price',
+        sliders: [
+          createSliderConfig('listPrice', 'Buy Price', assumptions.listPrice, 100000, 1000000, 5000, formatCurrency),
+        ],
+      },
+      {
+        id: 'financing',
+        title: 'Financing',
+        sliders: [
+          createSliderConfig('downPaymentPct', 'Down Payment', assumptions.downPaymentPct, 0.05, 0.30, 0.01, (v) => formatPercent(v, 0)),
+          createSliderConfig('interestRate', 'Interest Rate', assumptions.interestRate, 0.05, 0.10, 0.00125, (v) => formatPercent(v, 2)),
+        ],
+      },
+      {
+        id: 'rental',
+        title: 'Rental Income',
+        sliders: [
+          createSliderConfig('monthlyRent', 'Monthly Rent', assumptions.monthlyRent, 1000, 8000, 50, formatCurrency),
+          createSliderConfig('vacancyRate', 'Vacancy', assumptions.vacancyRate, 0, 0.15, 0.01, (v) => formatPercent(v, 0)),
+        ],
+      },
+    ];
+  }, [assumptions]);
 
   const toggleSection = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -79,7 +109,7 @@ export function TuneSectionNew({ groups, onSliderChange, isDark = true }: TuneSe
               group={group}
               isExpanded={expandedGroups.has(group.id)}
               onToggle={() => toggleGroup(group.id)}
-              onSliderChange={onSliderChange}
+              onSliderChange={updateAssumption}
               isDark={isDark}
             />
           ))}

@@ -18,18 +18,18 @@ import {
   BenchmarkConfig,
   TuneGroup,
   IQTargetResult,
-  GrowthAssumptions,
 } from './types';
 
-// Import the real data hook
-import { usePropertyAnalysis, StrategyGrades } from '../../../hooks/usePropertyAnalysis';
+// Import the real data hook and context
+import { StrategyGrades } from '../../../hooks/usePropertyAnalysis';
+import { useAnalysis } from './AnalysisContext';
 
 import { IQTargetHero } from './IQTargetHero';
 import { PriceLadder, generatePriceLadder } from './PriceLadder';
 import { PerformanceBenchmarks } from './SpectrumBar';
 import { NegotiationPlan, generateNegotiationPlan, LEVERAGE_POINTS } from './NegotiationPlan';
 import { StrategySelectorNew, SubTabNav } from './StrategySelectorNew';
-import { TuneSectionNew, createSliderConfig, formatCurrency, formatPercent } from './TuneSectionNew';
+import { TuneSectionNew } from './TuneSectionNew';
 import { DealScoreDisplayNew, calculateDealScoreData } from './DealScoreDisplayNew';
 import { InsightCard, createIQInsight } from './InsightCard';
 import { CompareToggle } from './CompareToggle';
@@ -61,77 +61,42 @@ export function StrategyAnalyticsView({
   onShare,
   initialStrategyId = null,
 }: StrategyAnalyticsViewProps) {
-  // State
-  const [activeStrategy, setActiveStrategy] = useState<StrategyId | null>(initialStrategyId);
+  // Use Context
+  const {
+    activeStrategy,
+    setActiveStrategy,
+    assumptions,
+    updateAssumption,
+    growthAssumptions,
+    updateGrowthAssumption,
+    analysis: {
+      strategyGrades: apiStrategyGrades,
+      targetPrice: apiTargetPrice,
+      breakevenPrice: apiBreakevenPrice,
+      discountPercent: apiDiscountPercent,
+      dealScore: apiDealScore,
+      strategies: apiStrategies,
+      projections: apiProjections,
+      isLoading: isAnalysisLoading,
+      error: analysisError,
+      refetch: refetchAnalysis,
+    }
+  } = useAnalysis();
+
+  // Local UI state
   const [activeSubTab, setActiveSubTab] = useState<SubTabId>('metrics');
   const [compareView, setCompareView] = useState<CompareView>('target');
   const [isWelcomeCollapsed, setIsWelcomeCollapsed] = useState(false);
 
+  // Sync initialStrategyId if provided
   useEffect(() => {
-    if (!initialStrategyId) return;
-    setActiveStrategy(initialStrategyId);
-    setActiveSubTab('metrics');
-    setCompareView('target');
-    setIsWelcomeCollapsed(true);
+    if (initialStrategyId && activeStrategy !== initialStrategyId) {
+      setActiveStrategy(initialStrategyId);
+      setActiveSubTab('metrics');
+      setCompareView('target');
+      setIsWelcomeCollapsed(true);
+    }
   }, [initialStrategyId]);
-  
-  // Assumptions state
-  const [assumptions, setAssumptions] = useState<TargetAssumptions>({
-    listPrice: property.listPrice,
-    downPaymentPct: 0.20,
-    interestRate: 0.073,
-    loanTermYears: 30,
-    closingCostsPct: 0.03,
-    monthlyRent: property.monthlyRent,
-    averageDailyRate: property.averageDailyRate || 195,
-    occupancyRate: property.occupancyRate || 0.72,
-    vacancyRate: 0.05,
-    propertyTaxes: property.propertyTaxes,
-    insurance: property.insurance,
-    managementPct: 0.08,
-    maintenancePct: 0.05,
-    rehabCost: 25000,
-    arv: property.arv || property.listPrice * 1.2,
-    holdingPeriodMonths: 6,
-    sellingCostsPct: 0.08,
-    roomsRented: 2,
-    totalBedrooms: property.bedrooms,
-    wholesaleFeePct: 0.10,
-  });
-
-  const updateAssumption = useCallback((key: keyof TargetAssumptions, value: number) => {
-    setAssumptions(prev => ({ ...prev, [key]: value }));
-  }, []);
-
-  // ============================================
-  // Growth Assumptions State - Triggers API refresh on change
-  // ============================================
-  const [growthAssumptions, setGrowthAssumptions] = useState<GrowthAssumptions>({
-    appreciationRate: 0.035, // 3.5% default
-    rentGrowthRate: 0.03,    // 3% default
-    expenseGrowthRate: 0.025, // 2.5% default
-  });
-
-  const updateGrowthAssumption = useCallback((key: keyof GrowthAssumptions, value: number) => {
-    setGrowthAssumptions(prev => ({ ...prev, [key]: value }));
-  }, []);
-
-  // ============================================
-  // REAL DATA HOOK - Fetches from backend API
-  // Includes projections data for Funding, TenYear, and Growth tabs
-  // ============================================
-  const {
-    strategyGrades: apiStrategyGrades,
-    targetPrice: apiTargetPrice,
-    breakevenPrice: apiBreakevenPrice,
-    discountPercent: apiDiscountPercent,
-    dealScore: apiDealScore,
-    strategies: apiStrategies,
-    projections: apiProjections,
-    isLoading: isAnalysisLoading,
-    error: analysisError,
-    refetch: refetchAnalysis,
-  } = usePropertyAnalysis(property, assumptions, growthAssumptions);
 
   // ============================================
   // Calculate IQ Target - Now uses backend data
@@ -282,37 +247,6 @@ export function StrategyAnalyticsView({
       },
     ];
   }, [activeStrategy, iqTarget]);
-
-  // Generate tune groups
-  const tuneGroups = useMemo((): TuneGroup[] => {
-    const baseGroups: TuneGroup[] = [
-      {
-        id: 'purchase',
-        title: 'Buy Price',
-        sliders: [
-          createSliderConfig('listPrice', 'Buy Price', assumptions.listPrice, 100000, 1000000, 5000, formatCurrency),
-        ],
-      },
-      {
-        id: 'financing',
-        title: 'Financing',
-        sliders: [
-          createSliderConfig('downPaymentPct', 'Down Payment', assumptions.downPaymentPct, 0.05, 0.30, 0.01, (v) => formatPercent(v, 0)),
-          createSliderConfig('interestRate', 'Interest Rate', assumptions.interestRate, 0.05, 0.10, 0.00125, (v) => formatPercent(v, 2)),
-        ],
-      },
-      {
-        id: 'rental',
-        title: 'Rental Income',
-        sliders: [
-          createSliderConfig('monthlyRent', 'Monthly Rent', assumptions.monthlyRent, 1000, 8000, 50, formatCurrency),
-          createSliderConfig('vacancyRate', 'Vacancy', assumptions.vacancyRate, 0, 0.15, 0.01, (v) => formatPercent(v, 0)),
-        ],
-      },
-    ];
-
-    return baseGroups;
-  }, [assumptions]);
 
   // Returns data
   const returnsData = useMemo(() => {
@@ -473,13 +407,10 @@ export function StrategyAnalyticsView({
         {activeStrategy && (
           <View style={styles.section}>
             <StrategySelectorNew
-              activeStrategy={activeStrategy}
               onStrategyChange={(id) => {
-                setActiveStrategy(id);
                 setActiveSubTab('metrics');
                 setCompareView('target');
               }}
-              strategyGrades={strategyGrades}
               isDark={isDark}
               showCTABanner={false}
             />
@@ -549,8 +480,6 @@ export function StrategyAnalyticsView({
 
                 <View style={styles.section}>
                   <TuneSectionNew
-                    groups={tuneGroups}
-                    onSliderChange={updateAssumption}
                     isDark={isDark}
                   />
                 </View>
@@ -627,8 +556,6 @@ export function StrategyAnalyticsView({
             {activeSubTab === 'what_if' && (
               <View style={styles.section}>
                 <TuneSectionNew
-                  groups={tuneGroups}
-                  onSliderChange={updateAssumption}
                   isDark={isDark}
                 />
               </View>

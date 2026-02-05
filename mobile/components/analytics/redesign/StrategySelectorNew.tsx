@@ -14,10 +14,16 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { StrategyId, STRATEGY_CONFIG } from './types';
 
+import { useAnalysis } from './AnalysisContext';
+
 interface StrategySelectorNewProps {
-  activeStrategy: StrategyId | null;
-  onStrategyChange: (strategy: StrategyId | null) => void;
+  // activeStrategy and strategyGrades are now optional as they come from context
+  activeStrategy?: StrategyId | null;
   strategyGrades?: Partial<Record<StrategyId, { grade: string; score: number }>>;
+  
+  // Callback for side effects (like resetting tabs)
+  onStrategyChange?: (strategy: StrategyId | null) => void;
+  
   isDark?: boolean;
   showCTABanner?: boolean;
 }
@@ -42,20 +48,45 @@ function getGradeStyle(grade: string): { bg: string; text: string } {
 }
 
 export function StrategySelectorNew({
-  activeStrategy,
+  activeStrategy: propActiveStrategy,
   onStrategyChange,
-  strategyGrades,
+  strategyGrades: propStrategyGrades,
   isDark = true,
   showCTABanner = true,
 }: StrategySelectorNewProps) {
+  // Consume context
+  const { 
+    activeStrategy: contextActiveStrategy, 
+    setActiveStrategy, 
+    analysis 
+  } = useAnalysis();
+
+  // Use props if provided (for flexibility), otherwise context
+  const activeStrategy = propActiveStrategy !== undefined ? propActiveStrategy : contextActiveStrategy;
+  const strategyGrades = propStrategyGrades !== undefined ? propStrategyGrades : analysis.strategyGrades;
+
   const handlePress = (strategyId: StrategyId) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onStrategyChange(strategyId);
+    
+    // Update context if we're using it
+    if (propActiveStrategy === undefined) {
+      setActiveStrategy(strategyId);
+    }
+    
+    // Notify parent
+    onStrategyChange?.(strategyId);
   };
 
   const handleBackToStrategies = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onStrategyChange(null);
+    
+    // Update context if we're using it
+    if (propActiveStrategy === undefined) {
+      setActiveStrategy(null);
+    }
+    
+    // Notify parent
+    onStrategyChange?.(null);
   };
 
   // When a strategy is selected, show single strategy header with back button

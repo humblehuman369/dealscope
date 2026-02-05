@@ -15,7 +15,7 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../context/ThemeContext';
 
 // NEW: Redesigned analytics components
-import { StrategyAnalyticsView, PropertyData } from '../../components/analytics/redesign';
+import { StrategyAnalyticsView, PropertyData, AnalysisProvider } from '../../components/analytics/redesign';
 import { StrategyId } from '../../components/analytics/redesign/types';
 
 export default function PropertyAnalyticsScreen() {
@@ -119,15 +119,17 @@ export default function PropertyAnalyticsScreen() {
         </View>
 
         {/* Main Content - New Redesigned View */}
-        <StrategyAnalyticsView
-          property={property}
-          isDark={isDark}
-          onBack={handleBack}
-          onSave={handleSave}
-          onGenerateLOI={handleGenerateLOI}
-          onShare={handleShare}
-          initialStrategyId={strategy ?? null}
-        />
+        <AnalysisProvider property={property} initialStrategyId={strategy ?? null}>
+          <StrategyAnalyticsView
+            property={property}
+            isDark={isDark}
+            onBack={handleBack}
+            onSave={handleSave}
+            onGenerateLOI={handleGenerateLOI}
+            onShare={handleShare}
+            initialStrategyId={strategy ?? null}
+          />
+        </AnalysisProvider>
       </View>
     </>
   );
