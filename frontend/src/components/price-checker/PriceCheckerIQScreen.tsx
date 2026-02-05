@@ -19,7 +19,7 @@ import { useRouter } from 'next/navigation'
 import {
   MapPin, Bed, Bath, Square, Calendar, Check, ChevronDown, ChevronUp,
   Target, DollarSign, RefreshCw, AlertCircle, Building2, Home,
-  Lock, Unlock, TrendingUp, RotateCcw, Info
+  Pencil, TrendingUp, RotateCcw, Info
 } from 'lucide-react'
 import {
   calculateAppraisalValues,
@@ -533,6 +533,12 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
   const [rentOverrideMarket, setRentOverrideMarket] = useState<number | null>(null)
   const [rentOverrideImproved, setRentOverrideImproved] = useState<number | null>(null)
 
+  // Original comps snapshot -- stored on initial fetch so user can reset
+  const [originalSaleComps, setOriginalSaleComps] = useState<LocalComp[]>([])
+  const [originalSaleSelected, setOriginalSaleSelected] = useState<Set<string | number>>(new Set())
+  const [originalRentComps, setOriginalRentComps] = useState<LocalComp[]>([])
+  const [originalRentSelected, setOriginalRentSelected] = useState<Set<string | number>>(new Set())
+
   // Shared state
   const [expandedComp, setExpandedComp] = useState<string | number | null>(null)
   const [recencyFilter, setRecencyFilter] = useState<'all' | '30' | '90'>('all')
@@ -605,31 +611,72 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
     } finally { setRentLoading(false) }
   }, [buildParams])
 
-  // Initial fetch on mount
+  // Initial fetch on mount -- store originals for reset
   useEffect(() => {
     if (!property.address) return
     const init = async () => {
       const [sold, rented] = await Promise.all([fetchSaleComps(), fetchRentComps()])
       setSaleComps(sold)
       setRentComps(rented)
-      if (sold.length > 0) setSaleSelected(new Set(sold.slice(0, 3).map(c => c.id)))
-      if (rented.length > 0) setRentSelected(new Set(rented.slice(0, 3).map(c => c.id)))
+      // Store originals for reset
+      setOriginalSaleComps(sold)
+      setOriginalRentComps(rented)
+      const saleIds = sold.length > 0 ? new Set(sold.slice(0, 3).map(c => c.id)) : new Set<string | number>()
+      const rentIds = rented.length > 0 ? new Set(rented.slice(0, 3).map(c => c.id)) : new Set<string | number>()
+      setSaleSelected(saleIds)
+      setRentSelected(rentIds)
+      setOriginalSaleSelected(saleIds)
+      setOriginalRentSelected(rentIds)
     }
     init()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Refresh all for active view
+  // Refresh all -- fetches brand new comps from the API
   const handleRefreshAll = async () => {
     if (isSale) {
       const fetched = await fetchSaleComps()
       setSaleComps(fetched); setSaleOffset(0)
       if (fetched.length > 0) setSaleSelected(new Set(fetched.slice(0, 3).map(c => c.id)))
+      setSaleOverrideMarket(null); setSaleOverrideArv(null)
     } else {
       const fetched = await fetchRentComps()
       setRentComps(fetched); setRentOffset(0)
       if (fetched.length > 0) setRentSelected(new Set(fetched.slice(0, 3).map(c => c.id)))
+      setRentOverrideMarket(null); setRentOverrideImproved(null)
     }
   }
+
+  // Reset to original -- restores the initial comps and system-selected choices
+  const handleResetToOriginal = () => {
+    if (isSale) {
+      setSaleComps(originalSaleComps)
+      setSaleSelected(new Set(originalSaleSelected))
+      setSaleOffset(0)
+      setSaleOverrideMarket(null)
+      setSaleOverrideArv(null)
+    } else {
+      setRentComps(originalRentComps)
+      setRentSelected(new Set(originalRentSelected))
+      setRentOffset(0)
+      setRentOverrideMarket(null)
+      setRentOverrideImproved(null)
+    }
+    setSaveMessage('Restored original comps')
+    setTimeout(() => setSaveMessage(null), 2000)
+  }
+
+  // Check if current state differs from original
+  const hasChangedFromOriginal = useMemo(() => {
+    if (isSale) {
+      if (saleComps.length !== originalSaleComps.length) return true
+      return saleComps.some((c, i) => c.id !== originalSaleComps[i]?.id) ||
+        [...saleSelected].sort().join(',') !== [...originalSaleSelected].sort().join(',')
+    } else {
+      if (rentComps.length !== originalRentComps.length) return true
+      return rentComps.some((c, i) => c.id !== originalRentComps[i]?.id) ||
+        [...rentSelected].sort().join(',') !== [...originalRentSelected].sort().join(',')
+    }
+  }, [isSale, saleComps, originalSaleComps, saleSelected, originalSaleSelected, rentComps, originalRentComps, rentSelected, originalRentSelected])
 
   // Refresh unselected
   const handleRefreshUnselected = async () => {
@@ -739,13 +786,22 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
               <h1 className="text-lg font-bold text-[#0A1628]">PriceChecker<span className="text-[#0891B2]">IQ</span></h1>
               <p className="text-xs text-[#64748B]">Comparable analysis for {property.address || 'property'}</p>
             </div>
-            <div className="flex gap-2">
-              <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0}
-                className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[11px] font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1">
-                <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />Unselected
+            <div className="flex gap-1.5">
+              {hasChangedFromOriginal && (
+                <button onClick={handleResetToOriginal} disabled={loading}
+                  className="px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-50 flex items-center gap-1"
+                  title="Restore original system-selected comps">
+                  <RotateCcw className="w-3 h-3" />Reset
+                </button>
+              )}
+              <button onClick={handleRefreshUnselected} disabled={loading || selectedIds.size === 0 || selectedIds.size === comps.length}
+                className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[11px] font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1"
+                title="Replace unselected comps with new ones">
+                <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />New
               </button>
               <button onClick={handleRefreshAll} disabled={loading}
-                className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[11px] font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1">
+                className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[11px] font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1"
+                title="Fetch all new comps from API">
                 <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />All
               </button>
             </div>
@@ -805,7 +861,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                     if (isSale) setSaleOverrideMarket(saleOverrideMarket !== null ? null : saleAppraisal.marketValue)
                     else setRentOverrideMarket(rentOverrideMarket !== null ? null : rentAppraisal.marketRent)
                   }} className={`p-0.5 rounded ${(isSale ? saleOverrideMarket : rentOverrideMarket) !== null ? 'text-amber-500' : 'text-slate-400'}`}>
-                    {(isSale ? saleOverrideMarket : rentOverrideMarket) !== null ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                    <Pencil className="w-3 h-3" />
                   </button>
                 </div>
                 {(isSale ? saleOverrideMarket : rentOverrideMarket) !== null ? (
@@ -837,7 +893,7 @@ export function PriceCheckerIQScreen({ property, initialView = 'sale' }: PriceCh
                     if (isSale) setSaleOverrideArv(saleOverrideArv !== null ? null : saleAppraisal.arv)
                     else setRentOverrideImproved(rentOverrideImproved !== null ? null : rentAppraisal.improvedRent)
                   }} className={`p-0.5 rounded ${(isSale ? saleOverrideArv : rentOverrideImproved) !== null ? 'text-amber-500' : 'text-slate-400'}`}>
-                    {(isSale ? saleOverrideArv : rentOverrideImproved) !== null ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                    <Pencil className="w-3 h-3" />
                   </button>
                 </div>
                 {(isSale ? saleOverrideArv : rentOverrideImproved) !== null ? (
