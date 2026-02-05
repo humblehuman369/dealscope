@@ -345,3 +345,19 @@ export interface ProfitZoneDashboardData {
   listPrice: number;
   tips: ProfitZoneTip[];
 }
+
+// ============================================
+// API RESPONSE TYPES (from backend IQVerdictResponse)
+// Re-exported from usePropertyAnalysis hook for convenience
+// ============================================
+
+export type {
+  IQVerdictResponse,
+  StrategyResultResponse,
+  ScoreDisplayResponse,
+  OpportunityFactorsResponse,
+  ReturnFactorsResponse,
+  StrategyGrades,
+  PropertyAnalysisResult,
+  VerdictInput,
+} from '../../../hooks/usePropertyAnalysis';

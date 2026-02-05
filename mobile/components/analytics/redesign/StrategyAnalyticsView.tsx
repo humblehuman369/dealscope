@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, ScrollView, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 
@@ -19,6 +19,9 @@ import {
   TuneGroup,
   IQTargetResult,
 } from './types';
+
+// Import the real data hook
+import { usePropertyAnalysis, StrategyGrades } from '../../../hooks/usePropertyAnalysis';
 
 import { IQTargetHero } from './IQTargetHero';
 import { PriceLadder, generatePriceLadder } from './PriceLadder';
@@ -99,9 +102,30 @@ export function StrategyAnalyticsView({
     setAssumptions(prev => ({ ...prev, [key]: value }));
   }, []);
 
-  // Calculate IQ Target (simplified calculation)
+  // ============================================
+  // REAL DATA HOOK - Fetches from backend API
+  // ============================================
+  const {
+    strategyGrades: apiStrategyGrades,
+    targetPrice: apiTargetPrice,
+    breakevenPrice: apiBreakevenPrice,
+    discountPercent: apiDiscountPercent,
+    dealScore: apiDealScore,
+    strategies: apiStrategies,
+    isLoading: isAnalysisLoading,
+    error: analysisError,
+    refetch: refetchAnalysis,
+  } = usePropertyAnalysis(property, assumptions);
+
+  // ============================================
+  // Calculate IQ Target - Now uses backend data
+  // ============================================
   const iqTarget = useMemo((): IQTargetResult => {
-    const targetPrice = Math.round(assumptions.listPrice * 0.80); // 20% below list
+    // USE BACKEND DATA: targetPrice and breakeven come from API
+    const targetPrice = apiTargetPrice || Math.round(assumptions.listPrice * 0.80);
+    const breakeven = apiBreakevenPrice || Math.round(assumptions.listPrice * 0.88);
+    const discountPercent = apiDiscountPercent ? apiDiscountPercent / 100 : 0.20;
+    
     const downPayment = targetPrice * assumptions.downPaymentPct;
     const closingCosts = targetPrice * assumptions.closingCostsPct;
     const loanAmount = targetPrice - downPayment;
@@ -127,19 +151,32 @@ export function StrategyAnalyticsView({
     const capRate = noi / targetPrice;
     const dscr = noi / (monthlyPI * 12);
 
+    // Get strategy-specific metrics from API if available
+    const activeApiStrategy = apiStrategies.find(s => s.id === activeStrategy);
+    const apiMonthlyCashFlow = activeApiStrategy?.monthlyCashFlow;
+    const apiCashOnCash = activeApiStrategy?.cashOnCash;
+    const apiCapRate = activeApiStrategy?.capRate;
+    const apiDscr = activeApiStrategy?.dscr;
+
+    // Use API values if available, otherwise fall back to calculated
+    const finalMonthlyCashFlow = apiMonthlyCashFlow ?? monthlyCashFlow;
+    const finalCashOnCash = apiCashOnCash ? apiCashOnCash / 100 : cashOnCash;
+    const finalCapRate = apiCapRate ? apiCapRate / 100 : capRate;
+    const finalDscr = apiDscr ?? dscr;
+
     return {
       targetPrice,
       discountFromList: assumptions.listPrice - targetPrice,
-      discountPercent: 0.20,
-      breakeven: Math.round(assumptions.listPrice * 0.88),
-      breakevenPercent: 0.88,
-      rationale: `At this price you achieve positive $${Math.round(monthlyCashFlow)}/mo cash flow with ${(cashOnCash * 100).toFixed(1)}% return`,
-      highlightedMetric: `$${Math.round(monthlyCashFlow)}/mo cash flow`,
-      secondaryMetric: `${(cashOnCash * 100).toFixed(1)}% CoC`,
-      monthlyCashFlow,
-      cashOnCash,
-      capRate,
-      dscr,
+      discountPercent,
+      breakeven,
+      breakevenPercent: breakeven / assumptions.listPrice,
+      rationale: `At this price you achieve positive $${Math.round(finalMonthlyCashFlow)}/mo cash flow with ${(finalCashOnCash * 100).toFixed(1)}% return`,
+      highlightedMetric: `$${Math.round(finalMonthlyCashFlow)}/mo cash flow`,
+      secondaryMetric: `${(finalCashOnCash * 100).toFixed(1)}% CoC`,
+      monthlyCashFlow: finalMonthlyCashFlow,
+      cashOnCash: finalCashOnCash,
+      capRate: finalCapRate,
+      dscr: finalDscr,
       // BRRRR-specific
       cashRecoveryPercent: activeStrategy === 'brrrr' ? 100 : undefined,
       cashLeftInDeal: activeStrategy === 'brrrr' ? 0 : undefined,
@@ -151,17 +188,37 @@ export function StrategyAnalyticsView({
       assignmentFee: activeStrategy === 'wholesale' ? 15000 : undefined,
       mao: activeStrategy === 'wholesale' ? targetPrice - 15000 : undefined,
     };
-  }, [assumptions, activeStrategy]);
+  }, [assumptions, activeStrategy, apiTargetPrice, apiBreakevenPrice, apiDiscountPercent, apiStrategies]);
 
-  // Generate strategy grades (simplified)
-  const strategyGrades = useMemo(() => ({
-    ltr: { grade: 'B+', score: 72 },
-    str: { grade: 'A-', score: 84 },
-    brrrr: { grade: 'A', score: 88 },
-    flip: { grade: 'B', score: 68 },
-    house_hack: { grade: 'A-', score: 82 },
-    wholesale: { grade: 'C+', score: 55 },
-  }), []);
+  // ============================================
+  // Strategy Grades - USE BACKEND DATA
+  // ============================================
+  // OLD MOCK DATA (commented out for Phase 3 cleanup):
+  // const strategyGradesMock = useMemo(() => ({
+  //   ltr: { grade: 'B+', score: 72 },
+  //   str: { grade: 'A-', score: 84 },
+  //   brrrr: { grade: 'A', score: 88 },
+  //   flip: { grade: 'B', score: 68 },
+  //   house_hack: { grade: 'A-', score: 82 },
+  //   wholesale: { grade: 'C+', score: 55 },
+  // }), []);
+  
+  // USE REAL DATA from API
+  const strategyGrades = useMemo((): StrategyGrades => {
+    // Use API data if available, otherwise provide loading state
+    if (apiStrategyGrades) {
+      return apiStrategyGrades;
+    }
+    // Fallback while loading
+    return {
+      ltr: { grade: '-', score: 0 },
+      str: { grade: '-', score: 0 },
+      brrrr: { grade: '-', score: 0 },
+      flip: { grade: '-', score: 0 },
+      house_hack: { grade: '-', score: 0 },
+      wholesale: { grade: '-', score: 0 },
+    };
+  }, [apiStrategyGrades]);
 
   // Generate benchmarks
   const benchmarks = useMemo((): BenchmarkConfig[] => {
@@ -285,13 +342,47 @@ export function StrategyAnalyticsView({
     );
   }, [assumptions.listPrice, iqTarget]);
 
-  // Deal score (Opportunity-Based)
+  // ============================================
+  // Deal Score - USE BACKEND DATA
+  // ============================================
+  // OLD MOCK DATA (commented out for Phase 3 cleanup):
+  // const dealScoreMock = useMemo(() => {
+  //   const breakevenPrice = iqTarget.breakeven || iqTarget.targetPrice;
+  //   const listPrice = assumptions.listPrice;
+  //   return calculateDealScoreData(breakevenPrice, listPrice);
+  // }, [iqTarget, assumptions]);
+  
+  // USE REAL DATA from API
   const dealScore = useMemo(() => {
-    // Use the breakeven price and list price for opportunity-based scoring
+    // If API data is available, use it directly
+    if (apiDealScore && apiDealScore.score > 0) {
+      // Build breakdown from opportunity factors if available
+      const breakdown = [
+        { 
+          id: 'discount', 
+          label: 'Discount Required', 
+          points: Math.round(100 - (apiDiscountPercent || 0)), 
+          maxPoints: 100 
+        }
+      ];
+      
+      return {
+        score: apiDealScore.score,
+        grade: apiDealScore.grade,
+        label: apiDealScore.label,
+        color: apiDealScore.color,
+        breakdown,
+        discountPercent: apiDiscountPercent || 0,
+        breakevenPrice: apiBreakevenPrice || iqTarget.breakeven,
+        listPrice: assumptions.listPrice,
+      };
+    }
+    
+    // Fallback to local calculation if API not available
     const breakevenPrice = iqTarget.breakeven || iqTarget.targetPrice;
     const listPrice = assumptions.listPrice;
     return calculateDealScoreData(breakevenPrice, listPrice);
-  }, [iqTarget, assumptions]);
+  }, [apiDealScore, apiDiscountPercent, apiBreakevenPrice, iqTarget, assumptions]);
 
   // Insight
   const insight = useMemo(() => {
