@@ -30,7 +30,7 @@ import { PerformanceBenchmarks } from './SpectrumBar';
 import { NegotiationPlan, generateNegotiationPlan, LEVERAGE_POINTS } from './NegotiationPlan';
 import { StrategySelectorNew, SubTabNav } from './StrategySelectorNew';
 import { TuneSectionNew } from './TuneSectionNew';
-import { DealScoreDisplayNew, calculateDealScoreData } from './DealScoreDisplayNew';
+import { DealScoreDisplayNew } from './DealScoreDisplayNew';
 import { InsightCard, createIQInsight } from './InsightCard';
 import { CompareToggle } from './CompareToggle';
 import { ReturnsGrid, createLTRReturns, createSTRReturns, createBRRRRReturns } from './ReturnsGrid';
@@ -40,7 +40,7 @@ import { TenYearTabContent } from './TenYearTabContent';
 import { GrowthTabContent } from './GrowthTabContent';
 import { WelcomeSection } from './WelcomeSection';
 import { StrategyGrid, StrategyPrompt } from './StrategyGrid';
-import { ProfitZoneDashboard, generateProfitZoneTips, ProfitZoneMetrics } from './ProfitZoneDashboard';
+import { ProfitZoneDashboard, ProfitZoneMetrics, ProfitZoneTip } from './ProfitZoneDashboard';
 
 interface StrategyAnalyticsViewProps {
   property: PropertyData;

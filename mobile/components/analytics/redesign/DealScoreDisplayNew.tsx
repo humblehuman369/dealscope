@@ -141,67 +141,6 @@ function BreakdownBar({ item, isDark }: BreakdownBarProps) {
   );
 }
 
-/**
- * Calculate Deal Score based on Investment Opportunity
- * 
- * The score is based on how much discount from list price is needed
- * to reach breakeven. Lower discount = better opportunity.
- * 
- * Thresholds:
- * - 0-5% discount needed = Strong Opportunity (A+)
- * - 5-10% = Great Opportunity (A)
- * - 10-15% = Moderate Opportunity (B)
- * - 15-25% = Potential Opportunity (C)
- * - 25-35% = Mild Opportunity (D)
- * - 35-45%+ = Weak Opportunity (F)
- */
-export function calculateDealScoreData(
-  breakevenPrice: number,
-  listPrice: number
-): DealScoreData {
-  // Calculate discount percentage needed to reach breakeven
-  const discountPercent = listPrice > 0 
-    ? Math.max(0, ((listPrice - breakevenPrice) / listPrice) * 100)
-    : 0;
-  
-  // Score is inverse of discount (lower discount = higher score)
-  // 0% discount = 100 score, 45% discount = 0 score
-  const score = Math.max(0, Math.min(100, Math.round(100 - (discountPercent * 100 / 45))));
-  
-  // Get grade and label based on discount percentage
-  const { grade, label, color } = getOpportunityGrading(discountPercent);
-  
-  // Build breakdown showing the discount needed
-  const breakdown: ScoreBreakdownItem[] = [
-    { 
-      id: 'discount', 
-      label: 'Discount Required', 
-      points: Math.round(100 - discountPercent), 
-      maxPoints: 100 
-    }
-  ];
-
-  return {
-    score,
-    grade,
-    label,
-    color,
-    breakdown,
-    discountPercent,
-    breakevenPrice,
-    listPrice,
-  };
-}
-
-function getOpportunityGrading(discountPercent: number): { grade: string; label: string; color: string } {
-  if (discountPercent <= 5) return { grade: 'A+', label: 'Strong Opportunity', color: '#22c55e' };
-  if (discountPercent <= 10) return { grade: 'A', label: 'Great Opportunity', color: '#22c55e' };
-  if (discountPercent <= 15) return { grade: 'B', label: 'Moderate Opportunity', color: '#84cc16' };
-  if (discountPercent <= 25) return { grade: 'C', label: 'Potential Opportunity', color: '#f59e0b' };
-  if (discountPercent <= 35) return { grade: 'D', label: 'Mild Opportunity', color: '#f97316' };
-  return { grade: 'F', label: 'Weak Opportunity', color: '#ef4444' };
-}
-
 const styles = StyleSheet.create({
   container: {
     borderRadius: 14,
