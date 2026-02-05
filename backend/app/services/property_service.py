@@ -544,12 +544,23 @@ class PropertyService:
             results.flip = FlipResults(**flip_result)
         
         if StrategyType.HOUSE_HACK in strategies_to_calc:
+            # Calculate defaults if not provided
+            room_rent = assumptions.house_hack.room_rent_monthly
+            if room_rent is None:
+                # Estimate room rent as 35% of total rent (approx for 3-4 bed house)
+                room_rent = monthly_rent * 0.35
+            
+            owner_market_rent = assumptions.house_hack.owner_unit_market_rent
+            if owner_market_rent is None:
+                # Default to total rent (conservative comparison)
+                owner_market_rent = monthly_rent
+
             house_hack_result = calculate_house_hack(
                 purchase_price=purchase_price,
-                monthly_rent_per_room=assumptions.house_hack.room_rent_monthly,
+                monthly_rent_per_room=room_rent,
                 rooms_rented=assumptions.house_hack.units_rented_out,
                 property_taxes_annual=property_taxes,
-                owner_unit_market_rent=assumptions.house_hack.owner_unit_market_rent,
+                owner_unit_market_rent=owner_market_rent,
                 down_payment_pct=assumptions.house_hack.fha_down_payment_pct,
                 interest_rate=assumptions.house_hack.fha_interest_rate,
                 loan_term_years=assumptions.financing.loan_term_years,

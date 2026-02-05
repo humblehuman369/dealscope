@@ -1015,7 +1015,7 @@ def get_availability_ranking(
         }
     
     # Check for price reductions (2+ times = motivated)
-    if ("FOR_SALE" in status or "SALE" in status) and price_reductions >= 2:
+    if ("FOR_SALE" in status or "SALE" in status) and price_reductions and price_reductions >= 2:
         ranking = AVAILABILITY_RANKINGS["PRICE_REDUCED"]
         return {
             "status": "PRICE_REDUCED",
@@ -1517,10 +1517,10 @@ def calculate_seller_motivation(
         "source": "AXESSO"
     }
     
-    if price_reduction_count > 0:
+    if price_reductions and price_reductions > 0:
         price_red_indicator["detected"] = True
         
-        if price_reduction_count >= 3:
+        if price_reductions >= 3:
             price_red_indicator["score"] = 100
             price_red_indicator["signal_strength"] = "high"
             price_red_indicator["description"] = f"{price_reduction_count} price cuts - Very motivated"
