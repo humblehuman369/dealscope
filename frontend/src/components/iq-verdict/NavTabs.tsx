@@ -28,8 +28,7 @@ interface NavTabsProps {
 const DEFAULT_TABS: NavTab[] = [
   { id: 'analyze', label: 'Analyze' },
   { id: 'details', label: 'Details' },
-  { id: 'sale-comps', label: 'Sale Comps' },
-  { id: 'rent-comps', label: 'Rent Comps' },
+  { id: 'price-checker', label: 'PriceCheckerIQ' },
   { id: 'dashboard', label: 'Dashboard' },
 ]
 
@@ -54,10 +53,8 @@ export function NavTabs({
         return zpid 
           ? `/property/${zpid}` 
           : `/property?address=${encodedAddress}`
-      case 'sale-comps':
-        return `/compare?address=${encodedAddress}`
-      case 'rent-comps':
-        return `/rental-comps?address=${encodedAddress}`
+      case 'price-checker':
+        return `/price-intel?address=${encodedAddress}`
       case 'dashboard':
         return '/dashboard'
       default:

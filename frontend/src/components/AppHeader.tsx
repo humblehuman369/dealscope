@@ -14,7 +14,7 @@
  * │  DealMakerIQ          [🔍] [👤]                 │  ← Dark navy bar
  * │  by InvestIQ                                    │
  * ├─────────────────────────────────────────────────┤
- * │  [Analyze]  Details  Sale Comps  Rent Comps  Dashboard│  ← White tab bar
+ * │  [Analyze]  Details  PriceCheckerIQ  Dashboard         │  ← White tab bar
  * ├─────────────────────────────────────────────────┤
  * │  🏠 1451 Sw 10th St, Boca Raton, FL 33486   ▼  │  ← Property bar (optional)
  * └─────────────────────────────────────────────────┘
@@ -53,7 +53,7 @@ const colors = {
 // TYPES
 // ===================
 
-export type AppTab = 'analyze' | 'details' | 'sale-comps' | 'rent' | 'dashboard'
+export type AppTab = 'analyze' | 'details' | 'price-checker' | 'dashboard'
 
 interface PropertyInfo {
   address: string
@@ -87,8 +87,7 @@ interface AppHeaderProps {
 const TABS: { id: AppTab; label: string }[] = [
   { id: 'analyze', label: 'Analyze' },
   { id: 'details', label: 'Details' },
-  { id: 'sale-comps', label: 'Sale Comps' },
-  { id: 'rent', label: 'Rent Comps' },
+  { id: 'price-checker', label: 'PriceCheckerIQ' },
   { id: 'dashboard', label: 'Dashboard' },
 ]
 
@@ -117,8 +116,9 @@ const NO_PROPERTY_BAR_ROUTES = [
 function getActiveTabFromPath(pathname: string): AppTab {
   if (pathname.startsWith('/verdict')) return 'analyze'
   if (pathname.startsWith('/property/')) return 'details'
-  if (pathname.startsWith('/compare')) return 'sale-comps'
-  if (pathname.startsWith('/rental-comps')) return 'rent'
+  if (pathname.startsWith('/price-intel')) return 'price-checker'
+  if (pathname.startsWith('/compare')) return 'price-checker'
+  if (pathname.startsWith('/rental-comps')) return 'price-checker'
   if (pathname.startsWith('/dashboard')) return 'dashboard'
   if (pathname.startsWith('/deal-maker')) return 'analyze'
   return 'analyze'
@@ -368,16 +368,9 @@ export function AppHeader({
           router.push('/search')
         }
         break
-      case 'sale-comps':
+      case 'price-checker':
         if (displayAddress) {
-          router.push(`/compare?address=${encodedAddress}`)
-        } else {
-          router.push('/search')
-        }
-        break
-      case 'rent':
-        if (displayAddress) {
-          router.push(`/rental-comps?address=${encodedAddress}`)
+          router.push(`/price-intel?address=${encodedAddress}`)
         } else {
           router.push('/search')
         }

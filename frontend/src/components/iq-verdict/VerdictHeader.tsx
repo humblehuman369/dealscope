@@ -24,7 +24,7 @@ import { colors, spacing } from './verdict-design-tokens'
 // TYPES
 // ===================
 
-export type VerdictTab = 'analyze' | 'details' | 'sale-comps' | 'rent' | 'dashboard'
+export type VerdictTab = 'analyze' | 'details' | 'price-checker' | 'dashboard'
 
 interface VerdictHeaderProps {
   /** Currently active tab */
@@ -48,8 +48,7 @@ interface VerdictHeaderProps {
 const TABS: { id: VerdictTab; label: string }[] = [
   { id: 'analyze', label: 'Analyze' },
   { id: 'details', label: 'Details' },
-  { id: 'sale-comps', label: 'Sale Comps' },
-  { id: 'rent', label: 'Rent Comps' },
+  { id: 'price-checker', label: 'PriceCheckerIQ' },
   { id: 'dashboard', label: 'Dashboard' },
 ]
 

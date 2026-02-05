@@ -79,10 +79,13 @@ export const ROUTES = {
     `/deal-maker/${encodeURIComponent(ctx.address || '')}`,
   
   compare: (ctx: NavContext) => 
-    `/compare?address=${encodeURIComponent(ctx.address || '')}`,
+    `/price-intel?view=sale&address=${encodeURIComponent(ctx.address || '')}`,
   
   rentalComps: (ctx: NavContext) => 
-    `/rental-comps?address=${encodeURIComponent(ctx.address || '')}`,
+    `/price-intel?view=rent&address=${encodeURIComponent(ctx.address || '')}`,
+  
+  priceChecker: (ctx: NavContext) =>
+    `/price-intel?address=${encodeURIComponent(ctx.address || '')}`,
   
   // Worksheets
   worksheet: (propertyId: string, strategy: string) => 

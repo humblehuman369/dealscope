@@ -213,7 +213,7 @@ export default function VerdictFreshPage() {
   }
 
   // Tab navigation handler
-  const handleTabChange = (tab: 'analyze' | 'details' | 'sale-comps' | 'rent' | 'dashboard') => {
+  const handleTabChange = (tab: 'analyze' | 'details' | 'price-checker' | 'dashboard') => {
     console.log('Tab changed to:', tab)
     const encodedAddress = encodeURIComponent(getFullAddress())
     
@@ -226,12 +226,9 @@ export default function VerdictFreshPage() {
           window.location.href = `/property/${sampleProperty.zpid}?address=${encodedAddress}`
         }
         break
-      case 'sale-comps':
-        // Navigate to sale comps page (/compare)
-        window.location.href = `/compare?address=${encodedAddress}`
-        break
-      case 'rent':
-        window.location.href = `/rental-comps?address=${encodedAddress}`
+      case 'price-checker':
+        // Navigate to PriceCheckerIQ page
+        window.location.href = `/price-intel?address=${encodedAddress}`
         break
       case 'dashboard':
         window.location.href = '/dashboard'

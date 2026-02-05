@@ -540,7 +540,7 @@ function VerdictContent() {
   }, [router])
 
   // Handle tab change - navigate to appropriate pages
-  const handleTabChange = useCallback((tab: 'analyze' | 'details' | 'sale-comps' | 'rent' | 'dashboard') => {
+  const handleTabChange = useCallback((tab: 'analyze' | 'details' | 'price-checker' | 'dashboard') => {
     if (!property) return
     
     // Build base URL params - property page requires address query param
@@ -559,13 +559,9 @@ function VerdictContent() {
           router.push(`/property/${propertyId}?address=${encodedAddress}`)
         }
         break
-      case 'sale-comps':
-        // Navigate to sale comps page (/compare)
-        router.push(`/compare?address=${encodedAddress}`)
-        break
-      case 'rent':
-        // Navigate to rental comps page
-        router.push(`/rental-comps?address=${encodedAddress}`)
+      case 'price-checker':
+        // Navigate to PriceCheckerIQ page
+        router.push(`/price-intel?address=${encodedAddress}`)
         break
       case 'dashboard':
         // Navigate to dashboard
