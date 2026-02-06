@@ -247,7 +247,7 @@ export function InvestmentAnalysisNew({
           <PriceCard 
             label="Target Buy" 
             value={targetBuyPrice} 
-            description="5% discount for profit" 
+            description="Max Price for\nPositive Cashflow" 
             isRecommended 
           />
           <PriceCard 

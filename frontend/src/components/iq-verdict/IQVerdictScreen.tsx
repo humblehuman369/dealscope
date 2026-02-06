@@ -481,7 +481,7 @@ export function IQVerdictScreen({
             <PriceCard 
               label="Target Buy" 
               value={buyPrice} 
-              desc="5% discount for profit" 
+              desc="Max Price for\nPositive Cashflow" 
               recommended 
             />
             <PriceCard 

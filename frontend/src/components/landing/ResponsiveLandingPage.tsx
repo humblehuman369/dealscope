@@ -155,7 +155,7 @@ export function ResponsiveLandingPage({ onPointAndScan }: ResponsiveLandingPageP
                         Target<span style={{ color: 'white' }}>IQ</span>
                       </p>
                       <p className="phone-target-value font-display">$766,733</p>
-                      <p className="phone-target-sub">Your optimal offer price</p>
+                      <p className="phone-target-sub">Positive Cashflow</p>
                     </div>
 
                     {/* Breakeven Row */}

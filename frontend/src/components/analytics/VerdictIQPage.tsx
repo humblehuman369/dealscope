@@ -325,7 +325,7 @@ export function VerdictIQPage({
             <PriceCard 
               label="Target Buy" 
               value={pricing.targetBuy} 
-              desc="5% discount for profit" 
+              desc="Max Price for\nPositive Cashflow" 
               recommended 
             />
             <PriceCard 
