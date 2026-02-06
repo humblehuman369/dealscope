@@ -85,8 +85,10 @@ class DealMakerService:
         # Apply market adjustments if zip code provided
         if zip_code:
             market = get_market_adjustments(zip_code)
+            # Exclude fields we're overriding to avoid duplicate keyword argument error
+            assumptions_dict = assumptions.model_dump(exclude={'insurance_pct', 'vacancy_rate', 'appreciation_rate', 'market_region'})
             assumptions = InitialAssumptions(
-                **assumptions.model_dump(),
+                **assumptions_dict,
                 insurance_pct=market.get("insurance_rate", OPERATING.insurance_pct),
                 vacancy_rate=market.get("vacancy_rate", OPERATING.vacancy_rate),
                 appreciation_rate=market.get("appreciation_rate", GROWTH.appreciation_rate),
@@ -94,8 +96,10 @@ class DealMakerService:
             )
         
         # Include strategy-specific defaults
+        # Exclude fields we're overriding to avoid duplicate keyword argument error
+        assumptions_dict = assumptions.model_dump(exclude={'str_defaults', 'brrrr_defaults', 'flip_defaults'})
         assumptions = InitialAssumptions(
-            **assumptions.model_dump(),
+            **assumptions_dict,
             str_defaults={
                 "platform_fees_pct": STR.platform_fees_pct,
                 "management_pct": STR.str_management_pct,
