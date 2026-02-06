@@ -172,16 +172,14 @@ async def save_property(
     try:
         # If no deal_maker_record provided, create one from property data
         # Make this optional - if it fails, we can still save the property
+        deal_maker_record_obj = None
         if not data.deal_maker_record and data.property_data_snapshot:
             try:
                 zip_code = data.address_zip or data.property_data_snapshot.get("zipCode")
-                deal_maker_record = DealMakerService.create_from_property_data(
+                deal_maker_record_obj = DealMakerService.create_from_property_data(
                     property_data=data.property_data_snapshot,
                     zip_code=zip_code,
                 )
-                # Assign the DealMakerRecord object - Pydantic will handle serialization
-                # The service will convert it to dict for storage
-                data.deal_maker_record = deal_maker_record
             except Exception as e:
                 # Log the error but don't fail the save operation
                 logger.warning(
@@ -189,8 +187,22 @@ async def save_property(
                     f"Property will be saved without DealMakerRecord."
                 )
                 logger.debug(f"DealMakerRecord creation error details: {e}", exc_info=True)
-                # Continue without deal_maker_record - ensure it's None
-                data.deal_maker_record = None
+        
+        # Update data with deal_maker_record if we successfully created one
+        if deal_maker_record_obj is not None:
+            # Create updated data dict with deal_maker_record
+            data_dict = data.model_dump(exclude_unset=True)
+            data_dict['deal_maker_record'] = deal_maker_record_obj
+            try:
+                data = SavedPropertyCreate(**data_dict)
+            except Exception as validation_error:
+                logger.warning(
+                    f"Failed to validate SavedPropertyCreate with DealMakerRecord: {validation_error}. "
+                    f"Saving without DealMakerRecord."
+                )
+                # Fall back to original data without deal_maker_record
+                data_dict.pop('deal_maker_record', None)
+                data = SavedPropertyCreate(**data_dict)
         
         saved = await saved_property_service.save_property(
             db=db,
