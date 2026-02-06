@@ -26,8 +26,7 @@ import { Search, User, ChevronDown, ChevronUp, Heart } from 'lucide-react'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useAuth } from '@/context/AuthContext'
 import { getAccessToken, refreshAccessToken } from '@/lib/api'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+import { toast } from '@/components/feedback'
 
 // ===================
 // DESIGN TOKENS (synced with verdict-design-tokens.ts)
@@ -222,41 +221,86 @@ export function AppHeader({
 
   const fetchExistingSavedProperty = useCallback(async (token: string) => {
     if (!displayAddress) return null
-    const { streetAddress, city } = parseDisplayAddress(displayAddress)
+    const { streetAddress, city, state } = parseDisplayAddress(displayAddress)
     if (!streetAddress) return null
 
-    const response = await fetch(
-      `${API_BASE_URL}/api/v1/properties/saved?search=${encodeURIComponent(streetAddress)}`, 
-      {
-        headers: { 'Authorization': `Bearer ${token}` },
-        credentials: 'include',
-      }
-    )
+    try {
+      // First, try to fetch all saved properties and filter by zpid if available
+      // This is more reliable than search which may miss exact matches
+      const response = await fetch(
+        `/api/v1/properties/saved?limit=100`, 
+        {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        }
+      )
 
-    if (!response.ok) return null
-    const data = await response.json()
-    const properties = (data && Array.isArray(data))
-      ? data 
-      : (data?.properties || data?.items || [])
+      if (!response.ok) return null
+      const data = await response.json()
+      const properties = (data && Array.isArray(data))
+        ? data 
+        : (data?.properties || data?.items || [])
 
-    return properties.find((p: { 
-      id?: string
-      address_street?: string
-      address_city?: string
-      zpid?: string
-    }) => {
-      if (!p) return false
-      if (property?.zpid && p.zpid) {
-        return String(p.zpid) === String(property.zpid)
+      // Normalize address components for comparison
+      const normalizeAddress = (addr: string) => addr.toLowerCase().trim().replace(/\s+/g, ' ')
+      const normalizeCity = (c: string) => c.toLowerCase().trim()
+      const normalizeState = (s: string) => s.toUpperCase().trim()
+
+      const targetStreet = normalizeAddress(streetAddress)
+      const targetCity = normalizeCity(city || '')
+      const targetState = normalizeState(state || '')
+
+      // First priority: Match by zpid if both have it
+      if (property?.zpid) {
+        const zpidMatch = properties.find((p: { zpid?: string }) => 
+          p?.zpid && String(p.zpid) === String(property.zpid)
+        )
+        if (zpidMatch) return zpidMatch
       }
-      const pStreet = p.address_street ? String(p.address_street).toLowerCase() : ''
-      const pCity = p.address_city ? String(p.address_city).toLowerCase() : ''
-      const targetStreet = streetAddress.toLowerCase()
-      const targetCity = city.toLowerCase()
-      const streetMatch = pStreet === targetStreet
-      const cityMatch = !city || !pCity || pCity === targetCity
-      return streetMatch && cityMatch
-    })
+
+      // Second priority: Exact address match (street + city + state)
+      const exactMatch = properties.find((p: { 
+        address_street?: string
+        address_city?: string
+        address_state?: string
+      }) => {
+        if (!p) return false
+        const pStreet = normalizeAddress(p.address_street || '')
+        const pCity = normalizeCity(p.address_city || '')
+        const pState = normalizeState(p.address_state || '')
+        
+        const streetMatch = pStreet === targetStreet
+        const cityMatch = !targetCity || !pCity || pCity === targetCity
+        const stateMatch = !targetState || !pState || pState === targetState
+        
+        return streetMatch && cityMatch && stateMatch
+      })
+      
+      if (exactMatch) return exactMatch
+
+      // Third priority: Partial match (street + city only)
+      const partialMatch = properties.find((p: { 
+        address_street?: string
+        address_city?: string
+      }) => {
+        if (!p) return false
+        const pStreet = normalizeAddress(p.address_street || '')
+        const pCity = normalizeCity(p.address_city || '')
+        
+        const streetMatch = pStreet === targetStreet
+        const cityMatch = !targetCity || !pCity || pCity === targetCity
+        
+        return streetMatch && cityMatch
+      })
+      
+      return partialMatch || null
+    } catch (error) {
+      console.error('Error fetching existing saved property:', error)
+      return null
+    }
   }, [displayAddress, property?.zpid])
 
   // Check if property is already saved on mount
@@ -425,7 +469,7 @@ export function AppHeader({
       // Parse address for API
       const { streetAddress, city, state, zipCode } = parseDisplayAddress(displayAddress)
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved`, {
+      const response = await fetch('/api/v1/properties/saved', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -438,6 +482,8 @@ export function AppHeader({
           address_state: state || '',
           address_zip: zipCode || '',
           full_address: displayAddress,
+          zpid: property?.zpid || null,
+          external_property_id: property?.zpid || null, // Use zpid as external ID if available
           status: 'watching',
           property_data_snapshot: {
             zpid: property?.zpid || null,
@@ -458,28 +504,48 @@ export function AppHeader({
         const data = await response.json()
         setIsSaved(true)
         setSavedPropertyId(data.id || null)
+        toast.success('Property saved to your portfolio')
       } else if (response.status === 409) {
         // Already exists - fetch existing ID for correct unsave behavior
         const existing = await fetchExistingSavedProperty(token)
         setIsSaved(true)
         setSavedPropertyId(existing?.id || null)
+        toast.info('Property is already in your portfolio')
       } else if (response.status === 400) {
         // Check if it's a duplicate error (backend may return 400 for duplicates)
-        const errorText = await response.text()
+        let errorData: { detail?: string }
+        try {
+          errorData = await response.json()
+        } catch {
+          const errorText = await response.text()
+          errorData = { detail: errorText }
+        }
+        const errorText = errorData.detail || JSON.stringify(errorData)
         if (errorText.includes('already in your saved list') || errorText.includes('already saved')) {
           const existing = await fetchExistingSavedProperty(token)
           setIsSaved(true)
           setSavedPropertyId(existing?.id || null)
+          toast.info('Property is already in your portfolio')
         } else {
+          toast.error(errorText || 'Failed to save property. Please try again.')
           console.error('Failed to save property:', response.status, errorText)
         }
       } else if (response.status === 401) {
         // Token expired - prompt login
         setShowAuthModal('login')
+        toast.error('Please log in to save properties')
       } else {
-        console.error('Failed to save property:', response.status, await response.text())
+        let errorData: { detail?: string } = { detail: 'Unknown error' }
+        try {
+          errorData = await response.json()
+        } catch {
+          // Response is not JSON, use default error
+        }
+        toast.error(errorData.detail || 'Failed to save property. Please try again.')
+        console.error('Failed to save property:', response.status, errorData)
       }
     } catch (error) {
+      toast.error('Network error. Please check your connection and try again.')
       console.error('Failed to save property:', error)
     } finally {
       setIsSaving(false)
@@ -502,10 +568,11 @@ export function AppHeader({
 
     setIsSaving(true)
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved/${savedPropertyId}`, {
+      const response = await fetch(`/api/v1/properties/saved/${savedPropertyId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
         credentials: 'include',
       })
@@ -513,12 +580,27 @@ export function AppHeader({
       if (response.ok || response.status === 204) {
         setIsSaved(false)
         setSavedPropertyId(null)
+        toast.success('Property removed from your portfolio')
       } else if (response.status === 401) {
         setShowAuthModal('login')
+        toast.error('Please log in to manage saved properties')
+      } else if (response.status === 404) {
+        // Property already deleted or doesn't exist
+        setIsSaved(false)
+        setSavedPropertyId(null)
+        toast.info('Property was already removed')
       } else {
-        console.error('Failed to unsave property:', response.status)
+        let errorData: { detail?: string } = { detail: 'Unknown error' }
+        try {
+          errorData = await response.json()
+        } catch {
+          // Response is not JSON, use default error
+        }
+        toast.error(errorData.detail || 'Failed to remove property. Please try again.')
+        console.error('Failed to unsave property:', response.status, errorData)
       }
     } catch (error) {
+      toast.error('Network error. Please check your connection and try again.')
       console.error('Failed to unsave property:', error)
     } finally {
       setIsSaving(false)

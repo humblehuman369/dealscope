@@ -21,8 +21,7 @@ import {
 import { Heart, FileText, Share2, Search } from 'lucide-react'
 import Link from 'next/link'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+import { toast } from '@/components/feedback'
 
 interface PropertyDetailsClientProps {
   property: PropertyData
@@ -64,7 +63,7 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
         return
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved`, {
+      const response = await fetch('/api/v1/properties/saved', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -77,6 +76,8 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
           address_state: property.address.state,
           address_zip: property.address.zipcode,
           full_address: fullAddress,
+          zpid: property.zpid || null,
+          external_property_id: property.zpid || null, // Use zpid as external ID if available
           status: 'watching',
           property_data_snapshot: {
             zpid: property.zpid,
@@ -104,15 +105,40 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
         }),
       })
 
-      if (response.ok || response.status === 409) {
+      if (response.ok) {
         setIsSaved(true)
-        setSaveMessage(response.status === 409 ? 'Already saved!' : 'Saved!')
+        toast.success('Property saved to your portfolio')
+        setSaveMessage('Saved!')
         setTimeout(() => setSaveMessage(null), 3000)
+      } else if (response.status === 409) {
+        setIsSaved(true)
+        toast.info('Property is already in your portfolio')
+        setSaveMessage('Already saved!')
+        setTimeout(() => setSaveMessage(null), 3000)
+      } else if (response.status === 400) {
+        const errorData = await response.json().catch(() => ({ detail: await response.text() }))
+        const errorText = errorData.detail || JSON.stringify(errorData)
+        if (errorText.includes('already in your saved list') || errorText.includes('already saved')) {
+          setIsSaved(true)
+          toast.info('Property is already in your portfolio')
+          setSaveMessage('Already saved!')
+          setTimeout(() => setSaveMessage(null), 3000)
+        } else {
+          toast.error(errorText || 'Failed to save property. Please try again.')
+          setSaveMessage('Failed to save')
+          setTimeout(() => setSaveMessage(null), 3000)
+        }
+      } else if (response.status === 401) {
+        setShowAuthModal('login')
+        toast.error('Please log in to save properties')
       } else {
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
+        toast.error(errorData.detail || 'Failed to save property. Please try again.')
         setSaveMessage('Failed to save')
         setTimeout(() => setSaveMessage(null), 3000)
       }
-    } catch {
+    } catch (error) {
+      toast.error('Network error. Please check your connection and try again.')
       setSaveMessage('Error saving property')
       setTimeout(() => setSaveMessage(null), 3000)
     } finally {

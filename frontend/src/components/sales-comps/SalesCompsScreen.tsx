@@ -16,9 +16,8 @@ import React, { useState, useCallback } from 'react'
 import { getAccessToken } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { toast } from '@/components/feedback'
 // Note: CompactHeader removed - now using global AppHeader from layout
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
 
 // Types
 export interface SalesCompProperty {
@@ -252,7 +251,7 @@ export function SalesCompsScreen({
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved`, {
+      const response = await fetch('/api/v1/properties/saved', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -265,8 +264,9 @@ export function SalesCompsScreen({
           address_state: property.state,
           address_zip: property.zipCode,
           full_address: fullAddress,
-          status: 'watching',
           zpid: property.zpid || null,
+          external_property_id: property.zpid || null, // Use zpid as external ID if available
+          status: 'watching',
           property_data_snapshot: {
             zpid: property.zpid || null,
             street: property.address,
@@ -282,26 +282,38 @@ export function SalesCompsScreen({
         }),
       })
 
-      if (response.ok || response.status === 409) {
-        // 201 = created, 409 = already exists
+      if (response.ok) {
         setIsSaved(true)
+        toast.success('Property saved to your portfolio')
         setSaveMessage('Saved!')
         setTimeout(() => setSaveMessage(null), 2000)
+      } else if (response.status === 409) {
+        setIsSaved(true)
+        toast.info('Property is already in your portfolio')
+        setSaveMessage('Already saved!')
+        setTimeout(() => setSaveMessage(null), 2000)
       } else if (response.status === 400) {
-        const errorText = await response.text()
+        const errorData = await response.json().catch(() => ({ detail: await response.text() }))
+        const errorText = errorData.detail || JSON.stringify(errorData)
         if (errorText.includes('already in your saved list') || errorText.includes('already saved')) {
           setIsSaved(true)
+          toast.info('Property is already in your portfolio')
           setSaveMessage('Already saved!')
           setTimeout(() => setSaveMessage(null), 2000)
         } else {
+          toast.error(errorText || 'Failed to save property. Please try again.')
           console.error('Failed to save property:', response.status, errorText)
         }
       } else if (response.status === 401) {
         setShowAuthModal('login')
+        toast.error('Please log in to save properties')
       } else {
-        console.error('Failed to save property:', response.status)
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
+        toast.error(errorData.detail || 'Failed to save property. Please try again.')
+        console.error('Failed to save property:', response.status, errorData)
       }
     } catch (error) {
+      toast.error('Network error. Please check your connection and try again.')
       console.error('Failed to save property:', error)
     }
   }, [isAuthenticated, setShowAuthModal, property, fullAddress])
