@@ -4,6 +4,7 @@ Saved Properties router for user's property portfolio management.
 
 import logging
 from typing import Optional, List
+import sys
 
 from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import ValidationError as PydanticValidationError
@@ -172,6 +173,8 @@ async def save_property(
     Includes property data snapshot at time of save.
     Also creates a DealMakerRecord with resolved defaults locked at save time.
     """
+    logger.info(f"Save property request received for user {current_user.id}")
+    logger.debug(f"Property data: address={data.address_street}, zpid={data.zpid}, external_id={data.external_property_id}")
     try:
         # If no deal_maker_record provided, create one from property data
         # Make this optional - if it fails, we can still save the property
@@ -192,22 +195,24 @@ async def save_property(
                 logger.debug(f"DealMakerRecord creation error details: {e}", exc_info=True)
         
         # Update data with deal_maker_record if we successfully created one
-        if deal_maker_record_obj is not None:
+        # Only do this if data.deal_maker_record is not already set
+        if deal_maker_record_obj is not None and not data.deal_maker_record:
             # Create updated data dict with deal_maker_record
             # Convert DealMakerRecord to dict first to ensure proper serialization
             try:
-                data_dict = data.model_dump(exclude_unset=True)
                 # Convert DealMakerRecord object to dict if needed
+                deal_maker_dict = None
                 if hasattr(deal_maker_record_obj, 'model_dump'):
-                    data_dict['deal_maker_record'] = deal_maker_record_obj.model_dump(mode="json")
+                    deal_maker_dict = deal_maker_record_obj.model_dump(mode="json")
                 elif isinstance(deal_maker_record_obj, dict):
-                    data_dict['deal_maker_record'] = deal_maker_record_obj
+                    deal_maker_dict = deal_maker_record_obj
                 else:
                     # Unexpected type, skip adding it
                     logger.warning(f"Unexpected deal_maker_record_obj type: {type(deal_maker_record_obj)}")
-                    data_dict = None
                 
-                if data_dict:
+                if deal_maker_dict is not None:
+                    data_dict = data.model_dump(exclude_unset=True)
+                    data_dict['deal_maker_record'] = deal_maker_dict
                     data = SavedPropertyCreate(**data_dict)
             except (PydanticValidationError, Exception) as validation_error:
                 logger.warning(
@@ -246,7 +251,7 @@ async def save_property(
         
         # Build response - wrap in try-catch in case of validation errors
         try:
-            return SavedPropertyResponse(
+            response = SavedPropertyResponse(
                 id=str(saved.id),
                 user_id=str(saved.user_id),
                 external_property_id=saved.external_property_id,
@@ -258,17 +263,17 @@ async def save_property(
                 full_address=saved.full_address,
                 nickname=saved.nickname,
                 status=saved.status,
-                tags=saved.tags,
+                tags=saved.tags or [],
                 color_label=saved.color_label,
                 priority=saved.priority,
-                property_data_snapshot=saved.property_data_snapshot,
+                property_data_snapshot=saved.property_data_snapshot or {},
                 custom_purchase_price=saved.custom_purchase_price,
                 custom_rent_estimate=saved.custom_rent_estimate,
                 custom_arv=saved.custom_arv,
                 custom_rehab_budget=saved.custom_rehab_budget,
                 custom_daily_rate=saved.custom_daily_rate,
                 custom_occupancy_rate=saved.custom_occupancy_rate,
-                custom_assumptions=saved.custom_assumptions,
+                custom_assumptions=saved.custom_assumptions or {},
                 worksheet_assumptions=saved.worksheet_assumptions or {},
                 deal_maker_record=deal_maker,
                 notes=saved.notes,
@@ -284,10 +289,20 @@ async def save_property(
                 document_count=0,
                 adjustment_count=0,
             )
-        except Exception as response_error:
+            return response
+        except (PydanticValidationError, ValueError, TypeError) as response_error:
             logger.error(f"Failed to construct SavedPropertyResponse: {str(response_error)}", exc_info=True)
             # Property was saved successfully, but response construction failed
-            # Return a minimal response to indicate success
+            # Log the saved property ID so we can debug
+            logger.error(f"Saved property ID: {saved.id}, User ID: {saved.user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Property saved but response construction failed: {str(response_error) if settings.DEBUG else 'Internal error'}"
+            )
+        except Exception as response_error:
+            logger.error(f"Unexpected error constructing SavedPropertyResponse: {str(response_error)}", exc_info=True)
+            logger.error(f"Exception type: {type(response_error).__name__}")
+            # Property was saved successfully, but response construction failed
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Property saved but response construction failed: {str(response_error) if settings.DEBUG else 'Internal error'}"
@@ -328,6 +343,16 @@ async def save_property(
     except HTTPException:
         # Re-raise HTTPExceptions as-is (they already have proper format)
         raise
+    except ExceptionGroup as eg:
+        # Handle ExceptionGroup (Python 3.11+)
+        logger.error(f"ExceptionGroup error saving property: {eg}", exc_info=True)
+        # Extract the first exception from the group for error message
+        first_exception = eg.exceptions[0] if eg.exceptions else eg
+        error_message = str(first_exception) if settings.DEBUG else "Failed to save property. Please try again or contact support."
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=error_message
+        )
     except Exception as e:
         # Catch all other exceptions and log them properly
         logger.error(f"Unexpected error saving property: {str(e)}", exc_info=True)
