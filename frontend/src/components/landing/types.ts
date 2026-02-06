@@ -43,7 +43,7 @@ export const priceIQData: PriceIQCard[] = [
     name: 'Breakeven',
     suffix: '',
     value: '$807,087',
-    description: 'Max price for $0 cashflow',
+    description: 'Max Price for\n$0 Cashflow',
     subtext: 'Your ceiling. Don\'t cross it.',
   },
   {
@@ -59,7 +59,7 @@ export const priceIQData: PriceIQCard[] = [
     name: 'Wholesale',
     suffix: '',
     value: '$564,961',
-    description: '30% discount for assignment',
+    description: '30% Discount for Assignment',
     subtext: 'Your wholesale number',
   },
 ];

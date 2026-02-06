@@ -814,6 +814,7 @@
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.7);
   margin-bottom: 8px;
+  white-space: pre-line;
 }
 
 .landing-page .price-card-subtext {
