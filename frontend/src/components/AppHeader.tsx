@@ -27,6 +27,8 @@ import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 import { useAuth } from '@/context/AuthContext'
 import { getAccessToken } from '@/lib/api'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+
 // ===================
 // DESIGN TOKENS (synced with verdict-design-tokens.ts)
 // ===================
@@ -224,9 +226,10 @@ export function AppHeader({
     if (!streetAddress) return null
 
     const response = await fetch(
-      `/api/v1/properties/saved?search=${encodeURIComponent(streetAddress)}`, 
+      `${API_BASE_URL}/api/v1/properties/saved?search=${encodeURIComponent(streetAddress)}`, 
       {
         headers: { 'Authorization': `Bearer ${token}` },
+        credentials: 'include',
       }
     )
 
@@ -409,12 +412,13 @@ export function AppHeader({
       // Parse address for API
       const { streetAddress, city, state, zipCode } = parseDisplayAddress(displayAddress)
 
-      const response = await fetch('/api/v1/properties/saved', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({
           address_street: streetAddress,
           address_city: city,
@@ -481,11 +485,12 @@ export function AppHeader({
 
     setIsSaving(true)
     try {
-      const response = await fetch(`/api/v1/properties/saved/${savedPropertyId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved/${savedPropertyId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
       })
 
       if (response.ok || response.status === 204) {
