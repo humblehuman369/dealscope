@@ -2,518 +2,194 @@ import { useState, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   ActivityIndicator,
-  Image,
-  Alert,
 } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
-import { colors } from '../../theme/colors';
-import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { validateEmail, validatePassword } from '../../services/authService';
+import { register as registerUser, validateEmail, validatePassword } from '../../services/authService';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { register, isLoading, error, clearError } = useAuth();
-  const { theme, isDark } = useTheme();
-  
+  const { isDark } = useTheme();
+
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [localErrors, setLocalErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const passwordValidation = password.length > 0 ? validatePassword(password) : null;
+
+  // Simple password strength
+  const strengthScore = (() => {
+    let s = 0;
+    if (password.length >= 8) s++;
+    if (password.length >= 12) s++;
+    if (/[A-Z]/.test(password)) s++;
+    if (/[a-z]/.test(password)) s++;
+    if (/[0-9]/.test(password)) s++;
+    if (/[^A-Za-z0-9]/.test(password)) s++;
+    return s;
+  })();
+  const strengthLabel = strengthScore <= 2 ? 'Weak' : strengthScore <= 3 ? 'Fair' : strengthScore <= 4 ? 'Good' : 'Strong';
+  const strengthColor = strengthScore <= 2 ? '#ef4444' : strengthScore <= 3 ? '#eab308' : strengthScore <= 4 ? '#3b82f6' : '#22c55e';
 
   const handleRegister = useCallback(async () => {
-    // Clear previous errors
-    setLocalErrors([]);
-    clearError();
-    
-    const errors: string[] = [];
-    
-    // Validate inputs
-    if (!fullName.trim()) {
-      errors.push('Please enter your name');
-    }
-    
-    if (!email.trim()) {
-      errors.push('Please enter your email');
-    } else if (!validateEmail(email.trim())) {
-      errors.push('Please enter a valid email address');
-    }
-    
-    if (!password) {
-      errors.push('Please enter a password');
-    } else {
-      const passwordValidation = validatePassword(password);
-      if (!passwordValidation.valid) {
-        errors.push(...passwordValidation.errors);
-      }
-    }
-    
-    if (password !== confirmPassword) {
-      errors.push('Passwords do not match');
-    }
-    
-    if (errors.length > 0) {
-      setLocalErrors(errors);
-      return;
-    }
-    
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
+    setError(null);
+
+    if (fullName.trim().length < 2) { setError('Name must be at least 2 characters'); return; }
+    if (!validateEmail(email)) { setError('Please enter a valid email address'); return; }
+    if (!validatePassword(password).valid) { setError('Password does not meet requirements'); return; }
+    if (password !== confirmPassword) { setError('Passwords do not match'); return; }
+
+    setIsLoading(true);
     try {
-      await register({
-        email: email.trim().toLowerCase(),
-        password,
-        full_name: fullName.trim(),
-      });
-      
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      
-      // Navigate to main app
-      router.replace('/(tabs)/scan');
+      await registerUser(email, password, fullName.trim());
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setSuccess(true);
     } catch (err: any) {
-      // Check if this is a verification required message (not really an error)
-      const message = err?.message || '';
-      if (message.includes('verify your email') || message.includes('check your email')) {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert(
-          'Check Your Email',
-          'We sent you a verification email. Please click the link in the email to verify your account before signing in.',
-          [
-            { 
-              text: 'OK', 
-              onPress: () => router.replace('/auth/login')
-            }
-          ]
-        );
-      } else {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        // Error is handled by context
-      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setError(err.message || 'Registration failed');
+    } finally {
+      setIsLoading(false);
     }
-  }, [fullName, email, password, confirmPassword, register, router, clearError]);
+  }, [fullName, email, password, confirmPassword]);
 
-  const displayErrors = localErrors.length > 0 ? localErrors : error ? [error] : [];
+  const bg = isDark ? '#0f172a' : '#f8fafc';
+  const cardBg = isDark ? '#1e293b' : '#ffffff';
+  const textColor = isDark ? '#f1f5f9' : '#0f172a';
+  const mutedColor = isDark ? '#94a3b8' : '#64748b';
+  const inputBg = isDark ? '#0f172a' : '#f1f5f9';
+  const borderColor = isDark ? '#334155' : '#e2e8f0';
+  const accentColor = '#0d9488';
 
-  // Password strength indicator
-  const passwordStrength = password.length === 0 ? 0 : 
-    password.length < 8 ? 1 :
-    (validatePassword(password).valid ? 3 : 2);
-
-  // Dynamic styles based on theme
-  const dynamicStyles = {
-    container: { backgroundColor: theme.background },
-    backIcon: isDark ? colors.gray[100] : colors.gray[900],
-    logo: { color: isDark ? colors.primary[400] : colors.primary[600] },
-    title: { color: theme.text },
-    subtitle: { color: theme.textMuted },
-    label: { color: isDark ? colors.gray[300] : colors.gray[700] },
-    inputContainer: { 
-      backgroundColor: isDark ? colors.navy[800] : colors.gray[50],
-      borderColor: isDark ? colors.navy[600] : colors.gray[200],
-    },
-    input: { color: theme.text },
-    inputIcon: isDark ? colors.gray[500] : colors.gray[400],
-    strengthBar: { backgroundColor: isDark ? colors.navy[600] : colors.gray[200] },
-    strengthText: { color: theme.textMuted },
-    passwordHint: { color: isDark ? colors.gray[500] : colors.gray[400] },
-    terms: { color: theme.textMuted },
-    signinText: { color: isDark ? colors.gray[400] : colors.gray[600] },
-  };
+  // Success screen
+  if (success) {
+    return (
+      <View style={{ flex: 1, backgroundColor: bg, paddingTop: insets.top, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
+        <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 32, borderWidth: 1, borderColor, alignItems: 'center', width: '100%' }}>
+          <Ionicons name="checkmark-circle" size={56} color="#22c55e" />
+          <Text style={{ fontSize: 20, fontWeight: '700', color: textColor, marginTop: 16, textAlign: 'center' }}>
+            Check your email
+          </Text>
+          <Text style={{ fontSize: 14, color: mutedColor, marginTop: 8, textAlign: 'center', lineHeight: 20 }}>
+            We've sent a verification link to your email. Please verify your account before signing in.
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.replace('/auth/login')}
+            style={{ marginTop: 24, backgroundColor: accentColor, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 32 }}
+          >
+            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Go to Sign In</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, dynamicStyles.container]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }
-        ]}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Back Button */}
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons name="arrow-back" size={24} color={dynamicStyles.backIcon} />
-        </TouchableOpacity>
+    <View style={{ flex: 1, backgroundColor: bg, paddingTop: insets.top }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
 
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={isDark 
-                ? require('../../assets/InvestIQ Logo 3D (Dark View).png')
-                : require('../../assets/InvestIQ Logo 3D (Light View).png')
-              }
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-            <Text style={[styles.logo, dynamicStyles.logo]}>
-              Invest<Text style={styles.logoAccent}>IQ</Text>
-            </Text>
-          </View>
-          <Text style={[styles.title, dynamicStyles.title]}>Create account</Text>
-          <Text style={[styles.subtitle, dynamicStyles.subtitle]}>
-            Join thousands of real estate investors
-          </Text>
-        </View>
-
-        {/* Form */}
-        <View style={styles.form}>
-          {/* Full Name Input */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, dynamicStyles.label]}>Full Name</Text>
-            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
-              <Ionicons name="person-outline" size={20} color={dynamicStyles.inputIcon} />
-              <TextInput
-                style={[styles.input, dynamicStyles.input]}
-                placeholder="John Smith"
-                placeholderTextColor={dynamicStyles.inputIcon}
-                value={fullName}
-                onChangeText={setFullName}
-                autoCapitalize="words"
-                autoComplete="name"
-                returnKeyType="next"
-              />
-            </View>
-          </View>
-
-          {/* Email Input */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, dynamicStyles.label]}>Email</Text>
-            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
-              <Ionicons name="mail-outline" size={20} color={dynamicStyles.inputIcon} />
-              <TextInput
-                style={[styles.input, dynamicStyles.input]}
-                placeholder="you@example.com"
-                placeholderTextColor={dynamicStyles.inputIcon}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                autoCorrect={false}
-                returnKeyType="next"
-              />
-            </View>
-          </View>
-
-          {/* Password Input */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, dynamicStyles.label]}>Password</Text>
-            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
-              <Ionicons name="lock-closed-outline" size={20} color={dynamicStyles.inputIcon} />
-              <TextInput
-                style={[styles.input, dynamicStyles.input]}
-                placeholder="Create a strong password"
-                placeholderTextColor={dynamicStyles.inputIcon}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                autoComplete="new-password"
-                returnKeyType="next"
-              />
-              <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Ionicons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={dynamicStyles.inputIcon}
-                />
-              </TouchableOpacity>
-            </View>
-            
-            {/* Password Strength Indicator */}
-            {password.length > 0 && (
-              <View style={styles.strengthContainer}>
-                <View style={styles.strengthBars}>
-                  <View style={[
-                    styles.strengthBar,
-                    dynamicStyles.strengthBar,
-                    passwordStrength >= 1 && styles.strengthBarWeak
-                  ]} />
-                  <View style={[
-                    styles.strengthBar,
-                    dynamicStyles.strengthBar,
-                    passwordStrength >= 2 && styles.strengthBarMedium
-                  ]} />
-                  <View style={[
-                    styles.strengthBar,
-                    dynamicStyles.strengthBar,
-                    passwordStrength >= 3 && styles.strengthBarStrong
-                  ]} />
-                </View>
-                <Text style={[
-                  styles.strengthText,
-                  dynamicStyles.strengthText,
-                  passwordStrength === 1 && { color: colors.loss.main },
-                  passwordStrength === 2 && { color: '#f59e0b' },
-                  passwordStrength === 3 && { color: colors.profit.main },
-                ]}>
-                  {passwordStrength === 1 && 'Weak'}
-                  {passwordStrength === 2 && 'Medium'}
-                  {passwordStrength === 3 && 'Strong'}
-                </Text>
-              </View>
-            )}
-            
-            <Text style={[styles.passwordHint, dynamicStyles.passwordHint]}>
-              Min 8 characters, uppercase, lowercase, and number
-            </Text>
-          </View>
-
-          {/* Confirm Password Input */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, dynamicStyles.label]}>Confirm Password</Text>
-            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
-              <Ionicons name="lock-closed-outline" size={20} color={dynamicStyles.inputIcon} />
-              <TextInput
-                style={[styles.input, dynamicStyles.input]}
-                placeholder="Confirm your password"
-                placeholderTextColor={dynamicStyles.inputIcon}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                autoComplete="new-password"
-                returnKeyType="go"
-                onSubmitEditing={handleRegister}
-              />
-              {confirmPassword.length > 0 && (
-                <Ionicons
-                  name={password === confirmPassword ? 'checkmark-circle' : 'close-circle'}
-                  size={20}
-                  color={password === confirmPassword ? colors.profit.main : colors.loss.main}
-                />
-              )}
-            </View>
-          </View>
-
-          {/* Error Messages */}
-          {displayErrors.length > 0 && (
-            <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle" size={18} color={colors.loss.main} />
-              <View style={styles.errorList}>
-                {displayErrors.map((err, index) => (
-                  <Text key={index} style={styles.errorText}>• {err}</Text>
-                ))}
-              </View>
-            </View>
-          )}
-
-          {/* Register Button */}
-          <TouchableOpacity
-            style={[styles.registerButton, isLoading && styles.registerButtonDisabled]}
-            onPress={handleRegister}
-            disabled={isLoading}
-            activeOpacity={0.8}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.registerButtonText}>Create Account</Text>
-            )}
+          {/* Back button */}
+          <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 20 }}>
+            <Ionicons name="arrow-back" size={20} color={mutedColor} />
+            <Text style={{ fontSize: 14, color: mutedColor }}>Back</Text>
           </TouchableOpacity>
 
-          {/* Terms */}
-          <Text style={[styles.terms, dynamicStyles.terms]}>
-            By creating an account, you agree to our{' '}
-            <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
-            <Text style={styles.termsLink}>Privacy Policy</Text>
-          </Text>
-        </View>
+          <View style={{ marginBottom: 24, alignItems: 'center' }}>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: textColor }}>Create Account</Text>
+            <Text style={{ fontSize: 14, color: mutedColor, marginTop: 4 }}>Start analyzing investment deals</Text>
+          </View>
 
-        {/* Sign In Link */}
-        <View style={styles.signinRow}>
-          <Text style={[styles.signinText, dynamicStyles.signinText]}>Already have an account? </Text>
-          <Link href="/auth/login" asChild>
-            <TouchableOpacity>
-              <Text style={styles.signinLink}>Sign in</Text>
+          <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 24, borderWidth: 1, borderColor }}>
+            {error && (
+              <View style={{ backgroundColor: isDark ? '#450a0a33' : '#fef2f2', padding: 12, borderRadius: 8, marginBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="alert-circle" size={16} color="#ef4444" />
+                <Text style={{ color: '#ef4444', fontSize: 13, flex: 1 }}>{error}</Text>
+              </View>
+            )}
+
+            {/* Full Name */}
+            <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Full Name</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 16 }}>
+              <Ionicons name="person-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
+              <TextInput value={fullName} onChangeText={setFullName} placeholder="John Doe" placeholderTextColor={mutedColor} autoComplete="name" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
+            </View>
+
+            {/* Email */}
+            <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Email</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 16 }}>
+              <Ionicons name="mail-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
+              <TextInput value={email} onChangeText={setEmail} placeholder="you@example.com" placeholderTextColor={mutedColor} autoCapitalize="none" keyboardType="email-address" autoComplete="email" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
+            </View>
+
+            {/* Password */}
+            <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Password</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 8 }}>
+              <Ionicons name="lock-closed-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
+              <TextInput value={password} onChangeText={setPassword} placeholder="Create a strong password" placeholderTextColor={mutedColor} secureTextEntry={!showPassword} autoComplete="new-password" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ paddingRight: 14 }}>
+                <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={mutedColor} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Strength bar */}
+            {password.length > 0 && (
+              <View style={{ marginBottom: 16 }}>
+                <View style={{ flexDirection: 'row', gap: 3, marginBottom: 4 }}>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <View key={i} style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: i <= strengthScore ? strengthColor : (isDark ? '#334155' : '#e2e8f0') }} />
+                  ))}
+                </View>
+                <Text style={{ fontSize: 11, color: mutedColor }}>Strength: {strengthLabel}</Text>
+              </View>
+            )}
+
+            {/* Confirm Password */}
+            <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Confirm Password</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 20 }}>
+              <Ionicons name="lock-closed-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
+              <TextInput value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Confirm your password" placeholderTextColor={mutedColor} secureTextEntry={!showPassword} autoComplete="new-password" style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }} />
+            </View>
+
+            {/* Submit */}
+            <TouchableOpacity
+              onPress={handleRegister}
+              disabled={isLoading}
+              style={{ backgroundColor: accentColor, borderRadius: 12, padding: 16, alignItems: 'center', opacity: isLoading ? 0.6 : 1 }}
+            >
+              {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Create Account</Text>}
             </TouchableOpacity>
-          </Link>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+            <Text style={{ fontSize: 11, color: mutedColor, textAlign: 'center', marginTop: 12 }}>
+              By creating an account, you agree to our Terms of Service and Privacy Policy.
+            </Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20, gap: 4 }}>
+            <Text style={{ fontSize: 14, color: mutedColor }}>Already have an account?</Text>
+            <Link href="/auth/login" asChild>
+              <TouchableOpacity>
+                <Text style={{ fontSize: 14, color: accentColor, fontWeight: '600' }}>Sign in</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-    padding: 4,
-    marginBottom: 20,
-  },
-  header: {
-    marginBottom: 32,
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 24,
-  },
-  logoImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-  },
-  logo: {
-    fontSize: 24,
-    fontWeight: '700',
-  },
-  logoAccent: {
-    color: colors.primary[500],
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  form: {
-    gap: 20,
-  },
-  inputGroup: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    gap: 10,
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 14,
-    fontSize: 16,
-  },
-  strengthContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 4,
-  },
-  strengthBars: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  strengthBar: {
-    width: 32,
-    height: 4,
-    borderRadius: 2,
-  },
-  strengthBarWeak: {
-    backgroundColor: colors.loss.main,
-  },
-  strengthBarMedium: {
-    backgroundColor: '#f59e0b',
-  },
-  strengthBarStrong: {
-    backgroundColor: colors.profit.main,
-  },
-  strengthText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  passwordHint: {
-    fontSize: 12,
-  },
-  errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    backgroundColor: colors.loss.light,
-    padding: 12,
-    borderRadius: 8,
-  },
-  errorList: {
-    flex: 1,
-  },
-  errorText: {
-    fontSize: 14,
-    color: colors.loss.main,
-    marginBottom: 2,
-  },
-  registerButton: {
-    backgroundColor: colors.primary[600],
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 8,
-    shadowColor: colors.primary[600],
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  registerButtonDisabled: {
-    backgroundColor: colors.gray[400],
-    shadowOpacity: 0,
-  },
-  registerButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  terms: {
-    fontSize: 13,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  termsLink: {
-    color: colors.primary[600],
-    fontWeight: '500',
-  },
-  signinRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
-  },
-  signinText: {
-    fontSize: 15,
-  },
-  signinLink: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.primary[600],
-  },
-});
-

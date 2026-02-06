@@ -80,7 +80,7 @@ class Settings(BaseSettings):
     # Empty default ensures this is explicitly configured.
     SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 5   # Short-lived JWT; session is the authority
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # ===========================================
@@ -89,6 +89,23 @@ class Settings(BaseSettings):
     COOKIE_SECURE: bool = True  # Set to False for local dev without HTTPS
     COOKIE_SAMESITE: str = "lax"  # lax, strict, or none
     COOKIE_DOMAIN: Optional[str] = None  # Set for cross-subdomain cookies
+    
+    # ===========================================
+    # Session settings
+    # ===========================================
+    SESSION_DEFAULT_DAYS: int = 7
+    SESSION_REMEMBER_ME_DAYS: int = 30
+    
+    # ===========================================
+    # Account lockout
+    # ===========================================
+    MAX_FAILED_LOGIN_ATTEMPTS: int = 5
+    LOCKOUT_DURATION_MINUTES: int = 15
+    
+    # ===========================================
+    # MFA
+    # ===========================================
+    MFA_ISSUER_NAME: str = "InvestIQ"
     
     # Password Reset
     PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = 1  # 1 hour for security
@@ -214,7 +231,7 @@ def validate_settings(settings: Settings) -> None:
     """
     errors = []
     
-    # SECRET_KEY is required in all environments for JWT security
+    # SECRET_KEY is required in ALL environments — no empty defaults
     if not settings.SECRET_KEY or len(settings.SECRET_KEY) < 32:
         if settings.is_production:
             errors.append(
@@ -223,10 +240,15 @@ def validate_settings(settings: Settings) -> None:
             )
         else:
             warnings.warn(
-                "SECRET_KEY is not set or too short. Using insecure default for development. "
-                "Set SECRET_KEY environment variable before deploying to production.",
-                UserWarning
+                "SECRET_KEY is not set or too short. "
+                "Set SECRET_KEY environment variable (openssl rand -hex 32). "
+                "A random key will be used for this session.",
+                UserWarning,
             )
+            # In dev mode, use a per-process random key so tests still work
+            if not settings.SECRET_KEY:
+                import secrets as _s
+                object.__setattr__(settings, "SECRET_KEY", _s.token_hex(32))
     
     # Production-specific validations
     if settings.is_production:

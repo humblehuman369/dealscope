@@ -1,623 +1,543 @@
 """
-Authentication service for user registration, login, and token management.
-Handles password hashing, JWT tokens, and session management.
+Authentication service – orchestrates registration, login, MFA, password
+management, and email-verification flows.
 
-Integrates with TokenBlacklistService for token revocation on logout.
+This service delegates data access to repositories and token/session
+management to their respective services.  It owns the business rules:
+  - account lockout after N failed attempts
+  - MFA challenge flow
+  - audit logging of every security event
 """
 
+from __future__ import annotations
+
+import logging
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple
-import secrets
-import logging
-import hashlib
 
-from jose import JWTError, jwt
+import pyotp
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
+from app.models.audit_log import AuditAction
+from app.models.session import UserSession
 from app.models.user import User, UserProfile
-from app.schemas.auth import TokenResponse, TokenPayload
+from app.models.verification_token import TokenType
+from app.repositories.audit_repository import audit_repo
+from app.repositories.role_repository import role_repo
+from app.repositories.user_repository import user_repo
+from app.services.session_service import session_service
+from app.services.token_service import token_service
 
 logger = logging.getLogger(__name__)
 
-# Password hashing context using bcrypt via passlib
-# This handles all the complexity of bcrypt versions and encoding
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=12,
-)
+# Password hashing — bcrypt via passlib
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+
+# Account lockout
+MAX_FAILED_ATTEMPTS = 5
+LOCKOUT_DURATION_MINUTES = 15
+LOCKOUT_PROGRESSIVE_MULTIPLIER = 2  # doubles each lockout
+
+
+class AuthError(Exception):
+    """Raised for authentication failures that should be shown to the user."""
+
+    def __init__(self, detail: str, *, status_code: int = 400):
+        self.detail = detail
+        self.status_code = status_code
+        super().__init__(detail)
+
+
+class MFARequired(Exception):
+    """Raised when credentials are valid but MFA verification is needed."""
+
+    def __init__(self, challenge_token: str, user_id: uuid.UUID):
+        self.challenge_token = challenge_token
+        self.user_id = user_id
+        super().__init__("MFA verification required")
 
 
 class AuthService:
-    """
-    Authentication service handling:
-    - Password hashing and verification
-    - JWT token creation and validation
-    - User registration and authentication
-    - Password reset flows
-    """
-    
-    def __init__(self):
-        self.algorithm = settings.ALGORITHM
-        self.secret_key = settings.SECRET_KEY
-        self.access_token_expire = settings.ACCESS_TOKEN_EXPIRE_MINUTES
-        self.refresh_token_expire = settings.REFRESH_TOKEN_EXPIRE_DAYS
-    
-    # ===========================================
-    # Password Hashing
-    # ===========================================
-    
-    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        """Verify a plain password against a hashed password."""
+    """Central authentication orchestrator."""
+
+    # ------------------------------------------------------------------
+    # Password helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def verify_password(plain: str, hashed: str) -> bool:
         try:
-            return pwd_context.verify(plain_password, hashed_password)
-        except Exception as e:
-            logger.warning(f"Password verification error: {e}")
+            return pwd_context.verify(plain, hashed)
+        except Exception:
             return False
-    
-    def get_password_hash(self, password: str) -> str:
-        """Hash a password for storage using passlib."""
-        try:
-            hashed = pwd_context.hash(password)
-            logger.debug(f"Password hashed successfully, length: {len(hashed)}")
-            return hashed
-        except Exception as e:
-            logger.error(f"Password hashing error: {e}")
-            raise
-    
-    # ===========================================
-    # Token Creation
-    # ===========================================
-    
-    def create_access_token(
-        self, 
-        user_id: str, 
-        expires_delta: Optional[timedelta] = None
-    ) -> str:
-        """Create a JWT access token."""
-        if expires_delta:
-            expire = datetime.utcnow() + expires_delta
-        else:
-            expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire)
-        
-        payload = {
-            "sub": str(user_id),
-            "exp": expire,
-            "iat": datetime.utcnow(),
-            "type": "access"
-        }
-        
-        return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
-    
-    def create_refresh_token(
-        self, 
-        user_id: str, 
-        expires_delta: Optional[timedelta] = None
-    ) -> str:
-        """Create a JWT refresh token."""
-        if expires_delta:
-            expire = datetime.utcnow() + expires_delta
-        else:
-            expire = datetime.utcnow() + timedelta(days=self.refresh_token_expire)
-        
-        payload = {
-            "sub": str(user_id),
-            "exp": expire,
-            "iat": datetime.utcnow(),
-            "type": "refresh"
-        }
-        
-        return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
-    
-    def create_tokens(
-        self, 
-        user_id: str, 
-        remember_me: bool = False
-    ) -> TokenResponse:
-        """Create both access and refresh tokens."""
-        # Extended expiration for "remember me"
-        access_delta = timedelta(minutes=self.access_token_expire)
-        refresh_delta = timedelta(days=self.refresh_token_expire)
-        
-        if remember_me:
-            access_delta = timedelta(hours=24)
-            refresh_delta = timedelta(days=30)
-        
-        access_token = self.create_access_token(user_id, access_delta)
-        refresh_token = self.create_refresh_token(user_id, refresh_delta)
-        
-        return TokenResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            token_type="bearer",
-            expires_in=int(access_delta.total_seconds())
-        )
-    
-    # ===========================================
-    # Token Verification
-    # ===========================================
-    
-    def verify_token(self, token: str, token_type: str = "access") -> Optional[TokenPayload]:
-        """
-        Verify a JWT token and return its payload.
-        
-        Args:
-            token: The JWT token to verify
-            token_type: Expected token type ("access" or "refresh")
-        
-        Returns:
-            TokenPayload if valid, None otherwise
-        """
-        try:
-            payload = jwt.decode(
-                token, 
-                self.secret_key, 
-                algorithms=[self.algorithm]
-            )
-            
-            # Verify token type
-            if payload.get("type") != token_type:
-                logger.warning(f"Token type mismatch: expected {token_type}, got {payload.get('type')}")
-                return None
-            
-            return TokenPayload(
-                sub=payload["sub"],
-                exp=datetime.fromtimestamp(payload["exp"]),
-                type=payload["type"],
-                iat=datetime.fromtimestamp(payload.get("iat", 0)) if payload.get("iat") else None
-            )
-            
-        except JWTError as e:
-            logger.warning(f"Token verification failed: {e}")
-            return None
-    
-    async def verify_token_with_blacklist(
-        self,
-        token: str,
-        token_type: str = "access"
-    ) -> Optional[TokenPayload]:
-        """
-        Verify a JWT token and check if it's blacklisted.
-        
-        Args:
-            token: The JWT token to verify
-            token_type: Expected token type ("access" or "refresh")
-        
-        Returns:
-            TokenPayload if valid and not blacklisted, None otherwise
-        """
-        # First verify the token structure and signature
-        payload = self.verify_token(token, token_type)
-        if not payload:
-            return None
-        
-        # Check token blacklist
-        try:
-            from app.services.token_blacklist_service import token_blacklist_service
-            
-            # Generate JTI from token hash
-            token_jti = self._get_token_jti(token)
-            
-            if await token_blacklist_service.is_blacklisted(token_jti):
-                logger.warning(f"Token is blacklisted: {token_jti[:8]}...")
-                return None
-            
-            # Check user-level blacklist
-            if payload.iat:
-                token_iat = int(payload.iat.timestamp())
-                if await token_blacklist_service.is_user_token_blacklisted(payload.sub, token_iat):
-                    logger.warning(f"User tokens blacklisted after token issuance")
-                    return None
-                    
-        except Exception as e:
-            logger.error(f"Error checking token blacklist: {e}")
-            # Continue with validation - don't block if blacklist check fails
-        
-        return payload
-    
-    def _get_token_jti(self, token: str) -> str:
-        """Generate a unique identifier for a token."""
-        return hashlib.sha256(token.encode()).hexdigest()[:32]
-    
-    async def blacklist_token(
-        self,
-        token: str,
-        reason: str = "logout"
-    ) -> bool:
-        """
-        Add a token to the blacklist.
-        
-        Args:
-            token: The JWT token to blacklist
-            reason: Why the token is being blacklisted
-            
-        Returns:
-            True if successfully blacklisted, False otherwise
-        """
-        try:
-            from app.services.token_blacklist_service import token_blacklist_service
-            
-            # Decode token to get expiry
-            payload = jwt.decode(
-                token,
-                self.secret_key,
-                algorithms=[self.algorithm],
-                options={"verify_exp": False}  # Allow expired tokens to be blacklisted
-            )
-            
-            token_jti = self._get_token_jti(token)
-            expiry_timestamp = payload.get("exp", 0)
-            
-            return await token_blacklist_service.blacklist_token(
-                token_jti=token_jti,
-                expiry_timestamp=expiry_timestamp,
-                reason=reason
-            )
-            
-        except JWTError as e:
-            logger.warning(f"Failed to decode token for blacklisting: {e}")
-            return False
-        except Exception as e:
-            logger.error(f"Failed to blacklist token: {e}")
-            return False
-    
-    async def logout(
-        self,
-        access_token: Optional[str] = None,
-        refresh_token: Optional[str] = None
-    ) -> bool:
-        """
-        Logout by blacklisting the provided tokens.
-        
-        Args:
-            access_token: Access token to blacklist
-            refresh_token: Refresh token to blacklist
-            
-        Returns:
-            True if at least one token was blacklisted
-        """
-        success = False
-        
-        if access_token:
-            if await self.blacklist_token(access_token, "logout"):
-                success = True
-                
-        if refresh_token:
-            if await self.blacklist_token(refresh_token, "logout"):
-                success = True
-        
-        return success
-    
-    # ===========================================
-    # User Authentication
-    # ===========================================
-    
-    async def authenticate_user(
-        self, 
-        db: AsyncSession, 
-        email: str, 
-        password: str
-    ) -> Optional[User]:
-        """
-        Authenticate a user by email and password.
-        
-        Returns:
-            User if authentication successful, None otherwise
-        """
-        # Query user by email
-        result = await db.execute(
-            select(User).where(User.email == email.lower())
-        )
-        user = result.scalar_one_or_none()
-        
-        if not user:
-            logger.info(f"Authentication failed: user not found - {email}")
-            return None
-        
-        if not self.verify_password(password, user.hashed_password):
-            logger.info(f"Authentication failed: invalid password - {email}")
-            return None
-        
-        if not user.is_active:
-            logger.info(f"Authentication failed: user inactive - {email}")
-            return None
-        
-        # Update last login
-        user.last_login = datetime.utcnow()
-        await db.commit()
-        
-        return user
-    
-    # ===========================================
-    # User Registration
-    # ===========================================
-    
+
+    @staticmethod
+    def hash_password(password: str) -> str:
+        return pwd_context.hash(password)
+
+    # ------------------------------------------------------------------
+    # Registration
+    # ------------------------------------------------------------------
+
     async def register_user(
         self,
         db: AsyncSession,
+        *,
         email: str,
         password: str,
-        full_name: str
+        full_name: str,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
     ) -> Tuple[User, Optional[str]]:
+        """Register a new user.
+
+        Returns ``(user, raw_verification_token_or_None)``.
+        Raises ``AuthError`` on duplicate email.
         """
-        Register a new user.
-        
-        Returns:
-            Tuple of (User, verification_token or None)
-        """
-        logger.info(f"[register_user] Starting registration for: {email}")
-        
-        # Step 1: Check if email already exists
-        try:
-            logger.debug(f"[register_user] Checking for existing email...")
-            result = await db.execute(
-                select(User).where(User.email == email.lower())
-            )
-            existing_user = result.scalar_one_or_none()
-            
-            if existing_user:
-                logger.warning(f"[register_user] Email already registered: {email}")
-                raise ValueError("Email already registered")
-            logger.debug(f"[register_user] Email available")
-        except ValueError:
-            raise
-        except Exception as e:
-            logger.error(f"[register_user] Database query failed: {e}")
-            raise ValueError(f"Database error checking email: {str(e)}")
-        
-        # Step 2: Generate verification token if required
-        verification_token = None
-        verification_expires = None
-        if settings.FEATURE_EMAIL_VERIFICATION_REQUIRED:
-            verification_token = secrets.token_urlsafe(32)
-            verification_expires = datetime.utcnow() + timedelta(
-                hours=settings.EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS
-            )
-            logger.debug(f"[register_user] Verification token generated")
-        
-        # Step 3: Hash password
-        try:
-            logger.debug(f"[register_user] Hashing password...")
-            hashed_password = self.get_password_hash(password)
-            logger.debug(f"[register_user] Password hashed successfully")
-        except Exception as e:
-            logger.error(f"[register_user] Password hashing failed: {e}")
-            raise ValueError(f"Password hashing failed: {str(e)}")
-        
-        # Step 4: Create user (without profile - profile created on demand)
-        try:
-            logger.debug(f"[register_user] Creating user record...")
-            user = User(
-                email=email.lower(),
-                hashed_password=hashed_password,
-                full_name=full_name,
-                is_active=True,
-                is_verified=not settings.FEATURE_EMAIL_VERIFICATION_REQUIRED,
-                verification_token=verification_token,
-                verification_token_expires=verification_expires,
-            )
-            
-            db.add(user)
-            await db.flush()
-            logger.debug(f"[register_user] User record created with id: {user.id}")
-        except Exception as e:
-            logger.error(f"[register_user] User creation failed: {e}")
-            raise ValueError(f"User creation failed: {str(e)}")
-        
-        # Step 5: Create user profile (separate try-catch for isolation)
-        try:
-            logger.debug(f"[register_user] Creating user profile...")
-            profile = UserProfile(user_id=user.id)
-            db.add(profile)
-            await db.flush()
-            logger.debug(f"[register_user] Profile created successfully")
-        except Exception as e:
-            # Profile creation is optional - log but don't fail registration
-            logger.warning(f"[register_user] Profile creation failed (non-fatal): {e}")
-        
-        # Note: Don't commit here - let the FastAPI dependency (get_db) handle the commit
-        # This ensures proper transaction management and rollback on errors
-        logger.info(f"[register_user] User registered successfully: {email}")
-        
-        return user, verification_token
-    
-    # ===========================================
-    # Email Verification
-    # ===========================================
-    
-    async def verify_email(
-        self, 
-        db: AsyncSession, 
-        token: str
-    ) -> Optional[User]:
-        """
-        Verify a user's email with the verification token.
-        
-        Returns:
-            User if verification successful, None otherwise
-        """
-        result = await db.execute(
-            select(User).where(
-                User.verification_token == token,
-                User.verification_token_expires > datetime.utcnow()
-            )
+        email = email.lower().strip()
+
+        existing = await user_repo.get_by_email(db, email)
+        if existing:
+            raise AuthError("Email already registered", status_code=409)
+
+        hashed = self.hash_password(password)
+        requires_verification = settings.FEATURE_EMAIL_VERIFICATION_REQUIRED
+
+        user = await user_repo.create(
+            db,
+            email=email,
+            hashed_password=hashed,
+            full_name=full_name.strip(),
+            is_active=True,
+            is_verified=not requires_verification,
         )
-        user = result.scalar_one_or_none()
-        
-        if not user:
-            return None
-        
-        user.is_verified = True
-        user.verification_token = None
-        user.verification_token_expires = None
-        
-        await db.commit()
-        await db.refresh(user)
-        
-        logger.info(f"Email verified: {user.email}")
-        
-        return user
-    
-    # ===========================================
-    # Password Reset
-    # ===========================================
-    
-    async def create_password_reset_token(
-        self, 
-        db: AsyncSession, 
-        email: str
-    ) -> Optional[tuple[str, User]]:
-        """
-        Create a password reset token for a user.
-        
-        Returns:
-            Tuple of (reset_token, user) if user found, None otherwise
-        """
-        result = await db.execute(
-            select(User).where(User.email == email.lower())
+
+        # Create profile
+        await user_repo.create_profile(db, user.id)
+
+        # Assign default member role
+        member_role = await role_repo.get_role_by_name(db, "member")
+        if member_role:
+            await role_repo.assign_role(db, user.id, member_role.id)
+
+        # Verification token
+        raw_token: Optional[str] = None
+        if requires_verification:
+            raw_token = await token_service.create_verification_token(
+                db, user.id, TokenType.EMAIL_VERIFICATION
+            )
+
+        # Audit
+        await audit_repo.log(
+            db,
+            action=AuditAction.REGISTER,
+            user_id=user.id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            metadata={"email": email},
         )
-        user = result.scalar_one_or_none()
-        
-        if not user:
-            # Don't reveal if user exists
-            return None
-        
-        # Generate reset token
-        reset_token = secrets.token_urlsafe(32)
-        user.reset_token = reset_token
-        user.reset_token_expires = datetime.utcnow() + timedelta(
-            hours=settings.PASSWORD_RESET_TOKEN_EXPIRE_HOURS
-        )
-        
-        await db.commit()
-        
-        logger.info(f"Password reset token created: {email}")
-        
-        return (reset_token, user)
-    
-    async def regenerate_verification_token(
+
+        logger.info("User registered: %s", email)
+        return user, raw_token
+
+    # ------------------------------------------------------------------
+    # Authentication (login)
+    # ------------------------------------------------------------------
+
+    async def authenticate(
         self,
         db: AsyncSession,
-        user: User
-    ) -> Optional[str]:
+        *,
+        email: str,
+        password: str,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        device_name: Optional[str] = None,
+        remember_me: bool = False,
+    ) -> Tuple[User, UserSession, str]:
+        """Authenticate a user and create a session.
+
+        Returns ``(user, session, jwt)``.
+        Raises ``AuthError`` on failure, ``MFARequired`` when MFA is needed.
         """
-        Regenerate a verification token for a user.
-        
-        Returns:
-            New verification token
-        """
-        if user.is_verified:
-            return None
-        
-        # Generate new token
-        verification_token = secrets.token_urlsafe(32)
-        user.verification_token = verification_token
-        user.verification_token_expires = datetime.utcnow() + timedelta(
-            hours=settings.VERIFICATION_TOKEN_EXPIRE_HOURS
-        )
-        
-        await db.commit()
-        
-        logger.info(f"Verification token regenerated: {user.email}")
-        
-        return verification_token
-    
-    async def reset_password(
-        self, 
-        db: AsyncSession, 
-        token: str, 
-        new_password: str
-    ) -> Optional[User]:
-        """
-        Reset a user's password with the reset token.
-        
-        Returns:
-            User if reset successful, None otherwise
-        """
-        result = await db.execute(
-            select(User).where(
-                User.reset_token == token,
-                User.reset_token_expires > datetime.utcnow()
+        email = email.lower().strip()
+        user = await user_repo.get_by_email(db, email, load_roles=True)
+
+        if user is None:
+            raise AuthError("Invalid email or password", status_code=401)
+
+        # Account lockout check
+        if user.locked_until and user.locked_until > datetime.now(timezone.utc):
+            remaining = int((user.locked_until - datetime.now(timezone.utc)).total_seconds())
+            raise AuthError(
+                f"Account is temporarily locked. Try again in {remaining // 60 + 1} minutes.",
+                status_code=423,
             )
+
+        if not user.is_active:
+            raise AuthError("Account is deactivated", status_code=403)
+
+        # Verify password
+        if not self.verify_password(password, user.hashed_password):
+            new_count = await user_repo.increment_failed_logins(db, user.id)
+            await audit_repo.log(
+                db,
+                action=AuditAction.LOGIN_FAILED,
+                user_id=user.id,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                metadata={"attempt": new_count},
+            )
+            if new_count >= MAX_FAILED_ATTEMPTS:
+                lockout_mins = LOCKOUT_DURATION_MINUTES * (
+                    LOCKOUT_PROGRESSIVE_MULTIPLIER ** ((new_count - MAX_FAILED_ATTEMPTS) // MAX_FAILED_ATTEMPTS)
+                )
+                lock_until = datetime.now(timezone.utc) + timedelta(minutes=lockout_mins)
+                await user_repo.lock_account(db, user.id, lock_until)
+                await audit_repo.log(
+                    db,
+                    action=AuditAction.ACCOUNT_LOCKED,
+                    user_id=user.id,
+                    ip_address=ip_address,
+                    metadata={"locked_until": lock_until.isoformat(), "attempts": new_count},
+                )
+                raise AuthError(
+                    f"Too many failed attempts. Account locked for {lockout_mins} minutes.",
+                    status_code=423,
+                )
+            raise AuthError("Invalid email or password", status_code=401)
+
+        # Email verification check
+        if settings.FEATURE_EMAIL_VERIFICATION_REQUIRED and not user.is_verified:
+            raise AuthError("Email not verified. Please check your inbox.", status_code=403)
+
+        # MFA check
+        if user.mfa_enabled and user.mfa_secret:
+            # Create a short-lived MFA challenge token
+            challenge_token = await token_service.create_verification_token(
+                db, user.id, TokenType.MFA_SETUP, expires_hours=0  # will override below
+            )
+            # Override — MFA challenge valid for 5 minutes only
+            # (the token_service already created a record; we're reusing it here)
+            raise MFARequired(challenge_token=challenge_token, user_id=user.id)
+
+        # Success — reset lockout and create session
+        await user_repo.reset_failed_logins(db, user.id)
+        await user_repo.update(db, user.id, last_login=datetime.now(timezone.utc))
+
+        session_obj, jwt_token = await session_service.create_session(
+            db,
+            user.id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            device_name=device_name,
+            remember_me=remember_me,
         )
-        user = result.scalar_one_or_none()
-        
-        if not user:
-            return None
-        
-        user.hashed_password = self.get_password_hash(new_password)
-        user.reset_token = None
-        user.reset_token_expires = None
-        
-        await db.commit()
-        await db.refresh(user)
-        
-        logger.info(f"Password reset completed: {user.email}")
-        
+
+        await audit_repo.log(
+            db,
+            action=AuditAction.LOGIN,
+            user_id=user.id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            metadata={"session_id": str(session_obj.id)},
+        )
+
+        logger.info("User authenticated: %s", email)
+        return user, session_obj, jwt_token
+
+    # ------------------------------------------------------------------
+    # MFA
+    # ------------------------------------------------------------------
+
+    async def verify_mfa_login(
+        self,
+        db: AsyncSession,
+        *,
+        challenge_token: str,
+        totp_code: str,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        device_name: Optional[str] = None,
+        remember_me: bool = False,
+    ) -> Tuple[User, UserSession, str]:
+        """Complete MFA login after a successful password check."""
+        user_id = await token_service.validate_verification_token(
+            db, challenge_token, TokenType.MFA_SETUP
+        )
+        if user_id is None:
+            raise AuthError("Invalid or expired MFA challenge", status_code=401)
+
+        user = await user_repo.get_by_id(db, user_id, load_roles=True)
+        if user is None or not user.mfa_enabled or not user.mfa_secret:
+            raise AuthError("MFA not configured", status_code=400)
+
+        totp = pyotp.TOTP(user.mfa_secret)
+        if not totp.verify(totp_code, valid_window=1):
+            await audit_repo.log(
+                db,
+                action=AuditAction.MFA_CHALLENGE,
+                user_id=user.id,
+                ip_address=ip_address,
+                metadata={"result": "failed"},
+            )
+            raise AuthError("Invalid MFA code", status_code=401)
+
+        # MFA passed — create session
+        await user_repo.reset_failed_logins(db, user.id)
+        await user_repo.update(db, user.id, last_login=datetime.now(timezone.utc))
+
+        session_obj, jwt_token = await session_service.create_session(
+            db,
+            user.id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            device_name=device_name,
+            remember_me=remember_me,
+        )
+
+        await audit_repo.log(
+            db,
+            action=AuditAction.LOGIN,
+            user_id=user.id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            metadata={"session_id": str(session_obj.id), "mfa": True},
+        )
+
+        return user, session_obj, jwt_token
+
+    async def setup_mfa(
+        self,
+        db: AsyncSession,
+        user_id: uuid.UUID,
+    ) -> Tuple[str, str]:
+        """Begin MFA setup.  Returns ``(secret, provisioning_uri)``."""
+        user = await user_repo.get_by_id(db, user_id)
+        if user is None:
+            raise AuthError("User not found", status_code=404)
+
+        secret = pyotp.random_base32()
+        totp = pyotp.TOTP(secret)
+        uri = totp.provisioning_uri(name=user.email, issuer_name=settings.APP_NAME)
+
+        # Store the secret temporarily — not yet enabled
+        await user_repo.update(db, user_id, mfa_secret=secret)
+        return secret, uri
+
+    async def confirm_mfa(
+        self,
+        db: AsyncSession,
+        user_id: uuid.UUID,
+        totp_code: str,
+        *,
+        ip_address: Optional[str] = None,
+    ) -> bool:
+        """Confirm MFA setup by verifying a code from the authenticator app."""
+        user = await user_repo.get_by_id(db, user_id)
+        if user is None or not user.mfa_secret:
+            raise AuthError("MFA setup not started", status_code=400)
+
+        totp = pyotp.TOTP(user.mfa_secret)
+        if not totp.verify(totp_code, valid_window=1):
+            raise AuthError("Invalid MFA code", status_code=400)
+
+        await user_repo.update(db, user_id, mfa_enabled=True)
+        await audit_repo.log(
+            db,
+            action=AuditAction.MFA_ENABLE,
+            user_id=user_id,
+            ip_address=ip_address,
+        )
+        return True
+
+    async def disable_mfa(
+        self,
+        db: AsyncSession,
+        user_id: uuid.UUID,
+        *,
+        ip_address: Optional[str] = None,
+    ) -> None:
+        await user_repo.update(db, user_id, mfa_secret=None, mfa_enabled=False)
+        await audit_repo.log(
+            db,
+            action=AuditAction.MFA_DISABLE,
+            user_id=user_id,
+            ip_address=ip_address,
+        )
+
+    # ------------------------------------------------------------------
+    # Email verification
+    # ------------------------------------------------------------------
+
+    async def verify_email(
+        self,
+        db: AsyncSession,
+        raw_token: str,
+        *,
+        ip_address: Optional[str] = None,
+    ) -> User:
+        user_id = await token_service.validate_verification_token(
+            db, raw_token, TokenType.EMAIL_VERIFICATION
+        )
+        if user_id is None:
+            raise AuthError("Invalid or expired verification token", status_code=400)
+
+        await user_repo.update(db, user_id, is_verified=True)
+        user = await user_repo.get_by_id(db, user_id)
+        if user is None:
+            raise AuthError("User not found", status_code=404)
+
+        await audit_repo.log(
+            db,
+            action=AuditAction.EMAIL_VERIFICATION,
+            user_id=user_id,
+            ip_address=ip_address,
+        )
         return user
-    
-    # ===========================================
-    # Password Change
-    # ===========================================
-    
+
+    async def resend_verification(
+        self,
+        db: AsyncSession,
+        user_id: uuid.UUID,
+    ) -> Optional[str]:
+        user = await user_repo.get_by_id(db, user_id)
+        if user is None or user.is_verified:
+            return None
+        return await token_service.create_verification_token(
+            db, user.id, TokenType.EMAIL_VERIFICATION
+        )
+
+    # ------------------------------------------------------------------
+    # Password reset
+    # ------------------------------------------------------------------
+
+    async def request_password_reset(
+        self,
+        db: AsyncSession,
+        email: str,
+        *,
+        ip_address: Optional[str] = None,
+    ) -> Optional[Tuple[str, User]]:
+        """Request a password reset.  Returns None if user not found (no leak)."""
+        user = await user_repo.get_by_email(db, email.lower().strip())
+        if user is None:
+            return None
+
+        raw_token = await token_service.create_verification_token(
+            db, user.id, TokenType.PASSWORD_RESET
+        )
+        await audit_repo.log(
+            db,
+            action=AuditAction.PASSWORD_RESET_REQUEST,
+            user_id=user.id,
+            ip_address=ip_address,
+        )
+        return raw_token, user
+
+    async def reset_password(
+        self,
+        db: AsyncSession,
+        raw_token: str,
+        new_password: str,
+        *,
+        ip_address: Optional[str] = None,
+    ) -> User:
+        user_id = await token_service.validate_verification_token(
+            db, raw_token, TokenType.PASSWORD_RESET
+        )
+        if user_id is None:
+            raise AuthError("Invalid or expired reset token", status_code=400)
+
+        hashed = self.hash_password(new_password)
+        await user_repo.update(
+            db,
+            user_id,
+            hashed_password=hashed,
+            password_changed_at=datetime.now(timezone.utc),
+        )
+
+        # Revoke all existing sessions
+        await session_service.revoke_all_sessions(db, user_id)
+
+        user = await user_repo.get_by_id(db, user_id)
+        if user is None:
+            raise AuthError("User not found", status_code=404)
+
+        await audit_repo.log(
+            db,
+            action=AuditAction.PASSWORD_RESET_COMPLETE,
+            user_id=user_id,
+            ip_address=ip_address,
+        )
+        return user
+
+    # ------------------------------------------------------------------
+    # Password change (authenticated)
+    # ------------------------------------------------------------------
+
     async def change_password(
         self,
         db: AsyncSession,
-        user: User,
+        user_id: uuid.UUID,
         current_password: str,
-        new_password: str
+        new_password: str,
+        *,
+        current_session_id: Optional[uuid.UUID] = None,
+        ip_address: Optional[str] = None,
     ) -> bool:
-        """
-        Change a user's password (requires current password).
-        
-        Returns:
-            True if change successful, False otherwise
-        """
+        user = await user_repo.get_by_id(db, user_id)
+        if user is None:
+            raise AuthError("User not found", status_code=404)
+
         if not self.verify_password(current_password, user.hashed_password):
-            return False
-        
-        user.hashed_password = self.get_password_hash(new_password)
-        await db.commit()
-        
-        logger.info(f"Password changed: {user.email}")
-        
-        return True
-    
-    # ===========================================
-    # User Lookup
-    # ===========================================
-    
-    async def get_user_by_id(
-        self, 
-        db: AsyncSession, 
-        user_id: str,
-        include_profile: bool = False
-    ) -> Optional[User]:
-        """Get a user by ID."""
-        query = select(User).where(User.id == user_id)
-        
-        if include_profile:
-            query = query.options(selectinload(User.profile))
-        
-        result = await db.execute(query)
-        return result.scalar_one_or_none()
-    
-    async def get_user_by_email(
-        self, 
-        db: AsyncSession, 
-        email: str
-    ) -> Optional[User]:
-        """Get a user by email."""
-        result = await db.execute(
-            select(User).where(User.email == email.lower())
+            raise AuthError("Current password is incorrect", status_code=400)
+
+        hashed = self.hash_password(new_password)
+        await user_repo.update(
+            db,
+            user_id,
+            hashed_password=hashed,
+            password_changed_at=datetime.now(timezone.utc),
         )
-        return result.scalar_one_or_none()
+
+        # Revoke all sessions except the current one
+        await session_service.revoke_all_sessions(
+            db, user_id, except_session_id=current_session_id
+        )
+
+        await audit_repo.log(
+            db,
+            action=AuditAction.PASSWORD_CHANGE,
+            user_id=user_id,
+            ip_address=ip_address,
+        )
+        return True
+
+    # ------------------------------------------------------------------
+    # Logout
+    # ------------------------------------------------------------------
+
+    async def logout(
+        self,
+        db: AsyncSession,
+        session_id: uuid.UUID,
+        *,
+        user_id: Optional[uuid.UUID] = None,
+        ip_address: Optional[str] = None,
+    ) -> None:
+        await session_service.revoke_session(db, session_id)
+        await audit_repo.log(
+            db,
+            action=AuditAction.LOGOUT,
+            user_id=user_id,
+            ip_address=ip_address,
+            metadata={"session_id": str(session_id)},
+        )
 
 
-# Singleton instance
+# Module-level singleton
 auth_service = AuthService()
-

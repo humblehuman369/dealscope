@@ -275,10 +275,18 @@ try:
         RateLimitMiddleware,
         SecurityHeadersMiddleware,
         RequestTimingMiddleware,
+        CSRFMiddleware,
+        RequestIDMiddleware,
     )
     
     # Add security headers to all responses
     app.add_middleware(SecurityHeadersMiddleware)
+    
+    # Add CSRF protection (double-submit cookie for cookie-based auth)
+    app.add_middleware(CSRFMiddleware)
+    
+    # Add request ID for tracing
+    app.add_middleware(RequestIDMiddleware)
     
     # Add request timing for performance monitoring
     app.add_middleware(RequestTimingMiddleware)
@@ -290,7 +298,7 @@ try:
         default_period=settings.RATE_LIMIT_PERIOD,
     )
     
-    logger.info("Security middleware enabled: rate limiting, security headers, request timing")
+    logger.info("Security middleware enabled: rate limiting, CSRF, security headers, request timing, request ID")
 except Exception as e:
     logger.warning(f"Could not load security middleware: {e}")
 

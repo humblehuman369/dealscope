@@ -19,69 +19,27 @@ interface RequestOptions {
 }
 
 /**
- * In-memory token storage.
- * 
- * Tokens are stored in memory (not localStorage) for XSS safety.
- * This works alongside httpOnly cookies as a fallback:
- * - Same-origin deployments: cookies handle auth automatically
- * - Cross-origin deployments (e.g. localhost:3000 → localhost:8000):
- *   cookies may not work due to Secure/SameSite restrictions,
- *   so we use Bearer tokens in the Authorization header.
- * 
- * Tokens are stored in-memory AND sessionStorage.
- * In-memory is the primary source (fastest, no DOM access).
- * sessionStorage is the fallback so tokens survive full page reloads
- * (e.g. window.location.href navigations) within the same browser tab.
- * sessionStorage is automatically cleared when the tab is closed.
+ * Token management — now cookie-only for web.
+ *
+ * These functions are kept as no-ops for backward compatibility with
+ * code that imports them.  Tokens are managed exclusively via httpOnly
+ * cookies set by the server — no JS-accessible token storage.
  */
-let _accessToken: string | null = null
-let _refreshToken: string | null = null
-
-const TOKEN_KEYS = {
-  access: 'iq_access_token',
-  refresh: 'iq_refresh_token',
-} as const
-
-function _readSession(key: string): string | null {
-  if (typeof window === 'undefined') return null
-  try { return sessionStorage.getItem(key) } catch { return null }
-}
-
-function _writeSession(key: string, value: string | null): void {
-  if (typeof window === 'undefined') return
-  try {
-    if (value) sessionStorage.setItem(key, value)
-    else sessionStorage.removeItem(key)
-  } catch { /* ignore quota/security errors */ }
-}
 
 function getAccessToken(): string | null {
-  if (_accessToken) return _accessToken
-  // Fallback: restore from sessionStorage after a page reload
-  const stored = _readSession(TOKEN_KEYS.access)
-  if (stored) _accessToken = stored
-  return _accessToken
+  return null  // Cookie-only — no JS access
 }
 
 function getRefreshToken(): string | null {
-  if (_refreshToken) return _refreshToken
-  const stored = _readSession(TOKEN_KEYS.refresh)
-  if (stored) _refreshToken = stored
-  return _refreshToken
+  return null  // Cookie-only — no JS access
 }
 
-function storeTokens(accessToken: string, refreshToken: string): void {
-  _accessToken = accessToken
-  _refreshToken = refreshToken
-  _writeSession(TOKEN_KEYS.access, accessToken)
-  _writeSession(TOKEN_KEYS.refresh, refreshToken)
+function storeTokens(_accessToken: string, _refreshToken: string): void {
+  // No-op — tokens are now in httpOnly cookies
 }
 
 function clearTokens(): void {
-  _accessToken = null
-  _refreshToken = null
-  _writeSession(TOKEN_KEYS.access, null)
-  _writeSession(TOKEN_KEYS.refresh, null)
+  // No-op — cookies are cleared by the server on logout
 }
 
 /**
@@ -140,31 +98,23 @@ function redirectToLogin(): void {
 }
 
 /**
- * Main API request function with auth handling
- * 
- * Uses both httpOnly cookies AND Authorization header for authentication:
- * - Same-origin: cookies are sent automatically (XSS-safe)
- * - Cross-origin: Bearer token in Authorization header (fallback)
- * The backend accepts both (cookies take precedence on server side).
+ * Main API request function with cookie-only auth.
+ *
+ * Auth is handled entirely via httpOnly cookies — no JS token storage.
+ * credentials: 'include' ensures cookies are sent on every request.
  */
 async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, headers = {}, skipAuth = false } = options
 
-  // Build headers - include Authorization if we have a token
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     ...headers,
   }
 
-  const token = getAccessToken()
-  if (token && !skipAuth) {
-    requestHeaders['Authorization'] = `Bearer ${token}`
-  }
-
   const config: RequestInit = {
     method,
     headers: requestHeaders,
-    credentials: 'include', // Also send cookies for same-origin
+    credentials: 'include',
   }
 
   if (body) {
@@ -173,19 +123,12 @@ async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Pr
 
   let response = await fetch(`${API_BASE_URL}${endpoint}`, config)
 
-  // Handle 401 Unauthorized - attempt token refresh
+  // Handle 401 — try refresh once
   if (response.status === 401 && !skipAuth) {
     const refreshSuccess = await refreshAccessToken()
-    
     if (refreshSuccess) {
-      // Retry the request with new token
-      const retryToken = getAccessToken()
-      if (retryToken) {
-        (config.headers as Record<string, string>)['Authorization'] = `Bearer ${retryToken}`
-      }
       response = await fetch(`${API_BASE_URL}${endpoint}`, config)
     } else {
-      // Token refresh failed - redirect to login
       redirectToLogin()
       throw new Error('Session expired. Please log in again.')
     }

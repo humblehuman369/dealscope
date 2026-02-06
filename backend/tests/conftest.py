@@ -17,8 +17,18 @@ from sqlalchemy.pool import StaticPool
 
 from app.db.base import Base
 from app.models.user import User, UserProfile
-from app.models.subscription import Subscription
-from app.services.auth_service import AuthService
+from app.models.session import UserSession
+from app.models.role import Role, Permission, RolePermission, UserRole
+from app.models.audit_log import AuditLog
+from app.models.verification_token import VerificationToken
+from app.services.auth_service import AuthService, auth_service
+from app.services.token_service import TokenService, token_service
+from app.services.session_service import SessionService, session_service
+from app.repositories.user_repository import UserRepository, user_repo
+from app.repositories.session_repository import SessionRepository, session_repo
+from app.repositories.role_repository import RoleRepository, role_repo
+from app.repositories.audit_repository import AuditRepository, audit_repo
+from app.repositories.token_repository import TokenRepository, token_repo
 
 
 # Use in-memory SQLite for testing (with async driver)
@@ -41,78 +51,83 @@ async def async_engine():
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
-    
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+
     yield engine
-    
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-    
+
     await engine.dispose()
 
 
 @pytest.fixture(scope="function")
 async def db_session(async_engine) -> AsyncGenerator[AsyncSession, None]:
     """Create a database session for testing."""
-    async_session_maker = async_sessionmaker(
-        async_engine, 
-        class_=AsyncSession, 
-        expire_on_commit=False
+    factory = async_sessionmaker(
+        async_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
     )
-    
-    async with async_session_maker() as session:
+
+    async with factory() as session:
         yield session
         await session.rollback()
 
 
 @pytest.fixture
-def auth_service() -> AuthService:
-    """Create an auth service instance for testing."""
-    return AuthService()
+async def seeded_roles(db_session: AsyncSession) -> dict:
+    """Seed default roles and return a name->Role mapping."""
+    roles = {}
+    for name, desc in [
+        ("owner", "Full access"),
+        ("admin", "Admin access"),
+        ("member", "Standard user"),
+        ("viewer", "Read-only"),
+    ]:
+        role = Role(name=name, description=desc)
+        db_session.add(role)
+        roles[name] = role
+    await db_session.flush()
+    return roles
 
 
 @pytest.fixture
 def sample_user_data() -> dict:
-    """Sample user registration data."""
     return {
         "email": "test@example.com",
         "password": "SecurePassword123",
-        "full_name": "Test User"
+        "full_name": "Test User",
     }
 
 
 @pytest.fixture
-def sample_weak_passwords() -> list:
-    """List of passwords that should fail validation."""
-    return [
-        "short",           # Too short
-        "alllowercase1",   # No uppercase
-        "ALLUPPERCASE1",   # No lowercase  
-        "NoNumbers",       # No digit
-        "12345678",        # No letters
-    ]
-
-
-@pytest.fixture
-async def created_user(db_session: AsyncSession, auth_service: AuthService, sample_user_data: dict) -> User:
-    """Create a test user in the database."""
-    user, _ = await auth_service.register_user(
-        db=db_session,
+async def created_user(
+    db_session: AsyncSession,
+    seeded_roles: dict,
+    sample_user_data: dict,
+) -> User:
+    """Create a test user in the database with member role."""
+    user = await user_repo.create(
+        db_session,
         email=sample_user_data["email"],
-        password=sample_user_data["password"],
-        full_name=sample_user_data["full_name"]
+        hashed_password=auth_service.hash_password(sample_user_data["password"]),
+        full_name=sample_user_data["full_name"],
+        is_active=True,
+        is_verified=True,
     )
-    await db_session.commit()
+    await role_repo.assign_role(db_session, user.id, seeded_roles["member"].id)
+    await db_session.flush()
     return user
 
 
 @pytest.fixture
 def mock_email_service():
-    """Mock email service for testing."""
     mock = MagicMock()
     mock.send_verification_email = AsyncMock(return_value={"success": True})
     mock.send_password_reset_email = AsyncMock(return_value={"success": True})
     mock.send_welcome_email = AsyncMock(return_value={"success": True})
+    mock.send_password_changed_email = AsyncMock(return_value={"success": True})
     return mock

@@ -10,6 +10,10 @@ from app.models.share import SharedLink, ShareType
 from app.models.search_history import SearchHistory
 from app.models.subscription import Subscription, PaymentHistory, SubscriptionTier, SubscriptionStatus
 from app.models.assumption_defaults import AdminAssumptionDefaults
+from app.models.session import UserSession
+from app.models.role import Role, Permission, RolePermission, UserRole
+from app.models.audit_log import AuditLog, AuditAction
+from app.models.verification_token import VerificationToken, TokenType
 
 __all__ = [
     "User",
@@ -27,5 +31,14 @@ __all__ = [
     "SubscriptionTier",
     "SubscriptionStatus",
     "AdminAssumptionDefaults",
+    # New auth models
+    "UserSession",
+    "Role",
+    "Permission",
+    "RolePermission",
+    "UserRole",
+    "AuditLog",
+    "AuditAction",
+    "VerificationToken",
+    "TokenType",
 ]
-

@@ -1,11 +1,14 @@
 """
-Middleware for rate limiting, security headers, and request processing.
+Middleware stack: rate limiting, security headers, CSRF protection,
+request timing, and request-ID injection.
 """
-import time
+
 import logging
-from typing import Dict, Optional, Callable
+import secrets
+import time
+import uuid
 from collections import defaultdict
-from datetime import datetime, timedelta
+from typing import Callable, Dict
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -21,38 +24,27 @@ logger = logging.getLogger(__name__)
 # ============================================
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """
-    Rate limiting middleware with Redis support.
-    
-    Uses Redis when available for distributed rate limiting across
-    multiple server instances. Falls back to in-memory for single-instance
-    deployments or when Redis is unavailable.
-    
-    Implements sliding window rate limiting.
-    """
-    
+    """Sliding-window rate limiter with optional Redis backend."""
+
     def __init__(self, app, default_limit: int = 100, default_period: int = 60):
         super().__init__(app)
         self.default_limit = default_limit
         self.default_period = default_period
-        
-        # In-memory storage fallback
         self.requests: Dict[str, list] = defaultdict(list)
-        
-        # Redis client (lazy initialization)
         self._redis_client = None
         self._redis_available = None
-        
-        # Route-specific limits (path prefix -> (limit, period))
+
         self.route_limits: Dict[str, tuple] = {
-            "/api/v1/auth/login": (5, 60),       # 5 per minute for login
-            "/api/v1/auth/register": (3, 60),    # 3 per minute for registration
-            "/api/v1/auth/forgot-password": (3, 60),  # 3 per minute for password reset
-            "/api/v1/properties/search": (30, 60),    # 30 per minute for property search
+            "/api/v1/auth/login": (5, 60),
+            "/api/v1/auth/login/mfa": (10, 60),
+            "/api/v1/auth/register": (3, 60),
+            "/api/v1/auth/forgot-password": (3, 60),
+            "/api/v1/auth/reset-password": (5, 60),
+            "/api/v1/auth/refresh": (20, 60),
+            "/api/v1/properties/search": (30, 60),
         }
-    
+
     async def _get_redis_client(self):
-        """Lazy initialization of Redis client."""
         if self._redis_available is None:
             if settings.REDIS_URL:
                 try:
@@ -64,153 +56,129 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                         socket_connect_timeout=2,
                         socket_timeout=2,
                     )
-                    # Test connection
                     await self._redis_client.ping()
                     self._redis_available = True
                     logger.info("Rate limiting using Redis")
                 except Exception as e:
-                    logger.warning(f"Redis not available for rate limiting: {e}")
+                    logger.warning("Redis not available for rate limiting: %s", e)
                     self._redis_available = False
             else:
                 self._redis_available = False
-                
         return self._redis_client if self._redis_available else None
-    
-    def _get_client_key(self, request: Request) -> str:
-        """Get a unique key for the client (IP + path)."""
+
+    def _client_key(self, request: Request) -> str:
         forwarded = request.headers.get("X-Forwarded-For")
-        if forwarded:
-            client_ip = forwarded.split(",")[0].strip()
-        else:
-            client_ip = request.client.host if request.client else "unknown"
-        
-        return f"ratelimit:{client_ip}:{request.url.path}"
-    
-    def _get_limits(self, path: str) -> tuple:
-        """Get rate limits for a specific path."""
-        for route_prefix, limits in self.route_limits.items():
-            if path.startswith(route_prefix):
-                return limits
+        ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
+        return f"rl:{ip}:{request.url.path}"
+
+    def _limits(self, path: str) -> tuple:
+        for prefix, lim in self.route_limits.items():
+            if path.startswith(prefix):
+                return lim
         return (self.default_limit, self.default_period)
-    
-    async def _is_rate_limited_redis(
-        self,
-        client_key: str,
-        limit: int,
-        period: int
-    ) -> tuple:
-        """
-        Check rate limit using Redis sliding window.
-        
-        Returns: (is_limited: bool, retry_after: int)
-        """
+
+    async def _check_redis(self, key: str, limit: int, period: int) -> tuple:
         redis = await self._get_redis_client()
         if not redis:
-            return await self._is_rate_limited_memory(client_key, limit, period)
-        
+            return await self._check_memory(key, limit, period)
         try:
-            current_time = time.time()
-            window_start = current_time - period
-            
-            # Use Redis sorted set for sliding window
-            # Score = timestamp, member = unique request ID
+            now = time.time()
             pipe = redis.pipeline()
-            
-            # Remove old entries
-            pipe.zremrangebyscore(client_key, 0, window_start)
-            
-            # Count current entries
-            pipe.zcard(client_key)
-            
-            # Add new entry
-            request_id = f"{current_time}:{id(self)}"
-            pipe.zadd(client_key, {request_id: current_time})
-            
-            # Set expiry on the key
-            pipe.expire(client_key, period + 1)
-            
+            pipe.zremrangebyscore(key, 0, now - period)
+            pipe.zcard(key)
+            pipe.zadd(key, {f"{now}:{id(self)}": now})
+            pipe.expire(key, period + 1)
             results = await pipe.execute()
-            current_count = results[1]  # zcard result
-            
-            if current_count >= limit:
-                # Get oldest entry to calculate retry_after
-                oldest = await redis.zrange(client_key, 0, 0, withscores=True)
-                if oldest:
-                    oldest_time = oldest[0][1]
-                    retry_after = int(period - (current_time - oldest_time)) + 1
-                else:
-                    retry_after = period
-                return True, max(retry_after, 1)
-            
+            count = results[1]
+            if count >= limit:
+                oldest = await redis.zrange(key, 0, 0, withscores=True)
+                retry = int(period - (now - oldest[0][1])) + 1 if oldest else period
+                return True, max(retry, 1)
             return False, 0
-            
-        except Exception as e:
-            logger.warning(f"Redis rate limit error, falling back to memory: {e}")
-            return await self._is_rate_limited_memory(client_key, limit, period)
-    
-    async def _is_rate_limited_memory(
-        self,
-        client_key: str,
-        limit: int,
-        period: int
-    ) -> tuple:
-        """Check rate limit using in-memory storage."""
-        current_time = time.time()
-        window_start = current_time - period
-        
-        # Clean up old requests
-        self.requests[client_key] = [
-            (ts, count) for ts, count in self.requests[client_key]
-            if ts >= window_start
-        ]
-        
-        # Count requests in current window
-        request_count = sum(count for _, count in self.requests[client_key])
-        
-        if request_count >= limit:
-            oldest_request = min(
-                (ts for ts, _ in self.requests[client_key]),
-                default=current_time
-            )
-            retry_after = int(period - (current_time - oldest_request)) + 1
-            return True, max(retry_after, 1)
-        
-        # Record this request
-        self.requests[client_key].append((current_time, 1))
-        
+        except Exception:
+            return await self._check_memory(key, limit, period)
+
+    async def _check_memory(self, key: str, limit: int, period: int) -> tuple:
+        now = time.time()
+        window = now - period
+        self.requests[key] = [(t, c) for t, c in self.requests[key] if t >= window]
+        total = sum(c for _, c in self.requests[key])
+        if total >= limit:
+            oldest = min((t for t, _ in self.requests[key]), default=now)
+            retry = int(period - (now - oldest)) + 1
+            return True, max(retry, 1)
+        self.requests[key].append((now, 1))
         return False, 0
-    
+
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        """Process the request with rate limiting."""
-        # Skip rate limiting for health checks and docs
-        skip_paths = ["/health", "/docs", "/redoc", "/openapi.json"]
-        if any(request.url.path.startswith(path) for path in skip_paths):
+        skip = ("/health", "/docs", "/redoc", "/openapi.json")
+        if any(request.url.path.startswith(p) for p in skip):
             return await call_next(request)
-        
-        # Get rate limits for this path
-        client_key = self._get_client_key(request)
-        limit, period = self._get_limits(request.url.path)
-        
-        # Check rate limit (use Redis if available)
-        is_limited, retry_after = await self._is_rate_limited_redis(
-            client_key, limit, period
-        )
-        
-        if is_limited:
-            client_ip = request.client.host if request.client else "unknown"
-            logger.warning(f"Rate limit exceeded for {client_ip}: {request.url.path}")
+
+        key = self._client_key(request)
+        limit, period = self._limits(request.url.path)
+        limited, retry = await self._check_redis(key, limit, period)
+        if limited:
             return JSONResponse(
                 status_code=429,
-                content={
-                    "error": True,
-                    "code": "RATE_LIMIT_EXCEEDED",
-                    "message": "Too many requests. Please try again later.",
-                    "details": {"retry_after": retry_after}
-                },
-                headers={"Retry-After": str(retry_after)}
+                content={"error": True, "code": "RATE_LIMIT_EXCEEDED", "message": "Too many requests.", "details": {"retry_after": retry}},
+                headers={"Retry-After": str(retry)},
             )
-        
         return await call_next(request)
+
+
+# ============================================
+# CSRF PROTECTION MIDDLEWARE (double-submit cookie)
+# ============================================
+
+class CSRFMiddleware(BaseHTTPMiddleware):
+    """Double-submit cookie CSRF protection for cookie-based auth.
+
+    On every response we set a non-httpOnly ``csrf_token`` cookie.
+    Mutating requests (POST/PUT/PATCH/DELETE) from browser clients must
+    echo it back in the ``X-CSRF-Token`` header.
+
+    Mobile / API clients using Authorization header (no cookies) are
+    exempt because CSRF is a browser-only attack vector.
+    """
+
+    SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
+    EXEMPT_PREFIXES = ("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh", "/health", "/docs", "/redoc", "/openapi.json")
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        # Always set the CSRF cookie so the client has a token
+        csrf_cookie = request.cookies.get("csrf_token")
+        if not csrf_cookie:
+            csrf_cookie = secrets.token_urlsafe(32)
+
+        # Check on mutating requests
+        if request.method not in self.SAFE_METHODS:
+            # Exempt if request uses Authorization header (mobile/API)
+            has_auth_header = "authorization" in {k.lower() for k in request.headers.keys()}
+            is_exempt_path = any(request.url.path.startswith(p) for p in self.EXEMPT_PREFIXES)
+
+            if not has_auth_header and not is_exempt_path:
+                # Browser client using cookies — require CSRF header
+                has_cookie = "access_token" in request.cookies
+                if has_cookie:
+                    header_token = request.headers.get("X-CSRF-Token", "")
+                    if not header_token or header_token != csrf_cookie:
+                        return JSONResponse(status_code=403, content={"detail": "CSRF token missing or invalid"})
+
+        response = await call_next(request)
+
+        # Set (or refresh) CSRF cookie — readable by JS
+        response.set_cookie(
+            key="csrf_token",
+            value=csrf_cookie,
+            httponly=False,
+            secure=settings.COOKIE_SECURE,
+            samesite=settings.COOKIE_SAMESITE,
+            domain=settings.COOKIE_DOMAIN,
+            max_age=86400 * 7,
+            path="/",
+        )
+        return response
 
 
 # ============================================
@@ -218,44 +186,17 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 # ============================================
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """
-    Add security headers to all responses.
-    
-    Headers added:
-    - X-Content-Type-Options: Prevent MIME type sniffing
-    - X-Frame-Options: Prevent clickjacking
-    - X-XSS-Protection: Enable browser XSS protection
-    - Referrer-Policy: Control referrer information
-    - Content-Security-Policy: Control resource loading (for API, minimal)
-    - Strict-Transport-Security: Enforce HTTPS (production only)
-    """
-    
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         response = await call_next(request)
-        
-        # Prevent MIME type sniffing
         response.headers["X-Content-Type-Options"] = "nosniff"
-        
-        # Prevent clickjacking (API shouldn't be framed)
         response.headers["X-Frame-Options"] = "DENY"
-        
-        # Enable XSS protection in older browsers
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        
-        # Control referrer information
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        
-        # Content Security Policy for API responses
         response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
-        
-        # HSTS header (only in production with HTTPS)
         if settings.is_production:
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        
-        # Remove server header to avoid version disclosure
         if "server" in response.headers:
             del response.headers["server"]
-        
         return response
 
 
@@ -264,23 +205,26 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 # ============================================
 
 class RequestTimingMiddleware(BaseHTTPMiddleware):
-    """
-    Log request timing for performance monitoring.
-    """
-    
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        start_time = time.time()
-        
+        start = time.time()
         response = await call_next(request)
-        
-        process_time = time.time() - start_time
-        response.headers["X-Process-Time"] = f"{process_time:.4f}"
-        
-        # Log slow requests (>500ms)
-        if process_time > 0.5:
-            logger.warning(
-                f"Slow request: {request.method} {request.url.path} "
-                f"took {process_time:.2f}s"
-            )
-        
+        elapsed = time.time() - start
+        response.headers["X-Process-Time"] = f"{elapsed:.4f}"
+        if elapsed > 0.5:
+            logger.warning("Slow request: %s %s took %.2fs", request.method, request.url.path, elapsed)
+        return response
+
+
+# ============================================
+# REQUEST ID MIDDLEWARE
+# ============================================
+
+class RequestIDMiddleware(BaseHTTPMiddleware):
+    """Inject a unique request ID for tracing."""
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+        request.state.request_id = request_id
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = request_id
         return response

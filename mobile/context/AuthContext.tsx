@@ -1,20 +1,24 @@
 /**
- * Authentication context provider.
- * Manages user authentication state across the app.
+ * Authentication context — wraps the new authService for mobile.
+ *
+ * Provides backward-compatible `useAuth()` hook for existing screens
+ * while adding MFA and new auth flow support.
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
-  User,
-  LoginData,
-  RegisterData,
+  type UserResponse as User,
   login as authLogin,
+  loginMfa as authLoginMfa,
   logout as authLogout,
   register as authRegister,
   getCurrentUser,
   getStoredUserData,
-  isAuthenticated,
+  initializeAuth,
+  getRefreshToken,
   AuthError,
+  type MFAChallengeResponse,
+  type LoginResponse,
 } from '../services/authService';
 
 interface AuthState {
@@ -25,8 +29,9 @@ interface AuthState {
 }
 
 interface AuthContextType extends AuthState {
-  login: (data: LoginData) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<LoginResponse | MFAChallengeResponse>;
+  loginMfa: (challengeToken: string, totpCode: string, rememberMe?: boolean) => Promise<LoginResponse>;
+  register: (email: string, password: string, fullName: string) => Promise<{ message: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   clearError: () => void;
@@ -48,49 +53,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Initialize auth state on mount
   useEffect(() => {
-    async function initAuth() {
+    async function init() {
       try {
-        // Check if we have stored auth
-        const authenticated = await isAuthenticated();
-        
-        if (authenticated) {
-          // Try to get user data
-          const storedUser = await getStoredUserData();
-          
-          if (storedUser) {
-            setState({
-              user: storedUser,
-              isLoading: false,
-              isAuthenticated: true,
-              error: null,
-            });
-            
-            // Refresh user data in background
-            getCurrentUser().then((freshUser) => {
-              if (freshUser) {
-                setState((prev) => ({ ...prev, user: freshUser }));
-              }
-            });
-          } else {
-            // Have token but no user data - fetch it
-            const user = await getCurrentUser();
-            setState({
-              user,
-              isLoading: false,
-              isAuthenticated: !!user,
-              error: null,
-            });
-          }
-        } else {
-          setState({
-            user: null,
-            isLoading: false,
-            isAuthenticated: false,
-            error: null,
-          });
-        }
-      } catch (error) {
-        console.warn('Auth initialization error:', error);
+        const user = await initializeAuth();
+        setState({
+          user,
+          isLoading: false,
+          isAuthenticated: !!user,
+          error: null,
+        });
+      } catch {
         setState({
           user: null,
           isLoading: false,
@@ -99,90 +71,96 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
       }
     }
-
-    initAuth();
+    init();
   }, []);
 
-  const login = useCallback(async (data: LoginData) => {
+  const login = useCallback(async (email: string, password: string, rememberMe = false) => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
-    
     try {
-      const result = await authLogin(data);
-      
+      const result = await authLogin(email, password, rememberMe);
+
+      // MFA required — return challenge without setting user
+      if ('mfa_required' in result && result.mfa_required) {
+        setState((prev) => ({ ...prev, isLoading: false }));
+        return result;
+      }
+
+      const loginData = result as LoginResponse;
+      setState({
+        user: loginData.user,
+        isLoading: false,
+        isAuthenticated: true,
+        error: null,
+      });
+      return loginData;
+    } catch (err: any) {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: err.message || 'Login failed',
+      }));
+      throw err;
+    }
+  }, []);
+
+  const loginMfa = useCallback(async (challengeToken: string, totpCode: string, rememberMe = false) => {
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+    try {
+      const result = await authLoginMfa(challengeToken, totpCode, rememberMe);
       setState({
         user: result.user,
         isLoading: false,
         isAuthenticated: true,
         error: null,
       });
-    } catch (error) {
-      const message = error instanceof AuthError 
-        ? error.message 
-        : 'Login failed. Please try again.';
-      
+      return result;
+    } catch (err: any) {
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: message,
+        error: err.message || 'MFA verification failed',
       }));
-      
-      throw error;
+      throw err;
     }
   }, []);
 
-  const register = useCallback(async (data: RegisterData) => {
+  const register = useCallback(async (email: string, password: string, fullName: string) => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
-    
     try {
-      const registeredUser = await authRegister(data);
-      
-      // Only auto-login if user is already verified (email verification not required)
-      if (registeredUser.is_verified) {
-        await login({ email: data.email, password: data.password });
-      } else {
-        // User needs to verify email first - set loading to false but don't log in
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: null,
-        }));
-        // Throw a specific error so the UI can show the verification message
-        throw new AuthError('Please check your email to verify your account before signing in.');
-      }
-    } catch (error) {
-      const message = error instanceof AuthError 
-        ? error.message 
-        : 'Registration failed. Please try again.';
-      
+      const result = await authRegister(email, password, fullName);
+      setState((prev) => ({ ...prev, isLoading: false }));
+      return result;
+    } catch (err: any) {
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: message,
+        error: err.message || 'Registration failed',
       }));
-      
-      throw error;
+      throw err;
     }
-  }, [login]);
+  }, []);
 
   const logout = useCallback(async () => {
     setState((prev) => ({ ...prev, isLoading: true }));
-    
-    try {
-      await authLogout();
-    } finally {
-      setState({
-        user: null,
-        isLoading: false,
-        isAuthenticated: false,
-        error: null,
-      });
-    }
+    await authLogout();
+    setState({
+      user: null,
+      isLoading: false,
+      isAuthenticated: false,
+      error: null,
+    });
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const user = await getCurrentUser();
-    if (user) {
-      setState((prev) => ({ ...prev, user }));
+    try {
+      const user = await getCurrentUser();
+      setState((prev) => ({
+        ...prev,
+        user,
+        isAuthenticated: !!user,
+      }));
+    } catch {
+      // Silent fail
     }
   }, []);
 
@@ -195,6 +173,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       value={{
         ...state,
         login,
+        loginMfa,
         register,
         logout,
         refreshUser,
@@ -206,30 +185,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 }
 
-/**
- * Hook to access auth context.
- */
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  
   return context;
 }
-
-/**
- * Hook to require authentication.
- * Returns true if authenticated, false if not.
- */
-export function useRequireAuth(): boolean {
-  const { isAuthenticated, isLoading } = useAuth();
-  
-  if (isLoading) {
-    return false; // Still loading
-  }
-  
-  return isAuthenticated;
-}
-

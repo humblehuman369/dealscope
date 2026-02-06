@@ -1,0 +1,143 @@
+"""
+Token service – JWT creation/verification and verification-token lifecycle.
+
+JWTs are short-lived (5 min) and contain a ``session_id`` claim so the
+server can revoke them instantly by invalidating the session row.
+
+Verification tokens (email confirmation, password reset, MFA setup) are
+generated as url-safe random strings.  Only the SHA-256 hash is stored in
+the database; the raw value is sent to the user via email or QR code.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import logging
+import secrets
+import uuid
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+
+from jose import JWTError, jwt
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.config import settings
+from app.models.verification_token import TokenType
+from app.repositories.token_repository import token_repo
+
+logger = logging.getLogger(__name__)
+
+# -----------------------------------------------------------------------
+# Constants
+# -----------------------------------------------------------------------
+JWT_ACCESS_LIFETIME_MINUTES = 5  # Short-lived — rely on session for validity
+JWT_ALGORITHM = "HS256"
+
+
+class TokenService:
+    """Handles JWT and one-time verification tokens."""
+
+    # ------------------------------------------------------------------
+    # JWT helpers
+    # ------------------------------------------------------------------
+
+    def create_jwt(
+        self,
+        user_id: uuid.UUID,
+        session_id: uuid.UUID,
+        *,
+        expires_delta: Optional[timedelta] = None,
+    ) -> str:
+        """Create a short-lived JWT access token bound to a session."""
+        now = datetime.now(timezone.utc)
+        expire = now + (expires_delta or timedelta(minutes=JWT_ACCESS_LIFETIME_MINUTES))
+        payload = {
+            "sub": str(user_id),
+            "sid": str(session_id),
+            "exp": expire,
+            "iat": now,
+            "type": "access",
+        }
+        return jwt.encode(payload, settings.SECRET_KEY, algorithm=JWT_ALGORITHM)
+
+    def verify_jwt(self, token: str) -> Optional[dict]:
+        """Decode and verify a JWT.  Returns the payload dict or None."""
+        try:
+            payload = jwt.decode(
+                token,
+                settings.SECRET_KEY,
+                algorithms=[JWT_ALGORITHM],
+            )
+            if payload.get("type") != "access":
+                return None
+            return payload
+        except JWTError:
+            return None
+
+    # ------------------------------------------------------------------
+    # Verification tokens (email, password reset, MFA setup)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _hash_token(raw: str) -> str:
+        return hashlib.sha256(raw.encode()).hexdigest()
+
+    async def create_verification_token(
+        self,
+        db: AsyncSession,
+        user_id: uuid.UUID,
+        token_type: str | TokenType,
+        *,
+        expires_hours: int | None = None,
+    ) -> str:
+        """Generate a verification token and persist its hash.
+
+        Returns the **raw** token (to send to the user).
+        """
+        if isinstance(token_type, TokenType):
+            token_type = token_type.value
+
+        # Decide expiry based on type
+        if expires_hours is None:
+            if token_type == TokenType.PASSWORD_RESET.value:
+                expires_hours = settings.PASSWORD_RESET_TOKEN_EXPIRE_HOURS
+            else:
+                expires_hours = settings.EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS
+
+        # Invalidate previous unused tokens of the same type
+        await token_repo.invalidate_for_user(db, user_id, token_type)
+
+        raw_token = secrets.token_urlsafe(32)
+        token_hash = self._hash_token(raw_token)
+
+        await token_repo.create(
+            db,
+            user_id=user_id,
+            token_hash=token_hash,
+            token_type=token_type,
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=expires_hours),
+        )
+        return raw_token
+
+    async def validate_verification_token(
+        self,
+        db: AsyncSession,
+        raw_token: str,
+        token_type: str | TokenType,
+    ) -> Optional[uuid.UUID]:
+        """Validate a raw token.  Returns the ``user_id`` if valid, else None."""
+        if isinstance(token_type, TokenType):
+            token_type = token_type.value
+
+        token_hash = self._hash_token(raw_token)
+        record = await token_repo.get_by_hash(db, token_hash, token_type)
+        if record is None:
+            return None
+
+        # Mark as used
+        await token_repo.mark_used(db, record.id)
+        return record.user_id
+
+
+# Module-level singleton
+token_service = TokenService()

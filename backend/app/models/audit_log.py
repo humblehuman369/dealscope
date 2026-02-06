@@ -1,0 +1,78 @@
+"""
+Security audit log model.
+
+Every security-relevant action (login, logout, password change, MFA
+enable/disable, session revoke, etc.) is recorded here with the
+acting user, IP, user-agent, and an arbitrary metadata payload.
+"""
+
+from sqlalchemy import String, DateTime, ForeignKey, Text, Index
+from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from typing import Optional, TYPE_CHECKING
+import uuid
+from datetime import datetime, timezone
+import enum
+
+from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.user import User
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+class AuditAction(str, enum.Enum):
+    """Enumeration of auditable actions."""
+    REGISTER = "register"
+    LOGIN = "login"
+    LOGIN_FAILED = "login_failed"
+    LOGOUT = "logout"
+    TOKEN_REFRESH = "token_refresh"
+    PASSWORD_CHANGE = "password_change"
+    PASSWORD_RESET_REQUEST = "password_reset_request"
+    PASSWORD_RESET_COMPLETE = "password_reset_complete"
+    EMAIL_VERIFICATION = "email_verification"
+    MFA_ENABLE = "mfa_enable"
+    MFA_DISABLE = "mfa_disable"
+    MFA_CHALLENGE = "mfa_challenge"
+    SESSION_REVOKE = "session_revoke"
+    SESSION_REVOKE_ALL = "session_revoke_all"
+    ACCOUNT_LOCKED = "account_locked"
+    ACCOUNT_UNLOCKED = "account_unlocked"
+    ROLE_GRANTED = "role_granted"
+    ROLE_REVOKED = "role_revoked"
+
+
+class AuditLog(Base):
+    """Immutable record of a security-relevant event."""
+    __tablename__ = "audit_logs"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        index=True,
+    )
+    action: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45))
+    user_agent: Mapped[Optional[str]] = mapped_column(Text)
+    metadata_: Mapped[Optional[dict]] = mapped_column("metadata", JSONB, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=_utcnow,
+        index=True,
+    )
+
+    # Relationships
+    user: Mapped[Optional["User"]] = relationship("User", back_populates="audit_logs")
+
+    __table_args__ = (
+        Index("ix_audit_logs_user_action", "user_id", "action"),
+    )

@@ -1,292 +1,248 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+/**
+ * Native dashboard screen — replaces the WebView wrapper.
+ *
+ * Uses React Query for data fetching with offline cache support.
+ * All data comes from the API directly rather than loading a web page.
+ */
+
+import { useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
+  ScrollView,
+  RefreshControl,
   TouchableOpacity,
   ActivityIndicator,
-  SafeAreaView,
-  Platform,
-  StatusBar,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Constants from 'expo-constants';
-import * as Haptics from 'expo-haptics';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { colors } from '../../theme/colors';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import { getAccessToken } from '../../services/authService';
 
-/**
- * Get the web app URL from environment or config
- */
-function getWebAppUrl(): string {
-  const envUrl = Constants.expoConfig?.extra?.webAppUrl || process.env.EXPO_PUBLIC_WEB_APP_URL;
-  if (envUrl) return envUrl;
-  // Fallback to production URL
-  return 'https://investiq.guru';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app';
+
+// ------------------------------------------------------------------
+// API helper
+// ------------------------------------------------------------------
+
+async function apiFetch<T>(endpoint: string): Promise<T> {
+  const token = getAccessToken();
+  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
 }
+
+// ------------------------------------------------------------------
+// Types
+// ------------------------------------------------------------------
+
+interface PropertyStats {
+  total: number;
+  by_status: Record<string, number>;
+  total_estimated_value?: number;
+  total_monthly_cash_flow?: number;
+  average_coc_return?: number;
+}
+
+interface SearchHistoryItem {
+  id: string;
+  search_query: string;
+  was_successful: boolean;
+  searched_at: string;
+}
+
+interface SavedProperty {
+  id: string;
+  address_street: string;
+  address_city?: string;
+  address_state?: string;
+  status: string;
+  best_cash_flow?: number;
+  best_coc_return?: number;
+}
+
+// ------------------------------------------------------------------
+// Helpers
+// ------------------------------------------------------------------
+
+const fmt = (n: number) => {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+  return `$${n.toFixed(0)}`;
+};
+
+const fmtPct = (n: number) => `${n.toFixed(1)}%`;
+
+const timeAgo = (d: string) => {
+  const ms = Date.now() - new Date(d).getTime();
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1) return 'Now';
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(ms / 3600000);
+  if (hrs < 24) return `${hrs}h`;
+  return `${Math.floor(ms / 86400000)}d`;
+};
+
+// ------------------------------------------------------------------
+// Component
+// ------------------------------------------------------------------
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
-  const { isDark, theme } = useTheme();
-  const webViewRef = useRef<WebView>(null);
-  
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [canGoBack, setCanGoBack] = useState(false);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [tokenLoaded, setTokenLoaded] = useState(false);
-  
-  const baseUrl = getWebAppUrl();
-  // Always go to dashboard - the web app will handle auth redirect if needed
-  const dashboardUrl = `${baseUrl}/dashboard`;
+  const { isDark } = useTheme();
+  const { user } = useAuth();
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
-  // Load access token on mount
-  useEffect(() => {
-    async function loadToken() {
-      try {
-        const token = await getAccessToken();
-        setAccessToken(token);
-      } catch (error) {
-        console.warn('Failed to get access token:', error);
-      } finally {
-        setTokenLoaded(true);
-      }
-    }
-    loadToken();
-  }, []);
+  const { data: stats, isLoading: statsLoading } = useQuery<PropertyStats>({
+    queryKey: ['mobile', 'dashboard', 'stats'],
+    queryFn: () => apiFetch('/api/v1/properties/saved/stats'),
+    staleTime: 2 * 60 * 1000,
+  });
 
-  const handleRefresh = useCallback(async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setHasError(false);
-    setIsLoading(true);
-    webViewRef.current?.reload();
-  }, []);
+  const { data: recentSearches } = useQuery<SearchHistoryItem[]>({
+    queryKey: ['mobile', 'dashboard', 'searches'],
+    queryFn: () => apiFetch('/api/v1/search-history/recent?limit=5'),
+    staleTime: 60 * 1000,
+  });
 
-  const handleGoBack = useCallback(async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    webViewRef.current?.goBack();
-  }, []);
+  const { data: savedProperties } = useQuery<SavedProperty[]>({
+    queryKey: ['mobile', 'dashboard', 'properties'],
+    queryFn: () => apiFetch('/api/v1/properties/saved?limit=5'),
+    staleTime: 2 * 60 * 1000,
+  });
 
-  // JavaScript to inject auth token into localStorage BEFORE content loads
-  // This must run before the page JavaScript executes
-  const injectedJSBeforeLoad = accessToken ? `
-    (function() {
-      try {
-        localStorage.setItem('access_token', '${accessToken}');
-        console.log('[Dashboard] Auth token injected into localStorage');
-      } catch (e) {
-        console.warn('[Dashboard] Failed to inject auth token:', e);
-      }
-    })();
-    true;
-  ` : '';
+  const onRefresh = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['mobile', 'dashboard'] });
+  }, [queryClient]);
 
-  // Inject dark mode CSS after content loads
-  const injectedJS = isDark ? `
-    (function() {
-      document.documentElement.classList.add('dark');
-      document.body.classList.add('dark');
-    })();
-    true;
-  ` : `
-    (function() {
-      document.documentElement.classList.remove('dark');
-      document.body.classList.remove('dark');
-    })();
-    true;
-  `;
+  const isRefreshing = statsLoading;
 
-  // Don't render WebView until token check is complete
-  if (!tokenLoaded) {
-    return (
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-        <View style={[
-          styles.header, 
-          { 
-            paddingTop: insets.top + 8,
-            backgroundColor: theme.headerBackground,
-            borderBottomColor: theme.headerBorder,
-          }
-        ]}>
-          <Text style={[styles.headerTitle, { color: theme.text }]}>Dashboard</Text>
-        </View>
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={colors.primary[600]} />
-          <Text style={[styles.loadingText, { color: theme.textMuted }]}>Loading...</Text>
-        </View>
-      </View>
-    );
-  }
+  const bg = isDark ? '#0f172a' : '#f8fafc';
+  const cardBg = isDark ? '#1e293b' : '#ffffff';
+  const textColor = isDark ? '#f1f5f9' : '#0f172a';
+  const mutedColor = isDark ? '#94a3b8' : '#64748b';
+  const borderColor = isDark ? '#334155' : '#e2e8f0';
+  const accentColor = '#0d9488';
 
-  if (hasError) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-        <View style={styles.errorContainer}>
-          <Ionicons name="cloud-offline-outline" size={64} color={theme.textMuted} />
-          <Text style={[styles.errorTitle, { color: theme.text }]}>Unable to Load Dashboard</Text>
-          <Text style={[styles.errorText, { color: theme.textMuted }]}>
-            Please check your internet connection and try again.
-          </Text>
-          <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
-            <Ionicons name="refresh" size={20} color="#fff" />
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const firstName = user?.full_name?.split(' ')[0] || 'Investor';
+
+  const total = stats?.total || 0;
+  const pipeline = stats?.by_status || {};
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-      
-      {/* Header */}
-      <View style={[
-        styles.header, 
-        { 
-          paddingTop: insets.top + 8,
-          backgroundColor: theme.headerBackground,
-          borderBottomColor: theme.headerBorder,
+    <View style={{ flex: 1, backgroundColor: bg, paddingTop: insets.top }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={accentColor} />
         }
-      ]}>
-        <View style={styles.headerLeft}>
-          {canGoBack && (
-            <TouchableOpacity onPress={handleGoBack} style={styles.headerButton}>
-              <Ionicons name="chevron-back" size={24} color={colors.primary[600]} />
-            </TouchableOpacity>
-          )}
-          <Text style={[styles.headerTitle, { color: theme.text }]}>Dashboard</Text>
+      >
+        {/* Header */}
+        <View style={{ marginBottom: 20 }}>
+          <Text style={{ fontSize: 24, fontWeight: '800', color: textColor }}>
+            Welcome, {firstName}
+          </Text>
+          <Text style={{ fontSize: 14, color: mutedColor, marginTop: 2 }}>
+            Your investment overview
+          </Text>
         </View>
-        
-        <TouchableOpacity onPress={handleRefresh} style={styles.headerButton}>
-          <Ionicons name="refresh" size={22} color={colors.primary[600]} />
-        </TouchableOpacity>
-      </View>
 
-      {/* WebView */}
-      <WebView
-        ref={webViewRef}
-        source={{ uri: dashboardUrl }}
-        style={styles.webView}
-        onLoadStart={() => setIsLoading(true)}
-        onLoadEnd={() => setIsLoading(false)}
-        onError={() => {
-          setHasError(true);
-          setIsLoading(false);
-        }}
-        onNavigationStateChange={(navState) => {
-          setCanGoBack(navState.canGoBack);
-        }}
-        injectedJavaScriptBeforeContentLoaded={injectedJSBeforeLoad}
-        injectedJavaScript={injectedJS}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-        startInLoadingState={true}
-        scalesPageToFit={true}
-        allowsBackForwardNavigationGestures={true}
-        sharedCookiesEnabled={true}
-        thirdPartyCookiesEnabled={true}
-        renderLoading={() => (
-          <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
-            <ActivityIndicator size="large" color={colors.primary[600]} />
-            <Text style={[styles.loadingText, { color: theme.textMuted }]}>Loading dashboard...</Text>
+        {/* Metrics */}
+        {statsLoading ? (
+          <View style={{ height: 120, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator color={accentColor} />
+          </View>
+        ) : (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
+            <MetricCard icon="home-outline" label="Properties" value={String(total)} color={accentColor} bg={cardBg} textColor={textColor} mutedColor={mutedColor} borderColor={borderColor} />
+            <MetricCard icon="cash-outline" label="Portfolio" value={fmt(stats?.total_estimated_value || 0)} color="#3b82f6" bg={cardBg} textColor={textColor} mutedColor={mutedColor} borderColor={borderColor} />
+            <MetricCard icon="trending-up-outline" label="Cash Flow" value={fmt(stats?.total_monthly_cash_flow || 0)} color="#22c55e" bg={cardBg} textColor={textColor} mutedColor={mutedColor} borderColor={borderColor} />
+            <MetricCard icon="stats-chart-outline" label="Avg CoC" value={fmtPct((stats?.average_coc_return || 0) * 100)} color="#8b5cf6" bg={cardBg} textColor={textColor} mutedColor={mutedColor} borderColor={borderColor} />
           </View>
         )}
-      />
 
-      {/* Loading Overlay */}
-      {isLoading && (
-        <View style={[styles.loadingOverlay, { backgroundColor: theme.background }]}>
-          <ActivityIndicator size="large" color={colors.primary[600]} />
-          <Text style={[styles.loadingText, { color: theme.textMuted }]}>Loading dashboard...</Text>
+        {/* Pipeline */}
+        {total > 0 && (
+          <View style={{ backgroundColor: cardBg, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor }}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 8 }}>Deal Pipeline</Text>
+            <View style={{ flexDirection: 'row', height: 6, borderRadius: 3, overflow: 'hidden', backgroundColor: isDark ? '#1e293b' : '#e2e8f0' }}>
+              {(pipeline['watching'] || 0) > 0 && <View style={{ flex: pipeline['watching'], backgroundColor: '#94a3b8' }} />}
+              {(pipeline['analyzing'] || 0) > 0 && <View style={{ flex: pipeline['analyzing'], backgroundColor: '#3b82f6' }} />}
+              {((pipeline['contacted'] || 0) + (pipeline['negotiating'] || 0)) > 0 && <View style={{ flex: (pipeline['contacted'] || 0) + (pipeline['negotiating'] || 0), backgroundColor: '#f59e0b' }} />}
+              {(pipeline['under_contract'] || 0) > 0 && <View style={{ flex: pipeline['under_contract'], backgroundColor: '#0d9488' }} />}
+              {(pipeline['owned'] || 0) > 0 && <View style={{ flex: pipeline['owned'], backgroundColor: '#22c55e' }} />}
+            </View>
+          </View>
+        )}
+
+        {/* Recent Properties */}
+        <View style={{ backgroundColor: cardBg, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 12 }}>Recent Properties</Text>
+          {savedProperties && savedProperties.length > 0 ? (
+            savedProperties.map((p) => (
+              <View key={p.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: borderColor }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: textColor }} numberOfLines={1}>{p.address_street}</Text>
+                  <Text style={{ fontSize: 12, color: mutedColor }}>{p.address_city}, {p.address_state}</Text>
+                </View>
+                {p.best_cash_flow != null && (
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#22c55e' }}>{fmt(p.best_cash_flow)}/mo</Text>
+                )}
+              </View>
+            ))
+          ) : (
+            <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+              <Ionicons name="home-outline" size={32} color={mutedColor} style={{ opacity: 0.4 }} />
+              <Text style={{ fontSize: 13, color: mutedColor, marginTop: 8 }}>No properties saved yet</Text>
+            </View>
+          )}
         </View>
-      )}
+
+        {/* Recent Searches */}
+        <View style={{ backgroundColor: cardBg, borderRadius: 12, padding: 16, borderWidth: 1, borderColor }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 12 }}>Recent Searches</Text>
+          {recentSearches && recentSearches.length > 0 ? (
+            recentSearches.map((s) => (
+              <View key={s.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
+                <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: s.was_successful ? '#22c55e' : '#ef4444' }} />
+                <Text style={{ flex: 1, fontSize: 13, color: textColor }} numberOfLines={1}>{s.search_query}</Text>
+                <Text style={{ fontSize: 11, color: mutedColor }}>{timeAgo(s.searched_at)}</Text>
+              </View>
+            ))
+          ) : (
+            <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+              <Ionicons name="time-outline" size={32} color={mutedColor} style={{ opacity: 0.4 }} />
+              <Text style={{ fontSize: 13, color: mutedColor, marginTop: 8 }}>No recent searches</Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  headerButton: {
-    padding: 8,
-  },
-  webView: {
-    flex: 1,
-  },
-  loadingContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 15,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  errorTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  errorText: {
-    fontSize: 15,
-    marginTop: 8,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  retryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: colors.primary[600],
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-    marginTop: 24,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
+// ------------------------------------------------------------------
+// MetricCard sub-component
+// ------------------------------------------------------------------
 
+function MetricCard({ icon, label, value, color, bg, textColor, mutedColor, borderColor }: {
+  icon: string; label: string; value: string; color: string;
+  bg: string; textColor: string; mutedColor: string; borderColor: string;
+}) {
+  return (
+    <View style={{ flex: 1, minWidth: '45%', backgroundColor: bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+        <Ionicons name={icon as any} size={18} color={color} />
+        <Text style={{ fontSize: 11, fontWeight: '600', color: mutedColor, textTransform: 'uppercase' }}>{label}</Text>
+      </View>
+      <Text style={{ fontSize: 20, fontWeight: '800', color: textColor }}>{value}</Text>
+    </View>
+  );
+}

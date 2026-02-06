@@ -1,625 +1,466 @@
 """
-Authentication router for user registration, login, and session management.
+Auth router – registration, login, logout, token refresh, password
+management, email verification, MFA, and session management.
+
+Every endpoint delegates to the service layer.  No business logic here.
 """
 
-from datetime import datetime
+from __future__ import annotations
+
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
-from pydantic import BaseModel
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.session import get_db
-from app.services.auth_service import auth_service
+from app.core.config import settings
+from app.core.deps import (
+    CurrentSession,
+    CurrentUser,
+    DbSession,
+    get_current_session,
+    get_current_user,
+)
+from app.repositories.role_repository import role_repo
 from app.schemas.auth import (
-    UserRegister,
-    UserLogin,
-    TokenResponse,
+    AuthMessage,
+    EmailVerification,
+    LoginResponse,
+    MFAChallengeResponse,
+    MFAConfirmRequest,
+    MFASetupResponse,
+    MFAVerifyRequest,
+    PasswordChange,
     PasswordReset,
     PasswordResetConfirm,
-    PasswordChange,
-    EmailVerification,
-    AuthMessage,
     RefreshTokenRequest,
+    SessionInfo,
+    TokenResponse,
+    UserLogin,
+    UserRegister,
+    UserResponse,
 )
-from app.schemas.user import UserResponse
-from app.core.deps import get_current_user, CurrentUser, DbSession
-from app.core.config import settings
+from app.services.auth_service import AuthError, MFARequired, auth_service
 from app.services.email_service import email_service
+from app.services.session_service import session_service
+from app.services.token_service import token_service
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
+router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
-# ===========================================
+# ------------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------------
+
+def _client_ip(request: Request) -> Optional[str]:
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else None
+
+
+def _set_auth_cookies(response: Response, session_token: str, refresh_token: str, access_jwt: str) -> None:
+    """Set httpOnly auth cookies on the response."""
+    cookie_kwargs = dict(
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        domain=settings.COOKIE_DOMAIN,
+        path="/",
+    )
+    response.set_cookie(key="access_token", value=access_jwt, max_age=300, **cookie_kwargs)
+    response.set_cookie(key="refresh_token", value=refresh_token, max_age=86400 * settings.REFRESH_TOKEN_EXPIRE_DAYS, **cookie_kwargs)
+    response.set_cookie(key="session_token", value=session_token, max_age=86400 * settings.REFRESH_TOKEN_EXPIRE_DAYS, **cookie_kwargs)
+
+
+def _clear_auth_cookies(response: Response) -> None:
+    for name in ("access_token", "refresh_token", "session_token", "csrf_token"):
+        response.delete_cookie(
+            key=name,
+            domain=settings.COOKIE_DOMAIN,
+            path="/",
+        )
+
+
+async def _build_user_response(db: AsyncSession, user) -> UserResponse:
+    """Build a UserResponse with roles and permissions."""
+    perms = await role_repo.get_user_permissions(db, user.id)
+    user_roles = await role_repo.get_user_roles(db, user.id)
+    role_names = [ur.role.name for ur in user_roles]
+    return UserResponse(
+        id=str(user.id),
+        email=user.email,
+        full_name=user.full_name,
+        avatar_url=user.avatar_url,
+        is_active=user.is_active,
+        is_verified=user.is_verified,
+        is_superuser=user.is_superuser,
+        mfa_enabled=user.mfa_enabled,
+        created_at=user.created_at,
+        last_login=user.last_login,
+        has_profile=user.profile is not None if hasattr(user, "profile") else False,
+        onboarding_completed=user.profile.onboarding_completed if (hasattr(user, "profile") and user.profile) else False,
+        roles=role_names,
+        permissions=sorted(perms),
+    )
+
+
+# ------------------------------------------------------------------
 # Registration
-# ===========================================
+# ------------------------------------------------------------------
 
-@router.post(
-    "/register", 
-    response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Register a new user"
-)
-async def register(
-    data: UserRegister,
-    db: DbSession
-):
-    """
-    Register a new user account.
-    
-    - **email**: Valid email address (will be used for login)
-    - **password**: Min 8 chars, must include uppercase and digit
-    - **full_name**: User's display name
-    
-    Returns the created user. If email verification is enabled,
-    a verification email will be sent.
-    """
-    logger.info(f"[API] Registration attempt for email: {data.email}")
-    
+@router.post("/register", response_model=AuthMessage, status_code=status.HTTP_201_CREATED)
+async def register(body: UserRegister, request: Request, db: DbSession):
+    """Register a new user account."""
     try:
         user, verification_token = await auth_service.register_user(
-            db=db,
-            email=data.email,
-            password=data.password,
-            full_name=data.full_name
+            db,
+            email=body.email,
+            password=body.password,
+            full_name=body.full_name,
+            ip_address=_client_ip(request),
+            user_agent=request.headers.get("User-Agent"),
         )
-        logger.info(f"[API] User registered successfully: {user.email} (id: {user.id})")
-        
-        # Send verification email if token exists (don't let email failure break registration)
-        if verification_token:
-            try:
-                logger.info(f"[API] Sending verification email to {data.email}")
-                await email_service.send_verification_email(
-                    to=user.email,
-                    user_name=user.full_name,
-                    verification_token=verification_token,
-                )
-            except Exception as email_error:
-                # Log but don't fail registration if email fails
-                logger.warning(f"[API] Failed to send verification email: {email_error}")
-        
-        # Build response with all required fields
-        # Note: We just created the profile in register_user, so it exists
-        # Avoid lazy loading by checking if profile was created (it was)
-        response = UserResponse(
-            id=str(user.id),
-            email=user.email,
-            full_name=user.full_name,
-            avatar_url=user.avatar_url,
-            is_active=user.is_active,
-            is_verified=user.is_verified,
-            is_superuser=user.is_superuser,
-            created_at=user.created_at,
-            last_login=user.last_login,
-            has_profile=True,  # Profile is created during registration
-            onboarding_completed=False
-        )
-        logger.debug(f"[API] Returning response for user: {user.email}")
-        return response
-        
-    except ValueError as e:
-        error_msg = str(e)
-        logger.warning(f"[API] Registration validation error: {error_msg}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=error_msg
-        )
-    except Exception as e:
-        import traceback
-        error_msg = str(e)
-        tb = traceback.format_exc()
-        logger.error(f"[API] Registration failed with error: {error_msg}")
-        logger.error(f"[API] Traceback: {tb}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Registration failed: {error_msg}"
-        )
+    except AuthError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+    # Send verification email (non-blocking)
+    if verification_token:
+        try:
+            await email_service.send_verification_email(
+                to_email=user.email,
+                user_name=user.full_name or user.email,
+                verification_token=verification_token,
+            )
+        except Exception as exc:
+            logger.warning("Verification email failed: %s", exc)
+
+    msg = "Registration successful."
+    if verification_token:
+        msg += " Please check your email to verify your account."
+    return AuthMessage(message=msg)
 
 
-# ===========================================
+# ------------------------------------------------------------------
 # Login
-# ===========================================
+# ------------------------------------------------------------------
 
-@router.post(
-    "/login",
-    response_model=TokenResponse,
-    summary="Login and get access token"
-)
-async def login(
-    data: UserLogin,
-    response: Response,
-    db: DbSession
-):
+@router.post("/login")
+async def login(body: UserLogin, request: Request, response: Response, db: DbSession):
+    """Authenticate with email and password.
+
+    Returns user data + tokens.  If MFA is enabled, returns a challenge
+    instead and the client must call ``/login/mfa``.
     """
-    Authenticate user and return JWT tokens.
-    
-    - **email**: User's email address
-    - **password**: User's password
-    - **remember_me**: If true, extends token expiration
-    
-    Returns access_token and refresh_token in response body.
-    Also sets httpOnly cookies for web clients (XSS-safe).
-    Mobile clients should use the tokens from the response body.
-    """
-    user = await auth_service.authenticate_user(
-        db=db,
-        email=data.email,
-        password=data.password
-    )
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
-            headers={"WWW-Authenticate": "Bearer"},
+    try:
+        user, session_obj, jwt_token = await auth_service.authenticate(
+            db,
+            email=body.email,
+            password=body.password,
+            ip_address=_client_ip(request),
+            user_agent=request.headers.get("User-Agent"),
+            remember_me=body.remember_me,
         )
-    
-    # Check if email verification is required
-    if settings.FEATURE_EMAIL_VERIFICATION_REQUIRED and not user.is_verified:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Please verify your email before logging in"
+    except MFARequired as mfa:
+        return MFAChallengeResponse(challenge_token=mfa.challenge_token)
+    except AuthError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+    _set_auth_cookies(response, session_obj.session_token, session_obj.refresh_token, jwt_token)
+
+    user_resp = await _build_user_response(db, user)
+    return LoginResponse(
+        user=user_resp,
+        access_token=jwt_token,
+        refresh_token=session_obj.refresh_token,
+        expires_in=300,
+    )
+
+
+@router.post("/login/mfa")
+async def login_mfa(body: MFAVerifyRequest, request: Request, response: Response, db: DbSession):
+    """Complete MFA-protected login."""
+    try:
+        user, session_obj, jwt_token = await auth_service.verify_mfa_login(
+            db,
+            challenge_token=body.challenge_token,
+            totp_code=body.totp_code,
+            ip_address=_client_ip(request),
+            user_agent=request.headers.get("User-Agent"),
+            remember_me=body.remember_me,
         )
-    
-    tokens = auth_service.create_tokens(
-        user_id=str(user.id),
-        remember_me=data.remember_me
+    except AuthError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+    _set_auth_cookies(response, session_obj.session_token, session_obj.refresh_token, jwt_token)
+
+    user_resp = await _build_user_response(db, user)
+    return LoginResponse(
+        user=user_resp,
+        access_token=jwt_token,
+        refresh_token=session_obj.refresh_token,
+        expires_in=300,
     )
-    
-    # Set httpOnly cookies for web clients (XSS-safe)
-    # Mobile clients will use the tokens from the response body
-    response.set_cookie(
-        key="access_token",
-        value=tokens.access_token,
-        httponly=True,
-        secure=settings.COOKIE_SECURE,
-        samesite=settings.COOKIE_SAMESITE,
-        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        domain=settings.COOKIE_DOMAIN,
-    )
-    response.set_cookie(
-        key="refresh_token",
-        value=tokens.refresh_token,
-        httponly=True,
-        secure=settings.COOKIE_SECURE,
-        samesite=settings.COOKIE_SAMESITE,
-        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-        domain=settings.COOKIE_DOMAIN,
-    )
-    
-    return tokens
 
 
-@router.post(
-    "/login/form",
-    response_model=TokenResponse,
-    summary="Login with OAuth2 form (for Swagger UI)"
-)
-async def login_form(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    OAuth2 compatible login endpoint for Swagger UI testing.
-    Uses form data instead of JSON body.
-    """
-    user = await auth_service.authenticate_user(
-        db=db,
-        email=form_data.username,  # OAuth2 uses 'username'
-        password=form_data.password
-    )
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    tokens = auth_service.create_tokens(user_id=str(user.id))
-    
-    return tokens
+# ------------------------------------------------------------------
+# Token refresh
+# ------------------------------------------------------------------
 
-
-# ===========================================
-# Token Refresh
-# ===========================================
-
-@router.post(
-    "/refresh",
-    response_model=TokenResponse,
-    summary="Refresh access token"
-)
-async def refresh_token(
-    request: Request,
-    response: Response,
-    db: DbSession,
-    data: Optional[RefreshTokenRequest] = None
-):
-    """
-    Get a new access token using a refresh token.
-    
-    Accepts refresh token from:
-    - Request body (for mobile clients)
-    - httpOnly cookie (for web clients)
-    
-    Returns new access_token and refresh_token.
-    The old refresh token is blacklisted to prevent reuse.
-    """
-    # Get refresh token from body or cookie
-    refresh_token_value = None
-    if data and data.refresh_token:
-        refresh_token_value = data.refresh_token
-    else:
-        refresh_token_value = request.cookies.get("refresh_token")
-    
-    if not refresh_token_value:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Refresh token required",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    # Verify the refresh token with blacklist check
-    payload = await auth_service.verify_token_with_blacklist(refresh_token_value, token_type="refresh")
-    
-    if not payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired refresh token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    # Verify user still exists and is active
-    user = await auth_service.get_user_by_id(db, payload.sub)
-    
-    if not user or not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found or inactive"
-        )
-    
-    # Create new tokens
-    tokens = auth_service.create_tokens(user_id=str(user.id))
-    
-    # Blacklist the old refresh token to prevent reuse (token rotation)
-    await auth_service.blacklist_token(refresh_token_value, reason="refresh_token_rotated")
-    
-    # Set httpOnly cookies for web clients
-    response.set_cookie(
-        key="access_token",
-        value=tokens.access_token,
-        httponly=True,
-        secure=settings.COOKIE_SECURE,
-        samesite=settings.COOKIE_SAMESITE,
-        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        domain=settings.COOKIE_DOMAIN,
-    )
-    response.set_cookie(
-        key="refresh_token",
-        value=tokens.refresh_token,
-        httponly=True,
-        secure=settings.COOKIE_SECURE,
-        samesite=settings.COOKIE_SAMESITE,
-        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-        domain=settings.COOKIE_DOMAIN,
-    )
-    
-    return tokens
-
-
-# ===========================================
-# Logout
-# ===========================================
-
-class LogoutRequest(BaseModel):
-    """Optional request body for logout with refresh token."""
-    refresh_token: Optional[str] = None
-
-
-@router.post(
-    "/logout",
-    response_model=AuthMessage,
-    summary="Logout current session"
-)
-async def logout(
-    current_user: CurrentUser,
-    response: Response,
-    request: Request,
-    body: Optional[LogoutRequest] = None
-):
-    """
-    Logout the current user session.
-    
-    Blacklists the current access token (and optionally refresh token)
-    to prevent further use. Tokens are stored in Redis with TTL matching
-    their original expiration.
-    
-    Also clears httpOnly cookies for web clients.
-    """
-    # Extract access token from authorization header or cookie
-    auth_header = request.headers.get("Authorization", "")
-    access_token = None
-    if auth_header.startswith("Bearer "):
-        access_token = auth_header[7:]
-    else:
-        access_token = request.cookies.get("access_token")
-    
-    # Get refresh token from body or cookie
-    refresh_token = None
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh_token(request: Request, response: Response, db: DbSession, body: Optional[RefreshTokenRequest] = None):
+    """Refresh the access token using a refresh token (cookie or body)."""
+    rt = request.cookies.get("refresh_token")
     if body and body.refresh_token:
-        refresh_token = body.refresh_token
-    else:
-        refresh_token = request.cookies.get("refresh_token")
-    
-    # Blacklist tokens
+        rt = body.refresh_token
+    if not rt:
+        raise HTTPException(status_code=401, detail="Refresh token required")
+
+    result = await session_service.refresh_session(db, rt)
+    if result is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+
+    session_obj, new_jwt, new_refresh = result
+    _set_auth_cookies(response, session_obj.session_token, new_refresh, new_jwt)
+
+    return TokenResponse(
+        access_token=new_jwt,
+        refresh_token=new_refresh,
+        expires_in=300,
+    )
+
+
+# ------------------------------------------------------------------
+# Logout
+# ------------------------------------------------------------------
+
+@router.post("/logout", response_model=AuthMessage)
+async def logout(request: Request, response: Response, db: DbSession, session: CurrentSession):
+    """Revoke the current session and clear cookies."""
     await auth_service.logout(
-        access_token=access_token,
-        refresh_token=refresh_token
+        db,
+        session.id,
+        user_id=session.user_id,
+        ip_address=_client_ip(request),
     )
-    
-    # Clear httpOnly cookies for web clients
-    response.delete_cookie(
-        key="access_token",
-        domain=settings.COOKIE_DOMAIN,
-        secure=settings.COOKIE_SECURE,
-        samesite=settings.COOKIE_SAMESITE,
-    )
-    response.delete_cookie(
-        key="refresh_token",
-        domain=settings.COOKIE_DOMAIN,
-        secure=settings.COOKIE_SECURE,
-        samesite=settings.COOKIE_SAMESITE,
-    )
-    
-    logger.info(f"User logged out: {current_user.email}")
-    
-    return AuthMessage(
-        message="Successfully logged out",
-        success=True
-    )
+    _clear_auth_cookies(response)
+    return AuthMessage(message="Logged out successfully")
 
 
-# ===========================================
-# Current User
-# ===========================================
+# ------------------------------------------------------------------
+# Current user
+# ------------------------------------------------------------------
 
-@router.get(
-    "/me",
-    response_model=UserResponse,
-    summary="Get current user info"
-)
-async def get_me(current_user: CurrentUser, db: DbSession):
-    """
-    Get the currently authenticated user's information.
-    
-    Requires valid access token in Authorization header.
-    """
-    # Fetch profile to get onboarding status
-    from app.services.user_service import user_service
-    profile = await user_service.get_profile(db, str(current_user.id))
-    
-    has_profile = profile is not None
-    onboarding_completed = profile.onboarding_completed if profile else False
-    
-    return UserResponse(
-        id=str(current_user.id),
-        email=current_user.email,
-        full_name=current_user.full_name,
-        avatar_url=current_user.avatar_url,
-        is_active=current_user.is_active,
-        is_verified=current_user.is_verified,
-        is_superuser=current_user.is_superuser,
-        created_at=current_user.created_at,
-        last_login=current_user.last_login,
-        has_profile=has_profile,
-        onboarding_completed=onboarding_completed
-    )
+@router.get("/me", response_model=UserResponse)
+async def get_me(user: CurrentUser, db: DbSession):
+    """Return the current authenticated user with roles and permissions."""
+    return await _build_user_response(db, user)
 
 
-# ===========================================
-# Email Verification
-# ===========================================
+# ------------------------------------------------------------------
+# Email verification
+# ------------------------------------------------------------------
 
-@router.post(
-    "/verify-email",
-    response_model=AuthMessage,
-    summary="Verify email address"
-)
-async def verify_email(
-    data: EmailVerification,
-    db: DbSession
-):
-    """
-    Verify a user's email address with the token from the verification email.
-    
-    - **token**: Verification token from email link
-    """
-    user = await auth_service.verify_email(db, data.token)
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired verification token"
-        )
-    
+@router.post("/verify-email", response_model=AuthMessage)
+async def verify_email(body: EmailVerification, request: Request, db: DbSession):
+    try:
+        user = await auth_service.verify_email(db, body.token, ip_address=_client_ip(request))
+    except AuthError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+
     # Send welcome email
-    await email_service.send_welcome_email(
-        to=user.email,
-        user_name=user.full_name,
-    )
-    
-    return AuthMessage(
-        message="Email verified successfully",
-        success=True
-    )
+    try:
+        await email_service.send_welcome_email(to_email=user.email, user_name=user.full_name or user.email)
+    except Exception:
+        pass
+
+    return AuthMessage(message="Email verified successfully")
 
 
-@router.post(
-    "/resend-verification",
-    response_model=AuthMessage,
-    summary="Resend verification email"
-)
-async def resend_verification(
-    current_user: CurrentUser,
-    db: DbSession
-):
-    """
-    Resend the email verification link.
-    
-    Requires authentication. Only works if email is not yet verified.
-    """
-    if current_user.is_verified:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already verified"
-        )
-    
-    # Generate new verification token
-    token = await auth_service.regenerate_verification_token(db, current_user)
-    
-    if token:
+@router.post("/resend-verification", response_model=AuthMessage)
+async def resend_verification(user: CurrentUser, db: DbSession):
+    raw_token = await auth_service.resend_verification(db, user.id)
+    if raw_token is None:
+        return AuthMessage(message="Email already verified")
+    try:
         await email_service.send_verification_email(
-            to=current_user.email,
-            user_name=current_user.full_name,
-            verification_token=token,
+            to_email=user.email,
+            user_name=user.full_name or user.email,
+            verification_token=raw_token,
         )
-    
-    return AuthMessage(
-        message="Verification email sent",
-        success=True
-    )
+    except Exception as exc:
+        logger.warning("Resend verification email failed: %s", exc)
+    return AuthMessage(message="Verification email sent")
 
 
-# ===========================================
-# Password Reset
-# ===========================================
+# ------------------------------------------------------------------
+# Password management
+# ------------------------------------------------------------------
 
-@router.post(
-    "/forgot-password",
-    response_model=AuthMessage,
-    summary="Request password reset"
-)
-async def forgot_password(
-    data: PasswordReset,
-    db: DbSession
-):
-    """
-    Request a password reset email.
-    
-    - **email**: Email address of the account
-    
-    Always returns success to prevent email enumeration.
-    """
-    result = await auth_service.create_password_reset_token(db, data.email)
-    
+@router.post("/forgot-password", response_model=AuthMessage)
+async def forgot_password(body: PasswordReset, request: Request, db: DbSession):
+    result = await auth_service.request_password_reset(db, body.email, ip_address=_client_ip(request))
     if result:
-        reset_token, user = result
-        logger.info(f"Password reset token created for {data.email}")
-        await email_service.send_password_reset_email(
-            to=data.email,
-            user_name=user.full_name if user else None,
-            reset_token=reset_token,
-        )
-    
+        raw_token, user = result
+        try:
+            await email_service.send_password_reset_email(
+                to_email=user.email,
+                user_name=user.full_name or user.email,
+                reset_token=raw_token,
+            )
+        except Exception as exc:
+            logger.warning("Password reset email failed: %s", exc)
     # Always return success to prevent email enumeration
-    return AuthMessage(
-        message="If an account exists with that email, a reset link has been sent",
-        success=True
-    )
+    return AuthMessage(message="If an account exists with that email, a reset link has been sent.")
 
 
-@router.post(
-    "/reset-password",
-    response_model=AuthMessage,
-    summary="Reset password with token"
-)
-async def reset_password(
-    data: PasswordResetConfirm,
-    db: DbSession
-):
-    """
-    Reset password using the token from the reset email.
-    
-    - **token**: Reset token from email link
-    - **new_password**: New password (min 8 chars, uppercase + digit)
-    """
-    user = await auth_service.reset_password(
-        db=db,
-        token=data.token,
-        new_password=data.new_password
-    )
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired reset token"
+@router.post("/reset-password", response_model=AuthMessage)
+async def reset_password(body: PasswordResetConfirm, request: Request, response: Response, db: DbSession):
+    try:
+        user = await auth_service.reset_password(
+            db, body.token, body.new_password, ip_address=_client_ip(request),
         )
-    
-    # Send password changed notification
-    await email_service.send_password_changed_email(
-        to=user.email,
-        user_name=user.full_name,
-    )
-    
-    return AuthMessage(
-        message="Password reset successfully",
-        success=True
-    )
+    except AuthError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+    _clear_auth_cookies(response)
+
+    try:
+        await email_service.send_password_changed_email(to_email=user.email, user_name=user.full_name or user.email)
+    except Exception:
+        pass
+
+    return AuthMessage(message="Password reset successfully. Please log in with your new password.")
 
 
-# ===========================================
-# Password Change
-# ===========================================
-
-@router.post(
-    "/change-password",
-    response_model=AuthMessage,
-    summary="Change password"
-)
-async def change_password(
-    data: PasswordChange,
-    current_user: CurrentUser,
-    db: DbSession
-):
-    """
-    Change the current user's password.
-    
-    - **current_password**: Current password for verification
-    - **new_password**: New password (min 8 chars, uppercase + digit)
-    """
-    success = await auth_service.change_password(
-        db=db,
-        user=current_user,
-        current_password=data.current_password,
-        new_password=data.new_password
-    )
-    
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Current password is incorrect"
+@router.post("/change-password", response_model=AuthMessage)
+async def change_password(body: PasswordChange, request: Request, user: CurrentUser, db: DbSession, session: CurrentSession):
+    try:
+        await auth_service.change_password(
+            db,
+            user.id,
+            body.current_password,
+            body.new_password,
+            current_session_id=session.id,
+            ip_address=_client_ip(request),
         )
-    
-    # Send password changed notification
-    await email_service.send_password_changed_email(
-        to=current_user.email,
-        user_name=current_user.full_name,
+    except AuthError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+    try:
+        await email_service.send_password_changed_email(to_email=user.email, user_name=user.full_name or user.email)
+    except Exception:
+        pass
+
+    return AuthMessage(message="Password changed successfully")
+
+
+# ------------------------------------------------------------------
+# Session management
+# ------------------------------------------------------------------
+
+@router.get("/sessions", response_model=list[SessionInfo])
+async def list_sessions(user: CurrentUser, db: DbSession, session: CurrentSession):
+    """List all active sessions for the current user."""
+    sessions = await session_service.list_sessions(db, user.id)
+    return [
+        SessionInfo(
+            id=str(s.id),
+            ip_address=s.ip_address,
+            user_agent=s.user_agent,
+            device_name=s.device_name,
+            last_active_at=s.last_active_at,
+            created_at=s.created_at,
+            is_current=(s.id == session.id),
+        )
+        for s in sessions
+    ]
+
+
+@router.delete("/sessions/{session_id}", response_model=AuthMessage)
+async def revoke_session(session_id: str, user: CurrentUser, db: DbSession, request: Request):
+    """Revoke a specific session."""
+    import uuid as _uuid
+    try:
+        sid = _uuid.UUID(session_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid session ID")
+
+    from app.repositories.session_repository import session_repo
+    from app.repositories.audit_repository import audit_repo
+    from app.models.audit_log import AuditAction
+
+    target = await session_repo.get_by_id(db, sid)
+    if target is None or target.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    await session_repo.revoke(db, sid)
+    await audit_repo.log(
+        db,
+        action=AuditAction.SESSION_REVOKE,
+        user_id=user.id,
+        ip_address=_client_ip(request),
+        metadata={"revoked_session": session_id},
     )
-    
-    return AuthMessage(
-        message="Password changed successfully",
-        success=True
-    )
+    return AuthMessage(message="Session revoked")
 
 
+# ------------------------------------------------------------------
+# MFA management
+# ------------------------------------------------------------------
 
-# NOTE: Debug endpoints removed for security (2026-01-30)
-# These endpoints exposed database configuration and enabled unauthenticated
-# test operations. For debugging in development, use proper logging and
-# local testing tools instead.
+@router.post("/mfa/setup", response_model=MFASetupResponse)
+async def mfa_setup(user: CurrentUser, db: DbSession):
+    """Begin MFA setup — returns secret and QR code provisioning URI."""
+    try:
+        secret, uri = await auth_service.setup_mfa(db, user.id)
+    except AuthError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    return MFASetupResponse(secret=secret, provisioning_uri=uri)
 
+
+@router.post("/mfa/verify", response_model=AuthMessage)
+async def mfa_verify(body: MFAConfirmRequest, user: CurrentUser, request: Request, db: DbSession):
+    """Confirm MFA setup by verifying a TOTP code."""
+    try:
+        await auth_service.confirm_mfa(db, user.id, body.totp_code, ip_address=_client_ip(request))
+    except AuthError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    return AuthMessage(message="MFA enabled successfully")
+
+
+@router.delete("/mfa", response_model=AuthMessage)
+async def mfa_disable(user: CurrentUser, request: Request, db: DbSession):
+    """Disable MFA for the current user."""
+    await auth_service.disable_mfa(db, user.id, ip_address=_client_ip(request))
+    return AuthMessage(message="MFA disabled")
+
+
+# ------------------------------------------------------------------
+# OAuth2 form login (for Swagger UI / API docs)
+# ------------------------------------------------------------------
+
+@router.post("/login/form", include_in_schema=False)
+async def login_form(request: Request, response: Response, db: DbSession):
+    """OAuth2-compatible form login for Swagger UI."""
+    from fastapi.security import OAuth2PasswordRequestForm
+
+    form = await request.form()
+    email = form.get("username", "")
+    password = form.get("password", "")
+
+    try:
+        user, session_obj, jwt_token = await auth_service.authenticate(
+            db,
+            email=str(email),
+            password=str(password),
+            ip_address=_client_ip(request),
+            user_agent=request.headers.get("User-Agent"),
+        )
+    except (AuthError, MFARequired) as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+    _set_auth_cookies(response, session_obj.session_token, session_obj.refresh_token, jwt_token)
+    return {"access_token": jwt_token, "token_type": "bearer"}

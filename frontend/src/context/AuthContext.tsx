@@ -1,11 +1,27 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react'
-import { storeTokens, clearTokens, getAccessToken, getRefreshToken } from '../lib/api'
+/**
+ * AuthContext — compatibility wrapper around the new useSession hook.
+ *
+ * This file provides backward compatibility for existing pages that
+ * import `useAuth` from '@/context/AuthContext'.  New code should use
+ * `useSession` from '@/hooks/useSession' directly.
+ *
+ * The AuthProvider is now a no-op — state lives in React Query.
+ */
 
-// ===========================================
-// Types
-// ===========================================
+import { createContext, useContext, useState, type ReactNode, useCallback } from 'react'
+import {
+  useSession,
+  useLogin,
+  useRegister,
+  useLogout,
+  useRefreshUser,
+} from '@/hooks/useSession'
+
+// ------------------------------------------------------------------
+// Types (kept for compat)
+// ------------------------------------------------------------------
 
 interface User {
   id: string
@@ -15,26 +31,13 @@ interface User {
   is_active: boolean
   is_verified: boolean
   is_superuser: boolean
+  mfa_enabled?: boolean
   created_at: string
   last_login?: string
   has_profile: boolean
   onboarding_completed: boolean
-}
-
-interface AuthTokens {
-  access_token: string
-  refresh_token: string
-  token_type: string
-  expires_in: number
-}
-
-interface RegisterResponse {
-  id: string
-  email: string
-  full_name: string
-  is_verified: boolean
-  is_active: boolean
-  verification_required?: boolean
+  roles?: string[]
+  permissions?: string[]
 }
 
 interface AuthContextType {
@@ -42,259 +45,97 @@ interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   needsOnboarding: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<any>
   register: (email: string, password: string, fullName: string) => Promise<void>
   logout: () => Promise<void>
-  refreshUser: () => Promise<void>
+  refreshUser: () => void
   showAuthModal: 'login' | 'register' | null
   setShowAuthModal: (modal: 'login' | 'register' | null) => void
+  // Legacy compat
+  isLoading: boolean
+  error: string | null
+  clearError: () => void
+  loginMfa: (challengeToken: string, totpCode: string, rememberMe?: boolean) => Promise<any>
 }
-
-// ===========================================
-// API Configuration
-// ===========================================
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
-
-// ===========================================
-// Context
-// ===========================================
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// ===========================================
-// Provider
-// ===========================================
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  // This provider is a thin wrapper — all state lives in React Query now.
+  return <>{children}</>
+}
+
+export function useAuth(): AuthContextType {
+  const session = useSession()
+  const loginMutation = useLogin()
+  const registerMutation = useRegister()
+  const logoutMutation = useLogout()
+  const refreshUser = useRefreshUser()
   const [showAuthModal, setShowAuthModal] = useState<'login' | 'register' | null>(null)
 
-  // Check for existing session on mount
-  // With httpOnly cookies, we can't check the token directly
-  // Instead, we try to fetch the current user
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        await fetchCurrentUser()
-      } catch (error) {
-        // No valid session - this is normal for logged out users
-        console.debug('No active session')
-      }
-      setIsLoading(false)
-    }
-
-    initAuth()
-  }, [])
-
-  // Build headers with Authorization token if available
-  const buildAuthHeaders = (token?: string): Record<string, string> => {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    }
-    const authToken = token || getAccessToken()
-    if (authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`
-    }
-    return headers
-  }
-
-  // Refresh access token using cookie or stored refresh token
-  const refreshAccessToken = async (): Promise<boolean> => {
-    try {
-      // Send refresh token in body for cross-origin support (cookies may not work)
-      const refreshToken = getRefreshToken()
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
-        method: 'POST',
-        headers: buildAuthHeaders(),
-        credentials: 'include',
-        body: refreshToken ? JSON.stringify({ refresh_token: refreshToken }) : undefined,
-      })
-
-      if (!response.ok) {
-        setUser(null)
-        clearTokens()
-        return false
-      }
-
-      // Store new tokens from response body
-      const data = await response.json()
-      if (data.access_token && data.refresh_token) {
-        storeTokens(data.access_token, data.refresh_token)
-      }
-
-      return true
-    } catch (error) {
-      console.error('Token refresh failed:', error)
-      return false
-    }
-  }
-
-  // Fetch current user from API with automatic token refresh on 401
-  const fetchCurrentUser = async (accessToken?: string) => {
-    let response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
-      headers: buildAuthHeaders(accessToken),
-      credentials: 'include',
-    })
-
-    // If 401, try to refresh token and retry
-    if (response.status === 401) {
-      const refreshed = await refreshAccessToken()
-      if (refreshed) {
-        response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
-          headers: buildAuthHeaders(),
-          credentials: 'include',
-        })
-      }
-    }
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch user')
-    }
-
-    const userData = await response.json()
-    setUser(userData)
-
-    // If we authenticated via cookies but have no in-memory token,
-    // trigger a token refresh so subsequent API calls (Save, etc.) work
-    if (!accessToken && !getAccessToken()) {
-      refreshAccessToken().catch(() => {
-        // Token refresh failed - user is still authenticated via cookies
-        // but save/export features that need Bearer tokens won't work
-        console.warn('Could not obtain access token for API calls')
-      })
-    }
-  }
-
-  // Login
-  const login = async (email: string, password: string) => {
-    setIsLoading(true)
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Receive and store httpOnly cookies
-        body: JSON.stringify({ email, password }),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.detail || 'Login failed')
-      }
-
-      // Store tokens from response body for Authorization header fallback
-      // (httpOnly cookies may not work cross-origin in development)
-      const tokens: AuthTokens = await response.json()
-      storeTokens(tokens.access_token, tokens.refresh_token)
-
-      // Fetch user data using the access token
-      await fetchCurrentUser(tokens.access_token)
-      
-      // Note: Modal closing is handled by the component after redirect
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Register
-  const register = async (email: string, password: string, fullName: string) => {
-    setIsLoading(true)
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ 
-          email, 
-          password,
-          full_name: fullName,
-        }),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.detail || 'Registration failed')
-      }
-
-      const registerData: RegisterResponse = await response.json()
-
-      // Only auto-login if user is already verified (email verification not required)
-      // If user is not verified, they need to verify email first
-      if (registerData.is_verified) {
-        await login(email, password)
-      } else {
-        // User needs to verify email - throw a specific message
-        throw new Error('VERIFICATION_REQUIRED:Please check your email to verify your account before signing in.')
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Logout - calls backend to blacklist tokens and clear cookies
-  const logout = useCallback(async () => {
-    try {
-      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
-        method: 'POST',
-        headers: buildAuthHeaders(),
-        credentials: 'include', // Send cookies for auth, server will clear them
-      })
-    } catch (error) {
-      // Best effort - still clear local state even if API call fails
-      console.error('Logout API call failed:', error)
-    }
-    
-    // Clear tokens and user state
-    clearTokens()
-    setUser(null)
-  }, [])
-
-  // Refresh user data
-  const refreshUser = useCallback(async () => {
-    try {
-      await fetchCurrentUser()
-    } catch (error) {
-      console.error('Failed to refresh user:', error)
-    }
-  }, [])
-
-  // Check if user needs onboarding
-  const needsOnboarding = !!user && !user.onboarding_completed
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        needsOnboarding,
-        login,
-        register,
-        logout,
-        refreshUser,
-        showAuthModal,
-        setShowAuthModal,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const result = await loginMutation.mutateAsync({ email, password })
+      return result
+    },
+    [loginMutation],
   )
-}
 
-// ===========================================
-// Hook
-// ===========================================
+  const loginMfa = useCallback(
+    async (challengeToken: string, totpCode: string, rememberMe = false) => {
+      // Import inline to avoid circular deps
+      const { authApi } = await import('@/lib/api-client')
+      return authApi.loginMfa(challengeToken, totpCode, rememberMe)
+    },
+    [],
+  )
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+  const register = useCallback(
+    async (email: string, password: string, fullName: string) => {
+      await registerMutation.mutateAsync({ email, password, fullName })
+    },
+    [registerMutation],
+  )
+
+  const logout = useCallback(async () => {
+    logoutMutation.mutate()
+  }, [logoutMutation])
+
+  const user = session.user
+    ? {
+        id: session.user.id,
+        email: session.user.email,
+        full_name: session.user.full_name || '',
+        avatar_url: session.user.avatar_url || undefined,
+        is_active: session.user.is_active,
+        is_verified: session.user.is_verified,
+        is_superuser: session.user.is_superuser,
+        mfa_enabled: session.user.mfa_enabled,
+        created_at: session.user.created_at,
+        last_login: session.user.last_login || undefined,
+        has_profile: session.user.has_profile,
+        onboarding_completed: session.user.onboarding_completed,
+        roles: session.user.roles,
+        permissions: session.user.permissions,
+      }
+    : null
+
+  return {
+    user,
+    isLoading: session.isLoading,
+    isAuthenticated: session.isAuthenticated,
+    needsOnboarding: session.needsOnboarding,
+    login,
+    loginMfa,
+    register,
+    logout,
+    refreshUser,
+    showAuthModal,
+    setShowAuthModal,
+    error: loginMutation.error?.message || registerMutation.error?.message || null,
+    clearError: () => {
+      loginMutation.reset()
+      registerMutation.reset()
+    },
   }
-  return context
 }
-

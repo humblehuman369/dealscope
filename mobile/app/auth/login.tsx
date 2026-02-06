@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -10,470 +9,270 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
-  Image,
 } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
-import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { validateEmail, forgotPassword } from '../../services/authService';
+import type { MFAChallengeResponse } from '../../services/authService';
 
 export default function LoginScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { login, isLoading, error, clearError } = useAuth();
+  const { login, loginMfa, isLoading } = useAuth();
   const { theme, isDark } = useTheme();
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [localError, setLocalError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // MFA state
+  const [mfaChallenge, setMfaChallenge] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState('');
 
   const handleLogin = useCallback(async () => {
-    // Clear previous errors
-    setLocalError(null);
-    clearError();
-    
-    // Validate inputs
-    if (!email.trim()) {
-      setLocalError('Please enter your email');
+    setError(null);
+
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address');
       return;
     }
-    
-    if (!validateEmail(email.trim())) {
-      setLocalError('Please enter a valid email address');
+    if (password.length < 1) {
+      setError('Please enter your password');
       return;
     }
-    
-    if (!password) {
-      setLocalError('Please enter your password');
-      return;
-    }
-    
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
+
     try {
-      await login({
-        email: email.trim().toLowerCase(),
-        password,
-        remember_me: rememberMe,
-      });
-      
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      
-      // Navigate to main app
-      router.replace('/(tabs)/scan');
-    } catch (err) {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      // Error is handled by context
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      const result = await login(email, password, rememberMe);
+
+      if ('mfa_required' in result && result.mfa_required) {
+        setMfaChallenge((result as MFAChallengeResponse).challenge_token);
+        return;
+      }
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setError(err.message || 'Login failed. Please try again.');
     }
-  }, [email, password, rememberMe, login, router, clearError]);
+  }, [email, password, rememberMe, login, router]);
+
+  const handleMfaSubmit = useCallback(async () => {
+    if (!mfaChallenge || mfaCode.length !== 6) return;
+    setError(null);
+
+    try {
+      await loginMfa(mfaChallenge, mfaCode, rememberMe);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace('/(tabs)');
+    } catch (err: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setError(err.message || 'Invalid MFA code');
+    }
+  }, [mfaChallenge, mfaCode, rememberMe, loginMfa, router]);
 
   const handleForgotPassword = useCallback(async () => {
-    if (!email.trim()) {
-      Alert.alert(
-        'Enter Email',
-        'Please enter your email address first, then tap "Forgot Password".'
-      );
+    if (!validateEmail(email)) {
+      Alert.alert('Email Required', 'Please enter your email address first.');
       return;
     }
-    
-    if (!validateEmail(email.trim())) {
-      Alert.alert(
-        'Invalid Email',
-        'Please enter a valid email address.'
-      );
-      return;
+    try {
+      await forgotPassword(email);
+      Alert.alert('Check Your Email', 'If an account exists with that email, a reset link has been sent.');
+    } catch {
+      Alert.alert('Check Your Email', 'If an account exists with that email, a reset link has been sent.');
     }
-    
-    Alert.alert(
-      'Reset Password',
-      `We'll send a password reset link to ${email.trim()}. Continue?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Send Link', 
-          onPress: async () => {
-            try {
-              await forgotPassword(email.trim().toLowerCase());
-              Alert.alert(
-                'Check Your Email',
-                'If an account exists with that email, a password reset link has been sent. Please check your inbox and spam folder.'
-              );
-            } catch (error) {
-              // Always show success to prevent email enumeration
-              Alert.alert(
-                'Check Your Email',
-                'If an account exists with that email, a password reset link has been sent. Please check your inbox and spam folder.'
-              );
-            }
-          }
-        },
-      ]
-    );
   }, [email]);
 
-  const displayError = localError || error;
+  const bg = isDark ? '#0f172a' : '#f8fafc';
+  const cardBg = isDark ? '#1e293b' : '#ffffff';
+  const textColor = isDark ? '#f1f5f9' : '#0f172a';
+  const mutedColor = isDark ? '#94a3b8' : '#64748b';
+  const inputBg = isDark ? '#0f172a' : '#f1f5f9';
+  const borderColor = isDark ? '#334155' : '#e2e8f0';
+  const accentColor = '#0d9488';
 
-  // Dynamic styles based on theme
-  const dynamicStyles = {
-    container: { backgroundColor: theme.background },
-    backIcon: isDark ? colors.gray[100] : colors.gray[900],
-    logo: { color: isDark ? colors.primary[400] : colors.primary[600] },
-    title: { color: theme.text },
-    subtitle: { color: theme.textMuted },
-    label: { color: isDark ? colors.gray[300] : colors.gray[700] },
-    inputContainer: { 
-      backgroundColor: isDark ? colors.navy[800] : colors.gray[50],
-      borderColor: isDark ? colors.navy[600] : colors.gray[200],
-    },
-    input: { color: theme.text },
-    inputIcon: isDark ? colors.gray[500] : colors.gray[400],
-    checkbox: { borderColor: isDark ? colors.gray[600] : colors.gray[300] },
-    rememberText: { color: isDark ? colors.gray[400] : colors.gray[600] },
-    dividerLine: { backgroundColor: isDark ? colors.navy[700] : colors.gray[200] },
-    dividerText: { color: theme.textMuted },
-    skipButton: { borderColor: isDark ? colors.navy[600] : colors.gray[300] },
-    skipButtonText: { color: isDark ? colors.gray[400] : colors.gray[600] },
-    signupText: { color: isDark ? colors.gray[400] : colors.gray[600] },
-  };
+  // MFA Screen
+  if (mfaChallenge) {
+    return (
+      <View style={{ flex: 1, backgroundColor: bg, paddingTop: insets.top }}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+          <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24 }}>
+            <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 24, borderWidth: 1, borderColor }}>
+              <Text style={{ fontSize: 20, fontWeight: '700', color: textColor, textAlign: 'center', marginBottom: 8 }}>
+                Two-Factor Authentication
+              </Text>
+              <Text style={{ fontSize: 14, color: mutedColor, textAlign: 'center', marginBottom: 24 }}>
+                Enter the 6-digit code from your authenticator app.
+              </Text>
 
-  return (
-    <KeyboardAvoidingView
-      style={[styles.container, dynamicStyles.container]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }
-        ]}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Back Button */}
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons name="arrow-back" size={24} color={dynamicStyles.backIcon} />
-        </TouchableOpacity>
+              {error && (
+                <View style={{ backgroundColor: isDark ? '#450a0a33' : '#fef2f2', padding: 12, borderRadius: 8, marginBottom: 16 }}>
+                  <Text style={{ color: '#ef4444', fontSize: 13 }}>{error}</Text>
+                </View>
+              )}
 
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={isDark 
-                ? require('../../assets/InvestIQ Logo 3D (Dark View).png')
-                : require('../../assets/InvestIQ Logo 3D (Light View).png')
-              }
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-            <Text style={[styles.logo, dynamicStyles.logo]}>
-              Invest<Text style={styles.logoAccent}>IQ</Text>
-            </Text>
-          </View>
-          <Text style={[styles.title, dynamicStyles.title]}>Welcome back</Text>
-          <Text style={[styles.subtitle, dynamicStyles.subtitle]}>
-            Sign in to sync your scans and portfolio
-          </Text>
-        </View>
-
-        {/* Form */}
-        <View style={styles.form}>
-          {/* Email Input */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, dynamicStyles.label]}>Email</Text>
-            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
-              <Ionicons name="mail-outline" size={20} color={dynamicStyles.inputIcon} />
               <TextInput
-                style={[styles.input, dynamicStyles.input]}
-                placeholder="you@example.com"
-                placeholderTextColor={dynamicStyles.inputIcon}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                autoCorrect={false}
-                returnKeyType="next"
+                value={mfaCode}
+                onChangeText={(t) => setMfaCode(t.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                placeholderTextColor={mutedColor}
+                keyboardType="number-pad"
+                maxLength={6}
+                autoFocus
+                style={{
+                  backgroundColor: inputBg,
+                  borderRadius: 12,
+                  padding: 16,
+                  fontSize: 24,
+                  fontWeight: '600',
+                  color: textColor,
+                  textAlign: 'center',
+                  letterSpacing: 12,
+                  borderWidth: 1,
+                  borderColor,
+                  marginBottom: 16,
+                }}
               />
-            </View>
-          </View>
 
-          {/* Password Input */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, dynamicStyles.label]}>Password</Text>
-            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
-              <Ionicons name="lock-closed-outline" size={20} color={dynamicStyles.inputIcon} />
-              <TextInput
-                style={[styles.input, dynamicStyles.input]}
-                placeholder="Enter your password"
-                placeholderTextColor={dynamicStyles.inputIcon}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                autoComplete="password"
-                returnKeyType="go"
-                onSubmitEditing={handleLogin}
-              />
               <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                onPress={handleMfaSubmit}
+                disabled={isLoading || mfaCode.length !== 6}
+                style={{
+                  backgroundColor: accentColor,
+                  borderRadius: 12,
+                  padding: 16,
+                  alignItems: 'center',
+                  opacity: isLoading || mfaCode.length !== 6 ? 0.5 : 1,
+                }}
               >
-                <Ionicons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={dynamicStyles.inputIcon}
-                />
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Verify</Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => { setMfaChallenge(null); setMfaCode(''); setError(null); }}
+                style={{ marginTop: 16, alignItems: 'center' }}
+              >
+                <Text style={{ color: mutedColor, fontSize: 14 }}>Back to login</Text>
               </TouchableOpacity>
             </View>
           </View>
+        </KeyboardAvoidingView>
+      </View>
+    );
+  }
 
-          {/* Remember Me & Forgot Password */}
-          <View style={styles.optionsRow}>
-            <TouchableOpacity
-              style={styles.rememberRow}
-              onPress={() => setRememberMe(!rememberMe)}
-            >
-              <View style={[styles.checkbox, dynamicStyles.checkbox, rememberMe && styles.checkboxChecked]}>
-                {rememberMe && (
-                  <Ionicons name="checkmark" size={14} color="#fff" />
-                )}
+  // Login Screen
+  return (
+    <View style={{ flex: 1, backgroundColor: bg, paddingTop: insets.top }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+
+          {/* Title */}
+          <View style={{ marginBottom: 32, alignItems: 'center' }}>
+            <Text style={{ fontSize: 28, fontWeight: '800', color: textColor }}>
+              DealHub<Text style={{ color: accentColor }}>IQ</Text>
+            </Text>
+            <Text style={{ fontSize: 15, color: mutedColor, marginTop: 6 }}>Sign in to your account</Text>
+          </View>
+
+          {/* Card */}
+          <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 24, borderWidth: 1, borderColor }}>
+            {error && (
+              <View style={{ backgroundColor: isDark ? '#450a0a33' : '#fef2f2', padding: 12, borderRadius: 8, marginBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="alert-circle" size={16} color="#ef4444" />
+                <Text style={{ color: '#ef4444', fontSize: 13, flex: 1 }}>{error}</Text>
               </View>
-              <Text style={[styles.rememberText, dynamicStyles.rememberText]}>Remember me</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity onPress={handleForgotPassword}>
-              <Text style={styles.forgotText}>Forgot password?</Text>
+            )}
+
+            {/* Email */}
+            <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Email</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 16 }}>
+              <Ionicons name="mail-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="you@example.com"
+                placeholderTextColor={mutedColor}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoComplete="email"
+                style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }}
+              />
+            </View>
+
+            {/* Password */}
+            <Text style={{ fontSize: 13, fontWeight: '600', color: mutedColor, marginBottom: 6 }}>Password</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 12 }}>
+              <Ionicons name="lock-closed-outline" size={18} color={mutedColor} style={{ paddingLeft: 14 }} />
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Enter your password"
+                placeholderTextColor={mutedColor}
+                secureTextEntry={!showPassword}
+                autoComplete="password"
+                style={{ flex: 1, padding: 14, color: textColor, fontSize: 15 }}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ paddingRight: 14 }}>
+                <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={mutedColor} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Remember me + Forgot */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <TouchableOpacity onPress={() => setRememberMe(!rememberMe)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name={rememberMe ? 'checkbox' : 'square-outline'} size={20} color={rememberMe ? accentColor : mutedColor} />
+                <Text style={{ fontSize: 13, color: mutedColor }}>Remember me</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleForgotPassword}>
+                <Text style={{ fontSize: 13, color: accentColor }}>Forgot password?</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Submit */}
+            <TouchableOpacity
+              onPress={handleLogin}
+              disabled={isLoading}
+              style={{
+                backgroundColor: accentColor,
+                borderRadius: 12,
+                padding: 16,
+                alignItems: 'center',
+                opacity: isLoading ? 0.6 : 1,
+              }}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Sign In</Text>
+              )}
             </TouchableOpacity>
           </View>
 
-          {/* Error Message */}
-          {displayError && (
-            <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle" size={18} color={colors.loss.main} />
-              <Text style={styles.errorText}>{displayError}</Text>
-            </View>
-          )}
-
-          {/* Login Button */}
-          <TouchableOpacity
-            style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
-            onPress={handleLogin}
-            disabled={isLoading}
-            activeOpacity={0.8}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.loginButtonText}>Sign In</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Divider */}
-        <View style={styles.divider}>
-          <View style={[styles.dividerLine, dynamicStyles.dividerLine]} />
-          <Text style={[styles.dividerText, dynamicStyles.dividerText]}>or</Text>
-          <View style={[styles.dividerLine, dynamicStyles.dividerLine]} />
-        </View>
-
-        {/* Skip for Now */}
-        <TouchableOpacity
-          style={[styles.skipButton, dynamicStyles.skipButton]}
-          onPress={() => router.replace('/(tabs)/scan')}
-        >
-          <Text style={[styles.skipButtonText, dynamicStyles.skipButtonText]}>Continue without account</Text>
-        </TouchableOpacity>
-
-        {/* Sign Up Link */}
-        <View style={styles.signupRow}>
-          <Text style={[styles.signupText, dynamicStyles.signupText]}>Don't have an account? </Text>
-          <Link href="/auth/register" asChild>
-            <TouchableOpacity>
-              <Text style={styles.signupLink}>Sign up</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          {/* Register link */}
+          <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20, gap: 4 }}>
+            <Text style={{ fontSize: 14, color: mutedColor }}>Don't have an account?</Text>
+            <Link href="/auth/register" asChild>
+              <TouchableOpacity>
+                <Text style={{ fontSize: 14, color: accentColor, fontWeight: '600' }}>Sign up</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-    padding: 4,
-    marginBottom: 20,
-  },
-  header: {
-    marginBottom: 32,
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 24,
-  },
-  logoImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-  },
-  logo: {
-    fontSize: 24,
-    fontWeight: '700',
-  },
-  logoAccent: {
-    color: colors.primary[500],
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  form: {
-    gap: 20,
-  },
-  inputGroup: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    gap: 10,
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 14,
-    fontSize: 16,
-  },
-  optionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  rememberRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: colors.primary[600],
-    borderColor: colors.primary[600],
-  },
-  rememberText: {
-    fontSize: 14,
-  },
-  forgotText: {
-    fontSize: 14,
-    color: colors.primary[600],
-    fontWeight: '500',
-  },
-  errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: colors.loss.light,
-    padding: 12,
-    borderRadius: 8,
-  },
-  errorText: {
-    flex: 1,
-    fontSize: 14,
-    color: colors.loss.main,
-  },
-  loginButton: {
-    backgroundColor: colors.primary[600],
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 8,
-    shadowColor: colors.primary[600],
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  loginButtonDisabled: {
-    backgroundColor: colors.gray[400],
-    shadowOpacity: 0,
-  },
-  loginButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    fontSize: 14,
-    paddingHorizontal: 16,
-  },
-  skipButton: {
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 12,
-  },
-  skipButtonText: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  signupRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
-  },
-  signupText: {
-    fontSize: 15,
-  },
-  signupLink: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.primary[600],
-  },
-});
-

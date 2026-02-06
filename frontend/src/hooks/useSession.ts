@@ -1,0 +1,172 @@
+'use client'
+
+/**
+ * useSession — React Query based session management.
+ *
+ * Replaces AuthContext.  React Query cache is the single source of truth
+ * for the current user.  No Context Provider is needed.
+ *
+ * Usage:
+ *   const { user, isLoading, isAuthenticated } = useSession()
+ *   const login = useLogin()
+ *   const logout = useLogout()
+ */
+
+import { useCallback } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
+import {
+  authApi,
+  type UserResponse,
+  type LoginResponse,
+  type MFAChallengeResponse,
+} from '@/lib/api-client'
+
+// ------------------------------------------------------------------
+// Query key
+// ------------------------------------------------------------------
+export const SESSION_QUERY_KEY = ['session', 'me'] as const
+
+// ------------------------------------------------------------------
+// useSession — reads current user from cache / API
+// ------------------------------------------------------------------
+
+export function useSession() {
+  const { data: user, isLoading, error } = useQuery<UserResponse | null>({
+    queryKey: SESSION_QUERY_KEY,
+    queryFn: async () => {
+      try {
+        return await authApi.me()
+      } catch {
+        return null
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: false,
+    refetchOnWindowFocus: true,
+  })
+
+  return {
+    user: user ?? null,
+    isLoading,
+    isAuthenticated: !!user,
+    needsOnboarding: !!user && !user.onboarding_completed,
+    permissions: user?.permissions ?? [],
+    roles: user?.roles ?? [],
+    hasPermission: (perm: string) => user?.permissions?.includes(perm) ?? false,
+    isAdmin: user?.roles?.includes('admin') || user?.roles?.includes('owner') || false,
+  }
+}
+
+// ------------------------------------------------------------------
+// useLogin
+// ------------------------------------------------------------------
+
+export function useLogin() {
+  const queryClient = useQueryClient()
+  const router = useRouter()
+
+  return useMutation({
+    mutationFn: async ({
+      email,
+      password,
+      rememberMe,
+    }: {
+      email: string
+      password: string
+      rememberMe?: boolean
+    }) => {
+      const result = await authApi.login(email, password, rememberMe)
+      return result
+    },
+    onSuccess: (data) => {
+      // If MFA is required, we don't update the cache yet
+      if ('mfa_required' in data && data.mfa_required) {
+        return
+      }
+      // Login success — set user in cache
+      const loginData = data as LoginResponse
+      queryClient.setQueryData(SESSION_QUERY_KEY, loginData.user)
+    },
+  })
+}
+
+// ------------------------------------------------------------------
+// useLoginMfa
+// ------------------------------------------------------------------
+
+export function useLoginMfa() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      challengeToken,
+      totpCode,
+      rememberMe,
+    }: {
+      challengeToken: string
+      totpCode: string
+      rememberMe?: boolean
+    }) => {
+      return authApi.loginMfa(challengeToken, totpCode, rememberMe)
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(SESSION_QUERY_KEY, data.user)
+    },
+  })
+}
+
+// ------------------------------------------------------------------
+// useRegister
+// ------------------------------------------------------------------
+
+export function useRegister() {
+  return useMutation({
+    mutationFn: async ({
+      email,
+      password,
+      fullName,
+    }: {
+      email: string
+      password: string
+      fullName: string
+    }) => {
+      return authApi.register(email, password, fullName)
+    },
+  })
+}
+
+// ------------------------------------------------------------------
+// useLogout
+// ------------------------------------------------------------------
+
+export function useLogout() {
+  const queryClient = useQueryClient()
+  const router = useRouter()
+
+  return useMutation({
+    mutationFn: async () => {
+      try {
+        await authApi.logout()
+      } catch {
+        // Best effort
+      }
+    },
+    onSettled: () => {
+      queryClient.setQueryData(SESSION_QUERY_KEY, null)
+      queryClient.clear()
+      router.push('/')
+    },
+  })
+}
+
+// ------------------------------------------------------------------
+// useRefreshUser — manually refresh user data
+// ------------------------------------------------------------------
+
+export function useRefreshUser() {
+  const queryClient = useQueryClient()
+  return useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY })
+  }, [queryClient])
+}
