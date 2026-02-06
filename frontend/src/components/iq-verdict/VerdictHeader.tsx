@@ -49,7 +49,7 @@ const TABS: { id: VerdictTab; label: string }[] = [
   { id: 'analyze', label: 'VerdictIQ' },
   { id: 'details', label: 'Details' },
   { id: 'price-checker', label: 'PriceCheckerIQ' },
-  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'dashboard', label: 'DealHubIQ' },
 ]
 
 // ===================
