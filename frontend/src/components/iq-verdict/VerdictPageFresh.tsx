@@ -30,6 +30,7 @@ import {
   tw,
   layout,
   getScoreColor,
+  getHarmonizedBarColor,
   getAssessment,
   getUrgencyColor,
   getMarketTempColor,
@@ -259,8 +260,9 @@ function PropertySummaryBar({
 }
 
 /**
- * Section B: Score Hero (Polished)
- * Gradient bg, progress ring with glow, pill verdict label
+ * Section B: Score Hero (Redesigned)
+ * Centered vertical layout with SVG arc gauge, verdict pill,
+ * signal indicator cards, all wrapped in a defined card container.
  */
 function ScoreHero({
   score,
@@ -276,234 +278,220 @@ function ScoreHero({
   onShowMethodology?: () => void
 }) {
   const scoreColor = getScoreColor(score)
-  
-  // Calculate stroke dash for the progress ring
-  const radius = 54
+
+  // Arc gauge geometry (240-degree arc)
+  const radius = 50
   const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = circumference - (score / 100) * circumference
+  const arcFraction = 240 / 360
+  const arcLength = circumference * arcFraction
+  const gapLength = circumference - arcLength
+  const clampedScore = Math.max(0, Math.min(100, score))
+  const fillLength = arcLength * (clampedScore / 100)
 
   // Pill background based on score
   const getPillBg = (s: number) => {
-    if (s >= 80) return 'bg-teal-500/10'
-    if (s >= 50) return 'bg-amber-500/10'
-    return 'bg-red-500/10'
+    if (s >= 80) return 'rgba(8,145,178,0.10)'
+    if (s >= 50) return 'rgba(107,127,153,0.10)'
+    return 'rgba(196,91,91,0.10)'
   }
 
+  // Signal indicator color helper
+  const getSignalColor = (type: 'dealGap' | 'urgency' | 'market' | 'vacancy'): string => {
+    switch (type) {
+      case 'dealGap':
+        return quickStats.dealGap <= 10 ? colors.brand.tealBright : (quickStats.dealGap <= 20 ? colors.harmonized.slateBlue : colors.harmonized.softCoral)
+      case 'urgency':
+        return quickStats.sellerUrgency.toLowerCase() === 'high' ? colors.brand.tealBright : (quickStats.sellerUrgency.toLowerCase() === 'medium' ? colors.harmonized.slateBlue : colors.harmonized.softCoral)
+      case 'market':
+        return quickStats.marketTemp.toLowerCase() === 'cold' ? colors.brand.tealBright : (quickStats.marketTemp.toLowerCase() === 'warm' ? colors.brand.tealBright : colors.harmonized.slateBlue)
+      case 'vacancy':
+        return quickStats.vacancy <= 5 ? colors.brand.tealBright : (quickStats.vacancy <= 10 ? colors.harmonized.slateBlue : colors.harmonized.softCoral)
+    }
+  }
+
+  const getSignalAccentBg = (color: string): string => {
+    if (color === colors.brand.tealBright) return 'rgba(8,145,178,0.08)'
+    if (color === colors.harmonized.slateBlue) return 'rgba(107,127,153,0.08)'
+    return 'rgba(196,91,91,0.08)'
+  }
+
+  // Signal data
+  const signals = [
+    {
+      label: 'DEAL GAP',
+      value: `${quickStats.dealGap > 0 ? '-' : '+'}${Math.abs(quickStats.dealGap).toFixed(1)}%`,
+      status: quickStats.dealGap <= 10 ? 'Achievable' : quickStats.dealGap <= 20 ? 'Stretch' : 'Difficult',
+      color: getSignalColor('dealGap'),
+    },
+    {
+      label: 'URGENCY',
+      value: quickStats.sellerUrgency,
+      status: `${quickStats.sellerUrgencyScore}/100`,
+      color: getSignalColor('urgency'),
+    },
+    {
+      label: 'MARKET',
+      value: quickStats.marketTemp,
+      status: quickStats.marketTemp === 'Cold' ? "Buyer's" : quickStats.marketTemp === 'Hot' ? "Seller's" : 'Balanced',
+      color: getSignalColor('market'),
+    },
+    {
+      label: 'VACANCY',
+      value: `<${quickStats.vacancy}%`,
+      status: quickStats.vacancy <= 5 ? 'Healthy' : quickStats.vacancy <= 10 ? 'Moderate' : 'High',
+      color: getSignalColor('vacancy'),
+    },
+  ]
+
   return (
-    <div className="bg-white border-b relative overflow-hidden" style={{ borderColor: colors.ui.border }}>
-      {/* Score Section - Compact horizontal layout */}
-      <div className="flex items-center gap-5 py-5 px-5 relative">
-        {/* Score Circle - Smaller, subdued */}
-        <div className="relative w-20 h-20 flex-shrink-0" style={{ filter: `drop-shadow(0 0 8px ${scoreColor}20)` }}>
-          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
-            <circle
-              cx="60"
-              cy="60"
-              r={radius}
-              fill="none"
-              stroke="rgba(229,229,229,0.4)"
-              strokeWidth="7"
-            />
-            <circle
-              cx="60"
-              cy="60"
-              r={radius}
-              fill="none"
-              stroke={scoreColor}
-              strokeWidth="7"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              className="transition-all duration-700 ease-out"
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span 
-              className="font-bold leading-none"
-              style={{ 
-                fontSize: 24,
-                color: scoreColor,
-              }}
-            >
-              {score}
-            </span>
-            <span 
-              className="font-medium"
-              style={{ 
-                fontSize: 9,
-                color: colors.text.muted,
-              }}
-            >
-              /100
-            </span>
-          </div>
+    <div className="px-4 py-2">
+      <div
+        className="bg-white rounded-xl overflow-hidden"
+        style={{
+          border: `1px solid ${colors.harmonized.verdictCardBorder}`,
+          boxShadow: colors.shadow.verdictCard,
+        }}
+      >
+        {/* Teal accent bar */}
+        <div className="h-[3px]" style={{ backgroundColor: colors.brand.tealBright }} />
+
+        {/* Section Header */}
+        <div className="flex justify-center pt-4 pb-1">
+          <span className="text-[15px] font-extrabold tracking-tight" style={{ color: colors.text.primary }}>
+            Verdict<span style={{ color: colors.brand.tealBright }}>IQ</span>
+          </span>
         </div>
 
-        {/* Verdict Info - Right side */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-bold" style={{ color: colors.text.primary }}>
-              Verdict<span style={{ color: colors.brand.tealBright }}>IQ</span>
-            </span>
-            <div className={`${getPillBg(score)} px-3 py-0.5 rounded-full`}>
-              <span 
-                className="font-bold"
-                style={{ 
-                  fontSize: 14,
-                  color: scoreColor,
-                }}
+        {/* Arc Gauge - Centered */}
+        <div className="flex justify-center py-2">
+          <div className="relative" style={{ width: 120, height: 120 }}>
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              {/* Track arc */}
+              <circle
+                cx="60"
+                cy="60"
+                r={radius}
+                fill="none"
+                stroke="rgba(229,229,229,0.4)"
+                strokeWidth="9"
+                strokeLinecap="round"
+                strokeDasharray={`${arcLength} ${gapLength}`}
+                strokeDashoffset="0"
+                transform="rotate(150 60 60)"
+              />
+              {/* Filled arc */}
+              <circle
+                cx="60"
+                cy="60"
+                r={radius}
+                fill="none"
+                stroke={scoreColor}
+                strokeWidth="9"
+                strokeLinecap="round"
+                strokeDasharray={`${fillLength} ${circumference - fillLength}`}
+                strokeDashoffset="0"
+                transform="rotate(150 60 60)"
+                className="transition-all duration-700 ease-out"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span
+                className="font-extrabold leading-none"
+                style={{ fontSize: 32, color: scoreColor }}
               >
-                {verdictLabel}
+                {score}
+              </span>
+              <span
+                className="font-medium"
+                style={{ fontSize: 11, color: colors.text.muted, marginTop: -1 }}
+              >
+                /100
               </span>
             </div>
           </div>
-          <p 
-            className="mb-1.5"
-            style={{ 
-              fontSize: typography.body.size - 1,
-              color: colors.text.tertiary,
-            }}
+        </div>
+
+        {/* Verdict Pill + Subtitle - Centered */}
+        <div className="flex flex-col items-center px-5 pb-4">
+          <div
+            className="px-4 py-1 rounded-full mb-1.5"
+            style={{ backgroundColor: getPillBg(score) }}
+          >
+            <span className="font-bold" style={{ fontSize: 14, color: scoreColor }}>
+              {verdictLabel}
+            </span>
+          </div>
+          <p
+            className="text-center mb-2"
+            style={{ fontSize: typography.body.size - 1, color: colors.text.tertiary }}
           >
             {verdictSubtitle}
           </p>
-          <button 
-            className="flex items-center gap-1 bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity p-0"
-            style={{ 
-              color: colors.brand.tealBright,
-              fontSize: typography.caption.size + 1,
-            }}
-            onClick={onShowMethodology}
-          >
-            <Info className="w-3 h-3" />
-            How Verdict IQ Works
-          </button>
-        </div>
-      </div>
-
-      {/* Quick Stats Row - 4 columns */}
-      <div className="grid grid-cols-4 border-t" style={{ borderColor: colors.ui.border }}>
-        {/* Deal Gap */}
-        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: colors.ui.border }}>
-          <span 
-            className="uppercase tracking-wide font-medium mb-1"
-            style={{ 
-              fontSize: typography.caption.size,
-              color: colors.text.tertiary,
-            }}
-          >
-            Deal Gap
-          </span>
-          <span 
-            className="font-bold"
-            style={{ 
-              fontSize: typography.body.size + 2,
-              color: quickStats.dealGap <= 0 ? colors.status.positive : colors.status.warning,
-            }}
-          >
-            {quickStats.dealGap > 0 ? '-' : '+'}{Math.abs(quickStats.dealGap).toFixed(1)}%
-          </span>
-          <span 
-            style={{ 
-              fontSize: typography.caption.size,
-              color: colors.text.muted,
-            }}
-          >
-            {quickStats.dealGap <= 10 ? 'Achievable' : quickStats.dealGap <= 20 ? 'Stretch' : 'Difficult'}
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              className="flex items-center gap-1 bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity p-0"
+              style={{ color: colors.brand.tealBright, fontSize: typography.caption.size + 1 }}
+              onClick={onShowMethodology}
+            >
+              <Info className="w-3 h-3" />
+              How VerdictIQ Works
+            </button>
+            <span style={{ color: colors.text.muted, fontSize: typography.caption.size + 1 }}>|</span>
+            <button
+              className="flex items-center gap-1 bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity p-0"
+              style={{ color: colors.brand.tealBright, fontSize: typography.caption.size + 1 }}
+              onClick={onShowMethodology}
+            >
+              How We Score
+            </button>
+          </div>
         </div>
 
-        {/* Seller Urgency */}
-        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: colors.ui.border }}>
-          <span 
-            className="uppercase tracking-wide font-medium mb-1"
-            style={{ 
-              fontSize: typography.caption.size,
-              color: colors.text.tertiary,
-            }}
-          >
-            Urgency
-          </span>
-          <span 
-            className="font-bold"
-            style={{ 
-              fontSize: typography.body.size + 2,
-              color: getUrgencyColor(quickStats.sellerUrgency),
-            }}
-          >
-            {quickStats.sellerUrgency}
-          </span>
-          <span 
-            style={{ 
-              fontSize: typography.caption.size,
-              color: colors.text.muted,
-            }}
-          >
-            {quickStats.sellerUrgencyScore}/100
-          </span>
-        </div>
-
-        {/* Market Temp */}
-        <div className="flex flex-col items-center py-4 border-r" style={{ borderColor: colors.ui.border }}>
-          <span 
-            className="uppercase tracking-wide font-medium mb-1"
-            style={{ 
-              fontSize: typography.caption.size,
-              color: colors.text.tertiary,
-            }}
-          >
-            Market
-          </span>
-          <span 
-            className="font-bold"
-            style={{ 
-              fontSize: typography.body.size + 2,
-              color: getMarketTempColor(quickStats.marketTemp),
-            }}
-          >
-            {quickStats.marketTemp}
-          </span>
-          <span 
-            style={{ 
-              fontSize: typography.caption.size,
-              color: colors.text.muted,
-            }}
-          >
-            {quickStats.marketTemp === 'Cold' ? "Buyer's" : quickStats.marketTemp === 'Hot' ? "Seller's" : 'Balanced'}
-          </span>
-        </div>
-
-        {/* Vacancy */}
-        <div className="flex flex-col items-center py-4">
-          <span 
-            className="uppercase tracking-wide font-medium mb-1"
-            style={{ 
-              fontSize: typography.caption.size,
-              color: colors.text.tertiary,
-            }}
-          >
-            Vacancy
-          </span>
-          <span 
-            className="font-bold"
-            style={{ 
-              fontSize: typography.body.size + 2,
-              color: quickStats.vacancy <= 5 
-                ? colors.status.positive 
-                : quickStats.vacancy <= 10 
-                  ? colors.status.warning 
-                  : colors.status.negative,
-            }}
-          >
-            {'<'}{quickStats.vacancy}%
-          </span>
-          <span 
-            style={{ 
-              fontSize: typography.caption.size,
-              color: colors.text.muted,
-            }}
-          >
-            {quickStats.vacancy <= 5 ? 'Healthy' : quickStats.vacancy <= 10 ? 'Moderate' : 'High'}
-          </span>
+        {/* Signal Indicators Row */}
+        <div className="h-px mx-4" style={{ backgroundColor: colors.ui.border }} />
+        <div className="grid grid-cols-4 gap-2 px-3 py-3.5">
+          {signals.map((signal) => (
+            <div
+              key={signal.label}
+              className="flex flex-col items-center rounded-lg relative overflow-hidden"
+              style={{
+                backgroundColor: colors.harmonized.signalCardBg,
+                paddingTop: 12,
+                paddingBottom: 8,
+                paddingLeft: 4,
+                paddingRight: 4,
+              }}
+            >
+              {/* Color accent bar */}
+              <div
+                className="absolute top-0 left-0 right-0 h-[3px] rounded-t-lg"
+                style={{ backgroundColor: signal.color }}
+              />
+              <span
+                className="uppercase tracking-wider font-bold mb-1"
+                style={{ fontSize: 8, color: colors.text.tertiary, letterSpacing: '0.5px' }}
+              >
+                {signal.label}
+              </span>
+              <span
+                className="font-extrabold mb-1"
+                style={{ fontSize: 14, color: signal.color }}
+              >
+                {signal.value}
+              </span>
+              <span
+                className="px-2 py-0.5 rounded-full"
+                style={{
+                  fontSize: 8,
+                  fontWeight: 600,
+                  color: signal.color,
+                  backgroundColor: getSignalAccentBg(signal.color),
+                }}
+              >
+                {signal.status}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -511,17 +499,11 @@ function ScoreHero({
 }
 
 /**
- * Section C: Confidence Metrics (Polished)
- * Smoother bars with animated fills
+ * Section C: Confidence Metrics (Harmonized)
+ * Slim bars with teal-tinted tracks and harmonized teal/slate/coral colors
+ * Wrapped inside the VerdictIQ card for visual continuity
  */
 function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
-  const getBarColor = (value: number): string => {
-    if (value >= 80) return colors.status.positive
-    if (value >= 60) return colors.brand.tealBright
-    if (value >= 40) return colors.status.amber
-    return colors.status.negative
-  }
-
   const metricItems = [
     { label: 'Deal Probability', value: metrics.dealProbability },
     { label: 'Market Alignment', value: metrics.marketAlignment },
@@ -529,56 +511,68 @@ function ConfidenceMetricsSection({ metrics }: { metrics: ConfidenceMetrics }) {
   ]
 
   return (
-    <div className="bg-white px-5 py-4 border-b" style={{ borderColor: colors.ui.border }}>
-      <h3 
-        className="uppercase tracking-wide mb-3"
-        style={{ 
-          fontSize: typography.label.size,
-          fontWeight: typography.heading.weight,
-          color: colors.text.secondary,
+    <div className="px-4 pb-2">
+      <div
+        className="bg-white rounded-xl overflow-hidden px-5 py-4"
+        style={{
+          border: `1px solid ${colors.harmonized.verdictCardBorder}`,
+          boxShadow: colors.shadow.verdictCard,
         }}
       >
-        Confidence Metrics
-      </h3>
-      
-      <div className="space-y-3">
-        {metricItems.map((item) => (
-          <div key={item.label} className="flex items-center gap-3">
-            <span 
-              className="w-32"
-              style={{ 
-                fontSize: typography.body.size,
-                color: colors.text.secondary,
-              }}
-            >
-              {item.label}
-            </span>
-            <div 
-              className="flex-1 rounded-full overflow-hidden"
-              style={{ 
-                backgroundColor: 'rgba(229,229,229,0.5)',
-                height: 7,
-              }}
-            >
-              <div 
-                className="h-full rounded-full transition-all duration-700 ease-out"
-                style={{ 
-                  width: `${item.value}%`,
-                  backgroundColor: getBarColor(item.value),
-                }}
-              />
-            </div>
-            <span 
-              className="w-12 text-right font-bold tabular-nums"
-              style={{ 
-                fontSize: typography.body.size,
-                color: getBarColor(item.value),
-              }}
-            >
-              {item.value}%
-            </span>
-          </div>
-        ))}
+        <h3 
+          className="uppercase tracking-wide mb-3"
+          style={{ 
+            fontSize: typography.label.size,
+            fontWeight: typography.heading.weight,
+            color: colors.text.secondary,
+            letterSpacing: '0.8px',
+          }}
+        >
+          Confidence Metrics
+        </h3>
+        
+        <div className="space-y-3">
+          {metricItems.map((item) => {
+            const barColor = getHarmonizedBarColor(item.value)
+            return (
+              <div key={item.label} className="flex items-center gap-3">
+                <span 
+                  className="w-32"
+                  style={{ 
+                    fontSize: typography.body.size,
+                    color: colors.text.secondary,
+                  }}
+                >
+                  {item.label}
+                </span>
+                <div 
+                  className="flex-1 rounded-full overflow-hidden"
+                  style={{ 
+                    backgroundColor: colors.harmonized.confidenceTrack,
+                    height: 6,
+                  }}
+                >
+                  <div 
+                    className="h-full rounded-full transition-all duration-700 ease-out"
+                    style={{ 
+                      width: `${item.value}%`,
+                      backgroundColor: barColor,
+                    }}
+                  />
+                </div>
+                <span 
+                  className="w-12 text-right font-bold tabular-nums"
+                  style={{ 
+                    fontSize: typography.body.size,
+                    color: barColor,
+                  }}
+                >
+                  {item.value}%
+                </span>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
@@ -1367,9 +1361,9 @@ export function VerdictPageFresh({
         />
 
         {/* Breathing room */}
-        <div className="h-1" style={{ backgroundColor: colors.background.light }} />
+        <div className="h-1.5" style={{ backgroundColor: colors.background.light }} />
 
-        {/* Score Hero - Supporting confidence section */}
+        {/* Score Hero - Supporting confidence section (card layout) */}
         <ScoreHero
           score={score}
           verdictLabel={verdictLabel}
@@ -1378,11 +1372,11 @@ export function VerdictPageFresh({
           onShowMethodology={handleMethodologyClick}
         />
 
-        {/* Confidence Metrics */}
+        {/* Confidence Metrics (card layout) */}
         <ConfidenceMetricsSection metrics={confidenceMetrics} />
 
         {/* Breathing room */}
-        <div className="h-1" style={{ backgroundColor: colors.background.light }} />
+        <div className="h-1.5" style={{ backgroundColor: colors.background.light }} />
 
         {/* Section E: Financial Breakdown */}
         <FinancialBreakdownSection columns={financialBreakdown} summary={financialSummary} />

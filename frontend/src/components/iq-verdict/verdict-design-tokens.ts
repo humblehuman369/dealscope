@@ -157,6 +157,20 @@ export const colors = {
     iconMuted: '#A3A3A3',
   },
 
+  // Harmonized Metric Colors (VerdictIQ palette)
+  harmonized: {
+    /** #6B7F99 - Slate blue for moderate/caution (replaces amber in score context) */
+    slateBlue: '#6B7F99',
+    /** #C45B5B - Soft coral for concern/negative (replaces red in score context) */
+    softCoral: '#C45B5B',
+    /** Teal-tinted confidence bar track */
+    confidenceTrack: 'rgba(8,145,178,0.06)',
+    /** Card border matching investment card */
+    verdictCardBorder: 'rgba(8,145,178,0.12)',
+    /** Signal indicator card background */
+    signalCardBg: '#F8FAFB',
+  },
+
   // Gradients & Shadows (VerdictIQ visual polish)
   gradient: {
     tealStart: 'rgba(8,145,178,0.10)',
@@ -167,6 +181,7 @@ export const colors = {
     card: '0 2px 8px rgba(0,0,0,0.06)',
     glow: '0 0 20px rgba(8,145,178,0.15)',
     metricCard: '0 1px 4px rgba(0,0,0,0.06)',
+    verdictCard: '0 2px 8px rgba(0,0,0,0.04)',
   },
 } as const
 
@@ -234,6 +249,17 @@ export function getScoreColor(score: number): string {
   if (score >= 80) return colors.brand.tealBright   // Strong/Good
   if (score >= 50) return '#6B7F99'                  // Slate blue - harmonious neutral
   return '#C45B5B'                                   // Soft coral - muted concern
+}
+
+/**
+ * Get harmonized bar color for confidence metrics
+ * Uses the same teal/slate/coral palette as getScoreColor
+ * for visual consistency across the VerdictIQ section.
+ */
+export function getHarmonizedBarColor(value: number): string {
+  if (value >= 70) return colors.brand.tealBright    // Strong
+  if (value >= 40) return colors.harmonized.slateBlue // Moderate
+  return colors.harmonized.softCoral                  // Concern
 }
 
 /**
