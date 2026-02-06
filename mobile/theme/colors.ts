@@ -303,6 +303,13 @@ export const decisionGrade = {
   textTertiary: '#737373',  // neutral-500
   textMuted: '#A3A3A3',     // neutral-400
 
+  // Harmonized Metric Colors (VerdictIQ palette)
+  slateBlue: '#6B7F99',           // Moderate/caution - harmonizes with navy/teal
+  softCoral: '#C45B5B',           // Concern/negative - muted risk signal
+  confidenceTrack: 'rgba(8,145,178,0.06)',  // Teal-tinted bar track
+  verdictCardBorder: 'rgba(8,145,178,0.12)', // Card border matching InvestmentAnalysis
+  signalCardBg: '#F8FAFB',        // Signal indicator card background
+
   // Gradients & Shadows (for VerdictIQ visual polish)
   gradientTealStart: 'rgba(8,145,178,0.10)',
   gradientCyanMid: 'rgba(6,182,212,0.05)',

@@ -28,6 +28,7 @@ import {
   PropertyContextBar,
   PropertyContextData,
   VerdictHero,
+  SignalIndicator,
   InvestmentAnalysis,
   IQPriceId,
   IQPriceOption,
@@ -146,6 +147,45 @@ function buildConfidenceMetrics(raw: IQVerdictResponse | null): Array<{ label: s
     { label: 'Deal Probability', value: Math.round(dealProbability), color: getColorFromScore(dealProbability) },
     { label: 'Market Alignment', value: Math.round(marketAlignment), color: getColorFromScore(marketAlignment) },
     { label: 'Price Confidence', value: Math.round(priceConfidence), color: getColorFromScore(priceConfidence) },
+  ];
+}
+
+function buildSignalIndicators(
+  raw: IQVerdictResponse | null,
+  discountPercent: number
+): SignalIndicator[] {
+  if (!raw || !raw.opportunityFactors) {
+    return [
+      { label: 'DEAL GAP', value: '—', status: 'N/A', color: 'negative' },
+      { label: 'URGENCY', value: '—', status: 'N/A', color: 'amber' },
+      { label: 'MARKET', value: '—', status: 'N/A', color: 'amber' },
+      { label: 'VACANCY', value: '<5%', status: 'Healthy', color: 'teal' },
+    ];
+  }
+
+  const { dealGap, motivation, motivationLabel, buyerMarket } = raw.opportunityFactors;
+
+  // Deal Gap
+  const gapValue = `${dealGap > 0 ? '+' : ''}${dealGap.toFixed(1)}%`;
+  const gapColor: 'teal' | 'amber' | 'negative' = dealGap >= 0 ? 'teal' : (dealGap >= -15 ? 'amber' : 'negative');
+  const gapStatus = dealGap >= 0 ? 'Favorable' : (dealGap >= -15 ? 'Moderate' : 'Difficult');
+
+  // Urgency
+  const urgencyColor: 'teal' | 'amber' | 'negative' = motivation >= 70 ? 'teal' : (motivation >= 40 ? 'amber' : 'negative');
+  const urgencyLabel = motivation >= 70 ? 'High' : (motivation >= 40 ? 'Medium' : 'Low');
+
+  // Market
+  const marketLabel = buyerMarket || 'Warm';
+  const marketColor: 'teal' | 'amber' | 'negative' = marketLabel === 'Hot' || marketLabel === 'Warm' ? 'teal' : (marketLabel === 'Cool' ? 'amber' : 'negative');
+
+  // Vacancy (estimated)
+  const vacancyColor: 'teal' | 'amber' | 'negative' = 'teal';
+
+  return [
+    { label: 'DEAL GAP', value: gapValue, status: gapStatus, color: gapColor },
+    { label: 'URGENCY', value: urgencyLabel, status: `${Math.round(motivation)}/100`, color: urgencyColor },
+    { label: 'MARKET', value: marketLabel, status: motivationLabel || 'Active', color: marketColor },
+    { label: 'VACANCY', value: '<5%', status: 'Healthy', color: vacancyColor },
   ];
 }
 
@@ -417,6 +457,7 @@ export default function VerdictIQScreen() {
   const iqPrices = useMemo(() => buildIQPrices(breakevenPrice, targetPrice, listPrice), [breakevenPrice, targetPrice, listPrice]);
   const metrics = useMemo(() => buildMetricsFromAPI(raw, targetPrice), [raw, targetPrice]);
   const confidenceMetrics = useMemo(() => buildConfidenceMetrics(raw), [raw]);
+  const signalIndicators = useMemo(() => buildSignalIndicators(raw, discountPercent), [raw, discountPercent]);
   const leftColumn = useMemo(() => [
     buildPurchaseGroup(listPrice, targetPrice),
     buildFinancingGroup(targetPrice),
@@ -657,6 +698,7 @@ export default function VerdictIQScreen() {
             verdictLabel={dealScore.label || 'Analyzing...'}
             verdictSubtitle={raw?.verdictDescription || 'Calculating deal metrics...'}
             confidenceMetrics={confidenceMetrics}
+            signalIndicators={signalIndicators}
             onHowItWorksPress={handleHowVerdictWorks}
             onHowWeScorePress={handleHowWeScore}
           />

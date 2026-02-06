@@ -14,6 +14,9 @@ export { PropertyContextBar } from './PropertyContextBar';
 export type { PropertyContextData, PropertyStatus } from './PropertyContextBar';
 
 export { VerdictHero } from './VerdictHero';
+export type { SignalIndicator } from './VerdictHero';
+
+export { ArcGauge } from './ArcGauge';
 
 export { InvestmentAnalysis } from './InvestmentAnalysis';
 export type { IQPriceId, IQPriceOption, MetricData } from './InvestmentAnalysis';
