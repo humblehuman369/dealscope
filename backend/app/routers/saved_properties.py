@@ -26,6 +26,7 @@ from app.schemas.deal_maker import (
     DealMakerResponse,
 )
 from app.core.deps import CurrentUser, DbSession
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -270,12 +271,17 @@ async def save_property(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=error_msg
         )
+    except HTTPException:
+        # Re-raise HTTPExceptions as-is (they already have proper format)
+        raise
     except Exception as e:
         # Catch all other exceptions and log them properly
         logger.error(f"Unexpected error saving property: {str(e)}", exc_info=True)
+        # In production, don't expose internal error details
+        error_message = str(e) if settings.DEBUG else "Failed to save property. Please try again or contact support."
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to save property: {str(e)}"
+            detail=error_message
         )
 
 

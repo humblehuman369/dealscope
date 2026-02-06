@@ -315,13 +315,15 @@ export function SalesCompsScreen({
         setShowAuthModal('login')
         toast.error('Please log in to save properties')
       } else {
-        let errorData: { detail?: string } = { detail: 'Unknown error' }
+        let errorData: { detail?: string; message?: string; code?: string } = { detail: 'Unknown error' }
         try {
           errorData = await response.json()
         } catch {
           // Response is not JSON, use default error
         }
-        toast.error(errorData.detail || 'Failed to save property. Please try again.')
+        // Handle both FastAPI format (detail) and custom InvestIQ format (message)
+        const errorMessage = errorData.detail || errorData.message || 'Failed to save property. Please try again.'
+        toast.error(errorMessage)
         console.error('Failed to save property:', response.status, errorData)
       }
     } catch (error) {

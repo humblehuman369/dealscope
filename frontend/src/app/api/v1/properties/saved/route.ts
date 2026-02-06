@@ -88,7 +88,8 @@ export async function POST(request: NextRequest) {
       try {
         if (contentType?.includes('application/json')) {
           const errorData = await backendResponse.json()
-          errorDetail = errorData.detail || JSON.stringify(errorData)
+          // Handle both FastAPI format (detail) and custom InvestIQ format (message)
+          errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData)
         } else {
           errorDetail = await backendResponse.text()
         }
