@@ -27,7 +27,7 @@ const NAV_TABS: NavTab[] = [
   { id: 'details', label: 'Details' },
   { id: 'saleComps', label: 'Sale Comps' },
   { id: 'rentComps', label: 'Rent Comps' },
-  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'dashboard', label: 'DealHubIQ' },
 ];
 
 interface NavTabsProps {
