@@ -639,20 +639,7 @@ export default function VerdictIQScreen() {
           contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]}
           showsVerticalScrollIndicator={false}
         >
-          {/* Verdict Hero - Uses API data */}
-          <VerdictHero
-            score={dealScore.score}
-            verdictLabel={dealScore.label || 'Analyzing...'}
-            verdictSubtitle={raw?.verdictDescription || 'Calculating deal metrics...'}
-            confidenceMetrics={confidenceMetrics}
-            onHowItWorksPress={handleHowVerdictWorks}
-            onHowWeScorePress={handleHowWeScore}
-          />
-
-          {/* Spacer before Investment Analysis (breathing room) */}
-          <View style={styles.sectionSpacer} />
-
-          {/* Investment Analysis - Uses API data (Star of the show) */}
+          {/* Investment Analysis FIRST (Star of the show - conversion driver) */}
           <InvestmentAnalysis
             financingTerms="20% down, 7.3%"
             currentStrategy={currentStrategy}
@@ -666,7 +653,20 @@ export default function VerdictIQScreen() {
             onHowCalculated={handleHowCalculated}
           />
 
-          {/* Spacer after Investment Analysis (breathing room) */}
+          {/* Spacer */}
+          <View style={styles.sectionSpacer} />
+
+          {/* Verdict Score - Supporting confidence section */}
+          <VerdictHero
+            score={dealScore.score}
+            verdictLabel={dealScore.label || 'Analyzing...'}
+            verdictSubtitle={raw?.verdictDescription || 'Calculating deal metrics...'}
+            confidenceMetrics={confidenceMetrics}
+            onHowItWorksPress={handleHowVerdictWorks}
+            onHowWeScorePress={handleHowWeScore}
+          />
+
+          {/* Spacer */}
           <View style={styles.sectionSpacer} />
 
           {/* Financial Breakdown - Uses calculated data */}

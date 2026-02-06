@@ -219,18 +219,21 @@ export const components = {
  * Get color based on score value (0-100)
  * Unified color system across all VerdictIQ pages
  * 
+ * Uses a harmonious palette that doesn't overpower the
+ * Investment Analysis section:
+ * - High scores: Brand teal (positive, confident)
+ * - Mid scores: Muted slate-blue (neutral, doesn't scream)
+ * - Low scores: Soft coral (concern without alarm)
+ * 
  * Score Tiers:
- * 90-100 (A+) Strong - Teal
- * 80-89  (A)  Good   - Teal
- * 65-79  (B)  Average - Amber
- * 50-64  (C)  Marginal - Amber
- * 30-49  (D)  Unlikely - Red
- * 0-29   (F)  Pass - Red
+ * 80-100: Strong/Good - Teal
+ * 50-79:  Average/Marginal - Slate blue
+ * 0-49:   Unlikely/Pass - Soft coral
  */
 export function getScoreColor(score: number): string {
-  if (score >= 80) return colors.brand.tealBright  // A+ and A: Strong/Good
-  if (score >= 50) return colors.status.amber      // B and C: Average/Marginal
-  return colors.status.negative                     // D and F: Unlikely/Pass
+  if (score >= 80) return colors.brand.tealBright   // Strong/Good
+  if (score >= 50) return '#6B7F99'                  // Slate blue - harmonious neutral
+  return '#C45B5B'                                   // Soft coral - muted concern
 }
 
 /**

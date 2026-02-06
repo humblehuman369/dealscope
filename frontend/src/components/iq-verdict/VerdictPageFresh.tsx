@@ -269,46 +269,37 @@ function ScoreHero({
 
   return (
     <div className="bg-white border-b relative overflow-hidden" style={{ borderColor: colors.ui.border }}>
-      {/* Teal accent line */}
-      <div className="h-[3px]" style={{ backgroundColor: colors.brand.tealBright }} />
-
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-teal-500/5 via-transparent to-transparent pointer-events-none" />
-
-      {/* Score Circle Section - Centered */}
-      <div className="flex flex-col items-center py-8 px-5 relative">
-        {/* Score Circle with Progress Ring and Glow */}
-        <div className="relative w-32 h-32 mb-4" style={{ filter: `drop-shadow(0 0 12px ${scoreColor}30)` }}>
+      {/* Score Section - Compact horizontal layout */}
+      <div className="flex items-center gap-5 py-5 px-5 relative">
+        {/* Score Circle - Smaller, subdued */}
+        <div className="relative w-20 h-20 flex-shrink-0" style={{ filter: `drop-shadow(0 0 8px ${scoreColor}20)` }}>
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
-            {/* Background circle */}
             <circle
               cx="60"
               cy="60"
               r={radius}
               fill="none"
-              stroke={colors.ui.border}
-              strokeWidth="8"
+              stroke="rgba(229,229,229,0.4)"
+              strokeWidth="7"
             />
-            {/* Progress circle */}
             <circle
               cx="60"
               cy="60"
               r={radius}
               fill="none"
               stroke={scoreColor}
-              strokeWidth="8"
+              strokeWidth="7"
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               className="transition-all duration-700 ease-out"
             />
           </svg>
-          {/* Score text in center */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span 
-              className="font-bold"
+              className="font-bold leading-none"
               style={{ 
-                fontSize: typography.display.size,
+                fontSize: 24,
                 color: scoreColor,
               }}
             >
@@ -317,7 +308,7 @@ function ScoreHero({
             <span 
               className="font-medium"
               style={{ 
-                fontSize: typography.caption.size,
+                fontSize: 9,
                 color: colors.text.muted,
               }}
             >
@@ -326,42 +317,45 @@ function ScoreHero({
           </div>
         </div>
 
-        {/* Verdict Label - Pill */}
-        <div className={`${getPillBg(score)} px-4 py-1.5 rounded-full mb-2`}>
-          <h2 
-            className="font-bold"
+        {/* Verdict Info - Right side */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm font-bold" style={{ color: colors.text.primary }}>
+              Verdict<span style={{ color: colors.brand.tealBright }}>IQ</span>
+            </span>
+            <div className={`${getPillBg(score)} px-3 py-0.5 rounded-full`}>
+              <span 
+                className="font-bold"
+                style={{ 
+                  fontSize: 14,
+                  color: scoreColor,
+                }}
+              >
+                {verdictLabel}
+              </span>
+            </div>
+          </div>
+          <p 
+            className="mb-1.5"
             style={{ 
-              fontSize: typography.heading.size + 2,
-              color: scoreColor,
+              fontSize: typography.body.size - 1,
+              color: colors.text.tertiary,
             }}
           >
-            {verdictLabel}
-          </h2>
+            {verdictSubtitle}
+          </p>
+          <button 
+            className="flex items-center gap-1 bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity p-0"
+            style={{ 
+              color: colors.brand.tealBright,
+              fontSize: typography.caption.size + 1,
+            }}
+            onClick={onShowMethodology}
+          >
+            <Info className="w-3 h-3" />
+            How Verdict IQ Works
+          </button>
         </div>
-        
-        {/* Verdict Subtitle */}
-        <p 
-          className="text-center mb-3"
-          style={{ 
-            fontSize: typography.body.size,
-            color: colors.text.tertiary,
-          }}
-        >
-          {verdictSubtitle}
-        </p>
-
-        {/* How it works link */}
-        <button 
-          className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
-          style={{ 
-            color: colors.brand.tealBright,
-            fontSize: typography.caption.size + 2,
-          }}
-          onClick={onShowMethodology}
-        >
-          <Info className="w-3.5 h-3.5" />
-          How Verdict IQ Works
-        </button>
       </div>
 
       {/* Quick Stats Row - 4 columns */}
@@ -1102,22 +1096,7 @@ export function VerdictPageFresh({
         className="mx-auto w-full"
         style={{ maxWidth: layout.maxWidth }}
       >
-        {/* Section B: Score Hero */}
-        <ScoreHero
-          score={score}
-          verdictLabel={verdictLabel}
-          verdictSubtitle={verdictSubtitle}
-          quickStats={quickStats}
-          onShowMethodology={handleMethodologyClick}
-        />
-
-        {/* Section C: Confidence Metrics */}
-        <ConfidenceMetricsSection metrics={confidenceMetrics} />
-
-        {/* Breathing room before Investment Analysis */}
-        <div className="h-2" style={{ backgroundColor: colors.background.light }} />
-
-        {/* Section D: Investment Analysis (Star of the show) */}
+        {/* Investment Analysis FIRST (Star of the show - conversion driver) */}
         <InvestmentAnalysisSection
           financingTerms={financingTerms}
           priceCards={priceCards}
@@ -1129,8 +1108,23 @@ export function VerdictPageFresh({
           isExporting={isExporting}
         />
 
-        {/* Breathing room after Investment Analysis */}
-        <div className="h-2" style={{ backgroundColor: colors.background.light }} />
+        {/* Breathing room */}
+        <div className="h-1" style={{ backgroundColor: colors.background.light }} />
+
+        {/* Score Hero - Supporting confidence section */}
+        <ScoreHero
+          score={score}
+          verdictLabel={verdictLabel}
+          verdictSubtitle={verdictSubtitle}
+          quickStats={quickStats}
+          onShowMethodology={handleMethodologyClick}
+        />
+
+        {/* Confidence Metrics */}
+        <ConfidenceMetricsSection metrics={confidenceMetrics} />
+
+        {/* Breathing room */}
+        <div className="h-1" style={{ backgroundColor: colors.background.light }} />
 
         {/* Section E: Financial Breakdown */}
         <FinancialBreakdownSection columns={financialBreakdown} />

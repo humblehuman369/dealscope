@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { decisionGrade } from '../../theme/colors';
 import { rf, rs } from './responsive';
 
@@ -30,15 +29,15 @@ interface VerdictHeroProps {
 }
 
 const getVerdictColor = (score: number): string => {
-  if (score >= 70) return decisionGrade.pacificTeal;
-  if (score >= 50) return decisionGrade.caution;
-  return decisionGrade.negative;
+  if (score >= 80) return decisionGrade.pacificTeal;
+  if (score >= 50) return '#6B7F99';  // Slate blue - harmonious neutral
+  return '#C45B5B';                    // Soft coral - muted concern
 };
 
 const getVerdictPillBg = (score: number): string => {
-  if (score >= 70) return 'rgba(8,145,178,0.10)';
-  if (score >= 50) return 'rgba(217,119,6,0.10)';
-  return 'rgba(220,38,38,0.10)';
+  if (score >= 80) return 'rgba(8,145,178,0.10)';
+  if (score >= 50) return 'rgba(107,127,153,0.10)';
+  return 'rgba(196,91,91,0.10)';
 };
 
 const getMetricColor = (color: 'teal' | 'amber' | 'negative'): string => {
@@ -62,42 +61,30 @@ export function VerdictHero({
 
   return (
     <View style={styles.container}>
-      {/* Teal accent line at top */}
-      <View style={styles.accentLine} />
-
-      <LinearGradient
-        colors={[
-          decisionGrade.gradientTealStart,
-          'rgba(255,255,255,0)',
-          'rgba(255,255,255,0)',
-        ]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={styles.gradientBg}
-      >
-        {/* Verdict Content - Grid Layout */}
+      <View style={styles.contentWrap}>
+        {/* Compact horizontal layout: Score ring + Verdict info */}
         <View style={styles.verdictContent}>
-          {/* Score Container - Centered in left half */}
+          {/* Score Ring - Compact */}
           <View style={styles.scoreContainer}>
-            {/* Glow behind ring */}
-            <View style={[styles.scoreGlow, { shadowColor: verdictColor }]} />
             <View style={[styles.scoreRing, { borderColor: verdictColor }]}>
               <Text style={[styles.scoreValue, { color: verdictColor }]}>{score}</Text>
               <Text style={styles.scoreMax}>/100</Text>
             </View>
           </View>
 
-          {/* Verdict Info - Right half */}
+          {/* Verdict Info - Right side */}
           <View style={styles.verdictInfo}>
-            <Text style={styles.verdictTitle}>
-              <Text style={styles.verdictTitleNavy}>Verdict</Text>
-              <Text style={styles.verdictTitleTeal}>IQ</Text>
-            </Text>
-            {/* Pill verdict label */}
-            <View style={[styles.verdictPill, { backgroundColor: pillBg }]}>
-              <Text style={[styles.verdictLabel, { color: verdictColor }]}>
-                {verdictLabel}
+            <View style={styles.verdictTitleRow}>
+              <Text style={styles.verdictTitle}>
+                <Text style={styles.verdictTitleNavy}>Verdict</Text>
+                <Text style={styles.verdictTitleTeal}>IQ</Text>
               </Text>
+              {/* Pill verdict label */}
+              <View style={[styles.verdictPill, { backgroundColor: pillBg }]}>
+                <Text style={[styles.verdictLabel, { color: verdictColor }]}>
+                  {verdictLabel}
+                </Text>
+              </View>
             </View>
             <Text style={styles.verdictSubtitle}>{verdictSubtitle}</Text>
             <View style={styles.verdictLinks}>
@@ -135,7 +122,7 @@ export function VerdictHero({
             );
           })}
         </View>
-      </LinearGradient>
+      </View>
     </View>
   );
 }
@@ -144,66 +131,53 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: decisionGrade.bgPrimary,
   },
-  accentLine: {
-    height: rs(3),
-    backgroundColor: decisionGrade.pacificTeal,
-  },
-  gradientBg: {
-    paddingBottom: rs(20),
+  contentWrap: {
+    paddingBottom: rs(16),
   },
   verdictContent: {
     flexDirection: 'row',
-    paddingVertical: rs(24),
-    paddingHorizontal: rs(20),
+    alignItems: 'center',
+    paddingVertical: rs(16),
+    paddingHorizontal: rs(16),
+    gap: rs(14),
   },
   scoreContainer: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  scoreGlow: {
-    position: 'absolute',
-    width: rs(100),
-    height: rs(100),
-    borderRadius: rs(50),
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 0,
-  },
   scoreRing: {
-    width: rs(90),
-    height: rs(90),
-    borderRadius: rs(45),
-    borderWidth: rs(5),
+    width: rs(70),
+    height: rs(70),
+    borderRadius: rs(35),
+    borderWidth: rs(4),
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: decisionGrade.bgPrimary,
-    shadowColor: 'rgba(8,145,178,0.15)',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    elevation: 4,
   },
   scoreValue: {
-    fontSize: rf(36),
+    fontSize: rf(26),
     fontWeight: '800',
+    lineHeight: rf(28),
   },
   scoreMax: {
-    fontSize: rf(11),
+    fontSize: rf(9),
     fontWeight: '500',
     color: decisionGrade.textMuted,
-    marginTop: rs(-2),
+    marginTop: rs(-1),
   },
   verdictInfo: {
     flex: 1,
-    paddingLeft: rs(8),
     justifyContent: 'center',
   },
-  verdictTitle: {
-    fontSize: rf(16),
-    fontWeight: '800',
+  verdictTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: rs(8),
     marginBottom: rs(4),
+  },
+  verdictTitle: {
+    fontSize: rf(14),
+    fontWeight: '800',
     letterSpacing: -0.3,
   },
   verdictTitleNavy: {
@@ -213,14 +187,12 @@ const styles = StyleSheet.create({
     color: decisionGrade.pacificTeal,
   },
   verdictPill: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: rs(12),
-    paddingVertical: rs(4),
-    borderRadius: rs(12),
-    marginBottom: rs(4),
+    paddingHorizontal: rs(10),
+    paddingVertical: rs(3),
+    borderRadius: rs(10),
   },
   verdictLabel: {
-    fontSize: rf(16),
+    fontSize: rf(13),
     fontWeight: '700',
   },
   verdictSubtitle: {
