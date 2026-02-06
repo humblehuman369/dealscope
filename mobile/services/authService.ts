@@ -183,13 +183,20 @@ export async function isAuthenticated(): Promise<boolean> {
  */
 export async function register(data: RegisterData): Promise<User> {
   try {
-    const response = await axios.post<User>(
-      `${API_BASE_URL}/api/v1/auth/register`,
+    const response = await authApi.post<User>(
+      '/api/v1/auth/register',
       data
     );
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
+      if (!error.response) {
+        console.error('[Auth] Network error during registration:', error.message);
+        throw new AuthError(
+          'Unable to connect to server. Please check your internet connection and try again.',
+          0
+        );
+      }
       const message = error.response?.data?.detail || 'Registration failed';
       throw new AuthError(message, error.response?.status);
     }
@@ -203,8 +210,8 @@ export async function register(data: RegisterData): Promise<User> {
 export async function login(data: LoginData): Promise<{ user: User; tokens: TokenResponse }> {
   try {
     // Step 1: Get tokens
-    const tokenResponse = await axios.post<TokenResponse>(
-      `${API_BASE_URL}/api/v1/auth/login`,
+    const tokenResponse = await authApi.post<TokenResponse>(
+      '/api/v1/auth/login',
       data
     );
     
@@ -220,6 +227,7 @@ export async function login(data: LoginData): Promise<{ user: User; tokens: Toke
         headers: {
           Authorization: `Bearer ${tokens.access_token}`,
         },
+        timeout: 30000,
       }
     );
     
@@ -231,10 +239,20 @@ export async function login(data: LoginData): Promise<{ user: User; tokens: Toke
     return { user, tokens };
   } catch (error) {
     if (axios.isAxiosError(error)) {
+      // Network error (CORS, server unreachable, DNS failure, etc.)
+      if (!error.response) {
+        const apiUrl = API_BASE_URL || '(not set)';
+        console.error(`[Auth] Network error connecting to ${apiUrl}:`, error.message);
+        throw new AuthError(
+          `Unable to connect to server. Please check your internet connection and try again.`,
+          0
+        );
+      }
       const message = error.response?.data?.detail || 'Login failed';
       throw new AuthError(message, error.response?.status);
     }
-    throw new AuthError('Login failed. Please try again.');
+    console.error('[Auth] Unexpected login error:', error);
+    throw new AuthError('Login failed. Please check your connection and try again.');
   }
 }
 
@@ -246,19 +264,11 @@ export async function logout(): Promise<void> {
     // Notify server (optional - JWT is stateless)
     const token = await getAccessToken();
     if (token) {
-      await axios.post(
-        `${API_BASE_URL}/api/v1/auth/logout`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await authApi.post('/api/v1/auth/logout', {});
     }
   } catch (error) {
     // Ignore logout API errors
-    console.warn('Logout API call failed:', error);
+    console.warn('[Auth] Logout API call failed:', error);
   } finally {
     // Always clear local data
     await clearAuthData();
@@ -270,13 +280,15 @@ export async function logout(): Promise<void> {
  */
 export async function refreshAccessToken(refreshToken: string): Promise<TokenResponse | null> {
   try {
+    // Use raw axios here to avoid circular interceptor calls
     const response = await axios.post<TokenResponse>(
       `${API_BASE_URL}/api/v1/auth/refresh`,
-      { refresh_token: refreshToken }
+      { refresh_token: refreshToken },
+      { timeout: 30000 }
     );
     return response.data;
   } catch (error: any) {
-    console.warn('Token refresh failed');
+    console.warn('[Auth] Token refresh failed:', error?.message);
     return null;
   }
 }
@@ -300,10 +312,10 @@ export async function getCurrentUser(): Promise<User | null> {
  */
 export async function forgotPassword(email: string): Promise<void> {
   try {
-    await axios.post(`${API_BASE_URL}/api/v1/auth/forgot-password`, { email });
+    await authApi.post('/api/v1/auth/forgot-password', { email });
   } catch (error) {
     // Always succeed to prevent email enumeration
-    console.warn('Forgot password request:', error);
+    console.warn('[Auth] Forgot password request:', error);
   }
 }
 
@@ -370,9 +382,12 @@ export function validateEmail(email: string): boolean {
  */
 export async function verifyEmail(token: string): Promise<void> {
   try {
-    await axios.post(`${API_BASE_URL}/api/v1/auth/verify-email`, { token });
+    await authApi.post('/api/v1/auth/verify-email', { token });
   } catch (error) {
     if (axios.isAxiosError(error)) {
+      if (!error.response) {
+        throw new AuthError('Unable to connect to server. Please check your connection.', 0);
+      }
       const message = error.response?.data?.detail || 'Email verification failed';
       throw new AuthError(message, error.response?.status);
     }
@@ -404,12 +419,15 @@ export async function resendVerificationEmail(): Promise<void> {
  */
 export async function resetPassword(token: string, newPassword: string): Promise<void> {
   try {
-    await axios.post(`${API_BASE_URL}/api/v1/auth/reset-password`, {
+    await authApi.post('/api/v1/auth/reset-password', {
       token,
       new_password: newPassword,
     });
   } catch (error) {
     if (axios.isAxiosError(error)) {
+      if (!error.response) {
+        throw new AuthError('Unable to connect to server. Please check your connection.', 0);
+      }
       const message = error.response?.data?.detail || 'Password reset failed';
       throw new AuthError(message, error.response?.status);
     }
