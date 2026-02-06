@@ -696,25 +696,12 @@ function InvestmentAnalysisSection({
                       : 'hover:bg-neutral-50/60'
                   }`}
                 >
-                  {/* RECOMMENDED badge for Target Buy */}
-                  {isTarget && (
-                    <span 
-                      className="absolute top-1 left-1/2 -translate-x-1/2 px-1.5 py-[1px] rounded text-[7px] font-bold tracking-wide uppercase"
-                      style={{ 
-                        backgroundColor: 'rgba(8,145,178,0.12)',
-                        color: colors.brand.tealBright,
-                      }}
-                    >
-                      Recommended
-                    </span>
-                  )}
                   <div 
                     className="uppercase tracking-wide text-center mb-1"
                     style={{ 
                       fontSize: 9,
                       fontWeight: 600,
                       letterSpacing: '0.5px',
-                      marginTop: isTarget ? 6 : 0,
                     }}
                   >
                     <span className={isSelected ? 'text-neutral-800 font-bold' : 'text-neutral-500'}>
