@@ -946,7 +946,7 @@ function FinancialBreakdownSection({
           <div>
             {/* Resources sub-header (matches FINANCING style) */}
             <div 
-              className="flex items-center gap-2 pb-1.5 mb-3"
+              className="flex items-center gap-2 pb-1.5 mb-1"
               style={{ borderBottom: `2px solid ${colors.brand.tealBright}` }}
             >
               <div 
