@@ -85,15 +85,20 @@ export async function POST(request: NextRequest) {
     
     if (!backendResponse.ok) {
       let errorDetail: string
-      if (contentType?.includes('application/json')) {
-        const errorData = await backendResponse.json()
-        errorDetail = errorData.detail || JSON.stringify(errorData)
-      } else {
-        errorDetail = await backendResponse.text()
+      try {
+        if (contentType?.includes('application/json')) {
+          const errorData = await backendResponse.json()
+          errorDetail = errorData.detail || JSON.stringify(errorData)
+        } else {
+          errorDetail = await backendResponse.text()
+        }
+      } catch (parseError) {
+        errorDetail = `Backend returned ${backendResponse.status} but response could not be parsed`
       }
       console.error('[Saved Properties POST] Backend error:', backendResponse.status, errorDetail)
+      // Return the backend's status code, but ensure we have a valid response
       return NextResponse.json(
-        { detail: errorDetail }, 
+        { detail: errorDetail || `Backend error: ${backendResponse.status}` }, 
         { status: backendResponse.status }
       )
     }

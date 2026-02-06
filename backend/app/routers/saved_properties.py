@@ -171,14 +171,26 @@ async def save_property(
     """
     try:
         # If no deal_maker_record provided, create one from property data
+        # Make this optional - if it fails, we can still save the property
         if not data.deal_maker_record and data.property_data_snapshot:
-            zip_code = data.address_zip or data.property_data_snapshot.get("zipCode")
-            deal_maker_record = DealMakerService.create_from_property_data(
-                property_data=data.property_data_snapshot,
-                zip_code=zip_code,
-            )
-            # Convert to dict for storage
-            data.deal_maker_record = deal_maker_record
+            try:
+                zip_code = data.address_zip or data.property_data_snapshot.get("zipCode")
+                deal_maker_record = DealMakerService.create_from_property_data(
+                    property_data=data.property_data_snapshot,
+                    zip_code=zip_code,
+                )
+                # Assign the DealMakerRecord object - Pydantic will handle serialization
+                # The service will convert it to dict for storage
+                data.deal_maker_record = deal_maker_record
+            except Exception as e:
+                # Log the error but don't fail the save operation
+                logger.warning(
+                    f"Failed to create DealMakerRecord for property save: {str(e)}. "
+                    f"Property will be saved without DealMakerRecord."
+                )
+                logger.debug(f"DealMakerRecord creation error details: {e}", exc_info=True)
+                # Continue without deal_maker_record - ensure it's None
+                data.deal_maker_record = None
         
         saved = await saved_property_service.save_property(
             db=db,
@@ -189,7 +201,11 @@ async def save_property(
         # Reconstruct DealMakerRecord from stored dict
         deal_maker = None
         if saved.deal_maker_record:
-            deal_maker = DealMakerService.from_dict(saved.deal_maker_record)
+            try:
+                deal_maker = DealMakerService.from_dict(saved.deal_maker_record)
+            except Exception as e:
+                logger.warning(f"Failed to reconstruct DealMakerRecord: {str(e)}")
+                # Continue without deal_maker - property is still saved
         
         return SavedPropertyResponse(
             id=str(saved.id),
@@ -241,6 +257,13 @@ async def save_property(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=error_msg
+        )
+    except Exception as e:
+        # Catch all other exceptions and log them properly
+        logger.error(f"Unexpected error saving property: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save property: {str(e)}"
         )
 
 

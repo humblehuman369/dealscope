@@ -55,7 +55,17 @@ class SavedPropertyService:
         # Convert DealMakerRecord to dict if provided
         deal_maker_dict = None
         if data.deal_maker_record:
-            deal_maker_dict = data.deal_maker_record.model_dump(mode="json")
+            try:
+                # Handle both Pydantic model and dict cases
+                if hasattr(data.deal_maker_record, 'model_dump'):
+                    deal_maker_dict = data.deal_maker_record.model_dump(mode="json")
+                elif isinstance(data.deal_maker_record, dict):
+                    deal_maker_dict = data.deal_maker_record
+                else:
+                    logger.warning(f"Unexpected deal_maker_record type: {type(data.deal_maker_record)}")
+            except Exception as e:
+                logger.error(f"Failed to convert deal_maker_record to dict: {e}", exc_info=True)
+                # Continue without deal_maker_record rather than failing the save
         
         # Create the saved property
         saved_property = SavedProperty(
