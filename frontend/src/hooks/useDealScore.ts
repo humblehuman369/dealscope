@@ -9,6 +9,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+
 export interface DealScoreInput {
   listPrice: number
   purchasePrice: number
@@ -138,8 +140,9 @@ export function useDealScore(
     setError(null)
     
     try {
-      const response = await fetch('/api/v1/worksheet/deal-score', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/worksheet/deal-score`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },

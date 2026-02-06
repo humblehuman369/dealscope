@@ -22,6 +22,8 @@ import { Heart, FileText, Share2, Search } from 'lucide-react'
 import Link from 'next/link'
 import { SearchPropertyModal } from '@/components/SearchPropertyModal'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+
 interface PropertyDetailsClientProps {
   property: PropertyData
   /** Optional initial strategy to highlight or auto-navigate to */
@@ -62,8 +64,9 @@ export function PropertyDetailsClient({ property, initialStrategy }: PropertyDet
         return
       }
 
-      const response = await fetch('/api/v1/properties/saved', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,

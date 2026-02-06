@@ -8,6 +8,8 @@ import {
   ExternalLink, AlertCircle, Camera
 } from 'lucide-react'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+
 interface Photo {
   url: string
   caption?: string
@@ -64,7 +66,9 @@ export default function PhotosPage() {
       const params = new URLSearchParams()
       params.append('zpid', zpidToFetch)
 
-      const response = await fetch(`/api/v1/photos?${params.toString()}`)
+      const response = await fetch(`${API_BASE_URL}/api/v1/photos?${params.toString()}`, {
+        credentials: 'include',
+      })
       const data: PhotosResponse = await response.json()
 
       if (data.success) {
@@ -101,7 +105,9 @@ export default function PhotosPage() {
       if (zpid) params.append('zpid', zpid)
       if (propertyUrl) params.append('url', propertyUrl)
 
-      const response = await fetch(`/api/v1/photos?${params.toString()}`)
+      const response = await fetch(`${API_BASE_URL}/api/v1/photos?${params.toString()}`, {
+        credentials: 'include',
+      })
       const data: PhotosResponse = await response.json()
 
       if (data.success) {

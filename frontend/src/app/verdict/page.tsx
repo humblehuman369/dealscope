@@ -30,6 +30,8 @@ import { useProgressiveProfiling } from '@/hooks/useProgressiveProfiling'
 import { ProgressiveProfilingPrompt } from '@/components/profile/ProgressiveProfilingPrompt'
 import { useDealMakerStore, useDealMakerReady } from '@/stores/dealMakerStore'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+
 // Backend analysis response type
 interface BackendAnalysisResponse {
   deal_score: number
@@ -197,8 +199,9 @@ function VerdictContent() {
         setError(null)
 
         // Fetch property data from Next.js API route which proxies to backend
-        const response = await fetch('/api/v1/properties/search', {
+        const response = await fetch(`${API_BASE_URL}/api/v1/properties/search`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -217,7 +220,9 @@ function VerdictContent() {
         
         if (data.zpid) {
           try {
-            const photosResponse = await fetch(`/api/v1/photos?zpid=${data.zpid}`)
+            const photosResponse = await fetch(`${API_BASE_URL}/api/v1/photos?zpid=${data.zpid}`, {
+              credentials: 'include',
+            })
             if (photosResponse.ok) {
               const photosData = await photosResponse.json()
               if (photosData.success && photosData.photos && photosData.photos.length > 0) {
@@ -363,8 +368,9 @@ function VerdictContent() {
         }
         
         try {
-          const analysisResponse = await fetch('/api/v1/analysis/verdict', {
+          const analysisResponse = await fetch(`${API_BASE_URL}/api/v1/analysis/verdict`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
             },

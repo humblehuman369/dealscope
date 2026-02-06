@@ -16,6 +16,8 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+
 function PropertyRedirector() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -33,8 +35,9 @@ function PropertyRedirector() {
 
       try {
         // Fetch property data to get zpid
-        const response = await fetch('/api/v1/properties/search', {
+        const response = await fetch(`${API_BASE_URL}/api/v1/properties/search`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ address: addressParam })
         })

@@ -258,9 +258,12 @@ app = FastAPI(
 )
 
 # CORS middleware
+# allow_origins: explicit list for known domains
+# allow_origin_regex: pattern match for Vercel preview/production deployments
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,  # CORS_ORIGINS must be configured; no wildcard fallback
+    allow_origins=settings.CORS_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

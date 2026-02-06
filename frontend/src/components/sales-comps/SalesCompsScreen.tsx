@@ -18,6 +18,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 // Note: CompactHeader removed - now using global AppHeader from layout
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://dealscope-production.up.railway.app'
+
 // Types
 export interface SalesCompProperty {
   id: number
@@ -250,8 +252,9 @@ export function SalesCompsScreen({
     }
 
     try {
-      const response = await fetch('/api/v1/properties/saved', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/properties/saved`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
